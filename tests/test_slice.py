@@ -52,9 +52,21 @@ async def main():
         check('hover without pressing does not slice', await page.evaluate("__grasp.slice.fruits.length") == 1)
         await page.evaluate("__grasp.CONFIG.SLICE_GRAVITY = 0.0012; __grasp.slice.fruits.length = 0; __grasp.slice.nextSpawn = 0"); await page.wait_for_timeout(4500)
         check('unsliced fruit counts as missed', await page.evaluate("__grasp.slice.missed") >= 1, await page.evaluate("__grasp.slice.missed"))
+        # katana: drawn while the blade is on, gone when it is off
+        await page.evaluate("parkFruit(640, 460); __grasp.slice.drawn = 0")
+        await page.mouse.move(400, 400); await page.mouse.down()
+        for i in range(1, 9): await page.mouse.move(400 + i*40, 400 + i*10); await page.wait_for_timeout(16)
+        kat = await page.evaluate("({drawn: __grasp.slice.drawn, ang: __grasp.slice.ang, cuts: __grasp.slice.cuts.length, on: __grasp.slice.bladeOn})")
+        await page.screenshot(path='tests/out/slice_katana.png')
+        await page.mouse.up(); await page.wait_for_timeout(50)
+        check('katana renders along the swipe + cut line', kat['on'] and kat['drawn'] > 3 and 0 < kat['ang'] < 0.6 and kat['cuts'] == 1, kat)
+        d0 = await page.evaluate("__grasp.slice.drawn"); await page.wait_for_timeout(120)
+        check('katana hidden when the blade is off', await page.evaluate("__grasp.slice.drawn") == d0 and not await page.evaluate("__grasp.slice.bladeOn"))
         await page.screenshot(path='tests/out/slice_mouse.png')
         await page.click('#modeBtn'); await page.wait_for_timeout(300)
-        check('mode chip switches back to sandbox', await page.evaluate("gameMode") == 'sandbox' and await page.inner_text('#modeBtn') == 'Slice')
+        check('mode chip cycles slice -> smash', await page.evaluate("gameMode") == 'smash' and await page.inner_text('#modeBtn') == 'Sandbox')
+        await page.click('#modeBtn'); await page.wait_for_timeout(300)
+        check('mode chip cycles smash -> sandbox', await page.evaluate("gameMode") == 'sandbox' and await page.inner_text('#modeBtn') == 'Slice')
         check('mouse: no page errors', not errs, errs); await ctx.close()
 
         # --- camera, phone ---

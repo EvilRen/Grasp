@@ -35,11 +35,13 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 .panel h1{ font-size:clamp(40px,9vw,64px); font-weight:700; letter-spacing:-.02em; margin:0 0 8px; line-height:1; }
 .panel p{ margin:0 0 24px; color:var(--muted); line-height:1.5; font-size:16px; }
 .actions{ display:flex; flex-direction:column; gap:10px; }
-.modes{ display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px; border-radius:14px; box-shadow:inset 0 0 0 1.5px var(--line); margin:0 0 16px; }
-.modes button{ background:transparent; color:var(--muted); padding:11px 12px; font-weight:500; border-radius:10px; font-size:16px; }
+.modes{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:4px; border-radius:14px; box-shadow:inset 0 0 0 1.5px var(--line); margin:0 0 16px; }
+.modes button{ background:transparent; color:var(--muted); padding:11px 6px; font-weight:500; border-radius:10px; font-size:16px; white-space:nowrap; }
 .modes button[aria-pressed="true"]{ background:var(--ink-2); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
 .primary{ background:var(--saffron); color:#241a00; font-weight:700; padding:15px 18px; font-size:17px; }
 .secondary{ background:transparent; color:var(--bone); padding:13px 18px; box-shadow:inset 0 0 0 1.5px var(--line); }
+.link{ display:block; text-align:center; margin:16px 0 0; color:var(--muted); font-size:14px; text-decoration:none; }
+.link:hover,.link:focus-visible{ color:var(--bone); text-decoration:underline; outline:none; }
 .checks{ list-style:none; margin:22px 0 0; padding:0; display:grid; gap:10px; }
 .checks[hidden]{ display:none; }
 .checks li{ display:grid; grid-template-columns:18px 1fr; gap:10px; align-items:start; font-size:15px; }
@@ -121,12 +123,14 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <div class="modes" role="group" data-i18n-aria="modesAria" aria-label="Game mode">
       <button type="button" data-mode="sandbox" aria-pressed="true" data-i18n="modeSandbox">Sandbox</button>
       <button type="button" data-mode="slice" aria-pressed="false" data-i18n="modeSlice">Slice</button>
+      <button type="button" data-mode="smash" aria-pressed="false" data-i18n="modeSmash">Smash</button>
     </div>
     <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
     <div class="actions">
       <button class="primary" id="camBtn" type="button" data-i18n="camBtn">Enable camera</button>
       <button class="secondary" id="mouseBtn" type="button" data-i18n="mouseBtn">Play with mouse or touch</button>
     </div>
+    <a class="link" href="tremorti/" data-i18n="tremortiLink">Tremorti · tremor meter</a>
     <ul class="checks" id="checks" hidden>
       <li data-k="camera"><span class="dot"></span><span><span data-i18n="chk_camera">Camera</span><small></small></span></li>
       <li data-k="library"><span class="dot"></span><span><span data-i18n="chk_library">Hand tracker library</span><small></small></span></li>
@@ -173,13 +177,23 @@ const CONFIG = {
   SLICE_MIN_SPEED: 0.45,      // px/ms: the finger must move at least this fast to cut
   SPAWN_INTERVAL_MS: [1100, 1900], // gap between waves
   BLADE_TRAIL_MS: 220,        // how long the blade trail lingers
+  CUT_LINE_MS: 250,           // bright cut line shown on a sliced fruit
+  // Smash mode
+  SMASH_ROUND_S: 60,          // round length
+  PUNCH_SPEED: 0.8,           // px/ms on a ~950px screen: a fist moving at least this fast is a punch
+  FIST_RADIUS: 28,
+  SMASH_RADIUS: 70,           // px (scaled): bricks within this distance of the hit come loose too
+  SMASH_MAX_PIECES: 140,      // dynamic debris cap; oldest small shards go first
+  CAR_INTERVAL_MS: [3500, 6500],
+  CAR_SPEED: 0.16,            // px/ms
+  WALL_REBUILD_MS: 2500,      // a wall that is fully knocked down comes back after this
 };
 
 /* ---------------- Language (English / Hebrew) ---------------- */
 const I18N = {
   en: {
     title: 'Grasp: hand physics sandbox', langName: 'עב', langAria: 'Switch language to Hebrew',
-    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modesAria: 'Game mode',
+    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
     statusTitle: 'Show your whole hand inside the yellow box',
     statusSub: "Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.",
@@ -187,7 +201,8 @@ const I18N = {
     bannerTitle: "Camera mode is off. You're playing with mouse or touch.", gotIt: 'Got it',
     descSandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
     descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
-    camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch',
+    descSmash: 'Brick walls stand and cars drive by. Make a fist and punch fast to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
+    camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch', tremortiLink: 'Tremorti · tremor meter',
     chk_camera: 'Camera', chk_library: 'Hand tracker library', chk_runtime: 'Tracker runtime (WebAssembly)', chk_model: 'Hand model', chk_sandbox: 'Page sandbox',
     st_camera: 'Camera', st_library: 'Hand tracker library', st_runtime: 'Tracker runtime', st_model: 'Hand model', st_sandbox: 'Page sandbox',
     hintSliceCam: 'Raise your index finger and swipe through the fruit. Keep your hand inside the yellow box.',
@@ -195,6 +210,9 @@ const I18N = {
     hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
     hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
+    hintSmashCam: 'Make a fist and punch through the walls and cars. Keep your hand inside the yellow box.',
+    hintSmashTouch: 'Swipe fast through the walls and cars to smash them.', hintSmashMouse: 'Hold the left button and swipe fast to punch. D for HUD.',
+    time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
     ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
@@ -216,12 +234,12 @@ const I18N = {
     missed: 'missed {n}', combo: 'Combo ×{n}',
     h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Tracking FPS', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
-    g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point',
-    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', Left: 'Left', Right: 'Right',
+    g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
+    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', Left: 'Left', Right: 'Right',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
-    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modesAria: 'מצב משחק',
+    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
     statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
     statusSub: 'כף יד פתוחה, אצבעות פרושות, שורש כף היד בתמונה. העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת.',
@@ -229,7 +247,8 @@ const I18N = {
     bannerTitle: 'מצב מצלמה כבוי. אתם משחקים עם עכבר או מגע.', gotIt: 'הבנתי',
     descSandbox: 'צבטו באוויר כדי להרים חפצים, שחררו כדי לזרוק, הצביעו כדי לדחוף. המצלמה היא השלט.',
     descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
-    camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע',
+    descSmash: 'קירות לבנים עומדים ומכוניות חולפות. קמצו אגרוף והכו מהר כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
+    camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע', tremortiLink: 'טרימורטי · מד רעד',
     chk_camera: 'מצלמה', chk_library: 'ספריית זיהוי היד', chk_runtime: 'מנוע הזיהוי (WebAssembly)', chk_model: 'מודל היד', chk_sandbox: 'הרשאות הדף',
     st_camera: 'מצלמה', st_library: 'ספריית זיהוי היד', st_runtime: 'מנוע הזיהוי', st_model: 'מודל היד', st_sandbox: 'הרשאות הדף',
     hintSliceCam: 'הרימו את האצבע המורה והעבירו אותה דרך הפירות. שמרו על היד בתוך המסגרת הצהובה.',
@@ -237,6 +256,9 @@ const I18N = {
     hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
     hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
+    hintSmashCam: 'קמצו אגרוף והכו דרך הקירות והמכוניות. שמרו על היד בתוך המסגרת הצהובה.',
+    hintSmashTouch: 'החליקו מהר דרך הקירות והמכוניות כדי לנפץ אותם.', hintSmashMouse: 'החזיקו את הכפתור השמאלי והחליקו מהר כדי להכות. D למדדים.',
+    time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
     ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
@@ -258,8 +280,8 @@ const I18N = {
     missed: 'פספוסים {n}', combo: 'קומבו ×{n}',
     h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'קצב זיהוי', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
-    g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה',
-    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', Left: 'שמאל', Right: 'ימין',
+    g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
+    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', Left: 'שמאל', Right: 'ימין',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -308,7 +330,7 @@ function ensureMatter() {
   });
 }
 
-let M, engine, world, walls = [], bodies = [], poker = null;
+let M, engine, world, walls = [], bodies = [], poker = null, fist = null;
 let W = 0, H = 0, DPR = 1;
 const particles = [];
 let gridPattern = null;
@@ -394,7 +416,8 @@ function initPhysics() {
   engine.gravity.y = 1;
   world = engine.world;
   poker = M.Bodies.circle(-500, -500, CONFIG.POKER_RADIUS, { isStatic: true, label: 'poker', collisionFilter: { mask: 0 } });
-  M.Composite.add(world, poker);
+  fist = M.Bodies.circle(-500, -500, CONFIG.FIST_RADIUS, { isStatic: true, label: 'fist', collisionFilter: { mask: 0 } });
+  M.Composite.add(world, [poker, fist]);
   buildWalls();
   spawnObjects();
   M.Events.on(engine, 'collisionStart', onCollisions);
@@ -450,8 +473,8 @@ class OneEuro {
 
 /* ---------------- Hand state (camera) ---------------- */
 const hand = {
-  seen: false, lastSeen: -1e9, misses: 99, pinch: false, point: false, pointVotes: 0, pinchD: NaN,
-  blend: 0, lastT: null, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), handedness: '',
+  seen: false, lastSeen: -1e9, misses: 99, pinch: false, point: false, pointVotes: 0, fist: false, fistVotes: 0, pinchD: NaN,
+  blend: 0, fblend: 0, lastT: null, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), handedness: '',
 };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -475,11 +498,19 @@ function processHand(lm, vw, vh, t) {
     hand.pointVotes++;
     if (hand.pointVotes >= CONFIG.POINT_CONFIRM_FRAMES || hand.pinch) { hand.point = rawPoint && !hand.pinch; hand.pointVotes = 0; }
   } else hand.pointVotes = 0;
+  // Fist: all four fingertips curled back toward the wrist. Same vote/hysteresis as pointing.
+  const rawFist = !hand.pinch && curled(8, 6) && curled(12, 10) && curled(16, 14) && curled(20, 18);
+  if (rawFist !== hand.fist) {
+    hand.fistVotes++;
+    if (hand.fistVotes >= CONFIG.POINT_CONFIRM_FRAMES || hand.pinch) { hand.fist = rawFist && !hand.pinch; hand.fistVotes = 0; }
+  } else hand.fistVotes = 0;
 
   const dtMs = hand.lastT === null ? 16 : Math.max(1, t - hand.lastT); hand.lastT = t;
   hand.blend = Math.min(1, Math.max(0, hand.blend + (hand.point ? 1 : -1) * dtMs / CONFIG.POINT_BLEND_MS));
-  const mid = { x: (P(4).x + P(8).x) / 2, y: (P(4).y + P(8).y) / 2 }, tip = P(8);
-  const ax = mid.x + (tip.x - mid.x) * hand.blend, ay = mid.y + (tip.y - mid.y) * hand.blend;
+  hand.fblend = Math.min(1, Math.max(0, hand.fblend + (hand.fist ? 1 : -1) * dtMs / CONFIG.POINT_BLEND_MS));
+  const mid = { x: (P(4).x + P(8).x) / 2, y: (P(4).y + P(8).y) / 2 }, tip = P(8), palm = P(9);
+  let ax = mid.x + (tip.x - mid.x) * hand.blend, ay = mid.y + (tip.y - mid.y) * hand.blend;
+  ax += (palm.x - ax) * hand.fblend; ay += (palm.y - ay) * hand.fblend; // a fist is anchored at the knuckles
   const m = (1 - CONFIG.MAP_BOX) / 2;
   const u = Math.min(1.02, Math.max(-0.02, (ax / vw - m) / CONFIG.MAP_BOX));
   const v = Math.min(1.02, Math.max(-0.02, (ay / vh - m) / CONFIG.MAP_BOX));
@@ -522,20 +553,21 @@ document.addEventListener('mouseleave', () => { if (mode === 'mouse' && !ptr.pin
 
 /* ---------------- Unified input → grab / throw / poke ---------------- */
 let mode = 'none';              // 'none' | 'camera' | 'mouse'
-let gesture = 'none';           // 'none' | 'open' | 'pinch' | 'point'
+let gesture = 'none';           // 'none' | 'open' | 'pinch' | 'point' | 'fist'
 const cursor = { x: 0, y: 0, present: false, history: [] };
 let held = null;                // { body, constraint }
 
 function readInput(now) {
   if (mode === 'camera') {
     const present = hand.misses < CONFIG.HAND_LOST_FRAMES && now - hand.lastSeen < CONFIG.HAND_LOST_MAX_MS;
-    return { present, x: hand.x, y: hand.y, pinch: present && hand.pinch, point: present && hand.point };
+    return { present, x: hand.x, y: hand.y, pinch: present && hand.pinch, point: present && hand.point, fist: present && hand.fist };
   }
-  if (mode === 'mouse') {
+  if (mode === 'mouse') { // smash: left button / one finger held = fist
     const present = ptr.type === 'touch' ? (ptr.touches.size > 0 || now - ptr.lastUp < 150) : ptr.present;
-    return { present, x: ptr.x, y: ptr.y, pinch: ptr.pinch, point: ptr.point };
+    const f = gameMode === 'smash' && ptr.pinch;
+    return { present, x: ptr.x, y: ptr.y, pinch: ptr.pinch && !f, point: ptr.point, fist: f };
   }
-  return { present: false, x: 0, y: 0, pinch: false, point: false };
+  return { present: false, x: 0, y: 0, pinch: false, point: false, fist: false };
 }
 
 function inputTick(now) {
@@ -546,11 +578,12 @@ function inputTick(now) {
     cursor.history.push({ t: now, x: inp.x, y: inp.y });
     while (cursor.history.length && now - cursor.history[0].t > 300) cursor.history.shift();
   }
-  const g = !inp.present ? 'none' : inp.pinch ? 'pinch' : inp.point ? 'point' : 'open';
+  const g = !inp.present ? 'none' : inp.pinch ? 'pinch' : inp.fist ? 'fist' : inp.point ? 'point' : 'open';
   if (g !== gesture) {
     if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
-    if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; } }
+    if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
+    if (gameMode === 'smash' && smash.over && g !== 'none' && g !== 'open' && now - smash.overAt > 1000) resetSmash(now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -601,7 +634,6 @@ let lastThrow = 0;
 /* ---------------- Main loop ---------------- */
 const STEP = 1000 / 60;
 let acc = 0, lastFrame = performance.now();
-const pokerPos = { from: { x: -500, y: -500 }, to: { x: -500, y: -500 } };
 let fps = 0, trackFps = 0, trackCount = 0, lastRateAt = performance.now(), frameCount = 0;
 
 function frame(now) {
@@ -610,26 +642,27 @@ function frame(now) {
   trackTick(now);
   inputTick(now);
 
-  const pokeOn = gameMode === 'sandbox' && gesture === 'point';
-  poker.collisionFilter.mask = pokeOn ? 0xFFFFFFFF : 0;
-  pokerPos.from = { ...poker.position };
-  pokerPos.to = pokeOn ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 };
+  // poker (sandbox) and fist (smash) are static circles dragged along the cursor path each step
+  const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over]];
+  for (const [b, on] of probes) { b.collisionFilter.mask = on ? 0xFFFFFFFF : 0; b.plugin.from = { ...b.position }; b.plugin.to = on ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 }; }
+  if (gameMode === 'smash') smashTick(now, dt);
 
   acc += dt;
-  const steps = gameMode === 'sandbox' ? Math.min(4, Math.floor(acc / STEP)) : 0;
-  if (gameMode !== 'sandbox') acc = 0;
+  const steps = gameMode !== 'slice' ? Math.min(4, Math.floor(acc / STEP)) : 0;
+  if (gameMode === 'slice') acc = 0;
   for (let i = 0; i < steps; i++) {
-    if (pokeOn) {
-      const f = (i + 1) / steps;
-      M.Body.setPosition(poker, { x: pokerPos.from.x + (pokerPos.to.x - pokerPos.from.x) * f, y: pokerPos.from.y + (pokerPos.to.y - pokerPos.from.y) * f }, true);
-    } else if (poker.position.x !== -500) M.Body.setPosition(poker, { x: -500, y: -500 }, false);
+    for (const [b, on] of probes) {
+      const f = (i + 1) / steps, { from, to } = b.plugin;
+      if (on) M.Body.setPosition(b, { x: from.x + (to.x - from.x) * f, y: from.y + (to.y - from.y) * f }, true);
+      else if (b.position.x !== -500) M.Body.setPosition(b, { x: -500, y: -500 }, false);
+    }
     if (held) M.Body.setAngularVelocity(held.body, held.body.angularVelocity * CONFIG.HELD_SPIN_DAMP);
     M.Engine.update(engine, STEP);
   }
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else render(now);
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -741,10 +774,10 @@ const FRUITS = [
   { rind: '#ff6f59', flesh: '#fff1dc', seed: '#8a3b2e', juice: '#ff8f6b' },
   { rind: '#54c6eb', flesh: '#dff5fc', seed: '#2b7e99', juice: '#54c6eb' },
 ];
-const slice = { fruits: [], halves: [], stains: [], floaters: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, combo: { n: 0, t: 0 } };
+const slice = { fruits: [], halves: [], stains: [], floaters: [], cuts: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, ang: 0, drawn: 0, combo: { n: 0, t: 0 } };
 function sliceScale() { return { g: CONFIG.SLICE_GRAVITY * H / 800, r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) }; }
 function resetSlice() {
-  slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = 0;
+  slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = slice.cuts.length = 0;
   slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
 }
 function spawnWave(now) {
@@ -787,6 +820,11 @@ function cutFruit(f, ux, uy, now) {
     particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.08, life: 1, decay: 0.0016 + Math.random() * 0.0014, r: 2 + Math.random() * 3.5, color: f.kind.juice || f.kind.flesh });
   }
   slice.stains.push({ x: f.x, y: f.y, r: f.r, ang, life: 1, color: f.kind.juice || f.kind.flesh });
+  slice.cuts.push({ x: f.x, y: f.y, r: f.r, ang, t: now });
+  for (let k = 0; k < 3 + Math.floor(Math.random() * 4) && particles.length < 320; k++) { // sparks off the blade
+    const a = ang + (Math.random() - 0.5) * 0.9, v = 0.3 + Math.random() * 0.4;
+    particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.004 + Math.random() * 0.004, r: 1 + Math.random() * 1.5, color: Math.random() < 0.5 ? '#ffffff' : '#ffc24b' });
+  }
   slice.score++;
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now;
   slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
@@ -797,11 +835,15 @@ function sliceTick(now, dt) {
   if (slice.bladeOn) {
     const p = { x: cursor.x, y: cursor.y, t: now };
     if (!slice.last) { slice.last = p; slice.blade.push(p); }
-    else if (p.x !== slice.last.x || p.y !== slice.last.y) { cutAlong(slice.last, p, now); slice.last = p; slice.blade.push(p); }
+    else if (p.x !== slice.last.x || p.y !== slice.last.y) {
+      let d = Math.atan2(p.y - slice.last.y, p.x - slice.last.x) - slice.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); slice.ang += d * 0.3; // blade follows the motion
+      cutAlong(slice.last, p, now); slice.last = p; slice.blade.push(p);
+    }
   } else slice.last = null;
   while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
+  while (slice.cuts.length && now - slice.cuts[0].t > CONFIG.CUT_LINE_MS) slice.cuts.shift();
 
-  for (let i = slice.floaters.length - 1; i >= 0; i--) { const f = slice.floaters[i]; f.y -= 0.04 * dt; f.life -= dt / 900; if (f.life <= 0) slice.floaters.splice(i, 1); }
+  tickFloaters(slice.floaters, dt);
   for (let i = slice.stains.length - 1; i >= 0; i--) { const s2 = slice.stains[i]; s2.life -= dt / 1800; if (s2.life <= 0) slice.stains.splice(i, 1); }
   if (noHandShown) return; // the world waits while the hand is missing
   const { g } = sliceScale();
@@ -816,6 +858,29 @@ function sliceTick(now, dt) {
     h.vy += g * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.rot += h.vr * dt;
     if (h.y - h.r > H + 40) slice.halves.splice(i, 1);
   }
+}
+function tickFloaters(list, dt) { for (let i = list.length - 1; i >= 0; i--) { const f = list[i]; f.y -= 0.04 * dt; f.life -= dt / 900; if (f.life <= 0) list.splice(i, 1); } }
+function drawFloaters(list) {
+  ctx.textAlign = 'center';
+  for (const f of list) {
+    ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.big ? '#ffc24b' : '#f1e9da';
+    ctx.font = (f.big ? '700 26px ' : '700 20px ') + 'Rubik, system-ui, sans-serif'; ctx.fillText(f.text, f.x, f.y);
+  }
+  ctx.globalAlpha = 1; ctx.textAlign = 'start';
+}
+function drawKatana(x, y, ang) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#2a2138'; ctx.lineWidth = 7; ctx.lineCap = 'round';                       // wrapped handle
+  ctx.beginPath(); ctx.moveTo(-34, 0); ctx.lineTo(-9, 0); ctx.stroke();
+  ctx.strokeStyle = 'rgba(241,233,218,0.35)'; ctx.lineWidth = 1.2; ctx.lineCap = 'butt';
+  for (let i = -31; i < -10; i += 5) { ctx.beginPath(); ctx.moveTo(i, -3.5); ctx.lineTo(i + 3, 3.5); ctx.stroke(); }
+  ctx.beginPath(); ctx.arc(-7, 0, 5.5, 0, TAU); ctx.fillStyle = '#ffc24b'; ctx.fill();          // tsuba
+  ctx.strokeStyle = 'rgba(20,27,52,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-2, -3); ctx.quadraticCurveTo(48, -6.5, 90, -1.5); ctx.lineTo(85, 3); ctx.quadraticCurveTo(48, 3.5, -2, 3); ctx.closePath();
+  ctx.fillStyle = '#dfe6f2'; ctx.fill(); ctx.strokeStyle = 'rgba(20,27,52,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, -2.2); ctx.quadraticCurveTo(48, -5.5, 89, -1.4);                 // edge highlight
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.restore();
 }
 function drawFruit(f) {
   ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot);
@@ -858,65 +923,356 @@ function renderSlice(now) {
     ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
   }
   ctx.globalAlpha = 1;
-  // blade trail
+  for (const c of slice.cuts) { // bright cut line across a just-sliced fruit
+    const k = 1 - (now - c.t) / CONFIG.CUT_LINE_MS, dx = Math.cos(c.ang) * c.r * 1.2, dy = Math.sin(c.ang) * c.r * 1.2;
+    ctx.strokeStyle = 'rgba(255,255,255,' + (0.95 * k).toFixed(3) + ')'; ctx.lineWidth = 1.5 + k;
+    ctx.beginPath(); ctx.moveTo(c.x - dx, c.y - dy); ctx.lineTo(c.x + dx, c.y + dy); ctx.stroke();
+  }
+  // glowing trail: wide soft saffron stroke under a thin white core
   const pts = slice.blade;
   if (pts.length > 1) {
-    ctx.save(); ctx.lineCap = 'round'; ctx.shadowColor = 'rgba(84,198,235,0.9)'; ctx.shadowBlur = 14;
-    for (let i = 1; i < pts.length; i++) {
-      const k = Math.max(0, 1 - (now - pts[i].t) / CONFIG.BLADE_TRAIL_MS);
-      ctx.strokeStyle = 'rgba(241,233,218,' + (0.95 * k).toFixed(3) + ')'; ctx.lineWidth = 1 + 11 * k;
-      ctx.beginPath(); ctx.moveTo(pts[i - 1].x, pts[i - 1].y); ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    for (const [col, wid] of [['255,194,75', 16], ['255,255,255', 2.5]]) {
+      for (let i = 1; i < pts.length; i++) {
+        const k = Math.max(0, 1 - (now - pts[i].t) / CONFIG.BLADE_TRAIL_MS);
+        ctx.strokeStyle = 'rgba(' + col + ',' + ((wid > 4 ? 0.28 : 0.95) * k).toFixed(3) + ')'; ctx.lineWidth = 1 + wid * k;
+        ctx.beginPath(); ctx.moveTo(pts[i - 1].x, pts[i - 1].y); ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+      }
     }
     ctx.restore();
   }
+  if (slice.bladeOn && cursor.present) { drawKatana(cursor.x, cursor.y, slice.ang); slice.drawn++; }
+  drawFloaters(slice.floaters);
   ctx.textAlign = 'center';
-  for (const f of slice.floaters) {
-    ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.big ? '#ffc24b' : '#f1e9da';
-    ctx.font = (f.big ? '700 26px ' : '700 20px ') + 'Rubik, system-ui, sans-serif'; ctx.fillText(f.text, f.x, f.y);
-  }
-  ctx.globalAlpha = 1;
   ctx.fillStyle = '#f1e9da'; ctx.font = '700 44px Rubik, system-ui, sans-serif'; ctx.fillText(String(slice.score), W / 2, 104);
   ctx.fillStyle = 'rgba(241,233,218,0.55)'; ctx.font = '400 13px Rubik, system-ui, sans-serif'; ctx.fillText(t('missed', { n: slice.missed }), W / 2, 124);
   ctx.textAlign = 'start';
-  if (cursor.present) {
-    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, slice.bladeOn ? 7 : 14, 0, TAU);
-    if (slice.bladeOn) { ctx.fillStyle = '#f1e9da'; ctx.fill(); }
-    else { ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.7)'; ctx.stroke(); }
+  if (cursor.present && !slice.bladeOn) {
+    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 14, 0, TAU);
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.7)'; ctx.stroke();
   }
+}
+
+/* ---------------- Smash mode ---------------- */
+const smash = { bricks: [], cars: [], pieces: [], walls: [], floaters: [], score: 0, best: 0, endAt: 0, over: false, overAt: 0, nextCar: 0, prev: null, ang: 0, punching: false, lastTick: -1, lastCrunch: 0 };
+const BRICK = { w: 48, h: 22, colors: ['#c8654a', '#b95a41', '#d17055', '#bd5d44'], dust: '#e0a48a' };
+const GLASS = 'rgba(84,198,235,0.7)', TYRE = '#2b2f45';
+const PIECE = { restitution: 0.3, friction: 0.5, frictionAir: 0.01, density: 0.002 };
+function smashScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
+function smashLeft(now) { return Math.max(0, smash.endAt - now); }
+function smashClock(now = performance.now()) { const s = Math.ceil(smashLeft(now) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function clearSmash() {
+  const all = [...smash.bricks, ...smash.cars, ...smash.pieces];
+  if (all.length) M.Composite.remove(world, all);
+  smash.bricks.length = smash.cars.length = smash.pieces.length = smash.walls.length = smash.floaters.length = 0;
+}
+function resetSmash(now) {
+  if (held) dropHeld();
+  if (bodies.length) { M.Composite.remove(world, bodies); bodies = []; } // sandbox objects make way
+  clearSmash(); particles.length = 0;
+  try { smash.best = Math.max(smash.best, +localStorage.getItem('smashBest') || 0); } catch {}
+  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1;
+  smash.endAt = now + CONFIG.SMASH_ROUND_S * 1000;
+  smash.nextCar = now + 1500 + Math.random() * 1500;
+  (W > 720 ? [W * 0.3, W * 0.7] : [W * 0.5]).forEach((x, i) => buildWall(x, i));
+}
+function buildWall(x, id) {
+  const s = smashScale(), bw = BRICK.w * s, bh = BRICK.h * s;
+  const cols = Math.max(3, Math.min(6, Math.floor(Math.min(W * 0.36, 300 * s) / bw)));
+  const rows = Math.max(5, Math.min(9, Math.floor(H * 0.42 / bh)));
+  const wall = { id, x, left: 0, rebuildAt: 0 };
+  for (let r = 0; r < rows; r++) { // staggered courses: odd rows start and end with a half brick
+    const ws = r % 2 ? [bw / 2, ...Array(cols - 1).fill(bw), bw / 2] : Array(cols).fill(bw);
+    let cx = x - cols * bw / 2;
+    for (const w of ws) {
+      const b = M.Bodies.rectangle(cx + w / 2, H - (r + 0.5) * bh, w - 1.5, bh - 1.5, { isStatic: true, friction: 0.6, restitution: 0.1, density: 0.003, label: 'brick' });
+      b.plugin = { color: BRICK.colors[(r + Math.round(cx / bw)) % BRICK.colors.length], r: Math.hypot(w, bh) / 2, kind: 'rect', wall, w, h: bh, lastBurst: 0 };
+      smash.bricks.push(b); wall.left++; cx += w;
+    }
+  }
+  smash.walls.push(wall);
+  M.Composite.add(world, smash.bricks.filter((b) => b.plugin.wall === wall));
+}
+function spawnCar(now = performance.now()) {
+  const s = smashScale(), w = 150 * s, h = 34 * s, wr = 16 * s, dir = Math.random() < 0.5 ? 1 : -1;
+  const x = dir > 0 ? -w : W + w, y = H - wr - h / 2 + 4 * s;
+  const parts = [M.Bodies.rectangle(x, y, w, h), M.Bodies.rectangle(x - dir * w * 0.05, y - h / 2 - 15 * s, w * 0.5, 30 * s),
+    M.Bodies.circle(x - w * 0.3, y + h / 2, wr), M.Bodies.circle(x + w * 0.3, y + h / 2, wr)];
+  const car = M.Body.create({ parts, isStatic: true, label: 'car' });
+  car.plugin = { color: COLORS[Math.floor(Math.random() * 5)], dir, w, h, wr, s, dist: 0, y: car.position.y, lastBurst: 0 };
+  smash.cars.push(car); M.Composite.add(world, car);
+  return car;
+}
+function cursorSpeed(now, win = 80) { // px/ms over the last few samples
+  const h = cursor.history; let i = h.length - 1;
+  while (i > 0 && now - h[i - 1].t <= win) i--;
+  const a = h[i], z = h[h.length - 1];
+  return a && z && z.t > a.t ? Math.hypot(z.x - a.x, z.y - a.y) / (z.t - a.t) : 0;
+}
+function addPiece(b, vel, now, small) {
+  b.plugin.born = now; b.plugin.small = !!small; b.plugin.lastBurst = 0;
+  if (b.isStatic) M.Body.setStatic(b, false);
+  M.Body.setVelocity(b, vel); M.Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.4);
+  if (!M.Composite.get(world, b.id, 'body')) M.Composite.add(world, b);
+  smash.pieces.push(b);
+}
+function capPieces() {
+  while (smash.pieces.length > CONFIG.SMASH_MAX_PIECES) {
+    let i = smash.pieces.findIndex((p) => p.plugin.small); if (i < 0) i = 0;
+    M.Composite.remove(world, smash.pieces[i]); smash.pieces.splice(i, 1);
+  }
+}
+// Everything within SMASH_RADIUS of p comes loose; the closest bricks may split into shards.
+function smashBricks(p, dir, v, now) {
+  const s = smashScale(), R = CONFIG.SMASH_RADIUS * s, kick = Math.min(24, 4 + v * 8);
+  let n = 0;
+  for (let i = smash.bricks.length - 1; i >= 0; i--) {
+    const b = smash.bricks[i], dx = b.position.x - p.x, dy = b.position.y - p.y, d = Math.hypot(dx, dy);
+    if (d > R) continue;
+    smash.bricks.splice(i, 1); b.plugin.wall.left--; n++;
+    const k = 1 - d / R * 0.6, ox = dx / (d || 1), oy = dy / (d || 1);
+    const vel = { x: (dir.x * kick + ox * kick * 0.4) * k, y: (dir.y * kick + oy * kick * 0.4) * k - 3 * k };
+    smash.score++;
+    if (d < R * 0.55 && Math.random() < 0.6) {
+      M.Composite.remove(world, b);
+      const parts = 2 + (Math.random() < 0.4 ? 1 : 0), pw = b.plugin.w / parts, { x, y } = b.position;
+      for (let j = 0; j < parts; j++) {
+        const sh = M.Bodies.rectangle(x - b.plugin.w / 2 + pw * (j + 0.5), y, pw - 1.5, b.plugin.h - 1.5, { ...PIECE, density: 0.003 });
+        sh.plugin = { color: b.plugin.color, r: Math.hypot(pw, b.plugin.h) / 2, kind: 'rect' };
+        addPiece(sh, { x: vel.x + (Math.random() - 0.5) * 3, y: vel.y + (Math.random() - 0.5) * 3 }, now, true); smash.score++;
+      }
+    } else addPiece(b, vel, now);
+    burst(b.position.x, b.position.y, BRICK.dust, 6 + v * 6);
+  }
+  if (n) { smash.floaters.push({ x: p.x, y: p.y - 30, text: '+' + n, big: false, life: 1 }); if (now - smash.lastCrunch > 60) { smash.lastCrunch = now; sfx('crunch'); } }
+  capPieces();
+}
+function crumpleCar(car, p, dir, v, now) {
+  const { color, w, h, wr, s } = car.plugin, b = car.parts[1].position, c = car.parts[2].position, kick = Math.min(26, 6 + v * 8);
+  M.Composite.remove(world, car); smash.cars.splice(smash.cars.indexOf(car), 1);
+  const dark = 'rgba(20,27,52,0.35)';
+  const mk = [
+    [M.Bodies.rectangle(b.x, b.y, w, h, { ...PIECE, chamfer: { radius: 6 * s } }), color, 'rect', Math.hypot(w, h) / 2],
+    [M.Bodies.rectangle(c.x, c.y, w * 0.5, 30 * s, PIECE), color, 'rect', w * 0.3],
+    [M.Bodies.rectangle(b.x - w * 0.2, b.y, w * 0.22, h * 0.75, PIECE), color, 'rect', w * 0.14],
+    [M.Bodies.rectangle(b.x + w * 0.2, b.y, w * 0.22, h * 0.75, PIECE), color, 'rect', w * 0.14],
+    [M.Bodies.circle(car.parts[3].position.x, car.parts[3].position.y, wr, { ...PIECE, friction: 0.8 }), TYRE, 'circle', wr],
+    [M.Bodies.circle(car.parts[4].position.x, car.parts[4].position.y, wr, { ...PIECE, friction: 0.8 }), TYRE, 'circle', wr],
+  ];
+  const glass = 6 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < glass; i++) {
+    const g = M.Bodies.polygon(c.x + (Math.random() - 0.5) * w * 0.4, c.y + (Math.random() - 0.5) * 20 * s, 3, (4 + Math.random() * 4) * s, { ...PIECE, density: 0.0005, frictionAir: 0.02 });
+    mk.push([g, GLASS, 'poly', 8 * s, true]);
+  }
+  for (const [body, col, kind, r, small] of mk) {
+    body.plugin = { color: col, r, kind, hub: kind === 'circle', shade: col === color && r < w * 0.2 ? dark : null };
+    const dx = body.position.x - p.x, dy = body.position.y - p.y, d = Math.hypot(dx, dy) || 1, k = small ? 1.4 : 0.9;
+    addPiece(body, { x: (dir.x * kick * 0.7 + dx / d * kick * 0.5) * k, y: (dir.y * kick * 0.5 + dy / d * kick * 0.5 - 5) * k }, now, small);
+  }
+  const pts = 25 + mk.length; smash.score += pts;
+  smash.floaters.push({ x: b.x, y: c.y - 30 * s, text: '+' + pts, big: true, life: 1 });
+  burst(p.x, p.y, GLASS, 20); burst(b.x, b.y, color, 16); sfx('car');
+  capPieces();
+}
+function endRound(now) {
+  smash.over = true; smash.overAt = now; smash.punching = false; hintEl.style.opacity = 0;
+  if (smash.score > smash.best) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} }
+  sfx('chime');
+}
+function smashTick(now, dt) {
+  tickFloaters(smash.floaters, dt);
+  if (noHandShown) { smash.endAt += dt; smash.nextCar += dt; smash.prev = null; return; } // the clock waits for the hand
+  if (!smash.over && smashLeft(now) <= 0) endRound(now);
+  if (smash.over) { smash.prev = null; return; }
+  const sec = Math.ceil(smashLeft(now) / 1000);
+  if (sec <= 5 && sec !== smash.lastTick) { smash.lastTick = sec; sfx('tick'); }
+  const s = smashScale();
+  if (now >= smash.nextCar && smash.cars.length < 2) { spawnCar(now); const [a, b] = CONFIG.CAR_INTERVAL_MS; smash.nextCar = now + a + Math.random() * (b - a); }
+  for (let i = smash.cars.length - 1; i >= 0; i--) {
+    const c = smash.cars[i], step = c.plugin.dir * CONFIG.CAR_SPEED * s * dt, x = c.position.x + step;
+    c.plugin.dist += Math.abs(step);
+    if (x > W + c.plugin.w || x < -c.plugin.w) { M.Composite.remove(world, c); smash.cars.splice(i, 1); continue; }
+    M.Body.setPosition(c, { x, y: c.plugin.y }, true);
+  }
+  for (let i = smash.walls.length - 1; i >= 0; i--) {
+    const wl = smash.walls[i];
+    if (wl.left > 0) continue;
+    if (!wl.rebuildAt) wl.rebuildAt = now + CONFIG.WALL_REBUILD_MS;
+    else if (now >= wl.rebuildAt) { smash.walls.splice(i, 1); buildWall(wl.x, wl.id); }
+  }
+  const cur = cursor.present ? { x: cursor.x, y: cursor.y } : null, v = cursorSpeed(now);
+  if (cur && smash.prev) {
+    const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
+    if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
+    smash.punching = gesture === 'fist' && v >= CONFIG.PUNCH_SPEED * s; // smaller screen, smaller motions
+    if (smash.punching && len > 0) {
+      const dir = { x: dx / len, y: dy / len };
+      const hits = M.Query.ray([...smash.bricks, ...smash.cars], smash.prev, cur, CONFIG.FIST_RADIUS * 2);
+      for (const h of hits) {
+        const b = h.bodyA.parent;
+        if (b.label === 'car') { if (smash.cars.includes(b)) crumpleCar(b, cur, dir, v, now); }
+        else if (smash.bricks.includes(b)) smashBricks(b.position, dir, v, now);
+      }
+    }
+  } else smash.punching = false;
+  smash.prev = cur;
+}
+function drawPiece(b, stroke) {
+  bodyPath(ctx, b); ctx.fillStyle = b.plugin.color; ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = stroke; ctx.stroke();
+  if (b.plugin.shade) { ctx.fillStyle = b.plugin.shade; ctx.fill(); }
+  if (b.plugin.hub) { ctx.beginPath(); ctx.arc(b.position.x, b.position.y, b.circleRadius * 0.45, 0, TAU); ctx.fillStyle = 'rgba(241,233,218,0.5)'; ctx.fill(); }
+}
+function drawCar(c) {
+  const { color, dir, w, h, wr, s, dist } = c.plugin, b = c.parts[1].position;
+  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(dir, 1);
+  ctx.fillStyle = color; ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-w * 0.3, -h / 2); ctx.lineTo(-w * 0.2, -h / 2 - 30 * s); ctx.lineTo(w * 0.16, -h / 2 - 30 * s); ctx.lineTo(w * 0.3, -h / 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 6 * s); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = GLASS; // windows
+  ctx.beginPath(); ctx.moveTo(-w * 0.26, -h / 2 - 2); ctx.lineTo(-w * 0.18, -h / 2 - 25 * s); ctx.lineTo(-w * 0.03, -h / 2 - 25 * s); ctx.lineTo(-w * 0.03, -h / 2 - 2); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(w * 0.01, -h / 2 - 2); ctx.lineTo(w * 0.01, -h / 2 - 25 * s); ctx.lineTo(w * 0.14, -h / 2 - 25 * s); ctx.lineTo(w * 0.25, -h / 2 - 2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(20,27,52,0.25)'; ctx.fillRect(-w * 0.5, h * 0.15, w, h * 0.35); // sill shade
+  ctx.fillStyle = '#ffe3a1'; ctx.fillRect(w / 2 - 6 * s, -h * 0.3, 5 * s, 8 * s); // headlight
+  ctx.fillStyle = '#ff6f59'; ctx.fillRect(-w / 2 + 1, -h * 0.3, 5 * s, 8 * s); // tail light
+  for (const wx of [-w * 0.3, w * 0.3]) {
+    ctx.beginPath(); ctx.arc(wx, h / 2, wr, 0, TAU); ctx.fillStyle = TYRE; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(wx, h / 2, wr * 0.45, 0, TAU); ctx.fillStyle = 'rgba(241,233,218,0.5)'; ctx.fill();
+    const a = dir * dist / wr;
+    ctx.beginPath(); ctx.moveTo(wx, h / 2); ctx.lineTo(wx + Math.cos(a) * wr * 0.8, h / 2 + Math.sin(a) * wr * 0.8); ctx.strokeStyle = 'rgba(20,27,52,0.6)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 2;
+  }
+  ctx.restore();
+}
+function drawFist(now) {
+  if (!cursor.present) return;
+  if (gesture !== 'fist') { drawCursor(now); return; }
+  const R = CONFIG.FIST_RADIUS, trail = cursor.history.filter((p) => now - p.t < 120);
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let i = 1; i < trail.length; i++) {
+    const k = Math.max(0, 1 - (now - trail[i].t) / 120);
+    ctx.strokeStyle = 'rgba(255,194,75,' + (0.35 * k).toFixed(3) + ')'; ctx.lineWidth = R * 1.3 * k;
+    ctx.beginPath(); ctx.moveTo(trail[i - 1].x, trail[i - 1].y); ctx.lineTo(trail[i].x, trail[i].y); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save(); ctx.translate(cursor.x, cursor.y); ctx.rotate(smash.ang);
+  if (smash.punching) { ctx.shadowColor = 'rgba(255,194,75,0.9)'; ctx.shadowBlur = 22; }
+  ctx.fillStyle = '#f1e9da';
+  ctx.beginPath(); ctx.arc(0, 0, R * 0.78, 0, TAU); ctx.fill();
+  for (const k of [-0.66, -0.22, 0.22, 0.66]) { ctx.beginPath(); ctx.arc(Math.cos(k) * R * 0.7, Math.sin(k) * R * 0.7, R * 0.24, 0, TAU); ctx.fill(); }
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = 'rgba(20,27,52,0.35)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-R * 0.5, -R * 0.35); ctx.lineTo(-R * 0.5, R * 0.35); ctx.stroke(); // thumb fold
+  ctx.restore();
+}
+function renderSmash(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#141b34'; ctx.fillRect(0, 0, W, H);
+  if (gridPattern) { ctx.fillStyle = gridPattern; ctx.fillRect(0, 0, W, H); }
+  const grad = ctx.createLinearGradient(0, H - 90, 0, H); grad.addColorStop(0, 'rgba(241,233,218,0)'); grad.addColorStop(1, 'rgba(241,233,218,0.06)');
+  ctx.fillStyle = grad; ctx.fillRect(0, H - 90, W, 90);
+  ctx.strokeStyle = 'rgba(241,233,218,0.18)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, H - 1); ctx.lineTo(W, H - 1); ctx.stroke();
+  for (const b of smash.bricks) drawPiece(b, 'rgba(241,233,218,0.3)');
+  for (const b of smash.pieces) drawPiece(b, 'rgba(255,255,255,0.18)');
+  for (const c of smash.cars) drawCar(c);
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  drawFloaters(smash.floaters);
+  const sec = Math.ceil(smashLeft(now) / 1000);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f1e9da'; ctx.font = '700 44px Rubik, system-ui, sans-serif'; ctx.fillText(String(smash.score), W / 2, 104);
+  ctx.fillStyle = sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.6)'; ctx.font = '500 18px Rubik, system-ui, sans-serif'; ctx.fillText(smashClock(now), W / 2, 130);
+  ctx.textAlign = 'start';
+  drawFist(now);
+  if (smash.over) {
+    ctx.fillStyle = 'rgba(14,19,40,0.72)'; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
+    const y = H * 0.4;
+    ctx.fillStyle = '#f1e9da'; ctx.font = '700 30px Rubik, system-ui, sans-serif'; ctx.fillText(t('roundOver'), W / 2, y);
+    ctx.font = '700 64px Rubik, system-ui, sans-serif'; ctx.fillText(String(smash.score), W / 2, y + 76);
+    ctx.fillStyle = 'rgba(241,233,218,0.62)'; ctx.font = '400 16px Rubik, system-ui, sans-serif'; ctx.fillText(t('best', { n: smash.best }), W / 2, y + 108);
+    if (now - smash.overAt > 1000) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 300); ctx.fillText(t('playAgain'), W / 2, y + 150); }
+    ctx.restore();
+  }
+}
+
+/* ---------------- Sound (generated with Web Audio, no files) ---------------- */
+let audio = null, noiseBuf = null;
+function audioInit() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    if (!audio) audio = new AC();
+    if (audio.state === 'suspended') audio.resume().catch(() => {});
+  } catch {}
+}
+function noise(t0, ms, filter) {
+  if (!noiseBuf) { noiseBuf = audio.createBuffer(1, audio.sampleRate, audio.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const src = audio.createBufferSource(); src.buffer = noiseBuf; src.connect(filter); src.start(t0); src.stop(t0 + ms / 1000 + 0.03);
+}
+function env(node, peak, ms, t0) { const g = audio.createGain(); g.gain.setValueAtTime(peak, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + ms / 1000); node.connect(g); g.connect(audio.destination); }
+function tone(type, f0, f1, peak, ms, t0) {
+  const o = audio.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t0);
+  if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + ms / 1000);
+  env(o, peak, ms, t0); o.start(t0); o.stop(t0 + ms / 1000 + 0.03);
+}
+function sfx(kind) {
+  if (!audio || audio.state !== 'running') return;
+  try {
+    const t0 = audio.currentTime, f = audio.createBiquadFilter();
+    if (kind === 'crunch') { f.type = 'bandpass'; f.frequency.value = 900 + Math.random() * 600; f.Q.value = 0.7; env(f, 0.2, 130, t0); noise(t0, 130, f); }
+    else if (kind === 'car') {
+      tone('sine', 110, 38, 0.25, 320, t0);
+      f.type = 'lowpass'; f.frequency.value = 500; env(f, 0.18, 220, t0); noise(t0, 220, f);
+      tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
+    }
+    else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'chime') { tone('sine', 660, 0, 0.12, 420, t0); tone('sine', 880, 0, 0.12, 520, t0 + 0.14); tone('sine', 1320, 0, 0.08, 620, t0 + 0.28); }
+  } catch {}
 }
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
+const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'sandbox' };
 function setGameMode(m) {
-  gameMode = m;
+  const was = gameMode; gameMode = m;
   if (held) dropHeld();
   particles.length = 0;
   if (m === 'slice') resetSlice();
+  if (engine) {
+    if (was === 'smash' && m !== 'smash') clearSmash();
+    if (m === 'sandbox' && !bodies.length) spawnObjects();
+    if (m === 'smash' && mode !== 'none') resetSmash(performance.now());
+  }
   renderModeText();
   document.querySelectorAll('.modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
   if (mode !== 'none') showHint();
 }
 function renderModeText() {
-  $('modeBtn').textContent = t(gameMode === 'slice' ? 'modeSandbox' : 'modeSlice');
-  $('modeDesc').textContent = t(gameMode === 'slice' ? 'descSlice' : 'descSandbox');
+  const cap = (m) => m[0].toUpperCase() + m.slice(1);
+  $('modeBtn').textContent = t('mode' + cap(MODE_NEXT[gameMode]));
+  $('modeDesc').textContent = t('desc' + cap(gameMode));
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
-  return t((gameMode === 'slice' ? 'hintSlice' : 'hintSand') + how);
+  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash' }[gameMode] + how);
 }
 function showHint() {
   hintEl.textContent = hintText(); hintEl.style.opacity = 1;
   clearTimeout(showHint.t); showHint.t = setTimeout(() => (hintEl.style.opacity = 0), 6000);
 }
 document.querySelectorAll('.modes button').forEach((b) => b.addEventListener('click', () => setGameMode(b.dataset.mode)));
-$('modeBtn').addEventListener('click', () => setGameMode(gameMode === 'slice' ? 'sandbox' : 'slice'));
+$('modeBtn').addEventListener('click', () => setGameMode(MODE_NEXT[gameMode]));
 
 /* ---------------- HUD ---------------- */
 let delegateUsed = '-';
 function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
   const rowsH = [
-    ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed : '')],
+    ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed
+      : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock() : '')],
     ['h_fps', fps.toFixed(0)],
     ['h_tfps', mode === 'camera' ? trackFps.toFixed(0) : '-'],
     ['h_gesture', t('g_' + gesture) + (held ? t('h_holding') : '')],
@@ -931,7 +1287,7 @@ function updateHud() {
 function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
 
 /* ---------------- Camera + tracker boot ---------------- */
 let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
@@ -1166,7 +1522,7 @@ function goHome() {
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
-  hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
+  hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
   hintEl.style.opacity = 0; updateHudOffset();
@@ -1185,7 +1541,7 @@ function startGame(m) {
     cameraStartedAt = performance.now();
   }
   requestAnimationFrame(updateHudOffset);
-  if (gameMode === 'slice') resetSlice();
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now());
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
@@ -1203,6 +1559,8 @@ function onLangChange() {
   if (!hudEl.hidden) updateHud();
 }
 applyLang();
+for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
+canvas.addEventListener('pointerdown', audioInit);
 $('camBtn').addEventListener('click', enableCamera);
 $('mouseBtn').addEventListener('click', () => fallbackToMouse([]));
 window.addEventListener('resize', resize);
@@ -1217,9 +1575,9 @@ ensureMatter().then(initPhysics).catch((e) => {
 window.__grasp = {
   processHand, CONFIG,
   simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
-  get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
+  get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, setGameMode, spawnWave,
+  slice, smash, setGameMode, spawnWave, spawnCar, resetSmash, setRoundEnd(atMs) { smash.endAt = atMs; },
 };
 </script>
 </body>

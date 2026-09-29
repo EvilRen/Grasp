@@ -11,4 +11,5 @@ if [ ! -f tests/vendor/matter.min.js ]; then   # Matter.js served locally so tes
 fi
 python3 tests/test_sandbox.py
 python3 tests/test_slice.py
+python3 tests/test_smash.py
 echo "ALL TESTS PASSED"
