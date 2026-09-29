@@ -86,6 +86,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <canvas id="preview" hidden aria-label="Camera preview with hand landmarks"></canvas>
 <div id="hud" hidden></div>
 <div class="chrome">
+  <button class="chip" id="homeBtn" type="button">Home</button>
   <button class="chip" id="hudBtn" type="button">HUD</button>
   <button class="chip" id="resetBtn" type="button">Reset</button>
 </div>
@@ -802,6 +803,21 @@ async function swapTracker() {
   } catch (e) { console.error('[grasp] tracker swap failed', e); lastTrackError = next + ' failed: ' + String(e.message || e).slice(0, 60); }
   swapping = false;
 }
+
+function goHome() {
+  if (held) dropHeld();
+  stopCamera();
+  try { landmarker && landmarker.close(); } catch {}
+  landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
+  hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
+  ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
+  preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
+  hintEl.style.opacity = 0;
+  $('checks').hidden = true; $('camBtn').disabled = false;
+  $('start').hidden = false;
+}
+$('homeBtn').addEventListener('click', goHome);
 
 let running = false;
 function startGame(m) {
