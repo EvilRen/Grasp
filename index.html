@@ -35,6 +35,9 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 .panel h1{ font-size:clamp(40px,9vw,64px); font-weight:700; letter-spacing:-.02em; margin:0 0 8px; line-height:1; }
 .panel p{ margin:0 0 24px; color:var(--muted); line-height:1.5; font-size:16px; }
 .actions{ display:flex; flex-direction:column; gap:10px; }
+.modes{ display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px; border-radius:14px; box-shadow:inset 0 0 0 1.5px var(--line); margin:0 0 16px; }
+.modes button{ background:transparent; color:var(--muted); padding:11px 12px; font-weight:500; border-radius:10px; font-size:16px; }
+.modes button[aria-pressed="true"]{ background:var(--ink-2); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
 .primary{ background:var(--saffron); color:#241a00; font-weight:700; padding:15px 18px; font-size:17px; }
 .secondary{ background:transparent; color:var(--bone); padding:13px 18px; box-shadow:inset 0 0 0 1.5px var(--line); }
 .checks{ list-style:none; margin:22px 0 0; padding:0; display:grid; gap:10px; }
@@ -87,6 +90,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <div id="hud" hidden></div>
 <div class="chrome">
   <button class="chip" id="homeBtn" type="button">Home</button>
+  <button class="chip" id="modeBtn" type="button" title="Switch game mode">Slice</button>
   <button class="chip" id="hudBtn" type="button">HUD</button>
   <button class="chip" id="resetBtn" type="button">Reset</button>
 </div>
@@ -101,7 +105,11 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <section id="start">
   <div class="panel">
     <h1>Grasp</h1>
-    <p>Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
+    <div class="modes" role="group" aria-label="Game mode">
+      <button type="button" data-mode="sandbox" aria-pressed="true">Sandbox</button>
+      <button type="button" data-mode="slice" aria-pressed="false">Slice</button>
+    </div>
+    <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
     <div class="actions">
       <button class="primary" id="camBtn" type="button">Enable camera</button>
       <button class="secondary" id="mouseBtn" type="button">Play with mouse or touch</button>
@@ -147,6 +155,11 @@ const CONFIG = {
   DETECT_CONFIDENCE: 0.3,     // hand detection + presence threshold (MediaPipe default 0.5)
   AUTO_SWAP_MS: 5000,         // GPU scanning with no hand for this long = switch to CPU (once)
   TRACK_CONFIDENCE: 0.5,      // below this, MediaPipe re-runs full hand detection on the next frame
+  // Slice mode
+  SLICE_GRAVITY: 0.0012,      // px/ms^2 on an 800px-tall screen (scales with height, so hang time stays the same)
+  SLICE_MIN_SPEED: 0.45,      // px/ms: the finger must move at least this fast to cut
+  SPAWN_INTERVAL_MS: [1100, 1900], // gap between waves
+  BLADE_TRAIL_MS: 220,        // how long the blade trail lingers
 };
 
 const COLORS = ['#ff6f59','#ffc24b','#43d9a3','#54c6eb','#a98bff','#f1e9da'];
@@ -154,6 +167,8 @@ const $ = (id) => document.getElementById(id);
 const canvas = $('stage'), ctx = canvas.getContext('2d');
 const video = $('cam'), preview = $('preview'), pctx = preview.getContext('2d');
 const hudEl = $('hud'), hintEl = $('hint'), statusEl = $('status'), statusLive = $('statusLive');
+// The tracker reads frames from this offscreen canvas, not from the <video> element.
+const frameCanvas = document.createElement('canvas'), fctx = frameCanvas.getContext('2d', { willReadFrequently: true });
 let lastTrackError = '';
 let cameraStartedAt = 0;
 
@@ -416,7 +431,7 @@ function inputTick(now) {
   const g = !inp.present ? 'none' : inp.pinch ? 'pinch' : inp.point ? 'point' : 'open';
   if (g !== gesture) {
     if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
-    if (g === 'pinch') tryGrab(now);
+    if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; } }
     gesture = g;
   }
@@ -477,13 +492,14 @@ function frame(now) {
   trackTick(now);
   inputTick(now);
 
-  const pokeOn = gesture === 'point';
+  const pokeOn = gameMode === 'sandbox' && gesture === 'point';
   poker.collisionFilter.mask = pokeOn ? 0xFFFFFFFF : 0;
   pokerPos.from = { ...poker.position };
   pokerPos.to = pokeOn ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 };
 
   acc += dt;
-  const steps = Math.min(4, Math.floor(acc / STEP));
+  const steps = gameMode === 'sandbox' ? Math.min(4, Math.floor(acc / STEP)) : 0;
+  if (gameMode !== 'sandbox') acc = 0;
   for (let i = 0; i < steps; i++) {
     if (pokeOn) {
       const f = (i + 1) / steps;
@@ -494,17 +510,16 @@ function frame(now) {
   }
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
-  const wantStatus = mode === 'camera' && !cursor.present && now - cameraStartedAt > 800;
-  if (statusEl.hidden === wantStatus) { statusEl.hidden = !wantStatus; preview.classList.toggle('big', wantStatus); if (wantStatus) hintEl.style.opacity = 0; }
   updateParticles(dt);
-  render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else render(now);
+  updateNoHand(now);
+  maybeAutoSwap(now);
   drawPreview();
 
   frameCount++;
   if (now - lastRateAt >= 500) {
     fps = frameCount * 1000 / (now - lastRateAt); trackFps = trackCount * 1000 / (now - lastRateAt);
     frameCount = 0; trackCount = 0; lastRateAt = now;
-    if (mode === 'camera' && delegateUsed === 'GPU' && !autoSwapped && !swapping && trackFps > 3 && now - Math.max(hand.lastSeen, cameraStartedAt) > CONFIG.AUTO_SWAP_MS) { autoSwapped = true; swapTracker(); }
     if (!statusEl.hidden) statusLive.textContent = swapping ? 'Switching tracker\u2026'
       : lastTrackError ? 'Tracker error: ' + lastTrackError
       : 'Tracker on ' + delegateUsed + ', ' + Math.round(trackFps) + ' scans/s' + (trackFps < 1 ? ' (stalled)' : '');
@@ -588,50 +603,232 @@ function drawPreview() {
   if (preview.hidden || video.readyState < 2) return;
   const w = preview.width, h = preview.height;
   pctx.save(); pctx.translate(w, 0); pctx.scale(-1, 1); pctx.drawImage(video, 0, 0, w, h); pctx.restore();
-  const m = (1 - CONFIG.MAP_BOX) / 2, k = w / 160; // scale strokes with canvas resolution
-  pctx.strokeStyle = 'rgba(255,194,75,0.85)'; pctx.setLineDash([4 * k, 3 * k]); pctx.lineWidth = 1.2 * k;
+  const m = (1 - CONFIG.MAP_BOX) / 2;
+  const big = preview.classList.contains('big');
+  pctx.strokeStyle = big ? '#ffc24b' : 'rgba(255,194,75,0.55)'; pctx.setLineDash(big ? [] : [6, 6]); pctx.lineWidth = big ? 3 : 2;
   pctx.strokeRect(m * w, m * h, CONFIG.MAP_BOX * w, CONFIG.MAP_BOX * h); pctx.setLineDash([]);
   if (!lastLandmarks) return;
   const P = (i) => [(1 - lastLandmarks[i].x) * w, lastLandmarks[i].y * h];
-  pctx.strokeStyle = gesture === 'pinch' ? '#ffc24b' : gesture === 'point' ? '#54c6eb' : '#43d9a3'; pctx.lineWidth = 1.5 * k;
+  pctx.strokeStyle = gesture === 'pinch' ? '#ffc24b' : gesture === 'point' ? '#54c6eb' : '#43d9a3'; pctx.lineWidth = 1.5;
   pctx.beginPath(); for (const [a, b] of HAND_LINKS) { const pa = P(a), pb = P(b); pctx.moveTo(pa[0], pa[1]); pctx.lineTo(pb[0], pb[1]); } pctx.stroke();
-  pctx.fillStyle = '#f1e9da'; for (let i = 0; i < 21; i++) { const p = P(i); pctx.fillRect(p[0] - 1.5 * k, p[1] - 1.5 * k, 3 * k, 3 * k); }
+  pctx.fillStyle = '#f1e9da'; for (let i = 0; i < 21; i++) { const p = P(i); pctx.fillRect(p[0] - 1.5, p[1] - 1.5, 3, 3); }
 }
+
+/* ---------------- Slice mode ---------------- */
+const TAU = Math.PI * 2;
+const FRUITS = [
+  { rind: '#43d9a3', flesh: '#ff6f59', seed: '#141b34', juice: '#ff6f59' },
+  { rind: '#ffc24b', flesh: '#ffe3a1', seed: null, juice: '#ffc24b' },
+  { rind: '#a98bff', flesh: '#f1e9da', seed: '#6d55c9', juice: '#a98bff' },
+  { rind: '#ff6f59', flesh: '#fff1dc', seed: '#8a3b2e', juice: '#ff8f6b' },
+  { rind: '#54c6eb', flesh: '#dff5fc', seed: '#2b7e99', juice: '#54c6eb' },
+];
+const slice = { fruits: [], halves: [], stains: [], floaters: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, combo: { n: 0, t: 0 } };
+function sliceScale() { return { g: CONFIG.SLICE_GRAVITY * H / 800, r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) }; }
+function resetSlice() {
+  slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = 0;
+  slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
+}
+function spawnWave(now) {
+  const { g, r } = sliceScale();
+  const n = 1 + Math.floor(Math.random() * Math.min(3, 1 + slice.score / 8));
+  for (let i = 0; i < n; i++) {
+    const rr = r * (0.85 + Math.random() * 0.35);
+    const x = W * (0.12 + Math.random() * 0.76);
+    const rise = H * (0.5 + Math.random() * 0.3) + rr;       // apex height above the spawn point
+    const vy = -Math.sqrt(2 * g * rise), tApex = -vy / g;
+    const targetX = W * (0.3 + Math.random() * 0.4);
+    slice.fruits.push({ x, y: H + rr, vx: (targetX - x) / tApex, vy, r: rr, rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.006,
+      kind: FRUITS[Math.floor(Math.random() * FRUITS.length)], born: now + i * 160 });
+  }
+  const [a, b] = CONFIG.SPAWN_INTERVAL_MS;
+  slice.nextSpawn = now + a + Math.random() * (b - a);
+}
+// Blade segment a -> b (with timestamps). Cuts every fruit the segment passes through, if the finger moved fast enough.
+function cutAlong(a, b, now) {
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+  if (len < 4 || len / Math.max(1, b.t - a.t) < CONFIG.SLICE_MIN_SPEED) return 0;
+  let hits = 0;
+  for (let i = slice.fruits.length - 1; i >= 0; i--) {
+    const f = slice.fruits[i]; if (now < f.born) continue;
+    const t = Math.max(0, Math.min(1, ((f.x - a.x) * dx + (f.y - a.y) * dy) / (len * len)));
+    if (Math.hypot(f.x - (a.x + dx * t), f.y - (a.y + dy * t)) > f.r * 1.05) continue;
+    slice.fruits.splice(i, 1); cutFruit(f, dx / len, dy / len, now); hits++;
+  }
+  return hits;
+}
+function cutFruit(f, ux, uy, now) {
+  const nx = -uy, ny = ux, push = 0.12, ang = Math.atan2(uy, ux);
+  for (const side of [1, -1]) slice.halves.push({
+    x: f.x + nx * side * 2, y: f.y + ny * side * 2, r: f.r, ang, rot: 0, side, kind: f.kind,
+    vx: f.vx * 0.6 + nx * side * push + ux * 0.06, vy: Math.min(f.vy, 0) * 0.5 + ny * side * push - 0.05,
+    vr: side * (0.003 + Math.random() * 0.004),
+  });
+  for (let k = 0; k < 18 && particles.length < 320; k++) {
+    const a = ang + (Math.random() < 0.5 ? 0 : Math.PI) + (Math.random() - 0.5) * 1.4, v = 0.08 + Math.random() * 0.28;
+    particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.08, life: 1, decay: 0.0016 + Math.random() * 0.0014, r: 2 + Math.random() * 3.5, color: f.kind.juice || f.kind.flesh });
+  }
+  slice.stains.push({ x: f.x, y: f.y, r: f.r, ang, life: 1, color: f.kind.juice || f.kind.flesh });
+  slice.score++;
+  slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now;
+  slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? 'Combo \u00d7' + slice.combo.n : '+1', big: slice.combo.n >= 3, life: 1 });
+}
+function sliceTick(now, dt) {
+  // Camera: only a raised index finger cuts. Mouse/touch: pressing (or two fingers) cuts.
+  slice.bladeOn = cursor.present && (gesture === 'point' || (mode === 'mouse' && gesture === 'pinch'));
+  if (slice.bladeOn) {
+    const p = { x: cursor.x, y: cursor.y, t: now };
+    if (!slice.last) { slice.last = p; slice.blade.push(p); }
+    else if (p.x !== slice.last.x || p.y !== slice.last.y) { cutAlong(slice.last, p, now); slice.last = p; slice.blade.push(p); }
+  } else slice.last = null;
+  while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
+
+  for (let i = slice.floaters.length - 1; i >= 0; i--) { const f = slice.floaters[i]; f.y -= 0.04 * dt; f.life -= dt / 900; if (f.life <= 0) slice.floaters.splice(i, 1); }
+  for (let i = slice.stains.length - 1; i >= 0; i--) { const s2 = slice.stains[i]; s2.life -= dt / 1800; if (s2.life <= 0) slice.stains.splice(i, 1); }
+  if (noHandShown) return; // the world waits while the hand is missing
+  const { g } = sliceScale();
+  if (now >= slice.nextSpawn && slice.fruits.length < 6) spawnWave(now);
+  for (let i = slice.fruits.length - 1; i >= 0; i--) {
+    const f = slice.fruits[i]; if (now < f.born) continue;
+    f.vy += g * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.vr * dt;
+    if (f.vy > 0 && f.y - f.r > H) { slice.fruits.splice(i, 1); slice.missed++; }
+  }
+  for (let i = slice.halves.length - 1; i >= 0; i--) {
+    const h = slice.halves[i];
+    h.vy += g * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.rot += h.vr * dt;
+    if (h.y - h.r > H + 40) slice.halves.splice(i, 1);
+  }
+}
+function drawFruit(f) {
+  ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot);
+  ctx.beginPath(); ctx.arc(0, 0, f.r, 0, TAU); ctx.fillStyle = f.kind.rind; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(-f.r * 0.35, -f.r * 0.35, f.r * 0.26, 0, TAU); ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fill();
+  ctx.lineCap = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(20,27,52,0.6)';
+  ctx.beginPath(); ctx.moveTo(0, -f.r * 0.88); ctx.lineTo(f.r * 0.1, -f.r * 1.15); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(f.r * 0.3, -f.r * 1.05, f.r * 0.22, f.r * 0.1, -0.5, 0, TAU);
+  ctx.fillStyle = f.kind.rind === '#43d9a3' ? '#f1e9da' : '#43d9a3'; ctx.fill();
+  ctx.restore();
+}
+function drawHalf(h) {
+  ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.ang + h.rot);
+  const a0 = h.side > 0 ? 0 : Math.PI;
+  ctx.beginPath(); ctx.arc(0, 0, h.r, a0, a0 + Math.PI); ctx.closePath(); ctx.fillStyle = h.kind.rind; ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, h.r * 0.84, a0, a0 + Math.PI); ctx.closePath(); ctx.fillStyle = h.kind.flesh; ctx.fill();
+  if (h.kind.seed) {
+    ctx.fillStyle = h.kind.seed;
+    for (const k of [-0.55, 0, 0.55]) {
+      const a = a0 + Math.PI / 2 + k;
+      ctx.beginPath(); ctx.ellipse(Math.cos(a) * h.r * 0.5, Math.sin(a) * h.r * 0.5, 2.6, 4.2, a, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function renderSlice(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#141b34'; ctx.fillRect(0, 0, W, H);
+  if (gridPattern) { ctx.fillStyle = gridPattern; ctx.fillRect(0, 0, W, H); }
+  for (const s2 of slice.stains) {
+    ctx.globalAlpha = s2.life * 0.3; ctx.fillStyle = s2.color;
+    ctx.beginPath(); ctx.ellipse(s2.x, s2.y, s2.r * 1.5, s2.r * 0.55, s2.ang, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  for (const h of slice.halves) drawHalf(h);
+  for (const f of slice.fruits) if (now >= f.born) drawFruit(f);
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // blade trail
+  const pts = slice.blade;
+  if (pts.length > 1) {
+    ctx.save(); ctx.lineCap = 'round'; ctx.shadowColor = 'rgba(84,198,235,0.9)'; ctx.shadowBlur = 14;
+    for (let i = 1; i < pts.length; i++) {
+      const k = Math.max(0, 1 - (now - pts[i].t) / CONFIG.BLADE_TRAIL_MS);
+      ctx.strokeStyle = 'rgba(241,233,218,' + (0.95 * k).toFixed(3) + ')'; ctx.lineWidth = 1 + 11 * k;
+      ctx.beginPath(); ctx.moveTo(pts[i - 1].x, pts[i - 1].y); ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.textAlign = 'center';
+  for (const f of slice.floaters) {
+    ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.big ? '#ffc24b' : '#f1e9da';
+    ctx.font = (f.big ? '700 26px ' : '700 20px ') + 'Rubik, system-ui, sans-serif'; ctx.fillText(f.text, f.x, f.y);
+  }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#f1e9da'; ctx.font = '700 44px Rubik, system-ui, sans-serif'; ctx.fillText(String(slice.score), W / 2, 104);
+  ctx.fillStyle = 'rgba(241,233,218,0.55)'; ctx.font = '400 13px Rubik, system-ui, sans-serif'; ctx.fillText('missed ' + slice.missed, W / 2, 124);
+  ctx.textAlign = 'start';
+  if (cursor.present) {
+    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, slice.bladeOn ? 7 : 14, 0, TAU);
+    if (slice.bladeOn) { ctx.fillStyle = '#f1e9da'; ctx.fill(); }
+    else { ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.7)'; ctx.stroke(); }
+  }
+}
+
+/* ---------------- Game mode ---------------- */
+let gameMode = 'sandbox';
+const MODE_DESC = {
+  sandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
+  slice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
+};
+function setGameMode(m) {
+  gameMode = m;
+  if (held) dropHeld();
+  particles.length = 0;
+  if (m === 'slice') resetSlice();
+  $('modeBtn').textContent = m === 'slice' ? 'Sandbox' : 'Slice';
+  $('modeDesc').textContent = MODE_DESC[m];
+  document.querySelectorAll('.modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+  if (mode !== 'none') showHint();
+}
+function showHint() {
+  const touch = matchMedia('(pointer: coarse)').matches;
+  const text = gameMode === 'slice'
+    ? (mode === 'camera' ? 'Raise your index finger and swipe through the fruit. Keep your hand inside the yellow box.'
+      : touch ? 'Swipe across the fruit to slice it.' : 'Drag across the fruit to slice it. D for HUD.')
+    : (mode === 'camera' ? 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.'
+      : touch ? 'Drag to grab and flick to throw. Two fingers to poke.' : 'Drag to grab, release to throw. Hold right button to poke. D for HUD.');
+  hintEl.textContent = text; hintEl.style.opacity = 1;
+  clearTimeout(showHint.t); showHint.t = setTimeout(() => (hintEl.style.opacity = 0), 6000);
+}
+document.querySelectorAll('.modes button').forEach((b) => b.addEventListener('click', () => setGameMode(b.dataset.mode)));
+$('modeBtn').addEventListener('click', () => setGameMode(gameMode === 'slice' ? 'sandbox' : 'slice'));
 
 /* ---------------- HUD ---------------- */
 let delegateUsed = '-';
 function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
   hudEl.textContent =
-`FPS            ${fps.toFixed(0)}
+`Mode           ${gameMode}${gameMode === 'slice' ? '  score ' + slice.score + '  missed ' + slice.missed : ''}
+FPS            ${fps.toFixed(0)}
 Tracking FPS   ${mode === 'camera' ? trackFps.toFixed(0) : '-'}
 Gesture        ${gesture}${held ? ' (holding)' : ''}
 Pinch dist     ${mode === 'camera' ? pd : '-'}   in<${CONFIG.PINCH_ENTER} out>${CONFIG.PINCH_EXIT}
 Input          ${mode}${mode === 'camera' ? ' / ' + delegateUsed : ''}
 Hand           ${mode === 'camera' ? (hand.seen ? 'tracked ' + hand.handedness : 'not found') : '-'}
-Cursor         ${cursor.present ? Math.round(cursor.x) + ', ' + Math.round(cursor.y) : 'hidden'}
 Last throw     ${lastThrow.toFixed(1)} px/step`;
 }
 function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (engine) spawnObjects(); });
 
 /* ---------------- Camera + tracker boot ---------------- */
-let makeLandmarker = null, swapping = false;
-let landmarker = null, stream = null, lastVideoTime = -1, lastDetectAt = -1e9, trackErrors = 0;
-const detCanvas = document.createElement('canvas'), detCtx = detCanvas.getContext('2d', { willReadFrequently: false });
+let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
+let landmarker = null, stream = null, lastVideoTime = -1, trackErrors = 0;
 
 function trackTick(now) {
   if (mode !== 'camera' || !landmarker || video.readyState < 2 || document.hidden) return;
-  if (video.currentTime === lastVideoTime && now - lastDetectAt < 100) return;
-  lastVideoTime = video.currentTime; lastDetectAt = now;
+  if (video.currentTime === lastVideoTime) return;
+  lastVideoTime = video.currentTime;
   try {
     const vw = video.videoWidth, vh = video.videoHeight;
     if (!vw || !vh) return;
-    if (detCanvas.width !== vw || detCanvas.height !== vh) { detCanvas.width = vw; detCanvas.height = vh; }
-    detCtx.drawImage(video, 0, 0, vw, vh);
-    const res = landmarker.detectForVideo(detCanvas, now);
+    if (frameCanvas.width !== vw || frameCanvas.height !== vh) { frameCanvas.width = vw; frameCanvas.height = vh; }
+    fctx.drawImage(video, 0, 0, vw, vh);
+    const res = landmarker.detectForVideo(frameCanvas, now);
     trackCount++; trackErrors = 0; lastTrackError = '';
     const lm = res.landmarks && res.landmarks[0];
     lastLandmarks = lm || null;
@@ -725,21 +922,22 @@ async function loadTracker() {
   if (wasmRes.status === 'rejected') { console.error('[grasp] wasm check failed', wasmRes.reason); setRow('runtime', 'fail', explain('runtime', wasmRes.reason, wasmUrl)); ok = false; }
   if (!ok) { if (wasmRes.status === 'fulfilled') setRow('runtime', 'skip', 'Reachable, but not started: the model is missing'); return false; }
 
-  setRow('runtime', 'pending', 'Starting tracker');
+  // Phones start on CPU: on some Android GPUs the GPU tracker runs but never finds a hand.
+  const first = matchMedia('(pointer: coarse)').matches ? 'CPU' : 'GPU', second = first === 'GPU' ? 'CPU' : 'GPU';
+  setRow('runtime', 'pending', 'Starting (' + first + ')');
   try {
     const fileset = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+    const modelBytes = new Uint8Array(modelRes.value);
     makeLandmarker = (delegate) => vision.HandLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetBuffer: new Uint8Array(modelRes.value), delegate },
+      baseOptions: { modelAssetBuffer: modelBytes.slice(), delegate },
       runningMode: 'VIDEO', numHands: 1,
       minHandDetectionConfidence: CONFIG.DETECT_CONFIDENCE, minHandPresenceConfidence: CONFIG.DETECT_CONFIDENCE, minTrackingConfidence: CONFIG.TRACK_CONFIDENCE,
     });
-    // Phones: GPU hand tracking runs but can return no hands on some mobile GPUs, so start on CPU there.
-    const order = matchMedia('(pointer: coarse)').matches ? ['CPU', 'GPU'] : ['GPU', 'CPU'];
-    try { landmarker = await withTimeout(makeLandmarker(order[0]), CONFIG.STAGE_TIMEOUT_MS, order[0] + ' start'); delegateUsed = order[0]; }
-    catch (firstErr) {
-      console.warn('[grasp] ' + order[0] + ' delegate failed, trying ' + order[1], firstErr);
-      setRow('runtime', 'pending', order[0] + ' failed, starting on ' + order[1]);
-      landmarker = await withTimeout(makeLandmarker(order[1]), CONFIG.STAGE_TIMEOUT_MS, order[1] + ' start'); delegateUsed = order[1];
+    try { landmarker = await withTimeout(makeLandmarker(first), CONFIG.STAGE_TIMEOUT_MS, first + ' start'); delegateUsed = first; }
+    catch (err1) {
+      console.warn('[grasp] ' + first + ' delegate failed, trying ' + second, err1);
+      setRow('runtime', 'pending', first + ' failed, starting on ' + second);
+      landmarker = await withTimeout(makeLandmarker(second), CONFIG.STAGE_TIMEOUT_MS, second + ' start'); delegateUsed = second;
     }
     setRow('runtime', 'ok', 'Running on ' + delegateUsed);
     return true;
@@ -784,25 +982,54 @@ function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop());
 
 function fallbackToMouse(failures) {
   stopCamera(); landmarker = null; lastLandmarks = null;
+  noHandShown = false; statusEl.hidden = true; preview.classList.remove('big');
   const list = $('bannerList'); list.innerHTML = '';
   for (const f of failures) { const li = document.createElement('li'); li.textContent = f.stage + ': ' + f.why; list.appendChild(li); }
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
 }
 $('bannerClose').addEventListener('click', () => ($('banner').hidden = true));
-let autoSwapped = false;
-$('swapBtn').addEventListener('click', () => swapTracker());
-async function swapTracker() {
-  if (!makeLandmarker || swapping) return;
+
+async function swapTracker(next) {
+  if (!makeLandmarker || swapping || next === delegateUsed) return false;
   swapping = true; statusLive.textContent = 'Switching tracker\u2026';
-  const next = delegateUsed === 'GPU' ? 'CPU' : 'GPU';
+  let ok = false;
   try {
     const fresh = await withTimeout(makeLandmarker(next), CONFIG.STAGE_TIMEOUT_MS, next + ' start');
-    const old = landmarker; landmarker = fresh; delegateUsed = next; lastVideoTime = -1;
+    const old = landmarker; landmarker = fresh; delegateUsed = next; lastVideoTime = -1; lastTrackError = '';
     try { old && old.close(); } catch {}
+    ok = true;
   } catch (e) { console.error('[grasp] tracker swap failed', e); lastTrackError = next + ' failed: ' + String(e.message || e).slice(0, 60); }
-  swapping = false;
+  swapping = false; lastSwapAt = performance.now();
+  return ok;
 }
+$('swapBtn').addEventListener('click', () => swapTracker(delegateUsed === 'GPU' ? 'CPU' : 'GPU'));
+
+// GPU scanning happily but never finding a hand = likely a GPU that returns nothing. Move to CPU once, never back.
+function maybeAutoSwap(now) {
+  if (mode !== 'camera' || delegateUsed !== 'GPU' || autoSwapped || swapping || !makeLandmarker || trackFps <= 3) return;
+  if (now - Math.max(hand.lastSeen, cameraStartedAt, lastSwapAt) < CONFIG.AUTO_SWAP_MS) return;
+  autoSwapped = true;
+  console.warn('[grasp] no hand on GPU for ' + CONFIG.AUTO_SWAP_MS + 'ms, switching to CPU');
+  swapTracker('CPU');
+}
+
+// No hand: enlarge the camera preview to the centre with instructions. Hand found: shrink it back to the corner.
+let noHandShown = false;
+function updateNoHand(now) {
+  const show = mode === 'camera' && !cursor.present && now - Math.max(hand.lastSeen, cameraStartedAt) > 400;
+  if (show === noHandShown) return;
+  noHandShown = show;
+  preview.classList.toggle('big', show);
+  statusEl.hidden = !show;
+  if (show) { hintEl.style.opacity = 0; statusLive.textContent = 'Tracker on ' + delegateUsed + ', starting\u2026'; }
+  updateHudOffset();
+}
+function updateHudOffset() {
+  const off = mode === 'camera' && !preview.hidden && !preview.classList.contains('big') ? preview.getBoundingClientRect().height + 8 : 0;
+  document.documentElement.style.setProperty('--hud-offset', off + 'px');
+}
+window.addEventListener('resize', () => updateHudOffset());
 
 function goHome() {
   if (held) dropHeld();
@@ -812,8 +1039,8 @@ function goHome() {
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
-  preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
-  hintEl.style.opacity = 0;
+  noHandShown = false; preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
+  hintEl.style.opacity = 0; updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   $('start').hidden = false;
 }
@@ -825,21 +1052,12 @@ function startGame(m) {
   $('start').hidden = true;
   preview.hidden = m !== 'camera';
   if (m === 'camera') {
-    const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
-    const cssW = vh > vw ? 96 : 128, cssH = Math.round(cssW * vh / vw);
-    preview.style.width = cssW + 'px';
-    preview.width = 560; preview.height = Math.round(560 * vh / vw); // sharp at both small and enlarged sizes
-    document.documentElement.style.setProperty('--hud-offset', (cssH + 8) + 'px');
+    preview.width = 320; preview.height = Math.round(320 * (video.videoHeight || 480) / (video.videoWidth || 640));
     cameraStartedAt = performance.now();
-  } else {
-    document.documentElement.style.setProperty('--hud-offset', '0px');
-    statusEl.hidden = true; preview.classList.remove('big');
   }
-  const touch = matchMedia('(pointer: coarse)').matches;
-  hintEl.textContent = m === 'camera'
-    ? 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.'
-    : touch ? 'Drag to grab and flick to throw. Two fingers to poke.' : 'Drag to grab, release to throw. Hold right button to poke. D for HUD.';
-  hintEl.style.opacity = 1; setTimeout(() => (hintEl.style.opacity = 0), 6000);
+  requestAnimationFrame(updateHudOffset);
+  if (gameMode === 'slice') resetSlice();
+  showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
 
@@ -862,6 +1080,7 @@ window.__grasp = {
   simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
+  slice, setGameMode, spawnWave,
 };
 </script>
 </body>
