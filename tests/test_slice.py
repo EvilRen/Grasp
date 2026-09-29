@@ -63,10 +63,8 @@ async def main():
         d0 = await page.evaluate("__grasp.slice.drawn"); await page.wait_for_timeout(120)
         check('katana hidden when the blade is off', await page.evaluate("__grasp.slice.drawn") == d0 and not await page.evaluate("__grasp.slice.bladeOn"))
         await page.screenshot(path='tests/out/slice_mouse.png')
-        await page.click('#modeBtn'); await page.wait_for_timeout(300)
-        check('mode chip cycles slice -> smash', await page.evaluate("gameMode") == 'smash' and await page.inner_text('#modeBtn') == 'Sandbox')
-        await page.click('#modeBtn'); await page.wait_for_timeout(300)
-        check('mode chip cycles smash -> sandbox', await page.evaluate("gameMode") == 'sandbox' and await page.inner_text('#modeBtn') == 'Slice')
+        await page.evaluate("__grasp.setGameMode('sandbox')"); await page.wait_for_timeout(300)
+        check('switching back to sandbox restores objects', await page.evaluate("gameMode === 'sandbox' && bodies.length === 10 && !document.getElementById('modeBtn')"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
 
         # --- camera, phone ---

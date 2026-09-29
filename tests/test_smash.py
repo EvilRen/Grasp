@@ -89,10 +89,8 @@ async def main():
         check('reset button restarts', await page.evaluate("__grasp.smash.score") > 0 and (await page.click('#resetBtn') or True) and await page.evaluate("__grasp.smash.score === 0 && __grasp.smash.pieces.length === 0"))
         await page.click('#hudBtn'); await page.wait_for_timeout(700)
         check('HUD shows smash + clock', 'smash' in await page.inner_text('#hud') and ':' in await page.inner_text('#hud'))
-        await page.click('#modeBtn'); await page.wait_for_timeout(300)
-        check('mode chip cycles smash -> sandbox and restores objects', await page.evaluate("gameMode === 'sandbox' && bodies.length === 10 && __grasp.smash.bricks.length === 0 && $('modeBtn').textContent === 'Slice'"))
-        await page.click('#modeBtn'); await page.click('#modeBtn'); await page.wait_for_timeout(300)
-        check('chip cycles sandbox -> slice -> smash', await page.evaluate("gameMode === 'smash' && __grasp.smash.bricks.length > 0 && $('modeBtn').textContent === 'Sandbox'"))
+        await page.evaluate("__grasp.setGameMode('sandbox')"); await page.wait_for_timeout(300)
+        check('switching back to sandbox restores objects', await page.evaluate("gameMode === 'sandbox' && bodies.length === 10 && !document.getElementById('modeBtn')"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
 
         # --- camera fist, desktop ---
