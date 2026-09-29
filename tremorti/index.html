@@ -26,7 +26,11 @@ html{ scroll-padding-top:env(safe-area-inset-top,0px); }
 body{ margin:0; background:var(--paper); color:var(--ink);
   font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size:18px; line-height:1.5; -webkit-font-smoothing:antialiased; }
-main{ max-width:560px; margin:0 auto; padding:28px 20px 56px; }
+main{ max-width:560px; margin:0 auto; padding:12px 20px 56px; }
+.topbar{ display:flex; justify-content:flex-end; margin:0 0 8px; }
+.lang{ display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:6px 14px; font:inherit; font-size:15px; font-weight:700;
+  border-radius:999px; border:2px solid var(--grid-strong); background:var(--field); color:var(--ink); cursor:pointer; }
+.lang svg{ width:18px; height:18px; flex:none; }
 h1{ font-size:36px; line-height:1.05; margin:0 0 6px; font-weight:700; letter-spacing:-.015em; }
 h2{ font-size:22px; margin:40px 0 12px; }
 .lede{ color:var(--muted); margin:0 0 28px; max-width:34em; }
@@ -38,7 +42,7 @@ legend{ font-weight:700; font-size:17px; margin-bottom:8px; padding:0; }
 .seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); font-weight:700; }
 .seg button:disabled{ opacity:.38; cursor:not-allowed; }
 .note{ font-size:15px; color:var(--muted); margin:8px 0 0; }
-.howto{ background:var(--field); border-left:5px solid var(--ink); padding:14px 16px; border-radius:0 12px 12px 0; margin:6px 0 24px; }
+.howto{ background:var(--field); border-inline-start:5px solid var(--ink); padding:14px 16px; border-radius:12px; border-start-start-radius:0; border-end-start-radius:0; margin:6px 0 24px; }
 .howto strong{ display:block; margin-bottom:4px; }
 button{ -webkit-tap-highlight-color:transparent; }
 .primary{ width:100%; min-height:66px; font:inherit; font-size:21px; font-weight:700; border:0; border-radius:16px;
@@ -61,7 +65,8 @@ button:focus-visible{ outline:3px solid var(--pen); outline-offset:3px; }
 /* result */
 .res-head{ font-size:20px; font-weight:700; margin:0; }
 .res-freq{ font-size:88px; line-height:1; font-weight:700; margin:6px 0 4px; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
-.res-freq small{ font-size:32px; font-weight:400; letter-spacing:0; margin-left:6px; }
+.res-freq small{ font-size:32px; font-weight:400; letter-spacing:0; margin-inline-start:6px; }
+[dir=rtl] .res-freq{ direction:ltr; text-align:right; }
 .res-freq.faint{ color:var(--muted); }
 .res-sub{ color:var(--muted); margin:0 0 18px; }
 .spectrum{ height:210px; }
@@ -82,68 +87,71 @@ button:focus-visible{ outline:3px solid var(--pen); outline-offset:3px; }
 </head>
 <body>
 <main>
+  <div class="topbar">
+    <button class="lang" id="langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.9 6 3.9 9.5s-1.3 6.7-3.9 9.5c-2.6-2.8-3.9-6-3.9-9.5s1.3-6.7 3.9-9.5z"/></svg><span id="langLabel">עב</span></button>
+  </div>
   <section id="setup">
-    <h1>Tremor meter</h1>
-    <p class="lede">Measures how fast a hand or leg shakes, from your phone's motion sensor or its camera.</p>
+    <h1 data-i18n="title">Tremor meter</h1>
+    <p class="lede" data-i18n="lede">Measures how fast a hand or leg shakes, from your phone's motion sensor or its camera.</p>
     <div id="setupError" class="error" role="alert" hidden></div>
 
     <fieldset>
-      <legend>Measure with</legend>
+      <legend data-i18n="measureWith">Measure with</legend>
       <div class="seg" data-key="sensor">
-        <button type="button" data-v="motion">Motion sensor</button>
-        <button type="button" data-v="camera">Camera</button>
+        <button type="button" data-v="motion" data-i18n="segMotion">Motion sensor</button>
+        <button type="button" data-v="camera" data-i18n="segCamera">Camera</button>
       </div>
       <p class="note" id="sensorNote"></p>
     </fieldset>
     <fieldset>
-      <legend>Body part</legend>
+      <legend data-i18n="bodyPart">Body part</legend>
       <div class="seg" data-key="limb">
-        <button type="button" data-v="hand">Hand</button>
-        <button type="button" data-v="leg">Leg</button>
+        <button type="button" data-v="hand" data-i18n="segHand">Hand</button>
+        <button type="button" data-v="leg" data-i18n="segLeg">Leg</button>
       </div>
     </fieldset>
     <fieldset>
-      <legend>Position</legend>
+      <legend data-i18n="position">Position</legend>
       <div class="seg" data-key="posture">
-        <button type="button" data-v="rest">At rest</button>
-        <button type="button" data-v="hold">Held out</button>
-        <button type="button" data-v="stand">Standing</button>
+        <button type="button" data-v="rest" data-i18n="segRest">At rest</button>
+        <button type="button" data-v="hold" data-i18n="segHold">Held out</button>
+        <button type="button" data-v="stand" data-i18n="segStand">Standing</button>
       </div>
     </fieldset>
 
     <div class="howto" id="howto"></div>
-    <button class="primary" id="startBtn" type="button">Start measuring</button>
+    <button class="primary" id="startBtn" type="button" data-i18n="start">Start measuring</button>
   </section>
 
   <section id="record" hidden aria-live="polite">
     <p class="rec-status" id="recStatus">Get ready</p>
     <div class="count" id="count"></div>
-    <canvas class="camview" id="camView" hidden aria-label="Camera view with hand points"></canvas>
-    <canvas class="chart strip" id="strip" aria-label="Live movement trace"></canvas>
+    <canvas class="camview" id="camView" hidden aria-label="Camera view with hand points" data-i18n-aria="ariaCam"></canvas>
+    <canvas class="chart strip" id="strip" aria-label="Live movement trace" data-i18n-aria="ariaStrip"></canvas>
     <p class="note" id="recNote"></p>
-    <div class="stack"><button class="secondary" id="cancelBtn" type="button">Cancel</button></div>
+    <div class="stack"><button class="secondary" id="cancelBtn" type="button" data-i18n="cancel">Cancel</button></div>
   </section>
 
   <section id="result" hidden>
     <p class="res-head" id="resHead"></p>
     <p class="res-freq" id="resFreq"></p>
     <p class="res-sub" id="resSub"></p>
-    <canvas class="chart spectrum" id="spectrum" aria-label="Frequency spectrum of the movement"></canvas>
+    <canvas class="chart spectrum" id="spectrum" aria-label="Frequency spectrum of the movement" data-i18n-aria="ariaSpectrum"></canvas>
     <dl class="details" id="resDetails"></dl>
     <div class="warn" id="resWarn" hidden></div>
     <div class="stack">
-      <button class="primary" id="againBtn" type="button">Measure again</button>
-      <button class="secondary" id="setupBtn" type="button">Change setup</button>
+      <button class="primary" id="againBtn" type="button" data-i18n="again">Measure again</button>
+      <button class="secondary" id="setupBtn" type="button" data-i18n="changeSetup">Change setup</button>
     </div>
   </section>
 
   <section id="historyWrap" hidden>
-    <h2>Past measurements</h2>
+    <h2 data-i18n="pastTitle">Past measurements</h2>
     <ol class="hist" id="histList"></ol>
-    <button class="link" id="clearHist" type="button">Clear history</button>
+    <button class="link" id="clearHist" type="button" data-i18n="clearHist">Clear history</button>
   </section>
 
-  <p class="disclaimer">Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.</p>
+  <p class="disclaimer" data-i18n="disclaimer">Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.</p>
 </main>
 
 <script>
@@ -166,20 +174,113 @@ const CONFIG = {
 
 const $ = (id) => document.getElementById(id);
 const state = { sensor: 'motion', limb: 'hand', posture: 'rest' };
-const LABEL = {
-  sensor: { motion: 'motion sensor', camera: 'camera' },
-  limb: { hand: 'Hand', leg: 'Leg' },
-  posture: { rest: 'at rest', hold: 'held out', stand: 'standing' },
+/* ---------------- language ---------------- */
+// [ ] in a string marks a left-to-right island (numbers with Latin units inside Hebrew text).
+const I18N = {
+  en: {
+    title: 'Tremor meter', lede: 'Measures how fast a hand or leg shakes, from your phone\'s motion sensor or its camera.',
+    langSwitch: 'Switch to Hebrew',
+    measureWith: 'Measure with', bodyPart: 'Body part', position: 'Position',
+    segMotion: 'Motion sensor', segCamera: 'Camera', segHand: 'Hand', segLeg: 'Leg', segRest: 'At rest', segHold: 'Held out', segStand: 'Standing',
+    noteCamera: 'Camera works for the hand only. It sees up to about 10–15 shakes per second.', noteMotion: 'Most accurate. Sees fast shaking too.',
+    howtoTail: 'Tap start, then get into position during the countdown. You\'ll hear a beep when recording starts and when it ends.',
+    start: 'Start measuring', cancel: 'Cancel', again: 'Measure again', changeSetup: 'Change setup', pastTitle: 'Past measurements', clearHist: 'Clear history',
+    ariaCam: 'Camera view with hand points', ariaStrip: 'Live movement trace', ariaSpectrum: 'Frequency spectrum of the movement',
+    disclaimer: 'Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.',
+    motionDenied: 'Motion access was denied. Allow motion access for this site and try again.', motionReqFail: 'Motion access could not be requested: {m}',
+    getReady: 'Get ready', camStarting: 'Starting camera and hand tracker…', handIntoView: 'Get your hand into view', intoPosition: 'Get into position',
+    noMotion: 'No motion data is coming from this device. Some browsers block the motion sensor: in Brave, turn Shields off for this site, or open the page in Chrome. Computers usually have no motion sensor at all.',
+    recording: 'Recording. Stay in position.', handNotFound: 'Hand not found. Keep the whole hand in view.',
+    camDenied: 'Camera permission was denied. Allow the camera for this site and try again.', camNotFound: 'No usable camera was found on this device.',
+    camBusy: 'The camera is busy in another app. Close it and try again.', camNoApi: 'This browser can\'t use the camera here. The page must be opened over https.',
+    camTracker: 'The hand tracker could not start ({m}). Check your connection and try again.',
+    errFew: 'Too few samples were recorded ({n}).', errShort: 'The recording was too short.', errRate: 'The sample rate ({fs} per second) is too low to measure shaking.',
+    noResult: 'No result', clear: 'Clear rhythm', weak: 'Weak rhythm', none: 'No clear rhythm', noneAt: 'No clear rhythm. Strongest at', hz: 'Hz',
+    sub: '{limb}, {posture}, {sensor}',
+    dFreq: 'Shakes per second', vFreq: '{f} (Hz)', dSize: 'Size', vSize: '≈ {mm} mm back and forth', vSizeCam: '≈ {mm} mm back and forth, at the fingertip',
+    dAccel: 'Acceleration', vAccel: '{a} m/s² (RMS)', dRatio: 'Rhythm strength', vRatio: '{r}× the background', over100: 'over 100',
+    dRate: 'Sample rate', vRate: '{fs} per second, sees up to {nyq} Hz', dRec: 'Recorded', vRec: '{d} s, {n} samples',
+    dTracker: 'Hand tracker', vTracker: '{d}, hand found in {p}% of frames',
+    wStand: 'This device only gave {fs} samples per second, which is too slow to see fast shaking while standing (13–18 Hz).',
+    wLowRate: 'Low sample rate: shaking faster than {nyq} Hz is invisible and can show up at a wrong, lower frequency.',
+    wTiny: 'The movement is very small. Everyone\'s hands and legs have a tiny, fast natural shake (often around 8–12 Hz), and a clear rhythm this small can be just that.',
+    wEdge: 'The peak is at the edge of the measurable range, so the real rhythm may be outside it.',
+    wLost: 'The hand was lost in {p}% of frames. Keep the whole hand in view and try again.',
+    wShort: 'The recording was shorter than planned ({d} s). Keep the screen on.',
+    hClear: 'clear rhythm', hWeak: 'weak rhythm', hNone: 'no clear rhythm', hWhat: '{f} Hz, {s}', hHow: '{limb} {posture}, {sensor}, ≈ {mm} mm',
+    label: { sensor: { motion: 'motion sensor', camera: 'camera' }, limb: { hand: 'Hand', leg: 'Leg' }, posture: { rest: 'at rest', hold: 'held out', stand: 'standing' } },
+    howto: {
+      'motion-hand-rest': ['Hold the phone loosely in your hand.', 'Rest your forearm on your thigh or a table and relax completely. Don\'t try to hold still.'],
+      'motion-hand-hold': ['Hold the phone in your hand.', 'Stretch your arm straight out in front of you, palm down, and keep it there.'],
+      'motion-leg-rest': ['Sit down and put the phone in your sock or strap it to your shin.', 'Feet flat on the floor, leg fully relaxed.'],
+      'motion-leg-hold': ['Sit down with the phone in your sock or strapped to your shin.', 'Lift the leg straight out and hold it there.'],
+      'motion-leg-stand': ['Put the phone in your sock or strap it to your shin.', 'Stand still with your feet together. Hold on to something if you need to.'],
+      'camera-hand-rest': ['Stand the phone up facing you, about 40 cm away.', 'Rest your forearm on the table with the hand relaxed, fingers spread, the whole hand in view.'],
+      'camera-hand-hold': ['Stand the phone up facing you, about 50 cm away.', 'Stretch your arm toward the camera, palm facing it, fingers spread, the whole hand in view.'],
+    },
+  },
+  he: {
+    title: 'מד רעד', lede: 'מודד כמה מהר רועדת יד או רגל, בעזרת חיישן התנועה של הטלפון או המצלמה שלו.',
+    langSwitch: 'מעבר לאנגלית',
+    measureWith: 'מודדים עם', bodyPart: 'איבר', position: 'תנוחה',
+    segMotion: 'חיישן תנועה', segCamera: 'מצלמה', segHand: 'יד', segLeg: 'רגל', segRest: 'במנוחה', segHold: 'מושטת', segStand: 'בעמידה',
+    noteCamera: 'המצלמה מתאימה ליד בלבד. היא קולטת עד כ־10–15 רעידות בשנייה.', noteMotion: 'המדויק ביותר. קולט גם רעד מהיר.',
+    howtoTail: 'לוחצים על התחלה ומתמקמים בזמן הספירה לאחור. צפצוף יישמע כשההקלטה מתחילה וכשהיא נגמרת.',
+    start: 'התחלת מדידה', cancel: 'ביטול', again: 'מדידה נוספת', changeSetup: 'שינוי הגדרות', pastTitle: 'מדידות קודמות', clearHist: 'מחיקת ההיסטוריה',
+    ariaCam: 'תמונת המצלמה עם נקודות כף היד', ariaStrip: 'גרף תנועה בזמן אמת', ariaSpectrum: 'ספקטרום התדרים של התנועה',
+    disclaimer: 'זה לא מכשיר רפואי. המספרים נועדו להשוואה אצל אותו אדם לאורך זמן ובאותם תנאים, לא לאבחון.',
+    motionDenied: 'הגישה לחיישן התנועה נדחתה. יש לאשר אותה לאתר הזה ולנסות שוב.', motionReqFail: 'לא ניתן לבקש גישה לחיישן התנועה: {m}',
+    getReady: 'מתכוננים', camStarting: 'מפעילים את המצלמה ואת זיהוי היד…', handIntoView: 'מכניסים את היד לתמונה', intoPosition: 'מתמקמים בתנוחה',
+    noMotion: 'לא מגיעים נתוני תנועה מהמכשיר. יש דפדפנים שחוסמים את חיישן התנועה: ב־Brave צריך לכבות את Shields לאתר הזה, או לפתוח את הדף ב־Chrome. במחשבים בדרך כלל אין חיישן תנועה בכלל.',
+    recording: 'מקליטים. לא לזוז מהתנוחה.', handNotFound: 'היד לא נמצאה. כל כף היד צריכה להיות בתמונה.',
+    camDenied: 'הגישה למצלמה נדחתה. יש לאשר את המצלמה לאתר הזה ולנסות שוב.', camNotFound: 'לא נמצאה במכשיר מצלמה שאפשר להשתמש בה.',
+    camBusy: 'המצלמה תפוסה באפליקציה אחרת. יש לסגור אותה ולנסות שוב.', camNoApi: 'הדפדפן לא יכול להשתמש במצלמה כאן. צריך לפתוח את הדף בכתובת https.',
+    camTracker: 'זיהוי היד לא הצליח לעלות ({m}). כדאי לבדוק את החיבור ולנסות שוב.',
+    errFew: 'הוקלטו מעט מדי דגימות ({n}).', errShort: 'ההקלטה הייתה קצרה מדי.', errRate: 'קצב הדגימה ({fs} בשנייה) נמוך מדי למדידת רעד.',
+    noResult: 'אין תוצאה', clear: 'קצב ברור', weak: 'קצב חלש', none: 'אין קצב ברור', noneAt: 'אין קצב ברור. השיא הבולט ביותר:', hz: 'Hz',
+    sub: '{limb}, {posture}, {sensor}',
+    dFreq: 'רעידות בשנייה', vFreq: '[{f} Hz]', dSize: 'גודל', vSize: '≈ {mm} מ״מ הלוך ושוב', vSizeCam: '≈ {mm} מ״מ הלוך ושוב, בקצה האצבע',
+    dAccel: 'תאוצה', vAccel: '[{a} m/s² (RMS)]', dRatio: 'עוצמת הקצב', vRatio: 'פי {r} מהרקע', over100: 'יותר מ־100',
+    dRate: 'קצב דגימה', vRate: '{fs} בשנייה, קולט עד [{nyq} Hz]', dRec: 'הוקלט', vRec: '{d} שנ׳, {n} דגימות',
+    dTracker: 'זיהוי היד', vTracker: '{d}, היד זוהתה ב־{p}% מהפריימים',
+    wStand: 'המכשיר נתן רק {fs} דגימות בשנייה. זה איטי מדי כדי לקלוט רעד מהיר בעמידה ([13–18 Hz]).',
+    wLowRate: 'קצב דגימה נמוך: רעד מהיר מ־[{nyq} Hz] לא נקלט, ועלול להופיע בתדר שגוי ונמוך יותר.',
+    wTiny: 'התנועה קטנה מאוד. לכולם יש רעד טבעי זעיר ומהיר בידיים וברגליים (לרוב סביב [8–12 Hz]), וקצב ברור בגודל כזה יכול להיות בדיוק זה.',
+    wEdge: 'השיא נמצא בקצה הטווח שאפשר למדוד, כך שהקצב האמיתי עשוי להיות מחוץ לו.',
+    wLost: 'היד לא זוהתה ב־{p}% מהפריימים. כל כף היד צריכה להיות בתמונה. כדאי לנסות שוב.',
+    wShort: 'ההקלטה הייתה קצרה מהמתוכנן ({d} שנ׳). צריך להשאיר את המסך דלוק.',
+    hClear: 'קצב ברור', hWeak: 'קצב חלש', hNone: 'אין קצב ברור', hWhat: '[{f} Hz], {s}', hHow: '{limb} {posture}, {sensor}, ≈ {mm} מ״מ',
+    label: { sensor: { motion: 'חיישן תנועה', camera: 'מצלמה' }, limb: { hand: 'יד', leg: 'רגל' }, posture: { rest: 'במנוחה', hold: 'מושטת', stand: 'בעמידה' } },
+    howto: {
+      'motion-hand-rest': ['מחזיקים את הטלפון ביד, באחיזה רפויה.', 'מניחים את האמה על הירך או על שולחן ומרפים לגמרי. לא מנסים להחזיק את היד יציבה.'],
+      'motion-hand-hold': ['מחזיקים את הטלפון ביד.', 'מושיטים את היד ישר קדימה, כף היד כלפי מטה, ומחזיקים אותה כך.'],
+      'motion-leg-rest': ['יושבים ומכניסים את הטלפון לגרב, או קושרים אותו לשוק.', 'כפות הרגליים על הרצפה, הרגל רפויה לגמרי.'],
+      'motion-leg-hold': ['יושבים, כשהטלפון בגרב או קשור לשוק.', 'מרימים את הרגל ישר קדימה ומחזיקים אותה כך.'],
+      'motion-leg-stand': ['מכניסים את הטלפון לגרב, או קושרים אותו לשוק.', 'עומדים בלי לזוז, כפות הרגליים צמודות. אפשר להיאחז במשהו אם צריך.'],
+      'camera-hand-rest': ['מעמידים את הטלפון מולכם, במרחק של כ־40 ס״מ.', 'מניחים את האמה על השולחן, היד רפויה, האצבעות פרושות וכל כף היד בתמונה.'],
+      'camera-hand-hold': ['מעמידים את הטלפון מולכם, במרחק של כ־50 ס״מ.', 'מושיטים את היד לכיוון המצלמה, כף היד מופנית אליה, האצבעות פרושות וכל כף היד בתמונה.'],
+    },
+  },
 };
-const HOWTO = {
-  'motion-hand-rest': ['Hold the phone loosely in your hand.', 'Rest your forearm on your thigh or a table and relax completely. Don\'t try to hold still.'],
-  'motion-hand-hold': ['Hold the phone in your hand.', 'Stretch your arm straight out in front of you, palm down, and keep it there.'],
-  'motion-leg-rest': ['Sit down and put the phone in your sock or strap it to your shin.', 'Feet flat on the floor, leg fully relaxed.'],
-  'motion-leg-hold': ['Sit down with the phone in your sock or strapped to your shin.', 'Lift the leg straight out and hold it there.'],
-  'motion-leg-stand': ['Put the phone in your sock or strap it to your shin.', 'Stand still with your feet together. Hold on to something if you need to.'],
-  'camera-hand-rest': ['Stand the phone up facing you, about 40 cm away.', 'Rest your forearm on the table with the hand relaxed, fingers spread, the whole hand in view.'],
-  'camera-hand-hold': ['Stand the phone up facing you, about 50 cm away.', 'Stretch your arm toward the camera, palm facing it, fingers spread, the whole hand in view.'],
-};
+let lang = (() => { try { const l = localStorage.getItem('lang'); if (I18N[l]) return l; } catch {} return /^he/i.test(navigator.language || '') ? 'he' : 'en'; })();
+function t(key, vars) {
+  const s = (I18N[lang][key] ?? I18N.en[key] ?? key).replace(/\[/g, '⁦').replace(/\]/g, '⁩');
+  return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : s;
+}
+const LABEL = () => I18N[lang].label;
+const said = {}; // element id -> [key, vars], re-rendered on language change
+function say(id, key, vars) { said[id] = [key, vars]; $(id).textContent = key ? t(key, vars) : ''; }
+function applyLang() {
+  const h = document.documentElement; h.lang = lang; h.dir = lang === 'he' ? 'rtl' : 'ltr'; document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  const lb = $('langLabel'); lb.textContent = lang === 'he' ? 'EN' : 'עב'; lb.lang = lang === 'he' ? 'en' : 'he';
+  $('langBtn').setAttribute('aria-label', t('langSwitch')); $('langBtn').title = t('langSwitch');
+  for (const id in said) say(id, ...said[id]);
+  renderSetup();
+  if (!$('result').hidden && lastResult) renderResult(lastResult, true); else renderHistory();
+}
+function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {} applyLang(); }
 
 /* ---------------- setup screen ---------------- */
 function renderSetup() {
@@ -193,13 +294,11 @@ function renderSetup() {
                    (key === 'posture' && b.dataset.v === 'stand' && state.limb === 'hand');
     });
   });
-  $('sensorNote').textContent = state.sensor === 'camera'
-    ? 'Camera works for the hand only. It sees up to about 10\u201315 shakes per second.'
-    : 'Most accurate. Sees fast shaking too.';
-  const [a, b] = HOWTO[state.sensor + '-' + state.limb + '-' + state.posture];
+  $('sensorNote').textContent = t(state.sensor === 'camera' ? 'noteCamera' : 'noteMotion');
+  const [a, b] = I18N[lang].howto[state.sensor + '-' + state.limb + '-' + state.posture];
   $('howto').innerHTML = '';
   const s = document.createElement('strong'); s.textContent = a;
-  const p = document.createElement('span'); p.textContent = b + ' Tap start, then get into position during the countdown. You\'ll hear a beep when recording starts and when it ends.';
+  const p = document.createElement('span'); p.textContent = b + ' ' + t('howtoTail');
   $('howto').append(s, p);
 }
 document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', (e) => {
@@ -211,7 +310,7 @@ function show(id) {
   $('historyWrap').hidden = id === 'record' || !loadHistory().length;
   window.scrollTo(0, 0);
 }
-function setupError(msg) { rec = null; show('setup'); $('setupError').textContent = msg; $('setupError').hidden = !msg; }
+function setupError(key, vars) { rec = null; show('setup'); say('setupError', key, vars); $('setupError').hidden = !key; }
 
 /* ---------------- sound ---------------- */
 let actx = null;
@@ -252,22 +351,22 @@ async function start() {
   $('setupError').hidden = true;
   // iOS asks for motion permission; it must be requested straight from the tap.
   if (state.sensor === 'motion' && typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return setupError('Motion access was denied. Allow motion access for this site and try again.'); }
-    catch (e) { return setupError('Motion access could not be requested: ' + (e.message || e)); }
+    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return setupError('motionDenied'); }
+    catch (e) { return setupError('motionReqFail', { m: e.message || e }); }
   }
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {}
   const id = Date.now();
   rec = { id, sensor: state.sensor, limb: state.limb, posture: state.posture, phase: 'prep', samples: [], live: [], ema: null,
           seen: 0, lastEventAt: 0, usedGravity: false, frames: 0, missed: 0, palm: [], startAt: Infinity, endAt: Infinity };
   show('record');
-  $('count').textContent = ''; $('recNote').textContent = '';
+  $('count').textContent = ''; say('recNote', null); say('recStatus', 'getReady');
   $('camView').hidden = rec.sensor !== 'camera';
   try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
 
   if (rec.sensor === 'camera') {
-    $('recStatus').textContent = 'Starting camera and hand tracker\u2026';
+    say('recStatus', 'camStarting');
     try { await startCamera(); await getLandmarker(); }
-    catch (e) { console.error('[tremor] camera', e); stopAll(); return setupError(explainCamera(e)); }
+    catch (e) { console.error('[tremor] camera', e); stopAll(); return setupError(...explainCamera(e)); }
     if (!rec || rec.id !== id) return;
     requestAnimationFrame(camLoop);
   } else {
@@ -277,7 +376,7 @@ async function start() {
   const n = CONFIG.COUNTDOWN_S[rec.sensor];
   for (let i = n; i > 0; i--) {
     if (!rec || rec.id !== id) return;
-    $('recStatus').textContent = rec.sensor === 'camera' ? 'Get your hand into view' : 'Get into position';
+    say('recStatus', rec.sensor === 'camera' ? 'handIntoView' : 'intoPosition');
     $('count').textContent = i; beep(660, 90, 0.18);
     await sleep(1000);
   }
@@ -285,13 +384,13 @@ async function start() {
   if (rec.sensor === 'motion' && rec.seen === 0) {
     await sleep(800);
     if (!rec || rec.id !== id) return;
-    if (rec.seen === 0) { stopAll(); return setupError('No motion data is coming from this device. Some browsers block the motion sensor: in Brave, turn Shields off for this site, or open the page in Chrome. Computers usually have no motion sensor at all.'); }
+    if (rec.seen === 0) { stopAll(); return setupError('noMotion'); }
   }
   beep(1040, 260);
   rec.startAt = performance.now() + CONFIG.START_DELAY_MS;
   rec.endAt = rec.startAt + CONFIG.RECORD_S * 1000;
   rec.phase = 'rec';
-  $('count').textContent = ''; $('recStatus').textContent = 'Recording. Stay in position.';
+  $('count').textContent = ''; say('recStatus', 'recording');
   drawStrip();
   await sleep(CONFIG.RECORD_S * 1000 + CONFIG.START_DELAY_MS + 60);
   if (!rec || rec.id !== id) return;
@@ -356,11 +455,11 @@ function getLandmarker() {
 }
 function explainCamera(e) {
   const n = e && e.name, m = String((e && e.message) || e);
-  if (n === 'NotAllowedError' || n === 'SecurityError') return 'Camera permission was denied. Allow the camera for this site and try again.';
-  if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'No usable camera was found on this device.';
-  if (n === 'NotReadableError') return 'The camera is busy in another app. Close it and try again.';
-  if (n === 'NoMediaDevices') return 'This browser can\'t use the camera here. The page must be opened over https.';
-  return 'The hand tracker could not start (' + m + '). Check your connection and try again.';
+  if (n === 'NotAllowedError' || n === 'SecurityError') return ['camDenied'];
+  if (n === 'NotFoundError' || n === 'OverconstrainedError') return ['camNotFound'];
+  if (n === 'NotReadableError') return ['camBusy'];
+  if (n === 'NoMediaDevices') return ['camNoApi'];
+  return ['camTracker', { m }];
 }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 function camLoop() {
@@ -385,8 +484,8 @@ function camLoop() {
 function addCameraFrame(t, lm, vw, vh) {
   const recording = rec.phase === 'rec' && t >= rec.startAt && t <= rec.endAt;
   if (recording) rec.frames++;
-  if (!lm || lm.length < 21) { if (recording) rec.missed++; if (rec.phase !== 'done') $('recNote').textContent = 'Hand not found. Keep the whole hand in view.'; return; }
-  $('recNote').textContent = '';
+  if (!lm || lm.length < 21) { if (recording) rec.missed++; if (rec.phase !== 'done') say('recNote', 'handNotFound'); return; }
+  say('recNote', null);
   if (!recording) return;
   const P = (i) => ({ x: lm[i].x * vw, y: lm[i].y * vh });
   const tip = P(8), c = [0, 5, 9, 13, 17].map(P);
@@ -417,7 +516,7 @@ function sizeCanvas(cv) {
   const dpr = Math.min(2, window.devicePixelRatio || 1), r = cv.getBoundingClientRect();
   const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
   if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.direction = 'ltr';
   return { c, w: r.width, h: r.height };
 }
 function paperGrid(c, w, h, xStep, yStep) {
@@ -504,11 +603,12 @@ function welch(x, fs, nfft) {
   for (let k = 0; k < out.length; k++) out[k] /= starts.length;
   return out;
 }
+const aErr = (key, vars) => ({ error: t(key, vars), errKey: [key, vars] });
 // samples: [{t: ms, v: [channels]}]. unit: 'accel' (m/s^2) or 'mm' (displacement).
 function analyze(samples, { unit = 'accel', ampChannels = null } = {}) {
-  if (samples.length < 32) return { error: 'Too few samples were recorded (' + samples.length + ').' };
+  if (samples.length < 32) return aErr('errFew', { n: samples.length });
   const n = samples.length, dur = (samples[n - 1].t - samples[0].t) / 1000;
-  if (dur < 3) return { error: 'The recording was too short.' };
+  if (dur < 3) return aErr('errShort');
   const fs = (n - 1) / dur, nyq = fs / 2;
   const chans = resample(samples, fs).map(detrend);
   const m = chans[0].length;
@@ -519,7 +619,7 @@ function analyze(samples, { unit = 'accel', ampChannels = null } = {}) {
   const ampIdx = ampChannels || psds.map((_, i) => i);
   psds.forEach((p, c) => { for (let k = 0; k < K; k++) { all[k] += p[k]; if (ampIdx.includes(c)) amp[k] += p[k]; } });
   const lo = CONFIG.BAND_LO, hi = Math.min(CONFIG.BAND_HI, nyq - 0.5);
-  if (hi <= lo + 1) return { error: 'The sample rate (' + fs.toFixed(0) + ' per second) is too low to measure shaking.', fs, nyq, dur };
+  if (hi <= lo + 1) return Object.assign(aErr('errRate', { fs: fs.toFixed(0) }), { fs, nyq, dur });
   const kLo = Math.ceil(lo / df), kHi = Math.floor(hi / df);
   let kp = kLo; for (let k = kLo; k <= kHi; k++) if (all[k] > all[kp]) kp = k;
   let f0 = kp * df; // parabolic refinement of the peak
@@ -542,39 +642,39 @@ function analyze(samples, { unit = 'accel', ampChannels = null } = {}) {
 
 /* ---------------- result ---------------- */
 function fmtMM(x) { return x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x >= 0.1 ? x.toFixed(2) : x.toFixed(3); }
-function renderResult(res) {
-  show('result');
-  const sub = LABEL.limb[res.limb] + ', ' + LABEL.posture[res.posture] + ', ' + LABEL.sensor[res.sensor];
-  $('resSub').textContent = sub;
+function renderResult(res, keep) { // keep: re-render in place (language change), no scroll
+  if (!keep) show('result');
+  const L = LABEL();
+  $('resSub').textContent = t('sub', { limb: L.limb[res.limb], posture: L.posture[res.posture], sensor: L.sensor[res.sensor] });
   const dl = $('resDetails'); dl.innerHTML = '';
   const row = (k, v) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; dl.append(dt, dd); };
   const warns = [];
   if (res.error) {
-    $('resHead').textContent = 'No result';
+    $('resHead').textContent = t('noResult');
     $('resFreq').textContent = '\u2013'; $('resFreq').className = 'res-freq faint';
-    warns.push(res.error);
+    warns.push(res.errKey ? t(...res.errKey) : res.error);
     $('spectrum').hidden = true;
   } else {
     $('spectrum').hidden = false;
-    $('resHead').textContent = res.strength === 'clear' ? 'Clear rhythm' : res.strength === 'weak' ? 'Weak rhythm' : 'No clear rhythm';
+    $('resHead').textContent = t(res.strength);
     $('resFreq').innerHTML = '';
     $('resFreq').append(document.createTextNode(res.f0.toFixed(1)));
-    const sm = document.createElement('small'); sm.textContent = 'Hz'; $('resFreq').append(sm);
+    const sm = document.createElement('small'); sm.textContent = t('hz'); $('resFreq').append(sm);
     $('resFreq').className = 'res-freq' + (res.strength === 'none' ? ' faint' : '');
-    if (res.strength === 'none') $('resHead').textContent = 'No clear rhythm. Strongest at';
-    row('Shakes per second', res.f0.toFixed(1) + ' (Hz)');
-    row('Size', '\u2248 ' + fmtMM(res.pp) + ' mm back and forth' + (res.sensor === 'camera' ? ', at the fingertip' : ''));
-    if (res.sensor === 'motion') row('Acceleration', res.rms.toFixed(3) + ' m/s\u00b2 (RMS)');
-    row('Rhythm strength', (res.ratio > 100 ? 'over 100' : res.ratio.toFixed(1)) + '\u00d7 the background');
-    row('Sample rate', res.fs.toFixed(0) + ' per second, sees up to ' + res.nyq.toFixed(0) + ' Hz');
-    row('Recorded', res.dur.toFixed(1) + ' s, ' + res.n + ' samples');
-    if (res.sensor === 'camera') row('Hand tracker', (res.delegate || '-') + ', hand found in ' + Math.round((res.handPct || 0) * 100) + '% of frames');
-    if (res.posture === 'stand' && res.nyq < 18) warns.push('This device only gave ' + res.fs.toFixed(0) + ' samples per second, which is too slow to see fast shaking while standing (13\u201318 Hz).');
-    else if (res.nyq < 12) warns.push('Low sample rate: shaking faster than ' + res.nyq.toFixed(0) + ' Hz is invisible and can show up at a wrong, lower frequency.');
-    if (res.strength !== 'none' && res.pp < 0.1) warns.push('The movement is very small. Everyone\'s hands and legs have a tiny, fast natural shake (often around 8\u201312 Hz), and a clear rhythm this small can be just that.');
-    if (res.edge && res.strength !== 'none') warns.push('The peak is at the edge of the measurable range, so the real rhythm may be outside it.');
-    if (res.sensor === 'camera' && res.handPct < 0.8) warns.push('The hand was lost in ' + Math.round((1 - res.handPct) * 100) + '% of frames. Keep the whole hand in view and try again.');
-    if (res.dur < res.plannedS * 0.8) warns.push('The recording was shorter than planned (' + res.dur.toFixed(1) + ' s). Keep the screen on.');
+    if (res.strength === 'none') $('resHead').textContent = t('noneAt');
+    row(t('dFreq'), t('vFreq', { f: res.f0.toFixed(1) }));
+    row(t('dSize'), t(res.sensor === 'camera' ? 'vSizeCam' : 'vSize', { mm: fmtMM(res.pp) }));
+    if (res.sensor === 'motion') row(t('dAccel'), t('vAccel', { a: res.rms.toFixed(3) }));
+    row(t('dRatio'), t('vRatio', { r: res.ratio > 100 ? t('over100') : res.ratio.toFixed(1) }));
+    row(t('dRate'), t('vRate', { fs: res.fs.toFixed(0), nyq: res.nyq.toFixed(0) }));
+    row(t('dRec'), t('vRec', { d: res.dur.toFixed(1), n: res.n }));
+    if (res.sensor === 'camera') row(t('dTracker'), t('vTracker', { d: res.delegate || '-', p: Math.round((res.handPct || 0) * 100) }));
+    if (res.posture === 'stand' && res.nyq < 18) warns.push(t('wStand', { fs: res.fs.toFixed(0) }));
+    else if (res.nyq < 12) warns.push(t('wLowRate', { nyq: res.nyq.toFixed(0) }));
+    if (res.strength !== 'none' && res.pp < 0.1) warns.push(t('wTiny'));
+    if (res.edge && res.strength !== 'none') warns.push(t('wEdge'));
+    if (res.sensor === 'camera' && res.handPct < 0.8) warns.push(t('wLost', { p: Math.round((1 - res.handPct) * 100) }));
+    if (res.dur < res.plannedS * 0.8) warns.push(t('wShort', { d: res.dur.toFixed(1) }));
     requestAnimationFrame(() => drawSpectrum(res));
   }
   $('resWarn').innerHTML = '';
@@ -591,7 +691,7 @@ function drawSpectrum(res) {
   for (let f = 0; f <= xmax; f += 1) { const x = Math.round(X(f)) + 0.5; c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); }
   c.stroke();
   c.fillStyle = cssVar('--muted'); c.font = '13px "Atkinson Hyperlegible", system-ui, sans-serif'; c.textAlign = 'center';
-  for (let f = 0; f <= xmax; f += 5) c.fillText(f + ' Hz', Math.min(w - 22, Math.max(18, X(f))), h - 8);
+  for (let f = 0; f <= xmax; f += 5) c.fillText(f + ' ' + t('hz'), Math.min(w - 22, Math.max(18, X(f))), h - 8);
   // outside the search band: shaded
   c.fillStyle = cssVar('--grid'); c.globalAlpha = 0.45;
   c.fillRect(X(0), pad.t, X(res.band[0]) - X(0), plotH);
@@ -608,7 +708,7 @@ function drawSpectrum(res) {
   const px = X(res.f0);
   c.strokeStyle = cssVar('--pen'); c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, pad.t); c.lineTo(px, h - pad.b); c.stroke(); c.setLineDash([]);
   c.fillStyle = cssVar('--pen'); c.textAlign = px > w - 70 ? 'right' : 'left'; c.font = '700 14px "Atkinson Hyperlegible", system-ui, sans-serif';
-  c.fillText(res.f0.toFixed(1) + ' Hz', px + (px > w - 70 ? -6 : 6), pad.t + 4);
+  c.fillText(res.f0.toFixed(1) + ' ' + t('hz'), px + (px > w - 70 ? -6 : 6), pad.t + 4);
 }
 
 /* ---------------- history ---------------- */
@@ -622,14 +722,14 @@ function saveHistory(res) {
 function renderHistory() {
   const h = loadHistory(), ol = $('histList'); ol.innerHTML = '';
   $('historyWrap').hidden = !h.length || !$('record').hidden;
-  const fmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const fmt = new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   for (const e of h.slice(0, 20)) {
     const li = document.createElement('li');
     const when = document.createElement('div'); when.className = 'when'; when.textContent = fmt.format(new Date(e.ts));
     const what = document.createElement('div'); what.className = 'what';
-    what.textContent = e.f.toFixed(1) + ' Hz, ' + (e.strength === 'clear' ? 'clear rhythm' : e.strength === 'weak' ? 'weak rhythm' : 'no clear rhythm');
+    what.textContent = t('hWhat', { f: e.f.toFixed(1), s: t(e.strength === 'clear' ? 'hClear' : e.strength === 'weak' ? 'hWeak' : 'hNone') });
     const how = document.createElement('div'); how.className = 'how';
-    how.textContent = LABEL.limb[e.limb] + ' ' + LABEL.posture[e.posture] + ', ' + LABEL.sensor[e.sensor] + ', \u2248 ' + fmtMM(e.pp) + ' mm';
+    const L = LABEL(); how.textContent = t('hHow', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], mm: fmtMM(e.pp) });
     li.append(when, what, how); ol.append(li);
   }
 }
@@ -642,11 +742,11 @@ $('againBtn').addEventListener('click', start);
 $('setupBtn').addEventListener('click', () => { show('setup'); renderHistory(); });
 $('clearHist').addEventListener('click', () => { try { localStorage.removeItem(HKEY); } catch {} renderHistory(); });
 window.addEventListener('resize', () => { if (!$('result').hidden && lastResult && !lastResult.error) drawSpectrum(lastResult); });
-renderSetup();
-renderHistory();
+$('langBtn').addEventListener('click', () => setLang(lang === 'he' ? 'en' : 'he'));
+applyLang();
 
 // Test hook: lets automated tests feed samples and run the analysis without real sensors.
-window.__tremor = { CONFIG, state, analyze, addMotion, get rec() { return rec; }, get last() { return lastResult; } };
+window.__tremor = { CONFIG, state, analyze, addMotion, get rec() { return rec; }, get last() { return lastResult; }, get lang() { return lang; }, setLang };
 </script>
 </body>
 </html>

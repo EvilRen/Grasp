@@ -17,8 +17,8 @@ the CSP blocks the model/WASM). It is deployed as a static site on Vercel, proje
 ## Also in this repo
 
 - **Slice mode** in Grasp: swipe a raised index finger through flying fruit.
-- **Tremor meter** at `/tremor/` (`tremor/index.html`).
+- **Tremor meter** at `/tremor/` (`tremorti/index.html`).
 
 ## Tests
 
-Headless Playwright tests (stubbed tracker, fake camera): `bash tests/run.sh` and `bash tremor/tests/run.sh`.
+Headless Playwright tests (stubbed tracker, fake camera): `bash tests/run.sh` and `bash tremorti/tests/run.sh`.
