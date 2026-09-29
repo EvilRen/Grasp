@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grasp: hand physics sandbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+<style>
+:root{
+  --ink:#141b34; --ink-2:#1d2547; --line:rgba(241,233,218,.14);
+  --bone:#f1e9da; --muted:rgba(241,233,218,.62);
+  --coral:#ff6f59; --saffron:#ffc24b; --mint:#43d9a3; --sky:#54c6eb; --lilac:#a98bff;
+  --ok:#43d9a3; --bad:#ff6f59;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#141b34; } }
+:root[data-theme="dark"]{ --ink:#141b34; }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+html,body{ height:100%; margin:0; overflow:hidden; background:var(--ink); color:var(--bone);
+  font-family:Rubik,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+#stage{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:none; }
+button{ font:inherit; cursor:pointer; border:0; border-radius:12px; }
+button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
+
+/* start screen */
+#start{ position:fixed; inset:0; display:grid; place-items:center; padding:24px;
+  background:radial-gradient(120% 90% at 50% 20%, rgba(29,37,71,.92), rgba(20,27,52,.97)); z-index:10; }
+#start[hidden]{ display:none; }
+.panel{ width:min(440px,100%); }
+.panel h1{ font-size:clamp(40px,9vw,64px); font-weight:700; letter-spacing:-.02em; margin:0 0 8px; line-height:1; }
+.panel p{ margin:0 0 24px; color:var(--muted); line-height:1.5; font-size:16px; }
+.actions{ display:flex; flex-direction:column; gap:10px; }
+.primary{ background:var(--saffron); color:#241a00; font-weight:700; padding:15px 18px; font-size:17px; }
+.secondary{ background:transparent; color:var(--bone); padding:13px 18px; box-shadow:inset 0 0 0 1.5px var(--line); }
+.checks{ list-style:none; margin:22px 0 0; padding:0; display:grid; gap:10px; }
+.checks[hidden]{ display:none; }
+.checks li{ display:grid; grid-template-columns:18px 1fr; gap:10px; align-items:start; font-size:15px; }
+.checks .dot{ width:12px; height:12px; border-radius:50%; margin-top:4px; background:var(--line); }
+.checks li[data-s="pending"] .dot{ background:var(--saffron); animation:pulse 1s infinite; }
+.checks li[data-s="ok"] .dot{ background:var(--ok); }
+.checks li[data-s="fail"] .dot{ background:var(--bad); }
+.checks li[data-s="skip"] .dot{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line); }
+.checks small{ display:block; color:var(--muted); font-size:13px; margin-top:2px; overflow-wrap:anywhere; }
+@keyframes pulse{ 50%{ opacity:.35; } }
+@media (prefers-reduced-motion: reduce){ .checks li[data-s="pending"] .dot{ animation:none; } }
+
+/* in-game chrome */
+.chrome{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; display:flex; gap:8px; z-index:5; }
+.chip{ background:rgba(29,37,71,.85); color:var(--bone); padding:9px 14px; box-shadow:inset 0 0 0 1px var(--line);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); font-size:14px; }
+#preview{ position:fixed; left:12px; top:calc(env(safe-area-inset-top,0px) + 12px); width:96px; border-radius:10px;
+  box-shadow:0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); z-index:5; background:#0e1328; }
+#preview[hidden]{ display:none; }
+#preview.big{ left:50%; top:40%; transform:translate(-50%,-50%); width:min(280px, 72vw) !important; max-height:52vh; object-fit:contain; }
+#hud{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px + var(--hud-offset, 0px)); left:12px; z-index:5; font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;
+  background:rgba(14,19,40,.82); padding:10px 12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); white-space:pre; pointer-events:none; }
+#hud[hidden]{ display:none; }
+#banner{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 60px); z-index:6;
+  width:min(520px,calc(100% - 24px)); background:#2a1e2a; box-shadow:inset 0 0 0 1px rgba(255,111,89,.45), 0 10px 30px rgba(0,0,0,.4);
+  border-radius:12px; padding:14px 16px; font-size:14px; line-height:1.45; }
+#banner[hidden]{ display:none; }
+#banner strong{ display:block; margin-bottom:6px; font-size:15px; }
+#banner ul{ margin:0 0 10px; padding-left:18px; }
+#banner li{ overflow-wrap:anywhere; }
+#banner .row{ display:flex; gap:8px; justify-content:flex-end; }
+#hint{ position:fixed; left:50%; transform:translateX(-50%); top:34%; z-index:4;
+  color:var(--muted); font-size:14px; text-align:center; pointer-events:none; transition:opacity .6s; max-width:min(460px, calc(100% - 32px)); }
+#status{ position:fixed; left:50%; top:74%; transform:translate(-50%,-50%); z-index:4; pointer-events:none; text-align:center;
+  width:min(320px, calc(100% - 48px)); color:var(--bone); font-size:20px; font-weight:500; line-height:1.35; transition:opacity .25s; }
+#status small{ display:block; margin-top:8px; font-size:14px; font-weight:400; color:var(--muted); }
+#status[hidden]{ display:block; opacity:0; }
+#status[hidden] *{ pointer-events:none !important; }
+#status .live{ display:block; margin-top:12px; font:13px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
+#status button{ pointer-events:auto; margin-top:12px; background:rgba(29,37,71,.9); color:var(--bone); padding:9px 14px; font-size:14px; box-shadow:inset 0 0 0 1px var(--line); }
+video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="Physics sandbox"></canvas>
+<video id="cam" playsinline muted autoplay></video>
+<canvas id="preview" hidden aria-label="Camera preview with hand landmarks"></canvas>
+<div id="hud" hidden></div>
+<div class="chrome">
+  <button class="chip" id="hudBtn" type="button">HUD</button>
+  <button class="chip" id="resetBtn" type="button">Reset</button>
+</div>
+<div id="hint"></div>
+<div id="status" hidden>Show your whole hand inside the yellow box<small>Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.</small><span class="live" id="statusLive"></span><button id="swapBtn" type="button">Hand still not found? Switch tracker</button></div>
+<div id="banner" hidden role="alert">
+  <strong>Camera mode is off. You're playing with mouse or touch.</strong>
+  <ul id="bannerList"></ul>
+  <div class="row"><button class="chip" id="bannerClose" type="button">Got it</button></div>
+</div>
+
+<section id="start">
+  <div class="panel">
+    <h1>Grasp</h1>
+    <p>Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
+    <div class="actions">
+      <button class="primary" id="camBtn" type="button">Enable camera</button>
+      <button class="secondary" id="mouseBtn" type="button">Play with mouse or touch</button>
+    </div>
+    <ul class="checks" id="checks" hidden>
+      <li data-k="camera"><span class="dot"></span><span>Camera<small></small></span></li>
+      <li data-k="library"><span class="dot"></span><span>Hand tracker library<small></small></span></li>
+      <li data-k="runtime"><span class="dot"></span><span>Tracker runtime (WebAssembly)<small></small></span></li>
+      <li data-k="model"><span class="dot"></span><span>Hand model<small></small></span></li>
+      <li data-k="sandbox"><span class="dot"></span><span>Page sandbox<small></small></span></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   TUNING CONSTANTS: start here if pinch or throw feels off
+   ============================================================ */
+const CONFIG = {
+  PINCH_ENTER: 0.30,          // normalized thumb-index distance to START a pinch
+  PINCH_EXIT: 0.45,           // ...and to END it (gap = hysteresis)
+  POINT_CONFIRM_FRAMES: 3,    // frames a POINT pose must hold before it switches on/off
+  POINT_EXTEND_RATIO: 1.08,   // index tip must be this much farther from wrist than its PIP
+  GRAB_RADIUS: 40,            // px: how close the pinch must be to an object's edge
+  SPRING_STIFFNESS: 0.25,     // grab spring: higher = object tracks hand tighter
+  SPRING_DAMPING: 0.12,
+  HELD_SPIN_DAMP: 0.88,       // per-step angular velocity multiplier while held
+  THROW_MULTIPLIER: 1.0,      // scales release velocity
+  THROW_WINDOW_MS: 100,       // velocity averaged over this window before release
+  MAX_THROW_SPEED: 42,        // px per physics step (60Hz); caps tunneling
+  HAND_LOST_FRAMES: 3,        // this many detections in a row without a hand = drop (no throw)
+  HAND_LOST_MAX_MS: 1500,     // safety net if tracking stalls entirely
+  MAP_BOX: 0.70,              // central fraction of the camera frame mapped to the full screen
+  EURO_MIN_CUTOFF: 1.2,       // One Euro filter: lower = steadier when still
+  EURO_BETA: 0.012,           // One Euro filter: higher = less lag on fast moves
+  EURO_D_CUTOFF: 1.0,
+  POINT_BLEND_MS: 100,        // cursor anchor glides between pinch midpoint and fingertip
+  POKER_RADIUS: 14,
+  IMPACT_SPEED: 7,            // relative speed (px/step) that triggers a particle burst
+  MP_VERSION: '0.10.35',
+  MODEL_URL: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+  STAGE_TIMEOUT_MS: 20000,
+  DETECT_CONFIDENCE: 0.3,     // hand detection + presence threshold (MediaPipe default 0.5)
+  AUTO_SWAP_MS: 5000,         // GPU scanning with no hand for this long = switch to CPU (once)
+  TRACK_CONFIDENCE: 0.5,      // below this, MediaPipe re-runs full hand detection on the next frame
+};
+
+const COLORS = ['#ff6f59','#ffc24b','#43d9a3','#54c6eb','#a98bff','#f1e9da'];
+const $ = (id) => document.getElementById(id);
+const canvas = $('stage'), ctx = canvas.getContext('2d');
+const video = $('cam'), preview = $('preview'), pctx = preview.getContext('2d');
+const hudEl = $('hud'), hintEl = $('hint'), statusEl = $('status'), statusLive = $('statusLive');
+let lastTrackError = '';
+let cameraStartedAt = 0;
+
+/* ---------------- CSP violation capture (diagnostics) ---------------- */
+const cspViolations = [];
+document.addEventListener('securitypolicyviolation', (e) => {
+  cspViolations.push({ uri: e.blockedURI, directive: e.effectiveDirective || e.violatedDirective });
+  console.warn('[grasp] CSP blocked', e.blockedURI, e.effectiveDirective || e.violatedDirective);
+});
+
+/* ---------------- Physics setup ---------------- */
+function ensureMatter() {
+  if (window.Matter) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js';
+    s.onload = res; s.onerror = () => rej(new Error('Matter.js failed to load from cdnjs and jsDelivr'));
+    document.head.appendChild(s);
+  });
+}
+
+let M, engine, world, walls = [], bodies = [], poker = null;
+let W = 0, H = 0, DPR = 1;
+const particles = [];
+let gridPattern = null;
+
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+  buildGrid();
+  if (engine) { buildWalls(); clampBodies(); }
+}
+
+function buildGrid() {
+  const g = document.createElement('canvas'); const s = 32;
+  g.width = g.height = s;
+  const c = g.getContext('2d');
+  c.fillStyle = 'rgba(241,233,218,0.08)';
+  c.beginPath(); c.arc(s / 2, s / 2, 1.3, 0, Math.PI * 2); c.fill();
+  gridPattern = ctx.createPattern(g, 'repeat');
+}
+
+function buildWalls() {
+  const { Bodies, Composite } = M;
+  if (walls.length) Composite.remove(world, walls);
+  const t = 400, o = { isStatic: true, friction: 0.3, restitution: 0.2, label: 'wall' };
+  walls = [
+    Bodies.rectangle(W / 2, H + t / 2, W + 2 * t, t, o),
+    Bodies.rectangle(W / 2, -t / 2, W + 2 * t, t, o),
+    Bodies.rectangle(-t / 2, H / 2, t, H + 2 * t, o),
+    Bodies.rectangle(W + t / 2, H / 2, t, H + 2 * t, o),
+  ];
+  Composite.add(world, walls);
+}
+
+function clampBodies() {
+  for (const b of bodies) {
+    const r = b.plugin.r;
+    const x = Math.min(Math.max(b.position.x, r), W - r), y = Math.min(Math.max(b.position.y, r), H - r);
+    if (x !== b.position.x || y !== b.position.y) M.Body.setPosition(b, { x, y });
+  }
+}
+
+function spawnObjects() {
+  const { Bodies, Composite, Body } = M;
+  if (held) dropHeld();
+  if (bodies.length) Composite.remove(world, bodies);
+  bodies = [];
+  const s = Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950));
+  // [kind, size params..., density, colorIndex]
+  const specs = [
+    ['circle', 46, 0.004, 0],   // heavy ball
+    ['circle', 24, 0.0008, 1],  // light ball
+    ['box', 88, 88, 0.002, 2],
+    ['box', 150, 40, 0.0015, 3],// plank
+    ['poly', 5, 44, 0.002, 4],
+    ['poly', 6, 38, 0.0025, 5],
+    ['poly', 3, 50, 0.0015, 1],
+    ['circle', 34, 0.0015, 2],
+    ['box', 56, 56, 0.005, 0],  // small heavy block
+    ['poly', 8, 30, 0.001, 3],
+  ];
+  const cols = Math.max(3, Math.min(5, Math.floor(W / (140 * s))));
+  specs.forEach((sp, i) => {
+    const cx = ((i % cols) + 0.5) * (W / cols) + (Math.random() - 0.5) * 20;
+    const cy = H * 0.18 + Math.floor(i / cols) * 120 * s + Math.random() * 20;
+    const common = { restitution: 0.32, friction: 0.25, frictionAir: 0.012, chamfer: undefined };
+    let b;
+    if (sp[0] === 'circle') b = Bodies.circle(cx, cy, sp[1] * s, { ...common, density: sp[2] });
+    else if (sp[0] === 'box') b = Bodies.rectangle(cx, cy, sp[1] * s, sp[2] * s, { ...common, density: sp[3], chamfer: { radius: 6 * s } });
+    else b = Bodies.polygon(cx, cy, sp[1], sp[2] * s, { ...common, density: sp[3], chamfer: { radius: 4 * s } });
+    const color = COLORS[sp[sp.length - 1]];
+    let r = 0; for (const v of b.vertices) r = Math.max(r, Math.hypot(v.x - b.position.x, v.y - b.position.y));
+    b.plugin = { color, r, kind: sp[0], lastBurst: 0, popAt: 0 };
+    Body.setAngle(b, Math.random() * Math.PI);
+    bodies.push(b);
+  });
+  Composite.add(world, bodies);
+}
+
+function initPhysics() {
+  M = window.Matter;
+  engine = M.Engine.create({ positionIterations: 8, velocityIterations: 6 });
+  engine.gravity.y = 1;
+  world = engine.world;
+  poker = M.Bodies.circle(-500, -500, CONFIG.POKER_RADIUS, { isStatic: true, label: 'poker', collisionFilter: { mask: 0 } });
+  M.Composite.add(world, poker);
+  buildWalls();
+  spawnObjects();
+  M.Events.on(engine, 'collisionStart', onCollisions);
+}
+
+/* ---------------- Particles (impact juice) ---------------- */
+function onCollisions(e) {
+  const now = performance.now();
+  for (const pair of e.pairs) {
+    const a = pair.bodyA, b = pair.bodyB;
+    const c = pair.collision; if (!c) continue;
+    const n = c.normal;
+    const rv = Math.abs((a.velocity.x - b.velocity.x) * n.x + (a.velocity.y - b.velocity.y) * n.y);
+    if (rv < CONFIG.IMPACT_SPEED) continue;
+    const dyn = a.isStatic ? b : a;
+    if (!dyn.plugin || !dyn.plugin.color || now - dyn.plugin.lastBurst < 90) continue;
+    dyn.plugin.lastBurst = now;
+    const sp = (c.supportCount > 0 && c.supports[0]) ? c.supports[0] : dyn.position;
+    burst(sp.x, sp.y, dyn.plugin.color, rv);
+  }
+}
+function burst(x, y, color, speed) {
+  const count = Math.min(14, 5 + Math.floor(speed));
+  for (let i = 0; i < count && particles.length < 320; i++) {
+    const a = Math.random() * Math.PI * 2, v = (0.08 + Math.random() * 0.22) * Math.min(speed, 30) / 10;
+    particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.1, life: 1, decay: 0.0018 + Math.random() * 0.0016, r: 1.5 + Math.random() * 2.5, color });
+  }
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.vy += 0.0009 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= p.decay * dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+/* ---------------- One Euro filter ---------------- */
+class LowPass { constructor() { this.y = null; } f(x, a) { this.y = this.y === null ? x : a * x + (1 - a) * this.y; return this.y; } }
+class OneEuro {
+  constructor() { this.x = new LowPass(); this.dx = new LowPass(); this.t = null; this.prev = null; }
+  alpha(cutoff, dt) { const tau = 1 / (2 * Math.PI * cutoff); return 1 / (1 + tau / dt); }
+  reset() { this.x = new LowPass(); this.dx = new LowPass(); this.t = null; this.prev = null; }
+  filter(v, tMs) {
+    if (!Number.isFinite(v) || !Number.isFinite(tMs)) return this.x.y === null ? 0 : this.x.y;
+    if (this.t === null) { this.t = tMs; this.prev = v; this.x.f(v, 1); this.dx.f(0, 1); return v; }
+    const dt = Math.max(1e-3, (tMs - this.t) / 1000); this.t = tMs;
+    const d = (v - this.prev) / dt; this.prev = v;
+    const ed = this.dx.f(d, this.alpha(CONFIG.EURO_D_CUTOFF, dt));
+    const cutoff = CONFIG.EURO_MIN_CUTOFF + CONFIG.EURO_BETA * Math.abs(ed);
+    return this.x.f(v, this.alpha(cutoff, dt));
+  }
+}
+
+/* ---------------- Hand state (camera) ---------------- */
+const hand = {
+  seen: false, lastSeen: -1e9, misses: 99, pinch: false, point: false, pointVotes: 0, pinchD: NaN,
+  blend: 0, lastT: null, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), handedness: '',
+};
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+// lm: 21 normalized landmarks (x,y in 0..1) or null; vw/vh: video pixel size; t: ms
+function processHand(lm, vw, vh, t) {
+  if (!lm || lm.length < 21) { hand.seen = false; hand.misses++; return; }
+  hand.seen = true; hand.lastSeen = t; hand.misses = 0;
+  const P = (i) => ({ x: (1 - lm[i].x) * vw, y: lm[i].y * vh }); // mirrored, pixel space
+  const wrist = P(0);
+  const size = dist(wrist, P(9)) || 1;
+  const pd = dist(P(4), P(8)) / size;
+  hand.pinchD = pd;
+  if (!hand.pinch && pd < CONFIG.PINCH_ENTER) hand.pinch = true;
+  else if (hand.pinch && pd > CONFIG.PINCH_EXIT) hand.pinch = false;
+
+  const dw = (i) => dist(P(i), wrist);
+  const extended = dw(8) > dw(6) * CONFIG.POINT_EXTEND_RATIO;
+  const curled = (tip, pip) => dw(tip) < dw(pip);
+  const rawPoint = !hand.pinch && extended && curled(12, 10) && curled(16, 14) && curled(20, 18);
+  if (rawPoint !== hand.point) {
+    hand.pointVotes++;
+    if (hand.pointVotes >= CONFIG.POINT_CONFIRM_FRAMES || hand.pinch) { hand.point = rawPoint && !hand.pinch; hand.pointVotes = 0; }
+  } else hand.pointVotes = 0;
+
+  const dtMs = hand.lastT === null ? 16 : Math.max(1, t - hand.lastT); hand.lastT = t;
+  hand.blend = Math.min(1, Math.max(0, hand.blend + (hand.point ? 1 : -1) * dtMs / CONFIG.POINT_BLEND_MS));
+  const mid = { x: (P(4).x + P(8).x) / 2, y: (P(4).y + P(8).y) / 2 }, tip = P(8);
+  const ax = mid.x + (tip.x - mid.x) * hand.blend, ay = mid.y + (tip.y - mid.y) * hand.blend;
+  const m = (1 - CONFIG.MAP_BOX) / 2;
+  const u = Math.min(1.02, Math.max(-0.02, (ax / vw - m) / CONFIG.MAP_BOX));
+  const v = Math.min(1.02, Math.max(-0.02, (ay / vh - m) / CONFIG.MAP_BOX));
+  hand.x = hand.fx.filter(u * W, t);
+  hand.y = hand.fy.filter(v * H, t);
+}
+
+/* ---------------- Pointer state (mouse / touch) ---------------- */
+const ptr = { type: 'mouse', present: false, x: 0, y: 0, pinch: false, point: false, touches: new Map(), lastUp: -1e9 };
+function recomputeTouch() {
+  const pts = [...ptr.touches.values()];
+  if (pts.length === 1) { ptr.x = pts[0].x; ptr.y = pts[0].y; ptr.pinch = true; ptr.point = false; }
+  else if (pts.length >= 2) {
+    ptr.x = (pts[0].x + pts[1].x) / 2; ptr.y = (pts[0].y + pts[1].y) / 2; ptr.pinch = false; ptr.point = true;
+  } else { ptr.pinch = false; ptr.point = false; }
+}
+canvas.addEventListener('pointerdown', (e) => {
+  if (mode !== 'mouse') return;
+  e.preventDefault();
+  ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
+  if (e.pointerType === 'touch') { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); ptr.present = true; recomputeTouch(); return; }
+  ptr.present = true; ptr.x = e.clientX; ptr.y = e.clientY;
+  if (e.button === 2) ptr.point = true; else if (e.button === 0) ptr.pinch = true;
+  canvas.setPointerCapture?.(e.pointerId);
+});
+window.addEventListener('pointermove', (e) => {
+  if (mode !== 'mouse') return;
+  if (e.pointerType === 'touch') { if (ptr.touches.has(e.pointerId)) { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); recomputeTouch(); } return; }
+  ptr.present = true; ptr.x = e.clientX; ptr.y = e.clientY;
+});
+const endPointer = (e) => {
+  if (mode !== 'mouse') return;
+  if (e.pointerType === 'touch') { ptr.touches.delete(e.pointerId); ptr.lastUp = performance.now(); recomputeTouch(); return; }
+  if (e.button === 2) ptr.point = false; else if (e.button === 0) ptr.pinch = false;
+};
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('mouseleave', () => { if (mode === 'mouse' && !ptr.pinch) ptr.present = false; });
+
+/* ---------------- Unified input → grab / throw / poke ---------------- */
+let mode = 'none';              // 'none' | 'camera' | 'mouse'
+let gesture = 'none';           // 'none' | 'open' | 'pinch' | 'point'
+const cursor = { x: 0, y: 0, present: false, history: [] };
+let held = null;                // { body, constraint }
+
+function readInput(now) {
+  if (mode === 'camera') {
+    const present = hand.misses < CONFIG.HAND_LOST_FRAMES && now - hand.lastSeen < CONFIG.HAND_LOST_MAX_MS;
+    return { present, x: hand.x, y: hand.y, pinch: present && hand.pinch, point: present && hand.point };
+  }
+  if (mode === 'mouse') {
+    const present = ptr.type === 'touch' ? (ptr.touches.size > 0 || now - ptr.lastUp < 150) : ptr.present;
+    return { present, x: ptr.x, y: ptr.y, pinch: ptr.pinch, point: ptr.point };
+  }
+  return { present: false, x: 0, y: 0, pinch: false, point: false };
+}
+
+function inputTick(now) {
+  const inp = readInput(now);
+  cursor.present = inp.present;
+  if (inp.present) {
+    cursor.x = inp.x; cursor.y = inp.y;
+    cursor.history.push({ t: now, x: inp.x, y: inp.y });
+    while (cursor.history.length && now - cursor.history[0].t > 300) cursor.history.shift();
+  }
+  const g = !inp.present ? 'none' : inp.pinch ? 'pinch' : inp.point ? 'point' : 'open';
+  if (g !== gesture) {
+    if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
+    if (g === 'pinch') tryGrab(now);
+    if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.lastT = null; } }
+    gesture = g;
+  }
+  if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
+}
+
+function tryGrab(now) {
+  const p = { x: cursor.x, y: cursor.y };
+  let target = M.Query.point(bodies, p)[0] || null;
+  if (!target) {
+    let best = Infinity;
+    for (const b of bodies) {
+      const d = Math.hypot(p.x - b.position.x, p.y - b.position.y) - b.plugin.r;
+      if (d < CONFIG.GRAB_RADIUS && d < best) { best = d; target = b; }
+    }
+  }
+  if (!target) return;
+  const dx = p.x - target.position.x, dy = p.y - target.position.y, len = Math.hypot(dx, dy) || 1;
+  const k = Math.min(len, target.plugin.r * 0.6) / len; // grab point pulled inside the object
+  const constraint = M.Constraint.create({
+    pointA: { ...p }, bodyB: target, pointB: { x: dx * k, y: dy * k },
+    stiffness: CONFIG.SPRING_STIFFNESS, damping: CONFIG.SPRING_DAMPING, length: 0,
+  });
+  M.Composite.add(world, constraint);
+  held = { body: target, constraint };
+  target.plugin.popAt = now;
+}
+
+function releaseThrow(now) {
+  const b = held.body;
+  const win = cursor.history.filter((s) => now - s.t <= CONFIG.THROW_WINDOW_MS);
+  removeConstraint();
+  if (win.length >= 2) {
+    const a = win[0], z = win[win.length - 1], span = z.t - a.t;
+    if (span >= 20) {
+      let vx = (z.x - a.x) / span * (1000 / 60) * CONFIG.THROW_MULTIPLIER;
+      let vy = (z.y - a.y) / span * (1000 / 60) * CONFIG.THROW_MULTIPLIER;
+      const sp = Math.hypot(vx, vy);
+      if (sp > CONFIG.MAX_THROW_SPEED) { vx *= CONFIG.MAX_THROW_SPEED / sp; vy *= CONFIG.MAX_THROW_SPEED / sp; }
+      M.Body.setVelocity(b, { x: vx, y: vy });
+      lastThrow = Math.hypot(vx, vy);
+    }
+  }
+}
+function dropHeld() { removeConstraint(); }
+function removeConstraint() { if (!held) return; M.Composite.remove(world, held.constraint); held = null; }
+let lastThrow = 0;
+
+/* ---------------- Main loop ---------------- */
+const STEP = 1000 / 60;
+let acc = 0, lastFrame = performance.now();
+const pokerPos = { from: { x: -500, y: -500 }, to: { x: -500, y: -500 } };
+let fps = 0, trackFps = 0, trackCount = 0, lastRateAt = performance.now(), frameCount = 0;
+
+function frame(now) {
+  if (!engine) { requestAnimationFrame(frame); return; }
+  const dt = Math.min(100, now - lastFrame); lastFrame = now;
+  trackTick(now);
+  inputTick(now);
+
+  const pokeOn = gesture === 'point';
+  poker.collisionFilter.mask = pokeOn ? 0xFFFFFFFF : 0;
+  pokerPos.from = { ...poker.position };
+  pokerPos.to = pokeOn ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 };
+
+  acc += dt;
+  const steps = Math.min(4, Math.floor(acc / STEP));
+  for (let i = 0; i < steps; i++) {
+    if (pokeOn) {
+      const f = (i + 1) / steps;
+      M.Body.setPosition(poker, { x: pokerPos.from.x + (pokerPos.to.x - pokerPos.from.x) * f, y: pokerPos.from.y + (pokerPos.to.y - pokerPos.from.y) * f }, true);
+    } else if (poker.position.x !== -500) M.Body.setPosition(poker, { x: -500, y: -500 }, false);
+    if (held) M.Body.setAngularVelocity(held.body, held.body.angularVelocity * CONFIG.HELD_SPIN_DAMP);
+    M.Engine.update(engine, STEP);
+  }
+  acc = steps === 4 ? 0 : acc - steps * STEP;
+
+  const wantStatus = mode === 'camera' && !cursor.present && now - cameraStartedAt > 800;
+  if (statusEl.hidden === wantStatus) { statusEl.hidden = !wantStatus; preview.classList.toggle('big', wantStatus); if (wantStatus) hintEl.style.opacity = 0; }
+  updateParticles(dt);
+  render(now);
+  drawPreview();
+
+  frameCount++;
+  if (now - lastRateAt >= 500) {
+    fps = frameCount * 1000 / (now - lastRateAt); trackFps = trackCount * 1000 / (now - lastRateAt);
+    frameCount = 0; trackCount = 0; lastRateAt = now;
+    if (mode === 'camera' && delegateUsed === 'GPU' && !autoSwapped && !swapping && trackFps > 3 && now - Math.max(hand.lastSeen, cameraStartedAt) > CONFIG.AUTO_SWAP_MS) { autoSwapped = true; swapTracker(); }
+    if (!statusEl.hidden) statusLive.textContent = swapping ? 'Switching tracker\u2026'
+      : lastTrackError ? 'Tracker error: ' + lastTrackError
+      : 'Tracker on ' + delegateUsed + ', ' + Math.round(trackFps) + ' scans/s' + (trackFps < 1 ? ' (stalled)' : '');
+    if (!hudEl.hidden) updateHud();
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- Rendering ---------------- */
+function bodyPath(c, b) {
+  if (b.plugin.kind === 'circle') { c.beginPath(); c.arc(b.position.x, b.position.y, b.circleRadius, 0, Math.PI * 2); return; }
+  const v = b.vertices; c.beginPath(); c.moveTo(v[0].x, v[0].y);
+  for (let i = 1; i < v.length; i++) c.lineTo(v[i].x, v[i].y);
+  c.closePath();
+}
+function render(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#141b34'; ctx.fillRect(0, 0, W, H);
+  if (gridPattern) { ctx.fillStyle = gridPattern; ctx.fillRect(0, 0, W, H); }
+
+  for (const b of bodies) {
+    const isHeld = held && held.body === b;
+    ctx.save();
+    if (isHeld) {
+      const t = (now - b.plugin.popAt) / 180;
+      const s = t < 1 ? 1 + 0.14 * Math.sin(Math.PI * t) + 0.04 * t : 1.04;
+      ctx.translate(b.position.x, b.position.y); ctx.scale(s, s); ctx.translate(-b.position.x, -b.position.y);
+      ctx.shadowColor = 'rgba(4,6,18,0.55)'; ctx.shadowBlur = 26; ctx.shadowOffsetY = 18;
+    }
+    bodyPath(ctx, b); ctx.fillStyle = b.plugin.color; ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.stroke();
+    // rotation notch so spin reads clearly
+    const r = b.plugin.r * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(b.position.x + Math.cos(b.angle) * r * 0.35, b.position.y + Math.sin(b.angle) * r * 0.35);
+    ctx.lineTo(b.position.x + Math.cos(b.angle) * r, b.position.y + Math.sin(b.angle) * r);
+    ctx.lineCap = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(20,27,52,0.35)'; ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  if (held) { // spring line
+    const b = held.body, c = held.constraint;
+    const bx = b.position.x + c.pointB.x, by = b.position.y + c.pointB.y;
+    ctx.beginPath(); ctx.moveTo(cursor.x, cursor.y); ctx.lineTo(bx, by);
+    ctx.strokeStyle = 'rgba(241,233,218,0.35)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  drawCursor(now);
+}
+
+let cursorAnim = 0; // 0 = open ring, 1 = pinch dot
+function drawCursor() {
+  if (!cursor.present) return;
+  const x = cursor.x, y = cursor.y;
+  cursorAnim += ((gesture === 'pinch' ? 1 : 0) - cursorAnim) * 0.35;
+  ctx.save();
+  if (gesture === 'point') {
+    ctx.fillStyle = 'rgba(241,233,218,0.14)';
+    ctx.beginPath(); ctx.arc(x, y, CONFIG.POKER_RADIUS + 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f1e9da';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 7, y + 22); ctx.lineTo(x + 1.5, y + 18); ctx.lineTo(x - 4, y + 24); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, CONFIG.POKER_RADIUS, 0, Math.PI * 2); ctx.lineWidth = 2; ctx.strokeStyle = '#f1e9da'; ctx.stroke();
+  } else {
+    const r = 18 - 10 * cursorAnim;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#f1e9da'; ctx.stroke();
+    if (cursorAnim > 0.05) { ctx.globalAlpha = cursorAnim; ctx.fillStyle = held ? '#ffc24b' : '#f1e9da'; ctx.fill(); }
+  }
+  ctx.restore();
+}
+
+const HAND_LINKS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+let lastLandmarks = null;
+function drawPreview() {
+  if (preview.hidden || video.readyState < 2) return;
+  const w = preview.width, h = preview.height;
+  pctx.save(); pctx.translate(w, 0); pctx.scale(-1, 1); pctx.drawImage(video, 0, 0, w, h); pctx.restore();
+  const m = (1 - CONFIG.MAP_BOX) / 2, k = w / 160; // scale strokes with canvas resolution
+  pctx.strokeStyle = 'rgba(255,194,75,0.85)'; pctx.setLineDash([4 * k, 3 * k]); pctx.lineWidth = 1.2 * k;
+  pctx.strokeRect(m * w, m * h, CONFIG.MAP_BOX * w, CONFIG.MAP_BOX * h); pctx.setLineDash([]);
+  if (!lastLandmarks) return;
+  const P = (i) => [(1 - lastLandmarks[i].x) * w, lastLandmarks[i].y * h];
+  pctx.strokeStyle = gesture === 'pinch' ? '#ffc24b' : gesture === 'point' ? '#54c6eb' : '#43d9a3'; pctx.lineWidth = 1.5 * k;
+  pctx.beginPath(); for (const [a, b] of HAND_LINKS) { const pa = P(a), pb = P(b); pctx.moveTo(pa[0], pa[1]); pctx.lineTo(pb[0], pb[1]); } pctx.stroke();
+  pctx.fillStyle = '#f1e9da'; for (let i = 0; i < 21; i++) { const p = P(i); pctx.fillRect(p[0] - 1.5 * k, p[1] - 1.5 * k, 3 * k, 3 * k); }
+}
+
+/* ---------------- HUD ---------------- */
+let delegateUsed = '-';
+function updateHud() {
+  const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
+  hudEl.textContent =
+`FPS            ${fps.toFixed(0)}
+Tracking FPS   ${mode === 'camera' ? trackFps.toFixed(0) : '-'}
+Gesture        ${gesture}${held ? ' (holding)' : ''}
+Pinch dist     ${mode === 'camera' ? pd : '-'}   in<${CONFIG.PINCH_ENTER} out>${CONFIG.PINCH_EXIT}
+Input          ${mode}${mode === 'camera' ? ' / ' + delegateUsed : ''}
+Hand           ${mode === 'camera' ? (hand.seen ? 'tracked ' + hand.handedness : 'not found') : '-'}
+Cursor         ${cursor.present ? Math.round(cursor.x) + ', ' + Math.round(cursor.y) : 'hidden'}
+Last throw     ${lastThrow.toFixed(1)} px/step`;
+}
+function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
+window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
+$('hudBtn').addEventListener('click', toggleHud);
+$('resetBtn').addEventListener('click', () => { if (engine) spawnObjects(); });
+
+/* ---------------- Camera + tracker boot ---------------- */
+let makeLandmarker = null, swapping = false;
+let landmarker = null, stream = null, lastVideoTime = -1, lastDetectAt = -1e9, trackErrors = 0;
+const detCanvas = document.createElement('canvas'), detCtx = detCanvas.getContext('2d', { willReadFrequently: false });
+
+function trackTick(now) {
+  if (mode !== 'camera' || !landmarker || video.readyState < 2 || document.hidden) return;
+  if (video.currentTime === lastVideoTime && now - lastDetectAt < 100) return;
+  lastVideoTime = video.currentTime; lastDetectAt = now;
+  try {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return;
+    if (detCanvas.width !== vw || detCanvas.height !== vh) { detCanvas.width = vw; detCanvas.height = vh; }
+    detCtx.drawImage(video, 0, 0, vw, vh);
+    const res = landmarker.detectForVideo(detCanvas, now);
+    trackCount++; trackErrors = 0; lastTrackError = '';
+    const lm = res.landmarks && res.landmarks[0];
+    lastLandmarks = lm || null;
+    hand.handedness = res.handednesses && res.handednesses[0] && res.handednesses[0][0] ? res.handednesses[0][0].categoryName : '';
+    processHand(lm || null, video.videoWidth, video.videoHeight, now);
+  } catch (err) {
+    console.error('[grasp] detectForVideo failed', err); lastTrackError = String(err && err.message || err).slice(0, 80);
+    if (++trackErrors > 30) fallbackToMouse([{ stage: 'Tracker runtime', why: 'Crashed while tracking: ' + (err.message || err) }]);
+  }
+}
+
+const rows = {};
+document.querySelectorAll('#checks li').forEach((li) => (rows[li.dataset.k] = li));
+function setRow(k, state, detail = '') { rows[k].dataset.s = state; rows[k].querySelector('small').textContent = detail; }
+const STAGE_NAME = { camera: 'Camera', library: 'Hand tracker library', runtime: 'Tracker runtime', model: 'Hand model', sandbox: 'Page sandbox' };
+let sandbox = {};
+
+function withTimeout(p, ms, label) {
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error(label + ' timed out after ' + ms / 1000 + 's'), { name: 'TimeoutError' })), ms))]);
+}
+function cspFor(url) {
+  try { const host = new URL(url).host; return cspViolations.find((v) => v.uri && v.uri.includes(host)); } catch { return null; }
+}
+function explain(stage, err, url) {
+  const name = err && err.name, msg = String((err && err.message) || err);
+  if (stage === 'camera') {
+    if (name === 'PolicyBlocked') return 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.';
+    if (name === 'NotAllowedError' && sandbox.cameraPermission === 'denied') return 'Camera is set to Blocked for this site in your browser. Allow it in site settings, then reload. (' + msg + ')';
+    if (name === 'NoMediaDevices') return 'Camera API is unavailable here (insecure page or sandboxed frame without camera permission).';
+    if (name === 'NotAllowedError' || name === 'SecurityError') return 'Camera permission was denied, either by you or by this page\'s embedding policy. (' + name + ': ' + msg + ')';
+    if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'No usable camera was found. (' + name + ')';
+    if (name === 'NotReadableError') return 'The camera is busy in another app or tab. (' + name + ')';
+    if (name === 'TimeoutError') return msg;
+    return name + ': ' + msg;
+  }
+  const v = url && cspFor(url);
+  if (v) return 'Blocked by this page\'s security policy (' + v.directive + ' refused ' + new URL(url).host + ').';
+  if (/unsafe-eval|wasm-unsafe-eval|Refused to compile/i.test(msg)) return 'WebAssembly is blocked by this page\'s security policy. (' + msg + ')';
+  if (name === 'TypeError' && /fetch|load|import/i.test(msg)) return 'Download was blocked or the network is offline. (' + msg + ')';
+  if (name === 'TimeoutError') return msg;
+  return (name ? name + ': ' : '') + msg;
+}
+
+function cameraPolicy() {
+  const pp = document.permissionsPolicy || document.featurePolicy;
+  try { return pp && pp.allowsFeature ? pp.allowsFeature('camera') : null; } catch { return null; }
+}
+async function probeSandbox() {
+  const out = { cameraPolicy: cameraPolicy() };
+  try { out.cameraPermission = (await navigator.permissions.query({ name: 'camera' })).state; } catch { out.cameraPermission = 'unknown'; }
+  try { new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0])); out.wasm = true; }
+  catch (e) { out.wasm = false; console.error('[grasp] WebAssembly blocked', e); }
+  try { await withTimeout(fetch(location.origin + '/_blob/probe', { method: 'HEAD', cache: 'no-store' }), 5000, 'Same-origin probe'); out.sameOrigin = true; }
+  catch (e) { out.sameOrigin = false; console.error('[grasp] same-origin fetch blocked', e); }
+  return out;
+}
+const yn = (v) => (v === true ? 'yes' : v === false ? 'no' : 'unknown');
+async function startCamera() {
+  if (cameraPolicy() === false) throw Object.assign(new Error('permissions policy disallows camera in this frame'), { name: 'PolicyBlocked' });
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw Object.assign(new Error('navigator.mediaDevices.getUserMedia is missing'), { name: 'NoMediaDevices' });
+  const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } });
+  stream = s; video.srcObject = s;
+  await video.play().catch(() => {});
+  if (video.readyState < 2) await new Promise((res) => video.addEventListener('loadeddata', res, { once: true }));
+  return true;
+}
+
+async function loadTracker() {
+  const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@' + CONFIG.MP_VERSION;
+  let vision;
+  setRow('library', 'pending', 'Loading from cdn.jsdelivr.net');
+  try {
+    vision = await withTimeout(import(base + '/vision_bundle.mjs'), CONFIG.STAGE_TIMEOUT_MS, 'Library download');
+    setRow('library', 'ok', 'MediaPipe Tasks Vision ' + CONFIG.MP_VERSION);
+  } catch (e) {
+    console.error('[grasp] library failed', e);
+    setRow('library', 'fail', explain('library', e, base)); setRow('runtime', 'skip', 'Skipped: needs the library'); setRow('model', 'skip', 'Skipped: needs the library');
+    return false;
+  }
+  // Model and runtime reachability are checked in parallel so both failures are reported.
+  setRow('model', 'pending', 'Downloading from storage.googleapis.com');
+  setRow('runtime', 'pending', 'Checking WebAssembly files');
+  const wasmUrl = base + '/wasm/vision_wasm_internal.wasm';
+  const [modelRes, wasmRes] = await Promise.allSettled([
+    withTimeout(fetch(CONFIG.MODEL_URL).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }), CONFIG.STAGE_TIMEOUT_MS, 'Model download'),
+    withTimeout(fetch(wasmUrl, { method: 'HEAD' }).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return true; }), CONFIG.STAGE_TIMEOUT_MS, 'Runtime check'),
+  ]);
+  let ok = true;
+  if (modelRes.status === 'fulfilled') setRow('model', 'ok', (modelRes.value.byteLength / 1e6).toFixed(1) + ' MB');
+  else { console.error('[grasp] model failed', modelRes.reason); setRow('model', 'fail', explain('model', modelRes.reason, CONFIG.MODEL_URL)); ok = false; }
+  if (wasmRes.status === 'rejected') { console.error('[grasp] wasm check failed', wasmRes.reason); setRow('runtime', 'fail', explain('runtime', wasmRes.reason, wasmUrl)); ok = false; }
+  if (!ok) { if (wasmRes.status === 'fulfilled') setRow('runtime', 'skip', 'Reachable, but not started: the model is missing'); return false; }
+
+  setRow('runtime', 'pending', 'Starting tracker');
+  try {
+    const fileset = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+    makeLandmarker = (delegate) => vision.HandLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetBuffer: new Uint8Array(modelRes.value), delegate },
+      runningMode: 'VIDEO', numHands: 1,
+      minHandDetectionConfidence: CONFIG.DETECT_CONFIDENCE, minHandPresenceConfidence: CONFIG.DETECT_CONFIDENCE, minTrackingConfidence: CONFIG.TRACK_CONFIDENCE,
+    });
+    // Phones: GPU hand tracking runs but can return no hands on some mobile GPUs, so start on CPU there.
+    const order = matchMedia('(pointer: coarse)').matches ? ['CPU', 'GPU'] : ['GPU', 'CPU'];
+    try { landmarker = await withTimeout(makeLandmarker(order[0]), CONFIG.STAGE_TIMEOUT_MS, order[0] + ' start'); delegateUsed = order[0]; }
+    catch (firstErr) {
+      console.warn('[grasp] ' + order[0] + ' delegate failed, trying ' + order[1], firstErr);
+      setRow('runtime', 'pending', order[0] + ' failed, starting on ' + order[1]);
+      landmarker = await withTimeout(makeLandmarker(order[1]), CONFIG.STAGE_TIMEOUT_MS, order[1] + ' start'); delegateUsed = order[1];
+    }
+    setRow('runtime', 'ok', 'Running on ' + delegateUsed);
+    return true;
+  } catch (e) {
+    console.error('[grasp] runtime failed', e);
+    setRow('runtime', 'fail', explain('runtime', e, wasmUrl));
+    return false;
+  }
+}
+
+async function enableCamera() {
+  $('camBtn').disabled = true; $('checks').hidden = false;
+  Object.keys(rows).forEach((k) => setRow(k, 'idle', ''));
+  setRow('camera', 'pending', 'Waiting for permission');
+  // Camera request starts synchronously inside the click so the user gesture counts.
+  const camP = withTimeout(startCamera(), CONFIG.STAGE_TIMEOUT_MS, 'Camera start')
+    .then(() => { setRow('camera', 'ok', video.videoWidth + '×' + video.videoHeight); return true; })
+    .catch((e) => { console.error('[grasp] camera failed', e); setRow('camera', 'fail', explain('camera', e)); return false; });
+  const trackerP = loadTracker().catch((e) => { console.error('[grasp] tracker failed', e); return false; });
+  setRow('sandbox', 'pending', 'Checking what this page is allowed to do');
+  const sandboxP = probeSandbox().then((sb) => {
+    sandbox = sb;
+    const good = sb.cameraPolicy !== false && sb.wasm && sb.sameOrigin;
+    setRow('sandbox', good ? 'ok' : 'fail', 'Camera allowed in frame: ' + yn(sb.cameraPolicy) + '. Browser camera setting: ' + sb.cameraPermission +
+      '. WebAssembly: ' + (sb.wasm ? 'allowed' : 'blocked') + '. Same-origin files: ' + (sb.sameOrigin ? 'reachable' : 'blocked') + '.');
+    console.info('[grasp] sandbox', sb);
+  }).catch((e) => { console.error('[grasp] sandbox probe failed', e); setRow('sandbox', 'fail', String(e.message || e)); });
+  const [camOk, trkOk] = await Promise.all([camP, trackerP, sandboxP]);
+  if (!camOk && rows.camera.dataset.s === 'fail' && sandbox.cameraPermission === 'denied' && sandbox.cameraPolicy !== false)
+    setRow('camera', 'fail', explain('camera', { name: 'NotAllowedError', message: 'Permission denied' }));
+
+  if (camOk && trkOk) {
+    setTimeout(() => startGame('camera'), 350);
+  } else {
+    const failures = Object.keys(rows).filter((k) => rows[k].dataset.s === 'fail')
+      .map((k) => ({ stage: STAGE_NAME[k], why: rows[k].querySelector('small').textContent }));
+    fallbackToMouse(failures);
+  }
+}
+
+function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; }
+
+function fallbackToMouse(failures) {
+  stopCamera(); landmarker = null; lastLandmarks = null;
+  const list = $('bannerList'); list.innerHTML = '';
+  for (const f of failures) { const li = document.createElement('li'); li.textContent = f.stage + ': ' + f.why; list.appendChild(li); }
+  $('banner').hidden = failures.length === 0;
+  startGame('mouse');
+}
+$('bannerClose').addEventListener('click', () => ($('banner').hidden = true));
+let autoSwapped = false;
+$('swapBtn').addEventListener('click', () => swapTracker());
+async function swapTracker() {
+  if (!makeLandmarker || swapping) return;
+  swapping = true; statusLive.textContent = 'Switching tracker\u2026';
+  const next = delegateUsed === 'GPU' ? 'CPU' : 'GPU';
+  try {
+    const fresh = await withTimeout(makeLandmarker(next), CONFIG.STAGE_TIMEOUT_MS, next + ' start');
+    const old = landmarker; landmarker = fresh; delegateUsed = next; lastVideoTime = -1;
+    try { old && old.close(); } catch {}
+  } catch (e) { console.error('[grasp] tracker swap failed', e); lastTrackError = next + ' failed: ' + String(e.message || e).slice(0, 60); }
+  swapping = false;
+}
+
+let running = false;
+function startGame(m) {
+  mode = m;
+  $('start').hidden = true;
+  preview.hidden = m !== 'camera';
+  if (m === 'camera') {
+    const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
+    const cssW = vh > vw ? 96 : 128, cssH = Math.round(cssW * vh / vw);
+    preview.style.width = cssW + 'px';
+    preview.width = 560; preview.height = Math.round(560 * vh / vw); // sharp at both small and enlarged sizes
+    document.documentElement.style.setProperty('--hud-offset', (cssH + 8) + 'px');
+    cameraStartedAt = performance.now();
+  } else {
+    document.documentElement.style.setProperty('--hud-offset', '0px');
+    statusEl.hidden = true; preview.classList.remove('big');
+  }
+  const touch = matchMedia('(pointer: coarse)').matches;
+  hintEl.textContent = m === 'camera'
+    ? 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.'
+    : touch ? 'Drag to grab and flick to throw. Two fingers to poke.' : 'Drag to grab, release to throw. Hold right button to poke. D for HUD.';
+  hintEl.style.opacity = 1; setTimeout(() => (hintEl.style.opacity = 0), 6000);
+  if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
+}
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastFrame = performance.now(); acc = 0; } });
+
+/* ---------------- Boot ---------------- */
+$('camBtn').addEventListener('click', enableCamera);
+$('mouseBtn').addEventListener('click', () => fallbackToMouse([]));
+window.addEventListener('resize', resize);
+resize();
+ensureMatter().then(initPhysics).catch((e) => {
+  console.error(e);
+  document.querySelector('.panel p').textContent = 'The physics engine could not load (' + e.message + '). Reload to try again.';
+  $('camBtn').disabled = $('mouseBtn').disabled = true;
+});
+
+// Test hook: lets automated tests drive the same input pipeline without a camera.
+window.__grasp = {
+  processHand, CONFIG,
+  simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
+  get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
+  get bodies() { return bodies; },
+};
+</script>
+</body>
+</html>
