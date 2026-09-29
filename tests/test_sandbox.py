@@ -121,6 +121,19 @@ async def main():
         check('can start again after home', await page.evaluate("mode === 'mouse' && $('start').hidden"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
 
+        # ---- Perf: 10 objects bouncing in the phone viewport must keep a playable frame rate (headless is slower than a phone) ----
+        ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
+        page.on('pageerror', lambda e: errs.append(str(e)))
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.tap('#mouseBtn'); await page.wait_for_timeout(300)
+        KICK = "engine.gravity.y = 0; for (const b of bodies) { M.Body.setVelocity(b, {x: (Math.random()-0.5)*16, y: (Math.random()-0.5)*16}); M.Body.setAngularVelocity(b, 0.1); }"
+        fpss = []
+        for _ in range(4):  # re-kick every half second so all 10 keep flying (walls soak up speed)
+            await page.evaluate(KICK); await page.wait_for_timeout(550); fpss.append(await page.evaluate("__grasp.state.fps"))
+        moving = await page.evaluate("bodies.filter(b => b.speed > 1).length")
+        check('phone perf: 10 moving objects >= 30 fps over 2 s', min(fpss[1:]) >= 30 and moving >= 8, {'fps': [round(f) for f in fpss], 'moving': moving})
+        check('sprites cached, not rebuilt per frame', await page.evaluate("SPRITES.size") <= 16, await page.evaluate("[...SPRITES.keys()]"))
+        check('perf: no page errors', not errs, errs); await ctx.close()
+
         # ---- Hebrew: language button, RTL, persistence, phone layout ----
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
