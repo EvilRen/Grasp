@@ -83,7 +83,7 @@ async def main():
         await page.mouse.move(300, 300); await page.mouse.down(); await page.mouse.up(); await page.wait_for_timeout(200)
         check('taps in the first second are ignored', await page.evaluate("__grasp.smash.over"))
         await page.wait_for_timeout(900)
-        await page.mouse.down(); await page.mouse.up(); await page.wait_for_timeout(200)
+        await page.mouse.down(); await page.wait_for_timeout(80); await page.mouse.up(); await page.wait_for_timeout(200)
         check('tap restarts a fresh round', await page.evaluate("!__grasp.smash.over && __grasp.smash.score === 0 && __grasp.smash.best === " + str(s_over)))
         await punch(page, tgt['x'] - 260, tgt['x'] + 260, tgt['y'])
         check('reset button restarts', await page.evaluate("__grasp.smash.score") > 0 and (await page.click('#resetBtn') or True) and await page.evaluate("__grasp.smash.score === 0 && __grasp.smash.pieces.length === 0"))
