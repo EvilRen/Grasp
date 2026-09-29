@@ -3,142 +3,250 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tremor meter</title>
+<title>Tremorti</title>
+<meta name="description" content="Tremor meter: measures how fast a hand or leg shakes with the phone's motion sensor or camera.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#e9efed; --field:#f6f9f8; --grid:#cfdbd7; --grid-strong:#a9bbb6;
-  --ink:#1d2742; --muted:#55656e; --pen:#c3352b; --warn-bg:#fbe7d8; --warn:#7f3410;
+  --ink:#141b34; --ink-2:#1d2547; --field:#0f1529; --line:rgba(241,233,218,.14);
+  --bone:#f1e9da; --muted:rgba(241,233,218,.62);
+  --coral:#ff6f59; --saffron:#ffc24b; --mint:#43d9a3; --sky:#54c6eb; --lilac:#a98bff;
+  --grid:rgba(241,233,218,.09); --grid-strong:rgba(241,233,218,.3); --pen:var(--coral);
+  --warn-bg:rgba(255,194,75,.12); --warn:#ffd98a; --err-bg:rgba(255,111,89,.14); --err:#ffb3a7;
+  --shadow:0 12px 32px rgba(0,0,0,.35), 0 1px 0 rgba(241,233,218,.05) inset;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --paper:#101a1c; --field:#172427; --grid:#213236; --grid-strong:#35494d;
-  --ink:#e3ecea; --muted:#94a7ac; --pen:#ff6f62; --warn-bg:#3b2519; --warn:#ffcaa9; } }
-:root[data-theme="dark"]{
-  --paper:#101a1c; --field:#172427; --grid:#213236; --grid-strong:#35494d;
-  --ink:#e3ecea; --muted:#94a7ac; --pen:#ff6f62; --warn-bg:#3b2519; --warn:#ffcaa9; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#141b34; } }
+:root[data-theme="dark"]{ --ink:#141b34; }
 *,*::before,*::after{ box-sizing:inherit; }
 [hidden]{ display:none !important; }
 html{ scroll-padding-top:env(safe-area-inset-top,0px); }
-body{ margin:0; background:var(--paper); color:var(--ink);
-  font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size:18px; line-height:1.5; -webkit-font-smoothing:antialiased; }
-main{ max-width:560px; margin:0 auto; padding:12px 20px 56px; }
-.topbar{ display:flex; justify-content:flex-end; margin:0 0 8px; }
-.lang{ display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:6px 14px; font:inherit; font-size:15px; font-weight:700;
-  border-radius:999px; border:2px solid var(--grid-strong); background:var(--field); color:var(--ink); cursor:pointer; }
+body{ margin:0; background:var(--ink); color:var(--bone); font-family:Rubik,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+main{ max-width:520px; margin:0 auto; padding:8px 16px 48px; }
+button{ -webkit-tap-highlight-color:transparent; font:inherit; }
+button:focus-visible,a:focus-visible,input:focus-visible{ outline:3px solid var(--sky); outline-offset:3px; }
+
+/* top bar */
+.topbar{ display:flex; align-items:center; gap:8px; margin:0 0 14px; min-height:48px; }
+.back{ display:inline-flex; align-items:center; gap:4px; min-height:44px; padding:0 10px; color:var(--muted); text-decoration:none; font-size:14px; font-weight:500; border-radius:12px; }
+.back svg{ width:18px; height:18px; } [dir=rtl] .back svg{ transform:scaleX(-1); }
+.brand{ flex:1; text-align:center; font-weight:700; font-size:21px; letter-spacing:-.01em; }
+.brand span{ display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--saffron); margin-inline-end:8px; vertical-align:2px; }
+.lang{ display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:6px 12px; font-size:14px; font-weight:700; border-radius:999px;
+  border:0; box-shadow:inset 0 0 0 1.5px var(--line); background:var(--ink-2); color:var(--bone); cursor:pointer; }
 .lang svg{ width:18px; height:18px; flex:none; }
-h1{ font-size:36px; line-height:1.05; margin:0 0 6px; font-weight:700; letter-spacing:-.015em; }
-h2{ font-size:22px; margin:40px 0 12px; }
-.lede{ color:var(--muted); margin:0 0 28px; max-width:34em; }
-fieldset{ border:0; padding:0; margin:0 0 22px; min-width:0; }
-legend{ font-weight:700; font-size:17px; margin-bottom:8px; padding:0; }
+
+/* cards */
+.card{ background:var(--ink-2); border-radius:20px; padding:18px 16px; box-shadow:var(--shadow); margin:0 0 14px; }
+h1{ font-size:26px; line-height:1.15; margin:0 0 4px; font-weight:700; letter-spacing:-.015em; }
+h2{ font-size:18px; margin:0 0 12px; font-weight:700; }
+.lede{ color:var(--muted); margin:0; font-size:15px; }
+fieldset{ border:0; padding:0; margin:0 0 16px; min-width:0; }
+fieldset:last-child{ margin-bottom:0; }
+legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; padding:0; letter-spacing:.04em; text-transform:uppercase; }
+[dir=rtl] legend{ text-transform:none; letter-spacing:0; font-size:14px; }
 .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:8px; }
-.seg button{ min-height:58px; font:inherit; font-size:17px; border-radius:14px; border:2px solid var(--grid-strong);
-  background:var(--field); color:var(--ink); cursor:pointer; padding:8px 6px; }
-.seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); font-weight:700; }
-.seg button:disabled{ opacity:.38; cursor:not-allowed; }
-.note{ font-size:15px; color:var(--muted); margin:8px 0 0; }
-.howto{ background:var(--field); border-inline-start:5px solid var(--ink); padding:14px 16px; border-radius:12px; border-start-start-radius:0; border-end-start-radius:0; margin:6px 0 24px; }
-.howto strong{ display:block; margin-bottom:4px; }
-button{ -webkit-tap-highlight-color:transparent; }
-.primary{ width:100%; min-height:66px; font:inherit; font-size:21px; font-weight:700; border:0; border-radius:16px;
-  background:var(--pen); color:#fff; cursor:pointer; }
-.secondary{ width:100%; min-height:58px; font:inherit; font-size:18px; border-radius:16px; border:2px solid var(--grid-strong);
-  background:transparent; color:var(--ink); cursor:pointer; }
-button:focus-visible{ outline:3px solid var(--pen); outline-offset:3px; }
-.stack{ display:grid; gap:10px; margin-top:24px; }
-.error{ background:var(--warn-bg); color:var(--warn); border-radius:12px; padding:14px 16px; margin:0 0 20px; }
-.warn{ background:var(--warn-bg); color:var(--warn); border-radius:12px; padding:12px 16px; margin:16px 0 0; font-size:16px; }
+.seg button{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-height:66px; padding:8px 4px; font-size:14px; font-weight:500;
+  border-radius:16px; border:0; background:var(--ink); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; line-height:1.2; text-align:center;
+  transition:transform .15s, box-shadow .15s, color .15s; }
+.seg button svg{ width:24px; height:24px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; opacity:.8; }
+.seg button[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--saffron); transform:translateY(-2px); }
+.seg button[aria-pressed="true"] svg{ color:var(--saffron); opacity:1; }
+.seg button:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+.seg.row button{ flex-direction:row; min-height:48px; gap:8px; }
+.seg.row button svg{ width:20px; height:20px; }
+.note{ font-size:14px; color:var(--muted); margin:8px 0 0; }
+.input{ width:100%; min-height:48px; margin-top:8px; padding:10px 14px; font:inherit; font-size:16px; border-radius:14px; border:0; box-shadow:inset 0 0 0 1.5px var(--line);
+  background:var(--ink); color:var(--bone); }
+.input::placeholder{ color:var(--muted); }
+.howto{ background:var(--ink); border-inline-start:4px solid var(--sky); padding:12px 14px; border-radius:14px; margin:0 0 16px; font-size:15px; }
+.howto strong{ display:block; margin-bottom:2px; }
+.primary{ width:100%; min-height:58px; font-size:18px; font-weight:700; border:0; border-radius:16px; background:var(--saffron); color:#241a00; cursor:pointer; }
+.secondary{ width:100%; min-height:52px; font-size:16px; font-weight:500; border:0; border-radius:16px; box-shadow:inset 0 0 0 1.5px var(--line); background:transparent; color:var(--bone); cursor:pointer; }
+.chipbtn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:500; border:0;
+  background:var(--ink); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; }
+.chipbtn svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:14px 0 0; }
+.stack{ display:grid; gap:10px; margin-top:16px; }
+.error{ display:grid; grid-template-columns:22px 1fr; gap:6px 10px; align-items:start; background:var(--err-bg); color:var(--err); border:1.5px solid var(--coral); border-inline-start-width:5px;
+  border-radius:14px; padding:12px 14px; margin:0 0 14px; font-size:15px; box-shadow:var(--shadow); }
+.error svg{ width:22px; height:22px; fill:none; stroke:var(--coral); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; margin-top:1px; }
+.error p{ margin:0; }
+.error .chipbtn{ grid-column:2; justify-self:start; background:var(--coral); color:#2a0d08; box-shadow:none; font-weight:700; margin-top:2px; }
+.warn{ background:var(--warn-bg); color:var(--warn); border-inline-start:4px solid var(--saffron); border-radius:14px; padding:12px 14px; margin:14px 0 0; font-size:15px; }
 .warn p{ margin:0; } .warn p + p{ margin-top:8px; }
 
 /* recording */
-.rec-status{ font-size:20px; font-weight:700; margin:8px 0 4px; min-height:1.5em; }
-.count{ font-size:112px; font-weight:700; line-height:1; margin:8px 0 16px; font-variant-numeric:tabular-nums; }
-.chart{ width:100%; display:block; border-radius:12px; background:var(--field); }
-.strip{ height:200px; }
-.camview{ width:100%; max-height:46vh; object-fit:contain; border-radius:12px; background:#000; display:block; margin:0 0 12px; }
+#record{ text-align:center; }
+.rec-status{ font-size:19px; font-weight:700; margin:4px 0 0; min-height:1.5em; }
+.rec-side{ color:var(--saffron); font-weight:500; margin:2px 0 0; min-height:1.5em; }
+.count{ font-size:104px; font-weight:700; line-height:1; margin:6px 0 14px; color:var(--saffron); font-variant-numeric:tabular-nums; direction:ltr; }
+.chart{ width:100%; display:block; border-radius:14px; background:var(--field); }
+.strip{ height:180px; }
+.camview{ width:100%; max-height:44vh; object-fit:contain; border-radius:14px; background:#000; display:block; margin:0 0 12px; }
 
 /* result */
-.res-head{ font-size:20px; font-weight:700; margin:0; }
-.res-freq{ font-size:88px; line-height:1; font-weight:700; margin:6px 0 4px; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
-.res-freq small{ font-size:32px; font-weight:400; letter-spacing:0; margin-inline-start:6px; }
-[dir=rtl] .res-freq{ direction:ltr; text-align:right; }
-.res-freq.faint{ color:var(--muted); }
-.res-sub{ color:var(--muted); margin:0 0 18px; }
-.spectrum{ height:210px; }
-.details{ margin:18px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 16px; font-size:16px; }
+#result{ text-align:center; }
+.res-head{ display:inline-block; margin:0; padding:5px 14px; border-radius:999px; font-size:14px; font-weight:700; background:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line); }
+.res-head.clear{ color:var(--coral); } .res-head.weak{ color:var(--saffron); } .res-head.none{ color:var(--mint); }
+.res-freq{ font-size:84px; line-height:1; font-weight:700; margin:10px 0 2px; font-variant-numeric:tabular-nums; letter-spacing:-.03em; direction:ltr; }
+.res-freq small{ font-size:28px; font-weight:400; letter-spacing:0; margin-inline-start:6px; color:var(--muted); }
+.res-freq.clear{ color:var(--coral); } .res-freq.weak{ color:var(--saffron); } .res-freq.none{ color:var(--mint); } .res-freq.faint{ color:var(--muted); }
+.res-sub{ color:var(--muted); margin:0 0 6px; font-size:15px; }
+.res-notes{ color:var(--muted); margin:0 0 14px; font-size:14px; }
+.spectrum{ height:200px; }
+.details{ margin:16px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 14px; font-size:15px; text-align:start; }
 .details dt{ color:var(--muted); }
 .details dd{ margin:0; }
+.cmp{ display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px 10px; font-size:15px; text-align:center; align-items:center; }
+.cmp .k{ color:var(--muted); text-align:start; }
+.cmp .h{ font-weight:700; color:var(--sky); }
+.cmp .num{ font-weight:700; font-size:22px; font-variant-numeric:tabular-nums; direction:ltr; }
+.cmp .num small{ font-size:13px; font-weight:400; color:var(--muted); margin-inline-start:3px; }
+.cmp .s.clear{ color:var(--coral); } .cmp .s.weak{ color:var(--saffron); } .cmp .s.none{ color:var(--mint); }
+.cmp-diff{ margin:14px 0 0; padding:10px 14px; background:var(--ink); border-radius:14px; font-size:15px; }
+.cmp-diff strong{ display:block; }
 
 /* history */
-.hist{ list-style:none; margin:0; padding:0; }
-.hist li{ padding:12px 0; border-top:1px solid var(--grid); }
-.hist .when{ font-size:14px; color:var(--muted); }
+.hist{ list-style:none; margin:0; padding:0; text-align:start; }
+.hist li{ padding:12px 0; border-top:1px solid var(--line); }
+.hist .when{ font-size:13px; color:var(--muted); }
 .hist .what{ font-weight:700; }
-.hist .how{ font-size:15px; color:var(--muted); }
-.link{ font:inherit; font-size:15px; background:none; border:0; color:var(--muted); text-decoration:underline; padding:10px 0; cursor:pointer; }
-.disclaimer{ font-size:14px; color:var(--muted); margin-top:40px; }
+.hist .what.clear{ color:var(--coral); } .hist .what.weak{ color:var(--saffron); } .hist .what.none{ color:var(--mint); }
+.hist .how,.hist .memo{ font-size:14px; color:var(--muted); }
+.hist .memo{ font-style:italic; }
+.chip{ display:inline-block; padding:1px 8px; border-radius:999px; background:var(--ink); box-shadow:inset 0 0 0 1px var(--line); font-size:12px; color:var(--bone); margin-inline-start:6px; vertical-align:1px; }
+.trend{ height:230px; touch-action:manipulation; }
+.trend-info{ font-size:14px; margin:8px 0 0; min-height:1.5em; color:var(--bone); }
+.trend-hint,.trend-empty{ font-size:14px; color:var(--muted); margin:8px 0 0; }
+.trend-empty{ padding:24px 12px; text-align:center; background:var(--field); border-radius:14px; margin:0; }
+.legend{ display:flex; gap:14px; justify-content:center; font-size:13px; color:var(--muted); margin:0 0 8px; }
+.legend i{ display:inline-block; width:14px; height:3px; border-radius:2px; vertical-align:middle; margin-inline-end:5px; }
+.link{ font-size:15px; background:none; border:0; color:var(--muted); text-decoration:underline; padding:10px 0; cursor:pointer; min-height:44px; }
+.disclaimer{ font-size:13px; color:var(--muted); margin-top:28px; text-align:center; }
+.toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,10px); background:var(--bone); color:var(--ink); padding:10px 18px; border-radius:999px; font-weight:500; font-size:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:9; white-space:nowrap; }
+.toast.on{ opacity:1; transform:translate(-50%,0); }
 @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-motion" viewBox="0 0 24 24"><rect x="7.5" y="2.5" width="9" height="19" rx="2"/><path d="M11 18.5h2M4 9c-1.3 2-1.3 4 0 6M20 9c1.3 2 1.3 4 0 6"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3.5l1.5-2.5h6L16.5 8H20v10H4z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4a1.5 1.5 0 0 1 3 0v7M14 11V5.5a1.5 1.5 0 0 1 3 0V13M17 12.5a1.5 1.5 0 0 1 3 .5v3a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 14a1.5 1.5 0 0 1 2.4-1.8L8 14"/></symbol>
+  <symbol id="i-leg" viewBox="0 0 24 24"><path d="M9.5 3h5v7l3 4v7h-3v-5.5l-3-3-1.5 8.5H7l2.5-9z"/></symbol>
+  <symbol id="i-rest" viewBox="0 0 24 24"><path d="M3 19h18M6 16V9a1.8 1.8 0 0 1 3.6 0v3.5l5.2-1.2a2 2 0 0 1 1.2 3.8L12 17"/></symbol>
+  <symbol id="i-hold" viewBox="0 0 24 24"><circle cx="7" cy="5" r="2.5"/><path d="M7 8.5V21M7 11.5h10.5l3-2.5"/></symbol>
+  <symbol id="i-stand" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.5"/><path d="M12 7.5V15M8 10.5h8M12 15l-3 6.5M12 15l3 6.5"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M20 12H4M10 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></symbol>
+  <symbol id="i-yes" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-no" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-both" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+</svg>
 <main>
   <div class="topbar">
+    <a class="back" href="../" id="backLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="back">Grasp</span></a>
+    <div class="brand"><span></span><b data-i18n="title">Tremorti</b></div>
     <button class="lang" id="langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.9 6 3.9 9.5s-1.3 6.7-3.9 9.5c-2.6-2.8-3.9-6-3.9-9.5s1.3-6.7 3.9-9.5z"/></svg><span id="langLabel">עב</span></button>
   </div>
+
   <section id="setup">
-    <h1 data-i18n="title">Tremor meter</h1>
-    <p class="lede" data-i18n="lede">Measures how fast a hand or leg shakes, from your phone's motion sensor or its camera.</p>
+    <div class="card">
+      <h1 data-i18n="heading">Measure a tremor</h1>
+      <p class="lede" data-i18n="lede">Measures how fast a hand or leg shakes, from your phone's motion sensor or its camera.</p>
+    </div>
     <div id="setupError" class="error" role="alert" hidden></div>
-
-    <fieldset>
-      <legend data-i18n="measureWith">Measure with</legend>
-      <div class="seg" data-key="sensor">
-        <button type="button" data-v="motion" data-i18n="segMotion">Motion sensor</button>
-        <button type="button" data-v="camera" data-i18n="segCamera">Camera</button>
-      </div>
-      <p class="note" id="sensorNote"></p>
-    </fieldset>
-    <fieldset>
-      <legend data-i18n="bodyPart">Body part</legend>
-      <div class="seg" data-key="limb">
-        <button type="button" data-v="hand" data-i18n="segHand">Hand</button>
-        <button type="button" data-v="leg" data-i18n="segLeg">Leg</button>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend data-i18n="position">Position</legend>
-      <div class="seg" data-key="posture">
-        <button type="button" data-v="rest" data-i18n="segRest">At rest</button>
-        <button type="button" data-v="hold" data-i18n="segHold">Held out</button>
-        <button type="button" data-v="stand" data-i18n="segStand">Standing</button>
-      </div>
-    </fieldset>
-
-    <div class="howto" id="howto"></div>
-    <button class="primary" id="startBtn" type="button" data-i18n="start">Start measuring</button>
+    <div class="card">
+      <fieldset>
+        <legend data-i18n="measureWith">Measure with</legend>
+        <div class="seg" data-key="sensor">
+          <button type="button" data-v="motion"><svg><use href="#i-motion"/></svg><span data-i18n="segMotion">Motion sensor</span></button>
+          <button type="button" data-v="camera"><svg><use href="#i-camera"/></svg><span data-i18n="segCamera">Camera</span></button>
+        </div>
+        <p class="note" id="sensorNote"></p>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="bodyPart">Body part</legend>
+        <div class="seg" data-key="limb">
+          <button type="button" data-v="hand"><svg><use href="#i-hand"/></svg><span data-i18n="segHand">Hand</span></button>
+          <button type="button" data-v="leg"><svg><use href="#i-leg"/></svg><span data-i18n="segLeg">Leg</span></button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="position">Position</legend>
+        <div class="seg" data-key="posture">
+          <button type="button" data-v="rest"><svg><use href="#i-rest"/></svg><span data-i18n="segRest">At rest</span></button>
+          <button type="button" data-v="hold"><svg><use href="#i-hold"/></svg><span data-i18n="segHold">Held out</span></button>
+          <button type="button" data-v="stand"><svg><use href="#i-stand"/></svg><span data-i18n="segStand">Standing</span></button>
+        </div>
+      </fieldset>
+    </div>
+    <div class="card">
+      <h2 data-i18n="notesTitle">Notes for this measurement</h2>
+      <fieldset>
+        <legend data-i18n="side">Side</legend>
+        <div class="seg row" data-key="side">
+          <button type="button" data-v="left"><svg><use href="#i-left"/></svg><span data-i18n="segLeft">Left</span></button>
+          <button type="button" data-v="right"><svg><use href="#i-right"/></svg><span data-i18n="segRight">Right</span></button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="med">Medication taken</legend>
+        <div class="seg row" data-key="med">
+          <button type="button" data-v="yes"><svg><use href="#i-yes"/></svg><span data-i18n="segYes">Yes</span></button>
+          <button type="button" data-v="no"><svg><use href="#i-no"/></svg><span data-i18n="segNo">No</span></button>
+        </div>
+        <input class="input" id="medText" type="text" maxlength="60" autocomplete="off" data-i18n-ph="medPh" placeholder="Which? (optional)" hidden>
+      </fieldset>
+      <fieldset>
+        <legend data-i18n="noteLbl">Note</legend>
+        <input class="input" id="noteText" type="text" maxlength="80" autocomplete="off" data-i18n-ph="notePh" placeholder="Short note (optional)" style="margin-top:0">
+      </fieldset>
+    </div>
+    <div class="card">
+      <div class="howto" id="howto"></div>
+      <button class="primary" id="startBtn" type="button" data-i18n="start">Start measuring</button>
+      <div class="stack" style="margin-top:10px"><button class="secondary" id="compareBtn" type="button" data-i18n="compare">Compare left and right</button></div>
+      <p class="note" data-i18n="compareNote">Compare runs two measurements back to back: left side first, then right.</p>
+    </div>
   </section>
 
   <section id="record" hidden aria-live="polite">
-    <p class="rec-status" id="recStatus">Get ready</p>
-    <div class="count" id="count"></div>
-    <canvas class="camview" id="camView" hidden aria-label="Camera view with hand points" data-i18n-aria="ariaCam"></canvas>
-    <canvas class="chart strip" id="strip" aria-label="Live movement trace" data-i18n-aria="ariaStrip"></canvas>
-    <p class="note" id="recNote"></p>
-    <div class="stack"><button class="secondary" id="cancelBtn" type="button" data-i18n="cancel">Cancel</button></div>
+    <div class="card">
+      <p class="rec-status" id="recStatus">Get ready</p>
+      <p class="rec-side" id="recSide"></p>
+      <div class="count" id="count"></div>
+      <canvas class="camview" id="camView" hidden aria-label="Camera view with hand points" data-i18n-aria="ariaCam"></canvas>
+      <canvas class="chart strip" id="strip" aria-label="Live movement trace" data-i18n-aria="ariaStrip"></canvas>
+      <p class="note" id="recNote"></p>
+      <div class="stack"><button class="secondary" id="cancelBtn" type="button" data-i18n="cancel">Cancel</button></div>
+    </div>
   </section>
 
   <section id="result" hidden>
-    <p class="res-head" id="resHead"></p>
-    <p class="res-freq" id="resFreq"></p>
-    <p class="res-sub" id="resSub"></p>
-    <canvas class="chart spectrum" id="spectrum" aria-label="Frequency spectrum of the movement" data-i18n-aria="ariaSpectrum"></canvas>
-    <dl class="details" id="resDetails"></dl>
-    <div class="warn" id="resWarn" hidden></div>
+    <div class="card">
+      <p class="res-head" id="resHead"></p>
+      <p class="res-freq" id="resFreq"></p>
+      <p class="res-sub" id="resSub"></p>
+      <p class="res-notes" id="resNotes"></p>
+      <canvas class="chart spectrum" id="spectrum" aria-label="Frequency spectrum of the movement" data-i18n-aria="ariaSpectrum"></canvas>
+      <dl class="details" id="resDetails"></dl>
+      <div class="warn" id="resWarn" hidden></div>
+    </div>
+    <div class="card" id="compareCard" hidden>
+      <h2 data-i18n="cmpTitle">Left vs right</h2>
+      <div class="cmp" id="cmpGrid"></div>
+      <div class="cmp-diff" id="cmpDiff"></div>
+    </div>
+    <div class="actions">
+      <button class="chipbtn" id="shareBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 13v7h14v-7"/></svg><span data-i18n="share">Share</span></button>
+    </div>
     <div class="stack">
       <button class="primary" id="againBtn" type="button" data-i18n="again">Measure again</button>
       <button class="secondary" id="setupBtn" type="button" data-i18n="changeSetup">Change setup</button>
@@ -146,13 +254,32 @@ button:focus-visible{ outline:3px solid var(--pen); outline-offset:3px; }
   </section>
 
   <section id="historyWrap" hidden>
-    <h2 data-i18n="pastTitle">Past measurements</h2>
-    <ol class="hist" id="histList"></ol>
-    <button class="link" id="clearHist" type="button" data-i18n="clearHist">Clear history</button>
+    <div class="card">
+      <h2 data-i18n="trendTitle">Trend over time</h2>
+      <div class="seg row" data-key="trendSide" style="margin-bottom:12px">
+        <button type="button" data-v="both"><svg><use href="#i-both"/></svg><span data-i18n="trendBoth">Both</span></button>
+        <button type="button" data-v="left"><svg><use href="#i-left"/></svg><span data-i18n="segLeft">Left</span></button>
+        <button type="button" data-v="right"><svg><use href="#i-right"/></svg><span data-i18n="segRight">Right</span></button>
+      </div>
+      <div class="legend" id="trendLegend"><span><i style="background:var(--sky)"></i><span data-i18n="legFreq">Shakes per second (Hz)</span></span><span><i style="background:var(--lilac);height:2px"></i><span data-i18n="legAmp">Size (mm)</span></span></div>
+      <canvas class="chart trend" id="trend" aria-label="Trend of shaking frequency over time" data-i18n-aria="ariaTrend"></canvas>
+      <p class="trend-empty" id="trendEmpty" hidden data-i18n="trendEmpty">At least two measurements with this setup are needed to draw a trend.</p>
+      <p class="trend-info" id="trendInfo"></p>
+      <p class="trend-hint" id="trendHint"></p>
+    </div>
+    <div class="card">
+      <h2 data-i18n="pastTitle">Past measurements</h2>
+      <ol class="hist" id="histList"></ol>
+      <div class="actions">
+        <button class="chipbtn" id="exportBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M5 17v3h14v-3"/></svg><span data-i18n="export">Export CSV</span></button>
+        <button class="link" id="clearHist" type="button" data-i18n="clearHist">Clear history</button>
+      </div>
+    </div>
   </section>
 
   <p class="disclaimer" data-i18n="disclaimer">Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.</p>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ============================================================
@@ -161,53 +288,75 @@ button:focus-visible{ outline:3px solid var(--pen); outline-offset:3px; }
 const CONFIG = {
   COUNTDOWN_S: { motion: 5, camera: 3 }, // time to strap the phone on / get the hand in frame
   RECORD_S: 20,
+  COMPARE_GAP_S: 6,      // pause between the left and the right measurement (switch hands)
   START_DELAY_MS: 350,   // skip the moment of the start beep
   BAND_LO: 3,            // Hz: slower movement than this is posture drift, not tremor
   BAND_HI: 20,           // Hz: upper end of the search (capped by what the sample rate can see)
   SEG_S: 4,              // Welch segment length in seconds (sets frequency resolution)
   STRONG_RATIO: 8,       // peak power / median power in the band for "clear rhythm"
   WEAK_RATIO: 3,         // ...for "weak rhythm"
+  STILL_ACCEL: 0.015,    // m/s² RMS below this = the phone barely moved
+  STILL_MM: 0.15,        // mm RMS below this = the hand barely moved (camera)
   PALM_MM: 85,           // assumed wrist-to-knuckle length, converts camera pixels to mm
   MP_VERSION: '0.10.35',
   MODEL_URL: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { sensor: 'motion', limb: 'hand', posture: 'rest' };
+const state = { sensor: 'motion', limb: 'hand', posture: 'rest', trendSide: 'both' };
+const NKEY = 'tremor.notes.v1';
+const notes = Object.assign({ side: '', med: '', medText: '', note: '' }, (() => { try { return JSON.parse(localStorage.getItem(NKEY) || '{}'); } catch { return {}; } })());
+function saveNotes() { try { localStorage.setItem(NKEY, JSON.stringify(notes)); } catch {} }
 /* ---------------- language ---------------- */
 // [ ] in a string marks a left-to-right island (numbers with Latin units inside Hebrew text).
 const I18N = {
   en: {
-    title: 'Tremor meter', lede: 'Measures how fast a hand or leg shakes, from your phone\'s motion sensor or its camera.',
+    title: 'Tremorti', heading: 'Measure a tremor', back: 'Grasp', lede: 'Measures how fast a hand or leg shakes, from your phone\'s motion sensor or its camera.',
     langSwitch: 'Switch to Hebrew',
     measureWith: 'Measure with', bodyPart: 'Body part', position: 'Position',
     segMotion: 'Motion sensor', segCamera: 'Camera', segHand: 'Hand', segLeg: 'Leg', segRest: 'At rest', segHold: 'Held out', segStand: 'Standing',
+    notesTitle: 'Notes for this measurement', side: 'Side', segLeft: 'Left', segRight: 'Right', med: 'Medication taken', segYes: 'Yes', segNo: 'No',
+    medPh: 'Which medication? (optional)', noteLbl: 'Note', notePh: 'Short note (optional)',
     noteCamera: 'Camera works for the hand only. It sees up to about 10–15 shakes per second.', noteMotion: 'Most accurate. Sees fast shaking too.',
     howtoTail: 'Tap start, then get into position during the countdown. You\'ll hear a beep when recording starts and when it ends.',
-    start: 'Start measuring', cancel: 'Cancel', again: 'Measure again', changeSetup: 'Change setup', pastTitle: 'Past measurements', clearHist: 'Clear history',
-    ariaCam: 'Camera view with hand points', ariaStrip: 'Live movement trace', ariaSpectrum: 'Frequency spectrum of the movement',
+    start: 'Start measuring', compare: 'Compare left and right', compareNote: 'Compare runs two measurements back to back: left side first, then right.',
+    cancel: 'Cancel', again: 'Measure again', changeSetup: 'Change setup', pastTitle: 'Past measurements', clearHist: 'Clear history',
+    share: 'Share', export: 'Export CSV', copied: 'Copied to clipboard', shareFail: 'Could not share',
+    ariaCam: 'Camera view with hand points', ariaStrip: 'Live movement trace', ariaSpectrum: 'Frequency spectrum of the movement', ariaTrend: 'Trend of shaking frequency over time',
     disclaimer: 'Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.',
-    motionDenied: 'Motion access was denied. Allow motion access for this site and try again.', motionReqFail: 'Motion access could not be requested: {m}',
+    motionDenied: 'Motion access was denied. {browser} blocks motion sensors for this site: tap the lock or shield icon next to the address → Site settings (Permissions) → Motion sensors → Allow, then reload.{brave}',
+    motionReqFail: 'Motion access could not be requested: {m}', yourBrowser: 'Your browser', braveShields: 'In Brave, also check that Shields are down for this site.', reload: 'Reload', tryAgain: 'Try again',
     getReady: 'Get ready', camStarting: 'Starting camera and hand tracker…', handIntoView: 'Get your hand into view', intoPosition: 'Get into position',
-    noMotion: 'No motion data is coming from this device. Some browsers block the motion sensor: in Brave, turn Shields off for this site, or open the page in Chrome. Computers usually have no motion sensor at all.',
+    nowLeft: 'Left side first', nowRight: 'Now the right side', switchSides: 'Move the phone to the right side. Recording starts after the countdown.',
+    noMotion: 'No motion data is coming from this device. {browser} probably blocks motion sensors for this site: tap the lock or shield icon next to the address → Site settings (Permissions) → Motion sensors → Allow, then reload.{brave} Computers usually have no motion sensor at all.',
     recording: 'Recording. Stay in position.', handNotFound: 'Hand not found. Keep the whole hand in view.',
     camDenied: 'Camera permission was denied. Allow the camera for this site and try again.', camNotFound: 'No usable camera was found on this device.',
-    camBusy: 'The camera is busy in another app. Close it and try again.', camNoApi: 'This browser can\'t use the camera here. The page must be opened over https.',
+    camBusy: 'The camera is in use by another tab or app, for example the Grasp game tab. Close that tab, then try again.', camNoApi: 'This browser can\'t use the camera here. The page must be opened over https.',
     camTracker: 'The hand tracker could not start ({m}). Check your connection and try again.',
-    errFew: 'Too few samples were recorded ({n}).', errShort: 'The recording was too short.', errRate: 'The sample rate ({fs} per second) is too low to measure shaking.',
+    errFew: 'Too few samples were recorded ({n}). The sensor gave almost no data: keep the screen on and the page in front, then try again.',
+    errShort: 'The recording was too short. Keep the screen on and try again.',
+    errRate: 'The sample rate ({fs} per second) is too low to measure shaking. Try another browser, or the camera instead of the motion sensor.',
     noResult: 'No result', clear: 'Clear rhythm', weak: 'Weak rhythm', none: 'No clear rhythm', noneAt: 'No clear rhythm. Strongest at', hz: 'Hz',
-    sub: '{limb}, {posture}, {sensor}',
+    sub: '{limb}, {posture}, {sensor}', subSide: '{limb}, {posture}, {sensor}, {side} side', sideL: 'left', sideR: 'right',
     dFreq: 'Shakes per second', vFreq: '{f} (Hz)', dSize: 'Size', vSize: '≈ {mm} mm back and forth', vSizeCam: '≈ {mm} mm back and forth, at the fingertip',
     dAccel: 'Acceleration', vAccel: '{a} m/s² (RMS)', dRatio: 'Rhythm strength', vRatio: '{r}× the background', over100: 'over 100',
     dRate: 'Sample rate', vRate: '{fs} per second, sees up to {nyq} Hz', dRec: 'Recorded', vRec: '{d} s, {n} samples',
     dTracker: 'Hand tracker', vTracker: '{d}, hand found in {p}% of frames',
-    wStand: 'This device only gave {fs} samples per second, which is too slow to see fast shaking while standing (13–18 Hz).',
-    wLowRate: 'Low sample rate: shaking faster than {nyq} Hz is invisible and can show up at a wrong, lower frequency.',
+    wStand: 'This device only gave {fs} samples per second, which is too slow to see fast shaking while standing (13–18 Hz). Try the camera, or another browser.',
+    wLowRate: 'Low sample rate ({fs} per second): shaking faster than {nyq} Hz is invisible and can show up at a wrong, lower frequency. Try another browser or the camera.',
+    wStill: 'Almost no movement was recorded. Make sure the phone (or the hand in view) is on the limb that shakes, not resting on a table, and measure again.',
     wTiny: 'The movement is very small. Everyone\'s hands and legs have a tiny, fast natural shake (often around 8–12 Hz), and a clear rhythm this small can be just that.',
     wEdge: 'The peak is at the edge of the measurable range, so the real rhythm may be outside it.',
     wLost: 'The hand was lost in {p}% of frames. Keep the whole hand in view and try again.',
     wShort: 'The recording was shorter than planned ({d} s). Keep the screen on.',
     hClear: 'clear rhythm', hWeak: 'weak rhythm', hNone: 'no clear rhythm', hWhat: '{f} Hz, {s}', hHow: '{limb} {posture}, {sensor}, ≈ {mm} mm',
+    hMed: 'medication: {m}', hNoMed: 'no medication', tod: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' },
+    cmpTitle: 'Left vs right', cmpLeft: 'Left', cmpRight: 'Right', cmpFreq: 'Shakes per second', cmpSize: 'Size', cmpStrength: 'Rhythm',
+    cmpDiff: 'Difference (right − left): [{f} Hz], [{mm} mm]', cmpSame: 'Both sides shake at about the same rate.', cmpFaster: 'The {side} side shakes faster.', cmpBigger: 'The {side} side shakes more.',
+    trendTitle: 'Trend over time', trendBoth: 'Both', legFreq: 'Shakes per second (Hz)', legAmp: 'Size (mm)',
+    trendEmpty: 'At least two measurements with this setup are needed to draw a trend.', trendHint: 'Showing: {setup}. Tap a point for details.',
+    trendPt: '{date}: {f} Hz, ≈ {mm} mm, {s}{side}', trendSideL: ', left', trendSideR: ', right',
+    shareText: 'Tremorti: {f} Hz, {s}, ≈ {mm} mm. {setup}. {date}',
     label: { sensor: { motion: 'motion sensor', camera: 'camera' }, limb: { hand: 'Hand', leg: 'Leg' }, posture: { rest: 'at rest', hold: 'held out', stand: 'standing' } },
     howto: {
       'motion-hand-rest': ['Hold the phone loosely in your hand.', 'Rest your forearm on your thigh or a table and relax completely. Don\'t try to hold still.'],
@@ -220,36 +369,52 @@ const I18N = {
     },
   },
   he: {
-    title: 'מד רעד', lede: 'מודד כמה מהר רועדת יד או רגל, בעזרת חיישן התנועה של הטלפון או המצלמה שלו.',
+    title: 'טרימורטי', heading: 'מדידת רעד', back: 'Grasp', lede: 'מודד כמה מהר רועדת יד או רגל, בעזרת חיישן התנועה של הטלפון או המצלמה שלו.',
     langSwitch: 'מעבר לאנגלית',
     measureWith: 'מודדים עם', bodyPart: 'איבר', position: 'תנוחה',
     segMotion: 'חיישן תנועה', segCamera: 'מצלמה', segHand: 'יד', segLeg: 'רגל', segRest: 'במנוחה', segHold: 'מושטת', segStand: 'בעמידה',
+    notesTitle: 'הערות למדידה הזאת', side: 'צד', segLeft: 'שמאל', segRight: 'ימין', med: 'נלקחה תרופה', segYes: 'כן', segNo: 'לא',
+    medPh: 'איזו תרופה? (לא חובה)', noteLbl: 'הערה', notePh: 'הערה קצרה (לא חובה)',
     noteCamera: 'המצלמה מתאימה ליד בלבד. היא קולטת עד כ־10–15 רעידות בשנייה.', noteMotion: 'המדויק ביותר. קולט גם רעד מהיר.',
     howtoTail: 'לוחצים על התחלה ומתמקמים בזמן הספירה לאחור. צפצוף יישמע כשההקלטה מתחילה וכשהיא נגמרת.',
-    start: 'התחלת מדידה', cancel: 'ביטול', again: 'מדידה נוספת', changeSetup: 'שינוי הגדרות', pastTitle: 'מדידות קודמות', clearHist: 'מחיקת ההיסטוריה',
-    ariaCam: 'תמונת המצלמה עם נקודות כף היד', ariaStrip: 'גרף תנועה בזמן אמת', ariaSpectrum: 'ספקטרום התדרים של התנועה',
+    start: 'התחלת מדידה', compare: 'השוואה בין שמאל לימין', compareNote: 'ההשוואה מריצה שתי מדידות ברצף: קודם צד שמאל ואז ימין.',
+    cancel: 'ביטול', again: 'מדידה נוספת', changeSetup: 'שינוי הגדרות', pastTitle: 'מדידות קודמות', clearHist: 'מחיקת ההיסטוריה',
+    share: 'שיתוף', export: 'ייצוא CSV', copied: 'הועתק ללוח', shareFail: 'השיתוף לא הצליח',
+    ariaCam: 'תמונת המצלמה עם נקודות כף היד', ariaStrip: 'גרף תנועה בזמן אמת', ariaSpectrum: 'ספקטרום התדרים של התנועה', ariaTrend: 'מגמת תדר הרעד לאורך זמן',
     disclaimer: 'זה לא מכשיר רפואי. המספרים נועדו להשוואה אצל אותו אדם לאורך זמן ובאותם תנאים, לא לאבחון.',
-    motionDenied: 'הגישה לחיישן התנועה נדחתה. יש לאשר אותה לאתר הזה ולנסות שוב.', motionReqFail: 'לא ניתן לבקש גישה לחיישן התנועה: {m}',
+    motionDenied: 'הגישה לחיישן התנועה נדחתה. {browser} חוסם חיישני תנועה לאתר הזה: לוחצים על סמל המנעול או המגן ליד הכתובת ← הגדרות אתר (הרשאות) ← חיישני תנועה ← אפשר, ואז טוענים מחדש.{brave}',
+    motionReqFail: 'לא ניתן לבקש גישה לחיישן התנועה: {m}', yourBrowser: 'הדפדפן', braveShields: 'ב־Brave כדאי לבדוק גם שה־Shields כבויים לאתר הזה.', reload: 'טעינה מחדש', tryAgain: 'ניסיון נוסף',
     getReady: 'מתכוננים', camStarting: 'מפעילים את המצלמה ואת זיהוי היד…', handIntoView: 'מכניסים את היד לתמונה', intoPosition: 'מתמקמים בתנוחה',
-    noMotion: 'לא מגיעים נתוני תנועה מהמכשיר. יש דפדפנים שחוסמים את חיישן התנועה: ב־Brave צריך לכבות את Shields לאתר הזה, או לפתוח את הדף ב־Chrome. במחשבים בדרך כלל אין חיישן תנועה בכלל.',
+    nowLeft: 'קודם צד שמאל', nowRight: 'עכשיו צד ימין', switchSides: 'מעבירים את הטלפון לצד ימין. ההקלטה תתחיל אחרי הספירה לאחור.',
+    noMotion: 'לא מגיעים נתוני תנועה מהמכשיר. כנראה {browser} חוסם חיישני תנועה לאתר הזה: לוחצים על סמל המנעול או המגן ליד הכתובת ← הגדרות אתר (הרשאות) ← חיישני תנועה ← אפשר, ואז טוענים מחדש.{brave} במחשבים בדרך כלל אין חיישן תנועה בכלל.',
     recording: 'מקליטים. לא לזוז מהתנוחה.', handNotFound: 'היד לא נמצאה. כל כף היד צריכה להיות בתמונה.',
     camDenied: 'הגישה למצלמה נדחתה. יש לאשר את המצלמה לאתר הזה ולנסות שוב.', camNotFound: 'לא נמצאה במכשיר מצלמה שאפשר להשתמש בה.',
-    camBusy: 'המצלמה תפוסה באפליקציה אחרת. יש לסגור אותה ולנסות שוב.', camNoApi: 'הדפדפן לא יכול להשתמש במצלמה כאן. צריך לפתוח את הדף בכתובת https.',
+    camBusy: 'המצלמה בשימוש בלשונית או באפליקציה אחרת, למשל לשונית המשחק Grasp. סוגרים את הלשונית הזאת ומנסים שוב.', camNoApi: 'הדפדפן לא יכול להשתמש במצלמה כאן. צריך לפתוח את הדף בכתובת https.',
     camTracker: 'זיהוי היד לא הצליח לעלות ({m}). כדאי לבדוק את החיבור ולנסות שוב.',
-    errFew: 'הוקלטו מעט מדי דגימות ({n}).', errShort: 'ההקלטה הייתה קצרה מדי.', errRate: 'קצב הדגימה ({fs} בשנייה) נמוך מדי למדידת רעד.',
+    errFew: 'הוקלטו מעט מדי דגימות ({n}). החיישן כמעט לא נתן נתונים: משאירים את המסך דלוק ואת הדף פתוח, ומנסים שוב.',
+    errShort: 'ההקלטה הייתה קצרה מדי. משאירים את המסך דלוק ומנסים שוב.',
+    errRate: 'קצב הדגימה ({fs} בשנייה) נמוך מדי למדידת רעד. כדאי לנסות דפדפן אחר, או את המצלמה במקום חיישן התנועה.',
     noResult: 'אין תוצאה', clear: 'קצב ברור', weak: 'קצב חלש', none: 'אין קצב ברור', noneAt: 'אין קצב ברור. השיא הבולט ביותר:', hz: 'Hz',
-    sub: '{limb}, {posture}, {sensor}',
+    sub: '{limb}, {posture}, {sensor}', subSide: '{limb}, {posture}, {sensor}, צד {side}', sideL: 'שמאל', sideR: 'ימין',
     dFreq: 'רעידות בשנייה', vFreq: '[{f} Hz]', dSize: 'גודל', vSize: '≈ {mm} מ״מ הלוך ושוב', vSizeCam: '≈ {mm} מ״מ הלוך ושוב, בקצה האצבע',
     dAccel: 'תאוצה', vAccel: '[{a} m/s² (RMS)]', dRatio: 'עוצמת הקצב', vRatio: 'פי {r} מהרקע', over100: 'יותר מ־100',
     dRate: 'קצב דגימה', vRate: '{fs} בשנייה, קולט עד [{nyq} Hz]', dRec: 'הוקלט', vRec: '{d} שנ׳, {n} דגימות',
     dTracker: 'זיהוי היד', vTracker: '{d}, היד זוהתה ב־{p}% מהפריימים',
-    wStand: 'המכשיר נתן רק {fs} דגימות בשנייה. זה איטי מדי כדי לקלוט רעד מהיר בעמידה ([13–18 Hz]).',
-    wLowRate: 'קצב דגימה נמוך: רעד מהיר מ־[{nyq} Hz] לא נקלט, ועלול להופיע בתדר שגוי ונמוך יותר.',
+    wStand: 'המכשיר נתן רק {fs} דגימות בשנייה. זה איטי מדי כדי לקלוט רעד מהיר בעמידה ([13–18 Hz]). כדאי לנסות את המצלמה או דפדפן אחר.',
+    wLowRate: 'קצב דגימה נמוך ({fs} בשנייה): רעד מהיר מ־[{nyq} Hz] לא נקלט, ועלול להופיע בתדר שגוי ונמוך יותר. כדאי לנסות דפדפן אחר או את המצלמה.',
+    wStill: 'כמעט לא נקלטה תנועה. צריך לוודא שהטלפון (או היד בתמונה) נמצא על האיבר שרועד ולא מונח על שולחן, ולמדוד שוב.',
     wTiny: 'התנועה קטנה מאוד. לכולם יש רעד טבעי זעיר ומהיר בידיים וברגליים (לרוב סביב [8–12 Hz]), וקצב ברור בגודל כזה יכול להיות בדיוק זה.',
     wEdge: 'השיא נמצא בקצה הטווח שאפשר למדוד, כך שהקצב האמיתי עשוי להיות מחוץ לו.',
     wLost: 'היד לא זוהתה ב־{p}% מהפריימים. כל כף היד צריכה להיות בתמונה. כדאי לנסות שוב.',
     wShort: 'ההקלטה הייתה קצרה מהמתוכנן ({d} שנ׳). צריך להשאיר את המסך דלוק.',
     hClear: 'קצב ברור', hWeak: 'קצב חלש', hNone: 'אין קצב ברור', hWhat: '[{f} Hz], {s}', hHow: '{limb} {posture}, {sensor}, ≈ {mm} מ״מ',
+    hMed: 'תרופה: {m}', hNoMed: 'בלי תרופה', tod: { morning: 'בוקר', afternoon: 'צהריים', evening: 'ערב', night: 'לילה' },
+    cmpTitle: 'שמאל מול ימין', cmpLeft: 'שמאל', cmpRight: 'ימין', cmpFreq: 'רעידות בשנייה', cmpSize: 'גודל', cmpStrength: 'קצב',
+    cmpDiff: 'הפרש (ימין פחות שמאל): [{f} Hz], [{mm} mm]', cmpSame: 'שני הצדדים רועדים בערך באותו קצב.', cmpFaster: 'צד {side} רועד מהר יותר.', cmpBigger: 'צד {side} רועד יותר.',
+    trendTitle: 'מגמה לאורך זמן', trendBoth: 'שניהם', legFreq: 'רעידות בשנייה (Hz)', legAmp: 'גודל (מ״מ)',
+    trendEmpty: 'כדי לצייר מגמה צריך לפחות שתי מדידות באותן הגדרות.', trendHint: 'מוצג: {setup}. נוגעים בנקודה לפרטים.',
+    trendPt: '{date}: [{f} Hz], ≈ {mm} מ״מ, {s}{side}', trendSideL: ', שמאל', trendSideR: ', ימין',
+    shareText: 'טרימורטי: [{f} Hz], {s}, ≈ {mm} מ״מ. {setup}. {date}',
     label: { sensor: { motion: 'חיישן תנועה', camera: 'מצלמה' }, limb: { hand: 'יד', leg: 'רגל' }, posture: { rest: 'במנוחה', hold: 'מושטת', stand: 'בעמידה' } },
     howto: {
       'motion-hand-rest': ['מחזיקים את הטלפון ביד, באחיזה רפויה.', 'מניחים את האמה על הירך או על שולחן ומרפים לגמרי. לא מנסים להחזיק את היד יציבה.'],
@@ -274,10 +439,11 @@ function applyLang() {
   const h = document.documentElement; h.lang = lang; h.dir = lang === 'he' ? 'rtl' : 'ltr'; document.title = t('title');
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
   const lb = $('langLabel'); lb.textContent = lang === 'he' ? 'EN' : 'עב'; lb.lang = lang === 'he' ? 'en' : 'he';
   $('langBtn').setAttribute('aria-label', t('langSwitch')); $('langBtn').title = t('langSwitch');
   for (const id in said) say(id, ...said[id]);
-  renderSetup();
+  renderError(); renderSetup();
   if (!$('result').hidden && lastResult) renderResult(lastResult, true); else renderHistory();
 }
 function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {} applyLang(); }
@@ -287,13 +453,16 @@ function renderSetup() {
   if (state.sensor === 'camera') state.limb = 'hand';
   if (state.limb === 'hand' && state.posture === 'stand') state.posture = 'rest';
   document.querySelectorAll('.seg').forEach((seg) => {
-    const key = seg.dataset.key;
+    const key = seg.dataset.key, cur = key in state ? state[key] : notes[key];
     seg.querySelectorAll('button').forEach((b) => {
-      b.setAttribute('aria-pressed', String(state[key] === b.dataset.v));
+      b.setAttribute('aria-pressed', String(cur === b.dataset.v));
       b.disabled = (key === 'limb' && b.dataset.v === 'leg' && state.sensor === 'camera') ||
                    (key === 'posture' && b.dataset.v === 'stand' && state.limb === 'hand');
     });
   });
+  $('medText').hidden = notes.med !== 'yes';
+  if ($('medText').value !== notes.medText) $('medText').value = notes.medText;
+  if ($('noteText').value !== notes.note) $('noteText').value = notes.note;
   $('sensorNote').textContent = t(state.sensor === 'camera' ? 'noteCamera' : 'noteMotion');
   const [a, b] = I18N[lang].howto[state.sensor + '-' + state.limb + '-' + state.posture];
   $('howto').innerHTML = '';
@@ -303,14 +472,36 @@ function renderSetup() {
 }
 document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
-  state[seg.dataset.key] = b.dataset.v; renderSetup();
+  const key = seg.dataset.key, v = b.dataset.v;
+  if (key in state) state[key] = v; else { notes[key] = notes[key] === v ? '' : v; saveNotes(); } // notes toggle off on a second tap
+  if (key !== 'trendSide' && errState) { errState = null; renderError(); } // a changed setup clears the old error
+  renderSetup();
+  if (key === 'trendSide') renderHistory();
 }));
+$('medText').addEventListener('input', () => { notes.medText = $('medText').value.trim(); saveNotes(); });
+$('noteText').addEventListener('input', () => { notes.note = $('noteText').value.trim(); saveNotes(); });
 function show(id) {
   for (const s of ['setup', 'record', 'result']) $(s).hidden = s !== id;
   $('historyWrap').hidden = id === 'record' || !loadHistory().length;
   window.scrollTo(0, 0);
 }
-function setupError(key, vars) { rec = null; show('setup'); say('setupError', key, vars); $('setupError').hidden = !key; }
+const isBrave = () => !!(navigator.brave && navigator.brave.isBrave);
+const browserVars = () => ({ browser: isBrave() ? 'Brave' : t('yourBrowser'), brave: isBrave() ? ' ' + t('braveShields') : '' });
+let errState = null; // { key, vars, action: 'reload' | 'retry' }
+function setupError(key, vars, action) { rec = null; compare = null; show('setup'); errState = key ? { key, vars, action } : null; renderError(); }
+function renderError() {
+  const box = $('setupError'); box.innerHTML = ''; box.hidden = !errState; if (!errState) return;
+  const vars = { ...browserVars(), ...(errState.vars || {}) };
+  box.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.3"/></svg>');
+  const p = document.createElement('p'); p.textContent = t(errState.key, vars); box.append(p);
+  if (errState.action) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chipbtn'; b.id = 'errAction'; b.textContent = t(errState.action === 'reload' ? 'reload' : 'tryAgain');
+    b.addEventListener('click', () => { if (errState && errState.action === 'reload') location.reload(); else { errState = null; renderError(); start(); } });
+    box.append(b);
+  }
+}
+let toastT = 0;
+function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2200); }
 
 /* ---------------- sound ---------------- */
 let actx = null;
@@ -326,7 +517,7 @@ function beep(freq, ms, vol = 0.25) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /* ---------------- recording ---------------- */
-let rec = null, wakeLock = null;
+let rec = null, wakeLock = null, compare = null; // compare: { id, stage: 'left'|'right', left: result }
 
 function onMotion(e) {
   if (!rec || rec.sensor !== 'motion') return;
@@ -348,25 +539,26 @@ function addMotion(t, x, y, z, gravity) {
 
 async function start() {
   if (rec) return; // already running
-  $('setupError').hidden = true;
+  if (errState) { errState = null; renderError(); }
   // iOS asks for motion permission; it must be requested straight from the tap.
   if (state.sensor === 'motion' && typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return setupError('motionDenied'); }
+    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return setupError('motionDenied', null, 'reload'); }
     catch (e) { return setupError('motionReqFail', { m: e.message || e }); }
   }
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {}
   const id = Date.now();
-  rec = { id, sensor: state.sensor, limb: state.limb, posture: state.posture, phase: 'prep', samples: [], live: [], ema: null,
-          seen: 0, lastEventAt: 0, usedGravity: false, frames: 0, missed: 0, palm: [], startAt: Infinity, endAt: Infinity };
+  rec = { id, sensor: state.sensor, limb: state.limb, posture: state.posture, side: compare ? compare.stage : notes.side, notes: { ...notes },
+          phase: 'prep', samples: [], live: [], ema: null, seen: 0, lastEventAt: 0, usedGravity: false, frames: 0, missed: 0, palm: [], startAt: Infinity, endAt: Infinity };
   show('record');
   $('count').textContent = ''; say('recNote', null); say('recStatus', 'getReady');
+  say('recSide', compare ? (compare.stage === 'left' ? 'nowLeft' : 'nowRight') : null);
   $('camView').hidden = rec.sensor !== 'camera';
   try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
 
   if (rec.sensor === 'camera') {
     say('recStatus', 'camStarting');
     try { await startCamera(); await getLandmarker(); }
-    catch (e) { console.error('[tremor] camera', e); stopAll(); return setupError(...explainCamera(e)); }
+    catch (e) { console.error('[tremor] camera', e); stopAll(); const [k, v] = explainCamera(e); return setupError(k, v, k === 'camDenied' ? 'reload' : 'retry'); }
     if (!rec || rec.id !== id) return;
     requestAnimationFrame(camLoop);
   } else {
@@ -384,7 +576,7 @@ async function start() {
   if (rec.sensor === 'motion' && rec.seen === 0) {
     await sleep(800);
     if (!rec || rec.id !== id) return;
-    if (rec.seen === 0) { stopAll(); return setupError('noMotion'); }
+    if (rec.seen === 0) { stopAll(); return setupError('noMotion', null, 'reload'); }
   }
   beep(1040, 260);
   rec.startAt = performance.now() + CONFIG.START_DELAY_MS;
@@ -396,13 +588,25 @@ async function start() {
   if (!rec || rec.id !== id) return;
   finish();
 }
+function startCompare() { if (rec) return; compare = { id: Date.now(), stage: 'left', left: null }; start(); }
+async function compareGap() { // between the two sides: prompt + countdown, then the right side
+  const id = compare.id;
+  show('record'); $('camView').hidden = true; $('count').textContent = '';
+  say('recStatus', 'nowRight'); say('recSide', null); say('recNote', 'switchSides');
+  for (let i = CONFIG.COMPARE_GAP_S; i > 0; i--) {
+    if (!compare || compare.id !== id) return;
+    $('count').textContent = i; beep(660, 90, 0.18); await sleep(1000);
+  }
+  if (!compare || compare.id !== id) return;
+  start();
+}
 
 function stopAll() {
   window.removeEventListener('devicemotion', onMotion);
   stopCamera();
   try { wakeLock && wakeLock.release(); } catch {} wakeLock = null;
 }
-function cancel() { stopAll(); rec = null; show('setup'); }
+function cancel() { stopAll(); rec = null; compare = null; show('setup'); }
 
 function finish() {
   const r = rec; r.phase = 'done'; stopAll();
@@ -414,13 +618,18 @@ function finish() {
     unit = 'mm';
   } else unit = 'accel';
   const res = analyze(samples, { unit, ampChannels: r.sensor === 'camera' ? [0, 1] : [0, 1, 2] });
-  res.sensor = r.sensor; res.limb = r.limb; res.posture = r.posture;
+  res.sensor = r.sensor; res.limb = r.limb; res.posture = r.posture; res.side = r.side; res.notes = r.notes; res.ts = Date.now();
   res.plannedS = CONFIG.RECORD_S;
   if (r.sensor === 'camera') { res.handPct = r.frames ? 1 - r.missed / r.frames : 0; res.delegate = trackerDelegate; }
   lastResult = res;
   if (!res.error) saveHistory(res);
-  renderResult(res);
   rec = null;
+  if (compare && !res.error) {
+    if (compare.stage === 'left') { compare.left = res; compare.stage = 'right'; return compareGap(); }
+    res.compare = { left: compare.left, right: { ...res } };
+  }
+  compare = null;
+  renderResult(res);
 }
 
 /* ---------------- camera ---------------- */
@@ -504,13 +713,14 @@ function drawCamView() {
   c.save(); c.translate(w, 0); c.scale(-1, 1); c.drawImage(video, 0, 0, w, h); c.restore();
   if (!lastLm) return;
   const P = (i) => [(1 - lastLm[i].x) * w, lastLm[i].y * h];
-  c.strokeStyle = '#ff6f62'; c.lineWidth = 2; c.beginPath();
+  c.strokeStyle = '#ff6f59'; c.lineWidth = 2; c.beginPath();
   for (const [a, b] of LINKS) { const pa = P(a), pb = P(b); c.moveTo(pa[0], pa[1]); c.lineTo(pb[0], pb[1]); }
   c.stroke();
   const tp = P(8); c.fillStyle = '#fff'; c.beginPath(); c.arc(tp[0], tp[1], 5, 0, Math.PI * 2); c.fill();
 }
 
 /* ---------------- live strip chart ---------------- */
+const FONT = 'Rubik, system-ui, sans-serif';
 function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function sizeCanvas(cv) {
   const dpr = Math.min(2, window.devicePixelRatio || 1), r = cv.getBoundingClientRect();
@@ -534,7 +744,7 @@ function drawStrip() {
   const pts = rec.live;
   let peak = 1e-9; for (let i = Math.max(0, pts.length - 400); i < pts.length; i++) peak = Math.max(peak, Math.abs(pts[i].y));
   const scale = (h * 0.42) / peak;
-  c.strokeStyle = cssVar('--ink'); c.lineWidth = 1.6; c.lineJoin = 'round'; c.beginPath();
+  c.strokeStyle = cssVar('--sky'); c.lineWidth = 1.6; c.lineJoin = 'round'; c.beginPath();
   pts.forEach((p, i) => { const x = (p.t - rec.startAt) / T * w, y = h / 2 - p.y * scale; i ? c.lineTo(x, y) : c.moveTo(x, y); });
   c.stroke();
   const px = Math.min(w, Math.max(0, (now - rec.startAt) / T * w));
@@ -635,33 +845,54 @@ function analyze(samples, { unit = 'accel', ampChannels = null } = {}) {
   const pp = unit === 'accel' ? 2 * Math.SQRT2 * rms / Math.pow(2 * Math.PI * f0, 2) * 1000 : 2 * Math.SQRT2 * rms; // mm, peak to peak
   const freqs = Array.from({ length: K }, (_, k) => k * df);
   const edge = kp === kLo || kp === kHi;
-  // trace for display: strongest channel, detrended
+  // trace for display: strongest channel, detrended. moveRms = overall movement in that channel (quality guard)
   let best = 0, bv = -1; chans.forEach((x, i) => { let v = 0; for (const s of x) v += s * s; if (v > bv) { bv = v; best = i; } });
-  return { fs, nyq, dur, n, f0, ratio, strength, rms, pp, unit, freqs, psd: Array.from(all), band: [lo, hi], edge, trace: Array.from(chans[best]) };
+  const moveRms = Math.sqrt(bv / (m || 1));
+  return { fs, nyq, dur, n, f0, ratio, strength, rms, pp, unit, moveRms, freqs, psd: Array.from(all), band: [lo, hi], edge, trace: Array.from(chans[best]) };
 }
 
 /* ---------------- result ---------------- */
 function fmtMM(x) { return x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x >= 0.1 ? x.toFixed(2) : x.toFixed(3); }
+function todOf(ts) { const h = new Date(ts).getHours(); return h < 5 ? 'night' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night'; }
+const sideName = (s) => (s === 'left' ? t('sideL') : s === 'right' ? t('sideR') : '');
+function setupText(e) { const L = LABEL(); return t(e.side ? 'subSide' : 'sub', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], side: sideName(e.side) }); }
+function notesText(e) {
+  const out = [];
+  if (e.med === 'yes') out.push(t('hMed', { m: e.medText || t('segYes') })); else if (e.med === 'no') out.push(t('hNoMed'));
+  if (e.note) out.push(e.note);
+  return out.join(' · ');
+}
+function qualityWarnings(res) { // measurement quality guard: sample rate and amount of movement
+  const w = [];
+  if (res.posture === 'stand' && res.nyq < 18) w.push(t('wStand', { fs: res.fs.toFixed(0) }));
+  else if (res.nyq < 12) w.push(t('wLowRate', { fs: res.fs.toFixed(0), nyq: res.nyq.toFixed(0) }));
+  if (res.moveRms < (res.unit === 'mm' ? CONFIG.STILL_MM : CONFIG.STILL_ACCEL)) w.push(t('wStill'));
+  else if (res.strength !== 'none' && res.pp < 0.1) w.push(t('wTiny'));
+  if (res.edge && res.strength !== 'none') w.push(t('wEdge'));
+  if (res.sensor === 'camera' && res.handPct < 0.8) w.push(t('wLost', { p: Math.round((1 - res.handPct) * 100) }));
+  if (res.dur < res.plannedS * 0.8) w.push(t('wShort', { d: res.dur.toFixed(1) }));
+  return w;
+}
 function renderResult(res, keep) { // keep: re-render in place (language change), no scroll
   if (!keep) show('result');
-  const L = LABEL();
-  $('resSub').textContent = t('sub', { limb: L.limb[res.limb], posture: L.posture[res.posture], sensor: L.sensor[res.sensor] });
+  lastResult = res;
+  $('resSub').textContent = setupText(res);
+  $('resNotes').textContent = notesText(res.notes || {});
   const dl = $('resDetails'); dl.innerHTML = '';
   const row = (k, v) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; dl.append(dt, dd); };
-  const warns = [];
+  let warns = [];
   if (res.error) {
-    $('resHead').textContent = t('noResult');
-    $('resFreq').textContent = '\u2013'; $('resFreq').className = 'res-freq faint';
+    $('resHead').textContent = t('noResult'); $('resHead').className = 'res-head';
+    $('resFreq').textContent = '–'; $('resFreq').className = 'res-freq faint';
     warns.push(res.errKey ? t(...res.errKey) : res.error);
     $('spectrum').hidden = true;
   } else {
     $('spectrum').hidden = false;
-    $('resHead').textContent = t(res.strength);
+    $('resHead').textContent = t(res.strength === 'none' ? 'noneAt' : res.strength); $('resHead').className = 'res-head ' + res.strength;
     $('resFreq').innerHTML = '';
     $('resFreq').append(document.createTextNode(res.f0.toFixed(1)));
     const sm = document.createElement('small'); sm.textContent = t('hz'); $('resFreq').append(sm);
-    $('resFreq').className = 'res-freq' + (res.strength === 'none' ? ' faint' : '');
-    if (res.strength === 'none') $('resHead').textContent = t('noneAt');
+    $('resFreq').className = 'res-freq ' + res.strength;
     row(t('dFreq'), t('vFreq', { f: res.f0.toFixed(1) }));
     row(t('dSize'), t(res.sensor === 'camera' ? 'vSizeCam' : 'vSize', { mm: fmtMM(res.pp) }));
     if (res.sensor === 'motion') row(t('dAccel'), t('vAccel', { a: res.rms.toFixed(3) }));
@@ -669,18 +900,32 @@ function renderResult(res, keep) { // keep: re-render in place (language change)
     row(t('dRate'), t('vRate', { fs: res.fs.toFixed(0), nyq: res.nyq.toFixed(0) }));
     row(t('dRec'), t('vRec', { d: res.dur.toFixed(1), n: res.n }));
     if (res.sensor === 'camera') row(t('dTracker'), t('vTracker', { d: res.delegate || '-', p: Math.round((res.handPct || 0) * 100) }));
-    if (res.posture === 'stand' && res.nyq < 18) warns.push(t('wStand', { fs: res.fs.toFixed(0) }));
-    else if (res.nyq < 12) warns.push(t('wLowRate', { nyq: res.nyq.toFixed(0) }));
-    if (res.strength !== 'none' && res.pp < 0.1) warns.push(t('wTiny'));
-    if (res.edge && res.strength !== 'none') warns.push(t('wEdge'));
-    if (res.sensor === 'camera' && res.handPct < 0.8) warns.push(t('wLost', { p: Math.round((1 - res.handPct) * 100) }));
-    if (res.dur < res.plannedS * 0.8) warns.push(t('wShort', { d: res.dur.toFixed(1) }));
+    warns = qualityWarnings(res);
     requestAnimationFrame(() => drawSpectrum(res));
   }
   $('resWarn').innerHTML = '';
   warns.forEach((w) => { const p = document.createElement('p'); p.textContent = w; $('resWarn').append(p); });
   $('resWarn').hidden = !warns.length;
+  renderCompare(res.compare);
   renderHistory();
+}
+function renderCompare(cmp) {
+  $('compareCard').hidden = !cmp; if (!cmp) return;
+  const g = $('cmpGrid'); g.innerHTML = '';
+  const cell = (txt, cls, unit) => { const d = document.createElement('div'); d.className = cls || ''; d.textContent = txt;
+    if (unit) { const s = document.createElement('small'); s.textContent = unit; d.append(s); } g.append(d); };
+  const { left: L, right: R } = cmp;
+  cell(''); cell(t('cmpLeft'), 'h'); cell(t('cmpRight'), 'h');
+  cell(t('cmpFreq'), 'k'); cell(L.f0.toFixed(1), 'num', t('hz')); cell(R.f0.toFixed(1), 'num', t('hz'));
+  cell(t('cmpSize'), 'k'); cell(fmtMM(L.pp), 'num', 'mm'); cell(fmtMM(R.pp), 'num', 'mm');
+  cell(t('cmpStrength'), 'k'); cell(t(L.strength), 's ' + L.strength); cell(t(R.strength), 's ' + R.strength);
+  const df = R.f0 - L.f0, dm = R.pp - L.pp, sg = (x, f) => (Math.abs(x) < 0.05 ? '0.0' : (x > 0 ? '+' : '−') + f(Math.abs(x)));
+  const d = $('cmpDiff'); d.innerHTML = '';
+  const s = document.createElement('strong'); s.textContent = t('cmpDiff', { f: sg(df, (x) => x.toFixed(1)), mm: sg(dm, fmtMM) });
+  const p = document.createElement('span');
+  p.textContent = Math.abs(df) >= 0.5 ? t('cmpFaster', { side: sideName(df > 0 ? 'right' : 'left') })
+    : Math.abs(dm) >= 0.3 * Math.max(L.pp, R.pp) ? t('cmpBigger', { side: sideName(dm > 0 ? 'right' : 'left') }) : t('cmpSame');
+  d.append(s, p);
 }
 function drawSpectrum(res) {
   const { c, w, h } = sizeCanvas($('spectrum'));
@@ -690,10 +935,10 @@ function drawSpectrum(res) {
   c.strokeStyle = cssVar('--grid'); c.lineWidth = 1; c.beginPath();
   for (let f = 0; f <= xmax; f += 1) { const x = Math.round(X(f)) + 0.5; c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); }
   c.stroke();
-  c.fillStyle = cssVar('--muted'); c.font = '13px "Atkinson Hyperlegible", system-ui, sans-serif'; c.textAlign = 'center';
+  c.fillStyle = cssVar('--muted'); c.font = '12px ' + FONT; c.textAlign = 'center';
   for (let f = 0; f <= xmax; f += 5) c.fillText(f + ' ' + t('hz'), Math.min(w - 22, Math.max(18, X(f))), h - 8);
   // outside the search band: shaded
-  c.fillStyle = cssVar('--grid'); c.globalAlpha = 0.45;
+  c.fillStyle = cssVar('--bone'); c.globalAlpha = 0.06;
   c.fillRect(X(0), pad.t, X(res.band[0]) - X(0), plotH);
   if (res.band[1] < xmax) c.fillRect(X(res.band[1]), pad.t, X(xmax) - X(res.band[1]), plotH);
   c.globalAlpha = 1;
@@ -702,12 +947,12 @@ function drawSpectrum(res) {
   c.beginPath(); c.moveTo(X(0), h - pad.b);
   res.freqs.forEach((f, k) => { if (f <= xmax) c.lineTo(X(f), Y(res.psd[k])); });
   c.lineTo(X(Math.min(xmax, res.freqs[res.freqs.length - 1])), h - pad.b); c.closePath();
-  c.fillStyle = cssVar('--ink'); c.globalAlpha = 0.14; c.fill(); c.globalAlpha = 1;
+  c.fillStyle = cssVar('--sky'); c.globalAlpha = 0.18; c.fill(); c.globalAlpha = 1;
   c.beginPath(); res.freqs.forEach((f, k) => { if (f <= xmax) (k ? c.lineTo(X(f), Y(res.psd[k])) : c.moveTo(X(f), Y(res.psd[k]))); });
-  c.strokeStyle = cssVar('--ink'); c.lineWidth = 1.8; c.stroke();
-  const px = X(res.f0);
-  c.strokeStyle = cssVar('--pen'); c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, pad.t); c.lineTo(px, h - pad.b); c.stroke(); c.setLineDash([]);
-  c.fillStyle = cssVar('--pen'); c.textAlign = px > w - 70 ? 'right' : 'left'; c.font = '700 14px "Atkinson Hyperlegible", system-ui, sans-serif';
+  c.strokeStyle = cssVar('--sky'); c.lineWidth = 1.8; c.stroke();
+  const px = X(res.f0), pen = cssVar('--' + (res.strength === 'clear' ? 'coral' : res.strength === 'weak' ? 'saffron' : 'mint'));
+  c.strokeStyle = pen; c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, pad.t); c.lineTo(px, h - pad.b); c.stroke(); c.setLineDash([]);
+  c.fillStyle = pen; c.textAlign = px > w - 70 ? 'right' : 'left'; c.font = '700 13px ' + FONT;
   c.fillText(res.f0.toFixed(1) + ' ' + t('hz'), px + (px > w - 70 ? -6 : 6), pad.t + 4);
 }
 
@@ -715,38 +960,129 @@ function drawSpectrum(res) {
 const HKEY = 'tremor.history.v1';
 function loadHistory() { try { return JSON.parse(localStorage.getItem(HKEY) || '[]'); } catch { return []; } }
 function saveHistory(res) {
-  const h = loadHistory();
-  h.unshift({ ts: Date.now(), sensor: res.sensor, limb: res.limb, posture: res.posture, f: +res.f0.toFixed(2), strength: res.strength, pp: +res.pp.toPrecision(3), fs: Math.round(res.fs) });
+  const h = loadHistory(), n = res.notes || {};
+  h.unshift({ ts: res.ts || Date.now(), sensor: res.sensor, limb: res.limb, posture: res.posture, f: +res.f0.toFixed(2), strength: res.strength, pp: +res.pp.toPrecision(3), fs: Math.round(res.fs),
+    side: res.side || '', med: n.med || '', medText: n.medText || '', note: n.note || '', tod: todOf(res.ts || Date.now()) });
   try { localStorage.setItem(HKEY, JSON.stringify(h.slice(0, 50))); } catch {}
 }
+const dateFmt = (o) => new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : undefined, o);
 function renderHistory() {
   const h = loadHistory(), ol = $('histList'); ol.innerHTML = '';
   $('historyWrap').hidden = !h.length || !$('record').hidden;
-  const fmt = new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const fmt = dateFmt({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }), L = LABEL();
   for (const e of h.slice(0, 20)) {
     const li = document.createElement('li');
-    const when = document.createElement('div'); when.className = 'when'; when.textContent = fmt.format(new Date(e.ts));
-    const what = document.createElement('div'); what.className = 'what';
+    const when = document.createElement('div'); when.className = 'when'; when.textContent = fmt.format(new Date(e.ts)) + (e.tod ? ' · ' + I18N[lang].tod[e.tod] : '');
+    if (e.side) { const ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = sideName(e.side); when.append(ch); }
+    const what = document.createElement('div'); what.className = 'what ' + e.strength;
     what.textContent = t('hWhat', { f: e.f.toFixed(1), s: t(e.strength === 'clear' ? 'hClear' : e.strength === 'weak' ? 'hWeak' : 'hNone') });
     const how = document.createElement('div'); how.className = 'how';
-    const L = LABEL(); how.textContent = t('hHow', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], mm: fmtMM(e.pp) });
-    li.append(when, what, how); ol.append(li);
+    how.textContent = t('hHow', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], mm: fmtMM(e.pp) });
+    li.append(when, what, how);
+    const memo = notesText(e); if (memo) { const m = document.createElement('div'); m.className = 'memo'; m.textContent = memo; li.append(m); }
+    ol.append(li);
   }
+  $('trendHint').textContent = t('trendHint', { setup: t('sub', { limb: L.limb[state.limb], posture: L.posture[state.posture], sensor: L.sensor[state.sensor] }) });
+  requestAnimationFrame(drawTrend);
+}
+
+/* ---------------- trend chart ---------------- */
+const trend = { pts: [], sel: -1, xs: [] };
+function trendData() {
+  return loadHistory().filter((e) => e.sensor === state.sensor && e.limb === state.limb && e.posture === state.posture && (state.trendSide === 'both' || e.side === state.trendSide))
+    .sort((a, b) => a.ts - b.ts).slice(-50);
+}
+function drawTrend() {
+  const cv = $('trend'), pts = trendData(); trend.pts = pts; trend.xs = [];
+  if (trend.sel >= pts.length) trend.sel = -1;
+  const empty = pts.length < 2; $('trendEmpty').hidden = !empty; cv.hidden = empty; $('trendLegend').hidden = empty;
+  if (empty || $('historyWrap').hidden) { $('trendInfo').textContent = ''; return; }
+  const { c, w, h } = sizeCanvas(cv); if (w < 40) return;
+  const pad = { l: 34, r: 12, t: 20, b: 24 }, gap = 18, ampH = Math.round((h - pad.t - pad.b - gap) * 0.3), freqH = h - pad.t - pad.b - gap - ampH;
+  const t0 = pts[0].ts, t1 = Math.max(pts[pts.length - 1].ts, t0 + 1), X = (ts) => pad.l + (ts - t0) / (t1 - t0) * (w - pad.l - pad.r);
+  let fLo = Infinity, fHi = -Infinity, aHi = 0; pts.forEach((p) => { fLo = Math.min(fLo, p.f); fHi = Math.max(fHi, p.f); aHi = Math.max(aHi, p.pp); });
+  fLo = Math.max(0, Math.floor(fLo - 1)); fHi = Math.ceil(fHi + 1); aHi = aHi * 1.15 || 1;
+  const YF = (f) => pad.t + (1 - (f - fLo) / (fHi - fLo)) * freqH, a0 = pad.t + freqH + gap, YA = (a) => a0 + (1 - a / aHi) * ampH;
+  paperGrid(c, w, h, 1e9, 1e9);
+  c.font = '11px ' + FONT; c.fillStyle = cssVar('--muted'); c.strokeStyle = cssVar('--grid'); c.lineWidth = 1;
+  const stepF = fHi - fLo > 8 ? 4 : fHi - fLo > 4 ? 2 : 1;
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let f = fLo; f <= fHi; f += stepF) { const y = Math.round(YF(f)) + 0.5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(w - pad.r, y); c.stroke(); c.fillText(String(f), pad.l - 6, y); }
+  for (const a of [0, aHi / 1.15]) { const y = Math.round(YA(a)) + 0.5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(w - pad.r, y); c.stroke(); c.fillText(a ? fmtMM(a) : '0', pad.l - 6, y); }
+  c.textAlign = 'left'; c.textBaseline = 'alphabetic'; // unit labels: above each panel, in the gutter next to the ticks
+  c.fillStyle = cssVar('--sky'); c.fillText(t('hz'), pad.l + 4, pad.t - 7); c.fillStyle = cssVar('--lilac'); c.fillText('mm', pad.l + 4, a0 - 6);
+  // date ticks: first, last and up to two between; a tick that would overlap the previous label is skipped
+  const dfmt = dateFmt(t1 - t0 < 2 * 864e5 ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' } : { month: 'short', day: 'numeric' }), nT = Math.min(pts.length, w < 420 ? 3 : 4), ticks = [];
+  for (let i = 0; i < nT; i++) ticks.push(pts[Math.round(i * (pts.length - 1) / (nT - 1 || 1))].ts);
+  c.fillStyle = cssVar('--muted'); let lastR = -1e9;
+  [...new Set(ticks)].forEach((ts, i, arr) => { const x = X(ts), s = dfmt.format(new Date(ts)), tw = c.measureText(s).width;
+    const al = i === 0 ? 'left' : i === arr.length - 1 ? 'right' : 'center', x0 = al === 'left' ? x : al === 'right' ? x - tw : x - tw / 2;
+    if (x0 < lastR + 10) return; c.textAlign = al; c.fillText(s, x, h - 7); lastR = x0 + tw; });
+  // amplitude (thin, lilac) then frequency (main, sky)
+  c.strokeStyle = cssVar('--lilac'); c.lineWidth = 1.4; c.lineJoin = 'round'; c.beginPath();
+  pts.forEach((p, i) => { const x = X(p.ts), y = YA(p.pp); i ? c.lineTo(x, y) : c.moveTo(x, y); });
+  c.stroke();
+  c.strokeStyle = cssVar('--sky'); c.lineWidth = 2.2; c.beginPath();
+  pts.forEach((p, i) => { const x = X(p.ts), y = YF(p.f); trend.xs.push(x); i ? c.lineTo(x, y) : c.moveTo(x, y); });
+  c.stroke();
+  const big = pts.length <= 30;
+  pts.forEach((p, i) => { const x = X(p.ts), y = YF(p.f);
+    c.fillStyle = cssVar('--field'); c.beginPath(); c.arc(x, y, big ? 5.5 : 3.5, 0, 7); c.fill();
+    c.fillStyle = cssVar('--' + (p.strength === 'clear' ? 'coral' : p.strength === 'weak' ? 'saffron' : 'mint')); c.beginPath(); c.arc(x, y, big ? 4 : 2.2, 0, 7); c.fill(); });
+  if (trend.sel >= 0) {
+    const p = pts[trend.sel], x = X(p.ts);
+    c.strokeStyle = cssVar('--bone'); c.lineWidth = 1; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = cssVar('--bone'); c.lineWidth = 2; c.beginPath(); c.arc(x, YF(p.f), 8, 0, 7); c.stroke(); c.beginPath(); c.arc(x, YA(p.pp), 5, 0, 7); c.stroke();
+    $('trendInfo').textContent = t('trendPt', { date: dateFmt({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(p.ts)), f: p.f.toFixed(1), mm: fmtMM(p.pp),
+      s: t(p.strength === 'clear' ? 'hClear' : p.strength === 'weak' ? 'hWeak' : 'hNone'), side: p.side === 'left' ? t('trendSideL') : p.side === 'right' ? t('trendSideR') : '' });
+  } else $('trendInfo').textContent = '';
+}
+$('trend').addEventListener('click', (e) => {
+  if (!trend.xs.length) return;
+  const x = e.clientX - $('trend').getBoundingClientRect().left;
+  let best = 0; trend.xs.forEach((px, i) => { if (Math.abs(px - x) < Math.abs(trend.xs[best] - x)) best = i; });
+  trend.sel = trend.sel === best ? -1 : best; drawTrend();
+});
+
+/* ---------------- export / share ---------------- */
+const csvCell = (v) => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+function exportCSV() {
+  const rows = [['date', 'sensor', 'limb', 'posture', 'side', 'freq_hz', 'amplitude', 'strength', 'medication', 'note']];
+  for (const e of loadHistory()) rows.push([new Date(e.ts).toISOString(), e.sensor, e.limb, e.posture, e.side || '', e.f, e.pp, e.strength, e.med === 'yes' ? (e.medText || 'yes') : e.med || '', e.note || '']);
+  const blob = new Blob(['﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tremorti-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function shareText() {
+  const r = lastResult && !lastResult.error ? lastResult : null, e = r ? { ...r, f: r.f0, notes: r.notes } : loadHistory()[0];
+  if (!e) return '';
+  const sTxt = t(e.strength === 'clear' ? 'hClear' : e.strength === 'weak' ? 'hWeak' : 'hNone'), memo = notesText(r ? r.notes || {} : e);
+  return t('shareText', { f: (+e.f).toFixed(1), s: sTxt, mm: fmtMM(e.pp), setup: setupText(e), date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(e.ts)) }) + (memo ? ' ' + memo : '');
+}
+async function share() {
+  const text = shareText(); if (!text) return;
+  if (navigator.share) { try { await navigator.share({ text }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(text); toast(t('copied')); return; } catch {}
+  try { const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast(t('copied')); }
+  catch { toast(t('shareFail')); }
 }
 
 /* ---------------- wiring ---------------- */
 let lastResult = null;
 $('startBtn').addEventListener('click', start);
+$('compareBtn').addEventListener('click', startCompare);
 $('cancelBtn').addEventListener('click', cancel);
 $('againBtn').addEventListener('click', start);
 $('setupBtn').addEventListener('click', () => { show('setup'); renderHistory(); });
 $('clearHist').addEventListener('click', () => { try { localStorage.removeItem(HKEY); } catch {} renderHistory(); });
-window.addEventListener('resize', () => { if (!$('result').hidden && lastResult && !lastResult.error) drawSpectrum(lastResult); });
+$('exportBtn').addEventListener('click', exportCSV);
+$('shareBtn').addEventListener('click', share);
+window.addEventListener('resize', () => { if (!$('result').hidden && lastResult && !lastResult.error) drawSpectrum(lastResult); drawTrend(); });
 $('langBtn').addEventListener('click', () => setLang(lang === 'he' ? 'en' : 'he'));
 applyLang();
 
 // Test hook: lets automated tests feed samples and run the analysis without real sensors.
-window.__tremor = { CONFIG, state, analyze, addMotion, get rec() { return rec; }, get last() { return lastResult; }, get lang() { return lang; }, setLang };
+window.__tremor = { CONFIG, state, notes, analyze, addMotion, shareText, get rec() { return rec; }, get last() { return lastResult; }, get lang() { return lang; }, get trend() { return trend; }, get compare() { return compare; }, setLang };
 </script>
 </body>
 </html>
