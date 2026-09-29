@@ -53,15 +53,26 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 @media (prefers-reduced-motion: reduce){ .checks li[data-s="pending"] .dot{ animation:none; } }
 
 /* in-game chrome */
-.chrome{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; display:flex; gap:8px; z-index:5; }
+.chrome{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; z-index:5;
+  max-width:calc(100% - 24px - var(--chrome-inset, 0px)); }
+body.home .chrome{ display:none; }
 .chip{ background:rgba(29,37,71,.85); color:var(--bone); padding:9px 14px; box-shadow:inset 0 0 0 1px var(--line);
   backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); font-size:14px; }
+.chip.icon{ display:inline-flex; align-items:center; gap:6px; padding:9px 11px; }
+.chip.icon svg{ width:18px; height:18px; flex:none; }
+.chip.icon span{ font-weight:500; line-height:18px; }
+#startLang{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; }
+html[dir="rtl"] #startLang{ right:auto; left:12px; }
+html[dir="rtl"] #banner ul{ padding-left:0; padding-right:18px; }
+html[dir="rtl"] #hud{ direction:rtl; }
 #preview{ position:fixed; left:12px; top:calc(env(safe-area-inset-top,0px) + 12px); width:96px; border-radius:10px;
   box-shadow:0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); z-index:5; background:#0e1328; }
 #preview[hidden]{ display:none; }
 #preview.big{ left:50%; top:40%; transform:translate(-50%,-50%); width:min(280px, 72vw) !important; max-height:52vh; object-fit:contain; }
 #hud{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px + var(--hud-offset, 0px)); left:12px; z-index:5; font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;
-  background:rgba(14,19,40,.82); padding:10px 12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); white-space:pre; pointer-events:none; }
+  background:rgba(14,19,40,.82); padding:10px 12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); pointer-events:none; min-width:230px; }
+#hud .r{ display:flex; justify-content:space-between; gap:14px; }
+#hud .r span:last-child{ direction:ltr; unicode-bidi:isolate; white-space:pre; }
 #hud[hidden]{ display:none; }
 #banner{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 60px); z-index:6;
   width:min(520px,calc(100% - 24px)); background:#2a1e2a; box-shadow:inset 0 0 0 1px rgba(255,111,89,.45), 0 10px 30px rgba(0,0,0,.4);
@@ -83,43 +94,45 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
-<body>
-<canvas id="stage" aria-label="Physics sandbox"></canvas>
+<body class="home">
+<canvas id="stage" data-i18n-aria="stageAria" aria-label="Physics sandbox"></canvas>
 <video id="cam" playsinline muted autoplay></video>
-<canvas id="preview" hidden aria-label="Camera preview with hand landmarks"></canvas>
+<canvas id="preview" hidden data-i18n-aria="previewAria" aria-label="Camera preview with hand landmarks"></canvas>
 <div id="hud" hidden></div>
 <div class="chrome">
-  <button class="chip" id="homeBtn" type="button">Home</button>
-  <button class="chip" id="modeBtn" type="button" title="Switch game mode">Slice</button>
-  <button class="chip" id="hudBtn" type="button">HUD</button>
-  <button class="chip" id="resetBtn" type="button">Reset</button>
+  <button class="chip icon" id="homeBtn" type="button" data-i18n-aria="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
+  <button class="chip icon langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
+  <button class="chip" id="modeBtn" type="button" data-i18n-title="modeTitle" title="Switch game mode">Slice</button>
+  <button class="chip" id="hudBtn" type="button" data-i18n="hud">HUD</button>
+  <button class="chip" id="resetBtn" type="button" data-i18n="reset">Reset</button>
 </div>
 <div id="hint"></div>
-<div id="status" hidden>Show your whole hand inside the yellow box<small>Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.</small><span class="live" id="statusLive"></span><button id="swapBtn" type="button">Hand still not found? Switch tracker</button></div>
+<div id="status" hidden><span data-i18n="statusTitle">Show your whole hand inside the yellow box</span><small data-i18n="statusSub">Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.</small><span class="live" id="statusLive"></span><button id="swapBtn" type="button" data-i18n="swap">Hand still not found? Switch tracker</button></div>
 <div id="banner" hidden role="alert">
-  <strong>Camera mode is off. You're playing with mouse or touch.</strong>
+  <strong data-i18n="bannerTitle">Camera mode is off. You're playing with mouse or touch.</strong>
   <ul id="bannerList"></ul>
-  <div class="row"><button class="chip" id="bannerClose" type="button">Got it</button></div>
+  <div class="row"><button class="chip" id="bannerClose" type="button" data-i18n="gotIt">Got it</button></div>
 </div>
 
 <section id="start">
+  <button class="chip icon langBtn" id="startLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
   <div class="panel">
     <h1>Grasp</h1>
-    <div class="modes" role="group" aria-label="Game mode">
-      <button type="button" data-mode="sandbox" aria-pressed="true">Sandbox</button>
-      <button type="button" data-mode="slice" aria-pressed="false">Slice</button>
+    <div class="modes" role="group" data-i18n-aria="modesAria" aria-label="Game mode">
+      <button type="button" data-mode="sandbox" aria-pressed="true" data-i18n="modeSandbox">Sandbox</button>
+      <button type="button" data-mode="slice" aria-pressed="false" data-i18n="modeSlice">Slice</button>
     </div>
     <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
     <div class="actions">
-      <button class="primary" id="camBtn" type="button">Enable camera</button>
-      <button class="secondary" id="mouseBtn" type="button">Play with mouse or touch</button>
+      <button class="primary" id="camBtn" type="button" data-i18n="camBtn">Enable camera</button>
+      <button class="secondary" id="mouseBtn" type="button" data-i18n="mouseBtn">Play with mouse or touch</button>
     </div>
     <ul class="checks" id="checks" hidden>
-      <li data-k="camera"><span class="dot"></span><span>Camera<small></small></span></li>
-      <li data-k="library"><span class="dot"></span><span>Hand tracker library<small></small></span></li>
-      <li data-k="runtime"><span class="dot"></span><span>Tracker runtime (WebAssembly)<small></small></span></li>
-      <li data-k="model"><span class="dot"></span><span>Hand model<small></small></span></li>
-      <li data-k="sandbox"><span class="dot"></span><span>Page sandbox<small></small></span></li>
+      <li data-k="camera"><span class="dot"></span><span><span data-i18n="chk_camera">Camera</span><small></small></span></li>
+      <li data-k="library"><span class="dot"></span><span><span data-i18n="chk_library">Hand tracker library</span><small></small></span></li>
+      <li data-k="runtime"><span class="dot"></span><span><span data-i18n="chk_runtime">Tracker runtime (WebAssembly)</span><small></small></span></li>
+      <li data-k="model"><span class="dot"></span><span><span data-i18n="chk_model">Hand model</span><small></small></span></li>
+      <li data-k="sandbox"><span class="dot"></span><span><span data-i18n="chk_sandbox">Page sandbox</span><small></small></span></li>
     </ul>
   </div>
 </section>
@@ -161,6 +174,111 @@ const CONFIG = {
   SPAWN_INTERVAL_MS: [1100, 1900], // gap between waves
   BLADE_TRAIL_MS: 220,        // how long the blade trail lingers
 };
+
+/* ---------------- Language (English / Hebrew) ---------------- */
+const I18N = {
+  en: {
+    title: 'Grasp: hand physics sandbox', langName: 'עב', langAria: 'Switch language to Hebrew',
+    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modesAria: 'Game mode',
+    stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
+    statusTitle: 'Show your whole hand inside the yellow box',
+    statusSub: "Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.",
+    swap: 'Hand still not found? Switch tracker',
+    bannerTitle: "Camera mode is off. You're playing with mouse or touch.", gotIt: 'Got it',
+    descSandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
+    descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
+    camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch',
+    chk_camera: 'Camera', chk_library: 'Hand tracker library', chk_runtime: 'Tracker runtime (WebAssembly)', chk_model: 'Hand model', chk_sandbox: 'Page sandbox',
+    st_camera: 'Camera', st_library: 'Hand tracker library', st_runtime: 'Tracker runtime', st_model: 'Hand model', st_sandbox: 'Page sandbox',
+    hintSliceCam: 'Raise your index finger and swipe through the fruit. Keep your hand inside the yellow box.',
+    hintSliceTouch: 'Swipe across the fruit to slice it.', hintSliceMouse: 'Drag across the fruit to slice it. D for HUD.',
+    hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
+    hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
+    hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
+    switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
+    trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
+    ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
+    ex_blockedSite: 'Camera is set to Blocked for this site in your browser. Allow it in site settings, then reload. ({m})',
+    ex_noApi: 'Camera API is unavailable here (insecure page or sandboxed frame without camera permission).',
+    ex_denied: "Camera permission was denied, either by you or by this page's embedding policy. ({n}: {m})",
+    ex_notFound: 'No usable camera was found. ({n})', ex_busy: 'The camera is busy in another app or tab. ({n})',
+    ex_csp: "Blocked by this page's security policy ({d} refused {h}).",
+    ex_wasm: "WebAssembly is blocked by this page's security policy. ({m})",
+    ex_net: 'Download was blocked or the network is offline. ({m})', ex_timeout: '{l} timed out after {s}s',
+    r_wait: 'Waiting for permission', r_loading: 'Loading from {h}', r_downloading: 'Downloading from {h}', r_checkWasm: 'Checking WebAssembly files',
+    r_skipLib: 'Skipped: needs the library', r_skipModel: 'Reachable, but not started: the model is missing',
+    r_starting: 'Starting ({d})', r_fallback: '{a} failed, starting on {b}', r_running: 'Running on {d}',
+    r_checkSandbox: 'Checking what this page is allowed to do',
+    r_sandbox: 'Camera allowed in frame: {a}. Browser camera setting: {b}. WebAssembly: {c}. Same-origin files: {d}.',
+    yes: 'yes', no: 'no', unknown: 'unknown', allowed: 'allowed', blocked: 'blocked', reachable: 'reachable',
+    perm_granted: 'granted', perm_prompt: 'prompt', perm_denied: 'denied', perm_unknown: 'unknown',
+    physicsFail: 'The physics engine could not load ({m}). Reload to try again.',
+    missed: 'missed {n}', combo: 'Combo ×{n}',
+    h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Tracking FPS', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
+    h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
+    g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point',
+    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', Left: 'Left', Right: 'Right',
+  },
+  he: {
+    title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
+    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modesAria: 'מצב משחק',
+    stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
+    statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
+    statusSub: 'כף יד פתוחה, אצבעות פרושות, שורש כף היד בתמונה. העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת.',
+    swap: 'היד עדיין לא מזוהה? החליפו מעבד זיהוי',
+    bannerTitle: 'מצב מצלמה כבוי. אתם משחקים עם עכבר או מגע.', gotIt: 'הבנתי',
+    descSandbox: 'צבטו באוויר כדי להרים חפצים, שחררו כדי לזרוק, הצביעו כדי לדחוף. המצלמה היא השלט.',
+    descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
+    camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע',
+    chk_camera: 'מצלמה', chk_library: 'ספריית זיהוי היד', chk_runtime: 'מנוע הזיהוי (WebAssembly)', chk_model: 'מודל היד', chk_sandbox: 'הרשאות הדף',
+    st_camera: 'מצלמה', st_library: 'ספריית זיהוי היד', st_runtime: 'מנוע הזיהוי', st_model: 'מודל היד', st_sandbox: 'הרשאות הדף',
+    hintSliceCam: 'הרימו את האצבע המורה והעבירו אותה דרך הפירות. שמרו על היד בתוך המסגרת הצהובה.',
+    hintSliceTouch: 'החליקו על הפרי כדי לחתוך אותו.', hintSliceMouse: 'גררו על הפרי כדי לחתוך אותו. D למדדים.',
+    hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
+    hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
+    hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
+    switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
+    trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
+    ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
+    ex_blockedSite: 'המצלמה חסומה לאתר הזה בדפדפן. אשרו אותה בהגדרות האתר ורעננו את הדף. ({m})',
+    ex_noApi: 'אין כאן גישה למצלמה (דף לא מאובטח או מסגרת מוגבלת בלי הרשאת מצלמה).',
+    ex_denied: 'הרשאת המצלמה נדחתה, על ידיכם או על ידי מדיניות ההטמעה של הדף. ({n}: {m})',
+    ex_notFound: 'לא נמצאה מצלמה זמינה. ({n})', ex_busy: 'המצלמה תפוסה באפליקציה או בלשונית אחרת. ({n})',
+    ex_csp: 'נחסם על ידי מדיניות האבטחה של הדף ({d} חסם את {h}).',
+    ex_wasm: 'WebAssembly חסום על ידי מדיניות האבטחה של הדף. ({m})',
+    ex_net: 'ההורדה נחסמה או שאין חיבור לרשת. ({m})', ex_timeout: 'עבר הזמן: {l} ({s} שניות)',
+    r_wait: 'ממתין להרשאה', r_loading: 'נטען מ-{h}', r_downloading: 'מוריד מ-{h}', r_checkWasm: 'בודק את קובצי WebAssembly',
+    r_skipLib: 'דולג: צריך את הספרייה', r_skipModel: 'זמין, אבל לא הופעל: המודל חסר',
+    r_starting: 'מופעל ({d})', r_fallback: '{a} נכשל, מופעל על {b}', r_running: 'רץ על {d}',
+    r_checkSandbox: 'בודק מה מותר לדף הזה',
+    r_sandbox: 'מצלמה מותרת במסגרת: {a}. הגדרת המצלמה בדפדפן: {b}. WebAssembly: {c}. קבצים מאותו מקור: {d}.',
+    yes: 'כן', no: 'לא', unknown: 'לא ידוע', allowed: 'מותר', blocked: 'חסום', reachable: 'זמינים',
+    perm_granted: 'מאושרת', perm_prompt: 'תישאל', perm_denied: 'חסומה', perm_unknown: 'לא ידוע',
+    physicsFail: 'מנוע הפיזיקה לא נטען ({m}). רעננו את הדף כדי לנסות שוב.',
+    missed: 'פספוסים {n}', combo: 'קומבו ×{n}',
+    h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'קצב זיהוי', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
+    h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
+    g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה',
+    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', Left: 'שמאל', Right: 'ימין',
+  },
+};
+let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
+function t(key, vars) {
+  let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
+  return s;
+}
+function applyLang() {
+  const root = document.documentElement;
+  root.lang = lang; root.dir = lang === 'he' ? 'rtl' : 'ltr'; document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach((el) => (el.textContent = t(el.dataset.i18n)));
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => (el.title = t(el.dataset.i18nTitle)));
+  document.querySelectorAll('.langBtn').forEach((b) => { b.querySelector('span').textContent = t('langName'); b.setAttribute('aria-label', t('langAria')); b.title = t('langAria'); });
+  if (typeof onLangChange === 'function') onLangChange();
+}
+function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {} applyLang(); }
+document.querySelectorAll('.langBtn').forEach((b) => b.addEventListener('click', () => setLang(lang === 'he' ? 'en' : 'he')));
 
 const COLORS = ['#ff6f59','#ffc24b','#43d9a3','#54c6eb','#a98bff','#f1e9da'];
 const $ = (id) => document.getElementById(id);
@@ -520,9 +638,9 @@ function frame(now) {
   if (now - lastRateAt >= 500) {
     fps = frameCount * 1000 / (now - lastRateAt); trackFps = trackCount * 1000 / (now - lastRateAt);
     frameCount = 0; trackCount = 0; lastRateAt = now;
-    if (!statusEl.hidden) statusLive.textContent = swapping ? 'Switching tracker\u2026'
-      : lastTrackError ? 'Tracker error: ' + lastTrackError
-      : 'Tracker on ' + delegateUsed + ', ' + Math.round(trackFps) + ' scans/s' + (trackFps < 1 ? ' (stalled)' : '');
+    if (!statusEl.hidden) statusLive.textContent = swapping ? t('switching')
+      : lastTrackError ? t('trackErr', { e: lastTrackError })
+      : t('trackOn', { d: delegateUsed, n: Math.round(trackFps) }) + (trackFps < 1 ? t('stalled') : '');
     if (!hudEl.hidden) updateHud();
   }
   requestAnimationFrame(frame);
@@ -671,7 +789,7 @@ function cutFruit(f, ux, uy, now) {
   slice.stains.push({ x: f.x, y: f.y, r: f.r, ang, life: 1, color: f.kind.juice || f.kind.flesh });
   slice.score++;
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now;
-  slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? 'Combo \u00d7' + slice.combo.n : '+1', big: slice.combo.n >= 3, life: 1 });
+  slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
 }
 function sliceTick(now, dt) {
   // Camera: only a raised index finger cuts. Mouse/touch: pressing (or two fingers) cuts.
@@ -758,7 +876,7 @@ function renderSlice(now) {
   }
   ctx.globalAlpha = 1;
   ctx.fillStyle = '#f1e9da'; ctx.font = '700 44px Rubik, system-ui, sans-serif'; ctx.fillText(String(slice.score), W / 2, 104);
-  ctx.fillStyle = 'rgba(241,233,218,0.55)'; ctx.font = '400 13px Rubik, system-ui, sans-serif'; ctx.fillText('missed ' + slice.missed, W / 2, 124);
+  ctx.fillStyle = 'rgba(241,233,218,0.55)'; ctx.font = '400 13px Rubik, system-ui, sans-serif'; ctx.fillText(t('missed', { n: slice.missed }), W / 2, 124);
   ctx.textAlign = 'start';
   if (cursor.present) {
     ctx.beginPath(); ctx.arc(cursor.x, cursor.y, slice.bladeOn ? 7 : 14, 0, TAU);
@@ -769,28 +887,25 @@ function renderSlice(now) {
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
-const MODE_DESC = {
-  sandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
-  slice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
-};
 function setGameMode(m) {
   gameMode = m;
   if (held) dropHeld();
   particles.length = 0;
   if (m === 'slice') resetSlice();
-  $('modeBtn').textContent = m === 'slice' ? 'Sandbox' : 'Slice';
-  $('modeDesc').textContent = MODE_DESC[m];
+  renderModeText();
   document.querySelectorAll('.modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
   if (mode !== 'none') showHint();
 }
+function renderModeText() {
+  $('modeBtn').textContent = t(gameMode === 'slice' ? 'modeSandbox' : 'modeSlice');
+  $('modeDesc').textContent = t(gameMode === 'slice' ? 'descSlice' : 'descSandbox');
+}
+function hintText() {
+  const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
+  return t((gameMode === 'slice' ? 'hintSlice' : 'hintSand') + how);
+}
 function showHint() {
-  const touch = matchMedia('(pointer: coarse)').matches;
-  const text = gameMode === 'slice'
-    ? (mode === 'camera' ? 'Raise your index finger and swipe through the fruit. Keep your hand inside the yellow box.'
-      : touch ? 'Swipe across the fruit to slice it.' : 'Drag across the fruit to slice it. D for HUD.')
-    : (mode === 'camera' ? 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.'
-      : touch ? 'Drag to grab and flick to throw. Two fingers to poke.' : 'Drag to grab, release to throw. Hold right button to poke. D for HUD.');
-  hintEl.textContent = text; hintEl.style.opacity = 1;
+  hintEl.textContent = hintText(); hintEl.style.opacity = 1;
   clearTimeout(showHint.t); showHint.t = setTimeout(() => (hintEl.style.opacity = 0), 6000);
 }
 document.querySelectorAll('.modes button').forEach((b) => b.addEventListener('click', () => setGameMode(b.dataset.mode)));
@@ -800,15 +915,18 @@ $('modeBtn').addEventListener('click', () => setGameMode(gameMode === 'slice' ? 
 let delegateUsed = '-';
 function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
-  hudEl.textContent =
-`Mode           ${gameMode}${gameMode === 'slice' ? '  score ' + slice.score + '  missed ' + slice.missed : ''}
-FPS            ${fps.toFixed(0)}
-Tracking FPS   ${mode === 'camera' ? trackFps.toFixed(0) : '-'}
-Gesture        ${gesture}${held ? ' (holding)' : ''}
-Pinch dist     ${mode === 'camera' ? pd : '-'}   in<${CONFIG.PINCH_ENTER} out>${CONFIG.PINCH_EXIT}
-Input          ${mode}${mode === 'camera' ? ' / ' + delegateUsed : ''}
-Hand           ${mode === 'camera' ? (hand.seen ? 'tracked ' + hand.handedness : 'not found') : '-'}
-Last throw     ${lastThrow.toFixed(1)} px/step`;
+  const rowsH = [
+    ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed : '')],
+    ['h_fps', fps.toFixed(0)],
+    ['h_tfps', mode === 'camera' ? trackFps.toFixed(0) : '-'],
+    ['h_gesture', t('g_' + gesture) + (held ? t('h_holding') : '')],
+    ['h_pinch', (mode === 'camera' ? pd : '-') + '   in<' + CONFIG.PINCH_ENTER + ' out>' + CONFIG.PINCH_EXIT],
+    ['h_input', t('m_' + mode) + (mode === 'camera' ? ' / ' + delegateUsed : '')],
+    ['h_hand', mode === 'camera' ? (hand.seen ? t('h_tracked') + ' ' + t(hand.handedness || '-') : t('h_notFound')) : '-'],
+    ['h_throw', lastThrow.toFixed(1) + ' ' + t('h_step')],
+  ];
+  hudEl.replaceChildren(...rowsH.map(([k, v]) => { const r = document.createElement('div'); r.className = 'r';
+    const a = document.createElement('span'), b = document.createElement('span'); a.textContent = t(k); b.textContent = v; r.append(a, b); return r; }));
 }
 function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
@@ -836,39 +954,41 @@ function trackTick(now) {
     processHand(lm || null, video.videoWidth, video.videoHeight, now);
   } catch (err) {
     console.error('[grasp] detectForVideo failed', err); lastTrackError = String(err && err.message || err).slice(0, 80);
-    if (++trackErrors > 30) fallbackToMouse([{ stage: 'Tracker runtime', why: 'Crashed while tracking: ' + (err.message || err) }]);
+    if (++trackErrors > 30) { const m = err.message || err; fallbackToMouse([{ stage: () => t('st_runtime'), why: () => t('crashed', { e: m }) }]); }
   }
 }
 
 const rows = {};
 document.querySelectorAll('#checks li').forEach((li) => (rows[li.dataset.k] = li));
-function setRow(k, state, detail = '') { rows[k].dataset.s = state; rows[k].querySelector('small').textContent = detail; }
-const STAGE_NAME = { camera: 'Camera', library: 'Hand tracker library', runtime: 'Tracker runtime', model: 'Hand model', sandbox: 'Page sandbox' };
+// detail may be a function so it re-renders in the current language
+function setRow(k, state, detail = '') { rows[k].dataset.s = state; rows[k]._d = detail; rows[k].querySelector('small').textContent = typeof detail === 'function' ? detail() : detail; }
+function rowDetail(k) { const d = rows[k]._d; return typeof d === 'function' ? d() : d || ''; }
 let sandbox = {};
 
 function withTimeout(p, ms, label) {
-  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error(label + ' timed out after ' + ms / 1000 + 's'), { name: 'TimeoutError' })), ms))]);
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error(label + ' timed out after ' + ms / 1000 + 's'), { name: 'TimeoutError', label, secs: ms / 1000 })), ms))]);
 }
 function cspFor(url) {
   try { const host = new URL(url).host; return cspViolations.find((v) => v.uri && v.uri.includes(host)); } catch { return null; }
 }
 function explain(stage, err, url) {
   const name = err && err.name, msg = String((err && err.message) || err);
+  const timeout = () => (err && err.label ? t('ex_timeout', { l: err.label, s: err.secs }) : msg);
   if (stage === 'camera') {
-    if (name === 'PolicyBlocked') return 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.';
-    if (name === 'NotAllowedError' && sandbox.cameraPermission === 'denied') return 'Camera is set to Blocked for this site in your browser. Allow it in site settings, then reload. (' + msg + ')';
-    if (name === 'NoMediaDevices') return 'Camera API is unavailable here (insecure page or sandboxed frame without camera permission).';
-    if (name === 'NotAllowedError' || name === 'SecurityError') return 'Camera permission was denied, either by you or by this page\'s embedding policy. (' + name + ': ' + msg + ')';
-    if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'No usable camera was found. (' + name + ')';
-    if (name === 'NotReadableError') return 'The camera is busy in another app or tab. (' + name + ')';
-    if (name === 'TimeoutError') return msg;
+    if (name === 'PolicyBlocked') return t('ex_policy');
+    if (name === 'NotAllowedError' && sandbox.cameraPermission === 'denied') return t('ex_blockedSite', { m: msg });
+    if (name === 'NoMediaDevices') return t('ex_noApi');
+    if (name === 'NotAllowedError' || name === 'SecurityError') return t('ex_denied', { n: name, m: msg });
+    if (name === 'NotFoundError' || name === 'OverconstrainedError') return t('ex_notFound', { n: name });
+    if (name === 'NotReadableError') return t('ex_busy', { n: name });
+    if (name === 'TimeoutError') return timeout();
     return name + ': ' + msg;
   }
   const v = url && cspFor(url);
-  if (v) return 'Blocked by this page\'s security policy (' + v.directive + ' refused ' + new URL(url).host + ').';
-  if (/unsafe-eval|wasm-unsafe-eval|Refused to compile/i.test(msg)) return 'WebAssembly is blocked by this page\'s security policy. (' + msg + ')';
-  if (name === 'TypeError' && /fetch|load|import/i.test(msg)) return 'Download was blocked or the network is offline. (' + msg + ')';
-  if (name === 'TimeoutError') return msg;
+  if (v) return t('ex_csp', { d: v.directive, h: new URL(url).host });
+  if (/unsafe-eval|wasm-unsafe-eval|Refused to compile/i.test(msg)) return t('ex_wasm', { m: msg });
+  if (name === 'TypeError' && /fetch|load|import/i.test(msg)) return t('ex_net', { m: msg });
+  if (name === 'TimeoutError') return timeout();
   return (name ? name + ': ' : '') + msg;
 }
 
@@ -885,7 +1005,7 @@ async function probeSandbox() {
   catch (e) { out.sameOrigin = false; console.error('[grasp] same-origin fetch blocked', e); }
   return out;
 }
-const yn = (v) => (v === true ? 'yes' : v === false ? 'no' : 'unknown');
+const yn = (v) => t(v === true ? 'yes' : v === false ? 'no' : 'unknown');
 async function startCamera() {
   if (cameraPolicy() === false) throw Object.assign(new Error('permissions policy disallows camera in this frame'), { name: 'PolicyBlocked' });
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw Object.assign(new Error('navigator.mediaDevices.getUserMedia is missing'), { name: 'NoMediaDevices' });
@@ -899,18 +1019,18 @@ async function startCamera() {
 async function loadTracker() {
   const base = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@' + CONFIG.MP_VERSION;
   let vision;
-  setRow('library', 'pending', 'Loading from cdn.jsdelivr.net');
+  setRow('library', 'pending', () => t('r_loading', { h: 'cdn.jsdelivr.net' }));
   try {
     vision = await withTimeout(import(base + '/vision_bundle.mjs'), CONFIG.STAGE_TIMEOUT_MS, 'Library download');
     setRow('library', 'ok', 'MediaPipe Tasks Vision ' + CONFIG.MP_VERSION);
   } catch (e) {
     console.error('[grasp] library failed', e);
-    setRow('library', 'fail', explain('library', e, base)); setRow('runtime', 'skip', 'Skipped: needs the library'); setRow('model', 'skip', 'Skipped: needs the library');
+    setRow('library', 'fail', () => explain('library', e, base)); setRow('runtime', 'skip', () => t('r_skipLib')); setRow('model', 'skip', () => t('r_skipLib'));
     return false;
   }
   // Model and runtime reachability are checked in parallel so both failures are reported.
-  setRow('model', 'pending', 'Downloading from storage.googleapis.com');
-  setRow('runtime', 'pending', 'Checking WebAssembly files');
+  setRow('model', 'pending', () => t('r_downloading', { h: 'storage.googleapis.com' }));
+  setRow('runtime', 'pending', () => t('r_checkWasm'));
   const wasmUrl = base + '/wasm/vision_wasm_internal.wasm';
   const [modelRes, wasmRes] = await Promise.allSettled([
     withTimeout(fetch(CONFIG.MODEL_URL).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }), CONFIG.STAGE_TIMEOUT_MS, 'Model download'),
@@ -918,13 +1038,13 @@ async function loadTracker() {
   ]);
   let ok = true;
   if (modelRes.status === 'fulfilled') setRow('model', 'ok', (modelRes.value.byteLength / 1e6).toFixed(1) + ' MB');
-  else { console.error('[grasp] model failed', modelRes.reason); setRow('model', 'fail', explain('model', modelRes.reason, CONFIG.MODEL_URL)); ok = false; }
-  if (wasmRes.status === 'rejected') { console.error('[grasp] wasm check failed', wasmRes.reason); setRow('runtime', 'fail', explain('runtime', wasmRes.reason, wasmUrl)); ok = false; }
-  if (!ok) { if (wasmRes.status === 'fulfilled') setRow('runtime', 'skip', 'Reachable, but not started: the model is missing'); return false; }
+  else { console.error('[grasp] model failed', modelRes.reason); setRow('model', 'fail', () => explain('model', modelRes.reason, CONFIG.MODEL_URL)); ok = false; }
+  if (wasmRes.status === 'rejected') { console.error('[grasp] wasm check failed', wasmRes.reason); setRow('runtime', 'fail', () => explain('runtime', wasmRes.reason, wasmUrl)); ok = false; }
+  if (!ok) { if (wasmRes.status === 'fulfilled') setRow('runtime', 'skip', () => t('r_skipModel')); return false; }
 
   // Phones start on CPU: on some Android GPUs the GPU tracker runs but never finds a hand.
   const first = matchMedia('(pointer: coarse)').matches ? 'CPU' : 'GPU', second = first === 'GPU' ? 'CPU' : 'GPU';
-  setRow('runtime', 'pending', 'Starting (' + first + ')');
+  setRow('runtime', 'pending', () => t('r_starting', { d: first }));
   try {
     const fileset = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
     const modelBytes = new Uint8Array(modelRes.value);
@@ -936,14 +1056,14 @@ async function loadTracker() {
     try { landmarker = await withTimeout(makeLandmarker(first), CONFIG.STAGE_TIMEOUT_MS, first + ' start'); delegateUsed = first; }
     catch (err1) {
       console.warn('[grasp] ' + first + ' delegate failed, trying ' + second, err1);
-      setRow('runtime', 'pending', first + ' failed, starting on ' + second);
+      setRow('runtime', 'pending', () => t('r_fallback', { a: first, b: second }));
       landmarker = await withTimeout(makeLandmarker(second), CONFIG.STAGE_TIMEOUT_MS, second + ' start'); delegateUsed = second;
     }
-    setRow('runtime', 'ok', 'Running on ' + delegateUsed);
+    { const d = delegateUsed; setRow('runtime', 'ok', () => t('r_running', { d })); }
     return true;
   } catch (e) {
     console.error('[grasp] runtime failed', e);
-    setRow('runtime', 'fail', explain('runtime', e, wasmUrl));
+    setRow('runtime', 'fail', () => explain('runtime', e, wasmUrl));
     return false;
   }
 }
@@ -951,29 +1071,28 @@ async function loadTracker() {
 async function enableCamera() {
   $('camBtn').disabled = true; $('checks').hidden = false;
   Object.keys(rows).forEach((k) => setRow(k, 'idle', ''));
-  setRow('camera', 'pending', 'Waiting for permission');
+  setRow('camera', 'pending', () => t('r_wait'));
   // Camera request starts synchronously inside the click so the user gesture counts.
   const camP = withTimeout(startCamera(), CONFIG.STAGE_TIMEOUT_MS, 'Camera start')
     .then(() => { setRow('camera', 'ok', video.videoWidth + '×' + video.videoHeight); return true; })
-    .catch((e) => { console.error('[grasp] camera failed', e); setRow('camera', 'fail', explain('camera', e)); return false; });
+    .catch((e) => { console.error('[grasp] camera failed', e); setRow('camera', 'fail', () => explain('camera', e)); return false; });
   const trackerP = loadTracker().catch((e) => { console.error('[grasp] tracker failed', e); return false; });
-  setRow('sandbox', 'pending', 'Checking what this page is allowed to do');
+  setRow('sandbox', 'pending', () => t('r_checkSandbox'));
   const sandboxP = probeSandbox().then((sb) => {
     sandbox = sb;
     const good = sb.cameraPolicy !== false && sb.wasm && sb.sameOrigin;
-    setRow('sandbox', good ? 'ok' : 'fail', 'Camera allowed in frame: ' + yn(sb.cameraPolicy) + '. Browser camera setting: ' + sb.cameraPermission +
-      '. WebAssembly: ' + (sb.wasm ? 'allowed' : 'blocked') + '. Same-origin files: ' + (sb.sameOrigin ? 'reachable' : 'blocked') + '.');
+    setRow('sandbox', good ? 'ok' : 'fail', () => t('r_sandbox', { a: yn(sb.cameraPolicy), b: t('perm_' + sb.cameraPermission), c: t(sb.wasm ? 'allowed' : 'blocked'), d: t(sb.sameOrigin ? 'reachable' : 'blocked') }));
     console.info('[grasp] sandbox', sb);
   }).catch((e) => { console.error('[grasp] sandbox probe failed', e); setRow('sandbox', 'fail', String(e.message || e)); });
   const [camOk, trkOk] = await Promise.all([camP, trackerP, sandboxP]);
   if (!camOk && rows.camera.dataset.s === 'fail' && sandbox.cameraPermission === 'denied' && sandbox.cameraPolicy !== false)
-    setRow('camera', 'fail', explain('camera', { name: 'NotAllowedError', message: 'Permission denied' }));
+    setRow('camera', 'fail', () => explain('camera', { name: 'NotAllowedError', message: 'Permission denied' }));
 
   if (camOk && trkOk) {
     setTimeout(() => startGame('camera'), 350);
   } else {
     const failures = Object.keys(rows).filter((k) => rows[k].dataset.s === 'fail')
-      .map((k) => ({ stage: STAGE_NAME[k], why: rows[k].querySelector('small').textContent }));
+      .map((k) => ({ stage: () => t('st_' + k), why: () => rowDetail(k) }));
     fallbackToMouse(failures);
   }
 }
@@ -983,16 +1102,21 @@ function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop());
 function fallbackToMouse(failures) {
   stopCamera(); landmarker = null; lastLandmarks = null;
   noHandShown = false; statusEl.hidden = true; preview.classList.remove('big');
-  const list = $('bannerList'); list.innerHTML = '';
-  for (const f of failures) { const li = document.createElement('li'); li.textContent = f.stage + ': ' + f.why; list.appendChild(li); }
+  lastFailures = failures; renderBanner();
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
+}
+let lastFailures = [];
+const val = (x) => (typeof x === 'function' ? x() : x);
+function renderBanner() {
+  const list = $('bannerList'); list.innerHTML = '';
+  for (const f of lastFailures) { const li = document.createElement('li'); li.textContent = val(f.stage) + ': ' + val(f.why); list.appendChild(li); }
 }
 $('bannerClose').addEventListener('click', () => ($('banner').hidden = true));
 
 async function swapTracker(next) {
   if (!makeLandmarker || swapping || next === delegateUsed) return false;
-  swapping = true; statusLive.textContent = 'Switching tracker\u2026';
+  swapping = true; statusLive.textContent = t('switching');
   let ok = false;
   try {
     const fresh = await withTimeout(makeLandmarker(next), CONFIG.STAGE_TIMEOUT_MS, next + ' start');
@@ -1022,12 +1146,17 @@ function updateNoHand(now) {
   noHandShown = show;
   preview.classList.toggle('big', show);
   statusEl.hidden = !show;
-  if (show) { hintEl.style.opacity = 0; statusLive.textContent = 'Tracker on ' + delegateUsed + ', starting\u2026'; }
+  if (show) { hintEl.style.opacity = 0; statusLive.textContent = t('trackStarting', { d: delegateUsed }); }
   updateHudOffset();
 }
+// Top row: camera preview at the left, buttons wrap at the right; the HUD sits under whichever is taller.
 function updateHudOffset() {
-  const off = mode === 'camera' && !preview.hidden && !preview.classList.contains('big') ? preview.getBoundingClientRect().height + 8 : 0;
-  document.documentElement.style.setProperty('--hud-offset', off + 'px');
+  const small = mode === 'camera' && !preview.hidden && !preview.classList.contains('big');
+  const root = document.documentElement.style;
+  root.setProperty('--chrome-inset', small ? preview.getBoundingClientRect().width + 8 + 'px' : '0px');
+  const top = document.querySelector('.chrome').getBoundingClientRect().top;
+  const bottoms = [document.querySelector('.chrome').getBoundingClientRect().bottom, small ? preview.getBoundingClientRect().bottom : 0];
+  root.setProperty('--hud-offset', Math.max(0, Math.max(...bottoms) - top) + 8 + 'px');
 }
 window.addEventListener('resize', () => updateHudOffset());
 
@@ -1042,14 +1171,14 @@ function goHome() {
   noHandShown = false; preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
   hintEl.style.opacity = 0; updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
-  $('start').hidden = false;
+  $('start').hidden = false; document.body.classList.add('home');
 }
 $('homeBtn').addEventListener('click', goHome);
 
 let running = false;
 function startGame(m) {
   mode = m;
-  $('start').hidden = true;
+  $('start').hidden = true; document.body.classList.remove('home');
   preview.hidden = m !== 'camera';
   if (m === 'camera') {
     preview.width = 320; preview.height = Math.round(320 * (video.videoHeight || 480) / (video.videoWidth || 640));
@@ -1064,13 +1193,23 @@ function startGame(m) {
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastFrame = performance.now(); acc = 0; } });
 
 /* ---------------- Boot ---------------- */
+let physicsError = null;
+function onLangChange() {
+  renderModeText();
+  if (physicsError) $('modeDesc').textContent = t('physicsFail', { m: physicsError });
+  Object.keys(rows).forEach((k) => (rows[k].querySelector('small').textContent = rowDetail(k)));
+  renderBanner();
+  if (hintEl.style.opacity === '1') hintEl.textContent = hintText();
+  if (!hudEl.hidden) updateHud();
+}
+applyLang();
 $('camBtn').addEventListener('click', enableCamera);
 $('mouseBtn').addEventListener('click', () => fallbackToMouse([]));
 window.addEventListener('resize', resize);
 resize();
 ensureMatter().then(initPhysics).catch((e) => {
   console.error(e);
-  document.querySelector('.panel p').textContent = 'The physics engine could not load (' + e.message + '). Reload to try again.';
+  physicsError = e.message; $('modeDesc').textContent = t('physicsFail', { m: physicsError });
   $('camBtn').disabled = $('mouseBtn').disabled = true;
 });
 
