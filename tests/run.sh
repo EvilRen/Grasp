@@ -12,4 +12,5 @@ fi
 python3 tests/test_sandbox.py
 python3 tests/test_slice.py
 python3 tests/test_smash.py
+python3 tests/test_busy.py
 echo "ALL TESTS PASSED"

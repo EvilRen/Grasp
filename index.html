@@ -38,7 +38,8 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 html[dir="rtl"] .tagline{ text-transform:none; letter-spacing:0; font-size:15px; }
 .panel p{ margin:0 0 20px; color:var(--muted); line-height:1.5; font-size:16px; min-height:4.5em; display:flex; align-items:center; justify-content:center; }
 .actions{ display:flex; flex-direction:column; gap:10px; }
-.modes{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0 0 16px; }
+.modes{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:0 0 16px; }
+@media (max-width:460px){ .modes{ grid-template-columns:repeat(2,1fr); } }
 .modes button{ display:flex; flex-direction:column; align-items:center; gap:8px; background:rgba(29,37,71,.5); color:var(--muted); padding:14px 6px 12px;
   font-weight:500; border-radius:14px; font-size:15px; white-space:nowrap; box-shadow:inset 0 0 0 1.5px var(--line); transition:transform .15s, box-shadow .15s, color .15s; }
 .modes button svg{ width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
@@ -92,7 +93,9 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #banner li{ overflow-wrap:anywhere; }
 #banner .row{ display:flex; gap:8px; justify-content:flex-end; }
 #hint{ position:fixed; left:50%; transform:translateX(-50%); top:34%; z-index:4;
-  color:var(--muted); font-size:14px; text-align:center; pointer-events:none; transition:opacity .6s; max-width:min(460px, calc(100% - 32px)); }
+  color:var(--bone); font-size:14px; text-align:center; pointer-events:none; transition:opacity .6s; max-width:min(460px, calc(100% - 32px));
+  background:rgba(14,19,40,.78); padding:8px 14px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--line); }
+#hint:empty{ display:none; }
 #status{ position:fixed; left:50%; top:74%; transform:translate(-50%,-50%); z-index:4; pointer-events:none; text-align:center;
   width:min(320px, calc(100% - 48px)); color:var(--bone); font-size:20px; font-weight:500; line-height:1.35; transition:opacity .25s; }
 #status small{ display:block; margin-top:8px; font-size:14px; font-weight:400; color:var(--muted); }
@@ -131,6 +134,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <button type="button" data-mode="sandbox" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="modeSandbox">Sandbox</span></button>
       <button type="button" data-mode="slice" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5 8 16"/><path d="M20.5 3.5c-1.5 5-5 9.5-10 12.5"/><path d="M9.5 14.5 6 18"/><path d="M7.2 15.8l1 1"/><path d="M6 18l-2.5 2.5"/></svg><span data-i18n="modeSlice">Slice</span></button>
       <button type="button" data-mode="smash" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11M10 11V7.5a1.5 1.5 0 0 1 3 0V11M13 11V8.5a1.5 1.5 0 0 1 3 0V11M16 11a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 12.5 21h-1A6.5 6.5 0 0 1 5 14.5V13a1.5 1.5 0 0 1 3 0"/><path d="M7 13v-2M4.5 10.5 7 11"/></svg><span data-i18n="modeSmash">Smash</span></button>
+      <button type="button" data-mode="busy" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><rect x="6" y="7.5" width="12" height="5" rx="2.5"/><circle cx="15" cy="10" r="1.6"/><circle cx="8" cy="16.5" r="1.4"/><circle cx="12" cy="16.5" r="1.4"/><circle cx="16" cy="16.5" r="1.4"/></svg><span data-i18n="modeBusy">Busy Board</span></button>
     </div>
     <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
     <div class="actions">
@@ -200,7 +204,7 @@ const CONFIG = {
 const I18N = {
   en: {
     title: 'Grasp: hand physics sandbox', tagline: 'Your hand is the controller', langName: 'עב', langAria: 'Switch language to Hebrew',
-    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modesAria: 'Game mode',
+    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
     statusTitle: 'Show your whole hand inside the yellow box',
     statusSub: "Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.",
@@ -209,6 +213,7 @@ const I18N = {
     descSandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
     descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
     descSmash: 'Brick walls stand and cars drive by. Make a fist and punch fast to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
+    descBusy: 'A busy board for little hands: switches that click, buttons that sing, knobs that turn. No score, no clock. Point to poke, pinch to turn.',
     camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch', tremortiLink: 'Tremorti · tremor meter',
     chk_camera: 'Camera', chk_library: 'Hand tracker library', chk_runtime: 'Tracker runtime (WebAssembly)', chk_model: 'Hand model', chk_sandbox: 'Page sandbox',
     st_camera: 'Camera', st_library: 'Hand tracker library', st_runtime: 'Tracker runtime', st_model: 'Hand model', st_sandbox: 'Page sandbox',
@@ -219,6 +224,9 @@ const I18N = {
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
     hintSmashCam: 'Make a fist and punch through the walls and cars. Keep your hand inside the yellow box.',
     hintSmashTouch: 'Swipe fast through the walls and cars to smash them.', hintSmashMouse: 'Hold the left button and swipe fast to punch. D for HUD.',
+    hintBusyCam: 'Point at a switch or button to poke it. Pinch a knob and turn your hand. Keep your hand inside the yellow box.',
+    hintBusyTouch: 'Tap the switches and buttons. Touch a knob and drag around it to turn it.',
+    hintBusyMouse: 'Click the switches and buttons. Drag around a knob to turn it. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
@@ -242,11 +250,11 @@ const I18N = {
     h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Tracking FPS', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
     g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
-    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', Left: 'Left', Right: 'Right',
+    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', Left: 'Left', Right: 'Right',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
-    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modesAria: 'מצב משחק',
+    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
     statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
     statusSub: 'כף יד פתוחה, אצבעות פרושות, שורש כף היד בתמונה. העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת.',
@@ -255,6 +263,7 @@ const I18N = {
     descSandbox: 'צבטו באוויר כדי להרים חפצים, שחררו כדי לזרוק, הצביעו כדי לדחוף. המצלמה היא השלט.',
     descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
     descSmash: 'קירות לבנים עומדים ומכוניות חולפות. קמצו אגרוף והכו מהר כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
+    descBusy: 'לוח עסוק לידיים קטנות: מתגים שמקליקים, כפתורים שמנגנים, כפתורי סיבוב שמסתובבים. בלי ניקוד, בלי שעון. הצביעו כדי ללחוץ, צבטו כדי לסובב.',
     camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע', tremortiLink: 'טרימורטי · מד רעד',
     chk_camera: 'מצלמה', chk_library: 'ספריית זיהוי היד', chk_runtime: 'מנוע הזיהוי (WebAssembly)', chk_model: 'מודל היד', chk_sandbox: 'הרשאות הדף',
     st_camera: 'מצלמה', st_library: 'ספריית זיהוי היד', st_runtime: 'מנוע הזיהוי', st_model: 'מודל היד', st_sandbox: 'הרשאות הדף',
@@ -265,6 +274,9 @@ const I18N = {
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
     hintSmashCam: 'קמצו אגרוף והכו דרך הקירות והמכוניות. שמרו על היד בתוך המסגרת הצהובה.',
     hintSmashTouch: 'החליקו מהר דרך הקירות והמכוניות כדי לנפץ אותם.', hintSmashMouse: 'החזיקו את הכפתור השמאלי והחליקו מהר כדי להכות. D למדדים.',
+    hintBusyCam: 'הצביעו על מתג או כפתור כדי ללחוץ עליו. צבטו כפתור סיבוב וסובבו את היד. שמרו על היד בתוך המסגרת הצהובה.',
+    hintBusyTouch: 'הקישו על המתגים והכפתורים. געו בכפתור סיבוב וגררו סביבו כדי לסובב.',
+    hintBusyMouse: 'לחצו על המתגים והכפתורים. גררו סביב כפתור סיבוב כדי לסובב אותו. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
@@ -288,7 +300,7 @@ const I18N = {
     h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'קצב זיהוי', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
-    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', Left: 'שמאל', Right: 'ימין',
+    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', Left: 'שמאל', Right: 'ימין',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -348,6 +360,7 @@ function resize() {
   canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
   SS = DPR; SPRITES.clear(); TEXTS.clear(); // sprite caches are resolution-dependent
   buildGrid();
+  if (gameMode === 'busy' && busy.widgets.length) layoutBusy();
   if (engine) { buildWalls(); clampBodies(); }
 }
 
@@ -529,7 +542,7 @@ function processHand(lm, vw, vh, t) {
 }
 
 /* ---------------- Pointer state (mouse / touch) ---------------- */
-const ptr = { type: 'mouse', present: false, x: 0, y: 0, pinch: false, point: false, touches: new Map(), lastUp: -1e9 };
+const ptr = { type: 'mouse', present: false, x: 0, y: 0, pinch: false, point: false, touches: new Map(), lastUp: -1e9, downAt: -1e9 };
 function recomputeTouch() {
   const pts = [...ptr.touches.values()];
   if (pts.length === 1) { ptr.x = pts[0].x; ptr.y = pts[0].y; ptr.pinch = true; ptr.point = false; }
@@ -541,6 +554,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (mode !== 'mouse') return;
   e.preventDefault();
   ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
+  if (e.button === 0 || e.pointerType === 'touch') ptr.downAt = performance.now(); // a tap shorter than a frame still counts as a press
   if (e.pointerType === 'touch') { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); ptr.present = true; recomputeTouch(); return; }
   ptr.present = true; ptr.x = e.clientX; ptr.y = e.clientY;
   if (e.button === 2) ptr.point = true; else if (e.button === 0) ptr.pinch = true;
@@ -574,8 +588,9 @@ function readInput(now) {
   }
   if (mode === 'mouse') { // smash: left button / one finger held = fist
     const present = ptr.type === 'touch' ? (ptr.touches.size > 0 || now - ptr.lastUp < 150) : ptr.present;
-    const f = gameMode === 'smash' && ptr.pinch;
-    return { present, x: ptr.x, y: ptr.y, pinch: ptr.pinch && !f, point: ptr.point, fist: f };
+    const down = ptr.pinch || now - ptr.downAt < 40;
+    const f = gameMode === 'smash' && down;
+    return { present, x: ptr.x, y: ptr.y, pinch: down && !f, point: ptr.point, fist: f };
   }
   return { present: false, x: 0, y: 0, pinch: false, point: false, fist: false };
 }
@@ -658,8 +673,9 @@ function frame(now) {
   if (gameMode === 'smash') smashTick(now, dt);
 
   acc += dt;
-  const steps = gameMode !== 'slice' ? Math.min(4, Math.floor(acc / STEP)) : 0;
-  if (gameMode === 'slice') acc = 0;
+  const noPhysics = gameMode === 'slice' || gameMode === 'busy';
+  const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
+  if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
     for (const [b, on] of probes) {
       const f = (i + 1) / steps, { from, to } = b.plugin;
@@ -672,7 +688,7 @@ function frame(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else render(now);
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -1567,6 +1583,263 @@ function renderSmash(now) {
   }
 }
 
+/* ---------------- Busy Board mode ---------------- */
+// A toddler busy board: chunky things to touch that click, light up and turn. No score, no clock.
+// Every widget is a plain object { kind, x, y, w, h, state, ... } (x/y = centre, w/h = touch cell) with
+//   hit(p)            true when p is inside its touch area
+//   update(now, dt)   animation step
+//   draw(now)         blits its pre-rendered sprites
+// and the shared interaction model, which later widgets (sliders, zipper...) reuse:
+//   press(now) / release(now)   a point or pinch (mouse click, touch tap) lands on / leaves the widget
+//   grab(p, now) / drag(p, now) / drop(now)   a pinch (mouse or one-finger drag) holds the widget and moves with the hand
+// Hovering with an open hand (or a mouse with no button down) highlights the widget under the cursor.
+const BUSY_COLORS = ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1'];
+const BUSY_NOTES = [['#ff5a4a', 261.63], ['#ffc24b', 329.63], ['#43d9a3', 392.0], ['#54c6eb', 523.25]]; // red C4, yellow E4, green G4, blue C5
+const WOODS = ['#c48a4f', '#b57841', '#d09a5f', '#a56d3c', '#c9905a'];
+const KNOB_RANGE = Math.PI * 0.75, KNOB_DETENT = Math.PI / 6; // pointer sweeps -135°..135° with a detent every 30°
+const busy = { widgets: [], hover: null, active: null, grabbed: null, seed: 1, top: 64, margin: 14, board: { x: 0, y: 0, w: 0, h: 0 }, sounds: { click: 0, note: 0, ratchet: 0, all: 0 } };
+function busySound(kind, f) { busy.sounds[kind] = (busy.sounds[kind] || 0) + 1; busy.sounds.all++; sfx(kind, f); }
+function shuffled(a, r) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const hitRect = (wd, p) => Math.abs(p.x - wd.x) <= wd.w / 2 && Math.abs(p.y - wd.y) <= wd.h / 2;
+function screw(g, x, y, r, a) {
+  const gr = g.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r); gr.addColorStop(0, '#eef0f4'); gr.addColorStop(0.7, '#a9afbd'); gr.addColorStop(1, '#6a7080');
+  g.beginPath(); g.arc(x, y, r, 0, TAU); g.fillStyle = gr; g.fill(); g.lineWidth = 1; g.strokeStyle = '#2f3444'; g.stroke();
+  g.save(); g.translate(x, y); g.rotate(a); g.lineWidth = Math.max(1.5, r * 0.3); g.strokeStyle = '#3a3f50'; g.beginPath(); g.moveTo(-r * 0.62, 0); g.lineTo(r * 0.62, 0); g.stroke(); g.restore();
+}
+function plateFill(g, path, r) { // dark plastic plate with a top-left bevel
+  const gr = g.createLinearGradient(-r, -r, r, r); gr.addColorStop(0, '#3a3350'); gr.addColorStop(0.5, '#2a2440'); gr.addColorStop(1, '#1a1628');
+  path(); g.fillStyle = gr; g.fill(); rimLight(g, path, r, 0.22); g.lineWidth = 1.5; g.strokeStyle = '#0c0a16'; path(); g.stroke();
+}
+function boardSprite() { // warm wooden board with planks, grain, knots, a bevelled edge and screws in the corners
+  const key = 'busy|board|' + busy.seed + '|' + Math.round(busy.board.w) + 'x' + Math.round(busy.board.h);
+  return makeSprite(key, W, H, 0, 0, (g) => {
+    const r = rng(busy.seed || 7), base = WOODS[busy.seed % WOODS.length], { x, y, w, h } = busy.board, rr = Math.min(28, w * 0.05);
+    g.fillStyle = '#141b34'; g.fillRect(0, 0, W, H);
+    const path = () => { g.beginPath(); g.roundRect(x, y, w, h, rr); };
+    g.save(); g.shadowColor = 'rgba(0,0,0,0.55)'; g.shadowBlur = 26; g.shadowOffsetY = 10; path(); g.fillStyle = base; g.fill(); g.restore();
+    g.save(); path(); g.clip();
+    const ph = h / Math.max(3, Math.round(h / 96));
+    for (let py = y, i = 0; py < y + h - 1; py += ph, i++) {
+      const v = (r() - 0.5) * 0.16, gr = g.createLinearGradient(x, py, x + w, py + ph);
+      gr.addColorStop(0, lighten(base, 0.14 + v)); gr.addColorStop(0.5, v > 0 ? lighten(base, v) : darken(base, -v)); gr.addColorStop(1, darken(base, 0.14 - v));
+      g.fillStyle = gr; g.fillRect(x, py, w, ph + 1);
+      for (let k = 0, n = 7 + Math.floor(r() * 5); k < n; k++) { // grain: long wavy lines
+        const yy = py + r() * ph, amp = ph * 0.08, light = r() < 0.3;
+        g.strokeStyle = light ? 'rgba(255,232,196,0.16)' : 'rgba(70,35,10,' + (0.1 + r() * 0.12).toFixed(2) + ')'; g.lineWidth = 0.8 + r() * 1.4;
+        g.beginPath(); g.moveTo(x, yy);
+        for (let sx = x; sx < x + w; sx += w / 5) g.quadraticCurveTo(sx + w / 10, yy + (r() - 0.5) * amp * 2, sx + w / 5, yy + (r() - 0.5) * amp);
+        g.stroke();
+      }
+      if (r() < 0.55) { // a knot
+        const kx = x + w * (0.1 + r() * 0.8), ky = py + ph * (0.3 + r() * 0.4), kr = 5 + r() * 7;
+        for (let q = 3; q >= 0; q--) { g.beginPath(); g.ellipse(kx, ky, kr * (0.35 + q * 0.25), kr * (0.25 + q * 0.16), 0.3, 0, TAU); g.strokeStyle = 'rgba(70,35,10,' + (0.25 - q * 0.04).toFixed(2) + ')'; g.lineWidth = 1.2; g.stroke(); }
+        g.beginPath(); g.ellipse(kx, ky, kr * 0.35, kr * 0.25, 0.3, 0, TAU); g.fillStyle = 'rgba(70,35,10,0.45)'; g.fill();
+      }
+      if (i) { g.fillStyle = 'rgba(60,30,10,0.5)'; g.fillRect(x, py - 1, w, 2); g.fillStyle = 'rgba(255,232,196,0.18)'; g.fillRect(x, py + 1, w, 1.5); } // seam
+    }
+    const v = g.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.3, x + w / 2, y + h / 2, Math.hypot(w, h) * 0.6);
+    v.addColorStop(0, 'rgba(40,15,0,0)'); v.addColorStop(1, 'rgba(40,15,0,0.3)'); g.fillStyle = v; g.fillRect(x, y, w, h);
+    g.restore();
+    g.lineWidth = 4; g.strokeStyle = darken(base, 0.55); path(); g.stroke(); // edge
+    g.lineWidth = 2.5; g.strokeStyle = 'rgba(255,235,200,0.35)'; g.beginPath(); g.roundRect(x + 4, y + 4, w - 8, h - 8, rr - 3); g.stroke(); // thin bevel highlight
+    for (const [sx, sy] of [[x + rr, y + rr], [x + w - rr, y + rr], [x + rr, y + h - rr], [x + w - rr, y + h - rr]]) screw(g, sx, sy, Math.min(9, rr * 0.36), r() * Math.PI);
+  });
+}
+function ledSprite(r, color, on) {
+  return makeSprite('busy|led|' + Math.round(r) + '|' + color + '|' + (on ? 1 : 0), r * 5, r * 5, r * 2.5, r * 2.5, (g) => {
+    g.beginPath(); g.arc(0, 0, r * 1.25, 0, TAU); g.fillStyle = '#0c0a16'; g.fill(); // socket
+    if (on) { const glow = g.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 2.5); glow.addColorStop(0, hexA(color, 0.55)); glow.addColorStop(1, hexA(color, 0)); g.fillStyle = glow; g.fillRect(-r * 2.5, -r * 2.5, r * 5, r * 5); }
+    const dome = () => { g.beginPath(); g.arc(0, 0, r, 0, TAU); };
+    if (on) { const gr = g.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.05, 0, 0, r); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.35, lighten(color, 0.3)); gr.addColorStop(1, color); dome(); g.fillStyle = gr; g.fill(); }
+    else { const gr = g.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.05, 0, 0, r); gr.addColorStop(0, darken(color, 0.45)); gr.addColorStop(1, darken(color, 0.75)); dome(); g.fillStyle = gr; g.fill(); }
+    g.lineWidth = 1; g.strokeStyle = 'rgba(0,0,0,0.5)'; dome(); g.stroke();
+    g.beginPath(); g.ellipse(-r * 0.32, -r * 0.4, r * 0.28, r * 0.16, -0.7, 0, TAU); g.fillStyle = 'rgba(255,255,255,' + (on ? 0.9 : 0.35) + ')'; g.fill();
+  });
+}
+function hexA(h, a) { const [r, g, b] = hexRgb(h); return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')'; }
+function drawHover(wd, now) { // soft pulsing frame so kids see what they can touch
+  const k = 0.55 + 0.45 * Math.sin(now / 180), pad = 3, rr = Math.min(wd.w, wd.h) * 0.16;
+  resetView(); ctx.beginPath(); ctx.roundRect(wd.x - wd.w / 2 + pad, wd.y - wd.h / 2 + pad, wd.w - pad * 2, wd.h - pad * 2, rr);
+  ctx.fillStyle = 'rgba(255,255,255,' + (0.05 + 0.04 * k).toFixed(3) + ')'; ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,240,200,' + (0.25 + 0.3 * k).toFixed(3) + ')'; ctx.stroke();
+}
+/* --- flip switch: toggle lever + LED --- */
+function switchPlateSprite(w, h) {
+  return makeSprite('busy|swp|' + Math.round(w) + 'x' + Math.round(h), w + 8, h + 8, w / 2 + 4, h / 2 + 4, (g) => {
+    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h * 0.16); };
+    plateFill(g, path, Math.min(w, h) / 2);
+    const px = -w * 0.14, py = h * 0.1, sr = h * 0.2; // lever socket
+    const sg = g.createRadialGradient(px, py, sr * 0.2, px, py, sr); sg.addColorStop(0, '#05040a'); sg.addColorStop(0.8, '#100d1c'); sg.addColorStop(1, '#3a3350');
+    g.beginPath(); g.arc(px, py, sr, 0, TAU); g.fillStyle = sg; g.fill();
+    g.beginPath(); g.arc(px, py, sr * 0.72, 0, TAU); g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,255,255,0.12)'; g.stroke();
+    screw(g, -w / 2 + h * 0.13, h / 2 - h * 0.13, h * 0.055, 0.6); screw(g, w / 2 - h * 0.13, h / 2 - h * 0.13, h * 0.055, 2.2); // bottom corners, clear of the lever
+  });
+}
+function leverSprite(len, color) { // pivot at the origin, lever points up (-y); rotated by blit
+  const key = 'busy|lever|' + Math.round(len) + '|' + color, tr = len * 0.34, sw = len * 0.3;
+  return makeSprite(key, len * 2, len * 2.1, len, len * 1.6, (g) => {
+    const stem = () => { g.beginPath(); g.roundRect(-sw / 2, -len, sw, len + sw * 0.4, sw * 0.4); };
+    const sg = g.createLinearGradient(-sw / 2, 0, sw / 2, 0); sg.addColorStop(0, '#cfd3dc'); sg.addColorStop(0.45, '#f4f6f9'); sg.addColorStop(1, '#7e8596');
+    stem(); g.fillStyle = sg; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#3a3f50'; g.stroke();
+    const tip = () => { g.beginPath(); g.arc(0, -len, tr, 0, TAU); };
+    shadedFill(g, tip, color, tr); rimLight(g, tip, tr, 0.35); gloss(g, tip, tr, 0.45); outline(g, tip, color, 1.5);
+  });
+}
+function makeSwitch(color) {
+  return {
+    kind: 'switch', color, x: 0, y: 0, w: 0, h: 0, state: { on: false, pos: -1, vel: 0 },
+    hit(p) { return hitRect(this, p); },
+    press(now) { const s = this.state; s.on = !s.on; s.vel += s.on ? 0.22 : -0.22; busySound('click'); },
+    update(now, dt) { // springy lever: overshoots a little then settles
+      const s = this.state, k = Math.min(2, dt / 16.7), target = s.on ? 1 : -1;
+      s.vel += (target - s.pos) * 0.32 * k; s.vel *= Math.pow(0.7, k); s.pos += s.vel * k;
+    },
+    ledPos() { return { x: this.x + this.pw * 0.3, y: this.y - this.ph * 0.22 }; },
+    draw() {
+      const pw = this.pw, ph = this.ph, len = ph * 0.42;
+      blit(switchPlateSprite(pw, ph), this.x, this.y);
+      const pivot = { x: this.x - pw * 0.14, y: this.y + ph * 0.1 };
+      blit(leverSprite(len, this.color), pivot.x, pivot.y, this.state.pos * 0.8);
+      const l = this.ledPos(); blit(ledSprite(ph * 0.11, this.color, this.state.on), l.x, l.y);
+    },
+  };
+}
+/* --- big button: dome that depresses and plays a note --- */
+function buttonBaseSprite(d) {
+  return makeSprite('busy|btnb|' + Math.round(d), d + 8, d + 8, d / 2 + 4, d / 2 + 4, (g) => {
+    const R = d / 2, path = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); };
+    plateFill(g, path, R);
+    const hole = g.createRadialGradient(0, R * 0.2, R * 0.2, 0, 0, R * 0.5); hole.addColorStop(0, '#05040a'); hole.addColorStop(0.85, '#0c0a16'); hole.addColorStop(1, '#3a3350');
+    g.beginPath(); g.arc(0, 0, R * 0.5, 0, TAU); g.fillStyle = hole; g.fill();
+  });
+}
+function buttonCapSprite(d, color) {
+  const R = d * 0.4;
+  return makeSprite('busy|btnc|' + Math.round(d) + '|' + color, R * 2 + 6, R * 2 + 6, R + 3, R + 3, (g) => {
+    const path = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); };
+    shadedFill(g, path, color, R); rimLight(g, path, R, 0.35); gloss(g, path, R, 0.4); outline(g, path, color, 2);
+  });
+}
+function makeButton(color, freq) {
+  return {
+    kind: 'button', color, freq, x: 0, y: 0, w: 0, h: 0, state: { down: false, k: 0 },
+    hit(p) { return hitRect(this, p); },
+    press(now) { this.state.down = true; busySound('note', this.freq); ring(this.x, this.y, hexA(this.color, 0.9), this.d * 0.7, 420, 6); },
+    release() { this.state.down = false; },
+    update(now, dt) { const s = this.state; s.k += ((s.down ? 1 : 0) - s.k) * Math.min(1, dt / 45); },
+    draw() {
+      const d = this.d, k = this.state.k, lift = d * 0.09 * (1 - k);
+      blit(buttonBaseSprite(d), this.x, this.y);
+      drawShadow(this.x + lift * 0.4, this.y + d * 0.06, d * 0.9, d * 0.5, 0.45 * (1 - k) + 0.1);
+      blit(buttonCapSprite(d, this.color), this.x, this.y - lift, 0, 1 - 0.05 * k);
+    },
+  };
+}
+/* --- knob: pinch and turn around its centre; detents every 30°, LED arc follows the angle --- */
+function knobBaseSprite(d) {
+  return makeSprite('busy|knb|' + Math.round(d), d + 8, d + 8, d / 2 + 4, d / 2 + 4, (g) => {
+    const R = d / 2, path = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); };
+    plateFill(g, path, R);
+    g.lineCap = 'butt'; g.strokeStyle = 'rgba(241,233,218,0.35)'; g.lineWidth = 2;
+    g.beginPath(); g.arc(0, 0, R * 0.8, -KNOB_RANGE - Math.PI / 2, KNOB_RANGE - Math.PI / 2); g.stroke(); // arc scale
+    for (let i = 0; i <= Math.round(KNOB_RANGE * 2 / KNOB_DETENT); i++) {
+      const a = -KNOB_RANGE + i * KNOB_DETENT - Math.PI / 2, big = i % 3 === 0, r0 = R * (big ? 0.82 : 0.86), r1 = R * 0.94;
+      g.lineWidth = big ? 2.5 : 1.5; g.strokeStyle = big ? '#f1e9da' : 'rgba(241,233,218,0.55)';
+      g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a) * r1, Math.sin(a) * r1); g.stroke();
+    }
+    const hole = g.createRadialGradient(0, R * 0.1, R * 0.2, 0, 0, R * 0.62); hole.addColorStop(0, '#05040a'); hole.addColorStop(0.9, '#100d1c'); hole.addColorStop(1, '#3a3350');
+    g.beginPath(); g.arc(0, 0, R * 0.62, 0, TAU); g.fillStyle = hole; g.fill();
+  });
+}
+function knobCapSprite(d, color) {
+  const R = d * 0.3;
+  return makeSprite('busy|knc|' + Math.round(d) + '|' + color, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => {
+    const rim = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); };
+    const rg = g.createRadialGradient(-R * 0.3, -R * 0.3, R * 0.2, 0, 0, R); rg.addColorStop(0, '#5a5470'); rg.addColorStop(1, '#1a1628');
+    rim(); g.fillStyle = rg; g.fill();
+    g.strokeStyle = 'rgba(0,0,0,0.55)'; g.lineWidth = 1.5; g.lineCap = 'butt';
+    for (let i = 0; i < 36; i++) { const a = i * TAU / 36; g.beginPath(); g.moveTo(Math.cos(a) * R * 0.8, Math.sin(a) * R * 0.8); g.lineTo(Math.cos(a) * R * 0.98, Math.sin(a) * R * 0.98); g.stroke(); } // knurl
+    outline(g, rim, '#3a3350', 1.5);
+    const top = () => { g.beginPath(); g.arc(0, 0, R * 0.76, 0, TAU); };
+    shadedFill(g, top, color, R * 0.76); rimLight(g, top, R * 0.76, 0.3); gloss(g, top, R * 0.76, 0.35); outline(g, top, color, 1.5);
+    g.lineCap = 'round'; g.lineWidth = Math.max(3, R * 0.14); g.strokeStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.moveTo(1, -R * 0.2 + 1); g.lineTo(1, -R * 0.66 + 1); g.stroke();
+    g.strokeStyle = '#fff8ec'; g.beginPath(); g.moveTo(0, -R * 0.2); g.lineTo(0, -R * 0.66); g.stroke(); // pointer mark
+  });
+}
+function makeKnob(color) {
+  const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  return {
+    kind: 'knob', color, x: 0, y: 0, w: 0, h: 0, state: { angle: -KNOB_RANGE, detent: 0, off: 0, held: false },
+    hit(p) { return hitRect(this, p); },
+    handAngle(p) { return Math.atan2(p.y - this.y, p.x - this.x); },
+    grab(p) { this.state.off = this.handAngle(p) - this.state.angle; this.state.held = true; },
+    drag(p) { const s = this.state, d = wrap(this.handAngle(p) - s.off - s.angle); this.turnTo(s.angle + d); },
+    drop() { this.state.held = false; },
+    press() { this.turnTo(this.state.detent >= Math.round(KNOB_RANGE * 2 / KNOB_DETENT) ? -KNOB_RANGE : this.state.angle + KNOB_DETENT); }, // a poke steps one notch
+    turnTo(a) {
+      const s = this.state; s.angle = Math.max(-KNOB_RANGE, Math.min(KNOB_RANGE, a));
+      const det = Math.round((s.angle + KNOB_RANGE) / KNOB_DETENT);
+      if (det !== s.detent) { s.detent = det; busySound('ratchet'); }
+    },
+    update(now, dt) { const s = this.state; if (!s.held) { const snap = -KNOB_RANGE + s.detent * KNOB_DETENT; s.angle += (snap - s.angle) * Math.min(1, dt / 60); } },
+    draw(now) {
+      const d = this.d, R = d / 2, frac = (this.state.angle + KNOB_RANGE) / (KNOB_RANGE * 2);
+      blit(knobBaseSprite(d), this.x, this.y);
+      resetView(); ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = Math.max(4, d * 0.05); // LED arc: brighter and longer as the knob turns up
+      ctx.strokeStyle = hexA(this.color, 0.15 + 0.85 * frac); ctx.shadowColor = this.color; ctx.shadowBlur = d * 0.08 * frac;
+      ctx.beginPath(); ctx.arc(this.x, this.y, R * 0.7, -KNOB_RANGE - Math.PI / 2, this.state.angle - Math.PI / 2 + 0.001); ctx.stroke(); ctx.restore();
+      blit(knobCapSprite(d, this.color), this.x, this.y, this.state.angle, this.state.held ? 1.05 : 1);
+    },
+  };
+}
+/* --- board setup, layout, input, render --- */
+function resetBusy() { // new colours (and a new plank of wood); all states back to off
+  busy.seed = 1 + Math.floor(Math.random() * 1e6); const r = rng(busy.seed);
+  for (const k of [...SPRITES.keys()]) if (k.startsWith('busy|board|')) SPRITES.delete(k);
+  const sw = shuffled(BUSY_COLORS, r).slice(0, 4), notes = shuffled(BUSY_NOTES, r), kn = shuffled(BUSY_COLORS, r);
+  busy.widgets = [...sw.map((c) => makeSwitch(c)), ...notes.map(([c, f]) => makeButton(c, f)), makeKnob(kn[0]), makeKnob(kn[1])];
+  busy.hover = busy.active = busy.grabbed = null; rings.length = 0;
+  layoutBusy();
+}
+function layoutBusy() { // responsive grid: 2 columns on a phone, 3 on a tablet, 4 in landscape; the last row is centred
+  const m = busy.margin, top = busy.top;
+  busy.board = { x: m, y: top, w: W - 2 * m, h: H - top - m };
+  const { x: bx, y: by, w: bw, h: bh } = busy.board, n = busy.widgets.length;
+  const cols = W / H > 1.15 ? 4 : W >= 560 ? 3 : 2, rows = Math.ceil(n / cols), pad = Math.max(10, Math.min(bw, bh) * 0.035);
+  const cell = Math.max(64, Math.min((bw - 2 * pad) / cols, (bh - 2 * pad) / rows, 230));
+  const ox = bx + (bw - cols * cell) / 2, oy = by + (bh - rows * cell) / 2;
+  busy.widgets.forEach((wd, i) => {
+    const r = Math.floor(i / cols), c = i - r * cols, inRow = Math.min(cols, n - r * cols);
+    wd.x = ox + (cols - inRow) * cell / 2 + (c + 0.5) * cell; wd.y = oy + (r + 0.5) * cell; wd.w = wd.h = cell;
+    wd.pw = cell * 0.9; wd.ph = cell * 0.72; wd.d = cell * (wd.kind === 'knob' ? 0.88 : 0.8);
+  });
+}
+function busyTick(now, dt) {
+  const p = cursor.present ? { x: cursor.x, y: cursor.y } : null;
+  const under = p ? busy.widgets.find((wd) => wd.hit(p)) || null : null;
+  const pressing = gesture === 'pinch' || gesture === 'point';
+  if (busy.grabbed) {
+    if (gesture === 'pinch' && p) busy.grabbed.drag(p, now);
+    else { busy.grabbed.drop(now); busy.grabbed = null; }
+  } else if (pressing) {
+    if (under !== busy.active) { // sweeping a finger across the board presses each thing it passes
+      if (busy.active) { busy.active.release?.(now); busy.active = null; }
+      if (under && gesture === 'pinch' && under.grab) { under.grab(p, now); busy.grabbed = under; }
+      else if (under) { under.press(now); busy.active = under; }
+    }
+  } else if (busy.active) { busy.active.release?.(now); busy.active = null; }
+  busy.hover = pressing || busy.grabbed ? null : under;
+  for (const wd of busy.widgets) wd.update(now, dt);
+}
+function renderBusy(now) {
+  view.x = view.y = 0; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.drawImage(boardSprite().c, 0, 0, W, H);
+  if (busy.hover) drawHover(busy.hover, now);
+  for (const wd of busy.widgets) wd.draw(now);
+  drawRings(now);
+  drawCursor(now);
+}
+
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
 let audio = null, noiseBuf = null;
 function audioInit() {
@@ -1586,11 +1859,17 @@ function tone(type, f0, f1, peak, ms, t0) {
   if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + ms / 1000);
   env(o, peak, ms, t0); o.start(t0); o.stop(t0 + ms / 1000 + 0.03);
 }
-function sfx(kind) {
+function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing without a running AudioContext
   if (!audio || audio.state !== 'running') return;
   try {
     const t0 = audio.currentTime, f = audio.createBiquadFilter();
     if (kind === 'crunch') { f.type = 'bandpass'; f.frequency.value = 900 + Math.random() * 600; f.Q.value = 0.7; env(f, 0.2, 130, t0); noise(t0, 130, f); }
+    else if (kind === 'click') { // mechanical switch: short bright burst + low thunk
+      f.type = 'highpass'; f.frequency.value = 1800; env(f, 0.14, 40, t0); noise(t0, 40, f);
+      tone('sine', 190, 60, 0.2, 110, t0 + 0.005);
+    }
+    else if (kind === 'note') { tone('sine', arg || 440, 0, 0.18, 700, t0); tone('triangle', (arg || 440) * 2, 0, 0.05, 320, t0); } // soft musical note
+    else if (kind === 'ratchet') { f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 2; env(f, 0.1, 30, t0); noise(t0, 30, f); tone('square', 700, 350, 0.035, 30, t0); }
     else if (kind === 'car') {
       tone('sine', 110, 38, 0.25, 320, t0);
       f.type = 'lowpass'; f.frequency.value = 500; env(f, 0.18, 220, t0); noise(t0, 220, f);
@@ -1603,12 +1882,13 @@ function sfx(kind) {
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
-const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'sandbox' };
+const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'sandbox' };
 function setGameMode(m) {
   const was = gameMode; gameMode = m;
   if (held) dropHeld();
-  particles.length = 0;
+  particles.length = 0; rings.length = 0;
   if (m === 'slice') resetSlice();
+  if (m === 'busy') resetBusy();
   if (engine) {
     if (was === 'smash' && m !== 'smash') clearSmash();
     if (m === 'sandbox' && !bodies.length) spawnObjects();
@@ -1624,7 +1904,7 @@ function renderModeText() {
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
-  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash' }[gameMode] + how);
+  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy' }[gameMode] + how);
 }
 function showHint() {
   hintEl.textContent = hintText(); hintEl.style.opacity = 1;
@@ -1653,7 +1933,7 @@ function updateHud() {
 function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
 
 /* ---------------- Camera + tracker boot ---------------- */
 let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
@@ -1945,7 +2225,7 @@ window.__grasp = {
   simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, setGameMode, spawnWave, spawnCar, resetSmash, setRoundEnd(atMs) { smash.endAt = atMs; },
+  slice, smash, busy, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setRoundEnd(atMs) { smash.endAt = atMs; },
 };
 </script>
 </body>
