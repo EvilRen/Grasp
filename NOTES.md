@@ -12,6 +12,10 @@ so deploys are never done from the connector.
 Old Vercel projects to delete in the dashboard: grasp-hand-physics, grasp-hands, grasp-play,
 grasp-play-2 … grasp-play-6.
 
+## Grasp modes
+Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (18 toddler widgets), Strike (3D corridor, walls).
+Each mode has a Playwright suite under tests/.
+
 ## Working branch
 Claude develops on `ccr-61aa39be-e8m1zx` and fast-forwards `main` to it after tests pass.
 
