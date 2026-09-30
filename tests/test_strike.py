@@ -34,9 +34,10 @@ async def main():
         check('ball approaches: z decreases at the base speed', z0 - z1 > 150 and z0 - z1 < 600, [z0, z1])
         # corridor + ball pixels (the mouse is present, parked low so the hand sprite stays clear of the probes)
         await page.mouse.move(640, 600); await page.wait_for_timeout(150)
-        await page.evaluate(f"{S}.setBallZ(900, 200, 700)"); await page.wait_for_timeout(50)
+        await page.evaluate(f"{S}.setBallZ(900, 200, 700); window.__keepWalls = {S}.walls.splice(0)"); await page.wait_for_timeout(50)  # brick walls set aside: they stand in front of the vanishing point
         floor = await page.evaluate(PIX + "(640, 796)"); far = await page.evaluate(PIX + "(640, 368)"); wall = await page.evaluate(PIX + "(6, 400)")
         check('corridor drawn: bright floor near the player, dark fog at the vanishing point, side wall', floor[2] > floor[0] and floor[2] > 60 and sum(far) < sum(floor) and wall[2] > wall[0], [floor, far, wall])
+        await page.evaluate(f"{S}.walls.push(...window.__keepWalls)")
         await page.evaluate(f"{S}.setBallZ(900, 640, 380)"); await page.wait_for_timeout(50)
         bpx = await page.evaluate(PIX + "(640, 380)")
         check('ball drawn as a coral sphere', bpx[0] > 170 and bpx[0] > bpx[2] + 40, bpx)
@@ -47,10 +48,15 @@ async def main():
         check('cursor on the ball at HIT_Z: hit, +1, direction reversed', st['dir'] == -1 and st['score'] == 1 and st['hits'] == 1 and st['z'] > 0, st)
         check('still hand = soft tier, slow return', st['power'] == 'soft' and st['speed'] < st['pace'], st)
         check('hit floater shows the tier', await page.evaluate(f"{S}.floaters.some(f => f.text.includes('Soft'))"))
-        pace0 = st['pace']
+        pace0 = st['pace']; w0 = await page.evaluate(f"({{ z: {S}.walls[0].z, n: {S}.walls[0].bricks.length }})")
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=4000)
+        st = await page.evaluate(STATE); left = await page.evaluate(f"{S}.walls[0].left")
+        check('soft return chips one brick off the first wall and bounces straight back', st['z'] < w0['z'] and st['z'] > w0['z'] - 80 and left == w0['n'] - 1 and st['score'] == 2 and st['bounces'] == 0 and st['speed'] == st['pace'], [st, w0, left])
+        await page.mouse.move(640, 400); await page.wait_for_timeout(120)
+        await page.evaluate(hit_js(640, 400, 130)); await page.wait_for_timeout(120)  # a hard return goes through the walls
         await page.wait_for_function(f"{S}.bounces >= 1", timeout=8000)
         st = await page.evaluate(STATE)
-        check('returned ball bounces off the far end and comes back 5% faster', st['dir'] == 1 and st['z'] > cfg['zf'] * 0.9 and abs(st['pace'] - pace0 * 1.05) < 1e-6 and st['speed'] == st['pace'], [st, pace0])
+        check('hard return bounces off the far end and comes back 5% faster', st['dir'] == 1 and st['z'] > cfg['zf'] * 0.9 and abs(st['pace'] - pace0 * 1.05) < 1e-6 and st['speed'] == st['pace'] and st['power'] == 'hard', [st, pace0])
         # power tiers from the hand speed over the last 100 ms
         await page.mouse.move(640, 400); await page.wait_for_timeout(120)
         for dx, tier, pts in [(60, 'medium', 2), (130, 'hard', 3), (320, 'super', 6)]:
@@ -89,6 +95,67 @@ async def main():
         await page.evaluate("__grasp.setGameMode('sandbox')"); await page.wait_for_timeout(300)
         check('switching back to sandbox restores objects', await page.evaluate("gameMode === 'sandbox' && bodies.length === 10"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
+
+        # --- brick walls (step 2), desktop mouse ---
+        ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
+        page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.mouse.move(1200, 760); await page.wait_for_timeout(100)  # hand parked in a corner, clear of the walls
+        ws = await page.evaluate(f"{S}.walls.map(w => ({{ z: w.z, n: w.bricks.length, alive: w.bricks.filter(k => k.alive).length, cols: w.cols, rows: w.rows, hp: w.hp, level: w.level }}))")
+        gap = await page.evaluate("__grasp.CONFIG.STRIKE_WALL_GAP")
+        check('4 walls of live bricks stand at 40% depth and every WALL_GAP after', len(ws) == 4 and all(w['n'] == w['cols'] * w['rows'] >= 12 and w['alive'] == w['n'] and w['hp'] == 1 and w['level'] == 1 for w in ws)
+              and abs(ws[0]['z'] - cfg['zf'] * 0.4) < 1 and all(abs(ws[i + 1]['z'] - ws[i]['z'] - gap) < 1 for i in range(3)) and ws[3]['z'] < cfg['zf'], ws)
+        check('walls sorted near to far', ws == sorted(ws, key=lambda w: w['z']))
+        check('level 1, no debris yet', await page.evaluate(f"{S}.level === 1 && {S}.debris.length === 0"))
+        # pixel probe: a brick face at the projected centre of the first wall's top-left brick
+        pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], 0, 0)")
+        brick = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        check('first wall drawn: terracotta brick pixel at a projected brick centre', brick[0] > brick[2] + 25 and brick[0] > 80, [pt, brick])
+        # soft: one brick, ball bounces back
+        s0 = await page.evaluate(f"{S}.score"); w = await page.evaluate(f"{S}.smashTest('soft') && {S}.walls[0].id"); await page.wait_for_timeout(150)
+        st = await page.evaluate(STATE); wl = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {w}); return {{ left: w.left, n: w.bricks.length, z: w.z }}; }})()")
+        check('soft: 1 brick out, +1, ball bounces back toward the player', wl['left'] == wl['n'] - 1 and st['score'] - s0 == 1 and st['dir'] == 1 and st['z'] < wl['z'] and st['speed'] == st['pace'], [st, wl])
+        check('brick fragments fly as 3D debris', await page.evaluate(f"{S}.debris.length") >= 1 and await page.evaluate(f"{S}.debris.every(d => d.z < {wl['z']} && d.vz < 0)"))
+        await page.wait_for_timeout(1200)
+        check('debris flies past the camera and is culled', await page.evaluate(f"{S}.debris.length") == 0)
+        # medium: 3x3 area, ball passes through slower
+        s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"{S}.smashTest('medium')"); await page.wait_for_timeout(150)
+        st = await page.evaluate(STATE); wl = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {w}); return {{ left: w.left, n: w.bricks.length, z: w.z }}; }})()")
+        check('medium: >= 5 bricks out, ball passes through at reduced speed', wl['n'] - wl['left'] >= 6 and st['score'] - s0 >= 5 and st['dir'] == -1 and st['z'] > wl['z'] and st['speed'] < st['pace'], [st, wl, s0])
+        # SUPER: whole wall, bonus, combo on the next wall, fresh walls spawn beyond
+        s0 = await page.evaluate(f"{S}.score"); zs = await page.evaluate(f"{S}.walls.map(w => w.z)")
+        await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(60)
+        peak = 0
+        for _ in range(12):
+            await page.wait_for_timeout(50); peak = max(peak, await page.evaluate(f"{S}.debris.length"))
+        st = await page.evaluate(STATE); fl = await page.evaluate(f"{S}.floaters.map(f => f.text)")
+        gone = await page.evaluate(f"!{S}.walls.some(w => w.id === {w})"); zs2 = await page.evaluate(f"{S}.walls.map(w => w.z)")
+        check('SUPER clears the whole first wall: removed, WALL bonus, +10 x level scored', gone and any('WALL' in f for f in fl) and st['score'] - s0 >= wl['left'] + 10, [st, s0, wl, fl])
+        check('SUPER keeps going: second wall smashed with a x2 combo floater', any(f == '×2' for f in fl) and await page.evaluate(f"{S}.cleared") >= 2, fl)
+        check('new walls spawned beyond the far end, still 4 in the queue', len(zs2) == 4 and max(zs2) > max(zs) and await page.evaluate(f"{S}.walls.every(w => w.left === w.bricks.length)"), [zs, zs2])
+        check('debris count capped at 60', 0 < peak <= 60, peak)
+        await page.mouse.move(1200, 760); await page.wait_for_timeout(700)
+        brick2 = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        check('first wall gone: corridor pixel where the brick was', brick2[2] >= brick2[0] and sum(brick2) < 200, [brick, brick2])
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1 && !{S}.ball.super", timeout=4000)
+        check('SUPER ends at the far end: ball returns at the normal pace, not super', await page.evaluate(f"{S}.speed === {S}.pace"))
+        # level: every 5 walls the bricks get tougher and change colour
+        await page.evaluate(f"{S}.cleared = 4; {S}.walls.forEach(w => (w.pz = w.z = Math.min(w.z, 1200)))")
+        await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(120)
+        lv = await page.evaluate(f"({{ level: {S}.level, cleared: {S}.cleared, hp: Math.max(...{S}.walls.map(w => w.hp)), lvls: {S}.walls.map(w => w.level) }})")
+        check('level 2 after 5 walls: new walls have 2-hp bricks', lv['level'] == 2 and lv['cleared'] >= 5 and lv['hp'] == 2 and 2 in lv['lvls'], lv)
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=4000); await page.wait_for_timeout(300)
+        await page.evaluate(f"{S}.walls.forEach(w => (w.pz = w.z = Math.max(w.z, 1000)))")
+        w2 = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.hp === 2 && w.left === w.bricks.length); w.pz = w.z = 960; {S}.walls.sort((a, b) => a.z - b.z); return w.id; }})()")
+        await page.evaluate(f"{S}.smashTest('soft')"); await page.wait_for_timeout(150)
+        cr = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {w2}); return {{ left: w.left, n: w.bricks.length, cracked: w.bricks.filter(k => k.alive && k.hp < w.hp).length, dir: {S}.ball.dir }}; }})()")
+        check('a soft hit only cracks a 2-hp brick and still bounces back', cr['left'] == cr['n'] and cr['cracked'] == 1 and cr['dir'] == 1, cr)
+        await page.evaluate(f"{S}.walls.find(w => w.id === {w2}).pz = 960"); await page.evaluate(f"{S}.smashTest('hard')"); await page.wait_for_timeout(150)
+        cr = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {w2}); return {{ left: w.left, n: w.bricks.length, dir: {S}.ball.dir }}; }})()")
+        check('a hard hit knocks 2-hp bricks out and passes', cr['n'] - cr['left'] >= 9 and cr['dir'] == -1, cr)
+        await page.wait_for_timeout(200); await page.screenshot(path='tests/out/strike2_desktop.png')
+        check('walls: no page errors', not errs, errs); await ctx.close()
 
         # --- camera stub, desktop: an open hand on the ball hits it ---
         ctx = await b.new_context(permissions=['camera'], viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
@@ -130,6 +197,11 @@ async def main():
             st = await page.evaluate(STATE)
             check(tag + ' phone: a finger on the ball hits it', st['dir'] == -1 and st['score'] >= 1 and st['lives'] == 3, st)
             await page.evaluate("touchAt('pointerup', 180, 360)"); await page.wait_for_timeout(300)
+            check(tag + ' phone: hint mentions the walls', ('לבנים' if he else 'walls') in await page.inner_text('#hint'))
+            s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(140)
+            await page.screenshot(path='tests/out/strike2_phone_' + tag + '.png')
+            check(tag + ' phone: SUPER smash clears a wall with debris', await page.evaluate(f"{S}.cleared") >= 1 and await page.evaluate(f"{S}.debris.length") > 0 and await page.evaluate(f"{S}.score") - s0 >= 20)
+            await page.wait_for_timeout(300)
             for _ in range(3): await miss(page); await page.wait_for_timeout(900)
             check(tag + ' phone: round over after 3 misses', await page.evaluate(f"{S}.over"))
             await page.wait_for_timeout(300); await page.screenshot(path='tests/out/strike_over_' + tag + '.png')
