@@ -10,7 +10,7 @@ window.mkPoint = (tx, ty) => { // index fingertip at camera coords (not mirrored
   for (const [tip, pip] of [[12,10],[16,14],[20,18]]) { L[pip] = {x: tx + 0.02, y: ty + 0.17, z:0}; L[tip] = {x: tx + 0.02, y: ty + 0.24, z:0}; }
   return L;
 };
-window.pointAt = (X, Y) => { const m = 0.15; return mkPoint(1 - (m + X / innerWidth * 0.7), m + Y / innerHeight * 0.7); };
+window.pointAt = (X, Y) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; return mkPoint(1 - (m + X / innerWidth * B), m + Y / innerHeight * B); };
 """
 ARC_JS = """
 // pinch at radius r around (cx, cy) and sweep from angle a0 to a1 over ms

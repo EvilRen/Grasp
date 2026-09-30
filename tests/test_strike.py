@@ -10,8 +10,10 @@ window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new
 # park an incoming ball at HIT_Z right under the cursor at (x, y); dx px of hand travel in the last ~60 ms sets the hand speed
 def hit_js(x, y, dx=0):
     return f"(() => {{ const now = performance.now(); if ({dx}) {{ cursor.history.length = 0; cursor.history.push({{ t: now - 60, x: {x} - {dx}, y: {y} }}, {{ t: now, x: {x}, y: {y} }}); }} {S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, {x}, {y}); }})()"
-async def miss(page):
-    await page.evaluate(f"{S}.setBallZ(4, innerWidth * 0.5, innerHeight * 0.5)"); await page.wait_for_timeout(250)
+async def miss(page):  # park the ball just past the player's plane with no hand near it: a miss on both difficulties (Easy still allows a late slap down to -HIT_Z)
+    await page.evaluate(f"{S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.7, innerWidth * 0.5, innerHeight * 0.5)"); await page.wait_for_timeout(250)
+async def miss_out(page, n):  # n misses, a serve apart
+    for _ in range(n): await miss(page); await page.wait_for_timeout(900)
 
 async def main():
     async with async_playwright() as p:
@@ -53,13 +55,14 @@ async def main():
         st = await page.evaluate(STATE); left = await page.evaluate(f"{S}.walls[0].left")
         check('soft return chips one brick off the first wall and bounces straight back', st['z'] < w0['z'] and st['z'] > w0['z'] - 80 and left == w0['n'] - 1 and st['score'] == 2 and st['bounces'] == 0 and st['speed'] == st['pace'], [st, w0, left])
         await page.mouse.move(640, 400); await page.wait_for_timeout(120)
-        await page.evaluate(hit_js(640, 400, 130)); await page.wait_for_timeout(120)  # a hard return goes through the walls
+        await page.evaluate(hit_js(640, 400, 95)); await page.wait_for_timeout(120)  # a hard return goes through the walls
         await page.wait_for_function(f"{S}.bounces >= 1", timeout=8000)
         st = await page.evaluate(STATE)
-        check('hard return bounces off the far end and comes back 5% faster', st['dir'] == 1 and st['z'] > cfg['zf'] * 0.9 and abs(st['pace'] - pace0 * 1.05) < 1e-6 and st['speed'] == st['pace'] and st['power'] == 'hard', [st, pace0])
+        grow = await page.evaluate("__grasp.strikeParams().grow")
+        check('hard return bounces off the far end and comes back faster (3% on Easy)', st['dir'] == 1 and st['z'] > cfg['zf'] * 0.9 and abs(st['pace'] - pace0 * grow) < 1e-6 and st['speed'] == st['pace'] and st['power'] == 'hard', [st, pace0, grow])
         # power tiers from the hand speed over the last 100 ms
         await page.mouse.move(640, 400); await page.wait_for_timeout(120)
-        for dx, tier, pts in [(60, 'medium', 2), (130, 'hard', 3), (320, 'super', 6)]:
+        for dx, tier, pts in [(50, 'medium', 2), (95, 'hard', 3), (320, 'super', 6)]:  # each sits mid-band: the next frame's rAF timestamp trails performance.now() by 0-16 ms, so the measured speed is dx / 44..60 ms
             s0 = (await page.evaluate(STATE))['score']
             await page.evaluate(hit_js(640, 400, dx)); await page.wait_for_timeout(120)
             st = await page.evaluate(STATE)
@@ -80,9 +83,9 @@ async def main():
         st = await page.evaluate(STATE)
         check('new serve ~800 ms after a miss', st['z'] is not None and st['z'] > cfg['zf'] * 0.7 and st['serves'] == 2, st)
         sc = st['score']
-        await miss(page); await page.wait_for_timeout(900); await miss(page)
+        await miss_out(page, cfg['lives'] - 1)
         st = await page.evaluate(STATE); best = await page.evaluate("localStorage.getItem('strikeBest')")
-        check('three misses: round over, best saved', st['over'] and st['lives'] == 0 and st['best'] == sc and best == str(sc), [st, best])
+        check('all lives missed: round over, best saved', st['over'] and st['lives'] == 0 and st['best'] == sc and best == str(sc), [st, best])
         await page.wait_for_timeout(1100); await page.screenshot(path='tests/out/strike_over.png')
         await page.mouse.move(300, 300); await page.mouse.down(); await page.mouse.up(); await page.wait_for_timeout(200)
         st = await page.evaluate(STATE)
@@ -92,6 +95,26 @@ async def main():
         check('reset button restarts', await page.evaluate(f"{S}.score") > 0 and (await page.click('#resetBtn') or True) and await page.evaluate(f"{S}.score === 0 && {S}.lives === {cfg['lives']} && !{S}.over"))
         await page.click('#hudBtn'); await page.wait_for_timeout(700)
         check('HUD shows strike + lives', 'strike' in await page.inner_text('#hud') and 'lives' in await page.inner_text('#hud'))
+        # kid-friendly Easy default: 5 lives, slower ball, bigger reach, late slaps, magnet assist; Normal = the old values
+        pr = await page.evaluate("__grasp.strikeParams()")
+        check('Easy is the default: 5 lives, 0.8 base speed, x2.6 reach + 90 px, late window, magnet', pr['diff'] == 'easy' and pr['lives'] == 5 and pr['speed'] == 0.8 and pr['radius'] == 2.6 and pr['near'] == 90 and pr['late'] > 0 and pr['magnet'] > 0 and pr['hand'] > 1 and pr['grow'] == 1.03 and pr['max'] == 2.2, pr)
+        await page.mouse.move(640, 400); await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
+        await page.evaluate(f"{S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, 760, 400)"); await page.wait_for_timeout(120)
+        check('Easy: a hand 120 px from the ball still hits it', await page.evaluate(f"{S}.score") > s0 and await page.evaluate(f"{S}.ball.dir") == -1)
+        await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
+        await page.evaluate(f"{S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.6, 640, 400)"); await page.wait_for_timeout(120)
+        check('Easy: a late slap just past the plane still counts', await page.evaluate(f"{S}.score") > s0 and await page.evaluate(f"{S}.misses") == 0)
+        await page.wait_for_timeout(150)
+        await page.evaluate(f"{S}.setBallZ({cfg['zf'] * 0.2}, 760, 400)"); x0 = (await page.evaluate(f"{S}.ballScreen()"))['x']; await page.wait_for_timeout(160)
+        x1 = (await page.evaluate(f"{S}.ballScreen()"))['x']
+        check('Easy: magnet assist drifts the ball toward the hand in the last quarter', x0 > 740 and x1 < x0 - 20 and x1 > 640, [x0, x1])
+        await page.evaluate("__grasp.setStrikeDiff('normal')"); await page.click('#resetBtn'); await page.wait_for_timeout(300)
+        pr = await page.evaluate("__grasp.strikeParams()"); st = await page.evaluate(STATE)
+        check('Normal: the previous values, saved in localStorage, 3 lives on reset', pr['lives'] == 3 and pr['speed'] == 1.1 and pr['radius'] == 1.3 and pr['near'] == 0 and pr['late'] == 0 and pr['magnet'] == 0 and pr['grow'] == 1.05 and pr['max'] == 2.8 and st['lives'] == 3 and await page.evaluate("localStorage.getItem('strikeDiff')") == 'normal', [pr, st])
+        await page.mouse.move(640, 400); await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
+        await page.evaluate(f"{S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, 760, 400)"); await page.wait_for_timeout(120)
+        check('Normal: 120 px away is a miss, not a hit', await page.evaluate(f"{S}.score") == s0 and await page.evaluate(f"{S}.ball ? {S}.ball.dir === 1 : {S}.misses >= 1"))
+        await page.evaluate("__grasp.setStrikeDiff('easy')")
         await page.evaluate("__grasp.setGameMode('sandbox')"); await page.wait_for_timeout(300)
         check('switching back to sandbox restores objects', await page.evaluate("gameMode === 'sandbox' && bodies.length === 10"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
@@ -136,7 +159,9 @@ async def main():
         check('new walls spawned beyond the far end, still 4 in the queue', len(zs2) == 4 and max(zs2) > max(zs) and await page.evaluate(f"{S}.walls.every(w => w.left === w.bricks.length)"), [zs, zs2])
         check('debris count capped at 60', 0 < peak <= 60, peak)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(700)
+        await page.evaluate(f"window.__keepBall = {S}.ball; {S}.ball = null; {S}.serveAt = performance.now() + 5000"); await page.wait_for_timeout(60)  # the (slower, Easy) ball and its trail out of the probe
         brick2 = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        await page.evaluate(f"{S}.ball = window.__keepBall")
         check('first wall gone: corridor pixel where the brick was', brick2[2] >= brick2[0] and sum(brick2) < 200, [brick, brick2])
         await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1 && !{S}.ball.super", timeout=4000)
         check('SUPER ends at the far end: ball returns at the normal pace, not super', await page.evaluate(f"{S}.speed === {S}.pace"))
@@ -168,7 +193,7 @@ async def main():
         rim = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y']})"); above = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y'] - 4})")
         check('HUD card rim drawn (a lighter line than the corridor above it)', sum(rim) > sum(above) + 30, [rim, above])
         hearts = await page.evaluate(f"{S}.ui.hearts"); hp = await page.evaluate(PIX + f"({hearts[0]['x']}, {hearts[0]['y']})")
-        check('three full hearts on the card', len(hearts) == 3 and hp[0] > 170 and hp[0] > hp[2] + 60 and all(hud['y'] < h['y'] < hud['y'] + hud['h'] for h in hearts), [hearts, hp])
+        check('all hearts full on the card', len(hearts) == cfg['lives'] and hp[0] > 170 and hp[0] > hp[2] + 60 and all(hud['y'] < h['y'] < hud['y'] + hud['h'] for h in hearts), [hearts, hp])
         await page.evaluate(f"{S}.score += 100; {S}.ui.scoreAt = performance.now()"); await page.wait_for_timeout(60)
         shown = await page.evaluate(f"{S}.ui.shown")
         check('score counts up over time rather than jumping', 0 < shown < 100, shown)
@@ -181,7 +206,7 @@ async def main():
         m1 = await page.evaluate(f"({{ v: {S}.ui.meter, tier: {S}.ui.meterTier }})")
         await page.wait_for_timeout(700); m2 = await page.evaluate(f"{S}.ui.meter")
         check('meter follows the hand speed: empty at rest, high after a fast move, empty again', m0 < 0.05 and m1['v'] > 0.4 and m1['tier'] in ('hard', 'super') and m2 < 0.08, [m0, m1, m2])
-        await page.evaluate(hit_js(640, 600, 60)); await page.wait_for_timeout(100)
+        await page.evaluate(hit_js(640, 600, 50)); await page.wait_for_timeout(100)
         tf = await page.evaluate(f"({{ tier: {S}.ui.tierFlash.tier, age: performance.now() - {S}.ui.tierFlash.t, txt: {S}.floaters.map(f => f.text) }})")
         check('medium hit: tier label flashes on the meter, the floater only shows the points', tf['tier'] == 'medium' and tf['age'] < 600 and any(x == '+2' for x in tf['txt']) and not any('Medium' in x for x in tf['txt']), tf)
         await page.screenshot(path='tests/out/strike_ui_desktop.png')
@@ -204,7 +229,7 @@ async def main():
         hearts = await page.evaluate(f"{S}.ui.hearts"); h0 = await page.evaluate(PIX + f"({hearts[0]['x']}, {hearts[0]['y']})"); h2 = await page.evaluate(PIX + f"({hearts[hl['i']]['x']}, {hearts[hl['i']]['y']})")
         check('hearts: first still red, the lost one hollow after the miss', h0[0] > 170 and h0[0] > h0[2] + 60 and h2[0] < 120, [h0, h2])
         # round over card: NEW BEST ribbon, stats, buttons
-        await miss(page); await page.wait_for_timeout(900); await miss(page)
+        await miss_out(page, cfg['lives'] - 1)
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=3000); await page.wait_for_timeout(600)
         ov = await page.evaluate(f"({{ nb: {S}.ui.newBest, best: {S}.best, score: {S}.score, rb: {S}.ui.ribbon, bt: {S}.ui.buttons, hits: {S}.hits, walls: {S}.cleared, combo: {S}.bestCombo }})")
         rbp = await page.evaluate(PIX + f"({ov['rb']['x']}, {ov['rb']['y']})") if ov['rb'] else None
@@ -219,7 +244,7 @@ async def main():
         st = await page.evaluate(STATE)
         check('click Play again: fresh round, best kept', not st['over'] and st['score'] == 0 and st['lives'] == cfg['lives'] and st['best'] == ov['best'] and await page.evaluate(f"{S}.ui.buttons === null"), st)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(700)
-        for _ in range(3): await miss(page); await page.wait_for_timeout(900)
+        await miss_out(page, cfg['lives'])
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=3000); await page.wait_for_timeout(600)
         check('a worse round: no NEW BEST', await page.evaluate(f"!{S}.ui.newBest && {S}.ui.ribbon === null"))
         # point gesture (right button) dwelling on Home for 400 ms presses it via the filling ring
@@ -232,7 +257,7 @@ async def main():
         check('point held on Home: dwell ring fills, then Home fires (no instant restart)', dw == 'home' and still == 'mouse' and await page.evaluate("mode === 'none' && !$('start').hidden"), [dw, still, await page.evaluate("mode")])
         # tap on Home from a fresh round-over
         await page.click('#mouseBtn'); await page.wait_for_timeout(500); await page.mouse.move(1200, 760); await page.wait_for_timeout(300)
-        for _ in range(3): await miss(page); await page.wait_for_timeout(900)
+        await miss_out(page, cfg['lives'])
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=3000); await page.wait_for_timeout(600)
         bt = await page.evaluate(f"{S}.ui.buttons")
         await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(200)
@@ -271,13 +296,15 @@ async def main():
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))
             await page.tap('#mouseBtn'); await page.wait_for_timeout(900)
             st = await page.evaluate(STATE)
-            check(tag + ' phone: ball served', st['z'] is not None and st['lives'] == 3, st)
+            check(tag + ' phone: ball served', st['z'] is not None and st['lives'] == cfg['lives'], st)
+            dp = await page.evaluate("(() => { const d = $('strikeDiff'); return { hidden: d.hidden, txt: [...d.querySelectorAll('button')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')) }; })()")
+            check(tag + ' phone: Easy / Normal pill was shown on the start screen with Easy selected', not dp['hidden'] and dp['txt'] == (['קל:true', 'רגיל:false'] if he else ['Easy:true', 'Normal:false']), dp)
             await page.evaluate("touchAt('pointerdown', 180, 360)"); await page.wait_for_timeout(80)
             await page.evaluate(f"{S}.setBallZ(700, 180, 360)"); await page.wait_for_timeout(50)
             await page.screenshot(path='tests/out/strike_phone_' + tag + '.png')
-            await page.evaluate(hit_js(180, 360, 60)); await page.wait_for_timeout(120)  # 1 px/ms at the phone's 0.55 scale = hard
+            await page.evaluate(hit_js(180, 360, 50)); await page.wait_for_timeout(120)  # ~0.85-1.1 px/ms at the phone's 0.55 scale = hard (60 px sat on the SUPER edge: the next frame's rAF timestamp trails performance.now() by 0-16 ms)
             st = await page.evaluate(STATE)
-            check(tag + ' phone: a finger on the ball hits it', st['dir'] == -1 and st['score'] >= 1 and st['lives'] == 3, st)
+            check(tag + ' phone: a finger on the ball hits it', st['dir'] == -1 and st['score'] >= 1 and st['lives'] == cfg['lives'], st)
             await page.screenshot(path='tests/out/strike_ui_' + tag + '.png')
             hud = await page.evaluate(f"{S}.ui.hud"); chrome = await page.evaluate("document.querySelector('.chrome').getBoundingClientRect().bottom")
             check(tag + ' phone: HUD card under the chrome, inside 360 px', hud['y'] >= chrome and hud['x'] >= 8 and hud['x'] + hud['w'] <= 352, [hud, chrome])
@@ -288,11 +315,17 @@ async def main():
             await page.screenshot(path='tests/out/strike2_phone_' + tag + '.png')
             check(tag + ' phone: SUPER smash clears a wall with debris', await page.evaluate(f"{S}.cleared") >= 1 and await page.evaluate(f"{S}.debris.length") > 0 and await page.evaluate(f"{S}.score") - s0 >= 20)
             await page.wait_for_timeout(300)
-            for _ in range(3): await miss(page); await page.wait_for_timeout(900)
-            check(tag + ' phone: round over after 3 misses', await page.evaluate(f"{S}.over"))
+            await miss_out(page, cfg['lives'])
+            check(tag + ' phone: round over after all lives are missed', await page.evaluate(f"{S}.over"))
             await page.wait_for_timeout(600); await page.screenshot(path='tests/out/strike_over_' + tag + '.png')
             bt = await page.evaluate(f"{S}.ui.buttons")
             check(tag + ' phone: card buttons fit the screen' + (', Play again on the right' if he else ''), bt and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and ((bt['again']['x'] > bt['home']['x']) == he), bt)
+            check(tag + ' phone: Easy / Normal pill on the card, Easy at the start edge', 'easy' in bt and 'normal' in bt and ((bt['easy']['x'] > bt['normal']['x']) == he) and bt['easy']['y'] > bt['again']['y'], bt)
+            await page.tap('#stage', position={'x': bt['normal']['x'] + bt['normal']['w'] / 2, 'y': bt['normal']['y'] + bt['normal']['h'] / 2}); await page.wait_for_timeout(200)
+            check(tag + ' phone: tapping Normal on the card switches the difficulty without restarting', await page.evaluate(f"{S}.diff === 'normal' && {S}.over && localStorage.getItem('strikeDiff') === 'normal'"))
+            await page.tap('#stage', position={'x': bt['again']['x'] + bt['again']['w'] / 2, 'y': bt['again']['y'] + bt['again']['h'] / 2}); await page.wait_for_timeout(200)
+            check(tag + ' phone: Play again starts a Normal round with 3 lives', await page.evaluate(f"!{S}.over && {S}.lives === 3"))
+            await page.evaluate("__grasp.setGameMode('strike'); __grasp.setStrikeDiff('easy')")
             check(tag + ' phone: no page errors', not errs, errs); await ctx.close()
         await b.close()
     print('FAILURES:', check.fails)

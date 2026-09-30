@@ -38,6 +38,10 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 html[dir="rtl"] .tagline{ text-transform:none; letter-spacing:0; font-size:15px; }
 .panel p{ margin:0 0 20px; color:var(--muted); line-height:1.5; font-size:16px; min-height:4.5em; display:flex; align-items:center; justify-content:center; }
 .actions{ display:flex; flex-direction:column; gap:10px; }
+.diff{ display:inline-flex; margin:-6px 0 14px; padding:3px; border-radius:999px; background:rgba(29,37,71,.5); box-shadow:inset 0 0 0 1.5px var(--line); }
+.diff[hidden]{ display:none; }
+.diff button{ padding:7px 18px; border-radius:999px; background:transparent; color:var(--muted); font-size:14px; font-weight:500; transition:background .15s, color .15s; }
+.diff button[aria-pressed="true"]{ background:var(--saffron); color:#241a00; font-weight:700; }
 .modes{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:0 0 16px; }
 @media (max-width:520px){ .modes{ grid-template-columns:repeat(6,1fr); gap:6px; } .modes button{ grid-column:span 2; } .modes button:nth-child(4){ grid-column:2/4; } } /* 3 + 2, second row centred */
 .modes button{ display:flex; flex-direction:column; align-items:center; gap:8px; background:rgba(29,37,71,.5); color:var(--muted); padding:13px 4px 11px; min-width:0;
@@ -62,29 +66,50 @@ html[dir="rtl"] .tagline{ text-transform:none; letter-spacing:0; font-size:15px;
 @keyframes pulse{ 50%{ opacity:.35; } }
 @media (prefers-reduced-motion: reduce){ .checks li[data-s="pending"] .dot{ animation:none; } }
 
-/* in-game chrome */
-.chrome{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; z-index:5;
-  max-width:calc(100% - 24px - var(--chrome-inset, 0px)); }
+/* in-game chrome: one glass pill toolbar top-right; the camera preview sits top-left on the same row */
+.chrome{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; display:flex; flex-wrap:nowrap; align-items:center; gap:6px; padding:4px; z-index:5;
+  background:rgba(14,19,40,.74); border-radius:999px; box-shadow:inset 0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
 body.home .chrome{ display:none; }
 .chip{ background:rgba(29,37,71,.85); color:var(--bone); padding:9px 14px; box-shadow:inset 0 0 0 1px var(--line);
   backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); font-size:14px; }
 .chip.icon{ display:inline-flex; align-items:center; gap:6px; padding:9px 11px; }
 .chip.icon svg{ width:18px; height:18px; flex:none; }
 .chip.icon span{ font-weight:500; line-height:18px; }
+.chrome .chip{ width:40px; height:40px; padding:0; flex:none; border-radius:50%; background:transparent; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none;
+  display:inline-flex; align-items:center; justify-content:center; color:var(--bone); transition:background .15s, color .15s, transform .1s; }
+.chrome .chip svg{ width:20px; height:20px; flex:none; }
+.chrome .chip:hover{ background:rgba(241,233,218,.1); }
+.chrome .chip:active{ transform:scale(.92); }
+.chrome .chip:focus-visible{ outline-offset:0; }
+.chrome .langBtn{ flex-direction:column; gap:1px; }
+.chrome .langBtn svg{ width:15px; height:15px; }
+.chrome .langBtn span{ font-size:9px; font-weight:700; line-height:1; letter-spacing:.04em; }
+#hudBtn[aria-pressed="true"]{ background:var(--saffron); color:#241a00; }
+#hudBtn[aria-pressed="true"]:hover{ background:#ffd170; }
+#muteBtn .off{ display:none; }
+#muteBtn[aria-pressed="true"]{ color:var(--muted); }
+#muteBtn[aria-pressed="true"] .on{ display:none; }
+#muteBtn[aria-pressed="true"] .off{ display:block; }
 #startLang{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); right:12px; }
 html[dir="rtl"] #startLang{ right:auto; left:12px; }
 html[dir="rtl"] #banner ul{ padding-left:0; padding-right:18px; }
 html[dir="rtl"] #hud{ direction:rtl; }
-#preview{ position:fixed; left:12px; top:calc(env(safe-area-inset-top,0px) + 12px); width:96px; border-radius:10px;
-  box-shadow:0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); z-index:5; background:#0e1328; }
+#preview{ position:fixed; left:12px; top:calc(env(safe-area-inset-top,0px) + 12px); width:96px; border-radius:12px; cursor:pointer; touch-action:manipulation;
+  box-shadow:0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); z-index:5; background:#0e1328; transition:width .25s; }
 #preview[hidden]{ display:none; }
-#preview.big{ left:50%; top:40%; transform:translate(-50%,-50%); width:min(280px, 72vw) !important; max-height:52vh; object-fit:contain; }
+#preview.peek{ width:min(240px, 64vw); z-index:7; } /* a tap on the small preview: a 2 s closer look */
+#preview.big{ position:relative; left:auto; top:auto; width:100%; height:auto; display:block; border-radius:14px; box-shadow:0 0 0 1px var(--line); z-index:auto; transition:none; cursor:default; }
+#liveDot{ position:fixed; left:19px; top:calc(env(safe-area-inset-top,0px) + 19px); width:8px; height:8px; border-radius:50%; z-index:6; pointer-events:none;
+  background:var(--coral); box-shadow:0 0 0 2px rgba(14,19,40,.85), 0 0 8px var(--coral); animation:pulse 1.6s infinite; }
+#liveDot[hidden]{ display:none; }
+@media (max-width:400px){ .chrome{ right:8px; } #preview{ left:8px; } #liveDot{ left:15px; } }
 #hud{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 12px + var(--hud-offset, 0px)); left:12px; z-index:5; font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;
   background:rgba(14,19,40,.82); padding:10px 12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); pointer-events:none; min-width:230px; }
 #hud .r{ display:flex; justify-content:space-between; gap:14px; }
 #hud .r span:last-child{ direction:ltr; unicode-bidi:isolate; white-space:pre; }
 #hud[hidden]{ display:none; }
-#banner{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 60px); z-index:6;
+#banner{ position:fixed; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 68px); z-index:6;
   width:min(520px,calc(100% - 24px)); background:#2a1e2a; box-shadow:inset 0 0 0 1px rgba(255,111,89,.45), 0 10px 30px rgba(0,0,0,.4);
   border-radius:12px; padding:14px 16px; font-size:14px; line-height:1.45; }
 #banner[hidden]{ display:none; }
@@ -92,33 +117,60 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #banner ul{ margin:0 0 10px; padding-left:18px; }
 #banner li{ overflow-wrap:anywhere; }
 #banner .row{ display:flex; gap:8px; justify-content:flex-end; }
-#hint{ position:fixed; left:50%; transform:translateX(-50%); top:34%; z-index:4;
-  color:var(--bone); font-size:14px; text-align:center; pointer-events:none; transition:opacity .6s; max-width:min(460px, calc(100% - 32px));
-  background:rgba(14,19,40,.78); padding:8px 14px; border-radius:12px; box-shadow:inset 0 0 0 1px var(--line); }
-#hint:empty{ display:none; }
-#status{ position:fixed; left:50%; top:74%; transform:translate(-50%,-50%); z-index:4; pointer-events:none; text-align:center;
-  width:min(320px, calc(100% - 48px)); color:var(--bone); font-size:20px; font-weight:500; line-height:1.35; transition:opacity .25s; }
-#status small{ display:block; margin-top:8px; font-size:14px; font-weight:400; color:var(--muted); }
-#status[hidden]{ display:block; opacity:0; }
+/* hint toast: slides up at the bottom edge (above Strike's power meter), holds 4 s, fades; never over the centre of the play area */
+#hint{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + var(--hint-bottom, 16px)); transform:translate(-50%, 14px); z-index:4; opacity:0;
+  display:flex; align-items:flex-start; gap:10px; width:max-content; max-width:min(460px, calc(100% - 32px)); pointer-events:none;
+  color:var(--bone); font-size:14px; line-height:1.4; text-align:start; transition:opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1);
+  background:rgba(14,19,40,.92); padding:10px 14px; border-radius:14px; box-shadow:inset 0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); }
+#hint.show{ transform:translate(-50%, 0); }
+#hint .ic{ flex:none; width:22px; height:22px; color:var(--saffron); }
+#hint .ic svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+/* no-hand card: the enlarged preview (moved inside), a title, three tips, the tracker line and the switch button */
+#status{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:4; pointer-events:none; text-align:center;
+  width:min(380px, calc(100% - 32px)); max-height:calc(100% - 24px); overflow:auto; color:var(--bone);
+  background:rgba(14,19,40,.93); border-radius:22px; padding:16px 16px 18px; box-shadow:inset 0 0 0 1px var(--line), 0 16px 40px rgba(0,0,0,.45); transition:opacity .25s, visibility 0s; }
+#status[hidden]{ display:block; opacity:0; visibility:hidden; transition:opacity .25s, visibility 0s .25s; }
 #status[hidden] *{ pointer-events:none !important; }
-#status .live{ display:block; margin-top:12px; font:13px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
-#status button{ pointer-events:auto; margin-top:12px; background:rgba(29,37,71,.9); color:var(--bone); padding:9px 14px; font-size:14px; box-shadow:inset 0 0 0 1px var(--line); }
+#status .camSlot{ position:relative; width:min(100%, 300px, 44vh); margin:0 auto 14px; border-radius:14px; }
+#status .handGuide{ position:absolute; inset:15%; z-index:1; pointer-events:none; }
+#status .handGuide svg{ width:100%; height:100%; overflow:visible; transform-origin:50% 60%; }
+#status:not([hidden]) .handGuide svg{ animation:guide 1.8s ease-in-out infinite; } /* only while the card shows: no per-frame work when hidden */
+@keyframes guide{ 0%,100%{ opacity:.55; transform:scale(.97); } 50%{ opacity:1; transform:scale(1.02); } }
+#status h2{ margin:0 0 12px; font-size:18px; font-weight:600; line-height:1.3; }
+#status .tips{ list-style:none; margin:0 0 12px; padding:0; display:grid; gap:8px; text-align:start; }
+#status .tips li{ display:flex; align-items:center; gap:10px; font-size:14px; line-height:1.35; color:var(--muted); }
+#status .tips svg{ flex:none; width:28px; height:28px; padding:4px; border-radius:8px; background:rgba(255,194,75,.12); color:var(--saffron); stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+#status .live{ display:block; margin:0 0 12px; font:12px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
+#status button{ pointer-events:auto; font-size:14px; padding:11px 16px; width:100%; }
+@media (max-height:520px){ #status .camSlot{ width:min(100%, 160px, 40vh); } #status h2{ font-size:16px; margin-bottom:8px; } #status .tips{ gap:4px; } }
+@media (prefers-reduced-motion: reduce){ #status .handGuide svg, #liveDot{ animation:none; } #hint{ transition:opacity .3s; } }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
 <body class="home">
 <canvas id="stage" data-i18n-aria="stageAria" aria-label="Physics sandbox"></canvas>
 <video id="cam" playsinline muted autoplay></video>
-<canvas id="preview" hidden data-i18n-aria="previewAria" aria-label="Camera preview with hand landmarks"></canvas>
+<canvas id="preview" hidden data-i18n-aria="previewAria" aria-label="Camera preview with hand landmarks"></canvas><span id="liveDot" hidden aria-hidden="true"></span>
 <div id="hud" hidden></div>
-<div class="chrome">
-  <button class="chip icon" id="homeBtn" type="button" data-i18n-aria="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
-  <button class="chip icon langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
-  <button class="chip" id="hudBtn" type="button" data-i18n="hud">HUD</button>
-  <button class="chip" id="resetBtn" type="button" data-i18n="reset">Reset</button>
+<div class="chrome" role="toolbar" data-i18n-aria="toolbarAria" aria-label="Game controls">
+  <button class="chip" id="homeBtn" type="button" data-i18n-aria="home" data-i18n-title="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
+  <button class="chip langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
+  <button class="chip" id="hudBtn" type="button" aria-pressed="false" data-i18n-aria="hud" data-i18n-title="hud" aria-label="HUD"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5a8 8 0 1 1 15 0"/><path d="M12 15.5l3.6-4.6"/><circle cx="12" cy="15.5" r="1.4"/><path d="M6 12.5h1.2M16.8 12.5H18M12 6.5v1.2"/></svg></button>
+  <button class="chip" id="muteBtn" type="button" aria-pressed="false" aria-label="Mute sound"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.5a7.6 7.6 0 0 1 0 11"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+  <button class="chip" id="resetBtn" type="button" data-i18n-aria="reset" data-i18n-title="reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20.5 4v4.8h-4.8"/></svg></button>
 </div>
-<div id="hint"></div>
-<div id="status" hidden><span data-i18n="statusTitle">Show your whole hand inside the yellow box</span><small data-i18n="statusSub">Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.</small><span class="live" id="statusLive"></span><button id="swapBtn" type="button" data-i18n="swap">Hand still not found? Switch tracker</button></div>
+<div id="hint" role="status"><span class="ic" aria-hidden="true"></span><span class="tx"></span></div>
+<div id="status" hidden>
+  <div class="camSlot"><div class="handGuide" aria-hidden="true"><svg viewBox="0 0 100 124" preserveAspectRatio="xMidYMid meet"><path d="M44 118 L36 96 L36 84 L13 60 Q6 52 13 47 Q19 43 25 50 L36 62 L36 30 Q36 22 42 22 Q48 22 48 30 L48 66 L51 66 L51 14 Q51 6 57 6 Q63 6 63 14 L63 66 L66 66 L66 20 Q66 12 72 12 Q78 12 78 20 L78 68 L81 68 L81 38 Q81 31 86.5 31 Q92 31 92 38 L92 96 L84 118 Z" fill="rgba(255,194,75,0.1)" stroke="#ffc24b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/></svg></div></div>
+  <h2 data-i18n="statusTitle">Show your whole hand inside the yellow box</h2>
+  <ul class="tips">
+    <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="tip_open">Open palm, fingers spread</span></li>
+    <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="2.5" stroke-dasharray="3 2.2"/><path d="M10 13V8.5a1 1 0 0 1 2 0V12M12 11.5V7.5a1 1 0 0 1 2 0V12M14 11.5V9a1 1 0 0 1 2 0v4.2a3.8 3.8 0 0 1-3.8 3.8h-.9a3.5 3.5 0 0 1-3-1.7L7.3 13.6a1 1 0 0 1 1.7-1L10 13.8"/></svg><span data-i18n="tip_box">Whole hand inside the box, wrist in view</span></li>
+    <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15" cy="5" r="2"/><path d="M15 7.5v5.5l-2.5 7M15 13l2.5 7M12.5 12l2.5-3 2.5 3"/><path d="M3 12h5.5M3 12l2.2-2.2M3 12l2.2 2.2"/></svg><span data-i18n="tip_back">Stand the phone up and step back if it doesn't fit</span></li>
+  </ul>
+  <span class="live" id="statusLive"></span>
+  <button class="secondary" id="swapBtn" type="button" data-i18n="swap">Hand still not found? Switch tracker</button>
+</div>
 <div id="banner" hidden role="alert">
   <strong data-i18n="bannerTitle">Camera mode is off. You're playing with mouse or touch.</strong>
   <ul id="bannerList"></ul>
@@ -138,6 +190,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <button type="button" data-mode="strike" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.5" cy="12" r="5"/><path d="M13.2 9.2a3 3 0 0 1 3.6 1.2"/><path d="M2.5 8.5h5.5M1.5 12h6M2.5 15.5h5.5"/></svg><span data-i18n="modeStrike">Strike</span></button>
     </div>
     <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
+    <div class="diff" id="strikeDiff" role="group" data-i18n-aria="diffAria" aria-label="Strike difficulty" hidden><button type="button" data-diff="easy" aria-pressed="true" data-i18n="diffEasy">Easy</button><button type="button" data-diff="normal" aria-pressed="false" data-i18n="diffNormal">Normal</button></div>
     <div class="actions">
       <button class="primary" id="camBtn" type="button" data-i18n="camBtn">Enable camera</button>
       <button class="secondary" id="mouseBtn" type="button" data-i18n="mouseBtn">Play with mouse or touch</button>
@@ -171,7 +224,8 @@ const CONFIG = {
   MAX_THROW_SPEED: 42,        // px per physics step (60Hz); caps tunneling
   HAND_LOST_FRAMES: 3,        // this many detections in a row without a hand = drop (no throw)
   HAND_LOST_MAX_MS: 1500,     // safety net if tracking stalls entirely
-  MAP_BOX: 0.70,              // central fraction of the camera frame mapped to the full screen
+  MAP_BOX: 0.86,              // central fraction of the camera frame mapped to the full screen (the preview's yellow box uses the same constant)
+  EDGE_MARGIN: 8,             // px: the camera cursor is clamped this far inside the screen edges
   EURO_MIN_CUTOFF: 1.2,       // One Euro filter: lower = steadier when still
   EURO_BETA: 0.012,           // One Euro filter: higher = less lag on fast moves
   EURO_D_CUTOFF: 1.0,
@@ -192,23 +246,33 @@ const CONFIG = {
   CUT_LINE_MS: 250,           // bright cut line shown on a sliced fruit
   // Smash mode
   SMASH_ROUND_S: 60,          // round length
-  PUNCH_SPEED: 0.8,           // px/ms on a ~950px screen: a fist moving at least this fast is a punch
-  FIST_RADIUS: 28,
-  SMASH_RADIUS: 70,           // px (scaled): bricks within this distance of the hit come loose too
+  PUNCH_SPEED: 0.55,          // px/ms on a ~950px screen: a hand (camera: any gesture; mouse/touch: pressed) moving at least this fast is a punch
+  FIST_RADIUS: 40,
+  SMASH_RADIUS: 95,           // px (scaled): bricks within this distance of the hit come loose too
   SMASH_MAX_PIECES: 140,      // dynamic debris cap; oldest small shards go first
   CAR_INTERVAL_MS: [3500, 6500],
   CAR_SPEED: 0.16,            // px/ms
   WALL_REBUILD_MS: 2500,      // a wall that is fully knocked down comes back after this
   // Strike mode (pseudo-3D corridor; z = depth, 0 is the player's plane)
   STRIKE_Z_FAR: 2400,         // depth of the far end of the corridor
-  STRIKE_BASE_SPEED: 1.1,     // depth units per ms on the first serve (~2.2 s to arrive)
+  // Strike difficulty: these are the kid-friendly Easy defaults; STRIKE_NORMAL below overrides them on Normal
+  STRIKE_BASE_SPEED: 0.8,     // depth units per ms on the first serve (~3 s to arrive; Normal 1.1)
   STRIKE_HIT_Z: 150,          // the ball can be slapped once it is this close to the player's plane
+  STRIKE_HIT_WINDOW: 2.2,     // x STRIKE_HIT_Z: how far out the slap window opens (Normal 1)
+  STRIKE_LATE_Z: 1,           // x STRIKE_HIT_Z past the player's plane: a late slap still counts (Normal 0)
+  STRIKE_HIT_RADIUS: 2.6,     // x the ball's screen radius: how close the hand must be (Normal 1.3)
+  STRIKE_HIT_NEAR: 90,        // px (screen-scaled): a hand this close to the ball's centre always hits (Normal 0)
+  STRIKE_MAGNET: 0.35,        // magnet assist: in the last 25% of the approach the ball drifts toward the hand by this share of the gap per 100 ms (Normal 0)
+  STRIKE_HAND_SCALE: 1.6,     // the hand sprite is drawn this much bigger (Normal 1)
   STRIKE_SUPER_SPEED: 2.2,    // hand speed (px/ms on a ~950px screen) at contact for a SUPER hit
-  STRIKE_MAX_SPEED: 2.8,      // cap on the incoming speed (it grows 5% per far-wall bounce)
-  STRIKE_LIVES: 3,
+  STRIKE_MAX_SPEED: 2.2,      // cap on the incoming speed (Normal 2.8)
+  STRIKE_PACE_GROW: 1.03,     // the pace grows by this factor per far-wall bounce (Normal 1.05)
+  STRIKE_LIVES: 5,            // (Normal 3)
   STRIKE_WALL_GAP: 400,       // depth between the brick walls (the first stands 40% of the way down the corridor; 4 in view)
   STRIKE_MAX_DEBRIS: 60,      // flying brick fragments cap; the oldest go first
 };
+const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3 };
+function sd(key) { return strike.diff === 'normal' && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
 
 /* ---------------- Language (English / Hebrew) ---------------- */
 const I18N = {
@@ -217,12 +281,12 @@ const I18N = {
     home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modeStrike: 'Strike', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
     statusTitle: 'Show your whole hand inside the yellow box',
-    statusSub: "Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.",
-    swap: 'Hand still not found? Switch tracker',
+    tip_open: 'Open palm, fingers spread', tip_box: 'Whole hand inside the box, wrist in view', tip_back: "Stand the phone up and step back if it doesn't fit",
+    swap: 'Hand still not found? Switch tracker', toolbarAria: 'Game controls', mute: 'Mute sound', unmute: 'Unmute sound',
     bannerTitle: "Camera mode is off. You're playing with mouse or touch.", gotIt: 'Got it',
     descSandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
     descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
-    descSmash: 'Brick walls stand and cars drive by. Make a fist and punch fast to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
+    descSmash: 'Brick walls stand and cars drive by. Wave your hand fast (a fist works too) to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
     descBusy: 'A busy board for little hands: switches that click, buttons that sing, knobs, sliders, a zipper, a little door with a surprise behind it, a piano, a xylophone, lights that glow and a wheel to spin. No score, no clock. Point to poke, pinch to turn and drag.',
     descStrike: 'A ball flies at you down a corridor blocked by brick walls. Slap it back with your palm the moment it arrives: the faster your hand, the harder the hit and the more bricks it smashes. Three misses and the round is over. Your webcam is the controller.',
     camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch', tremortiLink: 'Tremorti · tremor meter',
@@ -233,7 +297,7 @@ const I18N = {
     hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
     hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
-    hintSmashCam: 'Make a fist and punch through the walls and cars. Keep your hand inside the yellow box.',
+    hintSmashCam: 'Wave your hand fast through the walls and cars. Keep your hand inside the yellow box.',
     hintSmashTouch: 'Swipe fast through the walls and cars to smash them.', hintSmashMouse: 'Hold the left button and swipe fast to punch. D for HUD.',
     hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone and the wheel. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
     hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Drag the board to see more.',
@@ -241,7 +305,7 @@ const I18N = {
     hintStrikeCam: 'Move your hand onto the ball and slap it as it arrives. A fast slap smashes through the brick walls. Keep your hand inside the yellow box.',
     hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives. A fast swipe smashes the brick walls.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. A fast swipe smashes the brick walls. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
-    pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives',
+    pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives', diffEasy: 'Easy', diffNormal: 'Normal', diffAria: 'Strike difficulty',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
@@ -272,12 +336,12 @@ const I18N = {
     home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modeStrike: 'מכה', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
     statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
-    statusSub: 'כף יד פתוחה, אצבעות פרושות, שורש כף היד בתמונה. העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת.',
-    swap: 'היד עדיין לא מזוהה? החליפו מעבד זיהוי',
+    tip_open: 'כף יד פתוחה, אצבעות פרושות', tip_box: 'כל כף היד בתוך המסגרת, כולל שורש כף היד', tip_back: 'העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת',
+    swap: 'היד עדיין לא מזוהה? החליפו מעבד זיהוי', toolbarAria: 'פקדי המשחק', mute: 'השתקת צלילים', unmute: 'הפעלת צלילים',
     bannerTitle: 'מצב מצלמה כבוי. אתם משחקים עם עכבר או מגע.', gotIt: 'הבנתי',
     descSandbox: 'צבטו באוויר כדי להרים חפצים, שחררו כדי לזרוק, הצביעו כדי לדחוף. המצלמה היא השלט.',
     descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
-    descSmash: 'קירות לבנים עומדים ומכוניות חולפות. קמצו אגרוף והכו מהר כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
+    descSmash: 'קירות לבנים עומדים ומכוניות חולפות. הניפו את היד מהר (גם אגרוף עובד) כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
     descBusy: 'לוח עסוק לידיים קטנות: מתגים שמקליקים, כפתורים שמנגנים, כפתורי סיבוב, מחוונים, רוכסן, דלת קטנה עם הפתעה מאחוריה, פסנתר, קסילופון, נורות שזוהרות וגלגל מזל. בלי ניקוד, בלי שעון. הצביעו כדי ללחוץ, צבטו כדי לסובב ולגרור.',
     descStrike: 'כדור טס אליכם במסדרון חסום בקירות לבנים. הכו אותו בכף היד ברגע שהוא מגיע: ככל שהיד מהירה יותר, המכה חזקה יותר ויותר לבנים מתנפצות. שלושה פספוסים והסיבוב נגמר. המצלמה היא השלט.',
     camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע', tremortiLink: 'טרימורטי · מד רעד',
@@ -288,7 +352,7 @@ const I18N = {
     hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
     hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
-    hintSmashCam: 'קמצו אגרוף והכו דרך הקירות והמכוניות. שמרו על היד בתוך המסגרת הצהובה.',
+    hintSmashCam: 'הניפו את היד מהר דרך הקירות והמכוניות. שמרו על היד בתוך המסגרת הצהובה.',
     hintSmashTouch: 'החליקו מהר דרך הקירות והמכוניות כדי לנפץ אותם.', hintSmashMouse: 'החזיקו את הכפתור השמאלי והחליקו מהר כדי להכות. D למדדים.',
     hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון והגלגל. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
     hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גררו את הלוח כדי לראות עוד.',
@@ -296,7 +360,7 @@ const I18N = {
     hintStrikeCam: 'הזיזו את היד אל הכדור והכו בו כשהוא מגיע אליכם. מכה מהירה מנפצת את קירות הלבנים. שמרו על היד בתוך המסגרת הצהובה.',
     hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
-    pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים',
+    pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים', diffEasy: 'קל', diffNormal: 'רגיל', diffAria: 'רמת הקושי במכה',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
@@ -557,8 +621,9 @@ function processHand(lm, vw, vh, t) {
   const m = (1 - CONFIG.MAP_BOX) / 2;
   const u = Math.min(1.02, Math.max(-0.02, (ax / vw - m) / CONFIG.MAP_BOX));
   const v = Math.min(1.02, Math.max(-0.02, (ay / vh - m) / CONFIG.MAP_BOX));
-  hand.x = hand.fx.filter(u * W, t);
-  hand.y = hand.fy.filter(v * H, t);
+  const e = CONFIG.EDGE_MARGIN; // the cursor never runs off the screen
+  hand.x = Math.min(W - e, Math.max(e, hand.fx.filter(u * W, t)));
+  hand.y = Math.min(H - e, Math.max(e, hand.fy.filter(v * H, t)));
 }
 
 /* ---------------- Pointer state (mouse / touch) ---------------- */
@@ -960,7 +1025,7 @@ function drawPreview() {
   const w = preview.width, h = preview.height;
   pctx.save(); pctx.translate(w, 0); pctx.scale(-1, 1); pctx.drawImage(video, 0, 0, w, h); pctx.restore();
   const m = (1 - CONFIG.MAP_BOX) / 2;
-  const big = preview.classList.contains('big');
+  const big = preview.classList.contains('big') || preview.classList.contains('peek');
   pctx.strokeStyle = big ? '#ffc24b' : 'rgba(255,194,75,0.55)'; pctx.setLineDash(big ? [] : [6, 6]); pctx.lineWidth = big ? 3 : 2;
   pctx.strokeRect(m * w, m * h, CONFIG.MAP_BOX * w, CONFIG.MAP_BOX * h); pctx.setLineDash([]);
   if (!lastLandmarks) return;
@@ -1252,6 +1317,7 @@ function drawFloaters(list) {
     blit(sp, f.x, f.y - 8, 0, 1, Math.max(0, f.life));
   }
 }
+function scoreY() { return Math.max(104, Math.round(chromeRow.bottom) + 40); } // the big score starts under the toolbar / preview row
 function drawScore(text, y, sub, subColor) {
   blit(textSprite(text, 44, '#fff8ec', 'rgba(255,194,75,0.85)'), W / 2, y - 15);
   if (sub) blit(textSprite(sub, 14, subColor || 'rgba(241,233,218,0.7)', null, 500), W / 2, y + 17);
@@ -1283,7 +1349,7 @@ function renderSlice(now) {
   }
   if (slice.bladeOn && cursor.present) { drawKatana(cursor.x, cursor.y, slice.ang); slice.drawn++; }
   drawFloaters(slice.floaters);
-  drawScore(String(slice.score), 104, t('missed', { n: slice.missed }));
+  drawScore(String(slice.score), scoreY(), t('missed', { n: slice.missed }));
   resetView();
   if (cursor.present && !slice.bladeOn) {
     ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 14, 0, TAU);
@@ -1420,7 +1486,7 @@ function crumpleCar(car, p, dir, v, now) {
   capPieces();
 }
 function endRound(now) {
-  smash.over = true; smash.overAt = now; smash.punching = false; hintEl.style.opacity = 0;
+  smash.over = true; smash.overAt = now; smash.punching = false; hideHint();
   if (smash.score > smash.best) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} }
   sfx('chime');
 }
@@ -1449,7 +1515,7 @@ function smashTick(now, dt) {
   if (cur && smash.prev) {
     const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
     if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
-    smash.punching = gesture === 'fist' && v >= CONFIG.PUNCH_SPEED * s; // smaller screen, smaller motions
+    smash.punching = punchGesture() && v >= CONFIG.PUNCH_SPEED * s; // smaller screen, smaller motions
     if (smash.punching && len > 0) {
       const dir = { x: dx / len, y: dy / len };
       const hits = M.Query.ray([...smash.bricks, ...smash.cars], smash.prev, cur, CONFIG.FIST_RADIUS * 2);
@@ -1564,9 +1630,10 @@ function drawCar(c) {
   const sp = wheelSprite(p.wr);
   for (const part of [c.parts[3], c.parts[4]]) blit(sp, part.position.x, part.position.y, p.dir * p.dist / p.wr);
 }
+function punchGesture() { return mode === 'camera' ? gesture !== 'none' && gesture !== 'pinch' : gesture === 'fist'; } // camera: a fist, an open hand or a pointing finger all punch; mouse / touch: pressed
 function drawFist(now) {
   if (!cursor.present) return;
-  if (gesture !== 'fist') { drawCursor(now); return; }
+  if (!punchGesture()) { drawCursor(now); return; }
   const R = CONFIG.FIST_RADIUS, trail = cursor.history.filter((p) => now - p.t < 120);
   resetView(); ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (let i = 1; i < trail.length; i++) {
@@ -1592,7 +1659,7 @@ function renderSmash(now) {
   drawParticles(); drawRings(now);
   drawFloaters(smash.floaters);
   const sec = Math.ceil(smashLeft(now) / 1000);
-  drawScore(String(smash.score), 104, smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
+  drawScore(String(smash.score), scoreY(), smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
   drawFist(now);
   resetView();
   if (smash.over) drawRoundOver(now, smash.score, smash.best, smash.overAt, 'playAgain');
@@ -2381,6 +2448,7 @@ function resetBusy() { // new colours (and a new plank of wood); all states back
 }
 function busyQuiet() { busy.tone.active = false; sfx('toneOff'); } // stops the slider tone (leaving the mode, reset, home)
 function layoutBusy() { // grid packing: 2 columns on a phone, 3 on a tablet, 4 to 8 in landscape; wide/tall widgets span cells
+  busy.top = Math.max(64, Math.round(chromeRow.bottom) + 8); // the board starts under the toolbar / preview row
   const m = busy.margin, top = busy.top, bw = W - 2 * m, avail = H - top - m, n = busy.widgets.length;
   const cols = W / H > 1.15 ? Math.max(4, Math.min(8, Math.floor(bw / 170))) : W >= 560 ? 3 : 2, pad = Math.max(10, Math.min(bw, avail) * 0.035);
   const minCell = matchMedia('(pointer: coarse)').matches ? BUSY_MIN_CELL : BUSY_MIN_CELL_MOUSE; // a mouse pointer is fine with smaller cells, so a desktop fits the whole board
@@ -2477,12 +2545,13 @@ const STRIKE_BONUS = { soft: 0, medium: 1, hard: 2, super: 5 };
 const STRIKE_LEVELS = ['#c8654a', '#8f929e', '#5c7fb3', '#d9a441']; // brick tint per level: terracotta, grey stone, blue steel, gold
 const STRIKE_SLIDE = 0.5;               // depth units per ms a wall slides forward into a freed slot
 const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
-const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, score: 0, best: 0, over: false, overAt: 0,
+const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+  diff: (() => { try { const v = localStorage.getItem('strikeDiff'); if (v === 'easy' || v === 'normal') return v; } catch {} return 'easy'; })(), // 'easy' (default) | 'normal'
   serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
   level: 1, cleared: 0, wallId: 0, bestCombo: 0,
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
   ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
-    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null },
+    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0 },
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
@@ -2535,10 +2604,17 @@ function drawCorridor(g) { // static part of the corridor: floor, ceiling, side 
   glow.addColorStop(0, 'rgba(120,160,255,0.1)'); glow.addColorStop(0.5, 'rgba(100,140,240,0.04)'); glow.addColorStop(1, 'rgba(100,140,240,0)');
   g.fillStyle = glow; g.fillRect(0, 0, W, H);
 }
+function setStrikeDiff(d) { // Easy / Normal: saved, shown on the start screen pill; takes effect on the next round
+  strike.diff = d === 'normal' ? 'normal' : 'easy';
+  try { localStorage.setItem('strikeDiff', strike.diff); } catch {}
+  document.querySelectorAll('#strikeDiff button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.diff === strike.diff)));
+}
+function strikeParams() { return { diff: strike.diff, speed: sd('STRIKE_BASE_SPEED'), lives: sd('STRIKE_LIVES'), grow: sd('STRIKE_PACE_GROW'), max: sd('STRIKE_MAX_SPEED'), radius: sd('STRIKE_HIT_RADIUS'), near: sd('STRIKE_HIT_NEAR'), window: sd('STRIKE_HIT_WINDOW'), late: sd('STRIKE_LATE_Z'), magnet: sd('STRIKE_MAGNET'), hand: sd('STRIKE_HAND_SCALE') }; }
+document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListener('click', () => setStrikeDiff(b.dataset.diff)));
 function resetStrike(now) {
   strike.ball = null; strike.trail.length = strike.floaters.length = strike.walls.length = strike.debris.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
-  strike.score = 0; strike.lives = CONFIG.STRIKE_LIVES; strike.over = false; strike.pace = CONFIG.STRIKE_BASE_SPEED; strike.speed = strike.pace;
+  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED'); strike.speed = strike.pace;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = -1e9;
   strike.serveAt = now + 600; strike.cued = false;
@@ -2642,7 +2718,7 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
   b.vx = -offx * W * 0.00035 * (0.6 + pw); b.vy = -offy * H * 0.00035 * (0.6 + pw);
-  strike.speed = Math.min(CONFIG.STRIKE_MAX_SPEED * 1.5, strike.pace * (0.55 + 1.45 * pw));
+  strike.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw));
   const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy };
   strike.ui.tierFlash = { t: now, tier }; // the power meter flashes and shows the tier big
@@ -2656,7 +2732,7 @@ function strikeMiss(now) {
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   sfx('whiff'); shakeScreen(1.2);
   if (strike.lives <= 0) {
-    strike.over = true; strike.overAt = now; hintEl.style.opacity = 0; strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null;
+    strike.over = true; strike.overAt = now; hideHint(); strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null;
     strike.ui.newBest = strike.score > strike.best;
     if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
     else sfx('chime');
@@ -2667,7 +2743,7 @@ function strikeButtonAt(px, py) { // which round-over card button (if any) is un
   for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
   return null;
 }
-function strikeOverAction(key, now) { if (key === 'home') goHome(); else resetStrike(now); }
+function strikeOverAction(key, now) { if (key === 'home') goHome(); else if (key === 'easy' || key === 'normal') setStrikeDiff(key); else resetStrike(now); }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
   if (strike.over) { // round-over card: a point / pinch held on a button for 400 ms presses it (a filling ring shows the dwell); a wave or a tap elsewhere restarts
@@ -2692,11 +2768,19 @@ function strikeTick(now, dt) {
   const dz = strike.speed * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
   if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane); walls never block it
     b.z -= dz;
-    const k = 1 - Math.max(0, b.z) / Z; b.x = b.x0 + (b.tx - b.x0) * k; b.y = b.y0 + (b.ty - b.y0) * k;
-    if (b.z <= CONFIG.STRIKE_HIT_Z) {
-      const sc = ballScreen(b);
-      if (cursor.present && Math.hypot(cursor.x - sc.x, cursor.y - sc.y) <= sc.r * 1.3) strikeHit(b, now);
-      else if (b.z <= 0) { strikeMiss(now); return; }
+    const k = 1 - Math.max(0, b.z) / Z, mag = sd('STRIKE_MAGNET');
+    if (mag && cursor.present && b.z > 0 && b.z <= Z * 0.25) { // magnet assist: the target drifts toward a hand that is roughly there
+      const sc = ballScreen(b), v = vanish(), s = strikeScale(), clamp = (q, a, c) => Math.max(a, Math.min(c, q));
+      if (Math.hypot(cursor.x - sc.x, cursor.y - sc.y) <= Math.max(sc.r * 3, 160 * s)) {
+        const q = Math.min(1, mag * dt / 100);
+        b.tx += (clamp(cursor.x - v.x, L + r, R - r) - b.tx) * q; b.ty += (clamp(cursor.y - v.y, T + r, B - r) - b.ty) * q;
+      }
+    }
+    b.x = b.x0 + (b.tx - b.x0) * k; b.y = b.y0 + (b.ty - b.y0) * k;
+    if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
+      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale());
+      if (cursor.present && Math.hypot(cursor.x - sc.x, cursor.y - sc.y) <= reach) strikeHit(b, now);
+      else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(now); return; }
     }
   } else { // outgoing: lateral velocity from the hit, bouncing off the corridor sides, through the brick walls, then off the far wall
     const z0 = b.z;
@@ -2711,7 +2795,7 @@ function strikeTick(now, dt) {
     }
     if (b.dir < 0 && b.z >= Z) {
       b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
-      strike.pace = Math.min(CONFIG.STRIKE_MAX_SPEED, strike.pace * 1.05); strike.speed = strike.pace;
+      strike.pace = Math.min(sd('STRIKE_MAX_SPEED'), strike.pace * sd('STRIKE_PACE_GROW')); strike.speed = strike.pace;
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
   }
@@ -2814,7 +2898,7 @@ function heartSprite(on) {
 }
 function drawStrikeHand(now) {
   if (!cursor.present) return;
-  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), sx = 1 + 0.3 * k, sy = 1 - 0.25 * k; // squash on a hit
+  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), hs = sd('STRIKE_HAND_SCALE'), sx = hs * (1 + 0.3 * k), sy = hs * (1 - 0.25 * k); // squash on a hit; bigger on Easy
   ctx.setTransform(DPR * sx, 0, 0, DPR * sy, (cursor.x + view.x) * DPR, (cursor.y + view.y) * DPR);
   ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
   resetView();
@@ -2824,7 +2908,7 @@ const TIER_COL = { soft: '#43d9a3', medium: '#54c6eb', hard: '#ffc24b', super: '
 const METER_MAX = CONFIG.STRIKE_SUPER_SPEED * 1.15; // hand speed at the full end of the meter, so SUPER owns the last 13%
 const METER_ZONES = [[0, STRIKE_TIERS[0] / METER_MAX, 'soft'], [STRIKE_TIERS[0] / METER_MAX, STRIKE_TIERS[1] / METER_MAX, 'medium'], [STRIKE_TIERS[1] / METER_MAX, CONFIG.STRIKE_SUPER_SPEED / METER_MAX, 'hard'], [CONFIG.STRIKE_SUPER_SPEED / METER_MAX, 1, 'super']];
 function speedTier(v) { return v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft'; }
-function strikeTop() { const r = document.querySelector('.chrome').getBoundingClientRect(); return r.height > 0 ? r.bottom : 50; } // the HUD card sits under the chrome buttons
+function strikeTop() { return chromeRowBottom() || 50; } // the HUD card sits under the toolbar / preview row
 function glassSprite(w, h, r, solid) { // dark translucent card with a 1 px rim and a soft top highlight; drawn from its top-left corner
   return makeSprite('glass|' + Math.round(w) + 'x' + Math.round(h) + '|' + r + (solid ? '|s' : ''), w + 2, h + 2, 0, 0, (g) => {
     const path = () => { g.beginPath(); g.roundRect(1, 1, w, h, r); };
@@ -2853,14 +2937,15 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 34, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
   edgeText(sc, rtl ? x + w - 18 : x + 18, y + h / 2, rtl, 1 + 0.16 * Math.sin(Math.PI * pop));
   ui.hearts.length = 0;
-  for (let i = 0; i < CONFIG.STRIKE_LIVES; i++) {
-    let hx = x + w / 2 + (i - (CONFIG.STRIKE_LIVES - 1) / 2) * 30; const hy = y + h / 2 + 1, L = ui.heartLost;
+  const nL = strike.maxLives || sd('STRIKE_LIVES'), gapH = nL > 3 ? 26 : 30;
+  for (let i = 0; i < nL; i++) {
+    let hx = x + w / 2 + (i - (nL - 1) / 2) * gapH; const hy = y + h / 2 + 1, L = ui.heartLost;
     ui.hearts.push({ x: hx, y: hy });
     if (L && L.i === i && now - L.t < 550) { // just lost: shakes, the red fades out over the hollow one
       const k = (now - L.t) / 550; hx += Math.sin(k * 42) * 4 * (1 - k);
       blit(heartSprite(false), hx, hy, 0, 0.75); blit(heartSprite(true), hx, hy, 0, 0.75 + 0.35 * k, 1 - k); continue;
     }
-    blit(heartSprite(i < strike.lives), hx, hy, 0, 0.75);
+    blit(heartSprite(i < strike.lives), hx, hy, 0, nL > 3 ? 0.66 : 0.75);
   }
   const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
   blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
@@ -2886,6 +2971,7 @@ function drawPowerMeter(now, dt) { // bottom bar filling with the hand's speed i
   ui.meterSpeed += (Math.min(v, METER_MAX * 1.3) - ui.meterSpeed) * Math.min(1, dt / (v > ui.meterSpeed ? 25 : 140)); // quick to rise, slow to fall
   const val = Math.min(1, ui.meterSpeed / METER_MAX), tier = speedTier(ui.meterSpeed); ui.meter = val; ui.meterTier = tier;
   const w = Math.min(W - 32, 380), h = 12, cx = W / 2, cy = H - 30, x0 = cx - w / 2, col = TIER_COL[tier];
+  ui.meterTop = cy - 70; // top of the meter, its live tier label and the big tier flash after a hit: the hint toast stays above this
   blit(meterTrackSprite(w, h), cx, cy); resetView();
   if (val > 0.004) {
     const fw = val * w, fx = rtl ? cx + w / 2 - fw : x0;
@@ -2948,13 +3034,14 @@ function overButtonSprite(kind, w, h) {
   return makeSprite('obtn|' + kind + '|' + Math.round(w) + 'x' + Math.round(h), w + 8, h + 8, w / 2 + 4, h / 2 + 4, (g) => {
     const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, 14); };
     if (kind === 'again') { g.save(); g.shadowColor = 'rgba(255,194,75,0.45)'; g.shadowBlur = 12; path(); g.fillStyle = '#ffc24b'; g.fill(); g.restore(); const gr = g.createLinearGradient(0, -h / 2, 0, h / 2); gr.addColorStop(0, '#ffd77a'); gr.addColorStop(1, '#f5b23a'); path(); g.fillStyle = gr; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,0.45)'; g.stroke(); }
+    else if (kind === 'on') { path(); g.fillStyle = 'rgba(255,194,75,0.22)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = '#ffc24b'; g.stroke(); } // the selected difficulty
     else { path(); g.fillStyle = 'rgba(241,233,218,0.06)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(241,233,218,0.55)'; g.stroke(); }
   });
 }
 function drawStrikeOver(now) { // round-over card: title, score, best (+ NEW BEST ribbon), stats, Play again / Home buttons
   const ui = strike.ui, rtl = lang === 'he', k = Math.min(1, (now - strike.overAt) / 380), e = 1 - Math.pow(1 - k, 3);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const cw = Math.min(W - 32, 380), ch = 318, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(ui.top + 84, (H - ch) / 2) + (1 - e) * 26;
+  const cw = Math.min(W - 32, 380), ch = 372, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(ui.top + 84, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
@@ -2971,12 +3058,14 @@ function drawStrikeOver(now) { // round-over card: title, score, best (+ NEW BES
   const stats = [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo']]; // hits, walls, best combo
   stats.forEach(([val, key], i) => { const sx = cx + (i - 1) * cw * 0.3 * (rtl ? -1 : 1); blit(textSprite(String(val), 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
   const bw = (cw - 52) / 2, bh = 50, by = y0 + 246, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
-  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
-  for (const key of ['again', 'home']) {
-    const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2;
-    blit(overButtonSprite(key, r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
+  const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3; // Easy / Normal pill under the buttons (Easy at the start edge)
+  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh }, easy: { x: ex, y: dy, w: dw, h: 44 }, normal: { x: nx, y: dy, w: dw, h: 44 } };
+  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal') };
+  for (const key in ui.buttons) {
+    const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = key === strike.diff;
+    blit(overButtonSprite(key === 'again' ? 'again' : on ? 'on' : 'home', r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
-    blit(textSprite(key === 'again' ? t('playAgainBtn') : t('home'), 16, key === 'again' ? '#2a1a00' : '#f1e9da', null, key === 'again' ? 700 : 500), mx, my);
+    blit(textSprite(label[key], key === 'again' || key === 'home' ? 16 : 14, key === 'again' ? '#2a1a00' : on ? '#ffd77a' : '#f1e9da', null, key === 'again' || on ? 700 : 500), mx, my);
   }
   if (now - strike.overAt > 1000) blit(textSprite(t('playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
@@ -3035,6 +3124,14 @@ function renderStrike(now) {
 
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
 let audio = null, noiseBuf = null;
+let muted = false; try { muted = localStorage.getItem('muted') === '1'; } catch {}
+function setMuted(m) {
+  muted = !!m; try { localStorage.setItem('muted', muted ? '1' : '0'); } catch {}
+  if (muted) toneOff();
+  syncMuteBtn();
+}
+function syncMuteBtn() { const b = $('muteBtn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
+$('muteBtn').addEventListener('click', () => setMuted(!muted));
 function audioInit() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
@@ -3052,8 +3149,8 @@ function tone(type, f0, f1, peak, ms, t0) {
   if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + ms / 1000);
   env(o, peak, ms, t0); o.start(t0); o.stop(t0 + ms / 1000 + 0.03);
 }
-function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing without a running AudioContext
-  if (!audio || audio.state !== 'running') return;
+function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted or without a running AudioContext
+  if (muted || !audio || audio.state !== 'running') return;
   try {
     const t0 = audio.currentTime, f = audio.createBiquadFilter();
     if (kind === 'crunch') { f.type = 'bandpass'; f.frequency.value = 900 + Math.random() * 600; f.Q.value = 0.7; env(f, 0.2, 130, t0); noise(t0, 130, f); }
@@ -3114,7 +3211,7 @@ function pianoVoice(f, t0) {
 // Continuous slider tone: one oscillator whose gain ramps in and out so it never clicks; pitch follows the handle.
 const liveTone = { osc: null, gain: null };
 function toneOn(f) {
-  if (!audio || audio.state !== 'running') return;
+  if (muted || !audio || audio.state !== 'running') return;
   try {
     toneOff(); const t0 = audio.currentTime, o = audio.createOscillator(), g = audio.createGain(), lp = audio.createBiquadFilter();
     o.type = 'triangle'; o.frequency.setValueAtTime(f, t0); lp.type = 'lowpass'; lp.frequency.value = 1800;
@@ -3150,15 +3247,25 @@ function setGameMode(m) {
 function renderModeText() {
   const cap = (m) => m[0].toUpperCase() + m.slice(1);
   $('modeDesc').textContent = t('desc' + cap(gameMode));
+  $('strikeDiff').hidden = gameMode !== 'strike';
+  document.querySelectorAll('#strikeDiff button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.diff === strike.diff)));
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
   return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike' }[gameMode] + how);
 }
-function showHint() {
-  hintEl.textContent = hintText(); hintEl.style.opacity = 1;
-  clearTimeout(showHint.t); showHint.t = setTimeout(() => (hintEl.style.opacity = 0), 6000);
+function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, else a small margin
+  return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 100) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
+function showHint() { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades
+  hintEl.querySelector('.tx').textContent = hintText();
+  const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg');
+  hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
+  hintEl.style.setProperty('--hint-bottom', hintBottom() + 'px');
+  hintEl.style.opacity = 1; hintEl.classList.add('show');
+  clearTimeout(showHint.t); showHint.t = setTimeout(hideHint, 4000);
+}
+function hideHint() { hintEl.style.opacity = 0; hintEl.classList.remove('show'); clearTimeout(showHint.t); }
 document.querySelectorAll('.modes button').forEach((b) => b.addEventListener('click', () => setGameMode(b.dataset.mode)));
 
 /* ---------------- HUD ---------------- */
@@ -3180,7 +3287,8 @@ function updateHud() {
   hudEl.replaceChildren(...rowsH.map(([k, v]) => { const r = document.createElement('div'); r.className = 'r';
     const a = document.createElement('span'), b = document.createElement('span'); a.textContent = t(k); b.textContent = v; r.append(a, b); return r; }));
 }
-function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
+function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); syncHudBtn(); }
+function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
 $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
@@ -3353,7 +3461,7 @@ function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop());
 
 function fallbackToMouse(failures) {
   stopCamera(); landmarker = null; lastLandmarks = null;
-  noHandShown = false; statusEl.hidden = true; preview.classList.remove('big');
+  noHandShown = false; statusEl.hidden = true; setPreviewBig(false);
   lastFailures = failures; renderBanner();
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
@@ -3396,19 +3504,45 @@ function updateNoHand(now) {
   const show = mode === 'camera' && !cursor.present && now - Math.max(hand.lastSeen, cameraStartedAt) > 400;
   if (show === noHandShown) return;
   noHandShown = show;
-  preview.classList.toggle('big', show);
+  setPreviewBig(show);
   statusEl.hidden = !show;
-  if (show) { hintEl.style.opacity = 0; statusLive.textContent = t('trackStarting', { d: delegateUsed }); }
+  if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); }
   updateHudOffset();
 }
-// Top row: camera preview at the left, buttons wrap at the right; the HUD sits under whichever is taller.
+// The enlarged preview lives inside the no-hand card; the small one is a fixed corner element with a 'live' dot.
+const camSlot = document.querySelector('#status .camSlot');
+function setPreviewBig(on) {
+  preview.classList.toggle('big', on); preview.classList.remove('peek');
+  if (on) { if (preview.parentNode !== camSlot) camSlot.prepend(preview); }
+  else if (preview.parentNode !== document.body) document.body.insertBefore(preview, hudEl);
+  syncLiveDot();
+}
+function syncLiveDot() { $('liveDot').hidden = mode !== 'camera' || preview.hidden || preview.classList.contains('big'); }
+function peekPreview() { // a tap on the small preview: enlarge it for 2 s
+  if (preview.classList.contains('big') || mode !== 'camera') return;
+  preview.classList.add('peek'); clearTimeout(peekPreview.t); peekPreview.t = setTimeout(() => preview.classList.remove('peek'), 2000);
+}
+preview.addEventListener('pointerdown', (e) => { e.preventDefault(); peekPreview(); });
+// Top row: camera preview at the left, the toolbar at the right; the HUD and each mode's own top UI sit under whichever is taller.
+const chromeRow = { bottom: 0 };
+function chromeRowBottom() { // px: bottom of the toolbar or, in camera mode, of the small preview (reserved even while it is enlarged, so nothing jumps)
+  const c = document.querySelector('.chrome').getBoundingClientRect(); if (c.height <= 0) return 0;
+  let b = c.bottom;
+  if (mode === 'camera' && !preview.hidden) {
+    const small = !preview.classList.contains('big') && !preview.classList.contains('peek');
+    b = Math.max(b, small ? preview.getBoundingClientRect().bottom : c.top + 96 * preview.height / Math.max(1, preview.width));
+  }
+  return b;
+}
 function updateHudOffset() {
   const small = mode === 'camera' && !preview.hidden && !preview.classList.contains('big');
   const root = document.documentElement.style;
   root.setProperty('--chrome-inset', small ? preview.getBoundingClientRect().width + 8 + 'px' : '0px');
-  const top = document.querySelector('.chrome').getBoundingClientRect().top;
-  const bottoms = [document.querySelector('.chrome').getBoundingClientRect().bottom, small ? preview.getBoundingClientRect().bottom : 0];
-  root.setProperty('--hud-offset', Math.max(0, Math.max(...bottoms) - top) + 8 + 'px');
+  const c = document.querySelector('.chrome').getBoundingClientRect();
+  const bottoms = [c.bottom, small ? preview.getBoundingClientRect().bottom : 0];
+  root.setProperty('--hud-offset', Math.max(0, Math.max(...bottoms) - c.top) + 8 + 'px');
+  const b = chromeRowBottom(), changed = Math.abs(b - chromeRow.bottom) > 0.5; chromeRow.bottom = b;
+  if (changed && gameMode === 'busy' && busy.widgets.length) layoutBusy();
 }
 window.addEventListener('resize', () => updateHudOffset());
 
@@ -3421,8 +3555,8 @@ function goHome() {
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
-  noHandShown = false; preview.hidden = true; preview.classList.remove('big'); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
-  hintEl.style.opacity = 0; updateHudOffset();
+  noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
+  hideHint(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   $('start').hidden = false; document.body.classList.add('home');
 }
@@ -3437,7 +3571,7 @@ function startGame(m) {
     preview.width = 320; preview.height = Math.round(320 * (video.videoHeight || 480) / (video.videoWidth || 640));
     cameraStartedAt = performance.now();
   }
-  requestAnimationFrame(updateHudOffset);
+  syncLiveDot(); requestAnimationFrame(updateHudOffset);
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
@@ -3454,8 +3588,9 @@ function onLangChange() {
   if (physicsError) $('modeDesc').textContent = t('physicsFail', { m: physicsError });
   Object.keys(rows).forEach((k) => (rows[k].querySelector('small').textContent = rowDetail(k)));
   renderBanner();
-  if (hintEl.style.opacity === '1') hintEl.textContent = hintText();
+  if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
   if (!hudEl.hidden) updateHud();
+  syncMuteBtn();
 }
 applyLang();
 for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
@@ -3473,10 +3608,11 @@ ensureMatter().then(initPhysics).catch((e) => {
 // Test hook: lets automated tests drive the same input pipeline without a camera.
 window.__grasp = {
   processHand, CONFIG,
-  simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
+  simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; syncLiveDot(); },
+  get muted() { return muted; }, set muted(v) { setMuted(v); }, chromeRow, chromeRowBottom, scoreY, hintBottom,
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, busy, strike, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  slice, smash, busy, strike, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setStrikeDiff, strikeParams, punchGesture, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
 };
 </script>
 </body>

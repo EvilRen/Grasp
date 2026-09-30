@@ -22,7 +22,7 @@ window.mkHand = (ax, ay, pd) => {  // ax, ay: pinch anchor in camera coords (0..
   for (const [tip, pip] of [[12,10],[16,14],[20,18]]) { L[tip] = {x: ax, y: ay - 0.05, z:0}; L[pip] = {x: ax, y: ay + 0.05, z:0}; }
   return L;
 };
-window.handAt = (X, Y, pd) => { const m = 0.15; return mkHand(1 - (m + X / innerWidth * 0.7), m + Y / innerHeight * 0.7, pd); };
+window.handAt = (X, Y, pd) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; return mkHand(1 - (m + X / innerWidth * B), m + Y / innerHeight * B, pd); };
 """
 def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + (('  | ' + str(extra)) if extra != '' else ''))
@@ -151,7 +151,7 @@ async def main():
         check('phone: top buttons fit on screen', ov['minLeft'] >= 0 and ov['maxRight'] <= ov['W'], ov)
         await page.screenshot(path='tests/out/he_game.png')
         await page.tap('.chrome .langBtn'); await page.wait_for_timeout(100)
-        check('in-game button switches back to English', await page.evaluate("document.documentElement.dir === 'ltr' && $('resetBtn').textContent === 'Reset'"))
+        check('in-game button switches back to English', await page.evaluate("document.documentElement.dir === 'ltr' && $('resetBtn').title === 'Reset' && $('resetBtn').getAttribute('aria-label') === 'Reset'"))
         check('Hebrew: no page errors', not errs, errs)
         await b.close()
     print('FAILURES:', check.fails)

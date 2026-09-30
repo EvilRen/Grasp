@@ -6,7 +6,7 @@ window.mkFist = (cx, cy) => { // all four fingertips curled back toward the wris
   for (const [tip, pip] of [[8,6],[12,10],[16,14],[20,18]]) { L[pip] = {x: cx + 0.02, y: cy + 0.02, z:0}; L[tip] = {x: cx + 0.02, y: cy + 0.14, z:0}; }
   return L;
 };
-window.fistAt = (X, Y) => { const m = 0.15; return mkFist(1 - (m + X / innerWidth * 0.7), m + Y / innerHeight * 0.7); };
+window.fistAt = (X, Y) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; return mkFist(1 - (m + X / innerWidth * B), m + Y / innerHeight * B); };
 window.sweep = (fn, x0, y0, x1, y1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms); return fn(x0 + (x1 - x0) * k, y0 + (y1 - y0) * k); }; };
 """
 async def punch(page, x0, x1, y, step=64, wait=16, shot=None):  # ~2 px/ms, well above PUNCH_SPEED
@@ -108,6 +108,15 @@ async def main():
         await page.evaluate(f"sweep(fistAt, {tgt['x'] - 250}, {tgt['y']}, {tgt['x'] + 250}, {tgt['y']}, 220)"); await page.wait_for_timeout(700)
         st = await page.evaluate(STATE)
         check('camera: fist punch smashes bricks', st['score'] > 0 and st['pieces'] > 0, st)
+        # kid-friendly: any fast hand motion punches (fist, open hand or a pointing finger)
+        await page.evaluate("__grasp.resetSmash(performance.now())"); await page.wait_for_timeout(100)
+        tgt = await page.evaluate("(() => { const bs = __grasp.smash.bricks.filter(b => b.plugin.wall.id === 0); return { x: __grasp.smash.walls[0].x, y: Math.min(...bs.map(b => b.position.y)) + 10 }; })()")
+        await page.evaluate(f"window.__handFor = () => handAt({tgt['x'] - 250}, {tgt['y']}, 0.8)"); await page.wait_for_timeout(500)
+        check('camera: an open hand counts as a punching gesture', await page.evaluate("gesture === 'open' && __grasp.punchGesture()"))
+        await page.evaluate(f"sweep((x, y) => handAt(x, y, 0.8), {tgt['x'] - 250}, {tgt['y']}, {tgt['x'] + 250}, {tgt['y']}, 220)"); await page.wait_for_timeout(700)
+        st = await page.evaluate(STATE)
+        check('camera: a fast open-hand wave smashes bricks too', st['score'] > 0 and st['pieces'] > 0, st)
+        check('smash constants: PUNCH_SPEED 0.55, FIST_RADIUS 40, SMASH_RADIUS 95', await page.evaluate("__grasp.CONFIG.PUNCH_SPEED === 0.55 && __grasp.CONFIG.FIST_RADIUS === 40 && __grasp.CONFIG.SMASH_RADIUS === 95"))
         check('camera: no page errors', not errs, errs); await ctx.close()
 
         # --- phone (touch), English + Hebrew ---

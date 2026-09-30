@@ -7,7 +7,7 @@ window.mkPoint = (tx, ty) => { // index fingertip at camera coords (not mirrored
   for (const [tip, pip] of [[12,10],[16,14],[20,18]]) { L[pip] = {x: tx + 0.02, y: ty + 0.17, z:0}; L[tip] = {x: tx + 0.02, y: ty + 0.24, z:0}; }
   return L;
 };
-window.pointAt = (X, Y) => { const m = 0.15; return mkPoint(1 - (m + X / innerWidth * 0.7), m + Y / innerHeight * 0.7); };
+window.pointAt = (X, Y) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; return mkPoint(1 - (m + X / innerWidth * B), m + Y / innerHeight * B); };
 // sweep the hand from (x0,y0) to (x1,y1) over ms, using builder fn
 window.sweep = (fn, x0, y0, x1, y1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms); return fn(x0 + (x1 - x0) * k, y0 + (y1 - y0) * k); }; };
 window.parkFruit = (x, y) => { __grasp.CONFIG.SLICE_GRAVITY = 0; const f = __grasp.slice; f.fruits.length = 0; f.halves.length = 0; f.nextSpawn = 1e12;
