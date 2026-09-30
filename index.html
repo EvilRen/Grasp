@@ -141,6 +141,11 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #status .tips li{ display:flex; align-items:center; gap:10px; font-size:14px; line-height:1.35; color:var(--muted); }
 #status .tips svg{ flex:none; width:28px; height:28px; padding:4px; border-radius:8px; background:rgba(255,194,75,.12); color:var(--saffron); stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 #status .live{ display:block; margin:0 0 12px; font:12px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
+/* paused pill: the game is frozen while the hand is missing (camera mode); a 3-2-1 countdown on the canvas resumes it */
+#status .pausePill{ display:inline-flex; align-items:center; gap:7px; margin:0 0 10px; padding:6px 13px 6px 10px; border-radius:999px;
+  background:rgba(255,194,75,.14); box-shadow:inset 0 0 0 1px rgba(255,194,75,.4); color:var(--saffron); font-size:13px; font-weight:600; line-height:1.2; }
+#status .pausePill svg{ width:14px; height:14px; fill:currentColor; flex:none; }
+#status .pausePill[hidden]{ display:none; }
 #status button{ pointer-events:auto; font-size:14px; padding:11px 16px; width:100%; }
 @media (max-height:520px){ #status .camSlot{ width:min(100%, 160px, 40vh); } #status h2{ font-size:16px; margin-bottom:8px; } #status .tips{ gap:4px; } }
 @media (prefers-reduced-motion: reduce){ #status .handGuide svg, #liveDot{ animation:none; } #hint{ transition:opacity .3s; } }
@@ -162,6 +167,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <div id="hint" role="status"><span class="ic" aria-hidden="true"></span><span class="tx"></span></div>
 <div id="status" hidden>
   <div class="camSlot"><div class="handGuide" aria-hidden="true"><svg viewBox="0 0 100 124" preserveAspectRatio="xMidYMid meet"><path d="M44 118 L36 96 L36 84 L13 60 Q6 52 13 47 Q19 43 25 50 L36 62 L36 30 Q36 22 42 22 Q48 22 48 30 L48 66 L51 66 L51 14 Q51 6 57 6 Q63 6 63 14 L63 66 L66 66 L66 20 Q66 12 72 12 Q78 12 78 20 L78 68 L81 68 L81 38 Q81 31 86.5 31 Q92 31 92 38 L92 96 L84 118 Z" fill="rgba(255,194,75,0.1)" stroke="#ffc24b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/></svg></div></div>
+  <span class="pausePill" id="pausePill" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg><span data-i18n="paused">Paused – show your hand</span></span>
   <h2 data-i18n="statusTitle">Show your whole hand inside the yellow box</h2>
   <ul class="tips">
     <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="tip_open">Open palm, fingers spread</span></li>
@@ -307,6 +313,8 @@ const I18N = {
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
     pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives', diffEasy: 'Easy', diffNormal: 'Normal', diffAria: 'Strike difficulty',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
+    bricks: 'Bricks', cars: 'Cars', bigHit: 'Biggest hit', fruit: 'Fruit', bombsAvoided: 'Bombs dodged', playAgainSwipe: 'Tap or swipe to play again',
+    paused: 'Paused – show your hand', getReady: 'Get ready',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
     ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
@@ -362,6 +370,8 @@ const I18N = {
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
     pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים', diffEasy: 'קל', diffNormal: 'רגיל', diffAria: 'רמת הקושי במכה',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
+    bricks: 'לבנים', cars: 'מכוניות', bigHit: 'המכה הגדולה', fruit: 'פירות', bombsAvoided: 'פצצות שנמנעו', playAgainSwipe: 'הקישו או החליקו כדי לשחק שוב',
+    paused: 'מושהה – הראו את היד', getReady: 'להתכונן',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
     ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
@@ -636,8 +646,9 @@ function recomputeTouch() {
   } else { ptr.pinch = false; ptr.point = false; }
 }
 canvas.addEventListener('pointerdown', (e) => {
-  if (mode !== 'none' && gameMode === 'strike' && strike.over && (e.button === 0 || e.pointerType === 'touch') && performance.now() - strike.overAt > 500) { // a tap on a round-over card button
-    const k = strikeButtonAt(e.clientX, e.clientY); if (k) { e.preventDefault(); strikeOverAction(k, performance.now()); return; }
+  const E = endState();
+  if (mode !== 'none' && E && E.over && (e.button === 0 || e.pointerType === 'touch') && performance.now() - E.overAt > 500) { // a tap on a round-over card button
+    const k = endCardAt(e.clientX, e.clientY); if (k) { e.preventDefault(); endCardAction(k, performance.now()); return; }
   }
   if (mode !== 'mouse') return;
   e.preventDefault();
@@ -697,8 +708,8 @@ function inputTick(now) {
     if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
-    if (gameMode === 'smash' && smash.over && g !== 'none' && g !== 'open' && now - smash.overAt > 1000) resetSmash(now);
-    if (gameMode === 'strike' && strike.over && g !== 'none' && g !== 'open' && now - strike.overAt > 1000 && !strikeButtonAt(cursor.x, cursor.y)) resetStrike(now); // over a card button the dwell ring decides instead
+    const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
+    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y)) endCardAction('again', now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -756,14 +767,15 @@ function frame(now) {
   const dt = Math.min(100, now - lastFrame); lastFrame = now;
   trackTick(now);
   inputTick(now);
+  pauseTick(now);
 
   // poker (sandbox) and fist (smash) are static circles dragged along the cursor path each step
   const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over]];
   for (const [b, on] of probes) { b.collisionFilter.mask = on ? 0xFFFFFFFF : 0; b.plugin.from = { ...b.position }; b.plugin.to = on ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 }; }
-  if (gameMode === 'smash') smashTick(now, dt);
+  if (gameMode === 'smash' && mode !== 'none') smashTick(now, dt); // the clock stops on the start screen
 
   acc += dt;
-  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike';
+  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -779,6 +791,7 @@ function frame(now) {
 
   updateParticles(dt);
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else render(now);
+  if (pause.resumeT) drawResume(now);
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -1046,11 +1059,19 @@ const FRUITS = [
   { name: 'banana', rind: '#ffd23f', flesh: '#fff2c2', seed: null, juice: '#ffe89a' },
   { name: 'lemon', rind: '#ffe14d', flesh: '#fff9b8', seed: null, juice: '#fff28a' },
 ];
-const slice = { fruits: [], halves: [], stains: [], floaters: [], cuts: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, ang: 0, drawn: 0, combo: { n: 0, t: 0 } };
+// A round: 3 lives. A fruit that falls unsliced costs a life, so does slicing a bomb (one flies up every ~6 fruit). Score = fruit sliced.
+const SLICE_LIVES = 3, BOMB = { name: 'bomb', rind: '#1c1c2e', flesh: '#1c1c2e', seed: null, juice: '#3a3f50' };
+const slice = { fruits: [], halves: [], stains: [], floaters: [], cuts: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, ang: 0, drawn: 0, combo: { n: 0, t: 0 },
+  lives: SLICE_LIVES, best: 0, over: false, overAt: 0, bestCombo: 0, spawned: 0, lastBomb: 0, bombEvery: 6, bombs: 0, bombsHit: 0, bombsAvoided: 0, flash: -1e9,
+  ui: { hearts: [], heartLost: null, buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
 function sliceScale() { return { g: CONFIG.SLICE_GRAVITY * H / 800, r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) }; }
 function resetSlice() {
   slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = slice.cuts.length = 0;
+  try { slice.best = Math.max(slice.best, +localStorage.getItem('sliceBest') || 0); } catch {}
   slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
+  slice.lives = SLICE_LIVES; slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
+  slice.combo.n = 0; slice.combo.t = -1e9;
+  const ui = slice.ui; ui.heartLost = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
 }
 function spawnWave(now) {
   const { g, r } = sliceScale();
@@ -1061,11 +1082,27 @@ function spawnWave(now) {
     const rise = H * (0.5 + Math.random() * 0.3) + rr;       // apex height above the spawn point
     const vy = -Math.sqrt(2 * g * rise), tApex = -vy / g;
     const targetX = W * (0.3 + Math.random() * 0.4);
-    slice.fruits.push({ x, y: H + rr, vx: (targetX - x) / tApex, vy, r: rr, rot: Math.random() * TAU, vr: (Math.random() < 0.5 ? -1 : 1) * (0.0012 + Math.random() * 0.0016),
-      kind: FRUITS[Math.floor(Math.random() * FRUITS.length)], born: now + i * 160 });
+    const bomb = ++slice.spawned - slice.lastBomb >= slice.bombEvery; // a bomb every 5-7 fruit
+    if (bomb) { slice.lastBomb = slice.spawned; slice.bombEvery = 5 + Math.floor(Math.random() * 3); slice.bombs++; }
+    slice.fruits.push({ x, y: H + rr, vx: (targetX - x) / tApex, vy, r: bomb ? r * 0.9 : rr, rot: Math.random() * TAU, vr: (Math.random() < 0.5 ? -1 : 1) * (0.0012 + Math.random() * 0.0016),
+      kind: bomb ? BOMB : FRUITS[Math.floor(Math.random() * FRUITS.length)], bomb, born: now + i * 160 });
   }
   const [a, b] = CONFIG.SPAWN_INTERVAL_MS;
   slice.nextSpawn = now + a + Math.random() * (b - a);
+}
+function sliceLoseLife(now) { // a missed fruit or a sliced bomb; the last life ends the round
+  slice.lives--; slice.ui.heartLost = { i: slice.lives, t: now }; slice.combo.n = 0;
+  if (slice.lives > 0) return;
+  slice.lives = 0; slice.over = true; slice.overAt = now; hideHint(); slice.last = null; slice.blade.length = 0;
+  const ui = slice.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = slice.score > slice.best;
+  if (ui.newBest) { slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); }
+  else sfx('chime');
+}
+function hitBomb(f, now) { // slicing a bomb: flash, boom, smoke, sparks, shake, one life gone
+  slice.bombsHit++; slice.flash = now;
+  sfx('boom'); shakeScreen(4); ring(f.x, f.y, 'rgba(255,230,150,0.95)', f.r * 4, 420, 6); ring(f.x, f.y, 'rgba(255,111,89,0.8)', f.r * 2.2, 300, 4);
+  dust(f.x, f.y, 14, 1.4); burst(f.x, f.y, '#ffc24b', 22); burst(f.x, f.y, '#ff6f59', 14);
+  sliceLoseLife(now);
 }
 // Blade segment a -> b (with timestamps). Cuts every fruit the segment passes through, if the finger moved fast enough.
 function cutAlong(a, b, now) {
@@ -1076,7 +1113,8 @@ function cutAlong(a, b, now) {
     const f = slice.fruits[i]; if (now < f.born) continue;
     const t = Math.max(0, Math.min(1, ((f.x - a.x) * dx + (f.y - a.y) * dy) / (len * len)));
     if (Math.hypot(f.x - (a.x + dx * t), f.y - (a.y + dy * t)) > f.r * 1.05) continue;
-    slice.fruits.splice(i, 1); cutFruit(f, dx / len, dy / len, now); hits++;
+    slice.fruits.splice(i, 1); if (f.bomb) hitBomb(f, now); else cutFruit(f, dx / len, dy / len, now); hits++;
+    if (slice.over) break;
   }
   return hits;
 }
@@ -1098,12 +1136,15 @@ function cutFruit(f, ux, uy, now) {
     particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.004 + Math.random() * 0.004, r: 1 + Math.random() * 1.5, color: Math.random() < 0.5 ? '#ffffff' : '#ffc24b' });
   }
   slice.score++;
-  slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now;
+  slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now; slice.bestCombo = Math.max(slice.bestCombo, slice.combo.n);
   slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
 }
 function sliceTick(now, dt) {
-  // Camera: only a raised index finger cuts. Mouse/touch: pressing (or two fingers) cuts.
-  slice.bladeOn = cursor.present && (gesture === 'point' || (mode === 'mouse' && gesture === 'pinch'));
+  tickFloaters(slice.floaters, dt);
+  for (let i = slice.stains.length - 1; i >= 0; i--) { const s2 = slice.stains[i]; s2.life -= dt / 1300; if (s2.life <= 0) slice.stains.splice(i, 1); }
+  if (slice.over) { slice.bladeOn = false; slice.last = null; slice.blade.length = 0; endCardTick(now); return; } // round-over card: buttons via tap / dwell, a swipe elsewhere restarts
+  // Camera: only a raised index finger cuts. Mouse/touch: pressing (or two fingers) cuts. Nothing cuts while the game is paused.
+  slice.bladeOn = cursor.present && !pause.on && (gesture === 'point' || (mode === 'mouse' && gesture === 'pinch'));
   if (slice.bladeOn) {
     const p = { x: cursor.x, y: cursor.y, t: now };
     if (!slice.last) { slice.last = p; slice.blade.push(p); }
@@ -1114,16 +1155,17 @@ function sliceTick(now, dt) {
   } else slice.last = null;
   while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
   while (slice.cuts.length && now - slice.cuts[0].t > CONFIG.CUT_LINE_MS) slice.cuts.shift();
-
-  tickFloaters(slice.floaters, dt);
-  for (let i = slice.stains.length - 1; i >= 0; i--) { const s2 = slice.stains[i]; s2.life -= dt / 1300; if (s2.life <= 0) slice.stains.splice(i, 1); }
-  if (noHandShown) return; // the world waits while the hand is missing
+  if (slice.over) return; // a bomb on this very swipe ended the round
+  if (pause.on) { slice.nextSpawn += dt; return; } // the world waits while the hand is missing
   const { g } = sliceScale();
   if (now >= slice.nextSpawn && slice.fruits.length < 6) spawnWave(now);
   for (let i = slice.fruits.length - 1; i >= 0; i--) {
     const f = slice.fruits[i]; if (now < f.born) continue;
     f.vy += g * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.vr * dt;
-    if (f.vy > 0 && f.y - f.r > H) { slice.fruits.splice(i, 1); slice.missed++; }
+    if (f.vy > 0 && f.y - f.r > H) { // fell off the bottom: a fruit is a miss and costs a life, a bomb was dodged
+      slice.fruits.splice(i, 1);
+      if (f.bomb) slice.bombsAvoided++; else { slice.missed++; sfx('whiff'); sliceLoseLife(now); if (slice.over) break; }
+    }
   }
   for (let i = slice.halves.length - 1; i >= 0; i--) {
     const h = slice.halves[i];
@@ -1309,7 +1351,27 @@ function katanaSprite() {
   });
 }
 function drawKatana(x, y, ang) { blit(katanaSprite(), x, y, ang); }
-function drawFruit(f) { blit(fruitSprite(f.kind, 0), f.x, f.y, f.rot, f.r / FR); }
+function bombSprite() { // black sphere with a brass cap and a short fuse; the spark at the fuse tip is drawn live
+  return makeSprite('bomb', FR * 2.6, FR * 2.8, FR * 1.3, FR * 1.5, (g) => {
+    ball(g, FR, '#2a2f45', 1, 1, 0.35, 0.6);
+    g.save(); g.beginPath(); g.arc(0, 0, FR, 0, TAU); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.08)'; g.lineWidth = FR * 0.05;
+    g.beginPath(); g.ellipse(-FR * 0.5, 0, FR * 0.5, FR * 1.05, 0.3, 0, TAU); g.stroke(); g.restore();
+    shine(g, FR, 1, 1, 0.3); rim(g, FR, 'rgba(0,0,0,0.7)', 1, 1, 2);
+    const cg = g.createLinearGradient(-FR * 0.22, -FR * 1.1, FR * 0.22, -FR * 0.85); cg.addColorStop(0, '#fff1b8'); cg.addColorStop(0.5, '#e2b34a'); cg.addColorStop(1, '#8a6414');
+    g.beginPath(); g.roundRect(-FR * 0.22, -FR * 1.12, FR * 0.44, FR * 0.3, FR * 0.06); g.fillStyle = cg; g.fill(); g.lineWidth = 1.5; g.strokeStyle = '#4a3208'; g.stroke(); // cap
+    g.lineCap = 'round'; g.lineWidth = FR * 0.09; g.strokeStyle = '#8a6a48'; g.beginPath(); g.moveTo(0, -FR * 1.1); g.quadraticCurveTo(FR * 0.12, -FR * 1.32, FR * 0.34, -FR * 1.36); g.stroke(); // fuse
+    g.lineWidth = FR * 0.03; g.strokeStyle = 'rgba(255,240,210,0.5)'; g.beginPath(); g.moveTo(0, -FR * 1.12); g.quadraticCurveTo(FR * 0.12, -FR * 1.34, FR * 0.34, -FR * 1.38); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(-FR * 0.38, -FR * 0.42, FR * 0.2, FR * 0.09, -0.75, 0, TAU); g.fill();
+  });
+}
+function drawBomb(f, now) {
+  const k = f.r / FR; blit(bombSprite(), f.x, f.y, f.rot, k);
+  const c = Math.cos(f.rot), s = Math.sin(f.rot), lx = FR * 0.34 * k, ly = -FR * 1.38 * k, sx = f.x + lx * c - ly * s, sy = f.y + lx * s + ly * c; // the fuse tip, rotated with the bomb
+  resetView(); const r = f.r * (0.16 + 0.08 * Math.sin(now * 0.05)); // flickering spark
+  ctx.fillStyle = 'rgba(255,200,80,0.45)'; ctx.beginPath(); ctx.arc(sx, sy, r * 2.2, 0, TAU); ctx.fill();
+  sparkle(sx, sy, r * 1.6, '#fff3c4', 0.95); sparkle(sx + r * 0.9, sy - r * 0.6, r * 0.7, '#ff9a3d', 0.85);
+}
+function drawFruit(f, now) { if (f.bomb) drawBomb(f, now); else blit(fruitSprite(f.kind, 0), f.x, f.y, f.rot, f.r / FR); }
 function drawHalf(h) { blit(fruitSprite(h.kind, h.side), h.x, h.y, h.ang + h.rot, h.r / FR); }
 function drawFloaters(list) {
   for (const f of list) {
@@ -1326,7 +1388,7 @@ function renderSlice(now) {
   beginFrame('slice', now);
   for (const s2 of slice.stains) blit(splatSprite(s2.color), s2.x, s2.y, s2.ang, s2.r / 40, Math.min(1, Math.max(0, s2.life) * 1.1));
   for (const h of slice.halves) drawHalf(h);
-  for (const f of slice.fruits) if (now >= f.born) drawFruit(f);
+  for (const f of slice.fruits) if (now >= f.born) drawFruit(f, now);
   drawParticles(); drawRings(now);
   resetView();
   for (const c of slice.cuts) { // bright cut line across a just-sliced fruit
@@ -1349,7 +1411,16 @@ function renderSlice(now) {
   }
   if (slice.bladeOn && cursor.present) { drawKatana(cursor.x, cursor.y, slice.ang); slice.drawn++; }
   drawFloaters(slice.floaters);
-  drawScore(String(slice.score), scoreY(), t('missed', { n: slice.missed }));
+  const sy = scoreY(); drawScore(String(slice.score), sy, t('missed', { n: slice.missed }));
+  drawHearts(slice.ui, slice.lives, SLICE_LIVES, W / 2, sy + 44, now); // lives under the score
+  const fk = Math.max(0, 1 - (now - slice.flash) / 420);
+  if (fk > 0) { // a bomb went off: white flash, then a red glow creeping in from the edges
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.fillStyle = 'rgba(255,240,210,' + (0.75 * fk * fk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
+    const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) * 0.55);
+    gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  }
+  if (slice.over) drawEndCard(now, slice, { score: slice.score, best: slice.best, stats: [[slice.score, 'fruit'], [LRM + '×' + slice.bestCombo, 'bestCombo'], [slice.bombsAvoided, 'bombsAvoided']], again: 'playAgainSwipe' });
   resetView();
   if (cursor.present && !slice.bladeOn) {
     ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 14, 0, TAU);
@@ -1357,9 +1428,20 @@ function renderSlice(now) {
     ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.8)'; ctx.stroke();
   }
 }
+function drawHearts(ui, lives, max, cx, cy, now, k = 0.66, gap = 26) { // a row of hearts; the one just lost shakes and fades to hollow (ui.heartLost = { i, t })
+  ui.hearts.length = 0;
+  for (let i = 0; i < max; i++) {
+    let hx = cx + (i - (max - 1) / 2) * gap; const L = ui.heartLost;
+    ui.hearts.push({ x: hx, y: cy });
+    if (L && L.i === i && now - L.t < 550) { const q = (now - L.t) / 550; hx += Math.sin(q * 42) * 4 * (1 - q); blit(heartSprite(false), hx, cy, 0, k); blit(heartSprite(true), hx, cy, 0, k + 0.35 * q, 1 - q); continue; }
+    blit(heartSprite(i < lives), hx, cy, 0, k);
+  }
+}
 
 /* ---------------- Smash mode ---------------- */
-const smash = { bricks: [], cars: [], pieces: [], walls: [], floaters: [], score: 0, best: 0, endAt: 0, over: false, overAt: 0, nextCar: 0, prev: null, ang: 0, punching: false, lastTick: -1, lastCrunch: 0 };
+const smash = { bricks: [], cars: [], pieces: [], walls: [], floaters: [], score: 0, best: 0, endAt: 0, over: false, overAt: 0, nextCar: 0, prev: null, ang: 0, punching: false, lastTick: -1, lastCrunch: 0,
+  bricksOut: 0, carsOut: 0, bigHit: 0, // round stats for the end card: bricks knocked loose, cars crumpled, most points from one punch
+  ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
 const BRICK = { w: 48, h: 22, colors: ['#c8654a', '#b95a41', '#d17055', '#bd5d44'], dust: '#e0a48a' };
 const GLASS = 'rgba(84,198,235,0.7)', TYRE = '#2b2f45';
 const PIECE = { restitution: 0.3, friction: 0.5, frictionAir: 0.01, density: 0.002 };
@@ -1376,7 +1458,8 @@ function resetSmash(now) {
   if (bodies.length) { M.Composite.remove(world, bodies); bodies = []; } // sandbox objects make way
   clearSmash(); particles.length = 0;
   try { smash.best = Math.max(smash.best, +localStorage.getItem('smashBest') || 0); } catch {}
-  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1;
+  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0;
+  const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
   smash.endAt = now + CONFIG.SMASH_ROUND_S * 1000;
   smash.nextCar = now + 1500 + Math.random() * 1500;
   (W > 720 ? [W * 0.3, W * 0.7] : [W * 0.5]).forEach((x, i) => buildWall(x, i));
@@ -1450,6 +1533,7 @@ function smashBricks(p, dir, v, now) {
     burst(b.position.x, b.position.y, BRICK.dust, 6 + v * 6);
   }
   if (n) {
+    smash.bricksOut += n; smash.bigHit = Math.max(smash.bigHit, n);
     smash.floaters.push({ x: p.x, y: p.y - 30, text: '+' + n, big: false, life: 1 });
     if (now - smash.lastCrunch > 60) { // one shockwave + dust cloud + shake per punch, not per brick group
       smash.lastCrunch = now; sfx('crunch');
@@ -1479,7 +1563,7 @@ function crumpleCar(car, p, dir, v, now) {
     const dx = body.position.x - p.x, dy = body.position.y - p.y, d = Math.hypot(dx, dy) || 1, k = small ? 1.4 : 0.9;
     addPiece(body, { x: (dir.x * kick * 0.7 + dx / d * kick * 0.5) * k, y: (dir.y * kick * 0.5 + dy / d * kick * 0.5 - 5) * k }, now, small);
   }
-  const pts = 25 + mk.length; smash.score += pts;
+  const pts = 25 + mk.length; smash.score += pts; smash.carsOut++; smash.bigHit = Math.max(smash.bigHit, pts);
   smash.floaters.push({ x: b.x, y: c.y - 30 * s, text: '+' + pts, big: true, life: 1 });
   burst(p.x, p.y, GLASS, 20); burst(b.x, b.y, color, 16); sfx('car');
   ring(p.x, p.y, 'rgba(255,255,255,0.95)', 110 * s, 340, 5); ring(b.x, b.y, 'rgba(255,194,75,0.8)', 70 * s, 260, 3); dust(b.x, b.y, 14, 1.6); shakeScreen(4);
@@ -1487,14 +1571,15 @@ function crumpleCar(car, p, dir, v, now) {
 }
 function endRound(now) {
   smash.over = true; smash.overAt = now; smash.punching = false; hideHint();
-  if (smash.score > smash.best) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} }
-  sfx('chime');
+  const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = smash.score > smash.best;
+  if (ui.newBest) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} sfx('fanfare'); }
+  else sfx('chime');
 }
 function smashTick(now, dt) {
   tickFloaters(smash.floaters, dt);
-  if (noHandShown) { smash.endAt += dt; smash.nextCar += dt; smash.prev = null; return; } // the clock waits for the hand
-  if (!smash.over && smashLeft(now) <= 0) endRound(now);
-  if (smash.over) { smash.prev = null; return; }
+  if (smash.over) { smash.prev = null; endCardTick(now); return; } // round-over card: buttons via tap / dwell, a punch elsewhere restarts
+  if (pause.on) { smash.endAt += dt; smash.nextCar += dt; smash.prev = null; return; } // the clock waits for the hand
+  if (smashLeft(now) <= 0) { endRound(now); return; }
   const sec = Math.ceil(smashLeft(now) / 1000);
   if (sec <= 5 && sec !== smash.lastTick) { smash.lastTick = sec; sfx('tick'); }
   const s = smashScale();
@@ -1660,21 +1745,8 @@ function renderSmash(now) {
   drawFloaters(smash.floaters);
   const sec = Math.ceil(smashLeft(now) / 1000);
   drawScore(String(smash.score), scoreY(), smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
-  drawFist(now);
-  resetView();
-  if (smash.over) drawRoundOver(now, smash.score, smash.best, smash.overAt, 'playAgain');
-}
-function drawRoundOver(now, score, best, overAt, againKey) { // dim the game, big score, best, and a pulsing 'play again' after a second
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = 'rgba(14,19,40,0.72)'; ctx.fillRect(0, 0, W, H);
-  ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
-  const y = H * 0.4;
-  ctx.fillStyle = '#f1e9da'; ctx.font = '700 30px Rubik, system-ui, sans-serif'; ctx.fillText(t('roundOver'), W / 2, y);
-  ctx.restore(); blit(textSprite(String(score), 64, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, y + 54);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
-  ctx.fillStyle = 'rgba(241,233,218,0.62)'; ctx.font = '400 16px Rubik, system-ui, sans-serif'; ctx.fillText(t('best', { n: best }), W / 2, y + 108);
-  if (now - overAt > 1000) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 300); ctx.fillText(t(againKey), W / 2, y + 150); }
-  ctx.restore();
+  if (smash.over) drawEndCard(now, smash, { score: smash.score, best: smash.best, stats: [[smash.bricksOut, 'bricks'], [smash.carsOut, 'cars'], [smash.bigHit, 'bigHit']], again: 'playAgain' });
+  drawFist(now); // the glove stays on top so it can aim at the card buttons
 }
 
 /* ---------------- Busy Board mode ---------------- */
@@ -2498,6 +2570,11 @@ function busyScrollTick(now, dt, p, pinchStart) {
 function busyTick(now, dt) {
   const p = cursor.present ? { x: cursor.x, y: cursor.y } : null;
   const pinchStart = gesture === 'pinch' && busy.lastGesture !== 'pinch'; busy.lastGesture = gesture;
+  if (pause.on) { // the board waits while the hand is missing: whatever was held is let go (so no tone plays on), nothing animates
+    if (busy.grabbed) { busy.grabbed.drop(now); busy.grabbed = null; }
+    if (busy.active) { busy.active.release?.(now); busy.active = null; }
+    busy.hover = busy.scrollDrag = null; busy.scrollV = 0; return;
+  }
   if (!busy.grabbed) busyScrollTick(now, dt, p, pinchStart); else applyBusyScroll();
   const under = p && !busy.scrollDrag ? busy.widgets.find((wd) => wd.hit(p)) || null : null;
   const pressing = gesture === 'pinch' || gesture === 'point';
@@ -2738,25 +2815,10 @@ function strikeMiss(now) {
     else sfx('chime');
   } else { strike.serveAt = now + 800; strike.cued = false; }
 }
-function strikeButtonAt(px, py) { // which round-over card button (if any) is under a screen point
-  const B = strike.ui.buttons; if (!B) return null;
-  for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
-  return null;
-}
-function strikeOverAction(key, now) { if (key === 'home') goHome(); else if (key === 'easy' || key === 'normal') setStrikeDiff(key); else resetStrike(now); }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
-  if (strike.over) { // round-over card: a point / pinch held on a button for 400 ms presses it (a filling ring shows the dwell); a wave or a tap elsewhere restarts
-    const ui = strike.ui, armed = now - strike.overAt > 500, btn = cursor.present && armed ? strikeButtonAt(cursor.x, cursor.y) : null;
-    ui.hover = btn;
-    if (btn && (gesture === 'point' || gesture === 'pinch')) {
-      if (!ui.dwell || ui.dwell.key !== btn) ui.dwell = { key: btn, t: now };
-      else if (now - ui.dwell.t >= 400) { ui.dwell = null; strikeOverAction(btn, now); return; }
-    } else ui.dwell = null;
-    if (now - strike.overAt > 1000 && cursor.present && !btn && cursorSpeed(now) >= 1.2) resetStrike(now);
-    return;
-  }
-  if (noHandShown) return; // the ball waits while the hand is missing
+  if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
+  if (pause.on) { strike.serveAt += dt; return; } // the ball (and the next serve) waits while the hand is missing
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
   wallsTick(dt);
   const b = strike.ball;
@@ -2936,17 +2998,8 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   }
   const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 34, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
   edgeText(sc, rtl ? x + w - 18 : x + 18, y + h / 2, rtl, 1 + 0.16 * Math.sin(Math.PI * pop));
-  ui.hearts.length = 0;
-  const nL = strike.maxLives || sd('STRIKE_LIVES'), gapH = nL > 3 ? 26 : 30;
-  for (let i = 0; i < nL; i++) {
-    let hx = x + w / 2 + (i - (nL - 1) / 2) * gapH; const hy = y + h / 2 + 1, L = ui.heartLost;
-    ui.hearts.push({ x: hx, y: hy });
-    if (L && L.i === i && now - L.t < 550) { // just lost: shakes, the red fades out over the hollow one
-      const k = (now - L.t) / 550; hx += Math.sin(k * 42) * 4 * (1 - k);
-      blit(heartSprite(false), hx, hy, 0, 0.75); blit(heartSprite(true), hx, hy, 0, 0.75 + 0.35 * k, 1 - k); continue;
-    }
-    blit(heartSprite(i < strike.lives), hx, hy, 0, nL > 3 ? 0.66 : 0.75);
-  }
+  const nL = strike.maxLives || sd('STRIKE_LIVES');
+  drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 + 1, now, nL > 3 ? 0.66 : 0.75, nL > 3 ? 26 : 30);
   const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
   blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
   edgeText(textSprite(t('best', { n: strike.best }), 12, 'rgba(241,233,218,0.72)', null, 500), ex, y + 48, !rtl);
@@ -3022,7 +3075,7 @@ function drawComboBanner(now) { // slides in from the side, holds, slides out th
 }
 function drawServeCue(now) { // 500 ms before a serve: rings and a chevron at the far end say 'incoming'
   const ui = strike.ui; if (strike.ball || strike.over) { ui.cue = null; return; }
-  const t0 = strike.serveAt - 500; if (now < t0 || noHandShown) { ui.cue = null; return; }
+  const t0 = strike.serveAt - 500; if (now < t0 || pause.on) { ui.cue = null; return; }
   const k = Math.min(1, (now - t0) / 500), { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish(), a = proj(L, T, Z), b = proj(R, B, Z), fr = Math.max(b.x - a.x, b.y - a.y) * 0.5;
   ui.cue = k; resetView(); ctx.strokeStyle = '#ff6f59'; ctx.lineCap = 'round';
   for (let i = 0; i < 2; i++) { const q = (k + i * 0.5) % 1; ctx.globalAlpha = (1 - q) * 0.6; ctx.lineWidth = 1.5 + 2.5 * (1 - q); ctx.beginPath(); ctx.arc(v.x, v.y, fr * (0.6 + 1.6 * q), 0, TAU); ctx.stroke(); }
@@ -3038,16 +3091,41 @@ function overButtonSprite(kind, w, h) {
     else { path(); g.fillStyle = 'rgba(241,233,218,0.06)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(241,233,218,0.55)'; g.stroke(); }
   });
 }
-function drawStrikeOver(now) { // round-over card: title, score, best (+ NEW BEST ribbon), stats, Play again / Home buttons
-  const ui = strike.ui, rtl = lang === 'he', k = Math.min(1, (now - strike.overAt) / 380), e = 1 - Math.pow(1 - k, 3);
+/* ---------------- Round-over card, shared by Strike, Smash and Slice ----------------
+   Each of those modes keeps { over, overAt, ui: { buttons, hover, dwell, ribbon, newBest } }. The card shows the title, the score, the best
+   (with a NEW BEST ribbon), up to three stats, a saffron Play again button and an outline Home button, and, for Strike, the Easy / Normal pill.
+   A tap on a button presses it (canvas pointerdown); in camera mode a point / pinch / fist held on a button for 400 ms presses it (a filling
+   ring shows the dwell); a wave, a punch or a tap elsewhere after a second restarts. */
+function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : null; } // the mode that owns a round-over card
+function endCardAt(px, py) { // which card button (if any) is under a screen point
+  const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
+  for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
+  return null;
+}
+function endCardAction(key, now) {
+  if (key === 'home') return goHome();
+  if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
+  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice();
+}
+function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended
+  const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
+  ui.hover = btn;
+  if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
+    if (!ui.dwell || ui.dwell.key !== btn) ui.dwell = { key: btn, t: now };
+    else if (now - ui.dwell.t >= 400) { ui.dwell = null; endCardAction(btn, now); return; }
+  } else ui.dwell = null;
+  if (now - E.overAt > 1000 && cursor.present && !btn && cursorSpeed(now) >= 1.2) endCardAction('again', now);
+}
+function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
+  const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const cw = Math.min(W - 32, 380), ch = 372, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(ui.top + 84, (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = pill ? 372 : 316, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 84, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
   blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
-  blit(textSprite(String(strike.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
-  blit(textSprite(t('best', { n: strike.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
+  blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
+  blit(textSprite(t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
   if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
     const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
     resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
@@ -3055,21 +3133,23 @@ function drawStrikeOver(now) { // round-over card: title, score, best (+ NEW BES
     const c = Math.cos(ang), s = Math.sin(ang), at = (lx, ly) => ({ x: ox + lx * c - ly * s, y: y0 + lx * s + ly * c });
     const tp = at(0, 45); blit(textSprite(t('newBest'), 11, '#2a1a00', null), tp.x, tp.y, ang); ui.ribbon = at(0, 38);
   } else ui.ribbon = null;
-  const stats = [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo']]; // hits, walls, best combo
-  stats.forEach(([val, key], i) => { const sx = cx + (i - 1) * cw * 0.3 * (rtl ? -1 : 1); blit(textSprite(String(val), 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
+  (o.stats || []).slice(0, 3).forEach(([val, key], i, all) => { const sx = cx + (i - (all.length - 1) / 2) * cw * 0.3 * (rtl ? -1 : 1); blit(textSprite(String(val), 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
   const bw = (cw - 52) / 2, bh = 50, by = y0 + 246, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
-  const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3; // Easy / Normal pill under the buttons (Easy at the start edge)
-  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh }, easy: { x: ex, y: dy, w: dw, h: 44 }, normal: { x: nx, y: dy, w: dw, h: 44 } };
+  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
+  if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
+    const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
+    ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
+  }
   const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal') };
   for (const key in ui.buttons) {
-    const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = key === strike.diff;
+    const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
     blit(overButtonSprite(key === 'again' ? 'again' : on ? 'on' : 'home', r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
     blit(textSprite(label[key], key === 'again' || key === 'home' ? 16 : 14, key === 'again' ? '#2a1a00' : on ? '#ffd77a' : '#f1e9da', null, key === 'again' || on ? 700 : 500), mx, my);
   }
-  if (now - strike.overAt > 1000) blit(textSprite(t('playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
-  if (ui.dwell && cursor.present) { // a point / pinch held on a button: a ring fills over 400 ms
+  if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
     const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round';
     ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke();
     ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke();
@@ -3119,7 +3199,10 @@ function renderStrike(now) {
     gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  if (strike.over) { drawStrikeOver(now); drawStrikeHand(now); } // the hand stays on top so it can aim at the buttons
+  if (strike.over) { // the hand stays on top so it can aim at the buttons
+    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo']], diff: true, again: 'playAgainWave' });
+    drawStrikeHand(now);
+  }
 }
 
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
@@ -3198,6 +3281,9 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'fanfare') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 60, t0 + i * 0.09); tone('triangle', q / 2, 0, 0.025, 200, t0 + i * 0.09); }); } // new best: four rising notes
     else if (kind === 'whoosh') { f.type = 'bandpass'; f.frequency.setValueAtTime(320, t0); f.frequency.exponentialRampToValueAtTime(1800, t0 + 0.4); f.Q.value = 1.2; env(f, 0.07, 420, t0); noise(t0, 420, f); } // serve cue: something is coming
     else if (kind === 'swish') { f.type = 'bandpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(3200, t0 + 0.15); f.Q.value = 1.5; env(f, 0.06, 170, t0); noise(t0, 170, f); } // combo banner sliding in
+    else if (kind === 'boom') { f.type = 'lowpass'; f.frequency.setValueAtTime(1600, t0); f.frequency.exponentialRampToValueAtTime(120, t0 + 0.35); env(f, 0.25, 380, t0); noise(t0, 380, f); tone('sine', 140, 30, 0.25, 420, t0); tone('triangle', 2400, 600, 0.05, 120, t0); } // a bomb goes off
+    else if (kind === 'tick3') { tone('sine', 660, 0, 0.06, 110, t0); tone('sine', 1320, 0, 0.02, 60, t0); } // one soft tick of the resume countdown
+    else if (kind === 'go') { tone('sine', 880, 0, 0.08, 220, t0); tone('sine', 1320, 0, 0.05, 260, t0 + 0.05); } // countdown done, play on
   } catch {}
 }
 // Piano voices: sine + triangle with a short decay; at most 4 sound at once (the oldest is faded out to make room).
@@ -3273,7 +3359,7 @@ let delegateUsed = '-';
 function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
   const rowsH = [
-    ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed
+    ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed + '  ' + t('h_lives') + ' ' + slice.lives
       : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock()
       : gameMode === 'strike' ? '  ' + t('h_score') + ' ' + strike.score + '  ' + t('h_lives') + ' ' + strike.lives + '  L' + strike.level + (strike.ball ? '  z ' + Math.round(strike.ball.z) : '') : '')],
     ['h_fps', fps.toFixed(0)],
@@ -3461,7 +3547,7 @@ function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop());
 
 function fallbackToMouse(failures) {
   stopCamera(); landmarker = null; lastLandmarks = null;
-  noHandShown = false; statusEl.hidden = true; setPreviewBig(false);
+  noHandShown = false; statusEl.hidden = true; setPreviewBig(false); unpauseGame();
   lastFailures = failures; renderBanner();
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
@@ -3506,8 +3592,27 @@ function updateNoHand(now) {
   noHandShown = show;
   setPreviewBig(show);
   statusEl.hidden = !show;
-  if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); }
+  if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); pauseGame(); }
+  else if (pause.on) { pause.resumeT = now; pause.count = 0; } // the hand is back: 3-2-1 before play goes on
+  $('pausePill').hidden = !pause.on;
   updateHudOffset();
+}
+/* ---------------- Pause (camera mode): the game freezes while the hand is missing and resumes on a 3-2-1 countdown ---------------- */
+const pause = { on: false, resumeT: 0, count: 0 }; // count: the number on screen during the countdown (3, 2, 1), 0 otherwise
+function pauseGame() { pause.on = true; pause.resumeT = 0; pause.count = 0; }
+function unpauseGame() { pause.on = false; pause.resumeT = 0; pause.count = 0; $('pausePill').hidden = true; }
+function pauseTick(now) {
+  if (!pause.resumeT) return;
+  const n = 3 - Math.floor((now - pause.resumeT) / 1000);
+  if (n <= 0) { unpauseGame(); sfx('go'); return; }
+  if (n !== pause.count) { pause.count = n; sfx('tick3'); }
+}
+function drawResume(now) { // big number dropping in each second, over a light dim; the game underneath stays frozen
+  const el = now - pause.resumeT, n = Math.max(1, 3 - Math.floor(el / 1000)), k = (el % 1000) / 1000;
+  view.x = view.y = 0; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,0.38)'; ctx.fillRect(0, 0, W, H); resetView();
+  const pop = Math.max(0, 1 - k * 3.5), sc = 1 + 0.35 * Math.sin(Math.PI * pop) * pop, a = k < 0.78 ? 1 : 1 - (k - 0.78) / 0.22;
+  blit(textSprite(String(n), 132, '#fff8ec', 'rgba(255,194,75,0.95)'), W / 2, H * 0.42, 0, sc, a);
+  blit(textSprite(t('getReady'), 18, 'rgba(241,233,218,0.85)', null, 500), W / 2, H * 0.42 + 92);
 }
 // The enlarged preview lives inside the no-hand card; the small one is a fixed corner element with a 'live' dot.
 const camSlot = document.querySelector('#status .camSlot');
@@ -3548,7 +3653,9 @@ window.addEventListener('resize', () => updateHudOffset());
 
 function goHome() {
   if (held) dropHeld();
-  if (gameMode === 'busy') busyQuiet();
+  if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
+  if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; } // the clock stops; the next start deals a fresh round
+  unpauseGame();
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
@@ -3612,7 +3719,7 @@ window.__grasp = {
   get muted() { return muted; }, set muted(v) { setMuted(v); }, chromeRow, chromeRowBottom, scoreY, hintBottom,
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, busy, strike, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setStrikeDiff, strikeParams, punchGesture, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  slice, smash, busy, strike, pause, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
 };
 </script>
 </body>

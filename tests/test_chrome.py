@@ -128,6 +128,42 @@ async def main():
                 check('unmute via the test hook clears it', await page.evaluate("!__grasp.muted && localStorage.getItem('muted') === '0' && $('muteBtn').getAttribute('aria-pressed') === 'false'"))
             check(tag + ' phone: no page errors', not errs, errs); await ctx.close()
 
+        # ---- pause: the hand goes missing -> the game freezes behind the no-hand card (with a 'Paused' pill); hand back -> 3-2-1 -> play on ----
+        for he in (False, True):
+            tag = 'he' if he else 'en'
+            ctx, page, errs = await boot(b, True, he)
+            check(tag + ' pause: not paused while the hand is in view', await page.evaluate("!__grasp.pause.on && $('pausePill').hidden !== false || statusEl.hidden"))
+            await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(1200)
+            z0 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z")
+            await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+            P = "({on: __grasp.pause.on, count: __grasp.pause.count, card: !statusEl.hidden, pill: (() => { const r = $('pausePill').getBoundingClientRect(); return !$('pausePill').hidden && r.height > 10 && r.width > 40 && r.top >= 0 && r.bottom <= innerHeight; })(), txt: $('pausePill').textContent.trim(), z: __grasp.strike.ball && __grasp.strike.ball.z})"
+            p = await page.evaluate(P)
+            check(tag + ' pause: hand lost -> paused flag, no-hand card with the Paused pill', p['on'] and p['count'] == 0 and p['card'] and p['pill'] and p['txt'] == ('מושהה – הראו את היד' if he else 'Paused – show your hand'), p)
+            await page.wait_for_timeout(400)
+            check(tag + ' pause: the ball is frozen', z0 is not None and p['z'] is not None and await page.evaluate("__grasp.strike.ball.z") == p['z'], [z0, p['z']])
+            await page.screenshot(path='tests/out/pause_pill_' + tag + '.png')
+            await page.evaluate(HAND_ON); await page.wait_for_timeout(400)
+            p2 = await page.evaluate(P)
+            check(tag + ' pause: hand back -> card hides, countdown shows 3, still frozen', p2['on'] and p2['count'] == 3 and not p2['card'] and p2['z'] == p['z'], p2)
+            await page.screenshot(path='tests/out/pause_' + tag + '.png')
+            await page.wait_for_timeout(1000)
+            check(tag + ' pause: countdown at 2 a second later', await page.evaluate("__grasp.pause.on && __grasp.pause.count === 2"), await page.evaluate("__grasp.pause.count"))
+            await page.wait_for_function("!__grasp.pause.on", timeout=3000)
+            check(tag + ' pause: resumes after 3 s (count 0, pill hidden)', await page.evaluate("__grasp.pause.count === 0 && $('pausePill').hidden"))
+            z3 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z"); await page.wait_for_timeout(300); z4 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z")
+            check(tag + ' pause: the ball flies on after the countdown', z3 is not None and z4 is not None and z3 - z4 > 100, [z3, z4])
+            # Smash: the clock waits too
+            await page.evaluate("__grasp.setGameMode('smash')"); await page.wait_for_timeout(300)
+            await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+            l0 = await page.evaluate("__grasp.smash.endAt - performance.now()"); await page.wait_for_timeout(600); l1 = await page.evaluate("__grasp.smash.endAt - performance.now()")
+            check(tag + ' pause: the Smash clock stands still while the hand is missing', await page.evaluate("__grasp.pause.on") and abs(l0 - l1) < 80, [l0, l1])
+            await page.evaluate(HAND_ON); await page.wait_for_function("!__grasp.pause.on", timeout=4500)
+            l2 = await page.evaluate("__grasp.smash.endAt - performance.now()"); await page.wait_for_timeout(600); l3 = await page.evaluate("__grasp.smash.endAt - performance.now()")
+            check(tag + ' pause: the Smash clock runs again after the countdown', l2 - l3 > 450, [l2, l3])
+            await page.click('#homeBtn'); await page.wait_for_timeout(100)
+            check(tag + ' pause: Home clears the pause', await page.evaluate("!__grasp.pause.on && __grasp.pause.count === 0"))
+            check(tag + ' pause: no page errors', not errs, errs); await ctx.close()
+
         # ---- start screen: Strike difficulty pill, saved across reloads ----
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))

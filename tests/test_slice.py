@@ -12,7 +12,15 @@ window.pointAt = (X, Y) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; 
 window.sweep = (fn, x0, y0, x1, y1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms); return fn(x0 + (x1 - x0) * k, y0 + (y1 - y0) * k); }; };
 window.parkFruit = (x, y) => { __grasp.CONFIG.SLICE_GRAVITY = 0; const f = __grasp.slice; f.fruits.length = 0; f.halves.length = 0; f.nextSpawn = 1e12;
   f.fruits.push({ x, y, vx: 0, vy: 0, r: 40, rot: 0, vr: 0, kind: {rind:'#ffc24b', flesh:'#ffe3a1', seed:null}, born: 0 }); };
+window.parkBomb = (x, y) => { parkFruit(x, y); __grasp.slice.fruits[0].bomb = true; };
+window.dropFruit = () => { __grasp.CONFIG.SLICE_GRAVITY = 0; const f = __grasp.slice; f.nextSpawn = 1e12; // a fruit already below the screen, still falling: a miss on the next tick
+  f.fruits.push({ x: 300, y: innerHeight + 100, vx: 0, vy: 0.5, r: 40, rot: 0, vr: 0, kind: {rind:'#ffc24b', flesh:'#ffe3a1', seed:null}, born: 0 }); };
 """
+PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
+ROUND = "({score: __grasp.slice.score, missed: __grasp.slice.missed, lives: __grasp.slice.lives, over: __grasp.slice.over, best: __grasp.slice.best, ls: localStorage.getItem('sliceBest'), bombsHit: __grasp.slice.bombsHit, fruits: __grasp.slice.fruits.length, buttons: __grasp.slice.ui.buttons, nb: __grasp.slice.ui.newBest, rb: __grasp.slice.ui.ribbon})"
+async def end_round(page):  # three misses end the round; then the card is armed after ~600 ms
+    for _ in range(3): await page.evaluate("dropFruit()"); await page.wait_for_timeout(120)
+    await page.wait_for_function("__grasp.slice.over && __grasp.slice.ui.buttons", timeout=3000); await page.wait_for_timeout(650)
 async def camera_page(b, mobile):
     opts = dict(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width':1280,'height':800})
     ctx = await b.new_context(permissions=['camera'], **opts); page = await ctx.new_page(); await routes(page); errs=[]
@@ -51,7 +59,54 @@ async def main():
         for i in range(1, 13): await page.mouse.move(400 + i*40, 400); await page.wait_for_timeout(16)
         check('hover without pressing does not slice', await page.evaluate("__grasp.slice.fruits.length") == 1)
         await page.evaluate("__grasp.CONFIG.SLICE_GRAVITY = 0.0012; __grasp.slice.fruits.length = 0; __grasp.slice.nextSpawn = 0"); await page.wait_for_timeout(4500)
-        check('unsliced fruit counts as missed', await page.evaluate("__grasp.slice.missed") >= 1, await page.evaluate("__grasp.slice.missed"))
+        st = await page.evaluate(ROUND)
+        check('unsliced fruit counts as missed', st['missed'] >= 1, st)
+        check('a missed fruit costs a life (3 lives a round)', st['lives'] == max(0, 3 - st['missed']) and st['over'] == (st['missed'] >= 3), st)
+        # a round, step by step: one fruit sliced, then three misses end it with the card and a new best
+        await page.evaluate("localStorage.removeItem('sliceBest'); __grasp.slice.best = 0; __grasp.resetSlice()"); await page.mouse.move(100, 700); await page.wait_for_timeout(100)
+        check('reset restarts the round: 3 lives, score 0', await page.evaluate("__grasp.slice.lives === 3 && !__grasp.slice.over && __grasp.slice.score === 0 && __grasp.slice.ui.buttons === null"))
+        await page.evaluate("parkFruit(640, 400)")
+        await page.mouse.move(400, 400); await page.mouse.down()
+        for i in range(1, 13): await page.mouse.move(400 + i*40, 400); await page.wait_for_timeout(16)
+        await page.mouse.up(); await page.mouse.move(100, 700); await page.wait_for_timeout(100)
+        await page.evaluate("dropFruit()"); await page.wait_for_timeout(700)
+        hearts = await page.evaluate("__grasp.slice.ui.hearts"); h0 = await page.evaluate(PIX + f"({hearts[0]['x']}, {hearts[0]['y']})"); h2 = await page.evaluate(PIX + f"({hearts[2]['x']}, {hearts[2]['y']})")
+        check('lives shown as hearts under the score: first red, the lost one hollow', len(hearts) == 3 and await page.evaluate("__grasp.slice.lives") == 2 and h0[0] > 170 and h0[0] > h0[2] + 60 and h2[0] < 120, [hearts, h0, h2])
+        await page.screenshot(path='tests/out/slice_lives.png')
+        await page.evaluate("dropFruit()"); await page.wait_for_timeout(120); await page.evaluate("dropFruit()")
+        await page.wait_for_function("__grasp.slice.over && __grasp.slice.ui.buttons", timeout=3000); await page.wait_for_timeout(650)
+        st = await page.evaluate(ROUND)
+        check('third miss: round over, best saved in localStorage, NEW BEST', st['over'] and st['lives'] == 0 and st['missed'] == 3 and st['score'] == 1 and st['best'] == 1 and st['ls'] == '1' and st['nb'], st)
+        rbp = await page.evaluate(PIX + f"({st['rb']['x']}, {st['rb']['y']})") if st['rb'] else None
+        check('NEW BEST ribbon drawn on the card corner', rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, rbp)
+        bt = st['buttons']
+        check('card: Play again + Home side by side, no difficulty pill', bt and set(bt) == {'again', 'home'} and bt['again']['y'] == bt['home']['y'] and bt['again']['x'] + bt['again']['w'] < bt['home']['x'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
+        ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
+        check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
+        await page.screenshot(path='tests/out/slice_over.png')
+        await page.mouse.click(bt['again']['x'] + bt['again']['w'] / 2, bt['again']['y'] + bt['again']['h'] / 2); await page.wait_for_timeout(200)
+        st = await page.evaluate(ROUND)
+        check('click Play again: fresh round, best kept', not st['over'] and st['lives'] == 3 and st['score'] == 0 and st['best'] == 1 and st['buttons'] is None, st)
+        # bombs: one every ~6 fruit; slicing one costs a life with a flash and a boom
+        await page.evaluate("__grasp.slice.fruits.length = 0; for (let i = 0; i < 8; i++) __grasp.spawnWave(performance.now())")
+        bm = await page.evaluate("({spawned: __grasp.slice.spawned, bombs: __grasp.slice.bombs, inAir: __grasp.slice.fruits.filter(f => f.bomb).length, kinds: __grasp.slice.fruits.map(f => f.kind.name)})")
+        check('a bomb flies up among the fruit after ~6 of them', bm['spawned'] >= 6 and bm['bombs'] >= 1 and bm['inAir'] >= 1 and bm['bombs'] <= bm['spawned'] / 5 + 1, bm)
+        await page.evaluate("parkBomb(640, 400)"); await page.mouse.move(400, 400); await page.mouse.down()
+        for i in range(1, 13):
+            await page.mouse.move(400 + i*40, 400); await page.wait_for_timeout(16)
+            if i == 7: await page.screenshot(path='tests/out/slice_bomb.png')
+        await page.mouse.up(); await page.mouse.move(100, 700); await page.wait_for_timeout(60)
+        st = await page.evaluate(ROUND); fl = await page.evaluate("performance.now() - __grasp.slice.flash")
+        check('slicing a bomb costs a life (no points), with a flash', st['lives'] == 2 and st['bombsHit'] == 1 and st['score'] == 0 and st['fruits'] == 0 and st['missed'] == 0 and fl < 1500, [st, fl])
+        await page.click('#resetBtn'); await page.wait_for_timeout(100)
+        check('reset button restarts the round', await page.evaluate("__grasp.slice.lives === 3 && __grasp.slice.score === 0 && !__grasp.slice.over"))
+        await end_round(page); bt = await page.evaluate("__grasp.slice.ui.buttons")
+        await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(200)
+        check('click Home on the card: back to the start screen', await page.evaluate("mode === 'none' && !$('start').hidden && document.body.classList.contains('home')"))
+        await page.click('#mouseBtn'); await page.wait_for_timeout(300)
+        check('start again: a fresh round', await page.evaluate("mode === 'mouse' && gameMode === 'slice' && __grasp.slice.lives === 3 && !__grasp.slice.over"))
+        await page.click('#hudBtn'); await page.wait_for_timeout(700)
+        check('HUD shows slice lives', 'lives' in await page.inner_text('#hud')); await page.click('#hudBtn')
         # katana: drawn while the blade is on, gone when it is off
         await page.evaluate("parkFruit(640, 460); __grasp.slice.drawn = 0")
         await page.mouse.move(400, 400); await page.mouse.down()
@@ -90,6 +145,26 @@ async def main():
         await page.evaluate("__grasp.CONFIG.SLICE_GRAVITY = 0.0012; window.__handFor = () => pointAt(180, 300); __grasp.slice.nextSpawn = 0"); await page.wait_for_timeout(1500)
         await page.screenshot(path='tests/out/slice_phone.png')
         check('phone: no page errors', not errs, errs); await ctx.close()
+
+        # --- phone (touch), English + Hebrew: the round-over card ---
+        for he in (False, True):
+            tag = 'he' if he else 'en'
+            ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
+            page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + POINT_JS)
+            await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
+            await page.tap('.modes button[data-mode=slice]'); await page.tap('#mouseBtn'); await page.wait_for_timeout(300)
+            await page.evaluate("parkBomb(180, 400); __grasp.slice.fruits[0].vy = -0.001"); await page.wait_for_timeout(120)
+            await page.screenshot(path='tests/out/slice_bomb_phone_' + tag + '.png')
+            await page.evaluate("__grasp.slice.fruits.length = 0; __grasp.slice.score = 7"); await end_round(page)
+            st = await page.evaluate(ROUND)
+            check(tag + ' phone: round over after 3 misses, best 7 saved', st['over'] and st['best'] == 7 and st['ls'] == '7' and st['nb'], st)
+            await page.screenshot(path='tests/out/endcard_slice_' + tag + '.png')
+            bt = st['buttons']
+            check(tag + ' phone: card buttons fit the screen' + (', Play again on the right' if he else ''), bt and set(bt) == {'again', 'home'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and ((bt['again']['x'] > bt['home']['x']) == he), bt)
+            await page.tap('#stage', position={'x': bt['again']['x'] + bt['again']['w'] / 2, 'y': bt['again']['y'] + bt['again']['h'] / 2}); await page.wait_for_timeout(200)
+            check(tag + ' phone: tap Play again -> fresh round', await page.evaluate("!__grasp.slice.over && __grasp.slice.lives === 3 && __grasp.slice.score === 0 && __grasp.slice.best === 7"))
+            check(tag + ' phone: no page errors', not errs, errs); await ctx.close()
         await b.close()
     print('FAILURES:', check.fails)
 asyncio.run(main()); srv.terminate()
