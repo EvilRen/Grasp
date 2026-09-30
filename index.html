@@ -31,17 +31,17 @@ button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 #start{ position:fixed; inset:0; display:grid; place-items:center; padding:24px;
   background:radial-gradient(120% 90% at 50% 20%, rgba(29,37,71,.92), rgba(20,27,52,.97)); z-index:10; }
 #start[hidden]{ display:none; }
-.panel{ width:min(440px,100%); text-align:center; }
+.panel{ width:min(500px,100%); text-align:center; }
 .panel h1{ font-size:clamp(48px,11vw,72px); font-weight:700; letter-spacing:-.03em; margin:0; line-height:1;
   background:linear-gradient(135deg,var(--saffron),var(--coral) 55%,var(--lilac)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .tagline{ margin:6px 0 22px; color:var(--muted); font-size:14px; letter-spacing:.04em; text-transform:uppercase; }
 html[dir="rtl"] .tagline{ text-transform:none; letter-spacing:0; font-size:15px; }
 .panel p{ margin:0 0 20px; color:var(--muted); line-height:1.5; font-size:16px; min-height:4.5em; display:flex; align-items:center; justify-content:center; }
 .actions{ display:flex; flex-direction:column; gap:10px; }
-.modes{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:0 0 16px; }
-@media (max-width:460px){ .modes{ grid-template-columns:repeat(2,1fr); } }
-.modes button{ display:flex; flex-direction:column; align-items:center; gap:8px; background:rgba(29,37,71,.5); color:var(--muted); padding:14px 6px 12px;
-  font-weight:500; border-radius:14px; font-size:15px; white-space:nowrap; box-shadow:inset 0 0 0 1.5px var(--line); transition:transform .15s, box-shadow .15s, color .15s; }
+.modes{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:0 0 16px; }
+@media (max-width:520px){ .modes{ grid-template-columns:repeat(6,1fr); gap:6px; } .modes button{ grid-column:span 2; } .modes button:nth-child(4){ grid-column:2/4; } } /* 3 + 2, second row centred */
+.modes button{ display:flex; flex-direction:column; align-items:center; gap:8px; background:rgba(29,37,71,.5); color:var(--muted); padding:13px 4px 11px; min-width:0;
+  font-weight:500; border-radius:14px; font-size:14px; white-space:nowrap; box-shadow:inset 0 0 0 1.5px var(--line); transition:transform .15s, box-shadow .15s, color .15s; }
 .modes button svg{ width:30px; height:30px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .modes button[aria-pressed="true"]{ background:var(--ink-2); color:var(--bone); box-shadow:inset 0 0 0 2px var(--saffron); transform:translateY(-2px); }
 .modes button[aria-pressed="true"] svg{ color:var(--saffron); }
@@ -135,6 +135,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <button type="button" data-mode="slice" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5 8 16"/><path d="M20.5 3.5c-1.5 5-5 9.5-10 12.5"/><path d="M9.5 14.5 6 18"/><path d="M7.2 15.8l1 1"/><path d="M6 18l-2.5 2.5"/></svg><span data-i18n="modeSlice">Slice</span></button>
       <button type="button" data-mode="smash" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11M10 11V7.5a1.5 1.5 0 0 1 3 0V11M13 11V8.5a1.5 1.5 0 0 1 3 0V11M16 11a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 12.5 21h-1A6.5 6.5 0 0 1 5 14.5V13a1.5 1.5 0 0 1 3 0"/><path d="M7 13v-2M4.5 10.5 7 11"/></svg><span data-i18n="modeSmash">Smash</span></button>
       <button type="button" data-mode="busy" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><rect x="6" y="7.5" width="12" height="5" rx="2.5"/><circle cx="15" cy="10" r="1.6"/><circle cx="8" cy="16.5" r="1.4"/><circle cx="12" cy="16.5" r="1.4"/><circle cx="16" cy="16.5" r="1.4"/></svg><span data-i18n="modeBusy">Busy Board</span></button>
+      <button type="button" data-mode="strike" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.5" cy="12" r="5"/><path d="M13.2 9.2a3 3 0 0 1 3.6 1.2"/><path d="M2.5 8.5h5.5M1.5 12h6M2.5 15.5h5.5"/></svg><span data-i18n="modeStrike">Strike</span></button>
     </div>
     <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
     <div class="actions">
@@ -198,13 +199,20 @@ const CONFIG = {
   CAR_INTERVAL_MS: [3500, 6500],
   CAR_SPEED: 0.16,            // px/ms
   WALL_REBUILD_MS: 2500,      // a wall that is fully knocked down comes back after this
+  // Strike mode (pseudo-3D corridor; z = depth, 0 is the player's plane)
+  STRIKE_Z_FAR: 2400,         // depth of the far end of the corridor
+  STRIKE_BASE_SPEED: 1.1,     // depth units per ms on the first serve (~2.2 s to arrive)
+  STRIKE_HIT_Z: 150,          // the ball can be slapped once it is this close to the player's plane
+  STRIKE_SUPER_SPEED: 2.2,    // hand speed (px/ms on a ~950px screen) at contact for a SUPER hit
+  STRIKE_MAX_SPEED: 2.8,      // cap on the incoming speed (it grows 5% per far-wall bounce)
+  STRIKE_LIVES: 3,
 };
 
 /* ---------------- Language (English / Hebrew) ---------------- */
 const I18N = {
   en: {
     title: 'Grasp: hand physics sandbox', tagline: 'Your hand is the controller', langName: 'עב', langAria: 'Switch language to Hebrew',
-    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modesAria: 'Game mode',
+    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modeStrike: 'Strike', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
     statusTitle: 'Show your whole hand inside the yellow box',
     statusSub: "Open palm, fingers spread, wrist in view. Stand the phone up and step back if your hand doesn't fit.",
@@ -214,6 +222,7 @@ const I18N = {
     descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
     descSmash: 'Brick walls stand and cars drive by. Make a fist and punch fast to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
     descBusy: 'A busy board for little hands: switches that click, buttons that sing, knobs, sliders, a zipper, a little door with a surprise behind it, a piano, a xylophone, lights that glow and a wheel to spin. No score, no clock. Point to poke, pinch to turn and drag.',
+    descStrike: 'A ball flies at you down a corridor. Slap it back with your palm the moment it arrives: the faster your hand, the harder the hit. Three misses and the round is over. Your webcam is the controller.',
     camBtn: 'Enable camera', mouseBtn: 'Play with mouse or touch', tremortiLink: 'Tremorti · tremor meter',
     chk_camera: 'Camera', chk_library: 'Hand tracker library', chk_runtime: 'Tracker runtime (WebAssembly)', chk_model: 'Hand model', chk_sandbox: 'Page sandbox',
     st_camera: 'Camera', st_library: 'Hand tracker library', st_runtime: 'Tracker runtime', st_model: 'Hand model', st_sandbox: 'Page sandbox',
@@ -227,7 +236,10 @@ const I18N = {
     hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone and the wheel. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
     hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Drag the board to see more.',
     hintBusyMouse: 'Click the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Scroll or drag the board to see more. D for HUD.',
-    time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again',
+    hintStrikeCam: 'Move your hand onto the ball and slap it as it arrives. Keep your hand inside the yellow box.',
+    hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. D for HUD.',
+    time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
+    pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
     ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
@@ -250,11 +262,11 @@ const I18N = {
     h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Tracking FPS', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
     g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
-    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', Left: 'Left', Right: 'Right',
+    m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', gm_strike: 'strike', Left: 'Left', Right: 'Right',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
-    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modesAria: 'מצב משחק',
+    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modeStrike: 'מכה', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
     statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
     statusSub: 'כף יד פתוחה, אצבעות פרושות, שורש כף היד בתמונה. העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת.',
@@ -264,6 +276,7 @@ const I18N = {
     descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
     descSmash: 'קירות לבנים עומדים ומכוניות חולפות. קמצו אגרוף והכו מהר כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
     descBusy: 'לוח עסוק לידיים קטנות: מתגים שמקליקים, כפתורים שמנגנים, כפתורי סיבוב, מחוונים, רוכסן, דלת קטנה עם הפתעה מאחוריה, פסנתר, קסילופון, נורות שזוהרות וגלגל מזל. בלי ניקוד, בלי שעון. הצביעו כדי ללחוץ, צבטו כדי לסובב ולגרור.',
+    descStrike: 'כדור טס אליכם במסדרון. הכו אותו בכף היד ברגע שהוא מגיע: ככל שהיד מהירה יותר, המכה חזקה יותר. שלושה פספוסים והסיבוב נגמר. המצלמה היא השלט.',
     camBtn: 'הפעלת מצלמה', mouseBtn: 'משחק עם עכבר או מגע', tremortiLink: 'טרימורטי · מד רעד',
     chk_camera: 'מצלמה', chk_library: 'ספריית זיהוי היד', chk_runtime: 'מנוע הזיהוי (WebAssembly)', chk_model: 'מודל היד', chk_sandbox: 'הרשאות הדף',
     st_camera: 'מצלמה', st_library: 'ספריית זיהוי היד', st_runtime: 'מנוע הזיהוי', st_model: 'מודל היד', st_sandbox: 'הרשאות הדף',
@@ -277,7 +290,10 @@ const I18N = {
     hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון והגלגל. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
     hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גררו את הלוח כדי לראות עוד.',
     hintBusyMouse: 'לחצו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גללו או גררו את הלוח כדי לראות עוד. D למדדים.',
-    time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב',
+    hintStrikeCam: 'הזיזו את היד אל הכדור והכו בו כשהוא מגיע אליכם. שמרו על היד בתוך המסגרת הצהובה.',
+    hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. D למדדים.',
+    time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
+    pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
     ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
@@ -300,7 +316,7 @@ const I18N = {
     h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'קצב זיהוי', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
-    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', Left: 'שמאל', Right: 'ימין',
+    m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', gm_strike: 'מכה', Left: 'שמאל', Right: 'ימין',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -610,6 +626,7 @@ function inputTick(now) {
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     if (gameMode === 'smash' && smash.over && g !== 'none' && g !== 'open' && now - smash.overAt > 1000) resetSmash(now);
+    if (gameMode === 'strike' && strike.over && g !== 'none' && g !== 'open' && now - strike.overAt > 1000) resetStrike(now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -674,7 +691,7 @@ function frame(now) {
   if (gameMode === 'smash') smashTick(now, dt);
 
   acc += dt;
-  const noPhysics = gameMode === 'slice' || gameMode === 'busy';
+  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike';
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -689,7 +706,7 @@ function frame(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else render(now);
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -848,6 +865,7 @@ function bgSprite(kind) {
       g.fillStyle = gr; g.fillRect(0, H - 70, W, 70);
       g.strokeStyle = 'rgba(241,233,218,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, H - 1); g.lineTo(W, H - 1); g.stroke();
     }
+    if (kind === 'strike') drawCorridor(g);
     const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.hypot(W, H) * 0.62);
     v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.6)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
   });
@@ -1570,18 +1588,19 @@ function renderSmash(now) {
   drawScore(String(smash.score), 104, smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
   drawFist(now);
   resetView();
-  if (smash.over) {
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.fillStyle = 'rgba(14,19,40,0.72)'; ctx.fillRect(0, 0, W, H);
-    ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
-    const y = H * 0.4;
-    ctx.fillStyle = '#f1e9da'; ctx.font = '700 30px Rubik, system-ui, sans-serif'; ctx.fillText(t('roundOver'), W / 2, y);
-    ctx.restore(); blit(textSprite(String(smash.score), 64, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, y + 54);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
-    ctx.fillStyle = 'rgba(241,233,218,0.62)'; ctx.font = '400 16px Rubik, system-ui, sans-serif'; ctx.fillText(t('best', { n: smash.best }), W / 2, y + 108);
-    if (now - smash.overAt > 1000) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 300); ctx.fillText(t('playAgain'), W / 2, y + 150); }
-    ctx.restore();
-  }
+  if (smash.over) drawRoundOver(now, smash.score, smash.best, smash.overAt, 'playAgain');
+}
+function drawRoundOver(now, score, best, overAt, againKey) { // dim the game, big score, best, and a pulsing 'play again' after a second
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = 'rgba(14,19,40,0.72)'; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
+  const y = H * 0.4;
+  ctx.fillStyle = '#f1e9da'; ctx.font = '700 30px Rubik, system-ui, sans-serif'; ctx.fillText(t('roundOver'), W / 2, y);
+  ctx.restore(); blit(textSprite(String(score), 64, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, y + 54);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.save(); ctx.textAlign = 'center'; ctx.direction = lang === 'he' ? 'rtl' : 'ltr';
+  ctx.fillStyle = 'rgba(241,233,218,0.62)'; ctx.font = '400 16px Rubik, system-ui, sans-serif'; ctx.fillText(t('best', { n: best }), W / 2, y + 108);
+  if (now - overAt > 1000) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 300); ctx.fillText(t(againKey), W / 2, y + 150); }
+  ctx.restore();
 }
 
 /* ---------------- Busy Board mode ---------------- */
@@ -2437,6 +2456,193 @@ function renderBusy(now) {
   drawCursor(now);
 }
 
+/* ---------------- Strike mode ---------------- */
+// A pseudo-3D corridor. World coords: x/y in screen px at the player's plane (origin at the vanishing point), z = depth
+// (0 = player's plane, STRIKE_Z_FAR = far wall). proj() is a pinhole: scale = f / (f + z). The ball is served from the far
+// end, drifts toward a random spot, and must be slapped when it reaches z <= STRIKE_HIT_Z. A return flies it back to the
+// far wall (strike.walls is reserved for step 2: breakable walls at some depth z), where it bounces and comes back 5% faster.
+const STRIKE_F = 520, STRIPE_GAP = 240; // focal length (same units as z); depth between corridor stripes
+const STRIKE_TIERS = [0.5, 1.2];        // hand speed (px/ms, screen-scaled) below which a hit is soft / medium; hard up to SUPER
+const STRIKE_BONUS = { soft: 0, medium: 1, hard: 2, super: 5 };
+const strike = { ball: null, walls: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, score: 0, best: 0, over: false, overAt: 0,
+  serveAt: 0, scroll: 0, flash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
+  serve() { serveBall(performance.now()); },
+  setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
+    if (!strike.ball) serveBall(performance.now());
+    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; strike.speed = strike.pace; strike.trail.length = 0; // always an incoming ball at the current pace
+    if (sx !== undefined) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); b.x = b.x0 = b.tx = (sx - v.x) / s; b.y = b.y0 = b.ty = (sy - v.y) / s; }
+  },
+  ballScreen() { return strike.ball ? ballScreen(strike.ball) : null },
+};
+function vanish() { return { x: W / 2, y: H * 0.46 }; } // vanishing point: centre, a little above the middle
+function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y, B: H - v.y }; } // world bounds at z = 0 = the screen edges
+function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
+function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
+function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)); } // ball radius (px) at the player's plane
+function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballR() * p.s, s: p.s }; }
+function drawCorridor(g) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
+  const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish();
+  const P = (x, y, z) => { const s = STRIKE_F / (STRIKE_F + z); return [v.x + x * s, v.y + y * s]; };
+  const quad = (pts, grad) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fillStyle = grad; g.fill(); };
+  const far = { x0: P(L, T, Z)[0], y0: P(L, T, Z)[1], x1: P(R, B, Z)[0], y1: P(R, B, Z)[1] };
+  const lin = (x0, y0, x1, y1, a, b) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, a); gr.addColorStop(1, b); return gr; };
+  quad([P(L, B, 0), P(R, B, 0), P(R, B, Z), P(L, B, Z)], lin(0, H, 0, far.y1, '#232c58', '#0e1330'));      // floor
+  quad([P(L, T, 0), P(R, T, 0), P(R, T, Z), P(L, T, Z)], lin(0, 0, 0, far.y0, '#161c3c', '#0c1028'));      // ceiling
+  quad([P(L, T, 0), P(L, T, Z), P(L, B, Z), P(L, B, 0)], lin(0, 0, far.x0, 0, '#1b2348', '#0d1230'));      // left wall
+  quad([P(R, T, 0), P(R, T, Z), P(R, B, Z), P(R, B, 0)], lin(W, 0, far.x1, 0, '#1b2348', '#0d1230'));      // right wall
+  g.fillStyle = '#0a0e24'; g.fillRect(far.x0, far.y0, far.x1 - far.x0, far.y1 - far.y0);                     // far wall
+  g.strokeStyle = 'rgba(241,233,218,0.28)'; g.lineWidth = 1.5; g.beginPath();                                // the four corridor edges
+  for (const [x, y] of [[L, T], [R, T], [L, B], [R, B]]) { const a = P(x, y, 0), b = P(x, y, Z); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+  g.stroke();
+  const fog = g.createRadialGradient(v.x, v.y, (far.x1 - far.x0) * 0.4, v.x, v.y, Math.min(W, H) * 0.75);   // fog toward the vanishing point
+  fog.addColorStop(0, 'rgba(10,14,36,0.92)'); fog.addColorStop(0.35, 'rgba(10,14,36,0.45)'); fog.addColorStop(1, 'rgba(10,14,36,0)');
+  g.fillStyle = fog; g.fillRect(0, 0, W, H);
+}
+function resetStrike(now) {
+  strike.ball = null; strike.trail.length = strike.floaters.length = strike.walls.length = 0; particles.length = 0; rings.length = 0;
+  try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
+  strike.score = 0; strike.lives = CONFIG.STRIKE_LIVES; strike.over = false; strike.pace = CONFIG.STRIKE_BASE_SPEED; strike.speed = strike.pace;
+  strike.hits = strike.misses = strike.serves = strike.bounces = 0; strike.power = ''; strike.lastHit = null; strike.flash = strike.hitAt = strike.handHit = -1e9;
+  strike.serveAt = now + 600;
+}
+function strikeTarget(b) { // where the incoming ball drifts to: a random spot inside the corridor, so the player has to move
+  const { L, R, T, B } = corridor(), r = ballR();
+  b.tx = (L + r) * 0.75 + Math.random() * ((R - L) - 2 * r) * 0.75; b.ty = (T + r) * 0.6 + Math.random() * ((B - T) - 2 * r) * 0.6;
+}
+function serveBall(now) {
+  const { L, R, T, B } = corridor();
+  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, super: false, born: now };
+  b.x = b.x0; b.y = b.y0; strikeTarget(b);
+  strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++;
+}
+function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms, direction from where on the ball it landed
+  const sc = ballScreen(b), s = strikeScale(), v = cursorSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
+  const tier = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft';
+  const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
+  b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super';
+  b.vx = -offx * W * 0.00035 * (0.6 + pw); b.vy = -offy * H * 0.00035 * (0.6 + pw);
+  strike.speed = Math.min(CONFIG.STRIKE_MAX_SPEED * 1.5, strike.pace * (0.55 + 1.45 * pw));
+  const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now;
+  strike.lastHit = { v, pw, tier, pts, offx, offy };
+  strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: t('pw_' + tier) + ' +' + pts, big: tier === 'hard' || tier === 'super', life: 1 });
+  sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3);
+  burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
+  if (b.super) ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5);
+}
+function strikeMiss(now) {
+  strike.ball = null; strike.trail.length = 0; strike.lives--; strike.misses++; strike.flash = now; strike.power = '';
+  sfx('whiff'); shakeScreen(1.2);
+  if (strike.lives <= 0) {
+    strike.over = true; strike.overAt = now; hintEl.style.opacity = 0;
+    if (strike.score > strike.best) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} }
+    sfx('chime');
+  } else strike.serveAt = now + 800;
+}
+function strikeTick(now, dt) {
+  tickFloaters(strike.floaters, dt);
+  if (strike.over) { if (now - strike.overAt > 1000 && cursor.present && cursorSpeed(now) >= 1.2) resetStrike(now); return; } // a wave restarts too
+  if (noHandShown) return; // the ball waits while the hand is missing
+  strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
+  const b = strike.ball;
+  if (!b) { if (now >= strike.serveAt) serveBall(now); return; }
+  const dz = strike.speed * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
+  if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane)
+    b.z -= dz;
+    const k = 1 - Math.max(0, b.z) / Z; b.x = b.x0 + (b.tx - b.x0) * k; b.y = b.y0 + (b.ty - b.y0) * k;
+    if (b.z <= CONFIG.STRIKE_HIT_Z) {
+      const sc = ballScreen(b);
+      if (cursor.present && Math.hypot(cursor.x - sc.x, cursor.y - sc.y) <= sc.r * 1.3) strikeHit(b, now);
+      else if (b.z <= 0) { strikeMiss(now); return; }
+    }
+  } else { // outgoing: lateral velocity from the hit, bouncing off the corridor sides, then off the far wall
+    b.z += dz; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.x < L + r) { b.x = L + r; b.vx = Math.abs(b.vx); } else if (b.x > R - r) { b.x = R - r; b.vx = -Math.abs(b.vx); }
+    if (b.y < T + r) { b.y = T + r; b.vy = Math.abs(b.vy); } else if (b.y > B - r) { b.y = B - r; b.vy = -Math.abs(b.vy); }
+    if (b.z >= Z) {
+      b.z = Z; b.dir = 1; b.super = false; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
+      strike.pace = Math.min(CONFIG.STRIKE_MAX_SPEED, strike.pace * 1.05); strike.speed = strike.pace;
+      const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
+    }
+  }
+  const sc = ballScreen(b); strike.trail.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
+  while (strike.trail.length && now - strike.trail[0].t > 160) strike.trail.shift();
+}
+/* ---------------- Strike rendering: corridor stripes, ball, hand, hearts ---------------- */
+function strikeBallSprite(sup) {
+  const R = 64, col = sup ? '#ffc24b' : '#ff6f59';
+  return makeSprite('strikeBall|' + (sup ? 1 : 0), R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
+    if (sup) { const glow = g.createRadialGradient(0, 0, R * 0.8, 0, 0, R * 1.2); glow.addColorStop(0, 'rgba(255,194,75,0.55)'); glow.addColorStop(1, 'rgba(255,194,75,0)'); g.fillStyle = glow; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4); }
+    ball(g, R, col);
+    g.save(); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = R * 0.06; // two seams so spin and speed read
+    g.beginPath(); g.ellipse(-R * 0.55, 0, R * 0.55, R * 1.05, 0.25, 0, TAU); g.stroke(); g.beginPath(); g.ellipse(R * 0.55, 0, R * 0.55, R * 1.05, -0.25, 0, TAU); g.stroke();
+    g.restore(); shine(g, R, 1, 1, 0.5); rim(g, R, sup ? 'rgba(120,80,0,0.6)' : 'rgba(90,20,10,0.6)', 1, 1, 2);
+  });
+}
+function strikeHandSprite() { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre
+  const S = 1;
+  return makeSprite('strikeHand', 104, 128, 52, 74, (g) => {
+    g.globalAlpha = 0.62;
+    const skin = '#f1e9da', line = 'rgba(20,27,52,0.55)';
+    const finger = (x, y, w, len, a) => { g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); g.roundRect(-w / 2, -len, w, len + w * 0.3, w / 2); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke(); g.restore(); };
+    finger(-29, -8, 15, 54, 0.14); finger(-10, -10, 16, 64, 0.04); finger(9, -10, 16, 61, -0.04); finger(27, -8, 14, 52, -0.16);
+    finger(-32, 18, 16, 46, 1.05); // thumb
+    g.beginPath(); g.roundRect(-38, -20, 76, 66, 24); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke(); // palm
+    g.strokeStyle = 'rgba(20,27,52,0.22)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-26, 4); g.quadraticCurveTo(0, 14, 24, 0); g.stroke(); // palm crease
+    g.beginPath(); g.moveTo(-14, 42); g.quadraticCurveTo(-4, 18, 18, 8); g.stroke();
+  });
+}
+function heartSprite(on) {
+  return makeSprite('heart|' + (on ? 1 : 0), 34, 32, 17, 15, (g) => {
+    const path = () => { g.beginPath(); g.moveTo(0, 12); g.bezierCurveTo(-16, 0, -12, -14, -1, -8); g.bezierCurveTo(0, -9, 0, -9, 1, -8); g.bezierCurveTo(12, -14, 16, 0, 0, 12); g.closePath(); };
+    if (on) { shadedFill(g, path, '#ff6f59', 12); gloss(g, path, 11, 0.4); outline(g, path, '#ff6f59', 1.5); }
+    else { path(); g.fillStyle = 'rgba(241,233,218,0.08)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(241,233,218,0.35)'; g.stroke(); }
+  });
+}
+function drawStrikeHand(now) {
+  if (!cursor.present) return;
+  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), sx = 1 + 0.3 * k, sy = 1 - 0.25 * k; // squash on a hit
+  ctx.setTransform(DPR * sx, 0, 0, DPR * sy, (cursor.x + view.x) * DPR, (cursor.y + view.y) * DPR);
+  ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
+  resetView();
+}
+function renderStrike(now) {
+  beginFrame('strike', now);
+  const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR;
+  resetView(); ctx.lineWidth = 1.5; // depth stripes scrolling toward the player
+  for (let z = STRIPE_GAP - strike.scroll; z < Z; z += STRIPE_GAP) {
+    const a = proj(L, T, z), b = proj(R, B, z);
+    ctx.strokeStyle = 'rgba(241,233,218,' + (0.05 + 0.2 * a.s * a.s).toFixed(3) + ')';
+    ctx.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);
+  }
+  const bl = strike.ball;
+  if (bl) {
+    const sc = ballScreen(bl), fl = proj(bl.x, B, bl.z);
+    drawShadow(fl.x, fl.y, sc.r * 2.3, sc.r * 0.85, 0.55 * sc.s);
+    const tr = strike.trail;
+    if (tr.length > 1) { // motion trail: fading discs (a saffron streak after a SUPER hit)
+      resetView();
+      for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / 160) * 0.35; ctx.globalAlpha = k * (bl.super ? 1.4 : 1); ctx.fillStyle = bl.super ? '#ffc24b' : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * 0.9, 0, TAU); ctx.fill(); }
+      ctx.globalAlpha = 1;
+      if (bl.super) { ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,230,150,0.6)'; ctx.lineWidth = Math.max(2, sc.r * 0.25); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
+    }
+    const pop = Math.max(0, 1 - (now - strike.hitAt) / 160);
+    blit(strikeBallSprite(bl.super), sc.x, sc.y, (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
+  }
+  drawParticles(); drawRings(now);
+  drawFloaters(strike.floaters);
+  drawScore(String(strike.score), 104, null);
+  for (let i = 0; i < CONFIG.STRIKE_LIVES; i++) blit(heartSprite(i < strike.lives), W / 2 + (i - (CONFIG.STRIKE_LIVES - 1) / 2) * 30, 138, 0, 0.8);
+  drawStrikeHand(now);
+  const fk = Math.max(0, 1 - (now - strike.flash) / 450);
+  if (fk > 0) { // a miss: red flash creeping in from the edges
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) * 0.55);
+    gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')');
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  }
+  if (strike.over) drawRoundOver(now, strike.score, strike.best, strike.overAt, 'playAgainWave');
+}
+
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
 let audio = null, noiseBuf = null;
 function audioInit() {
@@ -2486,6 +2692,14 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing without a 
     else if (kind === 'tink') { tone('sine', 2200, 0, 0.08, 90, t0); tone('sine', 3300, 0, 0.03, 60, t0); } // glass bulb
     else if (kind === 'cog') { f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 1.5; env(f, 0.08, 18, t0); noise(t0, 18, f); tone('sine', 900, 500, 0.05, 25, t0); } // pointer clicking over a peg
     else if (kind === 'chord') { const r0 = arg || 523.25; [1, 1.26, 1.5].forEach((m, i) => tone('sine', r0 * m, 0, 0.1, 480, t0 + i * 0.03)); tone('triangle', r0 * 2, 0, 0.03, 300, t0); } // major chord when the wheel stops
+    else if (kind === 'slap') { // palm on ball: short filtered noise, brighter and louder with power, over a low thump
+      const pw = Math.max(0, Math.min(1, arg || 0));
+      f.type = 'bandpass'; f.frequency.value = 500 + pw * 1500; f.Q.value = 0.8; env(f, 0.12 + 0.13 * pw, 60 + pw * 70, t0); noise(t0, 60 + pw * 70, f);
+      tone('sine', 150 + pw * 260, 55, 0.14 + 0.1 * pw, 110 + pw * 60, t0);
+      if (pw >= 0.999) { tone('triangle', 880, 1760, 0.05, 160, t0 + 0.02); tone('sine', 1320, 2640, 0.04, 200, t0 + 0.05); } // SUPER: rising shimmer
+    }
+    else if (kind === 'whiff') { f.type = 'bandpass'; f.frequency.setValueAtTime(1400, t0); f.frequency.exponentialRampToValueAtTime(260, t0 + 0.2); f.Q.value = 1; env(f, 0.12, 220, t0); noise(t0, 220, f); tone('triangle', 330, 200, 0.07, 240, t0 + 0.04); } // the ball whooshes past
+    else if (kind === 'bounce') { tone('sine', 320, 180, 0.1, 120, t0); f.type = 'lowpass'; f.frequency.value = 700; env(f, 0.06, 60, t0); noise(t0, 60, f); } // far wall, muffled by distance
     else if (kind === 'thud') { f.type = 'lowpass'; f.frequency.value = 240; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('sine', 110, 45, 0.2, 140, t0); } // locked door rattles
   } catch {}
 }
@@ -2516,13 +2730,14 @@ function toneOff() {
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
-const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'sandbox' };
+const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'sandbox' };
 function setGameMode(m) {
   const was = gameMode; gameMode = m;
   if (held) dropHeld();
   particles.length = 0; rings.length = 0;
   if (m === 'slice') resetSlice();
   if (m === 'busy') resetBusy(); else if (was === 'busy') busyQuiet();
+  if (m === 'strike') resetStrike(performance.now());
   if (engine) {
     if (was === 'smash' && m !== 'smash') clearSmash();
     if (m === 'sandbox' && !bodies.length) spawnObjects();
@@ -2538,7 +2753,7 @@ function renderModeText() {
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
-  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy' }[gameMode] + how);
+  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike' }[gameMode] + how);
 }
 function showHint() {
   hintEl.textContent = hintText(); hintEl.style.opacity = 1;
@@ -2552,7 +2767,8 @@ function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
   const rowsH = [
     ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed
-      : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock() : '')],
+      : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock()
+      : gameMode === 'strike' ? '  ' + t('h_score') + ' ' + strike.score + '  ' + t('h_lives') + ' ' + strike.lives + (strike.ball ? '  z ' + Math.round(strike.ball.z) : '') : '')],
     ['h_fps', fps.toFixed(0)],
     ['h_tfps', mode === 'camera' ? trackFps.toFixed(0) : '-'],
     ['h_gesture', t('g_' + gesture) + (held ? t('h_holding') : '')],
@@ -2567,7 +2783,7 @@ function updateHud() {
 function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHud(); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
 
 /* ---------------- Camera + tracker boot ---------------- */
 let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
@@ -2822,7 +3038,7 @@ function startGame(m) {
     cameraStartedAt = performance.now();
   }
   requestAnimationFrame(updateHudOffset);
-  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now());
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
@@ -2860,7 +3076,7 @@ window.__grasp = {
   simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; },
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, busy, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  slice, smash, busy, strike, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
 };
 </script>
 </body>
