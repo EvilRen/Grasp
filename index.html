@@ -318,6 +318,8 @@ const CONFIG = {
   STRIKE_LIVES: 5,            // (Normal 3)
   STRIKE_WALL_GAP: 400,       // depth between the brick walls (the first stands 40% of the way down the corridor; 4 in view)
   STRIKE_MAX_DEBRIS: 60,      // flying brick fragments cap; the oldest go first
+  STRIKE_PU_RATE: 1 / 12,     // share of bricks that carry a power-up on walls from level 2 (Easy: x1.5, and at least one per two walls)
+  STRIKE_PU_SPEED: 0.45,      // depth units per ms a released capsule flies toward the player
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3 };
 function sd(key) { return strike.diff === 'normal' && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
@@ -356,6 +358,7 @@ const I18N = {
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
     pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives', diffEasy: 'Easy', diffNormal: 'Normal', diffAria: 'Strike difficulty',
     wk_brick: 'Brick wall', wk_glass: 'Glass wall!', wk_steel: 'Steel wall!', wk_holed: 'Wall with a hole!', wk_moving: 'Moving wall!', wk_tnt: 'TNT wall!',
+    pu_multi: 'Multi-ball!', pu_big: 'Big ball!', pu_slow: 'Slow-mo!', pu_fire: 'Fireball!', pu_life: '+1 life!',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
     bricks: 'Bricks', cars: 'Cars', bigHit: 'Biggest hit', fruit: 'Fruit', bombsAvoided: 'Bombs dodged', playAgainSwipe: 'Tap or swipe to play again',
     paused: 'Paused – show your hand', getReady: 'Get ready',
@@ -415,6 +418,7 @@ const I18N = {
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
     pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים', diffEasy: 'קל', diffNormal: 'רגיל', diffAria: 'רמת הקושי במכה',
     wk_brick: 'קיר לבנים', wk_glass: 'קיר זכוכית!', wk_steel: 'קיר פלדה!', wk_holed: 'קיר עם חור!', wk_moving: 'קיר נע!', wk_tnt: 'קיר TNT!',
+    pu_multi: 'כדורים כפולים!', pu_big: 'כדור ענק!', pu_slow: 'הילוך איטי!', pu_fire: 'כדור אש!', pu_life: 'לב נוסף!',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
     bricks: 'לבנים', cars: 'מכוניות', bigHit: 'המכה הגדולה', fruit: 'פירות', bombsAvoided: 'פצצות שנמנעו', playAgainSwipe: 'הקישו או החליקו כדי לשחק שוב',
     paused: 'מושהה – הראו את היד', getReady: 'להתכונן',
@@ -1515,6 +1519,8 @@ function drawHearts(ui, lives, max, cx, cy, now, k = 0.66, gap = 26) { // a row 
     let hx = cx + (i - (max - 1) / 2) * gap; const L = ui.heartLost;
     ui.hearts.push({ x: hx, y: cy });
     if (L && L.i === i && now - L.t < 550) { const q = (now - L.t) / 550; hx += Math.sin(q * 42) * 4 * (1 - q); blit(heartSprite(false), hx, cy, 0, k); blit(heartSprite(true), hx, cy, 0, k + 0.35 * q, 1 - q); continue; }
+    const P = ui.heartPop, pq = P && P.i === i ? (now - P.t) / 600 : 1; // a heart just gained (power-up) pops in with a bounce and a ring
+    if (pq < 1) { if (pq < 0.05 && !P.rung) { P.rung = true; ring(hx, cy, 'rgba(255,111,89,0.9)', 26, 400, 3); } blit(heartSprite(true), hx, cy, 0, k * (pq < 0.3 ? pq / 0.3 * 1.45 : 1.45 - 0.45 * (pq - 0.3) / 0.7)); continue; }
     blit(heartSprite(i < lives), hx, cy, 0, k);
   }
 }
@@ -2727,17 +2733,27 @@ const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
 const STRIKE_KINDS = ['brick', 'glass', 'steel', 'holed', 'moving', 'tnt']; // wall kinds: level 1 is brick only, each level to 6 unlocks the next (its first wall is that kind), then a weighted random mix
 const STRIKE_KIND_COL = { brick: '#c8654a', glass: '#9fdcff', steel: '#8fa3c4', holed: '#ffc24b', moving: '#a98bff', tnt: '#ff6f59' }; // tint of the 'new wall kind' tag
 const STRIKE_CURVE = 3e-7;              // sidespin: lateral acceleration per unit of spin, x W, px/ms^2 (the ball's x path curves visibly over a flight)
-const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+// Power-ups: some bricks (gold-rimmed, with an icon) release a capsule when broken; caught at the player's plane it runs for a while
+const PU_KINDS = ['multi', 'big', 'slow', 'fire', 'life'], PU_WEIGHTS = { multi: 3, big: 3, slow: 3, fire: 2, life: 1.5 };
+const PU_MS = { multi: 20000, big: 20000, slow: 15000, fire: 15000, life: 0 }; // how long each runs (life is instant)
+const PU_COL = { multi: '#54c6eb', big: '#a98bff', slow: '#5b8def', fire: '#ff8a3d', life: '#ff6f59' };
+const PU_BIG = 1.7, PU_SLOW = 0.55;     // big: ball radius factor; slow: ball speed factor
+// strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
+const strike = { balls: [], _speed: 0, _trail: [], walls: [], debris: [], capsules: [], powerups: [], floaters: [], pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+  get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
+  get speed() { const b = strike.balls[0]; return b ? b.speed : strike._speed; }, set speed(v) { const b = strike.balls[0]; if (b) b.speed = v; strike._speed = v; },
+  get trail() { const b = strike.balls[0]; return b ? b.trail : strike._trail; },
+  puDrought: 0, puDurMs: null, caught: 0, // walls spawned in a row without a power-up brick; test-only duration override; capsules caught this round
   diff: (() => { try { const v = localStorage.getItem('strikeDiff'); if (v === 'easy' || v === 'normal') return v; } catch {} return 'easy'; })(), // 'easy' (default) | 'normal'
   serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
   level: 1, cleared: 0, wallId: 0, bestCombo: 0, ricochets: 0, ricochetAt: -1e9, explosions: 0, tntAt: -1e9, seenKinds: new Set(), nextKind: null,
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
   ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
-    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null },
+    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null, puIcons: [], heartPop: null },
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
-    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; b.spin = 0; strike.speed = strike.pace; strike.trail.length = 0; // always an incoming ball at the current pace
+    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; b.spin = 0; b.speed = strike.pace; b.trail.length = 0; // always an incoming ball at the current pace
     if (sx !== undefined) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); b.x = b.x0 = b.tx = (sx - v.x) / s; b.y = b.y0 = b.ty = (sy - v.y) / s; }
   },
   ballScreen() { return strike.ball ? ballScreen(strike.ball) : null },
@@ -2748,9 +2764,13 @@ const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], spe
     const b = strike.ball, cc = (w.cols - 1) / 2, cr = (w.rows - 1) / 2, far = (k) => Math.abs(k.col - cc) + Math.abs(k.row - cr);
     const k = col !== undefined ? w.bricks.find((q) => q.col === col && q.row === row) : w.bricks.filter((q) => q.alive).sort((p, q) => far(p) - far(q))[0], c = brickCell(w, k.col, k.row);
     b.dir = -1; b.z = w.z - 30; b.x = c.x; b.y = c.y; b.vx = b.vy = 0; b.spin = 0; b.tier = power; b.super = power === 'super'; b.combo = 0;
-    strike.power = power; strike.speed = strike.pace * { soft: 0.55, medium: 1, hard: 1.5, super: 2 }[power]; strike.trail.length = 0;
+    strike.power = power; b.speed = strike.pace * { soft: 0.55, medium: 1, hard: 1.5, super: 2 }[power]; b.trail.length = 0;
     return w;
   },
+  spawnCapsule(kind, z, x, y) { return spawnCapsule(kind, z, x, y); }, // test helper: release a capsule of the kind (default: in front of the nearest wall)
+  catchTest(kind) { const c = spawnCapsule(kind, 0, 0, 0); catchCapsule(c, performance.now()); return strike.powerups.find((p) => p.kind === kind) || null; }, // test helper: a capsule released and caught at once
+  setPowerDuration(ms) { strike.puDurMs = ms > 0 ? ms : null; }, // test-only: every timed power-up runs this long (null = the real durations)
+  powerOn, speedMul, puMs,
   brickScreen(w, col, row) { const c = brickCell(w, col, row), p = proj(c.x, c.y, w.z); return { x: p.x, y: p.y, w: c.w * p.s, h: c.h * p.s }; },
   spawnWall(kind, z) { // test helper: a wall of the given kind (picked by level when omitted) at depth z or, with no z, in the nearest slot in place of the wall standing there
     if (z === undefined) { strike.walls.sort((a, b) => a.z - b.z); if (strike.walls.length && strike.walls[0].z < wallSlotZ(1)) strike.walls.shift(); z = wallSlotZ(0); }
@@ -2766,7 +2786,7 @@ function vanish() { return { x: W / 2, y: H * 0.46 }; } // vanishing point: cent
 function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y, B: H - v.y }; } // world bounds at z = 0 = the screen edges
 function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
 function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
-function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)); } // ball radius (px) at the player's plane
+function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
 function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballR() * p.s, s: p.s }; }
 function drawCorridor(g) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish();
@@ -2803,14 +2823,14 @@ function setStrikeDiff(d) { // Easy / Normal: saved, shown on the start screen p
 function strikeParams() { return { diff: strike.diff, speed: sd('STRIKE_BASE_SPEED'), lives: sd('STRIKE_LIVES'), grow: sd('STRIKE_PACE_GROW'), max: sd('STRIKE_MAX_SPEED'), radius: sd('STRIKE_HIT_RADIUS'), near: sd('STRIKE_HIT_NEAR'), window: sd('STRIKE_HIT_WINDOW'), late: sd('STRIKE_LATE_Z'), magnet: sd('STRIKE_MAGNET'), hand: sd('STRIKE_HAND_SCALE') }; }
 document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListener('click', () => setStrikeDiff(b.dataset.diff)));
 function resetStrike(now) {
-  strike.ball = null; strike.trail.length = strike.floaters.length = strike.walls.length = strike.debris.length = 0; particles.length = 0; rings.length = 0;
+  strike.balls.length = strike._trail.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
   strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED'); strike.speed = strike.pace;
-  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
+  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
   strike.serveAt = now + 600; strike.cued = false;
-  const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false;
+  const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = ui.heartPop = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false; ui.puIcons.length = 0;
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
 /* --- walls: grids of bricks across the corridor --- */
@@ -2843,8 +2863,82 @@ function spawnStrikeWall(z, kind) {
     const n = 2 + Math.floor(Math.random() * 2), order = bricks.slice().sort(() => Math.random() - 0.5);
     for (const k of order.slice(0, n)) { k.tnt = true; k.hp = 1; }
   }
+  if (level >= 2) { // power-up bricks: gold-rimmed, an icon on the face; ~1 in 12 (Easy: 1 in 8, and never two walls in a row without one)
+    const easy = strike.diff !== 'normal', rate = CONFIG.STRIKE_PU_RATE * (easy ? 1.5 : 1), free = bricks.filter((k) => k.alive && !k.tnt); let n = 0;
+    for (const k of free) if (Math.random() < rate) { k.pu = puKind(); n++; }
+    if (!n && easy && rate > 0 && strike.puDrought >= 1 && free.length) { free[Math.floor(Math.random() * free.length)].pu = puKind(); n++; }
+    for (const k of free) if (k.pu) k.hp = 1; // a power-up brick breaks on any hit, however tough its wall
+    strike.puDrought = n ? 0 : strike.puDrought + 1;
+  }
   strike.walls.push(w); strike.walls.sort((a, b) => a.z - b.z);
   return w;
+}
+function puKind() { // weighted pick; an extra life only while there is room for one
+  const pool = PU_KINDS.filter((k) => k !== 'life' || strike.lives < strike.maxLives + 2), wts = pool.map((k) => PU_WEIGHTS[k]);
+  let r = Math.random() * wts.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
+  return pool[0];
+}
+function puMs(kind) { return strike.puDurMs || PU_MS[kind] || 0; }
+function powerOn(kind) { const now = performance.now(); return strike.powerups.some((p) => p.kind === kind && p.until > now); }
+function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every ball at 55% pace
+function spawnCapsule(kind, z, x, y) { // the capsule pops out of a broken brick and floats down the corridor toward the player, bobbing
+  kind = PU_KINDS.includes(kind) ? kind : puKind();
+  if (z === undefined) z = strike.walls.length ? strike.walls[0].z : wallSlotZ(0);
+  const { L, R, T, B } = corridor(), r = ballR() * 0.6, clamp = (v, a, c) => Math.max(a, Math.min(c, v));
+  const c = { kind, x: x === undefined ? (Math.random() - 0.5) * (R - L) * 0.4 : x, y: y === undefined ? (Math.random() - 0.5) * (B - T) * 0.4 : y, z, born: performance.now(), phase: Math.random() * TAU, life: 1, missed: false, caught: false };
+  c.tx = clamp(c.x * 0.7, L + r, R - r); c.ty = clamp(c.y * 0.7, T + r, B - r); c.x0 = c.x; c.y0 = c.y; c.z0 = Math.max(1, z);
+  strike.capsules.push(c); return c;
+}
+function capsuleScreen(c, now = performance.now()) { const p = proj(c.x, c.y + Math.sin(now * 0.005 + c.phase) * 14, c.z); return { x: p.x, y: p.y, r: ballR() * 0.6 * p.s, s: p.s }; }
+function catchCapsule(c, now) { // the hand closes on a capsule: a burst in its colour, the sound, the tag and the power-up itself
+  c.caught = true; const i = strike.capsules.indexOf(c); if (i >= 0) strike.capsules.splice(i, 1);
+  const sc = capsuleScreen(c, now), col = PU_COL[c.kind]; strike.caught++;
+  sfx('powerup'); burst(sc.x, sc.y, col, 16); burst(sc.x, sc.y, '#ffffff', 8); ring(sc.x, sc.y, hexA(col, 0.9), sc.r * 3, 380, 4); ring(sc.x, sc.y, 'rgba(255,255,255,0.8)', sc.r * 1.6, 260, 2); shakeScreen(1);
+  strike.ui.tag = { t: now, kind: c.kind, pu: true };
+  activatePower(c.kind, now);
+}
+function activatePower(kind, now) {
+  if (kind === 'life') { // one more heart (up to two over the starting count), popping in
+    strike.lives = Math.min(strike.maxLives + 2, strike.lives + 1); strike.ui.heartPop = { i: strike.lives - 1, t: now }; strike.ui.heartLost = null; sfx('life'); return;
+  }
+  const p = strike.powerups.find((q) => q.kind === kind);
+  if (p) p.until = now + puMs(kind); else strike.powerups.push({ kind, until: now + puMs(kind), since: now });
+  if (kind === 'multi') addClones();
+  if (kind === 'fire') sfx('fire');
+}
+function addClones() { // Multi-ball: two more balls beside the current one (or beside the next serve), a little to each side
+  const b = strike.balls[0]; if (!b) return;
+  const { L, R } = corridor(), r = ballR(), off = (R - L) * 0.16, clamp = (v) => Math.max(L + r, Math.min(R - r, v));
+  while (strike.balls.length < 3) {
+    const s = strike.balls.length === 1 ? -1 : 1, c = { ...b, trail: [], x: clamp(b.x + s * off), x0: clamp(b.x0 + s * off), tx: clamp(b.tx + s * off), vx: (b.vx || 0) + s * 0.04, combo: 0, born: performance.now() };
+    strike.balls.push(c);
+  }
+  const sc = ballScreen(b); ring(sc.x, sc.y, 'rgba(84,198,235,0.8)', sc.r * 2.5, 320, 3);
+}
+function powerupsTick(now, dt) { // timers run down (and wait during a pause); expiry ends the effect
+  const P = strike.powerups;
+  if (pause.on) { for (const p of P) p.until += dt; return; }
+  for (let i = P.length - 1; i >= 0; i--) if (P[i].until <= now) { const k = P[i].kind; P.splice(i, 1); if (k === 'multi') endMulti(); }
+}
+function endMulti() { // the extra balls vanish in a puff; the first one plays on
+  const B = strike.balls; if (B.length <= 1) return;
+  for (const b of B.slice(1)) { const sc = ballScreen(b); dust(sc.x, sc.y, 4, 0.6 + sc.s); }
+  B.length = 1;
+}
+function capsulesTick(now, dt) { // capsules fly toward the player; on the plane a hand on one (with the same forgiving reach as the ball) catches it, else it fades out past the camera
+  const C = strike.capsules, Z = CONFIG.STRIKE_Z_FAR, hz = CONFIG.STRIKE_HIT_Z;
+  for (let i = C.length - 1; i >= 0; i--) {
+    const c = C[i];
+    if (c.missed) { c.life -= dt / 450; if (c.life <= 0) C.splice(i, 1); continue; }
+    c.z -= CONFIG.STRIKE_PU_SPEED * dt;
+    const k = 1 - Math.max(0, c.z) / c.z0; c.x = c.x0 + (c.tx - c.x0) * Math.min(1, k); c.y = c.y0 + (c.ty - c.y0) * Math.min(1, k);
+    if (c.z <= hz * sd('STRIKE_HIT_WINDOW')) {
+      const sc = capsuleScreen(c, now), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale());
+      if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) { catchCapsule(c, now); continue; }
+      if (c.z <= -hz) c.missed = true;
+    }
+  }
 }
 function wallsTick(dt) { // walls sit in slots in depth order; a cleared one leaves a gap the rest slide forward to fill; moving walls slide sideways; a new kind coming into view gets a tag
   strike.walls.sort((a, b) => a.z - b.z);
@@ -2861,14 +2955,14 @@ function wallsTick(dt) { // walls sit in slots in depth order; a cleared one lea
 // SUPER; a TNT crate that breaks blows a radius-2 area (chaining into other crates); a hole (holed, or a moving wall's free column)
 // lets the ball through with a whoosh. Returns what the ball does next: bounce / slow / pass.
 function smashWall(w, b, now) {
-  const tier = b.tier || 'soft', kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballR();
+  const fire = !!b.fire, tier = fire ? 'super' : b.tier || 'soft', kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballR(); // a fireball burns through any wall like a SUPER slap
   const edgeDist = (k) => { const c = brickCell(w, k.col, k.row); return Math.hypot(Math.max(0, Math.abs(b.x - c.x) - c.w / 2), Math.max(0, Math.abs(b.y - c.y) - c.h / 2)); };
   const nearest = (within) => { let best = null, bd = within; for (const k of w.bricks) { if (!k.alive) continue; const d = edgeDist(k); if (d < bd || (d === 0 && !best)) { bd = d; best = k; } } return best; };
   const ac = Math.floor((b.x - L - (w.ox || 0)) / cw), ar = Math.floor((b.y - T) / ch), under = w.bricks.find((k) => k.col === ac && k.row === ar); // the cell under the ball's centre
   if (tier !== 'super' && ((under && under.hole) || (kind === 'moving' && !under))) { sfx('whoosh'); return 'pass'; } // threading the hole (or a moving wall's free column): through untouched, however big the ball
   let targets;
   if (tier === 'super') targets = w.bricks.filter((k) => k.alive);
-  else if (tier === 'soft' && kind !== 'glass') { const k = nearest(r); targets = k ? [k] : []; } // the brick under the ball's centre, else the nearest one the ball overlaps
+  else if (tier === 'soft' && kind !== 'glass') { const k = nearest(r); targets = powerOn('big') ? w.bricks.filter((q) => q.alive && edgeDist(q) < r) : k ? [k] : []; } // the brick under the ball's centre, else the nearest one the ball overlaps; a Big ball takes every brick under its footprint
   else { // the cell under the ball's centre anchors the area; a dead cell (a brick already knocked out) only if the ball still overlaps a live neighbour
     let a = under; if (!a || !a.alive) a = nearest(r * 0.35);
     targets = a ? w.bricks.filter((k) => { const dc = Math.abs(k.col - a.col), dr = Math.abs(k.row - a.row); return k.alive && ((dc <= 1 && dr <= 1) || (tier === 'hard' && kind !== 'glass' && dc + dr <= 2)); }) : [];
@@ -2886,8 +2980,10 @@ function smashWall(w, b, now) {
     if (!k.alive || edgeDist(k) >= r * 1.1) continue;
     k.hp = 0; k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); if (k.tnt) destroyed += explodeTnt(w, k, b, now);
   }
+  for (const k of w.bricks) if (k.pu && !k.alive && !k.puOut) { k.puOut = true; const c = brickCell(w, k.col, k.row); spawnCapsule(k.pu, w.z, c.x, c.y); } // a broken power-up brick releases its capsule
   const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 2 + pw * 0.4);
   let pts = destroyed * (steel ? 3 : 1);
+  if (fire) { sfx('fire'); ring(sc.x, sc.y, 'rgba(255,138,61,0.9)', sc.r * 2.8, 360, 5); burst(sc.x, sc.y, '#ff8a3d', 14); burst(sc.x, sc.y, '#ffe07a', 10); }
   if (kind === 'glass') { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
   else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shakeScreen(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
   else { sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
@@ -2925,7 +3021,7 @@ function bounceOffWall(b, w) { // a soft ball comes straight back off the wall i
   b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
   b.tx = clamp(b.x + (Math.random() - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (Math.random() - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
-  strike.speed = strike.pace;
+  b.speed = strike.pace;
 }
 function spawnDebris(w, k, b, tier) { // one or two fragments per brick (a glass pane: 3-5 fine sparkling shards), flung off the wall toward the camera, tumbling and fading
   const c = brickCell(w, k.col, k.row), kick = { soft: 0.5, medium: 0.8, hard: 1.1, super: 1.5 }[tier], glass = w.kind === 'glass', n = glass ? 3 + Math.floor(Math.random() * 3) : Math.random() < 0.5 ? 2 : 1;
@@ -2951,9 +3047,10 @@ function strikeTarget(b) { // where the incoming ball drifts to: a random spot i
 }
 function serveBall(now) {
   const { L, R, T, B } = corridor();
-  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now };
+  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now, speed: strike.pace, trail: [], fire: false };
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
-  strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++; strike.cued = false; strike.ui.cue = null;
+  strike.balls.length = 0; strike.balls.push(b); strike.serves++; strike.cued = false; strike.ui.cue = null;
+  if (powerOn('multi')) addClones();
 }
 function handSpeed(now, win) { return Math.max(cursorSpeed(now, win), mode === 'camera' ? hand.rawSpeed : 0); } // px/ms: the smoothed cursor or, on camera, the raw tracker samples, whichever is faster
 function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at any point in the last win ms? (a laggy tracker's cursor may already have left the spot)
@@ -2972,7 +3069,7 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
   b.vx = latx * W * 0.00035 * (0.6 + pw); b.vy = laty * H * 0.00035 * (0.6 + pw);
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
-  strike.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
+  b.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
   const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
   strike.ui.tierFlash = { t: now, tier }; // the power meter flashes and shows the tier big
@@ -2981,8 +3078,10 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
   if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = now; }
 }
-function strikeMiss(now) {
-  strike.ball = null; strike.trail.length = 0; strike.lives--; strike.misses++; strike.flash = now; strike.power = '';
+function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life
+  const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
+  if (B.length) { sfx('whiff'); return; }
+  strike.lives--; strike.misses++; strike.flash = now; strike.power = '';
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   sfx('whiff'); shakeScreen(1.2);
   if (strike.lives <= 0) {
@@ -2995,16 +3094,20 @@ function strikeMiss(now) {
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
-  if (pause.on) { strike.serveAt += dt; return; } // the ball (and the next serve) waits while the hand is missing
+  if (pause.on) { strike.serveAt += dt; powerupsTick(now, dt); return; } // the ball (and the next serve) waits while the hand is missing
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
-  wallsTick(dt);
-  const b = strike.ball;
-  if (!b) { // between serves: a whoosh and a ring at the far end 500 ms before the ball comes, so a miss never feels unfair
+  wallsTick(dt); powerupsTick(now, dt); capsulesTick(now, dt);
+  if (!strike.balls.length) { // between serves: a whoosh and a ring at the far end 500 ms before the ball comes, so a miss never feels unfair
     if (!strike.cued && now >= strike.serveAt - 500) { strike.cued = true; sfx('whoosh'); }
     if (now >= strike.serveAt) serveBall(now);
     return;
   }
-  const dz = strike.speed * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
+  const fire = powerOn('fire'), mul = speedMul();
+  for (const b of strike.balls.slice()) ballTick(b, now, dt, fire, mul); // every ball in play (three on Multi-ball)
+}
+function ballTick(b, now, dt, fire, mul) {
+  const dz = b.speed * mul * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
+  b.fire = fire && b.dir < 0;
   if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane); walls never block it
     b.z -= dz;
     const k = 1 - Math.max(0, b.z) / Z, mag = sd('STRIKE_MAGNET');
@@ -3019,7 +3122,7 @@ function strikeTick(now, dt) {
     if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
       const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale());
       if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) strikeHit(b, now); // any cursor position from the last 160 ms counts, not only this frame's
-      else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(now); return; }
+      else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(b, now); return; }
     }
   } else { // outgoing: lateral velocity from the hit, curved by the spin, ricocheting off the corridor sides, through the walls, then off the far wall
     const z0 = b.z;
@@ -3030,17 +3133,22 @@ function strikeTick(now, dt) {
       if (w.left <= 0 || !(z0 < w.pz && b.z >= w.z)) continue;
       const out = smashWall(w, b, now);
       if (out === 'bounce') { bounceOffWall(b, w); break; }
-      if (out === 'slow') strike.speed = Math.max(strike.pace * 0.5, strike.speed * 0.7);
+      if (out === 'slow') b.speed = Math.max(strike.pace * 0.5, b.speed * 0.7);
     }
     if (b.dir < 0 && b.z >= Z) {
       b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
-      strike.pace = Math.min(sd('STRIKE_MAX_SPEED'), strike.pace * sd('STRIKE_PACE_GROW')); strike.speed = strike.pace;
+      if (b === strike.balls[0]) strike.pace = Math.min(sd('STRIKE_MAX_SPEED'), strike.pace * sd('STRIKE_PACE_GROW')); // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
+      b.speed = strike.pace;
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
   }
   b.rot = (b.rot || 0) + dt * (0.002 * b.dir + (b.spin || 0) * 0.012); // the seams (and the spin stripe) turn with the spin
-  const sc = ballScreen(b); strike.trail.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
-  while (strike.trail.length && now - strike.trail[0].t > (b.super || Math.abs(b.spin || 0) > 0.08 ? 320 : 160)) strike.trail.shift();
+  const sc = ballScreen(b), tr = b.trail; tr.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
+  while (tr.length && now - tr[0].t > (b.super || b.fire || Math.abs(b.spin || 0) > 0.08 ? 320 : 160)) tr.shift();
+  if (b.fire && sc.s > 0.08) for (let i = 0; i < 2 && particles.length < 300; i++) { // flames licking off a fireball
+    const a = Math.random() * TAU, d = sc.r * (0.4 + Math.random() * 0.5);
+    particles.push({ x: sc.x + Math.cos(a) * d, y: sc.y + Math.sin(a) * d, vx: (Math.random() - 0.5) * 0.06, vy: -0.05 - Math.random() * 0.12 * sc.s, life: 0.9, decay: 0.003 + Math.random() * 0.003, r: Math.max(1.5, sc.r * (0.12 + Math.random() * 0.14)), color: i ? '#ffe07a' : '#ff8a3d' });
+  }
 }
 function ricochet(b, now, side) { // the returning ball glances off the corridor: sparks and a ping; a side wall mirrors the spin (the curve carries on the other way)
   if (side) b.spin = -(b.spin || 0);
@@ -3128,7 +3236,8 @@ function drawStrikeWall(w, now) { // every live brick blitted through one depth 
     if (!k.alive) continue;
     const x = x0 + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch, q = k.tnt ? spT : sp;
     ctx.drawImage(q.c, x - q.ox, y - q.oy, q.w, q.h);
-    if (cr && (k.dent || k.hp < (k.tnt ? 1 : w.hp))) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
+    if (cr && (k.dent || k.hp < (k.tnt || k.pu ? 1 : w.hp))) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
+    if (k.pu) { const o = puBrickSprite(k.pu, cw, ch); ctx.drawImage(o.c, x - o.ox, y - o.oy, o.w, o.h); } // a power-up brick: gold rim + icon
   }
   ctx.save(); ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(x0 + k.col * cw, T + k.row * ch, cw, ch); ctx.clip();
   const ao = Math.min(cw, ch) * 0.9; // ambient occlusion: the wall darkens where it meets the corridor's floor, ceiling and sides
@@ -3152,19 +3261,70 @@ function drawStrikeWall(w, now) { // every live brick blitted through one depth 
 }
 function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeShardSprite(d.w, d.h) : strikeBrickSprite(d.level, d.w, d.h, true, d.kind), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
 function drawStrikeBall(bl, now) {
-  const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, tw = bl.super || curving ? 320 : 160;
+  const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, fire = !!bl.fire, tw = bl.super || fire || curving ? 320 : 160;
   drawShadow(fl.x, fl.y, sc.r * 2.4, sc.r * 0.9, 0.5 + 0.35 * sc.s); // a firm floor shadow: depth reads against the walls
-  const tr = strike.trail;
-  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, a lilac curve line while the ball spins)
+  const tr = bl.trail || [];
+  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, orange flames behind a fireball, a lilac curve line while the ball spins)
     resetView();
-    for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw) * 0.35; ctx.globalAlpha = k * (bl.super ? 1.4 : 1); ctx.fillStyle = bl.super ? '#ffc24b' : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * 0.9, 0, TAU); ctx.fill(); }
+    for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw) * 0.35; ctx.globalAlpha = k * (bl.super || fire ? 1.4 : 1); ctx.fillStyle = fire ? (i % 2 ? '#ffe07a' : '#ff8a3d') : bl.super ? '#ffc24b' : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (fire ? 1.05 : 0.9), 0, TAU); ctx.fill(); }
     ctx.globalAlpha = 1;
-    if (bl.super) { ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,230,150,0.6)'; ctx.lineWidth = Math.max(2, sc.r * 0.25); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
+    if (bl.super || fire) { ctx.lineCap = 'round'; ctx.strokeStyle = fire ? 'rgba(255,170,60,0.55)' : 'rgba(255,230,150,0.6)'; ctx.lineWidth = Math.max(2, sc.r * 0.25); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
     if (curving) { ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(169,139,255,0.6)'; ctx.lineWidth = Math.max(1.5, sc.r * 0.16); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); for (let i = 1; i < tr.length; i++) ctx.lineTo(tr[i].x, tr[i].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
   }
   const pop = Math.max(0, 1 - (now - strike.hitAt) / 160);
-  blit(strikeBallSprite(bl.super, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
-  resetView(); ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
+  if (fire) { resetView(); const gr = ctx.createRadialGradient(sc.x, sc.y, sc.r * 0.6, sc.x, sc.y, sc.r * 1.9); gr.addColorStop(0, 'rgba(255,150,50,0.55)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); ctx.fillStyle = gr; ctx.fillRect(sc.x - sc.r * 2, sc.y - sc.r * 2, sc.r * 4, sc.r * 4); } // the fireball's glow
+  blit(strikeBallSprite(bl.super || fire, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
+  resetView();
+  if (powerOn('slow')) { ctx.globalAlpha = 0.28; ctx.fillStyle = '#5b8def'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } // Slow-mo: a blue tint on the ball
+  ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
+}
+/* --- power-ups: the icon glyphs, the gold-rimmed brick overlay, the capsule, the HUD timers --- */
+function puIcon(g, kind, r, col = '#fff8ec') { // a simple glyph inside radius r: three balls / a big ball with arrows / a clock / a flame / a heart
+  g.fillStyle = g.strokeStyle = col; g.lineWidth = Math.max(1.5, r * 0.18); g.lineCap = g.lineJoin = 'round';
+  if (kind === 'multi') { for (const [x, y] of [[-r * 0.42, r * 0.28], [r * 0.42, r * 0.28], [0, -r * 0.4]]) { g.beginPath(); g.arc(x, y, r * 0.36, 0, TAU); g.fill(); } }
+  else if (kind === 'big') { g.beginPath(); g.arc(0, 0, r * 0.5, 0, TAU); g.fill(); for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * r * 0.5, -s * r * 0.5); g.lineTo(s * r * 0.95, -s * r * 0.95); g.moveTo(s * r * 0.45, -s * r * 0.95); g.lineTo(s * r * 0.95, -s * r * 0.95); g.lineTo(s * r * 0.95, -s * r * 0.45); g.stroke(); } }
+  else if (kind === 'slow') { g.beginPath(); g.arc(0, 0, r * 0.82, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(0, -r * 0.55); g.lineTo(0, 0); g.lineTo(r * 0.42, r * 0.25); g.stroke(); }
+  else if (kind === 'fire') { g.beginPath(); g.moveTo(0, -r); g.bezierCurveTo(r * 0.9, -r * 0.2, r * 0.85, r * 0.55, 0, r); g.bezierCurveTo(-r * 0.85, r * 0.55, -r * 0.6, -r * 0.05, -r * 0.25, -r * 0.3); g.bezierCurveTo(-r * 0.2, r * 0.1, r * 0.05, -r * 0.2, 0, -r); g.fill(); g.fillStyle = 'rgba(255,230,150,0.8)'; g.beginPath(); g.moveTo(0, -r * 0.2); g.bezierCurveTo(r * 0.4, r * 0.15, r * 0.35, r * 0.6, 0, r * 0.8); g.bezierCurveTo(-r * 0.35, r * 0.6, -r * 0.3, r * 0.2, 0, -r * 0.2); g.fill(); }
+  else { const k = r / 14; g.save(); g.scale(k, k); g.beginPath(); g.moveTo(0, 12); g.bezierCurveTo(-16, 0, -12, -14, -1, -8); g.bezierCurveTo(0, -9, 0, -9, 1, -8); g.bezierCurveTo(12, -14, 16, 0, 0, 12); g.closePath(); g.fill(); g.restore(); }
+}
+function puBrickSprite(kind, w, h) { // laid over a power-up brick: a gold rim with a soft glow and the kind's icon in a dark disc
+  return makeSprite('pubrick|' + kind + '|' + Math.round(w) + 'x' + Math.round(h), w, h, w / 2, h / 2, (g) => {
+    const m = Math.max(1.5, Math.min(w, h) * 0.04), e = Math.max(1.5, w * 0.04), r = Math.min(w, h) * 0.3;
+    g.save(); g.shadowColor = 'rgba(255,214,120,0.9)'; g.shadowBlur = e * 3; g.lineWidth = e; g.strokeStyle = '#ffd36b'; g.strokeRect(-w / 2 + m + e / 2, -h / 2 + m + e / 2, w - 2 * m - e, h - 2 * m - e); g.restore();
+    g.lineWidth = Math.max(1, e * 0.4); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.strokeRect(-w / 2 + m + e * 1.1, -h / 2 + m + e * 1.1, w - 2 * m - e * 2.2, h - 2 * m - e * 2.2);
+    g.beginPath(); g.arc(0, 0, r * 1.25, 0, TAU); g.fillStyle = 'rgba(14,19,40,0.72)'; g.fill(); g.lineWidth = Math.max(1, r * 0.1); g.strokeStyle = '#ffd36b'; g.stroke();
+    puIcon(g, kind, r * 0.8, PU_COL[kind] === '#5b8def' ? '#cfe0ff' : '#fff8ec');
+  });
+}
+function capsuleSprite(kind) { // a glowing bubble in the kind's colour with the icon inside; R = 40 at the player's plane before scaling
+  const R = 40, col = PU_COL[kind];
+  return makeSprite('capsule|' + kind, R * 3, R * 3, R * 1.5, R * 1.5, (g) => {
+    const glow = g.createRadialGradient(0, 0, R * 0.5, 0, 0, R * 1.5); glow.addColorStop(0, hexA(col, 0.55)); glow.addColorStop(1, hexA(col, 0)); g.fillStyle = glow; g.fillRect(-R * 1.5, -R * 1.5, R * 3, R * 3);
+    const gr = g.createRadialGradient(-R * 0.35, -R * 0.4, R * 0.05, 0, 0, R); gr.addColorStop(0, 'rgba(255,255,255,0.75)'); gr.addColorStop(0.5, hexA(col, 0.55)); gr.addColorStop(1, hexA(col, 0.85));
+    g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = gr; g.fill(); g.lineWidth = 2.5; g.strokeStyle = 'rgba(255,255,255,0.85)'; g.stroke();
+    g.beginPath(); g.ellipse(-R * 0.4, -R * 0.48, R * 0.24, R * 0.11, -0.75, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.8)'; g.fill();
+    puIcon(g, kind, R * 0.48, '#fff8ec');
+  });
+}
+function drawCapsule(c, now) {
+  const sc = capsuleScreen(c, now), { B } = corridor(), fl = proj(c.x, B, c.z), a = c.missed ? Math.max(0, c.life) : 1, pulse = 1 + 0.06 * Math.sin(now * 0.012 + c.phase);
+  drawShadow(fl.x, fl.y, sc.r * 2, sc.r * 0.8, 0.35 * sc.s * a);
+  blit(capsuleSprite(c.kind), sc.x, sc.y, 0, sc.r / 40 * pulse, a);
+  if (!c.missed && c.z < CONFIG.STRIKE_HIT_Z * 3) { resetView(); ctx.globalAlpha = 0.5 + 0.4 * Math.sin(now * 0.02); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * 1.35, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; } // nearly here: a blinking ring says 'grab me'
+}
+function drawPowerIcons(now, x, y, rtl) { // under the HUD card at the start edge: one round badge per active power-up with a ring that runs down, blinking in the last 3 s
+  const ui = strike.ui, P = strike.powerups; ui.puIcons.length = 0; if (!P.length) return;
+  const r = 15, gap = 38; resetView(); ctx.lineCap = 'round';
+  P.forEach((p, i) => {
+    const cx = rtl ? x - r - i * gap : x + r + i * gap, cy = y + r, left = p.until - now, frac = Math.max(0, Math.min(1, left / puMs(p.kind))), col = PU_COL[p.kind];
+    const a = left < 3000 ? 0.45 + 0.55 * Math.abs(Math.sin(now * 0.012)) : 1;
+    ui.puIcons.push({ kind: p.kind, x: cx, y: cy, r, frac, left });
+    ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fillStyle = 'rgba(12,17,38,0.8)'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = hexA(col, 0.25); ctx.stroke();
+    ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + TAU * frac); ctx.stroke();
+    ctx.save(); ctx.translate(cx, cy); puIcon(ctx, p.kind, r * 0.52, '#fff8ec'); ctx.restore();
+  });
+  ctx.globalAlpha = 1;
 }
 function strikeHandSprite() { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre
   const S = 1;
@@ -3226,17 +3386,18 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   }
   const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 34, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
   edgeText(sc, rtl ? x + w - 18 : x + 18, y + h / 2, rtl, 1 + 0.16 * Math.sin(Math.PI * pop));
-  const nL = strike.maxLives || sd('STRIKE_LIVES');
-  drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 + 1, now, nL > 3 ? 0.66 : 0.75, nL > 3 ? 26 : 30);
+  const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives); // an extra life (power-up) adds a heart
+  drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 + 1, now, nL > 5 ? 0.56 : nL > 3 ? 0.66 : 0.75, nL > 5 ? 21 : nL > 3 ? 26 : 30);
   const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
   blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
   edgeText(textSprite(t('best', { n: strike.best }), 12, 'rgba(241,233,218,0.72)', null, 500), ex, y + 48, !rtl);
+  drawPowerIcons(now, rtl ? x + w - 10 : x + 10, y + h + 8, rtl); // active power-ups with their timers, under the score
   const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
-  { // a new kind of wall came into view: its name on a tinted pill under the card, dropping in and fading out
-    const sp = textSprite(t('wk_' + tg.kind), 15, '#141b34', null), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = y + h + 8 + ph / 2 - 12 * (1 - e);
-    ui.tagBox = { x: x + w / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind };
-    blit(pillSprite(STRIKE_KIND_COL[tg.kind] || '#ffc24b', pw, ph), x + w / 2, ty, 0, 1, a * e); blit(sp, x + w / 2, ty, 0, 1, a * e);
+  { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the card, dropping in and fading out
+    const sp = textSprite(t((tg.pu ? 'pu_' : 'wk_') + tg.kind), 15, '#141b34', null), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = y + h + 8 + ph / 2 - 12 * (1 - e) + (ui.puIcons.length ? 42 : 0);
+    ui.tagBox = { x: x + w / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu };
+    blit(pillSprite((tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), x + w / 2, ty, 0, 1, a * e); blit(sp, x + w / 2, ty, 0, 1, a * e);
   }
 }
 function meterTrackSprite(w, h) { // dark rounded track with the four tier zones tinted and separated
@@ -3392,7 +3553,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
 }
 function renderStrike(now) {
   beginFrame('strike', now);
-  const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, bl = strike.ball, sup = !!(bl && bl.super);
+  const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, balls = strike.balls, sup = balls.some((b) => b.super || b.fire);
   if (frameCount % 30 === 0 || !strike.ui.hud) strike.ui.top = strikeTop();
   resetView(); ctx.lineWidth = 1.5; // depth stripes scrolling toward the player; they throb saffron while the SUPER ball is out
   const pulse = sup ? 1.4 + 0.6 * Math.sin(now * 0.025) : 1;
@@ -3412,16 +3573,22 @@ function renderStrike(now) {
     }
   }
   drawServeCue(now);
-  const items = []; // walls, debris and the ball painted far to near, so a wall behind the ball is under it and one in front covers it
+  const items = []; // walls, debris, capsules and the balls painted far to near, so a wall behind the ball is under it and one in front covers it
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
   for (const d of strike.debris) items.push({ z: d.z, d });
-  if (bl) items.push({ z: bl.z, b: bl });
-  strike.ui.ballOver = []; // walls the ball flies through are drawn behind it for a moment after it passes, so it never looks as if it went behind the wall
-  if (bl && bl.dir < 0) for (const it of items) if (it.w && it.w.z < bl.z && bl.z - it.w.z < CONFIG.STRIKE_WALL_GAP * 0.15) { it.z = bl.z + 1; strike.ui.ballOver.push(it.w.id); }
+  for (const c of strike.capsules) items.push({ z: c.z, c });
+  for (const b of balls) items.push({ z: b.z, b });
+  strike.ui.ballOver = []; // walls a ball flies through are drawn behind it for a moment after it passes, so it never looks as if it went behind the wall
+  for (const bl of balls) if (bl.dir < 0) for (const it of items) if (it.w && it.w.z < bl.z && bl.z - it.w.z < CONFIG.STRIKE_WALL_GAP * 0.15) { it.z = Math.max(it.z, bl.z + 1); if (!strike.ui.ballOver.includes(it.w.id)) strike.ui.ballOver.push(it.w.id); }
   items.sort((a, b) => b.z - a.z);
-  for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.d) drawDebris(it.d); else drawStrikeBall(bl, now); }
+  for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
   drawParticles(); drawRings(now);
   drawFloaters(strike.floaters);
+  if (powerOn('slow')) { // Slow-mo: a cool blue wash and a time-warp vignette breathing at the edges
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(70,120,255,0.1)'; ctx.fillRect(0, 0, W, H);
+    const k = 0.5 + 0.5 * Math.sin(now * 0.004), gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * (0.3 + 0.05 * k), W / 2, H / 2, Math.hypot(W, H) * 0.6);
+    gr.addColorStop(0, 'rgba(40,80,220,0)'); gr.addColorStop(1, 'rgba(40,80,220,' + (0.42 + 0.12 * k).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  }
   const dt = Math.min(100, now - strike.ui.lastDraw || 16); strike.ui.lastDraw = now;
   drawStrikeHud(now, dt);
   drawPowerMeter(now, dt);
@@ -3533,6 +3700,9 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'whoosh') { f.type = 'bandpass'; f.frequency.setValueAtTime(320, t0); f.frequency.exponentialRampToValueAtTime(1800, t0 + 0.4); f.Q.value = 1.2; env(f, 0.07, 420, t0); noise(t0, 420, f); } // serve cue: something is coming
     else if (kind === 'swish') { f.type = 'bandpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(3200, t0 + 0.15); f.Q.value = 1.5; env(f, 0.06, 170, t0); noise(t0, 170, f); } // combo banner sliding in
     else if (kind === 'boom') { f.type = 'lowpass'; f.frequency.setValueAtTime(1600, t0); f.frequency.exponentialRampToValueAtTime(120, t0 + 0.35); env(f, 0.25, 380, t0); noise(t0, 380, f); tone('sine', 140, 30, 0.25, 420, t0); tone('triangle', 2400, 600, 0.05, 120, t0); } // a bomb goes off
+    else if (kind === 'powerup') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => tone('triangle', q, 0, 0.09, 180, t0 + i * 0.05)); tone('sine', 2093, 0, 0.04, 320, t0 + 0.2); f.type = 'highpass'; f.frequency.value = 2600; env(f, 0.04, 120, t0); noise(t0, 120, f); } // a capsule caught: a quick rising arpeggio with a sparkle
+    else if (kind === 'fire') { f.type = 'bandpass'; f.frequency.setValueAtTime(400, t0); f.frequency.exponentialRampToValueAtTime(2400, t0 + 0.25); f.Q.value = 0.9; env(f, 0.14, 300, t0); noise(t0, 300, f); tone('sawtooth', 110, 60, 0.06, 320, t0); tone('sine', 70, 40, 0.12, 300, t0); } // the fireball roars through a wall
+    else if (kind === 'life') { tone('sine', 784, 0, 0.12, 200, t0); tone('sine', 1175, 0, 0.12, 380, t0 + 0.12); tone('triangle', 2350, 0, 0.03, 300, t0 + 0.12); } // an extra heart: two warm notes
     else if (kind === 'tick3') { tone('sine', 660, 0, 0.06, 110, t0); tone('sine', 1320, 0, 0.02, 60, t0); } // one soft tick of the resume countdown
     else if (kind === 'go') { tone('sine', 880, 0, 0.08, 220, t0); tone('sine', 1320, 0, 0.05, 260, t0 + 0.05); } // countdown done, play on
   } catch {}
