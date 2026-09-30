@@ -15,4 +15,5 @@ python3 tests/test_smash.py
 python3 tests/test_busy.py
 python3 tests/test_strike.py
 python3 tests/test_chrome.py
+python3 tests/test_start.py
 echo "ALL TESTS PASSED"

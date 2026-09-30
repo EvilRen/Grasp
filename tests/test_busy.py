@@ -344,7 +344,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            fits = await page.evaluate("(() => { const r = [...document.querySelectorAll('.modes button')].map(b => ({w: b.scrollWidth <= b.clientWidth + 1, in: b.getBoundingClientRect().right <= innerWidth})); const a = document.querySelector('#start a.link').getBoundingClientRect(); return r.length === 5 && r.every(x => x.w && x.in) && a.bottom <= innerHeight && a.width > 0; })()")
+            fits = await page.evaluate("(() => { const m = document.querySelector('.modes').getBoundingClientRect(), sel = document.querySelector('.modes button[aria-pressed=true]').getBoundingClientRect(); const r = [...document.querySelectorAll('.modes button')].map(b => ({w: b.scrollWidth <= b.clientWidth + 1, in: m.right <= innerWidth && sel.right <= innerWidth && sel.left >= 0})); const a = document.querySelector('#start a.link').getBoundingClientRect(); return r.length === 5 && r.every(x => x.w && x.in) && a.bottom <= innerHeight && a.width > 0; })()")
             check(tag + ' phone: 5 mode cards and link fit', fits)
             await page.tap('.modes button[data-mode=busy]')
             check(tag + ' phone: busy card label', await page.inner_text('.modes button[data-mode=busy]') == ('לוח עסוק' if he else 'Busy Board'))

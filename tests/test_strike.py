@@ -3,7 +3,7 @@ S = "__grasp.strike"
 STATE = "(() => { const s = " + S + ", b = s.ball; return { z: b ? b.z : null, x: b ? b.x : null, y: b ? b.y : null, dir: b ? b.dir : 0, sup: !!(b && b.super), speed: s.speed, pace: s.pace, lives: s.lives, score: s.score, over: s.over, power: s.power, hits: s.hits, misses: s.misses, serves: s.serves, bounces: s.bounces, best: s.best }; })()"
 PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
 ROWS = "new Set([...document.querySelectorAll('.modes button')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the pressed card is lifted 2 px
-FITS = "(() => { const bs = [...document.querySelectorAll('.modes button')]; const a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 5 && bs.every(b => b.scrollWidth <= b.clientWidth + 1 && b.getBoundingClientRect().right <= innerWidth && b.getBoundingClientRect().left >= 0) && a.bottom <= innerHeight && a.width > 0; })()"
+FITS = "(() => { const bs = [...document.querySelectorAll('.modes button')], m = document.querySelector('.modes').getBoundingClientRect(); const a = document.querySelector('#start a.link').getBoundingClientRect(); const sel = document.querySelector('.modes button[aria-pressed=true]').getBoundingClientRect(); return bs.length === 5 && bs.every(b => b.scrollWidth <= b.clientWidth + 1) && m.right <= innerWidth && m.left >= 0 && sel.right <= innerWidth && sel.left >= 0 && a.bottom <= innerHeight && a.width > 0; })()"  # phones: a scrollable snap row; the selected card is in view
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
 """
@@ -290,7 +290,7 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: 5 mode cards (3 + 2) and link fit', await page.evaluate(FITS) and rows == 2, rows)
+            check(tag + ' phone: 5 mode cards in one snap row and link fit', await page.evaluate(FITS) and rows == 1, rows)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
             await page.tap('.modes button[data-mode=strike]')
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))

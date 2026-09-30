@@ -153,7 +153,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            fits = await page.evaluate("(() => { const r = [...document.querySelectorAll('.modes button')].map(b => ({w: b.scrollWidth <= b.clientWidth + 1, in: b.getBoundingClientRect().right <= innerWidth})); const a = document.querySelector('#start a.link').getBoundingClientRect(); return r.every(x => x.w && x.in) && a.bottom <= innerHeight && a.width > 0; })()")
+            fits = await page.evaluate("(() => { const m = document.querySelector('.modes').getBoundingClientRect(), sel = document.querySelector('.modes button[aria-pressed=true]').getBoundingClientRect(); const r = [...document.querySelectorAll('.modes button')].map(b => ({w: b.scrollWidth <= b.clientWidth + 1, in: m.right <= innerWidth && sel.right <= innerWidth && sel.left >= 0})); const a = document.querySelector('#start a.link').getBoundingClientRect(); return r.every(x => x.w && x.in) && a.bottom <= innerHeight && a.width > 0; })()")
             check(('he' if he else 'en') + ' phone: 3 mode buttons and link fit', fits)
             if he: await page.screenshot(path='tests/out/smash_he_start.png')
             await page.tap('.modes button[data-mode=smash]'); await page.tap('#mouseBtn'); await page.wait_for_timeout(500)
