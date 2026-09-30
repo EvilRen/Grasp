@@ -242,6 +242,7 @@ const I18N = {
     hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives. A fast swipe smashes the brick walls.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. A fast swipe smashes the brick walls. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
     pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives',
+    newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
     switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
     trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
     ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
@@ -296,6 +297,7 @@ const I18N = {
     hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
     pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים',
+    newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
     switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
     trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
     ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
@@ -569,6 +571,9 @@ function recomputeTouch() {
   } else { ptr.pinch = false; ptr.point = false; }
 }
 canvas.addEventListener('pointerdown', (e) => {
+  if (mode !== 'none' && gameMode === 'strike' && strike.over && (e.button === 0 || e.pointerType === 'touch') && performance.now() - strike.overAt > 500) { // a tap on a round-over card button
+    const k = strikeButtonAt(e.clientX, e.clientY); if (k) { e.preventDefault(); strikeOverAction(k, performance.now()); return; }
+  }
   if (mode !== 'mouse') return;
   e.preventDefault();
   ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
@@ -628,7 +633,7 @@ function inputTick(now) {
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     if (gameMode === 'smash' && smash.over && g !== 'none' && g !== 'open' && now - smash.overAt > 1000) resetSmash(now);
-    if (gameMode === 'strike' && strike.over && g !== 'none' && g !== 'open' && now - strike.overAt > 1000) resetStrike(now);
+    if (gameMode === 'strike' && strike.over && g !== 'none' && g !== 'open' && now - strike.overAt > 1000 && !strikeButtonAt(cursor.x, cursor.y)) resetStrike(now); // over a card button the dwell ring decides instead
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -841,16 +846,16 @@ function drawParticles() {
   if (puffs) { const sp = puffSprite(); for (const p of particles) if (p.puff) blit(sp, p.x, p.y, 0, p.r / 32, Math.max(0, p.life) * 0.7); }
 }
 function textSprite(text, size, color, glow, weight = 700) {
-  const key = text + '|' + size + '|' + color + '|' + glow;
+  const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang;
   let sp = TEXTS.get(key); if (sp) return sp;
   if (TEXTS.size > 80) TEXTS.clear();
   const font = weight + ' ' + size + 'px Rubik, system-ui, sans-serif';
-  ctx.font = font; const w = Math.ceil(ctx.measureText(text).width) + size * 1.2, h = Math.ceil(size * 1.6);
+  ctx.font = font; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size * 1.2, h = Math.ceil(size * 1.6);
   const c = document.createElement('canvas'); c.width = Math.ceil(w * SS); c.height = Math.ceil(h * SS);
-  const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = lang === 'he' ? 'rtl' : 'ltr'; // Hebrew labels with digits read right-to-left, the digits stay LTR
   if (glow) { g.shadowColor = glow; g.shadowBlur = size * 0.5; g.fillStyle = glow; g.fillText(text, w / 2, h / 2); g.fillText(text, w / 2, h / 2); g.shadowColor = 'transparent'; }
   g.fillStyle = color; g.fillText(text, w / 2, h / 2);
-  sp = { c, w, h, ox: w / 2, oy: h / 2 }; TEXTS.set(key, sp); return sp;
+  sp = { c, w, h, ox: w / 2, oy: h / 2, tw }; TEXTS.set(key, sp); return sp;
 }
 if (document.fonts) { document.fonts.ready.then(() => TEXTS.clear()).catch(() => {}); document.fonts.addEventListener?.('loadingdone', () => TEXTS.clear()); }
 function bgSprite(kind) {
@@ -2473,8 +2478,11 @@ const STRIKE_LEVELS = ['#c8654a', '#8f929e', '#5c7fb3', '#d9a441']; // brick tin
 const STRIKE_SLIDE = 0.5;               // depth units per ms a wall slides forward into a freed slot
 const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
 const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, score: 0, best: 0, over: false, overAt: 0,
-  serveAt: 0, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
-  level: 1, cleared: 0, wallId: 0,
+  serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
+  level: 1, cleared: 0, wallId: 0, bestCombo: 0,
+  // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
+  ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
+    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null },
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
@@ -2511,20 +2519,30 @@ function drawCorridor(g) { // static part of the corridor: floor, ceiling, side 
   quad([P(L, T, 0), P(L, T, Z), P(L, B, Z), P(L, B, 0)], lin(0, 0, far.x0, 0, '#1b2348', '#0d1230'));      // left wall
   quad([P(R, T, 0), P(R, T, Z), P(R, B, Z), P(R, B, 0)], lin(W, 0, far.x1, 0, '#1b2348', '#0d1230'));      // right wall
   g.fillStyle = '#0a0e24'; g.fillRect(far.x0, far.y0, far.x1 - far.x0, far.y1 - far.y0);                     // far wall
-  g.strokeStyle = 'rgba(241,233,218,0.28)'; g.lineWidth = 1.5; g.beginPath();                                // the four corridor edges
+  const pool = g.createRadialGradient(W / 2, H + 20, 10, W / 2, H + 20, Math.max(W * 0.55, H * 0.5));       // warm light pool on the floor by the player
+  pool.addColorStop(0, 'rgba(255,176,96,0.13)'); pool.addColorStop(0.55, 'rgba(255,160,90,0.05)'); pool.addColorStop(1, 'rgba(255,160,90,0)');
+  g.fillStyle = pool; g.fillRect(0, 0, W, H);
+  g.save(); g.shadowColor = 'rgba(0,0,0,0.75)'; g.shadowBlur = 26; g.strokeStyle = 'rgba(0,0,0,0.55)'; g.lineWidth = 3; g.beginPath(); // ambient occlusion: the corners where floor, walls and ceiling meet fall into shadow
+  for (const [x, y] of [[L, T], [R, T], [L, B], [R, B]]) { const a = P(x, y, 0), b = P(x, y, Z); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
+  g.stroke(); g.restore();
+  g.strokeStyle = 'rgba(241,233,218,0.22)'; g.lineWidth = 1.2; g.beginPath();                                // the four corridor edges
   for (const [x, y] of [[L, T], [R, T], [L, B], [R, B]]) { const a = P(x, y, 0), b = P(x, y, Z); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); }
   g.stroke();
-  const fog = g.createRadialGradient(v.x, v.y, (far.x1 - far.x0) * 0.4, v.x, v.y, Math.min(W, H) * 0.75);   // fog toward the vanishing point
-  fog.addColorStop(0, 'rgba(10,14,36,0.92)'); fog.addColorStop(0.35, 'rgba(10,14,36,0.45)'); fog.addColorStop(1, 'rgba(10,14,36,0)');
+  const fog = g.createRadialGradient(v.x, v.y, (far.x1 - far.x0) * 0.4, v.x, v.y, Math.min(W, H) * 0.75);   // cool blue fog toward the vanishing point
+  fog.addColorStop(0, 'rgba(14,24,62,0.92)'); fog.addColorStop(0.35, 'rgba(12,20,54,0.45)'); fog.addColorStop(1, 'rgba(10,14,36,0)');
   g.fillStyle = fog; g.fillRect(0, 0, W, H);
+  const glow = g.createRadialGradient(v.x, v.y, 2, v.x, v.y, Math.max(far.x1 - far.x0, far.y1 - far.y0) * 0.9); // a faint light at the far end
+  glow.addColorStop(0, 'rgba(120,160,255,0.1)'); glow.addColorStop(0.5, 'rgba(100,140,240,0.04)'); glow.addColorStop(1, 'rgba(100,140,240,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, W, H);
 }
 function resetStrike(now) {
   strike.ball = null; strike.trail.length = strike.floaters.length = strike.walls.length = strike.debris.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
   strike.score = 0; strike.lives = CONFIG.STRIKE_LIVES; strike.over = false; strike.pace = CONFIG.STRIKE_BASE_SPEED; strike.speed = strike.pace;
-  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
+  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = -1e9;
-  strike.serveAt = now + 600;
+  strike.serveAt = now + 600; strike.cued = false;
+  const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
 /* --- walls: grids of bricks across the corridor --- */
@@ -2577,11 +2595,11 @@ function smashWall(w, b, now) {
     strike.walls.splice(strike.walls.indexOf(w), 1);
     spawnStrikeWall(Math.max(wallSlotZ(strike.walls.length), strike.walls.reduce((m, q) => Math.max(m, q.z), 0) + CONFIG.STRIKE_WALL_GAP));
   }
-  if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points
-    b.combo++; strike.superFlash = now;
-    if (b.combo >= 2) { pts *= b.combo; strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 34, text: '×' + b.combo, big: true, life: 1 }); sfx('combo', b.combo); }
+  if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points (with a combo banner)
+    b.combo++; strike.superFlash = now; strike.bestCombo = Math.max(strike.bestCombo, b.combo);
+    if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); }
   }
-  strike.score += pts;
+  strike.score += pts; strike.ui.scoreAt = now;
   return tier === 'soft' && w.left > 0 ? 'bounce' : tier === 'medium' ? 'slow' : 'pass';
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
@@ -2616,7 +2634,7 @@ function serveBall(now) {
   const { L, R, T, B } = corridor();
   const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, super: false, tier: '', combo: 0, born: now };
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
-  strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++;
+  strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++; strike.cued = false; strike.ui.cue = null;
 }
 function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms, direction from where on the ball it landed
   const sc = ballScreen(b), s = strikeScale(), v = cursorSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
@@ -2625,30 +2643,52 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
   b.vx = -offx * W * 0.00035 * (0.6 + pw); b.vy = -offy * H * 0.00035 * (0.6 + pw);
   strike.speed = Math.min(CONFIG.STRIKE_MAX_SPEED * 1.5, strike.pace * (0.55 + 1.45 * pw));
-  const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now;
+  const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy };
-  strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: t('pw_' + tier) + ' +' + pts, big: tier === 'hard' || tier === 'super', life: 1 });
+  strike.ui.tierFlash = { t: now, tier }; // the power meter flashes and shows the tier big
+  strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
   sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3);
   burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
   if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = now; }
 }
 function strikeMiss(now) {
   strike.ball = null; strike.trail.length = 0; strike.lives--; strike.misses++; strike.flash = now; strike.power = '';
+  strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   sfx('whiff'); shakeScreen(1.2);
   if (strike.lives <= 0) {
-    strike.over = true; strike.overAt = now; hintEl.style.opacity = 0;
-    if (strike.score > strike.best) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} }
-    sfx('chime');
-  } else strike.serveAt = now + 800;
+    strike.over = true; strike.overAt = now; hintEl.style.opacity = 0; strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null;
+    strike.ui.newBest = strike.score > strike.best;
+    if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
+    else sfx('chime');
+  } else { strike.serveAt = now + 800; strike.cued = false; }
 }
+function strikeButtonAt(px, py) { // which round-over card button (if any) is under a screen point
+  const B = strike.ui.buttons; if (!B) return null;
+  for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
+  return null;
+}
+function strikeOverAction(key, now) { if (key === 'home') goHome(); else resetStrike(now); }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
-  if (strike.over) { if (now - strike.overAt > 1000 && cursor.present && cursorSpeed(now) >= 1.2) resetStrike(now); return; } // a wave restarts too
+  if (strike.over) { // round-over card: a point / pinch held on a button for 400 ms presses it (a filling ring shows the dwell); a wave or a tap elsewhere restarts
+    const ui = strike.ui, armed = now - strike.overAt > 500, btn = cursor.present && armed ? strikeButtonAt(cursor.x, cursor.y) : null;
+    ui.hover = btn;
+    if (btn && (gesture === 'point' || gesture === 'pinch')) {
+      if (!ui.dwell || ui.dwell.key !== btn) ui.dwell = { key: btn, t: now };
+      else if (now - ui.dwell.t >= 400) { ui.dwell = null; strikeOverAction(btn, now); return; }
+    } else ui.dwell = null;
+    if (now - strike.overAt > 1000 && cursor.present && !btn && cursorSpeed(now) >= 1.2) resetStrike(now);
+    return;
+  }
   if (noHandShown) return; // the ball waits while the hand is missing
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
   wallsTick(dt);
   const b = strike.ball;
-  if (!b) { if (now >= strike.serveAt) serveBall(now); return; }
+  if (!b) { // between serves: a whoosh and a ring at the far end 500 ms before the ball comes, so a miss never feels unfair
+    if (!strike.cued && now >= strike.serveAt - 500) { strike.cued = true; sfx('whoosh'); }
+    if (now >= strike.serveAt) serveBall(now);
+    return;
+  }
   const dz = strike.speed * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
   if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane); walls never block it
     b.z -= dz;
@@ -2728,8 +2768,14 @@ function drawStrikeWall(w) { // every live brick blitted through one depth trans
     ctx.drawImage(sp.c, x - sp.ox, y - sp.oy, sp.w, sp.h);
     if (cr && k.hp < w.hp) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
   }
+  ctx.save(); ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(L + k.col * cw, T + k.row * ch, cw, ch); ctx.clip();
+  const ao = Math.min(cw, ch) * 0.9; // ambient occlusion: the wall darkens where it meets the corridor's floor, ceiling and sides
+  for (const [x0, y0, x1, y1] of [[L, 0, L + ao, 0], [R, 0, R - ao, 0], [0, T, 0, T + ao], [0, B, 0, B - ao]]) {
+    const gr = ctx.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(L, T, R - L, B - T);
+  }
   const fog = Math.min(0.8, (1 - s) * 0.72);
-  if (fog > 0.02) { ctx.fillStyle = 'rgba(10,14,36,' + fog.toFixed(3) + ')'; ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(L + k.col * cw, T + k.row * ch, cw, ch); ctx.fill(); }
+  if (fog > 0.02) { ctx.fillStyle = 'rgba(12,20,50,' + fog.toFixed(3) + ')'; ctx.fillRect(L, T, R - L, B - T); }
+  ctx.restore();
   resetView();
 }
 function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(strikeBrickSprite(d.level, d.w, d.h, true), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
@@ -2773,9 +2819,177 @@ function drawStrikeHand(now) {
   ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
   resetView();
 }
+/* ---------------- Strike UI: HUD card, power meter, combo banner, serve cue, round-over card ---------------- */
+const TIER_COL = { soft: '#43d9a3', medium: '#54c6eb', hard: '#ffc24b', super: '#ff6f59' };
+const METER_MAX = CONFIG.STRIKE_SUPER_SPEED * 1.15; // hand speed at the full end of the meter, so SUPER owns the last 13%
+const METER_ZONES = [[0, STRIKE_TIERS[0] / METER_MAX, 'soft'], [STRIKE_TIERS[0] / METER_MAX, STRIKE_TIERS[1] / METER_MAX, 'medium'], [STRIKE_TIERS[1] / METER_MAX, CONFIG.STRIKE_SUPER_SPEED / METER_MAX, 'hard'], [CONFIG.STRIKE_SUPER_SPEED / METER_MAX, 1, 'super']];
+function speedTier(v) { return v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft'; }
+function strikeTop() { const r = document.querySelector('.chrome').getBoundingClientRect(); return r.height > 0 ? r.bottom : 50; } // the HUD card sits under the chrome buttons
+function glassSprite(w, h, r, solid) { // dark translucent card with a 1 px rim and a soft top highlight; drawn from its top-left corner
+  return makeSprite('glass|' + Math.round(w) + 'x' + Math.round(h) + '|' + r + (solid ? '|s' : ''), w + 2, h + 2, 0, 0, (g) => {
+    const path = () => { g.beginPath(); g.roundRect(1, 1, w, h, r); };
+    path(); g.fillStyle = solid ? 'rgba(18,24,50,0.94)' : 'rgba(12,17,38,0.66)'; g.fill();
+    const gr = g.createLinearGradient(0, 1, 0, h * 0.6); gr.addColorStop(0, 'rgba(255,255,255,0.08)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); path(); g.fillStyle = gr; g.fill();
+    g.beginPath(); g.roundRect(1.5, 1.5, w - 1, h - 1, r); g.lineWidth = 1; g.strokeStyle = 'rgba(241,233,218,0.24)'; g.stroke();
+  });
+}
+function pillSprite(col, w, h) {
+  return makeSprite('pill|' + col + '|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
+    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h / 2); };
+    const gr = g.createLinearGradient(0, -h / 2, 0, h / 2); gr.addColorStop(0, lighten(col, 0.3)); gr.addColorStop(1, darken(col, 0.12));
+    path(); g.fillStyle = gr; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,0.35)'; g.stroke();
+  });
+}
+function edgeText(sp, edgeX, y, rightEdge, k = 1, alpha = 1) { blit(sp, rightEdge ? edgeX - sp.tw * k / 2 : edgeX + sp.tw * k / 2, y, 0, k, alpha); } // a text sprite anchored by its left or right edge
+const LRM = '‎'; // keeps '×4' reading left-to-right inside Hebrew text
+function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), hearts, level pill, best
+  const ui = strike.ui, rtl = lang === 'he', w = Math.min(W - 24, 420), h = 64, x = (W - w) / 2, y = ui.top + 8;
+  ui.hud = { x, y, w, h };
+  resetView(); blit(glassSprite(w, h, 16), x - 1, y - 1);
+  if (ui.shown !== strike.score) { // count up (or straight down on a reset), one tick per shown change
+    const d = strike.score - ui.shown; ui.shown = Math.abs(d) < 0.6 || d < 0 ? strike.score : ui.shown + d * Math.min(1, dt / 110);
+    const n = Math.round(ui.shown); if (n !== ui.lastShown) { ui.lastShown = n; if (now - ui.lastTick > 45) { ui.lastTick = now; sfx('count'); } }
+  }
+  const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 34, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
+  edgeText(sc, rtl ? x + w - 18 : x + 18, y + h / 2, rtl, 1 + 0.16 * Math.sin(Math.PI * pop));
+  ui.hearts.length = 0;
+  for (let i = 0; i < CONFIG.STRIKE_LIVES; i++) {
+    let hx = x + w / 2 + (i - (CONFIG.STRIKE_LIVES - 1) / 2) * 30; const hy = y + h / 2 + 1, L = ui.heartLost;
+    ui.hearts.push({ x: hx, y: hy });
+    if (L && L.i === i && now - L.t < 550) { // just lost: shakes, the red fades out over the hollow one
+      const k = (now - L.t) / 550; hx += Math.sin(k * 42) * 4 * (1 - k);
+      blit(heartSprite(false), hx, hy, 0, 0.75); blit(heartSprite(true), hx, hy, 0, 0.75 + 0.35 * k, 1 - k); continue;
+    }
+    blit(heartSprite(i < strike.lives), hx, hy, 0, 0.75);
+  }
+  const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
+  blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
+  edgeText(textSprite(t('best', { n: strike.best }), 12, 'rgba(241,233,218,0.72)', null, 500), ex, y + 48, !rtl);
+}
+function meterTrackSprite(w, h) { // dark rounded track with the four tier zones tinted and separated
+  return makeSprite('meter|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
+    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h / 2); };
+    path(); g.fillStyle = 'rgba(8,11,28,0.72)'; g.fill();
+    g.save(); path(); g.clip();
+    for (const [a, b, k] of METER_ZONES) { g.fillStyle = hexA(TIER_COL[k], 0.2); g.fillRect(-w / 2 + a * w, -h / 2, (b - a) * w, h); }
+    g.fillStyle = 'rgba(8,11,28,0.85)'; for (const [a] of METER_ZONES.slice(1)) g.fillRect(-w / 2 + a * w - 1, -h / 2, 2, h);
+    g.restore();
+    g.beginPath(); g.roundRect(-w / 2 + 0.5, -h / 2 + 0.5, w - 1, h - 1, h / 2); g.lineWidth = 1; g.strokeStyle = 'rgba(241,233,218,0.3)'; g.stroke();
+  });
+}
+function sparkle(x, y, r, col, alpha) { // four-point star
+  ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.beginPath();
+  ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.28, y - r * 0.28); ctx.lineTo(x + r, y); ctx.lineTo(x + r * 0.28, y + r * 0.28); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.28, y + r * 0.28); ctx.lineTo(x - r, y); ctx.lineTo(x - r * 0.28, y - r * 0.28); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+}
+function drawPowerMeter(now, dt) { // bottom bar filling with the hand's speed in real time; flashes and names the tier big after a hit
+  const ui = strike.ui, rtl = lang === 'he', v = cursor.present ? cursorSpeed(now, 100) / strikeScale() : 0;
+  ui.meterSpeed += (Math.min(v, METER_MAX * 1.3) - ui.meterSpeed) * Math.min(1, dt / (v > ui.meterSpeed ? 25 : 140)); // quick to rise, slow to fall
+  const val = Math.min(1, ui.meterSpeed / METER_MAX), tier = speedTier(ui.meterSpeed); ui.meter = val; ui.meterTier = tier;
+  const w = Math.min(W - 32, 380), h = 12, cx = W / 2, cy = H - 30, x0 = cx - w / 2, col = TIER_COL[tier];
+  blit(meterTrackSprite(w, h), cx, cy); resetView();
+  if (val > 0.004) {
+    const fw = val * w, fx = rtl ? cx + w / 2 - fw : x0;
+    ctx.save(); ctx.beginPath(); ctx.roundRect(x0, cy - h / 2, w, h, h / 2); ctx.clip();
+    const gr = ctx.createLinearGradient(rtl ? x0 + w : x0, 0, rtl ? x0 : x0 + w, 0); // mint -> sky -> saffron -> coral, revealed as the bar fills
+    gr.addColorStop(0, TIER_COL.soft); gr.addColorStop(METER_ZONES[1][0], TIER_COL.medium); gr.addColorStop(METER_ZONES[2][0], TIER_COL.hard); gr.addColorStop(METER_ZONES[3][0], TIER_COL.super); gr.addColorStop(1, '#ffd8c8');
+    ctx.fillStyle = gr; ctx.fillRect(fx, cy - h / 2, fw, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(fx, cy - h / 2 + 1.5, fw, 3);
+    ctx.restore();
+    const capx = rtl ? fx : fx + fw; ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.9; ctx.fillRect(capx - 1, cy - h / 2 - 2, 2, h + 4); ctx.globalAlpha = 1;
+    if (tier === 'super') { sparkle(capx, cy - h, 8 + 4 * Math.sin(now * 0.03), '#fff3c4', 0.85); sparkle(capx + (rtl ? -9 : 9), cy + h * 0.9, 4 + 2 * Math.sin(now * 0.05 + 1), '#ffd8c8', 0.8); }
+  }
+  const F = ui.tierFlash, k = F ? (now - F.t) / 600 : 1;
+  if (k < 1) { // hit: the bar flashes white and the tier stands big above it
+    const fc = TIER_COL[F.tier], a = 1 - k;
+    resetView(); ctx.globalAlpha = a * 0.7; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x0, cy - h / 2, w, h, h / 2); ctx.fill(); ctx.globalAlpha = 1;
+    const sp = textSprite(t('pw_' + F.tier), F.tier === 'super' ? 40 : 32, '#fff8ec', hexA(fc, 0.95)), pop = Math.max(0, 1 - k * 3);
+    blit(sp, cx, cy - 46 - 10 * k, 0, 1 + 0.35 * Math.sin(Math.PI * pop), Math.min(1, a * 3));
+  } else edgeText(textSprite(t('pw_' + tier), 13, col, null, 500), rtl ? x0 + w : x0, cy - 17, rtl, 1, 0.9); // live tier name
+}
+function comboTextSprite(n) { // big bold text with a saffron gradient, dark edge and a warm glow
+  const text = t('comboBig', { n }), size = 44, key = 'combo|' + lang + '|' + n;
+  ctx.font = '700 ' + size + 'px Rubik, system-ui, sans-serif'; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size, h = size * 1.8;
+  return makeSprite(key, w, h, w / 2, h / 2, (g) => {
+    g.font = '700 ' + size + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
+    g.shadowColor = 'rgba(255,150,40,0.9)'; g.shadowBlur = 22; g.lineWidth = 7; g.lineJoin = 'round'; g.strokeStyle = '#3a1d00'; g.strokeText(text, 0, 0); g.shadowColor = 'transparent';
+    const gr = g.createLinearGradient(0, -size / 2, 0, size / 2); gr.addColorStop(0, '#fff4c2'); gr.addColorStop(0.45, '#ffc24b'); gr.addColorStop(1, '#ff8a3d');
+    g.fillStyle = gr; g.fillText(text, 0, 0);
+  });
+}
+function burstSprite() { // 14 soft rays of warm light, rotated behind the combo banner
+  return makeSprite('lightburst', 420, 420, 210, 210, (g) => {
+    const gr = g.createRadialGradient(0, 0, 10, 0, 0, 210); gr.addColorStop(0, 'rgba(255,200,90,0.55)'); gr.addColorStop(0.5, 'rgba(255,180,70,0.18)'); gr.addColorStop(1, 'rgba(255,170,60,0)');
+    g.fillStyle = gr;
+    for (let i = 0; i < 14; i++) { const a = i * TAU / 14, s = i % 2 ? 0.09 : 0.16; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 210, a - s, a + s); g.closePath(); g.fill(); }
+  });
+}
+function drawComboBanner(now) { // slides in from the side, holds, slides out the other way; 900 ms in all
+  const Bn = strike.ui.banner; if (!Bn) return;
+  const k = (now - Bn.t) / 900; if (k >= 1) { strike.ui.banner = null; return; }
+  const dir = lang === 'he' ? -1 : 1; let off, a;
+  if (k < 0.2) { const q = k / 0.2, e = 1 - Math.pow(1 - q, 3); off = dir * W * 0.7 * (1 - e); a = Math.min(1, q * 2); }
+  else if (k < 0.78) { off = 0; a = 1; }
+  else { const q = (k - 0.78) / 0.22; off = -dir * W * 0.7 * q * q * q; a = 1 - q; }
+  const x = W / 2 + off, y = H * 0.32;
+  blit(burstSprite(), x, y, now * 0.0016, 0.7 + 0.35 * Math.min(1, k * 4), a * 0.9);
+  blit(comboTextSprite(Bn.n), x, y, 0, 1 + 0.06 * Math.sin(k * Math.PI * 4) * (1 - k), a);
+}
+function drawServeCue(now) { // 500 ms before a serve: rings and a chevron at the far end say 'incoming'
+  const ui = strike.ui; if (strike.ball || strike.over) { ui.cue = null; return; }
+  const t0 = strike.serveAt - 500; if (now < t0 || noHandShown) { ui.cue = null; return; }
+  const k = Math.min(1, (now - t0) / 500), { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish(), a = proj(L, T, Z), b = proj(R, B, Z), fr = Math.max(b.x - a.x, b.y - a.y) * 0.5;
+  ui.cue = k; resetView(); ctx.strokeStyle = '#ff6f59'; ctx.lineCap = 'round';
+  for (let i = 0; i < 2; i++) { const q = (k + i * 0.5) % 1; ctx.globalAlpha = (1 - q) * 0.6; ctx.lineWidth = 1.5 + 2.5 * (1 - q); ctx.beginPath(); ctx.arc(v.x, v.y, fr * (0.6 + 1.6 * q), 0, TAU); ctx.stroke(); }
+  const g = 0.55 + 0.45 * Math.sin(now * 0.02), r = Math.max(4, fr * 0.16); ctx.globalAlpha = g; ctx.fillStyle = '#ff6f59'; ctx.beginPath(); ctx.arc(v.x, v.y, r, 0, TAU); ctx.fill();
+  ctx.globalAlpha = 0.5 + 0.5 * g; ctx.strokeStyle = '#fff1e8'; ctx.lineWidth = 2.5; const cy = v.y + fr * 1.15 + 6 * Math.sin(now * 0.012), cw = Math.max(8, fr * 0.35); // chevron pointing at the player
+  ctx.beginPath(); ctx.moveTo(v.x - cw, cy - cw * 0.6); ctx.lineTo(v.x, cy); ctx.lineTo(v.x + cw, cy - cw * 0.6); ctx.stroke(); ctx.globalAlpha = 1;
+}
+function overButtonSprite(kind, w, h) {
+  return makeSprite('obtn|' + kind + '|' + Math.round(w) + 'x' + Math.round(h), w + 8, h + 8, w / 2 + 4, h / 2 + 4, (g) => {
+    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, 14); };
+    if (kind === 'again') { g.save(); g.shadowColor = 'rgba(255,194,75,0.45)'; g.shadowBlur = 12; path(); g.fillStyle = '#ffc24b'; g.fill(); g.restore(); const gr = g.createLinearGradient(0, -h / 2, 0, h / 2); gr.addColorStop(0, '#ffd77a'); gr.addColorStop(1, '#f5b23a'); path(); g.fillStyle = gr; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,0.45)'; g.stroke(); }
+    else { path(); g.fillStyle = 'rgba(241,233,218,0.06)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(241,233,218,0.55)'; g.stroke(); }
+  });
+}
+function drawStrikeOver(now) { // round-over card: title, score, best (+ NEW BEST ribbon), stats, Play again / Home buttons
+  const ui = strike.ui, rtl = lang === 'he', k = Math.min(1, (now - strike.overAt) / 380), e = 1 - Math.pow(1 - k, 3);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
+  const cw = Math.min(W - 32, 380), ch = 318, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(ui.top + 84, (H - ch) / 2) + (1 - e) * 26;
+  view.x = view.y = 0; resetView();
+  ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
+  blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
+  blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
+  blit(textSprite(String(strike.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
+  blit(textSprite(t('best', { n: strike.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
+  if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
+    const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
+    resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
+    ctx.fillStyle = '#ffc24b'; ctx.fillRect(-90, 34, 180, 22); ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(-90, 34, 180, 1.5); ctx.restore();
+    const c = Math.cos(ang), s = Math.sin(ang), at = (lx, ly) => ({ x: ox + lx * c - ly * s, y: y0 + lx * s + ly * c });
+    const tp = at(0, 45); blit(textSprite(t('newBest'), 11, '#2a1a00', null), tp.x, tp.y, ang); ui.ribbon = at(0, 38);
+  } else ui.ribbon = null;
+  const stats = [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo']]; // hits, walls, best combo
+  stats.forEach(([val, key], i) => { const sx = cx + (i - 1) * cw * 0.3 * (rtl ? -1 : 1); blit(textSprite(String(val), 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
+  const bw = (cw - 52) / 2, bh = 50, by = y0 + 246, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
+  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
+  for (const key of ['again', 'home']) {
+    const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2;
+    blit(overButtonSprite(key, r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
+    if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
+    blit(textSprite(key === 'again' ? t('playAgainBtn') : t('home'), 16, key === 'again' ? '#2a1a00' : '#f1e9da', null, key === 'again' ? 700 : 500), mx, my);
+  }
+  if (now - strike.overAt > 1000) blit(textSprite(t('playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  ctx.restore();
+  if (ui.dwell && cursor.present) { // a point / pinch held on a button: a ring fills over 400 ms
+    const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke();
+  }
+}
 function renderStrike(now) {
   beginFrame('strike', now);
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, bl = strike.ball, sup = !!(bl && bl.super);
+  if (frameCount % 30 === 0 || !strike.ui.hud) strike.ui.top = strikeTop();
   resetView(); ctx.lineWidth = 1.5; // depth stripes scrolling toward the player; they throb saffron while the SUPER ball is out
   const pulse = sup ? 1.4 + 0.6 * Math.sin(now * 0.025) : 1;
   for (let z = STRIPE_GAP - strike.scroll; z < Z; z += STRIPE_GAP) {
@@ -2783,6 +2997,17 @@ function renderStrike(now) {
     ctx.strokeStyle = (sup ? 'rgba(255,194,75,' : 'rgba(241,233,218,') + ((0.05 + 0.2 * a.s * a.s) * pulse).toFixed(3) + ')';
     ctx.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);
   }
+  { // light strips along the four corridor edges, pulsing faster the faster the ball flies
+    const rate = 0.003 * (0.6 + strike.speed / CONFIG.STRIKE_BASE_SPEED), p = 0.5 + 0.5 * Math.sin(now * rate), col = sup ? '255,194,75' : '120,170,255';
+    ctx.lineCap = 'round';
+    for (const [z0, z1, k] of [[0, Z * 0.12, 1], [Z * 0.12, Z * 0.3, 0.5], [Z * 0.3, Z * 0.5, 0.22]]) { // fading into the depth
+      ctx.beginPath();
+      for (const [x, y] of [[L, T], [R, T], [L, B], [R, B]]) { const a = proj(x, y, z0), b = proj(x, y, z1); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }
+      ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(' + col + ',' + ((0.04 + 0.09 * p) * k).toFixed(3) + ')'; ctx.stroke();
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(' + col + ',' + ((0.18 + 0.4 * p) * k).toFixed(3) + ')'; ctx.stroke();
+    }
+  }
+  drawServeCue(now);
   const items = []; // walls, debris and the ball painted far to near, so a wall behind the ball is under it and one in front covers it
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
   for (const d of strike.debris) items.push({ z: d.z, d });
@@ -2791,8 +3016,10 @@ function renderStrike(now) {
   for (const it of items) { if (it.w) drawStrikeWall(it.w); else if (it.d) drawDebris(it.d); else drawStrikeBall(bl, now); }
   drawParticles(); drawRings(now);
   drawFloaters(strike.floaters);
-  drawScore(String(strike.score), 104, null);
-  for (let i = 0; i < CONFIG.STRIKE_LIVES; i++) blit(heartSprite(i < strike.lives), W / 2 + (i - (CONFIG.STRIKE_LIVES - 1) / 2) * 30, 138, 0, 0.8);
+  const dt = Math.min(100, now - strike.ui.lastDraw || 16); strike.ui.lastDraw = now;
+  drawStrikeHud(now, dt);
+  drawPowerMeter(now, dt);
+  drawComboBanner(now);
   drawStrikeHand(now);
   const sk = Math.max(0, 1 - (now - strike.superFlash) / 200);
   if (sk > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,230,150,' + (0.22 * sk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); } // SUPER smash: a warm flash
@@ -2803,7 +3030,7 @@ function renderStrike(now) {
     gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  if (strike.over) drawRoundOver(now, strike.score, strike.best, strike.overAt, 'playAgainWave');
+  if (strike.over) { drawStrikeOver(now); drawStrikeHand(now); } // the hand stays on top so it can aim at the buttons
 }
 
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
@@ -2870,6 +3097,10 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing without a 
     }
     else if (kind === 'combo') { const n = arg || 2, f0 = 440 * Math.pow(1.19, n); tone('triangle', f0, 0, 0.1, 220, t0); tone('sine', f0 * 2, 0, 0.05, 260, t0 + 0.03); } // SUPER combo: a step up the scale per wall
     else if (kind === 'thud') { f.type = 'lowpass'; f.frequency.value = 240; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('sine', 110, 45, 0.2, 140, t0); } // locked door rattles
+    else if (kind === 'count') tone('sine', 1700 + Math.random() * 300, 0, 0.025, 28, t0); // one tick of the score counting up
+    else if (kind === 'fanfare') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 60, t0 + i * 0.09); tone('triangle', q / 2, 0, 0.025, 200, t0 + i * 0.09); }); } // new best: four rising notes
+    else if (kind === 'whoosh') { f.type = 'bandpass'; f.frequency.setValueAtTime(320, t0); f.frequency.exponentialRampToValueAtTime(1800, t0 + 0.4); f.Q.value = 1.2; env(f, 0.07, 420, t0); noise(t0, 420, f); } // serve cue: something is coming
+    else if (kind === 'swish') { f.type = 'bandpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(3200, t0 + 0.15); f.Q.value = 1.5; env(f, 0.06, 170, t0); noise(t0, 170, f); } // combo banner sliding in
   } catch {}
 }
 // Piano voices: sine + triangle with a short decay; at most 4 sound at once (the oldest is faded out to make room).
