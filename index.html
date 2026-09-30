@@ -2881,6 +2881,11 @@ function smashWall(w, b, now) {
   }
   for (const k of boom) destroyed += explodeTnt(w, k, b, now);
   if (!destroyed && !cracked) { sfx('whoosh'); return 'pass'; } // flew through a hole
+  const bounces = dent || (tier === 'soft' && kind !== 'glass' && !steel && w.left > 0);
+  if (!bounces) for (const k of w.bricks) { // the ball flies on: the hole it leaves is at least its own size (a 3x3 area can be smaller than the ball on a phone's small bricks), so no intact brick sits over the ball as it passes
+    if (!k.alive || edgeDist(k) >= r * 1.1) continue;
+    k.hp = 0; k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); if (k.tnt) destroyed += explodeTnt(w, k, b, now);
+  }
   const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 2 + pw * 0.4);
   let pts = destroyed * (steel ? 3 : 1);
   if (kind === 'glass') { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
@@ -2917,7 +2922,7 @@ function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
-  b.dir = 1; b.z = Math.max(1, w.z - 1); b.super = false; b.tier = ''; b.spin = 0;
+  b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
   b.tx = clamp(b.x + (Math.random() - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (Math.random() - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
   strike.speed = strike.pace;
@@ -3148,7 +3153,7 @@ function drawStrikeWall(w, now) { // every live brick blitted through one depth 
 function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeShardSprite(d.w, d.h) : strikeBrickSprite(d.level, d.w, d.h, true, d.kind), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
 function drawStrikeBall(bl, now) {
   const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, tw = bl.super || curving ? 320 : 160;
-  drawShadow(fl.x, fl.y, sc.r * 2.3, sc.r * 0.85, 0.55 * sc.s);
+  drawShadow(fl.x, fl.y, sc.r * 2.4, sc.r * 0.9, 0.5 + 0.35 * sc.s); // a firm floor shadow: depth reads against the walls
   const tr = strike.trail;
   if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, a lilac curve line while the ball spins)
     resetView();
@@ -3159,6 +3164,7 @@ function drawStrikeBall(bl, now) {
   }
   const pop = Math.max(0, 1 - (now - strike.hitAt) / 160);
   blit(strikeBallSprite(bl.super, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
+  resetView(); ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
 }
 function strikeHandSprite() { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre
   const S = 1;
@@ -3410,6 +3416,8 @@ function renderStrike(now) {
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
   for (const d of strike.debris) items.push({ z: d.z, d });
   if (bl) items.push({ z: bl.z, b: bl });
+  strike.ui.ballOver = []; // walls the ball flies through are drawn behind it for a moment after it passes, so it never looks as if it went behind the wall
+  if (bl && bl.dir < 0) for (const it of items) if (it.w && it.w.z < bl.z && bl.z - it.w.z < CONFIG.STRIKE_WALL_GAP * 0.15) { it.z = bl.z + 1; strike.ui.ballOver.push(it.w.id); }
   items.sort((a, b) => b.z - a.z);
   for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.d) drawDebris(it.d); else drawStrikeBall(bl, now); }
   drawParticles(); drawRings(now);
