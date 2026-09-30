@@ -170,7 +170,9 @@ async def main():
         check('debris count capped at 60', 0 < peak <= 60, peak)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(700)
         await page.evaluate(f"window.__keepBall = {S}.ball; {S}.ball = null; {S}.serveAt = performance.now() + 5000"); await page.wait_for_timeout(60)  # the (slower, Easy) ball and its trail out of the probe
-        brick2 = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        brick2 = [999, 999, 999]
+        for _ in range(6):  # fragments of the smashed walls may still be tumbling past the probe: keep the darkest sample
+            px = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})"); brick2 = min(brick2, px, key=sum); await page.wait_for_timeout(60)
         await page.evaluate(f"{S}.ball = window.__keepBall")
         check('first wall gone: corridor pixel where the brick was', brick2[2] >= brick2[0] and sum(brick2) < 200, [brick, brick2])
         await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1 && !{S}.ball.super", timeout=4000)
@@ -178,11 +180,11 @@ async def main():
         # level: every 5 walls the bricks get tougher and change colour
         await page.evaluate(f"{S}.cleared = 4; {S}.walls.forEach(w => (w.pz = w.z = Math.min(w.z, 1200)))")
         await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(120)
-        lv = await page.evaluate(f"({{ level: {S}.level, cleared: {S}.cleared, hp: Math.max(...{S}.walls.map(w => w.hp)), lvls: {S}.walls.map(w => w.level) }})")
-        check('level 2 after 5 walls: new walls have 2-hp bricks', lv['level'] == 2 and lv['cleared'] >= 5 and lv['hp'] == 2 and 2 in lv['lvls'], lv)
+        lv = await page.evaluate(f"({{ level: {S}.level, cleared: {S}.cleared, kinds: {S}.walls.map(w => w.kind), lvls: {S}.walls.map(w => w.level), hp2: (() => {{ const w = {S}.spawnWall('brick', 9000); const hp = w.hp; {S}.walls.splice({S}.walls.indexOf(w), 1); return hp; }})() }})")
+        check('level 2 after 5 walls: brick walls now have 2-hp bricks (a SUPER ball may clear more walls that slide into its path)', lv['level'] >= 2 and lv['cleared'] >= 5 and lv['level'] in lv['lvls'] and lv['hp2'] == lv['level'], lv)
         await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=4000); await page.wait_for_timeout(300)
-        await page.evaluate(f"{S}.walls.forEach(w => (w.pz = w.z = Math.max(w.z, 1000)))")
-        w2 = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.hp === 2 && w.left === w.bricks.length); w.pz = w.z = 960; {S}.walls.sort((a, b) => a.z - b.z); return w.id; }})()")
+        await page.evaluate(f"{S}.setLevel(2); {S}.walls.forEach(w => (w.pz = w.z = Math.max(w.z, 1000)))")  # pinned at level 2 for the 2-hp checks (the ball may have cleared enough for level 3 meanwhile)
+        w2 = await page.evaluate(f"(() => {{ const w = {S}.spawnWall('brick'); w.pz = w.z = 960; {S}.walls.sort((a, b) => a.z - b.z); return w.id; }})()")
         await page.evaluate(f"{S}.smashTest('soft')"); await page.wait_for_timeout(150)
         cr = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {w2}); return {{ left: w.left, n: w.bricks.length, cracked: w.bricks.filter(k => k.alive && k.hp < w.hp).length, dir: {S}.ball.dir }}; }})()")
         check('a soft hit only cracks a 2-hp brick and still bounces back', cr['left'] == cr['n'] and cr['cracked'] == 1 and cr['dir'] == 1, cr)
@@ -192,6 +194,117 @@ async def main():
         await page.wait_for_timeout(200); await page.screenshot(path='tests/out/strike2_desktop.png')
         check('walls: no page errors', not errs, errs); await ctx.close()
 
+
+        # --- wall kinds + spin (step 4), desktop mouse ---
+        ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
+        page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
+        await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")  # every sound asked for, in order
+        W_JS = lambda w: f"(() => {{ const w = {S}.walls.find(w => w.id === {w}); return {{ left: w.left, n: w.bricks.length, z: w.z, kind: w.kind, dents: w.bricks.filter(k => k.dent > 0).length, alive: w.bricks.filter(k => k.alive).length }}; }})()"
+        check('level 1: every wall in the queue is brick, no tag yet', await page.evaluate(f"{S}.walls.every(w => w.kind === 'brick') && {S}.ui.tag === null && {S}.level === 1"))
+        kinds = await page.evaluate("(() => { __grasp.strike.setLevel(1); const out = []; for (let i = 0; i < 12; i++) { const w = __grasp.strike.spawnWall(undefined, 9000 + i * 10); out.push(w.kind); __grasp.strike.walls.splice(__grasp.strike.walls.indexOf(w), 1); } return out; })()")
+        check('level 1 mix: 12 spawned walls are all brick', kinds == ['brick'] * 12, kinds)
+        kinds = await page.evaluate("(() => { __grasp.strike.setLevel(6); const out = [__grasp.strike.walls[0].kind]; for (let i = 0; i < 12; i++) { const w = __grasp.strike.spawnWall(undefined, 9000 + i * 10); out.push(w.kind); __grasp.strike.walls.splice(__grasp.strike.walls.indexOf(w), 1); } return out; })()")
+        check('level 6 mix: the first wall of the level is TNT (the kind it unlocks), >= 3 kinds among 12 more, all known kinds', kinds[0] == 'tnt' and len(set(kinds[1:])) >= 3 and set(kinds) <= {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'}, kinds)
+        lv = await page.evaluate("(() => { __grasp.strike.setLevel(3); const out = [__grasp.strike.walls[0].kind]; for (let i = 0; i < 20; i++) { const w = __grasp.strike.spawnWall(undefined, 9000 + i * 10); out.push(w.kind); __grasp.strike.walls.splice(__grasp.strike.walls.indexOf(w), 1); } return out; })()")
+        check('level 3 mix: steel first, then only brick, glass and steel', lv[0] == 'steel' and set(lv) <= {'brick', 'glass', 'steel'}, lv)
+        await page.evaluate(f"{S}.setLevel(1)"); await page.wait_for_timeout(50)
+        check('setLevel(1): level 1 again, 4 brick walls in their slots', await page.evaluate(f"{S}.level === 1 && {S}.walls.length === 4 && {S}.walls.every(w => w.kind === 'brick' && w.hp === 1)"))
+        # glass: pale blue translucent panes; any hit shatters 3x3 into many fine shards, the ball never bounces
+        g = await page.evaluate(f"{S}.spawnWall('glass')"); await page.wait_for_timeout(80)
+        check('spawnWall(glass): nearest slot, kind glass, 1-hp panes, tag "Glass wall!" shown under the HUD', g['kind'] == 'glass' and g['hp'] == 1 and abs(g['z'] - cfg['zf'] * 0.4) < 1 and await page.evaluate(f"{S}.walls.length === 4 && {S}.walls[0].id === {g['id']} && {S}.ui.tag && {S}.ui.tag.kind === 'glass'"), g['kind'])
+        tb = await page.evaluate(f"{S}.ui.tagBox"); hud = await page.evaluate(f"{S}.ui.hud")
+        check('the tag pill sits under the HUD card and names the kind', tb and tb['kind'] == 'glass' and tb['y'] >= hud['y'] + hud['h'] and tb['w'] > 60 and await page.evaluate("t('wk_glass')") == 'Glass wall!', tb)
+        pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], 1, 1)"); px = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        check('glass pane drawn pale sky-blue (blue > red, bright)', px[2] > px[0] + 30 and px[2] > 120, px)
+        await page.screenshot(path='tests/out/strike3_glass.png')
+        s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"__sfx.length = 0; {S}.smashTest('soft')"); await page.wait_for_timeout(150)
+        st = await page.evaluate(STATE); wl = await page.evaluate(W_JS(g['id']))
+        check('glass: a soft hit shatters the 3x3 area and the ball flies on (no bounce)', wl['n'] - wl['left'] >= 6 and st['dir'] == -1 and st['z'] > wl['z'] and st['score'] - s0 >= 6, [st, wl])
+        check('glass: many fine sparkling shards + glass tinkle', await page.evaluate(f"{S}.debris.length") >= 15 and await page.evaluate(f"{S}.debris.every(d => d.shard && d.k < 0.32)") and 'glass' in await page.evaluate("__sfx") and 'crack' not in await page.evaluate("__sfx"), await page.evaluate(f"[{S}.debris.length, __sfx]"))
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=6000); await page.wait_for_timeout(200)
+        # steel: riveted plates, 3 hp; soft / medium only dent + bounce; hard chips 1 hp; SUPER clears, 3 points a plate
+        sw = await page.evaluate(f"{S}.spawnWall('steel')"); await page.wait_for_timeout(80)
+        check('spawnWall(steel): 3-hp plates, tag "Steel wall!"', sw['kind'] == 'steel' and sw['hp'] == 3 and all(k['hp'] == 3 for k in sw['bricks']) and await page.evaluate(f"{S}.ui.tag.kind === 'steel'"))
+        pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], 1, 1)"); px = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        check('steel plate drawn grey-blue', px[2] >= px[0] and abs(px[0] - px[1]) < 40 and 60 < px[2] < 200, px)
+        s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"__sfx.length = 0; {S}.smashTest('medium')"); await page.wait_for_timeout(150)
+        st = await page.evaluate(STATE); wl = await page.evaluate(W_JS(sw['id']))
+        check('steel: a medium hit only dents 3x3 plates (crack overlay), clang, and the ball bounces back', wl['left'] == wl['n'] and wl['dents'] >= 6 and st['dir'] == 1 and st['z'] < wl['z'] and st['score'] == s0 and 'clang' in await page.evaluate("__sfx"), [st, wl, await page.evaluate("__sfx")])
+        await page.evaluate(f"{S}.smashTest('hard')"); await page.wait_for_timeout(150)
+        hp = await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {sw['id']}); return {{ left: w.left, n: w.bricks.length, chipped: w.bricks.filter(k => k.alive && k.hp === 2).length, dir: {S}.ball.dir, speed: {S}.speed, pace: {S}.pace }}; }})()")
+        check('steel: a hard hit takes 1 hp off the plates it reaches, none break, the ball goes on slowed', hp['left'] == hp['n'] and hp['chipped'] >= 6 and hp['dir'] == -1 and hp['speed'] < hp['pace'] * 1.5, hp)
+        await page.wait_for_timeout(100); s0 = await page.evaluate(f"{S}.score"); n = wl['n']
+        await page.evaluate(f"{S}.walls.forEach(w => {{ if (w.id !== {sw['id']}) w.left = 0; }})")  # the other walls stand aside: the SUPER ball must not score on them too
+        await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(150)
+        gone = await page.evaluate(f"!{S}.walls.some(w => w.id === {sw['id']})"); ds = await page.evaluate(f"{S}.score") - s0
+        check('steel: SUPER removes every plate outright, 3 points each + the wall bonus', gone and ds == 3 * n + 10, [gone, ds, n])
+        await page.evaluate(f"{S}.walls.forEach(w => (w.left = w.bricks.filter(k => k.alive).length))")
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=6000); await page.wait_for_timeout(200)
+        # holed: a 1-2 brick gap with glowing edges; the ball flies through it untouched
+        hw = await page.evaluate(f"{S}.spawnWall('holed')"); await page.wait_for_timeout(80)
+        holes = [k for k in hw['bricks'] if k['hole']]
+        check('spawnWall(holed): a 1-2 brick hole, those bricks dead, left counts the rest, tag', hw['kind'] == 'holed' and 1 <= len(holes) <= 2 and all(not k['alive'] for k in holes) and hw['left'] == hw['bricks'].__len__() - len(holes) and await page.evaluate(f"{S}.ui.tag.kind === 'holed'"), [len(holes), hw['left']])
+        hc = holes[0]; await page.evaluate(f"{S}.setBallZ(2300, 30, 30); {S}.walls.slice(1).forEach(w => (w.pz = w.z = 3200))"); await page.wait_for_timeout(80)  # the ball and the walls behind out of the probes (the queue slides back on its own)
+        pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], {hc['col']}, {hc['row']})"); edge = [0, 0, 0]
+        for _ in range(8):  # the glow pulses over ~1 s: keep the most saffron sample
+            e = await page.evaluate(PIX + f"({pt['x'] - pt['w'] / 2 + pt['w'] * 0.05}, {pt['y']})"); edge = max(edge, e, key=lambda c: c[0] - c[2]); await page.wait_for_timeout(70)
+        mid = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
+        check('hole edges glow saffron, the hole itself shows the corridor', edge[0] > 150 and edge[1] > 100 and edge[0] > edge[2] + 40 and sum(mid) < 260, [edge, mid])
+        s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"__sfx.length = 0; {S}.smashTest('soft', {hc['col']}, {hc['row']})"); await page.wait_for_timeout(150)
+        st = await page.evaluate(STATE); wl = await page.evaluate(W_JS(hw['id']))
+        check('a soft ball aimed at the hole passes through with no damage and a whoosh', wl['left'] == hw['left'] and st['dir'] == -1 and st['z'] > wl['z'] and st['score'] == s0 and 'whoosh' in await page.evaluate("__sfx") and 'crack' not in await page.evaluate("__sfx"), [st, wl, await page.evaluate("__sfx")])
+        await page.evaluate(f"{S}.smashTest('medium', {hc['col']}, {hc['row']})"); await page.wait_for_timeout(150)
+        wl = await page.evaluate(W_JS(hw['id']))
+        check('a medium ball through the hole: still no damage', wl['left'] == hw['left'] and await page.evaluate(f"{S}.ball.dir === -1"), wl)
+        await page.evaluate(f"{S}.setBallZ(1500, 640, 400)")
+        # moving: one column narrower, slides side to side on a slow sine
+        mw = await page.evaluate(f"{S}.spawnWall('moving')"); grid = await page.evaluate(f"(() => {{ const w = {S}.walls[1]; return {{ cols: w.cols, span: w.span }}; }})()")
+        check('spawnWall(moving): cols - 1 wide, span = the full grid, tag', mw['kind'] == 'moving' and mw['cols'] == mw['span'] - 1 and mw['span'] == grid['span'] and await page.evaluate(f"{S}.ui.tag.kind === 'moving'"), [mw['cols'], mw['span'], grid])
+        ox0 = await page.evaluate(f"{S}.walls[0].ox"); x0 = (await page.evaluate(f"{S}.brickScreen({S}.walls[0], 0, 0)"))['x']; await page.wait_for_timeout(400)
+        ox1 = await page.evaluate(f"{S}.walls[0].ox"); x1 = (await page.evaluate(f"{S}.brickScreen({S}.walls[0], 0, 0)"))['x']; cw = (await page.evaluate(f"{S}.brickScreen({S}.walls[0], 0, 0)"))['w']
+        check('moving wall slides: its x offset and the bricks on screen move over 400 ms, within one brick width', ox0 != ox1 and abs(x1 - x0) > 1 and 0 <= ox0 <= cw / (await page.evaluate(f"STRIKE_F / (STRIKE_F + {S}.walls[0].z)")) + 1 and 0 <= ox1, [ox0, ox1, x0, x1])
+        await page.screenshot(path='tests/out/strike3_moving.png')
+        # TNT: 2-3 red crates; breaking one blows a radius-2 area, chains into another crate inside it
+        tw = await page.evaluate(f"{S}.spawnWall('tnt')"); crates = [k for k in tw['bricks'] if k['tnt']]
+        check('spawnWall(tnt): 2-3 TNT crates (1 hp), the rest bricks, tag', tw['kind'] == 'tnt' and 2 <= len(crates) <= 3 and all(k['hp'] == 1 for k in crates) and await page.evaluate(f"{S}.ui.tag.kind === 'tnt'"), len(crates))
+        await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {tw['id']}); w.bricks.forEach(k => {{ k.tnt = false; k.hp = w.hp; }}); for (const [c, r] of [[1, 1], [2, 2]]) {{ const k = w.bricks.find(k => k.col === c && k.row === r); k.tnt = true; k.hp = 1; }} }})()"); await page.wait_for_timeout(60)  # a deterministic pair, two apart on the diagonal
+        pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], 1, 1)"); px = await page.evaluate(PIX + f"({pt['x'] - pt['w'] * 0.3}, {pt['y'] - pt['h'] * 0.3})")
+        check('TNT crate drawn red (under the depth fog)', px[0] > 100 and px[0] > px[1] + 50 and px[0] > px[2] + 40, px)
+        await page.screenshot(path='tests/out/strike3_tnt.png')
+        s0 = await page.evaluate(f"{S}.score"); e0 = await page.evaluate(f"{S}.explosions"); await page.evaluate(f"{S}.smashTest('soft', 1, 1)"); await page.wait_for_timeout(120)
+        wl = await page.evaluate(W_JS(tw['id'])) if await page.evaluate(f"{S}.walls.some(w => w.id === {tw['id']})") else None
+        ex = await page.evaluate(f"({{ n: {S}.explosions, age: performance.now() - {S}.tntAt, shake: shake.amp }})")
+        check('a soft hit on a crate: explosion clears the radius-2 area and chains into the second crate (2 booms)', ex['n'] - e0 == 2 and (wl is None or wl['n'] - wl['left'] >= 14) and await page.evaluate(f"{S}.score") - s0 >= 14, [ex, wl])
+        check('TNT: orange flash, rings and a big shake', ex['age'] < 400 and ex['shake'] >= 3 and await page.evaluate("rings.length") >= 2, ex)
+        await page.wait_for_timeout(150); await page.screenshot(path='tests/out/strike3_boom.png')
+        await page.wait_for_timeout(500); fpsv = await page.evaluate("fps")
+        check('frame rate holds through the explosion, debris and shards', fpsv >= 30, round(fpsv))
+        await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=6000); await page.wait_for_timeout(200)
+        # spin: an off-centre slap curves the ball; a side-wall ricochet mirrors the spin and sparks
+        await page.evaluate(f"{S}.walls.forEach(w => (w.left = 0))")  # the walls stand aside for the flight
+        await page.mouse.move(640, 400); await page.wait_for_timeout(250)
+        await page.evaluate(hit_js(640, 400, 50)); await page.wait_for_timeout(60)
+        c0 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, lh: {S}.lastHit, speed: {S}.speed, pace: {S}.pace }})")
+        check('dead-centre slap: near-zero spin and lateral speed, a straight fast ball (speed bonus)', abs(c0['spin']) < 0.25 and abs(c0['lh']['offx']) < 0.15 and c0['speed'] > c0['pace'] * (0.55 + 1.45 * c0['lh']['pw']) * 1.02, c0)
+        await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(250)
+        r0 = await page.evaluate(f"{S}.ricochets"); await page.evaluate(hit_js(600, 400)); await page.wait_for_timeout(50)  # the cursor sits 40 px right of the ball's centre
+        c1 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, z: {S}.ball.z, dir: {S}.ball.dir, rot: {S}.ball.rot }})"); await page.wait_for_timeout(300)
+        c2 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, z: {S}.ball.z, dir: {S}.ball.dir, rot: {S}.ball.rot, ric: {S}.ricochets - {r0} }})")
+        check('off-centre slap: the ball goes left with spin > 0, and the spin curves it (vx drifts back toward the right over the flight, no ricochet)', c1['dir'] == -1 and c1['vx'] < 0 and c1['spin'] > 0.1 and c2['dir'] == -1 and c2['spin'] == c1['spin'] and c2['vx'] - c1['vx'] > 0.01 and c2['ric'] == 0, [c1, c2])
+        check('the ball sprite turns with the spin (rotation runs on)', c2['rot'] != c1['rot'] and await page.evaluate("[...SPRITES.keys()].some(k => k === 'strikeBall|0|s')"))
+        await page.screenshot(path='tests/out/strike3_spin.png')
+        await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(250)
+        await page.mouse.move(380, 400); await page.wait_for_timeout(200); r0 = await page.evaluate(f"{S}.ricochets"); n0 = await page.evaluate("particles.length")
+        await page.evaluate("__sfx.length = 0; " + hit_js(300, 400)); await page.wait_for_timeout(40)  # slapped on its right side, 100-odd px from the left wall
+        sp0 = await page.evaluate(f"{S}.ball.spin"); vx0 = await page.evaluate(f"{S}.ball.vx")
+        await page.wait_for_function(f"{S}.ricochets > {r0}", timeout=3000); await page.wait_for_timeout(30)
+        rc = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, ric: {S}.ricochets, sfx: __sfx, parts: particles.length, dir: {S}.ball.dir }})")
+        check('slapped hard toward the left wall: ricochet sparks + ping, vx mirrored, spin mirrored', sp0 > 0 and vx0 < 0 and rc['ric'] == r0 + 1 and rc['spin'] == -sp0 and rc['vx'] > 0 and 'ricochet' in rc['sfx'] and rc['parts'] > n0 and rc['dir'] == -1, [sp0, vx0, rc])
+        await page.evaluate(f"{S}.walls.forEach(w => (w.left = w.bricks.filter(k => k.alive).length))")
+        check('kinds: no page errors', not errs, errs); await ctx.close()
         # --- in-game UI (step 3): HUD card, power meter, combo banner, serve cue, round-over card ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
@@ -321,6 +434,11 @@ async def main():
             check(tag + ' phone: tier flash on the meter after the hit', await page.evaluate(f"{S}.ui.tierFlash && {S}.ui.tierFlash.tier === 'hard'"))
             await page.evaluate("touchAt('pointerup', 180, 360)"); await page.wait_for_timeout(300)
             check(tag + ' phone: hint mentions the walls', ('לבנים' if he else 'walls') in await page.inner_text('#hint'))
+            mixed = await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(6); s.walls.length = 0; s.seenKinds.clear(); ['tnt', 'steel', 'holed'].forEach((k, i) => s.spawnWall(k, __grasp.CONFIG.STRIKE_Z_FAR * 0.4 + (i + 1) * __grasp.CONFIG.STRIKE_WALL_GAP)); s.spawnWall('glass'); s.setBallZ(600, 180, 300); return s.walls.map(w => w.kind); }})()"); await page.wait_for_timeout(120)
+            tb = await page.evaluate(f"{S}.ui.tagBox")
+            check(tag + ' phone: a mixed queue of wall kinds, "' + ('קיר זכוכית!' if he else 'Glass wall!') + '" tag under the HUD inside the screen', mixed[0] == 'glass' and set(mixed) >= {'tnt', 'steel', 'holed'} and tb and tb['kind'] == 'glass' and tb['x'] >= 8 and tb['x'] + tb['w'] <= 352 and await page.evaluate("t('wk_glass')") == ('קיר זכוכית!' if he else 'Glass wall!'), [mixed, tb])
+            await page.screenshot(path='tests/out/strike3_phone_' + tag + '.png')
+            await page.evaluate(f"{S}.setLevel(1)"); await page.wait_for_timeout(50)
             s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(140)
             await page.screenshot(path='tests/out/strike2_phone_' + tag + '.png')
             check(tag + ' phone: SUPER smash clears a wall with debris', await page.evaluate(f"{S}.cleared") >= 1 and await page.evaluate(f"{S}.debris.length") > 0 and await page.evaluate(f"{S}.score") - s0 >= 20)

@@ -355,6 +355,7 @@ const I18N = {
     hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives. A fast swipe smashes the brick walls.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. A fast swipe smashes the brick walls. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
     pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives', diffEasy: 'Easy', diffNormal: 'Normal', diffAria: 'Strike difficulty',
+    wk_brick: 'Brick wall', wk_glass: 'Glass wall!', wk_steel: 'Steel wall!', wk_holed: 'Wall with a hole!', wk_moving: 'Moving wall!', wk_tnt: 'TNT wall!',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
     bricks: 'Bricks', cars: 'Cars', bigHit: 'Biggest hit', fruit: 'Fruit', bombsAvoided: 'Bombs dodged', playAgainSwipe: 'Tap or swipe to play again',
     paused: 'Paused – show your hand', getReady: 'Get ready',
@@ -413,6 +414,7 @@ const I18N = {
     hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
     pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים', diffEasy: 'קל', diffNormal: 'רגיל', diffAria: 'רמת הקושי במכה',
+    wk_brick: 'קיר לבנים', wk_glass: 'קיר זכוכית!', wk_steel: 'קיר פלדה!', wk_holed: 'קיר עם חור!', wk_moving: 'קיר נע!', wk_tnt: 'קיר TNT!',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
     bricks: 'לבנים', cars: 'מכוניות', bigHit: 'המכה הגדולה', fruit: 'פירות', bombsAvoided: 'פצצות שנמנעו', playAgainSwipe: 'הקישו או החליקו כדי לשחק שוב',
     paused: 'מושהה – הראו את היד', getReady: 'להתכונן',
@@ -1576,6 +1578,12 @@ function cursorSpeed(now, win = 80) { // px/ms over the last few samples
   const a = h[i], z = h[h.length - 1];
   return a && z && z.t > a.t ? Math.hypot(z.x - a.x, z.y - a.y) / (z.t - a.t) : 0;
 }
+function cursorVel(now, win = 80) { // px/ms per axis over the last few samples (signed, unlike cursorSpeed)
+  const h = cursor.history; let i = h.length - 1;
+  while (i > 0 && now - h[i - 1].t <= win) i--;
+  const a = h[i], z = h[h.length - 1];
+  return a && z && z.t > a.t ? { x: (z.x - a.x) / (z.t - a.t), y: (z.y - a.y) / (z.t - a.t) } : { x: 0, y: 0 };
+}
 function fistContacts(targets, p, R) { // the bodies (bricks, cars) a circle of radius R at p touches: circle vs the axis-aligned bounds of each part
   const out = [];
   for (const b of targets) {
@@ -2716,31 +2724,43 @@ const STRIKE_BONUS = { soft: 0, medium: 1, hard: 2, super: 5 };
 const STRIKE_LEVELS = ['#c8654a', '#8f929e', '#5c7fb3', '#d9a441']; // brick tint per level: terracotta, grey stone, blue steel, gold
 const STRIKE_SLIDE = 0.5;               // depth units per ms a wall slides forward into a freed slot
 const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
+const STRIKE_KINDS = ['brick', 'glass', 'steel', 'holed', 'moving', 'tnt']; // wall kinds: level 1 is brick only, each level to 6 unlocks the next (its first wall is that kind), then a weighted random mix
+const STRIKE_KIND_COL = { brick: '#c8654a', glass: '#9fdcff', steel: '#8fa3c4', holed: '#ffc24b', moving: '#a98bff', tnt: '#ff6f59' }; // tint of the 'new wall kind' tag
+const STRIKE_CURVE = 3e-7;              // sidespin: lateral acceleration per unit of spin, x W, px/ms^2 (the ball's x path curves visibly over a flight)
 const strike = { ball: null, walls: [], debris: [], trail: [], floaters: [], speed: 0, pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   diff: (() => { try { const v = localStorage.getItem('strikeDiff'); if (v === 'easy' || v === 'normal') return v; } catch {} return 'easy'; })(), // 'easy' (default) | 'normal'
   serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
-  level: 1, cleared: 0, wallId: 0, bestCombo: 0,
+  level: 1, cleared: 0, wallId: 0, bestCombo: 0, ricochets: 0, ricochetAt: -1e9, explosions: 0, tntAt: -1e9, seenKinds: new Set(), nextKind: null,
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
   ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
-    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0 },
+    banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null },
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
-    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; strike.speed = strike.pace; strike.trail.length = 0; // always an incoming ball at the current pace
+    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; b.spin = 0; strike.speed = strike.pace; strike.trail.length = 0; // always an incoming ball at the current pace
     if (sx !== undefined) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); b.x = b.x0 = b.tx = (sx - v.x) / s; b.y = b.y0 = b.ty = (sy - v.y) / s; }
   },
   ballScreen() { return strike.ball ? ballScreen(strike.ball) : null },
-  smashTest(power) { // test helper: park the returning ball just before the nearest wall, aimed at its most central live brick, with the given tier
+  smashTest(power, col, row) { // test helper: park the returning ball just before the nearest wall, aimed at its most central live brick (or the given cell), with the given tier
     const now = performance.now(); if (!strike.ball) serveBall(now);
     wallsTick(0);
     const w = strike.walls.find((q) => q.left > 0 && q.z < CONFIG.STRIKE_Z_FAR); if (!w) return null;
     const b = strike.ball, cc = (w.cols - 1) / 2, cr = (w.rows - 1) / 2, far = (k) => Math.abs(k.col - cc) + Math.abs(k.row - cr);
-    const k = w.bricks.filter((q) => q.alive).sort((p, q) => far(p) - far(q))[0], c = brickCell(w, k.col, k.row);
-    b.dir = -1; b.z = w.z - 30; b.x = c.x; b.y = c.y; b.vx = b.vy = 0; b.tier = power; b.super = power === 'super'; b.combo = 0;
+    const k = col !== undefined ? w.bricks.find((q) => q.col === col && q.row === row) : w.bricks.filter((q) => q.alive).sort((p, q) => far(p) - far(q))[0], c = brickCell(w, k.col, k.row);
+    b.dir = -1; b.z = w.z - 30; b.x = c.x; b.y = c.y; b.vx = b.vy = 0; b.spin = 0; b.tier = power; b.super = power === 'super'; b.combo = 0;
     strike.power = power; strike.speed = strike.pace * { soft: 0.55, medium: 1, hard: 1.5, super: 2 }[power]; strike.trail.length = 0;
     return w;
   },
   brickScreen(w, col, row) { const c = brickCell(w, col, row), p = proj(c.x, c.y, w.z); return { x: p.x, y: p.y, w: c.w * p.s, h: c.h * p.s }; },
+  spawnWall(kind, z) { // test helper: a wall of the given kind (picked by level when omitted) at depth z or, with no z, in the nearest slot in place of the wall standing there
+    if (z === undefined) { strike.walls.sort((a, b) => a.z - b.z); if (strike.walls.length && strike.walls[0].z < wallSlotZ(1)) strike.walls.shift(); z = wallSlotZ(0); }
+    const w = spawnStrikeWall(z, kind); wallsTick(0); return w;
+  },
+  setLevel(n) { // test helper: jump to level n; the queued walls respawn for it (the first as the kind that level unlocks)
+    strike.level = Math.max(1, n | 0); strike.cleared = (strike.level - 1) * 5; strike.nextKind = strike.level > 1 && strike.level <= STRIKE_KINDS.length ? STRIKE_KINDS[strike.level - 1] : null;
+    strike.seenKinds.clear(); strike.ui.tag = strike.ui.tagBox = null;
+    const zs = strike.walls.map((w) => w.z); strike.walls.length = 0; zs.forEach((z) => spawnStrikeWall(z)); wallsTick(0);
+  },
 };
 function vanish() { return { x: W / 2, y: H * 0.46 }; } // vanishing point: centre, a little above the middle
 function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y, B: H - v.y }; } // world bounds at z = 0 = the screen edges
@@ -2787,9 +2807,10 @@ function resetStrike(now) {
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
   strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED'); strike.speed = strike.pace;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
-  strike.flash = strike.superFlash = strike.hitAt = strike.handHit = -1e9;
+  strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
+  strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
   strike.serveAt = now + 600; strike.cued = false;
-  const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false;
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
 /* --- walls: grids of bricks across the corridor --- */
@@ -2798,46 +2819,78 @@ function wallGrid() { // ~20 bricks about twice as wide as tall: 4x5 on a laptop
   const cols = Math.max(3, Math.min(6, Math.round(Math.sqrt(10 * W / H))));
   return { cols, rows: Math.max(3, Math.min(8, Math.round(2 * cols * H / W))) };
 }
-function brickCell(w, col, row) { const { L, R, T, B } = corridor(), cw = (R - L) / w.cols, ch = (B - T) / w.rows; return { x: L + (col + 0.5) * cw, y: T + (row + 0.5) * ch, w: cw, h: ch }; }
-function spawnStrikeWall(z) {
-  const { cols, rows } = wallGrid(), level = strike.level, bricks = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp: level });
-  const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp: level, level, left: bricks.length };
+function brickCell(w, col, row) { const { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows; return { x: L + (w.ox || 0) + (col + 0.5) * cw, y: T + (row + 0.5) * ch, w: cw, h: ch }; } // span: cells across the corridor (a moving wall is one short); ox: its lateral offset
+function wallKindFor(level) { // level 1: brick only; each level to 6 unlocks the next kind (the first wall of that level is it), then a weighted random mix of everything unlocked
+  if (strike.nextKind) { const k = strike.nextKind; strike.nextKind = null; return k; }
+  const n = Math.min(STRIKE_KINDS.length, Math.max(1, level)); if (n <= 1) return 'brick';
+  const pool = STRIKE_KINDS.slice(0, n), wts = pool.map((k) => (k === 'brick' ? 3 : 2)); let r = Math.random() * wts.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
+  return 'brick';
+}
+function spawnStrikeWall(z, kind) {
+  kind = STRIKE_KINDS.includes(kind) ? kind : wallKindFor(strike.level);
+  const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
+  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : level; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
+  const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: Math.random() * TAU };
+  const at = (c, r) => bricks[r * cols + c];
+  if (kind === 'holed') { // a 1-2 brick gap somewhere: the ball flies through it untouched
+    const c = Math.floor(Math.random() * cols), r = Math.floor(Math.random() * rows), cells = [at(c, r)];
+    if (Math.random() < 0.6) cells.push(c + 1 < cols ? at(c + 1, r) : c > 0 ? at(c - 1, r) : r + 1 < rows ? at(c, r + 1) : at(c, r - 1));
+    for (const k of cells) if (k && k.alive) { k.alive = false; k.hp = 0; k.hole = true; w.left--; }
+  }
+  if (kind === 'tnt') { // 2-3 crates at random spots; a crate that breaks blows up everything within 2 bricks of it
+    const n = 2 + Math.floor(Math.random() * 2), order = bricks.slice().sort(() => Math.random() - 0.5);
+    for (const k of order.slice(0, n)) { k.tnt = true; k.hp = 1; }
+  }
   strike.walls.push(w); strike.walls.sort((a, b) => a.z - b.z);
   return w;
 }
-function wallsTick(dt) { // walls sit in slots in depth order; a cleared one leaves a gap the rest slide forward to fill
+function wallsTick(dt) { // walls sit in slots in depth order; a cleared one leaves a gap the rest slide forward to fill; moving walls slide sideways; a new kind coming into view gets a tag
   strike.walls.sort((a, b) => a.z - b.z);
-  strike.walls.forEach((w, i) => { const tz = wallSlotZ(i); w.pz = w.z; if (w.z > tz) w.z = Math.max(tz, w.z - STRIKE_SLIDE * dt); });
+  const Z = CONFIG.STRIKE_Z_FAR, { L, R } = corridor(), now = performance.now();
+  strike.walls.forEach((w, i) => {
+    const tz = wallSlotZ(i); w.pz = w.z; if (w.z > tz) w.z = Math.max(tz, w.z - STRIKE_SLIDE * dt);
+    if (w.kind === 'moving') { w.phase += dt * 0.0011; w.ox = (R - L) / w.span * (0.5 + 0.5 * Math.sin(w.phase)); } // one brick's width side to side on a slow sine, the free column with it
+    if (w.z < Z && w.kind !== 'brick' && !strike.seenKinds.has(w.kind)) { strike.seenKinds.add(w.kind); strike.ui.tag = { t: now, kind: w.kind }; }
+  });
 }
 // The returning ball crosses a wall. Bricks break by tier: soft = the brick under the ball, medium = 3x3, hard = 3x3 plus the
-// next brick out on each side (and 2 damage), SUPER = the whole wall. Returns what the ball does next: bounce / slow / pass.
+// next brick out on each side (and 2 damage), SUPER = the whole wall. Other kinds: glass shatters 3x3 on any hit and never bounces
+// the ball; steel plates (3 hp) only dent under a soft / medium hit and bounce it back, lose 1 hp to a hard one and go outright to
+// SUPER; a TNT crate that breaks blows a radius-2 area (chaining into other crates); a hole (holed, or a moving wall's free column)
+// lets the ball through with a whoosh. Returns what the ball does next: bounce / slow / pass.
 function smashWall(w, b, now) {
-  const tier = b.tier || 'soft', { L, R, T, B } = corridor(), cw = (R - L) / w.cols, ch = (B - T) / w.rows, r = ballR();
-  const cc = Math.max(0, Math.min(w.cols - 1, Math.floor((b.x - L) / cw))), cr = Math.max(0, Math.min(w.rows - 1, Math.floor((b.y - T) / ch)));
+  const tier = b.tier || 'soft', kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballR();
+  const edgeDist = (k) => { const c = brickCell(w, k.col, k.row); return Math.hypot(Math.max(0, Math.abs(b.x - c.x) - c.w / 2), Math.max(0, Math.abs(b.y - c.y) - c.h / 2)); };
+  const nearest = (within) => { let best = null, bd = within; for (const k of w.bricks) { if (!k.alive) continue; const d = edgeDist(k); if (d < bd || (d === 0 && !best)) { bd = d; best = k; } } return best; };
+  const ac = Math.floor((b.x - L - (w.ox || 0)) / cw), ar = Math.floor((b.y - T) / ch), under = w.bricks.find((k) => k.col === ac && k.row === ar); // the cell under the ball's centre
+  if (tier !== 'super' && ((under && under.hole) || (kind === 'moving' && !under))) { sfx('whoosh'); return 'pass'; } // threading the hole (or a moving wall's free column): through untouched, however big the ball
   let targets;
   if (tier === 'super') targets = w.bricks.filter((k) => k.alive);
-  else if (tier === 'soft') { // the brick under the ball's centre, else the nearest one the ball overlaps
-    let best = null, bd = r;
-    for (const k of w.bricks) {
-      if (!k.alive) continue;
-      const c = brickCell(w, k.col, k.row), d = Math.hypot(Math.max(0, Math.abs(b.x - c.x) - c.w / 2), Math.max(0, Math.abs(b.y - c.y) - c.h / 2));
-      if (d < bd || (d === 0 && !best)) { bd = d; best = k; }
-    }
-    targets = best ? [best] : [];
-  } else targets = w.bricks.filter((k) => { const dc = Math.abs(k.col - cc), dr = Math.abs(k.row - cr); return k.alive && ((dc <= 1 && dr <= 1) || (tier === 'hard' && dc + dr <= 2)); });
-  const dmg = tier === 'hard' ? 2 : tier === 'super' ? 1e9 : 1;
-  let destroyed = 0, cracked = 0;
-  for (const k of targets) { k.hp -= dmg; if (k.hp <= 0) { k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); } else cracked++; }
-  if (!destroyed && !cracked) return 'pass'; // flew through a hole
+  else if (tier === 'soft' && kind !== 'glass') { const k = nearest(r); targets = k ? [k] : []; } // the brick under the ball's centre, else the nearest one the ball overlaps
+  else { // the cell under the ball's centre anchors the area; a dead cell (a brick already knocked out) only if the ball still overlaps a live neighbour
+    let a = under; if (!a || !a.alive) a = nearest(r * 0.35);
+    targets = a ? w.bricks.filter((k) => { const dc = Math.abs(k.col - a.col), dr = Math.abs(k.row - a.row); return k.alive && ((dc <= 1 && dr <= 1) || (tier === 'hard' && kind !== 'glass' && dc + dr <= 2)); }) : [];
+  }
+  const dent = steel && (tier === 'soft' || tier === 'medium'), dmg = tier === 'super' || kind === 'glass' ? 1e9 : tier === 'hard' && !steel ? 2 : 1;
+  let destroyed = 0, cracked = 0; const boom = [];
+  for (const k of targets) {
+    if (dent) { k.dent = (k.dent || 0) + 1; cracked++; continue; }
+    k.hp -= dmg; if (k.hp <= 0) { k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); if (k.tnt) boom.push(k); } else cracked++;
+  }
+  for (const k of boom) destroyed += explodeTnt(w, k, b, now);
+  if (!destroyed && !cracked) { sfx('whoosh'); return 'pass'; } // flew through a hole
   const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 2 + pw * 0.4);
-  let pts = destroyed;
-  sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3);
-  ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3);
-  if (destroyed) strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + destroyed, big: false, life: 1 });
-  if (w.left <= 0) { // wall down: bonus, chime; a fresh wall (tougher every 5) spawns beyond the far end and the queue slides forward
-    const bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); pts += bonus;
+  let pts = destroyed * (steel ? 3 : 1);
+  if (kind === 'glass') { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
+  else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shakeScreen(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
+  else { sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
+  if (destroyed) strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
+  if (w.left <= 0) { // wall down: bonus, chime; a fresh wall (tougher every 5, a new kind unlocked per level) spawns beyond the far end and the queue slides forward
+    const bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z), lv = strike.level; pts += bonus;
     strike.cleared++; strike.level = 1 + Math.floor(strike.cleared / 5);
+    if (strike.level !== lv && strike.level <= STRIKE_KINDS.length) strike.nextKind = STRIKE_KINDS[strike.level - 1];
     strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
     strike.walls.splice(strike.walls.indexOf(w), 1);
     spawnStrikeWall(Math.max(wallSlotZ(strike.walls.length), strike.walls.reduce((m, q) => Math.max(m, q.z), 0) + CONFIG.STRIKE_WALL_GAP));
@@ -2847,23 +2900,37 @@ function smashWall(w, b, now) {
     if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); }
   }
   strike.score += pts; strike.ui.scoreAt = now;
+  if (kind === 'glass') return 'pass';
+  if (dent) return 'bounce';
+  if (steel) return tier === 'super' ? 'pass' : 'slow';
   return tier === 'soft' && w.left > 0 ? 'bounce' : tier === 'medium' ? 'slow' : 'pass';
+}
+function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 of it goes, with a fireball ring, a boom and a big shake; crates inside the blast go off in turn
+  if (k.boomed) return 0; k.boomed = true;
+  const c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z), chain = []; let n = 0;
+  for (const q of w.bricks) { if (!q.alive || Math.abs(q.col - k.col) > 2 || Math.abs(q.row - k.row) > 2) continue; q.alive = false; q.hp = 0; w.left--; n++; spawnDebris(w, q, b, 'super'); if (q.tnt) chain.push(q); }
+  strike.explosions++; strike.tntAt = now; sfx('tnt'); shakeScreen(4);
+  ring(p.x, p.y, 'rgba(255,120,40,0.95)', c.w * p.s * 3, 520, 8); ring(p.x, p.y, 'rgba(255,230,150,0.9)', c.w * p.s * 1.6, 360, 5);
+  burst(p.x, p.y, '#ffc24b', 26); burst(p.x, p.y, '#ff6f59', 18); dust(p.x, p.y, 14, 1 + p.s);
+  for (const q of chain) n += explodeTnt(w, q, b, now);
+  return n;
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
-  b.dir = 1; b.z = Math.max(1, w.z - 1); b.super = false; b.tier = '';
+  b.dir = 1; b.z = Math.max(1, w.z - 1); b.super = false; b.tier = ''; b.spin = 0;
   b.tx = clamp(b.x + (Math.random() - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (Math.random() - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
   strike.speed = strike.pace;
 }
-function spawnDebris(w, k, b, tier) { // one or two fragments per brick, flung off the wall toward the camera, tumbling and fading
-  const c = brickCell(w, k.col, k.row), kick = { soft: 0.5, medium: 0.8, hard: 1.1, super: 1.5 }[tier], n = Math.random() < 0.5 ? 2 : 1;
+function spawnDebris(w, k, b, tier) { // one or two fragments per brick (a glass pane: 3-5 fine sparkling shards), flung off the wall toward the camera, tumbling and fading
+  const c = brickCell(w, k.col, k.row), kick = { soft: 0.5, medium: 0.8, hard: 1.1, super: 1.5 }[tier], glass = w.kind === 'glass', n = glass ? 3 + Math.floor(Math.random() * 3) : Math.random() < 0.5 ? 2 : 1;
+  const kind = glass ? 'glass' : w.kind === 'steel' ? 'steel' : k.tnt ? 'tnt' : 'brick';
   for (let i = 0; i < n; i++) {
     while (strike.debris.length >= CONFIG.STRIKE_MAX_DEBRIS) strike.debris.shift();
     strike.debris.push({ x: c.x + (Math.random() - 0.5) * c.w * 0.5, y: c.y + (Math.random() - 0.5) * c.h * 0.5, z: w.z,
-      vx: (c.x - b.x) * 0.0012 + (Math.random() - 0.5) * 0.25, vy: (c.y - b.y) * 0.0012 - 0.1 - Math.random() * 0.2, vz: -(0.6 + Math.random() * 0.7) * kick,
-      rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.015, k: n > 1 ? 0.32 + Math.random() * 0.2 : 0.5 + Math.random() * 0.2,
-      level: w.level, w: c.w, h: c.h, life: 1, decay: 1 / (650 + Math.random() * 350) });
+      vx: (c.x - b.x) * 0.0012 + (Math.random() - 0.5) * (glass ? 0.45 : 0.25), vy: (c.y - b.y) * 0.0012 - 0.1 - Math.random() * (glass ? 0.3 : 0.2), vz: -(0.6 + Math.random() * 0.7) * kick,
+      rot: Math.random() * TAU, vr: (Math.random() - 0.5) * (glass ? 0.04 : 0.015), k: glass ? 0.14 + Math.random() * 0.16 : n > 1 ? 0.32 + Math.random() * 0.2 : 0.5 + Math.random() * 0.2,
+      level: w.level, kind, shard: glass, w: c.w, h: c.h, life: 1, decay: 1 / (glass ? 420 + Math.random() * 300 : 650 + Math.random() * 350) });
   }
 }
 function debrisTick(dt) {
@@ -2879,7 +2946,7 @@ function strikeTarget(b) { // where the incoming ball drifts to: a random spot i
 }
 function serveBall(now) {
   const { L, R, T, B } = corridor();
-  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, super: false, tier: '', combo: 0, born: now };
+  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now };
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
   strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++; strike.cued = false; strike.ui.cue = null;
 }
@@ -2891,15 +2958,18 @@ function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at a
   for (let i = h.length - 1; i >= 0 && now - h[i].t <= win; i--) if (Math.hypot(h[i].x - x, h[i].y - y) <= r) return true;
   return false;
 }
-function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms, direction from where on the ball it landed
+function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms; direction and sidespin from where on the ball it landed and which way the hand was moving
   const sc = ballScreen(b), s = strikeScale(), v = handSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
   const tier = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft';
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
+  const hv = cursorVel(now, 100), hx = Math.max(-1, Math.min(1, hv.x / (1.6 * s))), hy = Math.max(-1, Math.min(1, hv.y / (1.6 * s))); // the hand's own direction, -1..1 per axis
+  const latx = -offx * 1.2 + hx * 0.7, laty = -offy * 1.2 + hy * 0.7, straight = Math.max(0, 1 - Math.hypot(latx, laty) / 0.5); // dead centre with a hand moving straight in = a straight, faster ball
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
-  b.vx = -offx * W * 0.00035 * (0.6 + pw); b.vy = -offy * H * 0.00035 * (0.6 + pw);
-  strike.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw));
+  b.vx = latx * W * 0.00035 * (0.6 + pw); b.vy = laty * H * 0.00035 * (0.6 + pw);
+  b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
+  strike.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
   const pts = 1 + STRIKE_BONUS[tier]; strike.score += pts; strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
-  strike.lastHit = { v, pw, tier, pts, offx, offy };
+  strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
   strike.ui.tierFlash = { t: now, tier }; // the power meter flashes and shows the tier big
   strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
   sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3);
@@ -2946,11 +3016,11 @@ function strikeTick(now, dt) {
       if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) strikeHit(b, now); // any cursor position from the last 160 ms counts, not only this frame's
       else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(now); return; }
     }
-  } else { // outgoing: lateral velocity from the hit, bouncing off the corridor sides, through the brick walls, then off the far wall
+  } else { // outgoing: lateral velocity from the hit, curved by the spin, ricocheting off the corridor sides, through the walls, then off the far wall
     const z0 = b.z;
-    b.z += dz; b.x += b.vx * dt; b.y += b.vy * dt;
-    if (b.x < L + r) { b.x = L + r; b.vx = Math.abs(b.vx); } else if (b.x > R - r) { b.x = R - r; b.vx = -Math.abs(b.vx); }
-    if (b.y < T + r) { b.y = T + r; b.vy = Math.abs(b.vy); } else if (b.y > B - r) { b.y = B - r; b.vy = -Math.abs(b.vy); }
+    b.z += dz; b.vx += (b.spin || 0) * STRIKE_CURVE * W * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.x < L + r) { b.x = L + r; b.vx = Math.abs(b.vx); ricochet(b, now, true); } else if (b.x > R - r) { b.x = R - r; b.vx = -Math.abs(b.vx); ricochet(b, now, true); }
+    if (b.y < T + r) { b.y = T + r; b.vy = Math.abs(b.vy); ricochet(b, now, false); } else if (b.y > B - r) { b.y = B - r; b.vy = -Math.abs(b.vy); ricochet(b, now, false); }
     for (const w of [...strike.walls]) { // nearest first (walls are kept sorted by depth); a wall may slide toward the ball, hence pz
       if (w.left <= 0 || !(z0 < w.pz && b.z >= w.z)) continue;
       const out = smashWall(w, b, now);
@@ -2958,36 +3028,75 @@ function strikeTick(now, dt) {
       if (out === 'slow') strike.speed = Math.max(strike.pace * 0.5, strike.speed * 0.7);
     }
     if (b.dir < 0 && b.z >= Z) {
-      b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
+      b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
       strike.pace = Math.min(sd('STRIKE_MAX_SPEED'), strike.pace * sd('STRIKE_PACE_GROW')); strike.speed = strike.pace;
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
   }
+  b.rot = (b.rot || 0) + dt * (0.002 * b.dir + (b.spin || 0) * 0.012); // the seams (and the spin stripe) turn with the spin
   const sc = ballScreen(b); strike.trail.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
-  while (strike.trail.length && now - strike.trail[0].t > (b.super ? 320 : 160)) strike.trail.shift();
+  while (strike.trail.length && now - strike.trail[0].t > (b.super || Math.abs(b.spin || 0) > 0.08 ? 320 : 160)) strike.trail.shift();
+}
+function ricochet(b, now, side) { // the returning ball glances off the corridor: sparks and a ping; a side wall mirrors the spin (the curve carries on the other way)
+  if (side) b.spin = -(b.spin || 0);
+  if (now - strike.ricochetAt < 120) return; strike.ricochetAt = now; strike.ricochets++; // a ball rolling along a wall does not chatter
+  const sc = ballScreen(b);
+  sfx('ricochet'); burst(sc.x, sc.y, '#fff3c4', 8 + 6 * sc.s); ring(sc.x, sc.y, 'rgba(255,240,200,0.75)', sc.r * 1.2, 200, 2);
 }
 /* ---------------- Strike rendering: corridor stripes, walls, debris, ball, hand, hearts ---------------- */
-function strikeBallSprite(sup) {
+function strikeBallSprite(sup, stripe) { // stripe: a broad band across the ball, so a spinning ball visibly turns
   const R = 64, col = sup ? '#ffc24b' : '#ff6f59';
-  return makeSprite('strikeBall|' + (sup ? 1 : 0), R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
+  return makeSprite('strikeBall|' + (sup ? 1 : 0) + (stripe ? '|s' : ''), R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
     if (sup) { const glow = g.createRadialGradient(0, 0, R * 0.8, 0, 0, R * 1.2); glow.addColorStop(0, 'rgba(255,194,75,0.55)'); glow.addColorStop(1, 'rgba(255,194,75,0)'); g.fillStyle = glow; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4); }
     ball(g, R, col);
     g.save(); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = R * 0.06; // two seams so spin and speed read
     g.beginPath(); g.ellipse(-R * 0.55, 0, R * 0.55, R * 1.05, 0.25, 0, TAU); g.stroke(); g.beginPath(); g.ellipse(R * 0.55, 0, R * 0.55, R * 1.05, -0.25, 0, TAU); g.stroke();
+    if (stripe) { g.rotate(0.6); g.fillStyle = 'rgba(255,255,255,0.32)'; g.fillRect(-R, -R * 0.17, R * 2, R * 0.34); g.fillStyle = 'rgba(60,10,10,0.22)'; g.fillRect(-R, R * 0.17, R * 2, R * 0.07); g.fillRect(-R, -R * 0.24, R * 2, R * 0.07); }
     g.restore(); shine(g, R, 1, 1, 0.5); rim(g, R, sup ? 'rgba(120,80,0,0.6)' : 'rgba(90,20,10,0.6)', 1, 1, 2);
   });
 }
-function strikeBrickSprite(level, w, h, raw) { // one brick face at the player's plane (drawn scaled by depth), tinted per level, with its mortar; raw = a loose fragment
-  const col = STRIKE_LEVELS[(level - 1) % STRIKE_LEVELS.length], key = 'sbrick|' + col + '|' + Math.round(w) + 'x' + Math.round(h) + (raw ? '|raw' : '');
+function strikeBrickSprite(level, w, h, raw, kind = 'brick') { // one brick / glass pane / steel plate / TNT crate face at the player's plane (drawn scaled by depth); bricks tinted per level; raw = a loose fragment
+  const base = kind === 'glass' || kind === 'steel' || kind === 'tnt' ? kind : 'brick';
+  const col = base === 'glass' ? '#8ccdf5' : base === 'steel' ? '#7c8ba8' : base === 'tnt' ? '#d8362e' : STRIKE_LEVELS[(level - 1) % STRIKE_LEVELS.length], key = 'sbrick|' + base + '|' + col + '|' + Math.round(w) + 'x' + Math.round(h) + (raw ? '|raw' : '');
   return makeSprite(key, w, h, w / 2, h / 2, (g) => {
     const r = rng(strSeed(key)), m = Math.max(1.5, Math.min(w, h) * 0.04), bw = w - 2 * m, bh = h - 2 * m, e = Math.max(1.5, bw * 0.012);
-    if (!raw) { g.fillStyle = 'rgba(196,186,172,0.55)'; g.fillRect(-w / 2, -h / 2, w, h); } // mortar
+    if (base === 'glass') { // pale sky-blue translucent pane in a light frame, with a diagonal shine
+      if (!raw) { g.fillStyle = 'rgba(215,238,255,0.5)'; g.fillRect(-w / 2, -h / 2, w, h); }
+      const gg = g.createLinearGradient(-bw / 2, -bh / 2, bw / 2, bh / 2); gg.addColorStop(0, 'rgba(180,225,255,0.62)'); gg.addColorStop(0.5, 'rgba(130,200,245,0.5)'); gg.addColorStop(1, 'rgba(90,160,225,0.55)');
+      g.fillStyle = gg; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      g.save(); g.beginPath(); g.rect(-bw / 2, -bh / 2, bw, bh); g.clip();
+      g.fillStyle = 'rgba(255,255,255,0.4)'; g.beginPath(); g.moveTo(-bw * 0.5, bh * 0.2); g.lineTo(-bw * 0.1, -bh * 0.5); g.lineTo(bw * 0.12, -bh * 0.5); g.lineTo(-bw * 0.28, bh * 0.5); g.lineTo(-bw * 0.5, bh * 0.5); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.22)'; g.beginPath(); g.moveTo(bw * 0.2, -bh * 0.5); g.lineTo(bw * 0.3, -bh * 0.5); g.lineTo(-bw * 0.1, bh * 0.5); g.lineTo(-bw * 0.2, bh * 0.5); g.closePath(); g.fill();
+      g.restore();
+      g.lineWidth = e; g.strokeStyle = 'rgba(240,250,255,0.85)'; g.strokeRect(-bw / 2 + e / 2, -bh / 2 + e / 2, bw - e, bh - e);
+      return;
+    }
+    if (!raw) { g.fillStyle = base === 'steel' ? 'rgba(40,48,70,0.8)' : 'rgba(196,186,172,0.55)'; g.fillRect(-w / 2, -h / 2, w, h); } // mortar (a dark seam between steel plates)
     const grad = g.createLinearGradient(-bw / 2, -bh / 2, bw / 2, bh / 2); grad.addColorStop(0, lighten(col, 0.22)); grad.addColorStop(0.5, col); grad.addColorStop(1, darken(col, 0.26));
     g.fillStyle = grad; g.fillRect(-bw / 2, -bh / 2, bw, bh);
-    for (let i = 0, n = Math.min(400, bw * bh / 60); i < n; i++) { g.fillStyle = r() < 0.5 ? 'rgba(255,240,220,0.13)' : 'rgba(30,10,0,0.16)'; const q = 1 + r() * Math.max(1, bw * 0.012); g.fillRect(-bw / 2 + r() * bw, -bh / 2 + r() * bh, q, q); }
+    if (base === 'steel') { // brushed grey-blue plate with a rivet in each corner
+      g.strokeStyle = 'rgba(255,255,255,0.07)'; g.lineWidth = 1; g.beginPath(); for (let y = -bh / 2 + 3; y < bh / 2; y += 3) { g.moveTo(-bw / 2, y + r() * 1.5); g.lineTo(bw / 2, y + r() * 1.5); } g.stroke();
+      const rr = Math.max(2, Math.min(bw, bh) * 0.075), ix = bw / 2 - rr * 2.2, iy = bh / 2 - rr * 2.2;
+      for (const [x, y] of [[-ix, -iy], [ix, -iy], [-ix, iy], [ix, iy]]) { const rg = g.createRadialGradient(x - rr * 0.35, y - rr * 0.35, rr * 0.1, x, y, rr); rg.addColorStop(0, lighten(col, 0.55)); rg.addColorStop(1, darken(col, 0.45)); g.fillStyle = rg; g.beginPath(); g.arc(x, y, rr, 0, TAU); g.fill(); g.strokeStyle = 'rgba(10,14,30,0.45)'; g.lineWidth = 1; g.stroke(); }
+    } else if (base === 'tnt') { // red crate: slats, a dark strap, a TNT stencil and a fuse with a spark on it
+      g.strokeStyle = 'rgba(70,10,10,0.5)'; g.lineWidth = Math.max(1, bh * 0.03); g.beginPath(); for (const q of [-0.25, 0.25]) { g.moveTo(-bw / 2, bh * q); g.lineTo(bw / 2, bh * q); } g.stroke();
+      g.fillStyle = 'rgba(40,10,10,0.35)'; g.fillRect(-bw * 0.08, -bh / 2, bw * 0.16, bh);
+      const fs = Math.max(6, Math.min(bh * 0.42, bw * 0.28)); g.font = '700 ' + fs + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = 'rgba(255,240,220,0.92)'; g.fillText('TNT', 0, bh * 0.05);
+      g.strokeStyle = '#3a2a1a'; g.lineWidth = Math.max(1.5, bw * 0.025); g.lineCap = 'round'; g.beginPath(); g.moveTo(bw * 0.3, -bh * 0.5 + e); g.quadraticCurveTo(bw * 0.38, -bh * 0.42, bw * 0.42, -bh * 0.3); g.stroke(); // fuse
+      const sx = bw * 0.42, sy = -bh * 0.3, sr = Math.max(2, bw * 0.05); g.fillStyle = '#ffe07a'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, d = i % 2 ? sr * 0.4 : sr; g.lineTo(sx + Math.cos(a) * d, sy + Math.sin(a) * d); } g.closePath(); g.fill(); // spark
+    } else for (let i = 0, n = Math.min(400, bw * bh / 60); i < n; i++) { g.fillStyle = r() < 0.5 ? 'rgba(255,240,220,0.13)' : 'rgba(30,10,0,0.16)'; const q = 1 + r() * Math.max(1, bw * 0.012); g.fillRect(-bw / 2 + r() * bw, -bh / 2 + r() * bh, q, q); }
     g.lineWidth = e; g.strokeStyle = 'rgba(255,235,210,0.35)'; g.beginPath(); g.moveTo(-bw / 2 + e, bh / 2 - e); g.lineTo(-bw / 2 + e, -bh / 2 + e); g.lineTo(bw / 2 - e, -bh / 2 + e); g.stroke(); // bevel
     g.strokeStyle = 'rgba(20,5,0,0.35)'; g.beginPath(); g.moveTo(bw / 2 - e, -bh / 2 + e); g.lineTo(bw / 2 - e, bh / 2 - e); g.lineTo(-bw / 2 + e, bh / 2 - e); g.stroke();
     g.lineWidth = 1; g.strokeStyle = darken(col, 0.5); g.strokeRect(-bw / 2, -bh / 2, bw, bh);
+  });
+}
+function strikeShardSprite(w, h) { // a fine sliver of glass: a pale-blue triangle with a bright edge (drawn small, tumbling)
+  const key = 'sshard|' + Math.round(w) + 'x' + Math.round(h);
+  return makeSprite(key, w, h, w / 2, h / 2, (g) => {
+    g.beginPath(); g.moveTo(-w * 0.45, h * 0.35); g.lineTo(w * 0.4, h * 0.2); g.lineTo(-w * 0.05, -h * 0.45); g.closePath();
+    const gr = g.createLinearGradient(-w * 0.4, h * 0.3, w * 0.3, -h * 0.4); gr.addColorStop(0, 'rgba(150,205,250,0.7)'); gr.addColorStop(1, 'rgba(235,248,255,0.9)');
+    g.fillStyle = gr; g.fill(); g.lineWidth = Math.max(1.5, w * 0.03); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.stroke();
   });
 }
 function strikeCrackSprite(w, h) { // dark cracks radiating from a point, laid over a damaged brick
@@ -3005,40 +3114,51 @@ function strikeCrackSprite(w, h) { // dark cracks radiating from a point, laid o
     }
   });
 }
-function drawStrikeWall(w) { // every live brick blitted through one depth transform, then a fog wash that deepens with distance
+function drawStrikeWall(w, now) { // every live brick blitted through one depth transform, then a fog wash that deepens with distance; per kind: TNT crates, a motion sheen, glowing hole edges
   const Z = CONFIG.STRIKE_Z_FAR; if (w.z >= Z) return;
-  const { L, R, T, B } = corridor(), v = vanish(), s = STRIKE_F / (STRIKE_F + w.z), cw = (R - L) / w.cols, ch = (B - T) / w.rows;
-  const sp = strikeBrickSprite(w.level, cw, ch), cr = w.hp > 1 ? strikeCrackSprite(cw, ch) : null;
+  const { L, R, T, B } = corridor(), v = vanish(), s = STRIKE_F / (STRIKE_F + w.z), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, x0 = L + (w.ox || 0), kind = w.kind || 'brick';
+  const sp = strikeBrickSprite(w.level, cw, ch, false, kind === 'tnt' ? 'brick' : kind), spT = kind === 'tnt' ? strikeBrickSprite(w.level, cw, ch, false, 'tnt') : null, cr = w.hp > 1 ? strikeCrackSprite(cw, ch) : null;
   ctx.setTransform(DPR * s, 0, 0, DPR * s, (v.x + view.x) * DPR, (v.y + view.y) * DPR);
   for (const k of w.bricks) {
     if (!k.alive) continue;
-    const x = L + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch;
-    ctx.drawImage(sp.c, x - sp.ox, y - sp.oy, sp.w, sp.h);
-    if (cr && k.hp < w.hp) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
+    const x = x0 + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch, q = k.tnt ? spT : sp;
+    ctx.drawImage(q.c, x - q.ox, y - q.oy, q.w, q.h);
+    if (cr && (k.dent || k.hp < (k.tnt ? 1 : w.hp))) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
   }
-  ctx.save(); ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(L + k.col * cw, T + k.row * ch, cw, ch); ctx.clip();
+  ctx.save(); ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(x0 + k.col * cw, T + k.row * ch, cw, ch); ctx.clip();
   const ao = Math.min(cw, ch) * 0.9; // ambient occlusion: the wall darkens where it meets the corridor's floor, ceiling and sides
-  for (const [x0, y0, x1, y1] of [[L, 0, L + ao, 0], [R, 0, R - ao, 0], [0, T, 0, T + ao], [0, B, 0, B - ao]]) {
-    const gr = ctx.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(L, T, R - L, B - T);
+  for (const [ax, ay, bx, by] of [[L, 0, L + ao, 0], [R, 0, R - ao, 0], [0, T, 0, T + ao], [0, B, 0, B - ao]]) {
+    const gr = ctx.createLinearGradient(ax, ay, bx, by); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(L, T, R - L, B - T);
+  }
+  if (kind === 'moving') { // motion sheen: a soft band of light sweeping across the bricks as they slide
+    const sx = L + (R - L) * (0.5 + 0.5 * Math.sin(w.phase * 1.6)), bw = (R - L) * 0.22, gr = ctx.createLinearGradient(sx - bw, 0, sx + bw, 0);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,0.16)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = gr; ctx.fillRect(L, T, R - L, B - T);
   }
   const fog = Math.min(0.8, (1 - s) * 0.72);
   if (fog > 0.02) { ctx.fillStyle = 'rgba(12,20,50,' + fog.toFixed(3) + ')'; ctx.fillRect(L, T, R - L, B - T); }
   ctx.restore();
+  if (kind === 'holed') { // the gap's edges glow saffron so the kid can aim through it
+    const a = 0.45 + 0.35 * Math.sin(now * 0.006), lw = Math.max(2, cw * 0.05);
+    ctx.beginPath(); for (const k of w.bricks) if (k.hole) ctx.rect(x0 + k.col * cw + lw, T + k.row * ch + lw, cw - 2 * lw, ch - 2 * lw);
+    ctx.lineWidth = lw * 2.2; ctx.strokeStyle = 'rgba(255,194,75,' + (a * 0.35).toFixed(3) + ')'; ctx.stroke();
+    ctx.lineWidth = lw; ctx.strokeStyle = 'rgba(255,214,120,' + a.toFixed(3) + ')'; ctx.stroke();
+  }
   resetView();
 }
-function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(strikeBrickSprite(d.level, d.w, d.h, true), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
+function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeShardSprite(d.w, d.h) : strikeBrickSprite(d.level, d.w, d.h, true, d.kind), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
 function drawStrikeBall(bl, now) {
-  const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), tw = bl.super ? 320 : 160;
+  const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, tw = bl.super || curving ? 320 : 160;
   drawShadow(fl.x, fl.y, sc.r * 2.3, sc.r * 0.85, 0.55 * sc.s);
   const tr = strike.trail;
-  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit)
+  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, a lilac curve line while the ball spins)
     resetView();
     for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw) * 0.35; ctx.globalAlpha = k * (bl.super ? 1.4 : 1); ctx.fillStyle = bl.super ? '#ffc24b' : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * 0.9, 0, TAU); ctx.fill(); }
     ctx.globalAlpha = 1;
     if (bl.super) { ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,230,150,0.6)'; ctx.lineWidth = Math.max(2, sc.r * 0.25); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
+    if (curving) { ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(169,139,255,0.6)'; ctx.lineWidth = Math.max(1.5, sc.r * 0.16); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); for (let i = 1; i < tr.length; i++) ctx.lineTo(tr[i].x, tr[i].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
   }
   const pop = Math.max(0, 1 - (now - strike.hitAt) / 160);
-  blit(strikeBallSprite(bl.super), sc.x, sc.y, (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
+  blit(strikeBallSprite(bl.super, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
 }
 function strikeHandSprite() { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre
   const S = 1;
@@ -3105,6 +3225,13 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
   blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
   edgeText(textSprite(t('best', { n: strike.best }), 12, 'rgba(241,233,218,0.72)', null, 500), ex, y + 48, !rtl);
+  const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
+  if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
+  { // a new kind of wall came into view: its name on a tinted pill under the card, dropping in and fading out
+    const sp = textSprite(t('wk_' + tg.kind), 15, '#141b34', null), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = y + h + 8 + ph / 2 - 12 * (1 - e);
+    ui.tagBox = { x: x + w / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind };
+    blit(pillSprite(STRIKE_KIND_COL[tg.kind] || '#ffc24b', pw, ph), x + w / 2, ty, 0, 1, a * e); blit(sp, x + w / 2, ty, 0, 1, a * e);
+  }
 }
 function meterTrackSprite(w, h) { // dark rounded track with the four tier zones tinted and separated
   return makeSprite('meter|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
@@ -3284,7 +3411,7 @@ function renderStrike(now) {
   for (const d of strike.debris) items.push({ z: d.z, d });
   if (bl) items.push({ z: bl.z, b: bl });
   items.sort((a, b) => b.z - a.z);
-  for (const it of items) { if (it.w) drawStrikeWall(it.w); else if (it.d) drawDebris(it.d); else drawStrikeBall(bl, now); }
+  for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.d) drawDebris(it.d); else drawStrikeBall(bl, now); }
   drawParticles(); drawRings(now);
   drawFloaters(strike.floaters);
   const dt = Math.min(100, now - strike.ui.lastDraw || 16); strike.ui.lastDraw = now;
@@ -3294,6 +3421,8 @@ function renderStrike(now) {
   drawStrikeHand(now);
   const sk = Math.max(0, 1 - (now - strike.superFlash) / 200);
   if (sk > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,230,150,' + (0.22 * sk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); } // SUPER smash: a warm flash
+  const tk = Math.max(0, 1 - (now - strike.tntAt) / 280);
+  if (tk > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,130,40,' + (0.26 * tk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); } // TNT: an orange flash
   const fk = Math.max(0, 1 - (now - strike.flash) / 450);
   if (fk > 0) { // a miss: red flash creeping in from the edges
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -3377,6 +3506,18 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       f.type = 'lowpass'; f.frequency.value = 1900 - 1300 * k; f.Q.value = 0.8; env(f, 0.14 + 0.1 * k, 90 + 140 * k, t0); noise(t0, 90 + 140 * k, f);
       tone('sine', 230 - 130 * k, 40, 0.12 + 0.1 * k, 120 + 120 * k, t0);
     }
+    else if (kind === 'glass') { // a pane shattering: a bright hiss and a scatter of tinkles, more of them the bigger the hit (arg 0..1)
+      const k = Math.max(0, Math.min(1, arg || 0));
+      f.type = 'highpass'; f.frequency.value = 3200; env(f, 0.1 + 0.08 * k, 140 + 120 * k, t0); noise(t0, 140 + 120 * k, f);
+      [2900, 3700, 4600, 5300].forEach((q, i) => tone('sine', q * (0.95 + Math.random() * 0.1), 0, 0.05, 160 + i * 40, t0 + i * 0.035));
+    }
+    else if (kind === 'clang') { // a steel plate rings: three inharmonic partials over a short metallic burst
+      const k = Math.max(0, Math.min(1, arg || 0));
+      [1, 2.76, 5.4].forEach((m, i) => tone('triangle', 520 * m, 480 * m, [0.14, 0.06, 0.03][i] * (0.7 + 0.3 * k), 260 - i * 60, t0));
+      f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 1.4; env(f, 0.08 + 0.06 * k, 50, t0); noise(t0, 50, f);
+    }
+    else if (kind === 'tnt') { f.type = 'lowpass'; f.frequency.setValueAtTime(2200, t0); f.frequency.exponentialRampToValueAtTime(90, t0 + 0.5); env(f, 0.25, 560, t0); noise(t0, 560, f); tone('sine', 120, 28, 0.25, 600, t0); tone('sawtooth', 90, 40, 0.06, 300, t0 + 0.02); tone('triangle', 3000, 500, 0.05, 150, t0); } // TNT: deeper and longer than a bomb
+    else if (kind === 'ricochet') { f.type = 'bandpass'; f.frequency.setValueAtTime(3400, t0); f.frequency.exponentialRampToValueAtTime(900, t0 + 0.12); f.Q.value = 3; env(f, 0.08, 130, t0); noise(t0, 130, f); tone('sine', 2100, 700, 0.06, 140, t0); } // the ball glances off the corridor wall
     else if (kind === 'combo') { const n = arg || 2, f0 = 440 * Math.pow(1.19, n); tone('triangle', f0, 0, 0.1, 220, t0); tone('sine', f0 * 2, 0, 0.05, 260, t0 + 0.03); } // SUPER combo: a step up the scale per wall
     else if (kind === 'thud') { f.type = 'lowpass'; f.frequency.value = 240; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('sine', 110, 45, 0.2, 140, t0); } // locked door rattles
     else if (kind === 'count') tone('sine', 1700 + Math.random() * 300, 0, 0.025, 28, t0); // one tick of the score counting up
