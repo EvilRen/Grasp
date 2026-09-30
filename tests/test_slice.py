@@ -131,12 +131,16 @@ async def main():
         await page.evaluate("sweep(pointAt, 60, 300, 320, 300, 250)"); await page.wait_for_timeout(700)
         st = await page.evaluate("({score: __grasp.slice.score, halves: __grasp.slice.halves.length})")
         check('pointing swipe slices fruit', st['score'] == 1 and st['halves'] == 2, st)
-        # open hand (not pointing) swipe must not cut
+        # an open hand (not pointing) cuts only when it moves fast; a slow open hand and a pinch never cut
         await page.evaluate("window.__handFor = () => handAt(40, 400, 0.8)"); await page.wait_for_timeout(700)
         await page.evaluate("parkFruit(180, 400)")
-        await page.evaluate("sweep((x,y) => handAt(x, y, 0.8), 40, 400, 320, 400, 250)"); await page.wait_for_timeout(700)
-        check('open-hand swipe does not cut', await page.evaluate("__grasp.slice.fruits.length") == 1, await page.evaluate("[gesture, __grasp.slice.score]"))
-        await page.evaluate("sweep((x,y) => handAt(x, y, 0.1), 320, 400, 40, 400, 250)"); await page.wait_for_timeout(700)
+        await page.evaluate("sweep((x,y) => handAt(x, y, 0.8), 40, 400, 320, 400, 250)"); await page.wait_for_timeout(700)  # ~1.1 px/ms
+        st = await page.evaluate("({score: __grasp.slice.score, fruits: __grasp.slice.fruits.length, g: gesture})")
+        check('fast open-hand swipe cuts (camera)', st['score'] == 2 and st['fruits'] == 0 and st['g'] == 'open', st)
+        await page.evaluate("parkFruit(180, 400)")
+        await page.evaluate("sweep((x,y) => handAt(x, y, 0.8), 320, 400, 40, 400, 1600)"); await page.wait_for_timeout(2000)  # ~0.18 px/ms: below SLICE_MIN_SPEED
+        check('slow open-hand swipe does not cut', await page.evaluate("__grasp.slice.fruits.length") == 1 and await page.evaluate("__grasp.slice.score") == 2, await page.evaluate("[gesture, __grasp.slice.score]"))
+        await page.evaluate("sweep((x,y) => handAt(x, y, 0.1), 40, 400, 320, 400, 250)"); await page.wait_for_timeout(700)
         check('pinch swipe does not cut', await page.evaluate("__grasp.slice.fruits.length") == 1)
         # hand gone -> world freezes, no-hand screen
         await page.evaluate("window.__handFor = null; __grasp.slice.fruits[0].vy = -0.5"); await page.wait_for_timeout(900)

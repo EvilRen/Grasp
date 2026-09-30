@@ -267,20 +267,23 @@ const CONFIG = {
   MAX_THROW_SPEED: 42,        // px per physics step (60Hz); caps tunneling
   HAND_LOST_FRAMES: 3,        // this many detections in a row without a hand = drop (no throw)
   HAND_LOST_MAX_MS: 1500,     // safety net if tracking stalls entirely
-  MAP_BOX: 0.86,              // central fraction of the camera frame mapped to the full screen (the preview's yellow box uses the same constant)
+  MAP_BOX: 0.55,              // central fraction of the camera frame mapped to the full screen (the preview's yellow box uses the same constant): a small hand well inside the frame reaches every edge
   EDGE_MARGIN: 8,             // px: the camera cursor is clamped this far inside the screen edges
-  EURO_MIN_CUTOFF: 1.2,       // One Euro filter: lower = steadier when still
-  EURO_BETA: 0.012,           // One Euro filter: higher = less lag on fast moves
+  EURO_MIN_CUTOFF: 2.0,       // One Euro filter: lower = steadier when still
+  EURO_BETA: 0.05,            // One Euro filter: higher = less lag on fast moves
   EURO_D_CUTOFF: 1.0,
+  PREDICT_MAX_MS: 140,        // camera cursor: dead reckoning from the last two tracker samples runs at most this far past the latest one
+  CURSOR_EASE_MS: 40,         // camera cursor: time constant of the critically damped ease toward the predicted target (a 9 scans/s tracker still gives a 60 fps cursor)
+  TRACK_MAX_PX: 320,          // the video is drawn into the detection canvas at most this big on its long side (landmarks are normalized, so nothing else changes)
   POINT_BLEND_MS: 100,        // cursor anchor glides between pinch midpoint and fingertip
   POKER_RADIUS: 14,
   IMPACT_SPEED: 7,            // relative speed (px/step) that triggers a particle burst
   MP_VERSION: '0.10.35',
   MODEL_URL: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
   STAGE_TIMEOUT_MS: 20000,
-  DETECT_CONFIDENCE: 0.3,     // hand detection + presence threshold (MediaPipe default 0.5)
+  DETECT_CONFIDENCE: 0.25,    // hand detection + presence threshold (MediaPipe default 0.5)
   AUTO_SWAP_MS: 5000,         // GPU scanning with no hand for this long = switch to CPU (once)
-  TRACK_CONFIDENCE: 0.5,      // below this, MediaPipe re-runs full hand detection on the next frame
+  TRACK_CONFIDENCE: 0.25,     // below this, MediaPipe re-runs full hand detection on the next frame (low: stay in the cheap landmark-tracking path)
   // Slice mode
   SLICE_GRAVITY: 0.0012,      // px/ms^2 on an 800px-tall screen (scales with height, so hang time stays the same)
   SLICE_MIN_SPEED: 0.45,      // px/ms: the finger must move at least this fast to cut
@@ -289,7 +292,8 @@ const CONFIG = {
   CUT_LINE_MS: 250,           // bright cut line shown on a sliced fruit
   // Smash mode
   SMASH_ROUND_S: 60,          // round length
-  PUNCH_SPEED: 0.55,          // px/ms on a ~950px screen: a hand (camera: any gesture; mouse/touch: pressed) moving at least this fast is a punch
+  PUNCH_SPEED: 0.55,          // px/ms on a ~950px screen: a pressed mouse moving at least this fast is a punch (camera: any contact of the fist punches; speed only makes the hit bigger)
+  PUNCH_SPEED_TOUCH: 0.35,    // ...the same gate for a finger on a touch screen
   FIST_RADIUS: 40,
   SMASH_RADIUS: 95,           // px (scaled): bricks within this distance of the hit come loose too
   SMASH_MAX_PIECES: 140,      // dynamic debris cap; oldest small shards go first
@@ -299,13 +303,14 @@ const CONFIG = {
   // Strike mode (pseudo-3D corridor; z = depth, 0 is the player's plane)
   STRIKE_Z_FAR: 2400,         // depth of the far end of the corridor
   // Strike difficulty: these are the kid-friendly Easy defaults; STRIKE_NORMAL below overrides them on Normal
-  STRIKE_BASE_SPEED: 0.8,     // depth units per ms on the first serve (~3 s to arrive; Normal 1.1)
+  STRIKE_BASE_SPEED: 0.65,    // depth units per ms on the first serve (~3.7 s to arrive; Normal 1.1)
   STRIKE_HIT_Z: 150,          // the ball can be slapped once it is this close to the player's plane
   STRIKE_HIT_WINDOW: 2.2,     // x STRIKE_HIT_Z: how far out the slap window opens (Normal 1)
   STRIKE_LATE_Z: 1,           // x STRIKE_HIT_Z past the player's plane: a late slap still counts (Normal 0)
   STRIKE_HIT_RADIUS: 2.6,     // x the ball's screen radius: how close the hand must be (Normal 1.3)
-  STRIKE_HIT_NEAR: 90,        // px (screen-scaled): a hand this close to the ball's centre always hits (Normal 0)
-  STRIKE_MAGNET: 0.35,        // magnet assist: in the last 25% of the approach the ball drifts toward the hand by this share of the gap per 100 ms (Normal 0)
+  STRIKE_HIT_NEAR: 120,       // px (screen-scaled): a hand this close to the ball's centre always hits (Normal 0)
+  STRIKE_HIT_PATH_MS: 160,    // a hit counts if any cursor position from this long ago was on the ball, so a laggy tracker still connects
+  STRIKE_MAGNET: 0.5,         // magnet assist: in the last 25% of the approach the ball drifts toward the hand by this share of the gap per 100 ms (Normal 0)
   STRIKE_HAND_SCALE: 1.6,     // the hand sprite is drawn this much bigger (Normal 1)
   STRIKE_SUPER_SPEED: 2.2,    // hand speed (px/ms on a ~950px screen) at contact for a SUPER hit
   STRIKE_MAX_SPEED: 2.2,      // cap on the incoming speed (Normal 2.8)
@@ -341,7 +346,7 @@ const I18N = {
     hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
     hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
-    hintSmashCam: 'Wave your hand fast through the walls and cars. Keep your hand inside the yellow box.',
+    hintSmashCam: 'Touch the walls and cars with your hand to smash them; move fast for bigger hits. Keep your hand inside the yellow box.',
     hintSmashTouch: 'Swipe fast through the walls and cars to smash them.', hintSmashMouse: 'Hold the left button and swipe fast to punch. D for HUD.',
     hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone and the wheel. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
     hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Drag the board to see more.',
@@ -372,7 +377,7 @@ const I18N = {
     perm_granted: 'granted', perm_prompt: 'prompt', perm_denied: 'denied', perm_unknown: 'unknown',
     physicsFail: 'The physics engine could not load ({m}). Reload to try again.',
     missed: 'missed {n}', combo: 'Combo ×{n}',
-    h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Tracking FPS', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
+    h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Scans/s', h_lat: 'Cursor latency', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
     g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
     m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', gm_strike: 'strike', Left: 'Left', Right: 'Right',
@@ -399,7 +404,7 @@ const I18N = {
     hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
     hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
-    hintSmashCam: 'הניפו את היד מהר דרך הקירות והמכוניות. שמרו על היד בתוך המסגרת הצהובה.',
+    hintSmashCam: 'געו בקירות ובמכוניות עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר. שמרו על היד בתוך המסגרת הצהובה.',
     hintSmashTouch: 'החליקו מהר דרך הקירות והמכוניות כדי לנפץ אותם.', hintSmashMouse: 'החזיקו את הכפתור השמאלי והחליקו מהר כדי להכות. D למדדים.',
     hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון והגלגל. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
     hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גררו את הלוח כדי לראות עוד.',
@@ -430,7 +435,7 @@ const I18N = {
     perm_granted: 'מאושרת', perm_prompt: 'תישאל', perm_denied: 'חסומה', perm_unknown: 'לא ידוע',
     physicsFail: 'מנוע הפיזיקה לא נטען ({m}). רעננו את הדף כדי לנסות שוב.',
     missed: 'פספוסים {n}', combo: 'קומבו ×{n}',
-    h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'קצב זיהוי', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
+    h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'סריקות/שנייה', h_lat: 'השהיית הסמן', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
     m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', gm_strike: 'מכה', Left: 'שמאל', Right: 'ימין',
@@ -631,7 +636,11 @@ class OneEuro {
 const hand = {
   seen: false, lastSeen: -1e9, misses: 99, pinch: false, point: false, pointVotes: 0, fist: false, fistVotes: 0, pinchD: NaN,
   blend: 0, fblend: 0, lastT: null, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), handedness: '',
+  samples: [],   // the last few tracker samples as mapped screen positions { t, x, y } (the tracker may run at only ~9 scans/s)
+  rawSpeed: 0,   // px/ms between the last two tracker samples: the hand's real speed, for gesture speed decisions
+  sm: null,      // the displayed 60 fps cursor: { x, y, vx, vy, t }, predicted from the samples and eased (see camCursor)
 };
+function resetHandCursor() { hand.samples.length = 0; hand.rawSpeed = 0; hand.sm = null; }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 // lm: 21 normalized landmarks (x,y in 0..1) or null; vw/vh: video pixel size; t: ms
@@ -673,6 +682,35 @@ function processHand(lm, vw, vh, t) {
   const e = CONFIG.EDGE_MARGIN; // the cursor never runs off the screen
   hand.x = Math.min(W - e, Math.max(e, hand.fx.filter(u * W, t)));
   hand.y = Math.min(H - e, Math.max(e, hand.fy.filter(v * H, t)));
+  const S = hand.samples, prev = S[S.length - 1];
+  hand.rawSpeed = prev ? Math.hypot(hand.x - prev.x, hand.y - prev.y) / Math.max(1, t - prev.t) : 0;
+  if (!prev || t > prev.t) S.push({ t, x: hand.x, y: hand.y }); else { prev.x = hand.x; prev.y = hand.y; }
+  while (S.length > 4) S.shift();
+}
+// The tracker delivers a sample every ~30-110 ms; the game renders at 60 fps. Each frame the cursor target is the latest sample
+// pushed on by the velocity of the last two samples for up to PREDICT_MAX_MS (dead reckoning), and the displayed cursor is eased
+// toward it with a critically damped spring (time constant CURSOR_EASE_MS), so it moves continuously instead of jumping per scan.
+function camCursor(now) {
+  const S = hand.samples, n = S.length; if (!n) return null;
+  const s1 = S[n - 1], s0 = n > 1 ? S[n - 2] : null;
+  let tx = s1.x, ty = s1.y;
+  if (s0 && s1.t > s0.t) { // never further than 1.5 sample intervals ahead: a fast 30 scans/s tracker must not amplify its jitter 4x
+    const k = Math.min(CONFIG.PREDICT_MAX_MS, 1.5 * (s1.t - s0.t), Math.max(0, now - s1.t)) / (s1.t - s0.t);
+    tx += (s1.x - s0.x) * k; ty += (s1.y - s0.y) * k;
+  }
+  const e = CONFIG.EDGE_MARGIN; tx = Math.min(W - e, Math.max(e, tx)); ty = Math.min(H - e, Math.max(e, ty));
+  let sm = hand.sm;
+  if (!sm) { sm = hand.sm = { x: tx, y: ty, vx: 0, vy: 0, t: now }; return sm; }
+  const dt = Math.min(100, Math.max(0, now - sm.t)); sm.t = now;
+  if (dt > 0) {
+    const om = 1 / CONFIG.CURSOR_EASE_MS, x = om * dt, ex = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x); // Unity-style SmoothDamp: critically damped
+    const cx = sm.x - tx, cy = sm.y - ty, px = (sm.vx + om * cx) * dt, py = (sm.vy + om * cy) * dt;
+    sm.vx = (sm.vx - om * px) * ex; sm.vy = (sm.vy - om * py) * ex;
+    sm.x = tx + (cx + px) * ex; sm.y = ty + (cy + py) * ex;
+  }
+  if (Math.hypot(sm.x - tx, sm.y - ty) < 0.05 && Math.hypot(sm.vx, sm.vy) < 0.002) { sm.x = tx; sm.y = ty; sm.vx = sm.vy = 0; } // settled: sit exactly on the target
+  sm.x = Math.min(W - e, Math.max(e, sm.x)); sm.y = Math.min(H - e, Math.max(e, sm.y));
+  return sm;
 }
 
 /* ---------------- Pointer state (mouse / touch) ---------------- */
@@ -723,7 +761,8 @@ let held = null;                // { body, constraint }
 function readInput(now) {
   if (mode === 'camera') {
     const present = hand.misses < CONFIG.HAND_LOST_FRAMES && now - hand.lastSeen < CONFIG.HAND_LOST_MAX_MS;
-    return { present, x: hand.x, y: hand.y, pinch: present && hand.pinch, point: present && hand.point, fist: present && hand.fist };
+    const c = present ? camCursor(now) : null;
+    return { present, x: c ? c.x : hand.x, y: c ? c.y : hand.y, pinch: present && hand.pinch, point: present && hand.point, fist: present && hand.fist };
   }
   if (mode === 'mouse') { // smash: left button / one finger held = fist
     const present = ptr.type === 'touch' ? (ptr.touches.size > 0 || now - ptr.lastUp < 150) : ptr.present;
@@ -746,7 +785,7 @@ function inputTick(now) {
   if (g !== gesture) {
     if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
-    if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
+    if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); resetHandCursor(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
     if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y)) endCardAction('again', now);
     gesture = g;
@@ -1182,8 +1221,9 @@ function sliceTick(now, dt) {
   tickFloaters(slice.floaters, dt);
   for (let i = slice.stains.length - 1; i >= 0; i--) { const s2 = slice.stains[i]; s2.life -= dt / 1300; if (s2.life <= 0) slice.stains.splice(i, 1); }
   if (slice.over) { slice.bladeOn = false; slice.last = null; slice.blade.length = 0; endCardTick(now); return; } // round-over card: buttons via tap / dwell, a swipe elsewhere restarts
-  // Camera: only a raised index finger cuts. Mouse/touch: pressing (or two fingers) cuts. Nothing cuts while the game is paused.
-  slice.bladeOn = cursor.present && !pause.on && (gesture === 'point' || (mode === 'mouse' && gesture === 'pinch'));
+  // Camera: a raised index finger cuts, and so does an open hand moving fast (the tracker may not resolve the pointing pose mid-swipe).
+  // Mouse/touch: pressing (or two fingers) cuts. Nothing cuts while the game is paused.
+  slice.bladeOn = cursor.present && !pause.on && (gesture === 'point' || (mode === 'mouse' && gesture === 'pinch') || (mode === 'camera' && gesture === 'open' && hand.rawSpeed >= CONFIG.SLICE_MIN_SPEED));
   if (slice.bladeOn) {
     const p = { x: cursor.x, y: cursor.y, t: now };
     if (!slice.last) { slice.last = p; slice.blade.push(p); }
@@ -1536,6 +1576,17 @@ function cursorSpeed(now, win = 80) { // px/ms over the last few samples
   const a = h[i], z = h[h.length - 1];
   return a && z && z.t > a.t ? Math.hypot(z.x - a.x, z.y - a.y) / (z.t - a.t) : 0;
 }
+function fistContacts(targets, p, R) { // the bodies (bricks, cars) a circle of radius R at p touches: circle vs the axis-aligned bounds of each part
+  const out = [];
+  for (const b of targets) {
+    const parts = b.parts.length > 1 ? b.parts.slice(1) : b.parts;
+    for (const q of parts) {
+      const dx = Math.max(q.bounds.min.x - p.x, 0, p.x - q.bounds.max.x), dy = Math.max(q.bounds.min.y - p.y, 0, p.y - q.bounds.max.y);
+      if (dx * dx + dy * dy <= R * R) { out.push(b); break; }
+    }
+  }
+  return out;
+}
 function addPiece(b, vel, now, small) {
   b.plugin.born = now; b.plugin.small = !!small; b.plugin.lastBurst = 0;
   if (b.isStatic) M.Body.setStatic(b, false);
@@ -1635,18 +1686,22 @@ function smashTick(now, dt) {
     if (!wl.rebuildAt) wl.rebuildAt = now + CONFIG.WALL_REBUILD_MS;
     else if (now >= wl.rebuildAt) { smash.walls.splice(i, 1); buildWall(wl.x, wl.id); }
   }
-  const cur = cursor.present ? { x: cursor.x, y: cursor.y } : null, v = cursorSpeed(now);
+  const cur = cursor.present ? { x: cursor.x, y: cursor.y } : null, cam = mode === 'camera', v = cam ? Math.max(cursorSpeed(now), hand.rawSpeed) : cursorSpeed(now);
   if (cur && smash.prev) {
     const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
     if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
-    smash.punching = punchGesture() && v >= CONFIG.PUNCH_SPEED * s; // smaller screen, smaller motions
-    if (smash.punching && len > 0) {
-      const dir = { x: dx / len, y: dy / len };
-      const hits = M.Query.ray([...smash.bricks, ...smash.cars], smash.prev, cur, CONFIG.FIST_RADIUS * 2);
-      for (const h of hits) {
-        const b = h.bodyA.parent;
-        if (b.label === 'car') { if (smash.cars.includes(b)) crumpleCar(b, cur, dir, v, now); }
-        else if (smash.bricks.includes(b)) smashBricks(b.position, dir, v, now);
+    // Camera: any contact of the fist punches (a laggy tracker under-reads speed; kids just touch the wall), speed only makes the hit bigger.
+    // Mouse / touch: a pressed pointer must move fast enough (smaller screen, smaller motions; a finger is slower than a mouse).
+    const gate = cam ? 0 : (ptr.type === 'touch' ? CONFIG.PUNCH_SPEED_TOUCH : CONFIG.PUNCH_SPEED) * s;
+    smash.punching = punchGesture() && v >= gate;
+    if (smash.punching) {
+      const dir = len > 0 ? { x: dx / len, y: dy / len } : { x: 0, y: 0 }, pv = cam ? Math.max(v, CONFIG.PUNCH_SPEED * s) : v; // camera: at least a medium punch
+      const targets = [...smash.bricks, ...smash.cars];
+      const hits = len > 0 ? M.Query.ray(targets, smash.prev, cur, CONFIG.FIST_RADIUS * 2).map((h) => h.bodyA.parent) : []; // swept along the path
+      for (const b of fistContacts(targets, cur, CONFIG.FIST_RADIUS)) if (!hits.includes(b)) hits.push(b);            // plus whatever the fist body sits on
+      for (const b of hits) {
+        if (b.label === 'car') { if (smash.cars.includes(b)) crumpleCar(b, cur, dir, pv, now); }
+        else if (smash.bricks.includes(b)) smashBricks(b.position, dir, pv, now);
       }
     }
   } else smash.punching = false;
@@ -2828,8 +2883,16 @@ function serveBall(now) {
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
   strike.ball = b; strike.speed = strike.pace; strike.trail.length = 0; strike.serves++; strike.cued = false; strike.ui.cue = null;
 }
+function handSpeed(now, win) { return Math.max(cursorSpeed(now, win), mode === 'camera' ? hand.rawSpeed : 0); } // px/ms: the smoothed cursor or, on camera, the raw tracker samples, whichever is faster
+function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at any point in the last win ms? (a laggy tracker's cursor may already have left the spot)
+  if (!cursor.present) return false;
+  if (Math.hypot(cursor.x - x, cursor.y - y) <= r) return true;
+  const h = cursor.history;
+  for (let i = h.length - 1; i >= 0 && now - h[i].t <= win; i--) if (Math.hypot(h[i].x - x, h[i].y - y) <= r) return true;
+  return false;
+}
 function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms, direction from where on the ball it landed
-  const sc = ballScreen(b), s = strikeScale(), v = cursorSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
+  const sc = ballScreen(b), s = strikeScale(), v = handSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
   const tier = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft';
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
@@ -2880,7 +2943,7 @@ function strikeTick(now, dt) {
     b.x = b.x0 + (b.tx - b.x0) * k; b.y = b.y0 + (b.ty - b.y0) * k;
     if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
       const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale());
-      if (cursor.present && Math.hypot(cursor.x - sc.x, cursor.y - sc.y) <= reach) strikeHit(b, now);
+      if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) strikeHit(b, now); // any cursor position from the last 160 ms counts, not only this frame's
       else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(now); return; }
     }
   } else { // outgoing: lateral velocity from the hit, bouncing off the corridor sides, through the brick walls, then off the far wall
@@ -3059,7 +3122,7 @@ function sparkle(x, y, r, col, alpha) { // four-point star
   ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.28, y - r * 0.28); ctx.lineTo(x + r, y); ctx.lineTo(x + r * 0.28, y + r * 0.28); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.28, y + r * 0.28); ctx.lineTo(x - r, y); ctx.lineTo(x - r * 0.28, y - r * 0.28); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
 }
 function drawPowerMeter(now, dt) { // bottom bar filling with the hand's speed in real time; flashes and names the tier big after a hit
-  const ui = strike.ui, rtl = lang === 'he', v = cursor.present ? cursorSpeed(now, 100) / strikeScale() : 0;
+  const ui = strike.ui, rtl = lang === 'he', v = cursor.present ? handSpeed(now, 100) / strikeScale() : 0;
   ui.meterSpeed += (Math.min(v, METER_MAX * 1.3) - ui.meterSpeed) * Math.min(1, dt / (v > ui.meterSpeed ? 25 : 140)); // quick to rise, slow to fall
   const val = Math.min(1, ui.meterSpeed / METER_MAX), tier = speedTier(ui.meterSpeed); ui.meter = val; ui.meterTier = tier;
   const w = Math.min(W - 32, 380), h = 12, cx = W / 2, cy = H - 30, x0 = cx - w / 2, col = TIER_COL[tier];
@@ -3405,6 +3468,7 @@ function updateHud() {
       : gameMode === 'strike' ? '  ' + t('h_score') + ' ' + strike.score + '  ' + t('h_lives') + ' ' + strike.lives + '  L' + strike.level + (strike.ball ? '  z ' + Math.round(strike.ball.z) : '') : '')],
     ['h_fps', fps.toFixed(0)],
     ['h_tfps', mode === 'camera' ? trackFps.toFixed(0) : '-'],
+    ['h_lat', mode === 'camera' && hand.seen ? Math.round(performance.now() - hand.lastSeen) + ' ms' : '-'],
     ['h_gesture', t('g_' + gesture) + (held ? t('h_holding') : '')],
     ['h_pinch', (mode === 'camera' ? pd : '-') + '   in<' + CONFIG.PINCH_ENTER + ' out>' + CONFIG.PINCH_EXIT],
     ['h_input', t('m_' + mode) + (mode === 'camera' ? ' / ' + delegateUsed : '')],
@@ -3431,14 +3495,15 @@ function trackTick(now) {
   try {
     const vw = video.videoWidth, vh = video.videoHeight;
     if (!vw || !vh) return;
-    if (frameCanvas.width !== vw || frameCanvas.height !== vh) { frameCanvas.width = vw; frameCanvas.height = vh; }
-    fctx.drawImage(video, 0, 0, vw, vh);
+    const k = Math.min(1, CONFIG.TRACK_MAX_PX / Math.max(vw, vh)), cw = Math.max(1, Math.round(vw * k)), ch = Math.max(1, Math.round(vh * k)); // a small frame is cheaper to copy and scan
+    if (frameCanvas.width !== cw || frameCanvas.height !== ch) { frameCanvas.width = cw; frameCanvas.height = ch; }
+    fctx.drawImage(video, 0, 0, cw, ch);
     const res = landmarker.detectForVideo(frameCanvas, now);
     trackCount++; trackErrors = 0; lastTrackError = '';
     const lm = res.landmarks && res.landmarks[0];
     lastLandmarks = lm || null;
     hand.handedness = res.handednesses && res.handednesses[0] && res.handednesses[0][0] ? res.handednesses[0][0].categoryName : '';
-    processHand(lm || null, video.videoWidth, video.videoHeight, now);
+    processHand(lm || null, cw, ch, now);
   } catch (err) {
     console.error('[grasp] detectForVideo failed', err); lastTrackError = String(err && err.message || err).slice(0, 80);
     if (++trackErrors > 30) { const m = err.message || err; fallbackToMouse([{ stage: () => t('st_runtime'), why: () => t('crashed', { e: m }) }]); }
@@ -3701,7 +3766,7 @@ function goHome() {
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
-  hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset();
+  hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
   hideHint(); syncHudBtn(); syncLiveDot(); updateHudOffset();

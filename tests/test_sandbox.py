@@ -1,4 +1,4 @@
-import asyncio, subprocess, time, json, sys
+import asyncio, subprocess, time, json, sys, re
 from playwright.async_api import async_playwright
 srv = subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
 MATTER = open('tests/vendor/matter.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
@@ -48,13 +48,13 @@ async def main():
         ctx, page, errs = await boot(b, False)
         cr = await page.evaluate("__created")
         check('desktop starts on GPU', cr[0]['d'] == 'GPU', cr)
-        check('thresholds 0.3 / 0.3 / 0.5', (cr[0]['det'], cr[0]['pres'], cr[0]['trk']) == (0.3, 0.3, 0.5))
+        check('thresholds 0.25 / 0.25 / 0.25 (cheap landmark tracking)', (cr[0]['det'], cr[0]['pres'], cr[0]['trk']) == (0.25, 0.25, 0.25), cr[0])
         rows = await page.evaluate("Object.fromEntries([...document.querySelectorAll('#checks li')].map(l=>[l.dataset.k, l.dataset.s + ': ' + l.querySelector('small').textContent]))")
         check('all 5 boot rows ok', all(v.startswith('ok') for v in rows.values()), rows)
         await page.wait_for_timeout(1500)
         check('no-hand screen shown', await page.evaluate("!statusEl.hidden && preview.classList.contains('big')"))
         live = await page.inner_text('#statusLive'); check('live line shows GPU + scans/s', 'GPU' in live and 'scans/s' in live, live)
-        check('tracker reads from canvas, not video', (await page.evaluate("__inputs.at(-1)")).startswith('CANVAS:640x480'), await page.evaluate("__inputs.at(-1)"))
+        check('tracker reads a 320 px frame from the canvas, not the video', (await page.evaluate("__inputs.at(-1)")).startswith('CANVAS:320x240'), await page.evaluate("__inputs.at(-1)"))
         await page.wait_for_timeout(4500)
         check('auto-switched to CPU after ~5s', await page.evaluate("delegateUsed") == 'CPU', await page.evaluate("[delegateUsed, __created.map(c=>c.d), __closed]"))
         await page.wait_for_timeout(6500)
@@ -65,6 +65,28 @@ async def main():
         check('hand found -> screen hides, preview back to corner', await page.evaluate("statusEl.hidden && !preview.classList.contains('big') && cursor.present"))
         hudoff = await page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--hud-offset')")
         check('HUD pushed below small preview', hudoff.strip() not in ('', '0px'), hudoff)
+        # a tracker that scans only every 110 ms (a phone's CPU tracker) still gives a cursor that moves every frame: predicted from the last two samples, then eased
+        await page.evaluate("(() => { const orig = trackTick; let last = -1e9; window.__slowTrack = (on) => { trackTick = on ? (now) => { if (now - last < 110) return; last = now; orig(now); } : orig; }; })()")
+        await page.evaluate("__slowTrack(true); window.__rec = []; window.__recOn = true; (function r(t) { if (!__recOn) return; __rec.push([t, cursor.x, hand.lastSeen]); requestAnimationFrame(r); })(performance.now())")
+        n0 = await page.evaluate("__inputs.length")
+        await page.evaluate("(() => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / 1200); return handAt(200 + 800 * k, innerHeight * 0.3, 0.8); }; })()")
+        await page.wait_for_timeout(1000)
+        scans = await page.evaluate("__inputs.length") - n0
+        rec = await page.evaluate("__recOn = false; __rec"); await page.evaluate("__slowTrack(false)")
+        gaps, cnt, seen = [], 0, 0
+        for i in range(1, len(rec)):  # frames grouped by the sample they follow; count the frames on which the cursor moved between two samples
+            if rec[i][2] != rec[i - 1][2]:
+                if seen: gaps.append(cnt)
+                cnt = 0; seen += 1
+            elif rec[i][1] != rec[i - 1][1]: cnt += 1
+        gaps = gaps[1:-1] if len(gaps) > 3 else gaps
+        check('stubbed tracker throttled to ~9 scans/s', 6 <= scans <= 12, scans)
+        check('cursor moves on >= 5 intermediate frames between two 110 ms samples (smooth, not jumping)', len(gaps) >= 4 and max(gaps) >= 5 and sorted(gaps)[len(gaps) // 2] >= 4, gaps)
+        check('raw tracker speed recorded (px/ms between samples)', await page.evaluate("hand.rawSpeed") >= 0 and await page.evaluate("hand.samples.length") >= 2, await page.evaluate("[hand.rawSpeed, hand.samples.length]"))
+        await page.click('#hudBtn'); await page.wait_for_timeout(700)
+        hud = await page.inner_text('#hud')
+        check('HUD shows scans/s and the cursor latency in ms', 'Scans/s' in hud and re.search(r'Cursor latency\s+\d+ ms', hud) is not None, hud)
+        await page.click('#hudBtn'); await page.wait_for_timeout(100)
 
         # grab + throw with the camera pipeline
         await page.evaluate("for (const b of bodies) { M.Body.setStatic(b, false); } engine.gravity.y = 0; for (const b of bodies) { M.Body.setVelocity(b,{x:0,y:0}); M.Body.setAngularVelocity(b,0); }")

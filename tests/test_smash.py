@@ -144,7 +144,17 @@ async def main():
         await page.evaluate(f"sweep((x, y) => handAt(x, y, 0.8), {tgt['x'] - 250}, {tgt['y']}, {tgt['x'] + 250}, {tgt['y']}, 220)"); await page.wait_for_timeout(700)
         st = await page.evaluate(STATE)
         check('camera: a fast open-hand wave smashes bricks too', st['score'] > 0 and st['pieces'] > 0, st)
-        check('smash constants: PUNCH_SPEED 0.55, FIST_RADIUS 40, SMASH_RADIUS 95', await page.evaluate("__grasp.CONFIG.PUNCH_SPEED === 0.55 && __grasp.CONFIG.FIST_RADIUS === 40 && __grasp.CONFIG.SMASH_RADIUS === 95"))
+        check('smash constants: PUNCH_SPEED 0.55 (touch 0.35), FIST_RADIUS 40, SMASH_RADIUS 95', await page.evaluate("__grasp.CONFIG.PUNCH_SPEED === 0.55 && __grasp.CONFIG.PUNCH_SPEED_TOUCH === 0.35 && __grasp.CONFIG.FIST_RADIUS === 40 && __grasp.CONFIG.SMASH_RADIUS === 95"))
+        # contact semantics on camera: a slow hand that merely touches the wall breaks bricks (no speed gate; speed only makes hits bigger)
+        await page.evaluate("__grasp.resetSmash(performance.now())"); await page.wait_for_timeout(100)
+        tgt = await page.evaluate("(() => { const bs = __grasp.smash.bricks.filter(b => b.plugin.wall.id === 0); return { x: __grasp.smash.walls[0].x, y: Math.min(...bs.map(b => b.position.y)) + 10 }; })()")
+        await page.evaluate(f"window.__handFor = () => handAt({tgt['x']}, {tgt['y'] - 220}, 0.8)"); await page.wait_for_timeout(600)  # hovering well above the wall
+        check('camera: hovering above the wall breaks nothing', (await page.evaluate(STATE))['score'] == 0)
+        await page.evaluate("window.__vmax = 0; window.__vOn = true; (function r() { if (!__vOn) return; __vmax = Math.max(__vmax, hand.rawSpeed); requestAnimationFrame(r); })()")
+        await page.evaluate(f"sweep((x, y) => handAt(x, y, 0.8), {tgt['x']}, {tgt['y'] - 220}, {tgt['x']}, {tgt['y'] + 10}, 1800)"); await page.wait_for_timeout(2200)  # ~0.13 px/ms down onto the wall
+        st = await page.evaluate(STATE); vmax = await page.evaluate("__vOn = false; __vmax")
+        check('camera: a slow hand touching the wall breaks bricks (contact, no speed gate)', st['score'] > 0 and st['pieces'] > 0 and vmax < 0.55 * 0.9, [st, vmax])
+        check('camera hint: touch the walls and cars, move fast for bigger hits (EN + HE)', (await page.evaluate("hintText()")).startswith('Touch the walls and cars with your hand to smash them; move fast for bigger hits') and (await page.evaluate("(() => { setLang('he'); const h = hintText(); setLang('en'); return h; })()")).startswith('געו בקירות ובמכוניות עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר'), await page.evaluate("hintText()"))
         check('camera: no page errors', not errs, errs); await ctx.close()
 
         # --- phone (touch), English + Hebrew ---

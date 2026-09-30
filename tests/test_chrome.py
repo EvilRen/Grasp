@@ -99,10 +99,13 @@ async def main():
             w2 = await page.evaluate("preview.getBoundingClientRect().width")
             check(tag + ' phone: a tap on the preview enlarges it for a look, then it shrinks back', w1 > 150 and abs(w2 - 96) < 1 and await page.evaluate("!preview.classList.contains('peek')"), [w1, w2])
             if not he:
-                check('camera maps the central 86% of the frame', await page.evaluate("__grasp.CONFIG.MAP_BOX === 0.86"))
-                await page.evaluate("window.__handFor = () => mkHand(1 - 0.12, 0.5, 0.8)"); await page.wait_for_timeout(700)  # a hand 12% into the frame lands ~5.8% into the screen
+                check('camera maps the central 55% of the frame', await page.evaluate("__grasp.CONFIG.MAP_BOX === 0.55"))
+                await page.evaluate("window.__handFor = () => mkHand(1 - 0.225, 0.5, 0.8)"); await page.wait_for_timeout(700)  # a hand 22.5% into the frame sits on the box edge = the screen edge
                 cx = await page.evaluate("cursor.x")
-                check('hand at 12% of the frame maps near the screen edge (~21 px)', abs(cx - 360 * (0.12 - 0.07) / 0.86) < 4, cx)
+                check('hand at 22.5% of the frame maps to the screen edge (clamped to 8 px)', cx == 8, cx)
+                await page.evaluate("window.__handFor = () => mkHand(1 - 0.30, 0.5, 0.8)"); await page.wait_for_timeout(700)  # 30% into the frame = 7.5% of the box = ~49 px
+                cx = await page.evaluate("cursor.x")
+                check('hand at 30% of the frame maps ~49 px in', abs(cx - 360 * (0.30 - 0.225) / 0.55) < 4, cx)
                 await page.evaluate("window.__handFor = () => handAt(-300, innerHeight / 2, 0.8)"); await page.wait_for_timeout(700)
                 lx = await page.evaluate("[cursor.x, cursor.present]")
                 await page.evaluate("window.__handFor = () => handAt(innerWidth + 300, innerHeight + 300, 0.8)"); await page.wait_for_timeout(700)

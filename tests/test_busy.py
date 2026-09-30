@@ -3,10 +3,10 @@ POINT_JS = """
 // pointing finger sweeping in a straight line, and an open hand doing the same
 window.pointLine = (x0, y0, x1, y1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms); return pointAt(x0 + (x1 - x0) * k, y0 + (y1 - y0) * k); }; };
 window.openLine = (x0, y0, x1, y1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms); return handAt(x0 + (x1 - x0) * k, y0 + (y1 - y0) * k, 0.8); }; };
-window.mkPoint = (tx, ty) => { // index fingertip at camera coords (not mirrored); other fingers curled, thumb tucked
+window.mkPoint = (tx, ty) => { // index fingertip at camera coords (not mirrored); other fingers curled; the thumb sits just above the tip so the pinch midpoint (the anchor before the point pose is confirmed) is only ~65 px off the tip on screen
   const L = Array.from({length:21}, () => ({x: tx, y: ty + 0.25, z: 0}));
   L[0] = {x: tx, y: ty + 0.35, z:0}; L[9] = {x: tx, y: ty + 0.20, z:0};
-  L[8] = {x: tx, y: ty, z:0}; L[6] = {x: tx, y: ty + 0.12, z:0}; L[4] = {x: tx - 0.08, y: ty + 0.22, z:0};
+  L[8] = {x: tx, y: ty, z:0}; L[6] = {x: tx, y: ty + 0.12, z:0}; L[4] = {x: tx, y: ty - 0.09, z:0};
   for (const [tip, pip] of [[12,10],[16,14],[20,18]]) { L[pip] = {x: tx + 0.02, y: ty + 0.17, z:0}; L[tip] = {x: tx + 0.02, y: ty + 0.24, z:0}; }
   return L;
 };
@@ -14,6 +14,8 @@ window.pointAt = (X, Y) => { const B = __grasp.CONFIG.MAP_BOX, m = (1 - B) / 2; 
 """
 ARC_JS = """
 // pinch at radius r around (cx, cy) and sweep from angle a0 to a1 over ms
+// jump: the eased camera cursor glides through everything between two spots, so a hand that goes somewhere else first relaxes (open, 250 ms) at the old spot, moves there open (300 ms), then takes the pose
+window.jump = (fn, x, y) => { const t0 = performance.now(), ox = cursor.x, oy = cursor.y; window.__handFor = () => { const e = performance.now() - t0; return e < 250 ? handAt(ox, oy, 0.8) : e < 550 ? handAt(x, y, 0.8) : fn(x, y); }; };
 window.arcHand = (cx, cy, r, a0, a1, ms) => { const t0 = performance.now(); window.__handFor = () => { const k = Math.min(1, (performance.now() - t0) / ms), a = a0 + (a1 - a0) * k; return handAt(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0.1); }; };
 """
 LINE_JS = """
@@ -288,14 +290,14 @@ async def main():
         await page.evaluate(f"window.__handFor = () => handAt({k0['x']}, {k0['y'] + r}, 0.8)"); await page.wait_for_timeout(400)
         check('camera: opening the hand lets go', await page.evaluate("__grasp.busy.grabbed === null && !" + W + "[9].state.held"))
         b0 = await page.evaluate(wjs(5))
-        await page.evaluate(f"window.__handFor = () => pointAt({b0['x']}, {b0['y']})"); await page.wait_for_timeout(700)
+        await page.evaluate(f"jump(pointAt, {b0['x']}, {b0['y']})"); await page.wait_for_timeout(1000)
         check('camera: pointing at a button presses it', await page.evaluate("gesture === 'point' && " + W + "[5].state.down && __grasp.busy.sounds.note === 1"), await page.evaluate("[gesture, __grasp.busy.sounds]"))
         s0 = await page.evaluate(wjs(1))
-        await page.evaluate(f"window.__handFor = () => pointAt({s0['x']}, {s0['y']})"); await page.wait_for_timeout(500)
+        await page.evaluate(f"jump(pointAt, {s0['x']}, {s0['y']})"); await page.wait_for_timeout(1000)
         check('camera: pointing at a switch flips it and releases the button', await page.evaluate(W + "[1].state.on && !" + W + "[5].state.down"))
         # pinch the slider handle and move the hand along the track
         hp = await page.evaluate(HANDLE(10)); tr = await page.evaluate("(() => { const g = " + W + "[10].geom(); return g.len - g.hw; })()")
-        await page.evaluate(f"window.__handFor = () => handAt({hp['x']}, {hp['y']}, 0.8)"); await page.wait_for_timeout(400)
+        await page.evaluate(f"jump((x, y) => handAt(x, y, 0.8), {hp['x']}, {hp['y']})"); await page.wait_for_timeout(900)
         await page.evaluate(f"window.__handFor = () => handAt({hp['x']}, {hp['y']}, 0.1)"); await page.wait_for_timeout(400)
         check('camera: pinch grabs the slider and starts the tone', await page.evaluate("__grasp.busy.grabbed === " + W + "[10] && __grasp.busy.tone.active && __grasp.busy.sounds.tone === 1"))
         await page.evaluate(f"lineHand({hp['x']}, {hp['y']}, {hp['x'] + tr * 0.7}, {hp['y']}, 500)"); await page.wait_for_timeout(800)
@@ -304,17 +306,17 @@ async def main():
         await page.evaluate(f"window.__handFor = () => handAt({hp['x'] + tr * 0.7}, {hp['y']}, 0.8)"); await page.wait_for_timeout(400)
         check('camera: opening the hand drops the slider and stops the tone', await page.evaluate("__grasp.busy.grabbed === null && !__grasp.busy.tone.active"))
         dr = await page.evaluate(wjs(13))
-        await page.evaluate(f"window.__handFor = () => pointAt({dr['x']}, {dr['y'] + dr['h'] * 0.2})"); await page.wait_for_timeout(600)
-        check('camera: pointing at the locked door rattles it', await page.evaluate("__grasp.busy.sounds.thud") == 1 and not (await page.evaluate(wjs(13)))['st']['open'])
+        await page.evaluate(f"jump(pointAt, {dr['x']}, {dr['y'] + dr['h'] * 0.2})"); await page.wait_for_timeout(1000)
+        check('camera: pointing at the locked door rattles it', await page.evaluate("__grasp.busy.sounds.thud") == 1 and not (await page.evaluate(wjs(13)))['st']['open'], [await page.evaluate("__grasp.busy.sounds"), (await page.evaluate(wjs(13)))['st'], await page.evaluate("[gesture, __grasp.state.cursor, __grasp.busy.active && __grasp.busy.active.kind, __grasp.busy.hover && __grasp.busy.hover.kind]"), dr])
         # piano: a pointing finger sweeping along the keys plays a glissando
         kq = [await page.evaluate(W + f"[14].keyPos({i})") for i in (0, 7)]
-        await page.evaluate(f"window.__handFor = () => pointAt({kq[0]['x']}, {kq[0]['y']})"); await page.wait_for_timeout(500)
+        await page.evaluate(f"jump(pointAt, {kq[0]['x']}, {kq[0]['y']})"); await page.wait_for_timeout(1000)
         check('camera: pointing at a key plays and sinks it', await page.evaluate("__grasp.busy.sounds.piano") == 1 and await page.evaluate(W + "[14].state.keys[0].k") > 0.8)
         await page.evaluate(f"pointLine({kq[0]['x']}, {kq[0]['y']}, {kq[1]['x']}, {kq[1]['y']}, 600)"); await page.wait_for_timeout(900)
         check('camera: sweeping the finger plays a glissando across the keys', await page.evaluate("__grasp.busy.sounds.piano") >= 6, await page.evaluate("__grasp.busy.sounds"))
         # lights: pinch-and-hold pulses a bulb
         b2 = await page.evaluate(W + "[16].bulbPos(2)")
-        await page.evaluate(f"window.__handFor = () => handAt({b2['x']}, {b2['y']}, 0.8)"); await page.wait_for_timeout(400)
+        await page.evaluate(f"jump((x, y) => handAt(x, y, 0.8), {b2['x']}, {b2['y']})"); await page.wait_for_timeout(900)
         check('camera: open hand hovers the lights', await page.evaluate("__grasp.busy.hover === " + W + "[16]"))
         await page.evaluate(f"window.__handFor = () => handAt({b2['x']}, {b2['y']}, 0.1)"); await page.wait_for_timeout(800)
         st = (await page.evaluate(wjs(16)))['st']
@@ -324,13 +326,13 @@ async def main():
         check('camera: opening the hand ends the pulse, bulb not toggled', not st['bulbs'][2]['pulse'] and not st['bulbs'][2]['on'] and await page.evaluate("__grasp.busy.sounds.tink") == 1, st['bulbs'][2])
         # spinner: a fast open-hand sweep flicks it
         sp = await page.evaluate(wjs(17)); R = await page.evaluate(W + "[17].R()")
-        await page.evaluate(f"window.__handFor = () => handAt({sp['x'] - 2 * R}, {sp['y'] - R * 0.4}, 0.8)"); await page.wait_for_timeout(400)
+        await page.evaluate(f"jump((x, y) => handAt(x, y, 0.8), {sp['x'] - 2 * R}, {sp['y'] - R * 0.4})"); await page.wait_for_timeout(900)
         await page.evaluate(f"openLine({sp['x'] - 2 * R}, {sp['y'] - R * 0.4}, {sp['x'] + 2 * R}, {sp['y'] - R * 0.4}, 160)"); await page.wait_for_timeout(400)
         st = (await page.evaluate(wjs(17)))['st']
         check('camera: an open-hand sweep spins the wheel (clicks follow)', st['spun'] and (st['vel'] > 0 or st['winner'] is not None) and st['clicks'] >= 1 and await page.evaluate("__grasp.busy.sounds.cog") >= 1, [st['vel'], st['clicks']])
         # xylophone: a fast open-hand sweep plays the bars it crosses
         xy = await page.evaluate(wjs(15)); x0 = await page.evaluate(W + "[15].x + " + W + "[15].barX(0)"); x7 = await page.evaluate(W + "[15].x + " + W + "[15].barX(7)")
-        await page.evaluate(f"window.__handFor = () => handAt({x0 - 60}, {xy['y']}, 0.8)"); await page.wait_for_timeout(400)
+        await page.evaluate(f"jump((x, y) => handAt(x, y, 0.8), {x0 - 60}, {xy['y']})"); await page.wait_for_timeout(900)
         await page.evaluate(f"openLine({x0 - 60}, {xy['y']}, {x7 + 60}, {xy['y']}, 260)"); await page.wait_for_timeout(500)
         check('camera: an open-hand sweep plays a run on the xylophone', await page.evaluate("__grasp.busy.sounds.xylo") >= 3, await page.evaluate("__grasp.busy.sounds"))
         await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(600)

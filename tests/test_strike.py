@@ -10,8 +10,8 @@ window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new
 # park an incoming ball at HIT_Z right under the cursor at (x, y); dx px of hand travel in the last ~60 ms sets the hand speed
 def hit_js(x, y, dx=0):
     return f"(() => {{ const now = performance.now(); if ({dx}) {{ cursor.history.length = 0; cursor.history.push({{ t: now - 60, x: {x} - {dx}, y: {y} }}, {{ t: now, x: {x}, y: {y} }}); }} {S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, {x}, {y}); }})()"
-async def miss(page):  # park the ball just past the player's plane with no hand near it: a miss on both difficulties (Easy still allows a late slap down to -HIT_Z)
-    await page.evaluate(f"{S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.7, innerWidth * 0.5, innerHeight * 0.5)"); await page.wait_for_timeout(250)
+async def miss(page):  # park the ball just past the player's plane with no hand near it (and no recent cursor path near it): a miss on both difficulties (Easy still allows a late slap down to -HIT_Z)
+    await page.evaluate(f"cursor.history.length = 0; {S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.7, innerWidth * 0.5, innerHeight * 0.5)"); await page.wait_for_timeout(250)
 async def miss_out(page, n):  # n misses, a serve apart
     for _ in range(n): await miss(page); await page.wait_for_timeout(900)
 
@@ -33,7 +33,7 @@ async def main():
         check('strike mode starts: ball served from the far end, 3 lives, score 0', await page.evaluate("gameMode") == 'strike' and st['z'] is not None and st['z'] > cfg['zf'] * 0.7 and st['lives'] == cfg['lives'] and st['score'] == 0 and st['dir'] == 1, st)
         check('strike.walls list exists for step 2', await page.evaluate(f"Array.isArray({S}.walls)"))
         z0 = st['z']; await page.wait_for_timeout(250); z1 = await page.evaluate(f"{S}.ball.z")
-        check('ball approaches: z decreases at the base speed', z0 - z1 > 150 and z0 - z1 < 600, [z0, z1])
+        check('ball approaches: z decreases at the base speed', z0 - z1 > 100 and z0 - z1 < 600, [z0, z1])
         # corridor + ball pixels (the mouse is present, parked low so the hand sprite stays clear of the probes)
         await page.mouse.move(640, 600); await page.wait_for_timeout(150)
         await page.evaluate(f"{S}.setBallZ(900, 200, 700); window.__keepWalls = {S}.walls.splice(0)"); await page.wait_for_timeout(50)  # brick walls set aside: they stand in front of the vanishing point
@@ -75,7 +75,7 @@ async def main():
         await page.evaluate(hit_js(600, 400)); await page.wait_for_timeout(100)
         check('hit on the left side of the ball sends it right', await page.evaluate(f"{S}.ball.dir === -1 && {S}.ball.vx > 0"), await page.evaluate(STATE))
         # miss
-        await page.mouse.move(100, 100); await page.wait_for_timeout(100)
+        await page.mouse.move(100, 100); await page.wait_for_timeout(250)
         await miss(page)
         st = await page.evaluate(STATE)
         check('ball passes the cursor: miss, one life lost, red flash', st['lives'] == cfg['lives'] - 1 and st['misses'] == 1 and st['z'] is None and await page.evaluate(f"performance.now() - {S}.flash < 600"), st)
@@ -97,10 +97,20 @@ async def main():
         check('HUD shows strike + lives', 'strike' in await page.inner_text('#hud') and 'lives' in await page.inner_text('#hud'))
         # kid-friendly Easy default: 5 lives, slower ball, bigger reach, late slaps, magnet assist; Normal = the old values
         pr = await page.evaluate("__grasp.strikeParams()")
-        check('Easy is the default: 5 lives, 0.8 base speed, x2.6 reach + 90 px, late window, magnet', pr['diff'] == 'easy' and pr['lives'] == 5 and pr['speed'] == 0.8 and pr['radius'] == 2.6 and pr['near'] == 90 and pr['late'] > 0 and pr['magnet'] > 0 and pr['hand'] > 1 and pr['grow'] == 1.03 and pr['max'] == 2.2, pr)
+        check('Easy is the default: 5 lives, 0.65 base speed, x2.6 reach + 120 px, late window, magnet 0.5', pr['diff'] == 'easy' and pr['lives'] == 5 and pr['speed'] == 0.65 and pr['radius'] == 2.6 and pr['near'] == 120 and pr['late'] > 0 and pr['magnet'] == 0.5 and pr['hand'] > 1 and pr['grow'] == 1.03 and pr['max'] == 2.2, pr)
         await page.mouse.move(640, 400); await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
         await page.evaluate(f"{S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, 760, 400)"); await page.wait_for_timeout(120)
         check('Easy: a hand 120 px from the ball still hits it', await page.evaluate(f"{S}.score") > s0 and await page.evaluate(f"{S}.ball.dir") == -1)
+        # a laggy tracker: a cursor that was on the ball ~100 ms before the crossing (and has since moved away) still hits; 300 ms ago is too old
+        await page.wait_for_timeout(150); h0 = await page.evaluate(f"{S}.hits")
+        await page.mouse.move(400, 400); await page.wait_for_timeout(250); await page.mouse.move(900, 400); await page.wait_for_timeout(70)
+        await page.evaluate(f"{S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, 400, 400)"); await page.wait_for_timeout(120)
+        check('a cursor that was on the ball 100 ms before the crossing still hits', await page.evaluate(f"{S}.hits") == h0 + 1 and await page.evaluate(f"{S}.ball.dir") == -1, await page.evaluate(STATE))
+        await page.wait_for_timeout(150); h0 = await page.evaluate(f"{S}.hits")
+        await page.mouse.move(400, 400); await page.wait_for_timeout(250); await page.mouse.move(900, 400); await page.wait_for_timeout(320)
+        await page.evaluate(f"{S}.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, 400, 400)"); await page.wait_for_timeout(120)
+        check('a cursor that left the ball 300 ms ago is too old: no hit', await page.evaluate(f"{S}.hits") == h0 and await page.evaluate(f"{S}.ball && {S}.ball.dir") == 1, await page.evaluate(STATE))
+        await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.mouse.move(640, 400); await page.wait_for_timeout(400)  # that ball parked far away again, the hand back on it
         await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
         await page.evaluate(f"{S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.6, 640, 400)"); await page.wait_for_timeout(120)
         check('Easy: a late slap just past the plane still counts', await page.evaluate(f"{S}.score") > s0 and await page.evaluate(f"{S}.misses") == 0)
