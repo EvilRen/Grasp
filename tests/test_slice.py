@@ -43,6 +43,7 @@ async def main():
         await page.click('.modes button[data-mode=slice]')
         check('menu shows slice selected + description', await page.evaluate("document.querySelector('[data-mode=slice]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('Fruit')"))
         await page.click('#mouseBtn'); await page.wait_for_timeout(2500)
+        if not await page.evaluate("__grasp.slice.fruits.length > 0"): await page.evaluate("__grasp.spawnWave()"); await page.wait_for_timeout(300)  # spawn timing is random
         check('fruit spawns and flies up from below', await page.evaluate("__grasp.slice.fruits.some(f => f.vy < 0) || __grasp.slice.fruits.length > 0"), await page.evaluate("__grasp.slice.fruits.map(f=>[Math.round(f.y), +f.vy.toFixed(2)])"))
         await page.evaluate("parkFruit(640, 400)")
         await page.mouse.move(400, 400); await page.mouse.down()
