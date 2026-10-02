@@ -147,7 +147,7 @@ async def main():
         ctx, page, errs = await fresh(b, init="sessionStorage.setItem('grasp.testDate', '2026-03-01');")
         await page.evaluate(SFX_JS)
         a = await page.evaluate("__grasp.missions")
-        check('a set date gives 3 distinct missions from the pool', len(a) == 3 and len({m['id'] for m in a}) == 3 and all(m['id'] in ['fruit', 'bricks', 'cars', 'walls', 'powerups', 'boss', 'strikeLevel', 'rounds', 'combo'] for m in a) and await page.evaluate(P + ".missions.date") == '2026-03-01', a)
+        check('a set date gives 3 distinct missions from the pool', len(a) == 3 and len({m['id'] for m in a}) == 3 and all(m['id'] in ['fruit', 'bricks', 'cars', 'walls', 'powerups', 'boss', 'strikeLevel', 'rounds', 'combo', 'close'] for m in a) and await page.evaluate(P + ".missions.date") == '2026-03-01', a)
         ev0 = await page.evaluate("__grasp.missionPool.find(q => q.id === '" + a[0]['id'] + "').ev")
         await page.evaluate("__grasp.track('" + ev0 + "', 1)")
         await page.reload(); await page.wait_for_timeout(600); await page.evaluate(SFX_JS)

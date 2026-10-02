@@ -1,5 +1,6 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 S = "__grasp.strike"
+LEGACY = "__grasp.strike.extrasOff = true"  # this suite checks exact scores and timings: no perk cards, streak multiplier or 'Close one!' slow-mo here (tests/test_strike2.py covers those)
 STATE = "(() => { const s = " + S + ", b = s.ball; return { z: b ? b.z : null, x: b ? b.x : null, y: b ? b.y : null, dir: b ? b.dir : 0, sup: !!(b && b.super), speed: s.speed, pace: s.pace, lives: s.lives, score: s.score, over: s.over, power: s.power, hits: s.hits, misses: s.misses, serves: s.serves, bounces: s.bounces, best: s.best }; })()"
 PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
 ROWS = "new Set([...document.querySelectorAll('.modes button')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the pressed card is lifted 2 px
@@ -22,7 +23,7 @@ async def main():
         # --- mouse, desktop ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         check('desktop: 5 mode cards in one row fit', await page.evaluate(FITS) and await page.evaluate(ROWS) == 1)
         await page.click('.modes button[data-mode=strike]')
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
@@ -133,7 +134,7 @@ async def main():
         # --- brick walls (step 2), desktop mouse ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)  # hand parked in a corner, clear of the walls
@@ -201,7 +202,7 @@ async def main():
         # --- wall kinds + spin (step 4), desktop mouse ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
@@ -331,7 +332,7 @@ async def main():
         # --- power-ups (step 5), desktop mouse: gold bricks, capsules, catch / miss, the five kinds, timers ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")
@@ -451,7 +452,7 @@ async def main():
         # --- in-game UI (step 3): HUD card, power meter, combo banner, serve cue, round-over card ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(200)
@@ -534,7 +535,7 @@ async def main():
         # --- levels + boss (step 6), desktop mouse: level goals, the progress bar, level-up, the boss wall, its defeat, the end card and the badge ---
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
@@ -666,7 +667,7 @@ async def main():
         # --- camera stub, desktop: an open hand on the ball hits it ---
         ctx = await b.new_context(permissions=['camera'], viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS)
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.click('#camBtn')
         await page.wait_for_function("mode === 'camera'", timeout=15000)
         await page.evaluate("window.__handFor = () => handAt(640, 400, 0.8); __grasp.CONFIG.STRIKE_PU_RATE = 0"); await page.wait_for_timeout(900)
@@ -686,7 +687,7 @@ async def main():
             tag = 'he' if he else 'en'
             ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
-            await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+            await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
             check(tag + ' phone: 5 mode cards in one snap row and link fit', await page.evaluate(FITS) and rows == 1, rows)
