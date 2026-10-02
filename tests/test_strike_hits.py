@@ -11,8 +11,9 @@ async def open_page(b, w, h, gfx=None):
     await routes(page); page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + (f"window.__graspGfx = {gfx};" if gfx else ''))
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     await page.evaluate(f"{S}.extrasOff = true; {S}.guestEvery = 0; __grasp.CONFIG.STRIKE_PU_RATE = 0; __grasp.CONFIG.STRIKE_MAGNET = 0")
-    await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
     return ctx, page, errs
 
@@ -49,7 +50,7 @@ async def main():
             return await page.evaluate(f"""(() => {{ const s = {S}; s.walls.length = 0; const w = s.spawnWall('brick', 900); for (const k of w.bricks) k.hp = 1;
               const cells = {cells}.map(([c, r]) => w.bricks.find(k => k.col === c && k.row === r)); for (const k of cells) {{ k.alive = false; k.hole = true; k.hp = 0; w.left--; }}
               s.smashTest('medium'); const b = s.ball, cs = cells.map(k => brickCell(w, k.col, k.row)); b.x = cs.reduce((a, c) => a + c.x, 0) / cs.length; b.y = cs.reduce((a, c) => a + c.y, 0) / cs.length;
-              const c0 = brickCell(w, 0, 0); return {{ id: w.id, left: w.left, fits: s.ballFitsGap(w), r: ballRad(b), cw: c0.w, ch: c0.h, cols: w.cols, rows: w.rows }}; }})()""")
+              b.lx = b.x; b.ly = b.y; const gc = s.ballGapContact(w, b); const c0 = brickCell(w, 0, 0); return {{ id: w.id, left: w.left, fits: s.ballFitsGap(w), clear: gc.over.length === 0, clip: gc.over.length, open: gc.open, r: ballRad(b), cw: c0.w, ch: c0.h, cols: w.cols, rows: w.rows }}; }})()""")
         await park(page)
         g = await page.evaluate(f"(() => {{ const w = {S}.spawnWall('brick', 900); return {{ cols: w.cols, rows: w.rows }}; }})()")
         mid = [g['cols'] // 2, g['rows'] // 2]
@@ -59,8 +60,8 @@ async def main():
             await page.evaluate(f"{S}.ball.tier = '{tier}'; {S}.ball.super = false")
             await page.wait_for_function(f"(() => {{ const w = {S}.walls.find(q => q.id === {h['id']}); return !w || w.left < {h['left']} || ({S}.ball && {S}.ball.dir > 0); }})()", timeout=8000)
             a = await page.evaluate(f"(() => {{ const w = {S}.walls.find(q => q.id === {h['id']}); return {{ left: w ? w.left : 0, dir: {S}.ball ? {S}.ball.dir : 0 }}; }})()")
-            check(f"Big ball (diameter {h['r'] * 2:.0f}) at a 1-cell hole ({h['cw']:.0f} x {h['ch']:.0f}) on a {tier} hit: does not fit -> no free pass; it breaks the bricks it overlaps" + (' and bounces back' if tier == 'soft' else ''),
-                  not h['fits'] and h['r'] * 2 > min(h['cw'], h['ch']) and a['left'] < h['left'] and (tier != 'soft' or a['dir'] == 1), [h, a])
+            check(f"Big ball (diameter {h['r'] * 2:.0f}) at a 1-cell hole ({h['cw']:.0f} x {h['ch']:.0f}) on a {tier} hit: does not fit -> no free pass; it breaks the bricks it overlaps" + (' (mostly in the hole: it flies on; else it bounces back)' if tier == 'soft' else ''),
+                  not h['fits'] and h['r'] * 2 > min(h['cw'], h['ch']) and a['left'] < h['left'] and (tier != 'soft' or a['dir'] == (-1 if h['open'] >= 0.5 else 1)), [h, a])
         await page.evaluate(f"{S}.powerups.length = 0")
         # a normal ball and a 2 x 2 hole: it fits and flies through untouched
         await park(page)
@@ -69,13 +70,57 @@ async def main():
         zb = await page.evaluate(f"{S}.ball.z")
         await page.wait_for_function(f"{S}.ball && {S}.ball.z > 940", timeout=8000)
         a = await page.evaluate(f"(() => {{ const w = {S}.walls.find(q => q.id === {h['id']}); return {{ left: w ? w.left : -1, dir: {S}.ball.dir }}; }})()")
-        check(f"ball (diameter {h['r'] * 2:.0f}) smaller than a 2 x 2 hole ({h['cw'] * 2:.0f} x {h['ch'] * 2:.0f}): fits -> passes untouched (no brick broken, flies on)", h['fits'] and a['left'] == h['left'] and a['dir'] == -1, [h, a])
+        check(f"ball (diameter {h['r'] * 2:.0f}) at a 2 x 2 hole ({h['cw'] * 2:.0f} x {h['ch'] * 2:.0f}): flies on (no bounce); untouched if its full circle fits, else only the edge bricks it clips go", a['dir'] == -1 and (a['left'] == h['left'] if h['clear'] else h['left'] - a['left'] == h['clip']), [h, a])
         # a ball off-centre in that hole, overlapping the bricks round it, does not fit
         nf = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}), c = brickCell(w, {c0}, {r0}); return s.ballFitsGap(w, {{ x: c.x + c.w / 2, y: c.y - c.h * 0.45, guest: null }}); }})()")
         check('the same ball half over the hole edge: does not fit (no free pass)', nf is False, nf)
         hf = await page.evaluate(f"(() => {{ const s = {S}, out = []; for (let i = 0; i < 12; i++) {{ s.walls.length = 0; const w = s.spawnWall('holed', 900), cs = w.bricks.filter(k => k.hole).map(k => brickCell(w, k.col, k.row)); out.push(s.ballFitsGap(w, {{ x: cs.reduce((a, c) => a + c.x, 0) / cs.length, y: cs.reduce((a, c) => a + c.y, 0) / cs.length, guest: null }})); }} return out; }})()")
         check('every spawned holed wall (12 on the phone grid) has a hole the ball fits through at its centre', all(hf), hf)
         check('phone: no page errors', not errs, errs); await ctx.close()
+
+        # ===== the hole edge (desktop, 2D then 3D): the ball's FULL circle, swept over the crossing; clipped edge bricks go, the ball flies on =====
+        for gfx in (None, "{ pr: 0.4, auto: false, shadows: false }"):
+            tag = '3D' if gfx else '2D'
+            ctx, page, errs = await open_page(b, 1280, 800, gfx=gfx)
+            if gfx:
+                await page.wait_for_function(f"{S}.gfx === '3d' || {S}.gfxInfo.state === 'failed'", timeout=20000)
+                if await page.evaluate(f"{S}.gfx") != '3d': print('INFO no WebGL: 3D hole-edge check skipped'); await ctx.close(); continue
+            await park(page)
+            HOLE = f"""((dx, dy, lat) => {{ const s = {S}; s.walls.length = 0; const w = s.spawnWall('brick', 900); for (const k of w.bricks) k.hp = 1;
+              const c0 = Math.max(0, Math.floor(w.cols / 2) - 1), r0 = Math.max(0, Math.floor(w.rows / 2) - 1);
+              for (const [c, r] of [[c0, r0], [c0 + 1, r0], [c0, r0 + 1], [c0 + 1, r0 + 1]]) {{ const k = w.bricks.find(q => q.col === c && q.row === r); k.alive = false; k.hole = true; k.hp = 0; w.left--; }}
+              const a = brickCell(w, c0, r0), z = brickCell(w, c0 + 1, r0 + 1), L = a.x - a.w / 2, Rr = z.x + z.w / 2, T = a.y - a.h / 2, B = z.y + z.h / 2;
+              s.smashTest('medium'); const b = s.ball, r = ballRad(b); b.vx = b.vy = 0; b.spin = 0; b.speed = 0; // (held at the wall: the checks call smashWall themselves, or set the speed)
+              b.x = (L + Rr) / 2 + dx * r; b.y = (T + B) / 2 + dy * r; b.lx = b.x + (lat || 0) * r; b.ly = b.y;
+              return {{ id: w.id, left: w.left, r, hole: [L, Rr, T, B], x: b.x, y: b.y }}; }})"""
+            OVER = f"""((id) => {{ const s = {S}, w = s.walls.find(q => q.id === id), b = s.ball; if (!w) return []; return w.bricks.filter(k => k.alive && sweptDist(w, k, b) < ballRad(b) - 0.5).map(k => [k.col, k.row]); }})"""
+            # the ball's circle reaching over the hole's left edge by 5% / 15% of its radius
+            for pen in (0.05, 0.15):
+                h = await page.evaluate(HOLE + "(0, 0, 0)")
+                hw = (h['hole'][1] - h['hole'][0]) / 2
+                r = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}), b = s.ball, r = ballRad(b); b.x = {h['hole'][0]} + r * (1 - {pen}); b.lx = b.x; b.speed = s.pace; const spd = b.speed, pre = {OVER}({h['id']}), out = smashWall(w, b, performance.now()); return {{ pre, spd, out, left: w.left, clip: s.lastClip, speed: b.speed, dir: b.dir }}; }})()"); pre = r['pre']; spd = r['spd']
+                post = await page.evaluate(OVER + f"({h['id']})")
+                check(f"{tag}: ball overlapping the hole edge by {int(pen * 100)}% of its radius: exactly the {len(pre)} brick(s) it overlaps are knocked out, it flies on (no bounce, no slow-down), none left under its circle",
+                      len(pre) >= 1 and r['out'] == 'pass' and h['left'] - r['left'] == len(pre) and r['clip'] and r['clip']['n'] == len(pre) and r['speed'] == spd and r['dir'] == -1 and post == [], [pre, r, post])
+            h = await page.evaluate(HOLE + "(0, 0, 0)")
+            r = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}); s.lastClip = null; const out = smashWall(w, s.ball, performance.now()); return {{ out, left: w.left, clip: s.lastClip }}; }})()")
+            check(f'{tag}: ball wholly inside the hole: passes, no brick destroyed', r['out'] == 'pass' and r['left'] == h['left'] and r['clip'] is None, [h['left'], r])
+            # swept: centred in the hole at the crossing, but it came in sideways from over the edge bricks this frame
+            h = await page.evaluate(HOLE + "(0, 0, -3.2)")
+            r = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}), b = s.ball; b.lx = b.x - 3.2 * ballRad(b); const pre = {OVER}({h['id']}), out = smashWall(w, b, performance.now()); return {{ pre, out, left: w.left }}; }})()"); pre = r['pre']
+            check(f'{tag}: a crossing with lateral motion clips the edge brick(s) it swept over: destroyed, the ball passes', len(pre) >= 1 and r['out'] == 'pass' and h['left'] - r['left'] == len(pre), [pre, r])
+            # mostly blocked: the ball's circle mostly over the bricks beside the hole -> a normal (medium) hit, not a clip
+            h = await page.evaluate(HOLE + "(0, 0, 0)")
+            r = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}), b = s.ball, r = ballRad(b); b.x = {h['hole'][0]} - r * 0.3; b.lx = b.x; s.lastClip = null; const open = s.ballGapContact(w).open, out = smashWall(w, b, performance.now()); return {{ open, out, left: w.left, clip: s.lastClip }}; }})()"); gc = r['open']
+            check(f'{tag}: the circle mostly over the bricks (open {gc:.2f} < 0.5): a normal hit (the medium footprint), not a clip', gc < 0.5 and r['clip'] is None and h['left'] - r['left'] >= 3, [gc, r])
+            # a real flight across the edge: at the crossing frame (and after) no live brick overlaps the ball's circle, and the drawn bricks (3D) match
+            h = await page.evaluate(HOLE + "(0, 0, 0)")
+            await page.evaluate(f"(() => {{ const b = {S}.ball, r = ballRad(b); b.x = {h['hole'][0]} + r * 0.9; b.lx = b.x; b.vx = -0.05; b.speed = {S}.pace; }})()")
+            await page.wait_for_function(f"!{S}.ball || {S}.ball.z > 905 || {S}.ball.dir > 0", timeout=8000); await page.evaluate(FRAMES)
+            fl = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}); if (!w) return {{ gone: true }}; const e = typeof G3 !== 'undefined' && G3.walls && gfx3dActive() ? G3.walls.get(w.id) : null; let inst = null; if (e) {{ inst = 0; for (const k in e.ims) inst += e.ims[k].count; }} return {{ dir: s.ball.dir, over: {OVER}({h['id']}), live: w.left, inst, left0: {h['left']} }}; }})()")
+            check(f'{tag}: a real flight over the hole edge: through (no bounce), edge bricks gone, no live brick under the ball after the crossing' + (', the 3D bricks match the live ones' if gfx else ''),
+                  fl.get('gone') or (fl['dir'] == -1 and fl['over'] == [] and fl['live'] < fl['left0'] and (not gfx or fl['inst'] == fl['live'])), fl)
+            check(f'{tag} hole edge: no page errors', not errs, errs); await ctx.close()
 
         # ===== 3D: the WebGL bricks and hole outlines sit at the logic's cells =====
         ctx, page, errs = await open_page(b, 1280, 800, gfx="{ pr: 0.4, auto: false, shadows: false }")

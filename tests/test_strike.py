@@ -1,6 +1,6 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 S = "__grasp.strike"
-LEGACY = "__grasp.strike.extrasOff = true"  # this suite checks exact scores and timings: no perk cards, streak multiplier or 'Close one!' slow-mo here (tests/test_strike2.py covers those)
+LEGACY = "__grasp.setPlayerLevel(20); __grasp.strike.extrasOff = true"  # this suite checks exact scores and timings: no perk cards, streak multiplier or 'Close one!' slow-mo here (tests/test_strike2.py covers those)
 STATE = "(() => { const s = " + S + ", b = s.ball; return { z: b ? b.z : null, x: b ? b.x : null, y: b ? b.y : null, dir: b ? b.dir : 0, sup: !!(b && b.super), speed: s.speed, pace: s.pace, lives: s.lives, score: s.score, over: s.over, power: s.power, hits: s.hits, misses: s.misses, serves: s.serves, bounces: s.bounces, best: s.best }; })()"
 PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 # 3D mode (the default harness): checks of the 2D art's colours / fine detail, the 2D sprite cache, and the frame rate (the headless WebGL is a
@@ -8,8 +8,8 @@ PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 GFX_READY = "['ready', 'failed'].includes(__grasp.strike.gfxInfo.state) || __grasp.strike.gfxInfo.want === '2d'"
 TO2D = "(async () => { await __grasp.setGfx('2d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"
 TO3D = "(async () => { if (!(window.__graspGfx && window.__graspGfx.mode === '2d')) await __grasp.setGfx('3d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
-ROWS = "new Set([...document.querySelectorAll('.modes button')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the pressed card is lifted 2 px
-FITS = "(() => { const bs = [...document.querySelectorAll('.modes button')], m = document.querySelector('.modes').getBoundingClientRect(); const a = document.querySelector('#start a.link').getBoundingClientRect(); const sel = document.querySelector('.modes button[aria-pressed=true]').getBoundingClientRect(); return bs.length === 5 && bs.every(b => b.scrollWidth <= b.clientWidth + 1) && m.right <= innerWidth && m.left >= 0 && sel.right <= innerWidth && sel.left >= 0 && a.bottom <= innerHeight && a.width > 0; })()"  # phones: a scrollable snap row; the selected card is in view
+ROWS = "new Set([...document.querySelectorAll('.modes > button[data-mode]')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the start screen's tiles: 3 + 2
+FITS = "(() => { const bs = [...document.querySelectorAll('.modes > button[data-mode]')], a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 5 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && b.scrollWidth <= b.clientWidth + 1; }) && a.bottom <= innerHeight && document.documentElement.scrollHeight <= innerHeight; })()"
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
@@ -29,13 +29,13 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        check('desktop: 5 mode cards in one row fit', await page.evaluate(FITS) and await page.evaluate(ROWS) == 1)
+        check('desktop: the 5 game tiles (3 + 2) fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 2)
         await page.click('.modes button[data-mode=strike]')
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
         check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'sandbox'"))
         cfg = await page.evaluate("({ zf: __grasp.CONFIG.STRIKE_Z_FAR, hz: __grasp.CONFIG.STRIKE_HIT_Z, base: __grasp.CONFIG.STRIKE_BASE_SPEED, max: __grasp.CONFIG.STRIKE_MAX_SPEED, lives: __grasp.CONFIG.STRIKE_LIVES, sup: __grasp.CONFIG.STRIKE_SUPER_SPEED })")
         check('CONFIG has the strike constants', all(v > 0 for v in cfg.values()) and cfg['hz'] < cfg['zf'] and cfg['base'] < cfg['max'], cfg)
-        await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
         st = await page.evaluate(STATE)
         check('strike mode starts: ball served from the far end, 3 lives, score 0', await page.evaluate("gameMode") == 'strike' and st['z'] is not None and st['z'] > cfg['zf'] * 0.7 and st['lives'] == cfg['lives'] and st['score'] == 0 and st['dir'] == 1, st)
         check('strike.walls list exists for step 2', await page.evaluate(f"Array.isArray({S}.walls)"))
@@ -140,7 +140,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)  # hand parked in a corner, clear of the walls
         ws = await page.evaluate(f"{S}.walls.map(w => ({{ z: w.z, n: w.bricks.length, alive: w.bricks.filter(k => k.alive).length, cols: w.cols, rows: w.rows, hp: w.hp, level: w.level }}))")
@@ -208,7 +208,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")  # every sound asked for, in order
@@ -342,7 +342,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.wait_for_timeout(900)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")
         PU = "{ const s = __grasp.strike; "
@@ -464,11 +464,11 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(200)
         chrome = await page.evaluate("document.querySelector('.chrome').getBoundingClientRect().bottom"); hud = await page.evaluate(f"{S}.ui.hud")
-        check('HUD card sits below the chrome buttons and fits the screen', hud and hud['y'] >= chrome and hud['x'] >= 0 and hud['x'] + hud['w'] <= 1280 and hud['h'] >= 48, [hud, chrome])
+        check('the slim HUD bar (36-52 px) sits below the chrome buttons and fits the screen', hud and hud['y'] >= chrome and hud['x'] >= 0 and hud['x'] + hud['w'] <= 1280 and 36 <= hud['h'] <= 52, [hud, chrome])
         rim = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y']})"); above = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y'] - 4})")
         check('HUD card rim drawn (a lighter line than the corridor above it)', sum(rim) > sum(above) + 30, [rim, above])
         hearts = await page.evaluate(f"{S}.ui.hearts"); hp = await page.evaluate(PIX + f"({hearts[0]['x']}, {hearts[0]['y']})")
@@ -515,7 +515,7 @@ async def main():
         check('round over with a NEW BEST ribbon (saffron pixel on the card corner)', ov['nb'] and ov['best'] == ov['score'] > 0 and rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, [ov, rbp])
         check('stats for the card: hits, walls, best combo', ov['hits'] >= 1 and ov['walls'] >= 2 and ov['combo'] >= 2, ov)
         bt = ov['bt']
-        check('two buttons on the card, side by side, on screen', bt['again']['w'] > 100 and bt['home']['w'] > 100 and bt['again']['y'] == bt['home']['y'] and bt['again']['x'] + bt['again']['w'] < bt['home']['x'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
+        check('two buttons on the card, side by side, on screen (Home shares its slot with Shop when something is affordable)', bt['again']['w'] > 100 and bt['home']['w'] > (50 if 'shop' in bt else 100) and bt['again']['y'] == bt['home']['y'] and bt['again']['x'] + bt['again']['w'] < bt['home']['x'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
         ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
         check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
         await page.screenshot(path='tests/out/strike_ui_over.png')
@@ -535,7 +535,7 @@ async def main():
         await page.wait_for_timeout(400); await page.mouse.up(button='right')
         check('point held on Home: dwell ring fills, then Home fires (no instant restart)', dw == 'home' and still == 'mouse' and await page.evaluate("mode === 'none' && !$('start').hidden"), [dw, still, await page.evaluate("mode")])
         # tap on Home from a fresh round-over
-        await page.click('#mouseBtn'); await page.wait_for_timeout(500); await page.mouse.move(1200, 760); await page.wait_for_timeout(300)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(500); await page.mouse.move(1200, 760); await page.wait_for_timeout(300)
         await miss_out(page, cfg['lives'])
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=3000); await page.wait_for_timeout(600)
         bt = await page.evaluate(f"{S}.ui.buttons")
@@ -548,7 +548,7 @@ async def main():
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
         await page.click('.modes button[data-mode=strike]'); await page.wait_for_function(GFX_READY, timeout=20000); await page.evaluate(FRAMES)  # (3D: the renderer built before the round starts, so its one-off setup never eats into the banner's time)
-        await page.click('#mouseBtn'); await page.wait_for_timeout(900)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")
@@ -565,7 +565,7 @@ async def main():
         try: await page.wait_for_function(f"Math.abs({S}.ui.progBar.frac - 0.75) < 0.02", timeout=3000)  # the fill eases; slow machines need longer than 500 ms
         except Exception: pass
         bar = await page.evaluate(f"{S}.ui.progBar")
-        check('progress bar: a slim bar right under the HUD card, filled 3/4 (eased)', bar and abs(bar['frac'] - 0.75) < 0.02 and bar['y'] >= pb['hud']['y'] + pb['hud']['h'] and bar['y'] < pb['hud']['y'] + pb['hud']['h'] + 12 and bar['h'] <= 6 and bar['x'] >= pb['hud']['x'] and bar['x'] + bar['w'] <= pb['hud']['x'] + pb['hud']['w'], [bar, pb['hud']])
+        check('progress: a thin line along the HUD bar\'s bottom edge (inside it), filled 3/4 (eased)', bar and abs(bar['frac'] - 0.75) < 0.02 and bar['y'] >= pb['hud']['y'] + pb['hud']['h'] - 10 and bar['y'] + bar['h'] <= pb['hud']['y'] + pb['hud']['h'] and bar['h'] <= 6 and bar['x'] >= pb['hud']['x'] and bar['x'] + bar['w'] <= pb['hud']['x'] + pb['hud']['w'], [bar, pb['hud']])
         fill = await page.evaluate(PIX + f"({bar['x'] + bar['w'] * 0.3}, {bar['y'] + bar['h'] / 2})"); empty = await page.evaluate(PIX + f"({bar['x'] + bar['w'] * 0.9}, {bar['y'] + bar['h'] / 2})")
         check('progress bar pixels: saffron in the filled part, dark in the rest', fill[0] > 200 and fill[1] > 120 and fill[2] < 120 and sum(empty) < 200, [fill, empty])
         await page.screenshot(path='tests/out/strike5_progress.png')
@@ -583,11 +583,11 @@ async def main():
         check('banner pixel: saffron / cream "Level 2" text in the middle of the banner', bpx[0] > 180 and bpx[1] > 120, bpx)
         await page.wait_for_timeout(1200)
         check('the banner is gone after 1.6 s', await page.evaluate(f"{S}.ui.levelBanner === null && {S}.ui.levelUp === null"))
-        # boss (Normal): the 10th wall brings it: hp 16, near the far end, every wall in view crumbled, the queue behind it, the 'Boss!' tag and a roar
+        # boss (Normal): the last wall of world 1 (level 6, wall 36) brings it: hp 16 x the level-6 factor, near the far end, every wall in view crumbled, the queue behind it, the 'Boss!' tag and a roar
         await page.evaluate("__grasp.setStrikeDiff('normal')"); await page.click('#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
-        await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.setCleared(10)"); await page.wait_for_timeout(200)
-        bs = await page.evaluate(f"(() => {LB} const b = s.boss; return {{ boss: b && {{ n: b.n, hp: b.hp, maxHp: b.maxHp, z: b.z, angry: b.angry }}, z0: __grasp.CONFIG.STRIKE_Z_FAR * 0.8, level: s.level, progress: s.progress, walls: s.walls.map(w => w.z), gap: __grasp.CONFIG.STRIKE_WALL_GAP, tag: s.ui.tag, sfx: __sfx, ui: s.ui.boss, debris: s.debris.length, every: __grasp.strikeParams().diff === 'normal' && sd('STRIKE_BOSS_EVERY') }}; }})()")
-        check('Normal: the 10th wall spawns boss #1 with 17 hp (16 x the level-3 factor 1.08) near the far end, angry not yet', bs['boss'] and bs['boss']['n'] == 1 and bs['boss']['hp'] == 17 and bs['boss']['maxHp'] == 17 and bs['z0'] - 60 < bs['boss']['z'] <= bs['z0'] and not bs['boss']['angry'] and bs['every'] == 10 and bs['level'] == 3 and bs['progress'] == 1, bs)
+        await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.setCleared(36)"); await page.wait_for_timeout(200)
+        bs = await page.evaluate(f"(() => {LB} const b = s.boss; return {{ boss: b && {{ n: b.n, hp: b.hp, maxHp: b.maxHp, z: b.z, angry: b.angry }}, z0: __grasp.CONFIG.STRIKE_Z_FAR * 0.8, level: s.level, progress: s.progress, walls: s.walls.map(w => w.z), gap: __grasp.CONFIG.STRIKE_WALL_GAP, tag: s.ui.tag, sfx: __sfx, ui: s.ui.boss, debris: s.debris.length, every: __grasp.strikeParams().diff === 'normal' && s.gate }}; }})()")
+        check('Normal: wall 36 (the end of world 1) spawns boss #1 with 24 hp (16 x the level-6 factor 1.5) near the far end, angry not yet; level 6 holds with a full bar', bs['boss'] and bs['boss']['n'] == 1 and bs['boss']['hp'] == 24 and bs['boss']['maxHp'] == 24 and bs['z0'] - 60 < bs['boss']['z'] <= bs['z0'] and not bs['boss']['angry'] and bs['every'] == 6 and bs['level'] == 6 and bs['progress'] == 7, bs)
         check('the walls in view crumbled into debris; the 4 queued walls all wait behind the boss (none in front)', bs['debris'] > 10 and len(bs['walls']) == 4 and all(z >= bs['boss']['z'] + bs['gap'] - 1 for z in bs['walls']), [bs['walls'], bs['boss']['z']])
         check('"Boss!" tag under the HUD + a roar', bs['tag'] and bs['tag']['kind'] == 'boss' and 'roar' in bs['sfx'] and await page.evaluate("t('wk_boss')") == 'Boss!' and await page.evaluate("I18N.he.wk_boss.length") >= 3, [bs['tag'], bs['sfx']])
         check('a replacement wall would spawn behind the boss too', await page.evaluate(f"nextWallZ() >= {S}.boss.z + __grasp.CONFIG.STRIKE_WALL_GAP - 1"))
@@ -614,14 +614,14 @@ async def main():
             await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.bossHit('{tier}')"); await page.wait_for_timeout(60)
             r = await page.evaluate(f"(() => {LB} return {{ hp: s.boss.hp, ds: s.score - {s0}, wince: s.ui.boss.wince, shut: s.ui.boss.eyes[0].shut, age: performance.now() - s.boss.hitAt, debris: s.debris.length - {d0}, angry: s.boss.angry, sfx: __sfx }}; }})()")
             check(f'{tier} hit on the boss: {dmg} damage, +{dmg * 5}, wince (eyes shut), bits of brick fly off, crack sfx', r['hp'] == h0 - dmg and r['ds'] == dmg * 5 and r['wince'] and r['shut'] and r['age'] < 300 and r['debris'] >= 2 and 'crack' in r['sfx'], [r, h0])
-        check('after 7 damage: 10 / 17 hp, not angry yet (above half)', await page.evaluate(f"{S}.boss.hp === 10 && !{S}.boss.angry"))
+        check('after 7 damage: 17 / 24 hp, not angry yet (above half)', await page.evaluate(f"{S}.boss.hp === 17 && !{S}.boss.angry"))
         fl = await page.evaluate(PIX + f"({ub['x'] + ub['w'] * 0.5}, {ub['y'] + ub['h'] * 0.93})")
         await page.wait_for_timeout(300)
         hb2 = await page.evaluate(f"{S}.ui.boss.bar"); hbp = await page.evaluate(PIX + f"({hb2['x'] + hb2['w'] * 0.5}, {hb2['y'] + hb2['h'] / 2})"); hbe = await page.evaluate(PIX + f"({hb2['x'] + hb2['w'] * 0.9}, {hb2['y'] + hb2['h'] / 2})")
-        check('health bar at 10 / 17: filled just past the middle (green), empty at the end', abs(hb2['frac'] - 10 / 17) < 0.01 and hbp[1] > hbp[0] + 60 and sum(hbe) < 200, [hb2, hbp, hbe])
+        check('health bar at 17 / 24: filled past the middle (green), empty at the end', abs(hb2['frac'] - 17 / 24) < 0.01 and hbp[1] > hbp[0] + 60 and sum(hbe) < 200, [hb2, hbp, hbe])
         await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.bossHit('super')"); await page.wait_for_timeout(80)
         an = await page.evaluate(f"(() => {LB} return {{ hp: s.boss.hp, angry: s.boss.angry, sfx: __sfx, roar: performance.now() - s.boss.roarAt, shake: shake.amp, ui: s.ui.boss.angry }}; }})()")
-        check('SUPER: 8 damage -> 2 / 17 hp: the boss gets angry (a roar + shake, brows down)', an['hp'] == 2 and an['angry'] and 'roar' in an['sfx'] and an['roar'] < 300 and an['shake'] >= 2.5 and an['ui'], an)
+        check('SUPER: 8 damage -> 9 / 24 hp: the boss gets angry (a roar + shake, brows down)', an['hp'] == 9 and an['angry'] and 'roar' in an['sfx'] and an['roar'] < 300 and an['shake'] >= 2.5 and an['ui'], an)
         await page.wait_for_timeout(300); z0 = await page.evaluate(f"{S}.boss.z"); await page.wait_for_timeout(400); z1 = await page.evaluate(f"{S}.boss.z")
         check('angry: it advances faster (x1.6)', (z0 - z1) / 400 > adv * 1.3, [(z0 - z1) / 400, adv])
         await page.evaluate(f"{S}.boss.nextRoar = performance.now() + 50; __sfx.length = 0"); await page.wait_for_timeout(250)
@@ -629,14 +629,14 @@ async def main():
         await page.wait_for_timeout(60); await page.screenshot(path='tests/out/strike5_angry.png')
         # the returning ball hits the boss and bounces back; a fireball does 8
         await page.evaluate(f"{S}.spawnBoss(2)"); await page.wait_for_timeout(60)
-        check('spawnBoss(2): boss #2 has 22 hp on Normal (20 x the level-3 factor 1.08)', await page.evaluate(f"{S}.boss.n === 2 && {S}.boss.hp === 22 && {S}.boss.maxHp === 22"))
+        check('spawnBoss(2): boss #2 has 30 hp on Normal (20 x the level-6 factor 1.5)', await page.evaluate(f"{S}.boss.n === 2 && {S}.boss.hp === 30 && {S}.boss.maxHp === 30"))
         await page.evaluate(f"{S}.setPowerDuration(3000); {S}.catchTest('fire'); {S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(60)
         await page.evaluate(f"(() => {LB} const b = s.ball; b.dir = -1; b.z = s.boss.z - 40; b.x = 0; b.y = 0; b.vx = b.vy = 0; b.tier = 'soft'; b.speed = s.pace * 1.5; }})()"); await page.wait_for_timeout(200)
         fb = await page.evaluate(f"(() => {LB} return {{ hp: s.boss.hp, dir: s.ball.dir, z: s.ball.z, bz: s.boss.z, tier: s.boss.lastTier }}; }})()")
-        check('a fireball flying into the boss does 8 damage and is thrown back (in front of the boss)', fb['hp'] == 14 and fb['dir'] == 1 and fb['z'] < fb['bz'] and fb['tier'] == 'super', fb)
+        check('a fireball flying into the boss does 8 damage and is thrown back (in front of the boss)', fb['hp'] == 22 and fb['dir'] == 1 and fb['z'] < fb['bz'] and fb['tier'] == 'super', fb)
         await page.evaluate(f"{S}.powerups.length = 0; {S}.setPowerDuration(0); {S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(60)
         await page.evaluate(f"(() => {LB} const b = s.ball; b.dir = -1; b.z = s.boss.z - 40; b.x = 0; b.y = 0; b.vx = b.vy = 0; b.tier = 'medium'; b.speed = s.pace * 1.5; }})()"); await page.wait_for_timeout(200)
-        check('a medium ball into the boss: 2 damage and back', await page.evaluate(f"{S}.boss.hp === 12 && {S}.ball.dir === 1"))
+        check('a medium ball into the boss: 2 damage and back', await page.evaluate(f"{S}.boss.hp === 20 && {S}.ball.dir === 1"))
         # reaching the near plane: a life lost, the boss thrown back, then it comes again
         await page.evaluate(PARK); lv = await page.evaluate(f"{S}.lives"); await page.evaluate(f"__sfx.length = 0; {S}.boss.z = __grasp.CONFIG.STRIKE_HIT_Z * 3 + 3"); await page.wait_for_timeout(250)
         sl = await page.evaluate(f"(() => {LB} return {{ lives: s.lives, retreat: s.boss.retreat, z: s.boss.z, near: __grasp.CONFIG.STRIKE_HIT_Z * 3, lost: s.ui.heartLost, flash: performance.now() - s.flash, sfx: __sfx, over: s.over }}; }})()")
@@ -654,27 +654,27 @@ async def main():
         await page.evaluate(TO2D); await page.wait_for_timeout(1100); fpsv = await page.evaluate("fps"); await page.evaluate(TO3D); await page.screenshot(path='tests/out/strike5_bossdown.png')
         check('frame rate holds through the boss fight and its explosion', fpsv >= 30, round(fpsv))
         await page.wait_for_function(f"{S}.walls.some(w => w.z < {cfg['zf']} * 0.9)", timeout=8000)
-        check('normal walls resume: the queue slides into view', await page.evaluate(f"{S}.walls.length === 4 && {S}.walls.every(w => w.left === w.bricks.length) && {S}.boss === null"))
-        # Easy: a boss every 8 walls with 60% of the hp
+        check('normal walls resume: the queue slides into view', await page.evaluate(f"{S}.walls.length === 4 && {S}.walls.every(w => w.left === w.bricks.filter(k => !k.hole).length) && {S}.boss === null"))
+        # Easy: the same world boss (wall 36) with 85% of the hp
         await page.evaluate("__grasp.setStrikeDiff('easy')"); await page.click('#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
-        await page.evaluate(f"{PARK}; {S}.setCleared(7)"); e7 = await page.evaluate(f"{S}.boss === null"); await page.evaluate(f"{PARK}; {S}.setCleared(8)"); await page.wait_for_timeout(60)
-        eb = await page.evaluate(f"(() => {LB} return {{ boss: s.boss && {{ n: s.boss.n, hp: s.boss.hp, maxHp: s.boss.maxHp }}, every: sd('STRIKE_BOSS_EVERY') }}; }})()")
-        check('Easy: no boss at 7 walls, boss #1 at 8 with 14 hp (85% of Normal\'s 16 x the level-2 factor 1.02)', e7 and eb['every'] == 8 and eb['boss'] and eb['boss']['n'] == 1 and eb['boss']['hp'] == 14 and eb['boss']['maxHp'] == 14, [e7, eb])
-        await page.evaluate(f"(() => {LB} s.setCleared(15); }})()")
-        check('no second boss while one is alive (cleared 16 skipped: still boss #1)', await page.evaluate(f"(() => {LB} s.setCleared(16); return s.boss && s.boss.n === 1 && s.bosses === 0; }})()"))
+        await page.evaluate(f"{PARK}; {S}.setCleared(35)"); e7 = await page.evaluate(f"{S}.boss === null"); await page.evaluate(f"{PARK}; {S}.setCleared(36)"); await page.wait_for_timeout(60)
+        eb = await page.evaluate(f"(() => {LB} return {{ boss: s.boss && {{ n: s.boss.n, hp: s.boss.hp, maxHp: s.boss.maxHp }}, every: s.gate }}; }})()")
+        check('Easy: no boss at 35 walls, boss #1 at 36 with 20 hp (85% of Normal\'s 16 x the level-6 factor 1.5)', e7 and eb['every'] == 6 and eb['boss'] and eb['boss']['n'] == 1 and eb['boss']['hp'] == 20 and eb['boss']['maxHp'] == 20, [e7, eb])
+        await page.evaluate(f"(() => {LB} s.setCleared(37); }})()")
+        check('no second boss while one is alive (cleared 38: still boss #1, level 6)', await page.evaluate(f"(() => {LB} s.setCleared(38); if (s.level !== 6) return false; return s.boss && s.boss.n === 1 && s.bosses === 0; }})()"))
         # end card: the Bosses stat; the best level on the start-screen badge after Home
         await page.evaluate(f"(() => {LB} while (s.boss) s.bossHit('super'); }})()"); await page.wait_for_timeout(100)
-        await page.evaluate(f"{S}.setCleared(25); {S}.lives = {S}.maxLives")  # level 5 (cleared 22 .. 28), then round over
+        await page.evaluate(f"{S}.setCleared(45); {S}.lives = {S}.maxLives")  # past the boss: level 8 (cleared 43 .. 49), then round over
         await page.wait_for_timeout(200); await page.mouse.move(1200, 760)
         await miss_out(page, cfg['lives'])
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=4000); await page.wait_for_timeout(600)
         ec = await page.evaluate(f"(() => {LB} return {{ bosses: s.bosses, level: s.level, best: localStorage.getItem('strikeLevelBest'), label: [...TEXTS.keys()].some(k => k.startsWith(t('bosses') + '|')), val: [...TEXTS.keys()].some(k => k.startsWith('1|20|')), stats: 4 }}; }})()")
-        check('end card: a fourth stat "Bosses" = 1 drawn; the best level (5) saved', ec['bosses'] == 1 and ec['level'] == 5 and ec['best'] == '5' and ec['label'] and ec['val'] and await page.evaluate("t('bosses')") == 'Bosses' and await page.evaluate("I18N.he.bosses.length") >= 4, ec)
+        check('end card: a fourth stat "Bosses" = 1 drawn; the best level (8) saved', ec['bosses'] == 1 and ec['level'] == 8 and ec['best'] == '8' and ec['label'] and ec['val'] and await page.evaluate("t('bosses')") == 'Bosses' and await page.evaluate("I18N.he.bosses.length") >= 4, ec)
         await page.screenshot(path='tests/out/strike5_over.png')
         bt = await page.evaluate(f"{S}.ui.buttons")
         await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(300)
         badge = await page.evaluate("(() => { const b = document.querySelector('.modes button[data-mode=strike] .best'); return { hidden: b.hidden, text: b.textContent, title: b.title, fits: b.getBoundingClientRect().right <= document.querySelector('.modes button[data-mode=strike] .pv').getBoundingClientRect().right + 1 }; })()")
-        check('start screen: the Strike card badge shows the best score and "L5"', not badge['hidden'] and badge['text'].startswith('★ ') and badge['text'].endswith('L5') and 'Best level 5' in badge['title'] and badge['fits'] and await page.evaluate(FITS), badge)
+        check('start screen: the Strike card badge shows the best score and "L8"', not badge['hidden'] and badge['text'].startswith('★ ') and badge['text'].endswith('L8') and 'Best level 8' in badge['title'] and badge['fits'] and await page.evaluate(FITS), badge)
         await page.screenshot(path='tests/out/strike5_badge.png')
         check('levels + boss: no page errors', not errs, errs); await ctx.close()
 
@@ -682,7 +682,7 @@ async def main():
         ctx = await b.new_context(permissions=['camera'], viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#camBtn')
+        await page.click('#camBtn'); await page.click('.modes button[data-mode=strike]')
         await page.wait_for_function("mode === 'camera'", timeout=15000)
         await page.evaluate("window.__handFor = () => handAt(640, 400, 0.8); __grasp.CONFIG.STRIKE_PU_RATE = 0"); await page.wait_for_timeout(900)
         cur = await page.evaluate("[gesture, cursor.x, cursor.y, cursor.present]")
@@ -704,11 +704,11 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: 5 mode cards in one snap row and link fit', await page.evaluate(FITS) and rows == 1, rows)
+            check(tag + ' phone: the 5 game tiles (3 + 2) and the link fit on one screen', await page.evaluate(FITS) and rows == 2, rows)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
             await page.tap('.modes button[data-mode=strike]')
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))
-            await page.tap('#mouseBtn'); await page.wait_for_timeout(900)
+            await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
             st = await page.evaluate(STATE)
             check(tag + ' phone: ball served', st['z'] is not None and st['lives'] == cfg['lives'], st)
             dp = await page.evaluate("(() => { const d = $('strikeDiff'); return { hidden: d.hidden, txt: [...d.querySelectorAll('button')].map(b => b.textContent + ':' + b.getAttribute('aria-pressed')) }; })()")
@@ -750,7 +750,7 @@ async def main():
             await page.screenshot(path='tests/out/strike5_phone_' + tag + '.png')
             ub = pbz['ui']
             check(tag + ' phone: the boss face and its health bar fit inside 360 px, under the HUD, with the level banner up and the "' + ('בוס!' if he else 'Boss!') + '" tag', ub and ub['x'] >= 0 and ub['x'] + ub['w'] <= 360 and ub['w'] > 40 and ub['bar']['x'] >= 0 and ub['bar']['x'] + ub['bar']['w'] <= 360 and ub['bar']['y'] >= pbz['hud']['y'] + pbz['hud']['h'] and pbz['bn'] and pbz['boss'] and pbz['tag'] == 'boss' and await page.evaluate("t('wk_boss')") == ('בוס!' if he else 'Boss!'), pbz)
-            check(tag + ' phone: the progress bar sits under the HUD card inside the screen', pbz['bar'] and pbz['bar']['x'] >= 8 and pbz['bar']['x'] + pbz['bar']['w'] <= 352 and pbz['bar']['y'] >= pbz['hud']['y'] + pbz['hud']['h'], pbz['bar'])
+            check(tag + ' phone: the progress line sits along the HUD bar\'s bottom edge inside the screen', pbz['bar'] and pbz['bar']['x'] >= 8 and pbz['bar']['x'] + pbz['bar']['w'] <= 352 and pbz['bar']['y'] >= pbz['hud']['y'] and pbz['bar']['y'] + pbz['bar']['h'] <= pbz['hud']['y'] + pbz['hud']['h'], pbz['bar'])
             e = ub['eyes'][0]; await page.evaluate(TO2D); white = await page.evaluate(PIX + f"({e['x'] - e['r'] * 0.9}, {e['y']})"); await page.evaluate(TO3D)
             check(tag + ' phone: eye white pixel on the small far face', white[0] > 120 and white[1] > 120 and white[2] > 120, white)
             await page.evaluate(f"(() => {{ const s = {S}; while (s.boss) s.bossHit('super'); s.ui.bossBanner = null; }})()"); await page.wait_for_timeout(300)

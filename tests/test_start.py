@@ -38,7 +38,7 @@ async def main():
         check('tab back: previews run again', f['running'] and f['frames'] > e['frames'])
         await page.wait_for_timeout(1400)
         check('intro class dropped after the entrance', not await page.evaluate("$('start').classList.contains('intro')"))
-        await page.click('#mouseBtn'); await page.wait_for_timeout(100)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(100)
         g = await page.evaluate(PV); await page.wait_for_timeout(400); h = await page.evaluate(PV)
         check('game started: previews stop and the canvases keep their last frame', not g['running'] and h['frames'] == g['frames'] and g['shots'] == h['shots'])
         await page.click('#homeBtn'); await page.wait_for_timeout(350)
@@ -51,7 +51,7 @@ async def main():
         bs = await page.evaluate(BESTS)
         check('no scores yet: every badge hidden', all(v is None for v in bs.values()) and len(bs) == 5, bs)
         await page.evaluate("localStorage.setItem('sliceBest', '480'); localStorage.setItem('strikeBest', '12')")
-        await page.click('#mouseBtn'); await page.wait_for_timeout(100); await page.click('#homeBtn'); await page.wait_for_timeout(100)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(100); await page.click('#homeBtn'); await page.wait_for_timeout(100)
         bs = await page.evaluate(BESTS)
         check('home refreshes the badges from localStorage', bs['slice'] == '★ 480' and bs['strike'] == '★ 12' and bs['smash'] is None, bs)
         vis = await page.evaluate("(() => { const b = document.querySelector('.modes button[data-mode=slice] .best').getBoundingClientRect(), c = document.querySelector('.modes button[data-mode=slice] .pv').getBoundingClientRect(); return b.width > 20 && b.top >= c.top && b.right <= c.right + 1 && b.bottom < c.top + c.height / 2; })()")
@@ -60,53 +60,36 @@ async def main():
         check('badges read on load', (await page.evaluate(BESTS))['slice'] == '★ 480')
         check('badges: no page errors', not errs, errs); await ctx.close()
 
-        # ---- hint row + camera memory + layout, both languages, phone and desktop ----
+        # ---- the start screen v2, phone + desktop, EN + HE: everything on one screen (no scroll), 5 game tiles, a labelled icon row, the Camera | Touch toggle; a tap on a tile starts that game ----
+        LAY = """(() => { const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode, in: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, w: r.width, h: r.height, name: b.querySelector('[data-i18n]').textContent }; });
+          const icons = [...document.querySelectorAll('.metaRow > button')].map(b => { const r = b.getBoundingClientRect(), l = b.querySelector('.dTx b, :scope > span[data-i18n]').getBoundingClientRect(); return { id: b.id, in: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, label: l.width > 10 && l.left >= r.left - 1 && l.right <= r.right + 1, text: b.querySelector('.dTx b, :scope > span[data-i18n]').textContent }; });
+          const st = $('start'), a = document.querySelector('#start a.link').getBoundingClientRect(), sd = $('strikeDiff').getBoundingClientRect(), stk = document.querySelector('.modes button[data-mode=strike]').getBoundingClientRect(), cam = $('camBtn').getBoundingClientRect(), mo = $('mouseBtn').getBoundingClientRect();
+          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, link: a.bottom <= innerHeight && a.height > 0, tiles, icons, diffOnTile: !$('strikeDiff').hidden && sd.left >= stk.left - 1 && sd.right <= stk.right + 1 && sd.top >= stk.top && sd.bottom <= stk.bottom,
+            seg: [cam.bottom <= innerHeight && cam.width > 60, mo.bottom <= innerHeight && mo.width > 60], segText: [$('camBtn').textContent.trim(), $('mouseBtn').textContent.trim()], pressed: [$('camBtn').getAttribute('aria-pressed'), $('mouseBtn').getAttribute('aria-pressed')], h1: document.querySelector('.panel h1').getBoundingClientRect().height }; })()"""
         for mobile in (True, False):
             for he in (False, True):
-                tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en')
-                ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('smashBest', '7');")
+                tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en'); W = 360 if mobile else 1280
+                ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('smashBest', '7'); if (!sessionStorage.getItem('pv')) { sessionStorage.setItem('pv', '1'); localStorage.removeItem('inputPref'); }")
                 await page.wait_for_timeout(1300)  # entrance done
-                hs = await page.evaluate(HINTS)
-                check(tag + ': sandbox hint row = pinch Grab, open Throw, point Poke', hs['g'] == ['pinch', 'open', 'point'] and hs['icons'] and hs['t'] == (['תפיסה', 'זריקה', 'דחיפה'] if he else ['Grab', 'Throw', 'Poke']), hs)
-                check(tag + ': hint icon at the start edge of its label', all(hs['rtl']) if he else not any(hs['rtl']), hs['rtl'])
-                cam = await page.evaluate(CAM)
-                check(tag + ': first visit: Enable camera, no hint', cam['label'] == ('הפעלת מצלמה' if he else 'Enable camera') and cam['hint'] is None, cam)
-                fit = await page.evaluate(FIT)
-                check(tag + ': start screen inside the viewport, no scroll', fit['bodyScroll'] and fit['startScroll'] and fit['top'] >= 0 and fit['link'] <= fit['H'] and fit['mouse'][1] <= fit['H'] and fit['dl'] >= 0 and fit['dr'] <= fit['W'], fit)
-                row = await page.evaluate(ROW)
-                if mobile:
-                    check(tag + ': snap row: one scrollable row of 136 px cards, 5 dots, first dot on', row['snap'].startswith('x') and row['scrollable'] and row['rowIn'] and row['rows'] == 1 and all(w == 136 for w in row['widths']) and row['fit'] and row['dots'] == 5 and row['dotsShown'] and row['on'] == 0, row)
-                    check(tag + ': selected (first) card centred', row['selIn'] and abs(row['selMid'] - row['W'] / 2) < 3, row)
-                else:
-                    check(tag + ': desktop: 5-up grid in one row, dots hidden', row['rows'] == 1 and not row['scrollable'] and row['fit'] and all(w > 90 for w in row['widths']) and not row['dotsShown'], row)
-                worst = None
-                for m, g, n in (('slice', ['point'], 1), ('smash', ['fist', 'open'], 2), ('busy', ['point', 'pinch', 'open'], 3), ('strike', ['open'], 1)):
+                L = await page.evaluate(LAY)
+                check(tag + ': no scrolling at all; the Tremorti link visible; a small wordmark', L['noScroll'] and L['link'] and L['h1'] <= 40, L)
+                check(tag + ': all 5 game tiles fully on screen, named', len(L['tiles']) == 5 and all(t['in'] and t['w'] > 80 and t['name'] for t in L['tiles']), L['tiles'])
+                check(tag + ': one icon row, every button labelled on screen (Daily, Missions, Road, Shop)', [i['id'] for i in L['icons']] == ['dailyBtn', 'missionsBtn', 'roadBtn', 'collectionBtn'] and all(i['in'] and i['label'] for i in L['icons']) and [i['text'] for i in L['icons']] == (['יומי', 'משימות', 'הדרך', 'חנות'] if he else ['Daily', 'Missions', 'Road', 'Shop']), L['icons'])
+                check(tag + ': the Easy / Normal toggle sits on the Strike tile', L['diffOnTile'], L)
+                check(tag + ': the Camera | Touch toggle on screen, translated; on a first visit the camera is the default', all(L['seg']) and L['segText'] == (['מצלמה', 'מגע'] if he else ['Camera', 'Touch']) and L['pressed'] == ['true', 'false'], L)
+                check(tag + ': smash best badge', (await page.evaluate(BESTS))['smash'] == '★ 7')
+                await page.screenshot(path='tests/out/start2_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '.png')
+                if mobile: await page.tap('#mouseBtn')
+                else: await page.click('#mouseBtn')
+                await page.reload(); await page.wait_for_timeout(700)
+                check(tag + ': the toggle persists (Touch after a reload)', (await page.evaluate(LAY))['pressed'] == ['false', 'true'])
+                started = {}
+                for m in ('sandbox', 'slice', 'smash', 'busy', 'strike'):
                     if mobile: await page.tap('.modes button[data-mode=' + m + ']')
                     else: await page.click('.modes button[data-mode=' + m + ']')
-                    await page.wait_for_timeout(600)
-                    hs = await page.evaluate(HINTS); fit = await page.evaluate(FIT); row = await page.evaluate(ROW)
-                    check(tag + ': ' + m + ' hint row updates (' + str(n) + ')', hs['g'] == g and len(hs['t']) == n and all(hs['t']), hs)
-                    ok = fit['bodyScroll'] and fit['startScroll'] and fit['link'] <= fit['H'] and fit['top'] >= 0 and fit['desc'][0] > 0
-                    if not ok: worst = (m, fit)
-                    if mobile: check(tag + ': ' + m + ' card scrolled into view and centred, its dot on', row['selIn'] and abs(row['selMid'] - row['W'] / 2) < 3 and row['on'] == ['sandbox', 'slice', 'smash', 'busy', 'strike'].index(m), row)
-                    if m == 'smash': await page.screenshot(path='tests/out/start_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '_smash.png')
-                check(tag + ': every mode fits (description card, both buttons, link visible)', worst is None, worst)
-                check(tag + ': strike pill shows and still fits', await page.evaluate("!$('strikeDiff').hidden && $('strikeDiff').getBoundingClientRect().bottom < $('camBtn').getBoundingClientRect().top"))
-                check(tag + ': smash best badge', (await page.evaluate(BESTS))['smash'] == '★ 7')
-                if mobile: # a swipe on the row scrolls it; the dots follow
-                    await page.evaluate("document.querySelector('.modes').scrollBy({ left: " + ('' if he else '-') + "600, behavior: 'instant' })"); await page.wait_for_timeout(250)
-                    row2 = await page.evaluate(ROW)
-                    check(tag + ': row scrolls; the dot follows the card in view', row2['sl'] != row['sl'] and row2['on'] != row['on'], [row['sl'], row2['sl'], row['on'], row2['on']])
-                    await page.tap('.modes button[data-mode=sandbox]'); await page.wait_for_timeout(600)
-                    check(tag + ': tapping a card selects and centres it', await page.evaluate("gameMode") == 'sandbox' and (await page.evaluate(ROW))['on'] == 0)
-                else: await page.click('.modes button[data-mode=sandbox]')
-                await page.wait_for_timeout(200)
-                await page.screenshot(path='tests/out/start_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '.png')
-                # camera worked once: the button says so next time
-                await page.evaluate("localStorage.setItem('camOk', '1')"); await page.reload(); await page.wait_for_timeout(700)
-                cam = await page.evaluate(CAM)
-                check(tag + ': camera remembered: Play with camera + last used tag', cam['label'] == ('משחק עם מצלמה' if he else 'Play with camera') and cam['hint'] == ('בפעם הקודמת' if he else 'last used') and cam['hintIn'], cam)
-                await page.screenshot(path='tests/out/start_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '_camok.png')
+                    await page.wait_for_function("mode !== 'none'", timeout=8000); started[m] = await page.evaluate("[gameMode, mode, $('start').hidden]")
+                    await page.evaluate("goHome()"); await page.wait_for_timeout(250)
+                check(tag + ': a tap on each tile starts that game at once, with touch', all(v == [m, 'mouse', True] for m, v in started.items()), started)
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
 
         # ---- a real camera run sets camOk; reduced motion skips the entrance ----
@@ -115,12 +98,11 @@ async def main():
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(300)
         an = await page.evaluate("[getComputedStyle(document.querySelector('.panel h1')).animationName, getComputedStyle(document.querySelector('.modes button')).animationName, $('start').classList.contains('intro')]")
         check('reduced motion: no entrance animation', an[0] == 'none' and an[1] == 'none' and an[2], an)
-        check('camOk unset before the camera ran', await page.evaluate("localStorage.getItem('camOk')") is None)
-        await page.click('#camBtn'); await page.wait_for_function("mode === 'camera'", timeout=15000); await page.wait_for_timeout(200)
+        check('camOk unset before the camera ran', await page.evaluate("localStorage.getItem('camOk')") is None)  # (the toggle: Camera, then a tap on the selected tile)
+        await page.click('#camBtn'); await page.click('.modes > button[aria-pressed=true]'); await page.wait_for_function("mode === 'camera'", timeout=15000); await page.wait_for_timeout(200)
         check('camera started: camOk saved', await page.evaluate("localStorage.getItem('camOk')") == '1')
         await page.click('#homeBtn'); await page.wait_for_timeout(200)
-        cam = await page.evaluate(CAM)
-        check('home after a camera game: Play with camera', cam['label'] == 'Play with camera' and cam['hint'] == 'last used', cam)
+        check('home after a camera game: the toggle says Camera', await page.evaluate("$('camBtn').getAttribute('aria-pressed')") == 'true')
         check('camera run: no page errors', not errs, errs); await ctx.close()
         await b.close()
     print('FAILURES:', check.fails)

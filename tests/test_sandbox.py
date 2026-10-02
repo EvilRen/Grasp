@@ -14,6 +14,8 @@ async def routes(page):
         return await route.continue_()
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
+INIT += "try { if (!localStorage.getItem('inputPref')) localStorage.setItem('inputPref', 'mouse'); } catch (e) {}"  # the start screen's tiles start a game at once with the remembered input: the suites play with the mouse unless they pick the camera
+START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('.modes > button[aria-pressed=\"true\"]').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button)
 # Strike's renderer in the suites: by default (GRASP_GFX=2d) the 2D canvas; GRASP_GFX=3d runs the WebGL renderer at a low fixed pixel ratio, no
 # shadows and no low-fps fallback (headless Chromium's WebGL is SwiftShader, a CPU rasterizer: full resolution runs at ~2-5 fps and falls back
 # to 2D; even this light setup runs ~30 fps, so the frame-timing checks of test_strike.py flake in 3D here; test_strike3d.py sets its own)
@@ -43,7 +45,7 @@ async def boot(b, mobile):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + HAND_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-    await page.click('#camBtn')
+    await page.click('#camBtn'); await page.click('.modes > button[aria-pressed=true]')
     await page.wait_for_function("mode === 'camera'", timeout=15000)
     return ctx, page, errs
 
@@ -136,7 +138,7 @@ async def main():
         # ---- Mouse fallback: drag + flick throw ----
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.click('#mouseBtn')
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(START_MOUSE)
         await page.evaluate("engine.gravity.y = 0; const b = bodies[2]; M.Body.setPosition(b,{x:400,y:400}); M.Body.setVelocity(b,{x:0,y:0});"); await page.wait_for_timeout(100)
         await page.mouse.move(400, 400); await page.mouse.down(); await page.wait_for_timeout(100)
         st = await page.evaluate("__grasp.state"); check('mouse grabs', st['held'] == 2, st)
@@ -146,14 +148,14 @@ async def main():
         check('mouse: status stays hidden', await page.evaluate("statusEl.hidden"))
         await page.click('#homeBtn'); await page.wait_for_timeout(100)
         check('home returns to start screen', await page.evaluate("mode === 'none' && !$('start').hidden && preview.hidden"))
-        await page.click('#mouseBtn'); await page.wait_for_timeout(100)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(100)
         check('can start again after home', await page.evaluate("mode === 'mouse' && $('start').hidden"))
         check('mouse: no page errors', not errs, errs); await ctx.close()
 
         # ---- Perf: 10 objects bouncing in the phone viewport must keep a playable frame rate (headless is slower than a phone) ----
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
-        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.tap('#mouseBtn'); await page.wait_for_timeout(300)
+        await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(START_MOUSE); await page.wait_for_timeout(300)
         KICK = "engine.gravity.y = 0; for (const b of bodies) { M.Body.setVelocity(b, {x: (Math.random()-0.5)*16, y: (Math.random()-0.5)*16}); M.Body.setAngularVelocity(b, 0.1); }"
         fpss = []
         for _ in range(4):  # re-kick every half second so all 10 keep flying (walls soak up speed)
@@ -170,11 +172,11 @@ async def main():
         check('defaults to English', await page.evaluate("document.documentElement.dir") == 'ltr')
         await page.tap('#startLang'); await page.wait_for_timeout(100)
         st = await page.evaluate("({dir: document.documentElement.dir, lang: document.documentElement.lang, cam: $('camBtn').textContent, desc: $('modeDesc').textContent})")
-        check('language button switches to Hebrew RTL', st['dir'] == 'rtl' and st['lang'] == 'he' and st['cam'] == 'הפעלת מצלמה' and 'המצלמה' in st['desc'], st)
+        check('language button switches to Hebrew RTL', st['dir'] == 'rtl' and st['lang'] == 'he' and st['cam'] == 'מצלמה' and 'המצלמה' in st['desc'], st)
         await page.screenshot(path='tests/out/he_start.png')
         await page.reload(); await page.wait_for_timeout(600)
         check('Hebrew persists after reload', await page.evaluate("document.documentElement.lang") == 'he')
-        await page.tap('#mouseBtn'); await page.wait_for_timeout(200); await page.tap('#hudBtn'); await page.wait_for_timeout(700)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(200); await page.tap('#hudBtn'); await page.wait_for_timeout(700)
         check('HUD in Hebrew', 'מחווה' in await page.inner_text('#hud'))
         ov = await page.evaluate("(() => { const r = [...document.querySelectorAll('.chrome .chip')].map(b => b.getBoundingClientRect()); return {minLeft: Math.min(...r.map(x => x.left)), maxRight: Math.max(...r.map(x => x.right)), W: innerWidth}; })()")
         check('phone: top buttons fit on screen', ov['minLeft'] >= 0 and ov['maxRight'] <= ov['W'], ov)

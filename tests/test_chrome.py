@@ -40,7 +40,7 @@ async def boot(b, mobile, he=False):
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
     if he: await page.click('#startLang'); await page.wait_for_timeout(100)
     await page.evaluate(HAND_ON)  # a hand is in view from the start, so the game (not the no-hand card) shows
-    await page.click('#camBtn')
+    await page.click('#camBtn'); await page.click('.modes > button[aria-pressed=true]')
     await page.wait_for_function("mode === 'camera'", timeout=15000); await page.wait_for_timeout(700)
     return ctx, page, errs
 
@@ -137,6 +137,7 @@ async def main():
             ctx, page, errs = await boot(b, True, he)
             check(tag + ' pause: not paused while the hand is in view', await page.evaluate("!__grasp.pause.on && $('pausePill').hidden !== false || statusEl.hidden"))
             await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(1200)
+            await page.evaluate("__grasp.strike.serve()")  # a ball in flight (the round itself starts with the player's serve, waiting)
             z0 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z")
             await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
             P = "({on: __grasp.pause.on, count: __grasp.pause.count, card: !statusEl.hidden, pill: (() => { const r = $('pausePill').getBoundingClientRect(); return !$('pausePill').hidden && r.height > 10 && r.width > 40 && r.top >= 0 && r.bottom <= innerHeight; })(), txt: $('pausePill').textContent.trim(), z: __grasp.strike.ball && __grasp.strike.ball.z})"
@@ -172,15 +173,13 @@ async def main():
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        check('difficulty pill hidden unless Strike is selected', await page.evaluate("$('strikeDiff').hidden"))
-        await page.tap('.modes button[data-mode=strike]'); await page.wait_for_timeout(100)
-        d = await page.evaluate("(() => { const r = $('strikeDiff').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(); return { hidden: $('strikeDiff').hidden, diff: __grasp.strike.diff, pressed: $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff, top: r.top, fits: a.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth }; })()")
-        check('Strike selected: Easy / Normal pill shows, Easy by default, start screen still fits', not d['hidden'] and d['diff'] == 'easy' and d['pressed'] == 'easy' and d['fits'], d)
+        d = await page.evaluate("(() => { const r = $('strikeDiff').getBoundingClientRect(), t = document.querySelector('.modes button[data-mode=strike]').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(); return { hidden: $('strikeDiff').hidden, diff: __grasp.strike.diff, pressed: $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff, onTile: r.left >= t.left - 1 && r.right <= t.right + 1 && r.top >= t.top && r.bottom <= t.bottom, fits: a.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth }; })()")
+        check('the Easy / Normal toggle sits on the Strike tile, Easy by default, the start screen fits', not d['hidden'] and d['diff'] == 'easy' and d['pressed'] == 'easy' and d['onTile'] and d['fits'], d)
         await page.tap('#strikeDiff button[data-diff=normal]'); await page.wait_for_timeout(100)
-        check('tap Normal: selected and saved', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal' && localStorage.getItem('strikeDiff') === 'normal'"))
-        await page.reload(); await page.wait_for_timeout(600); await page.tap('.modes button[data-mode=strike]'); await page.wait_for_timeout(100)
+        check('tap Normal: selected and saved (the game does not start)', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal' && localStorage.getItem('strikeDiff') === 'normal' && mode === 'none'"))
+        await page.reload(); await page.wait_for_timeout(600)
         check('difficulty persists across a reload', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal'"))
-        await page.tap('#mouseBtn'); await page.wait_for_timeout(300)
+        await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.wait_for_timeout(300)
         check('Normal round starts with 3 lives', await page.evaluate("__grasp.strike.lives === 3 && __grasp.strikeParams().speed === 1.1"))
         await page.screenshot(path='tests/out/chrome_phone_strike_normal.png')
         check('difficulty: no page errors', not errs, errs); await ctx.close()

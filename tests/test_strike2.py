@@ -20,11 +20,12 @@ async def new_page(b, mobile=False):
     ctx = await b.new_context(**opts); page = await ctx.new_page(); await routes(page); errs = []
     page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     return ctx, page, errs
 
 async def play_strike(page, tap=False):
-    if tap: await page.tap('.modes button[data-mode=strike]'); await page.tap('#mouseBtn')
-    else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    if tap: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.ball", timeout=8000)
     await page.evaluate(SFX_JS + ";\n" + HELP_JS + "\n__grasp.CONFIG.STRIKE_PU_RATE = 0; park()")
 
@@ -88,7 +89,7 @@ async def main():
         check('click on a card picks it: Wider Hands stacked once, reach x1.0 -> x1.2, the cards close', st['perks'] == {'wide': 1} and st['offer'] is None and abs(st0['reach'] - 1) < 1e-9 and abs(st['stats']['reach'] - 1.2) < 1e-9, [st0, st])
         check('after the pick the level banner slides in and the perk name shows as a tag under the HUD', st['bn'] and not st['bn'].get('held') and st['bn']['t'] >= st['now'] - 100 and st['tag'] and st['tag']['kind'] == 'wide' and st['tag'].get('perk'), [st['bn'], st['tag']])
         await frames(page, 2); pi = await page.evaluate(f"({{ icons: {S}.ui.perkIcons, hud: {S}.ui.hud }})")
-        check('the active perk shows as a tiny icon inside the HUD card', len(pi['icons']) == 1 and pi['icons'][0]['id'] == 'wide' and pi['hud']['y'] < pi['icons'][0]['y'] < pi['hud']['y'] + pi['hud']['h'] and pi['hud']['x'] < pi['icons'][0]['x'] < pi['hud']['x'] + pi['hud']['w'], pi)
+        check('the active perk shows as a tiny icon just under the HUD bar, in its middle', len(pi['icons']) == 1 and pi['icons'][0]['id'] == 'wide' and pi['hud']['y'] + pi['hud']['h'] < pi['icons'][0]['y'] < pi['hud']['y'] + pi['hud']['h'] + 20 and pi['hud']['x'] < pi['icons'][0]['x'] < pi['hud']['x'] + pi['hud']['w'], pi)
         # the other effects (picked through the hook)
         await page.evaluate("forceOffer(['magnet'])"); await page.evaluate(f"{S}.pickPerk(0)")
         await page.evaluate("forceOffer(['skin'])"); lv0 = await page.evaluate(f"[{S}.lives, {S}.maxLives]"); await page.evaluate(f"{S}.lives = 3; {S}.pickPerk(0)")
@@ -147,20 +148,20 @@ async def main():
         # ===== the NEXT card =====
         await page.evaluate("park()"); await frames(page, 2)
         nc = await page.evaluate(f"({{ next: {S}.next, card: {S}.ui.nextCard, v: vanish() }})")
-        check('NEXT card: level 1 telegraphs a brick wall, centred above the vanishing point', nc['next'] == 'brick' and nc['card'] and nc['card']['kind'] == 'brick' and nc['card']['y'] + nc['card']['h'] <= nc['v']['y'] and abs(nc['card']['x'] + nc['card']['w'] / 2 - 640) < 2, nc)
+        check('NEXT: level 1 has a brick wall next, but the card stays hidden on levels 1-2 (nothing new to telegraph)', nc['next'] == 'brick' and nc['card'] is None, nc)
         await page.evaluate(f"__sfx.length = 0; park(); {S}.setLevel(2); {S}.setCleared(9)"); await frames(page, 2)  # level 2 done: level 3 unlocks glass
         nc = await page.evaluate(f"({{ next: {S}.next, card: {S}.ui.nextCard, at: performance.now() - {S}.ui.nextAt }})")
-        check('level 3: the next wall is the new kind (glass), and the card pulses as it changes', nc['next'] == 'glass' and nc['card']['kind'] == 'glass' and nc['at'] < 600 and nc['card']['pulse'] > 0, nc)
+        check('level 3: the next wall is the new kind (glass): the small card shows it in the top end corner under the bar, pulsing as it appears', nc['next'] == 'glass' and nc['card']['kind'] == 'glass' and nc['at'] < 600 and nc['card']['pulse'] > 0 and nc['card']['w'] <= 90 and nc['card']['h'] <= 34 and nc['card']['x'] + nc['card']['w'] >= 1280 / 2 + 150, nc)
         check('no perk pick after level 2', await page.evaluate(f"!{S}.perkAt && !{S}.perkOffer")); await page.evaluate("park()")
         ids0 = await page.evaluate(f"{S}.walls.map(w => w.id)")
         await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(80); await page.evaluate("park()")
         nw = await page.evaluate(f"(() => {{ const w = {S}.walls.filter(q => !{ids0}.includes(q.id)); return w.map(q => q.kind); }})()")
         check('the telegraph tells the truth: the wall that spawned next is glass', nw[:1] == ['glass'], nw)
-        await page.evaluate(f"{S}.setCleared(7)"); await frames(page, 2)  # 7 walls down on Easy: the 8th brings the boss
+        await page.evaluate(f"{S}.setCleared(35); {S}.perkAt = 0; {S}.perkOffer = null"); await frames(page, 2)  # 35 walls down: level 6's final wall is up, the next clear brings world 1's boss
         nc = await page.evaluate(f"({{ next: {S}.next, card: {S}.ui.nextCard, boss: {S}.boss }})")
         check('the next wall cleared brings the boss: the card says BOSS', nc['next'] == 'boss' and nc['card'] and nc['card']['kind'] == 'boss' and not nc['boss'] and await page.evaluate("t('nk_boss')") == 'BOSS', nc)
         await page.wait_for_timeout(300); await page.screenshot(path='tests/out/strike6_next_boss_desktop.png')
-        await page.evaluate(f"{S}.setCleared(8)"); await frames(page, 2)
+        await page.evaluate(f"{S}.setCleared(36)"); await frames(page, 2)
         check('while the boss is in view the card steps aside', await page.evaluate(f"!!{S}.boss && {S}.ui.nextCard === null"))
         check('next card: no page errors', not errs, errs); await ctx.close()
 
@@ -173,7 +174,7 @@ async def main():
         st = await page.evaluate(f"({{ streak: {S}.streak, hits: {S}.hits, mul: {S}.streakMul }})")
         check('every return without a miss adds to the streak (3 hits -> 3, multiplier x1.3)', st['streak'] == 3 and st['hits'] == 3 and abs(st['mul'] - 1.3) < 1e-9, st)
         await frames(page, 2); sb = await page.evaluate(f"({{ box: {S}.ui.streakBox, hud: {S}.ui.hud }})")
-        check('streak chip (flame + ×3) in the middle under the HUD card', sb['box'] and sb['box']['n'] == 3 and sb['box']['y'] >= sb['hud']['y'] + sb['hud']['h'] and abs(sb['box']['x'] + sb['box']['w'] / 2 - 640) < 2, sb)
+        check('streak (a small flame + 3) inside the HUD bar, by the level pill', sb['box'] and sb['box']['n'] == 3 and sb['box']['y'] >= sb['hud']['y'] and sb['box']['y'] + sb['box']['h'] <= sb['hud']['y'] + sb['hud']['h'] and sb['box']['x'] > sb['hud']['x'] + sb['hud']['w'] / 2, sb)
         await page.evaluate(f"{S}.streak = 10"); s0 = await page.evaluate(f"{S}.score"); await hit(page, 640, 400)
         sc = await page.evaluate(f"({{ ds: {S}.score - {s0}, power: {S}.power, fl: {S}.floaters.map(f => f.text) }})")
         check('streak 10: score multiplier x2 (a soft hit worth 1 scores 2)', sc['power'] == 'soft' and sc['ds'] == 2 and '+2' in sc['fl'], sc)
@@ -199,7 +200,7 @@ async def main():
         await page.evaluate(f"__sfx.length = 0; {S}.setBallZ(-100, 640, 400)")  # Easy window: +330 .. -150, so -100 sits in its last 15% (<= -78)
         await page.wait_for_function(f"{S}.closeOnes === 1", timeout=4000); await page.evaluate(f"{S}.ball.speed = 0")
         co = await page.evaluate(f"({{ why: {S}.lastClose, coins: __grasp.profile.coins - {c0}, ev: __grasp.events.slice({e0}), slow: {S}.slowUntil - {S}.ui.closeAt, fl: {S}.floaters.map(f => f.text), sfx: __sfx, hits: {S}.hits, m: __grasp.profile.missions.list[0] }})")
-        check('late hit: "Close one!" floater, +2 coins, track(close), the close sound', co['why'] == 'late' and co['coins'] == 2 and ['close', 1] in co['ev'] and 'Close one!' in co['fl'] and 'close' in co['sfx'], co)
+        check('late hit: "Close one!" floater, +1 coin (the economy), track(close), the close sound', co['why'] == 'late' and co['coins'] == 1 and ['close', 1] in co['ev'] and 'Close one!' in co['fl'] and 'close' in co['sfx'], co)
         check('Close one: a slow-motion moment (x0.4 for 250 ms)', co['slow'] == 250 and await page.evaluate("CLOSE_SLOW") == 0.4, co['slow'])
         check('the "Close one ×3" mission counts it', co['m']['id'] == 'close' and co['m']['progress'] == 1 and any(m['id'] == 'close' and m['goals'] == [3] for m in await page.evaluate("__grasp.missionPool")) and await page.evaluate("t('ms_close', { n: 3 })") == 'Get 3 "Close one!" hits', co['m'])
         await page.wait_for_timeout(150); await page.screenshot(path='tests/out/strike6_close_desktop.png')
@@ -240,12 +241,12 @@ async def main():
             await page.evaluate("touchAt('pointerdown', 180, 380)"); await page.wait_for_timeout(250)
             for _ in range(3): await hit(page, 180, 380)
             await page.evaluate("touchAt('pointerup', 180, 380)")
-            await page.evaluate(f"park(); {S}.setCleared(7)"); await page.wait_for_timeout(450); await frames(page, 2)
+            await page.evaluate(f"park(); {S}.setCleared(35); {S}.perkAt = 0; {S}.perkOffer = null"); await page.wait_for_timeout(450); await frames(page, 2)
             ui = await page.evaluate(f"({{ next: {S}.ui.nextCard, streak: {S}.ui.streakBox, icons: {S}.ui.perkIcons, hud: {S}.ui.hud, v: vanish(), coin: __grasp.coinUi.box }})")
             check(tag + ' phone: NEXT card (BOSS) inside the screen above the vanishing point, below the HUD', ui['next'] and ui['next']['kind'] == 'boss' and ui['next']['x'] >= 8 and ui['next']['x'] + ui['next']['w'] <= 352 and ui['next']['y'] + ui['next']['h'] <= ui['v']['y'] and ui['next']['y'] > ui['hud']['y'] + ui['hud']['h'], ui['next'])
-            check(tag + ' phone: streak chip ×3 under the HUD card, clear of the coin pill', ui['streak'] and ui['streak']['n'] == 3 and ui['streak']['y'] >= ui['hud']['y'] + ui['hud']['h'] and (ui['streak']['x'] + ui['streak']['w'] <= ui['coin']['x'] or ui['streak']['x'] >= ui['coin']['x'] + ui['coin']['w']), [ui['streak'], ui['coin']])
+            check(tag + ' phone: the streak (flame + 3) inside the HUD bar; no coin pill in play', ui['streak'] and ui['streak']['n'] == 3 and ui['streak']['y'] >= ui['hud']['y'] and ui['streak']['y'] + ui['streak']['h'] <= ui['hud']['y'] + ui['hud']['h'] and ui['coin'] is None, [ui['streak'], ui['coin']])
             ic = ui['icons']
-            check(tag + ' phone: 3 perk icons inside the HUD card' + (' (right to left)' if he else ''), len(ic) == 3 and all(ui['hud']['x'] < i['x'] - i['r'] and i['x'] + i['r'] < ui['hud']['x'] + ui['hud']['w'] and i['y'] + i['r'] <= ui['hud']['y'] + ui['hud']['h'] for i in ic) and ((ic[0]['x'] > ic[2]['x']) == he), ic)
+            check(tag + ' phone: 3 perk icons just under the HUD bar' + (' (right to left)' if he else ''), len(ic) == 3 and all(ui['hud']['x'] < i['x'] - i['r'] and i['x'] + i['r'] < ui['hud']['x'] + ui['hud']['w'] and ui['hud']['y'] + ui['hud']['h'] <= i['y'] - i['r'] + 1 and i['y'] + i['r'] <= ui['hud']['y'] + ui['hud']['h'] + 22 for i in ic) and ((ic[0]['x'] > ic[2]['x']) == he), ic)
             await page.evaluate(f"{S}.lives = {S}.maxLives; {S}.ui.levelBanner = {S}.ui.levelUp = {S}.ui.tag = null"); await frames(page, 2); await page.screenshot(path='tests/out/strike6_next_' + tag + '.png'); await page.evaluate("park()")
             await page.evaluate(f"{S}.streak = 4"); await page.evaluate("touchAt('pointerdown', 180, 380)"); await page.wait_for_timeout(250); await hit(page, 180, 380); await page.evaluate("touchAt('pointerup', 180, 380)")
             tk = await page.evaluate(f"({{ key: {S}.ui.streakToast && {S}.ui.streakToast.key, streak: {S}.streak }})")

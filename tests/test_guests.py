@@ -10,6 +10,7 @@ FREEZE = f"(() => {{ const s = {S}; s.serveAt = performance.now() + 1e9; for (co
 # park the guest at depth z on screen point (x, y), frozen, upright (no tumble): for pixel probes and screenshots
 PARK = f"""((z, x, y) => {{ const s = {S}, b = s.ball; const g = b.guest; s.setBallZ(z, x, y); b.guest = g; b.speed = 0; b.rot = 0; b.tumble = 0; b.trail.length = 0; s.serveAt = performance.now() + 1e9; s.lives = 40; return ballScreen(b); }})"""
 # probe a grid of points inside 0.7 r of the guest's screen centre: how many near-white, near-black and brown pixels
+HEAD = lambda sc: {'x': sc['x'], 'y': sc['y'] - 0.5 * sc['r'], 'r': sc['r'] * 0.6}  # the cow's head (eyes, horns, black patches): the painted art has its pink muzzle at the centre
 PROBE = """((sc) => { const out = { white: 0, black: 0, brown: 0, beige: 0, n: 0, px: [] }; for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) {
   const x = sc.x + i / 4 * sc.r * 0.7, y = sc.y + j / 4 * sc.r * 0.7; if (Math.hypot(x - sc.x, y - sc.y) > sc.r * 0.7) continue; const [r, g, b] = __grasp.strike.pixel(x, y); out.n++;
   if (out.px.length < 6) out.px.push([r, g, b]);
@@ -22,11 +23,12 @@ async def new_page(b, mobile=False, lang='en', gfx=None):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + (f"window.__graspGfx = {gfx};" if gfx else "") + f"try {{ localStorage.setItem('lang', '{lang}'); }} catch (e) {{}}")
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     return ctx, page, errs
 
 async def play_strike(page, mobile=False):
-    if mobile: await page.tap('.modes button[data-mode=strike]'); await page.tap('#mouseBtn')
-    else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function(f"mode === 'mouse' && gameMode === 'strike' && {S}.ball", timeout=10000)
     await page.evaluate(SFX_JS + f"; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.extrasOff = true; {S}.lives = 40; " + FREEZE)
 
@@ -73,11 +75,11 @@ async def main():
         check('the guest tumbles in flight (its rotation turns)', abs(rot[1] - rot[0]) > 0.2, rot)
 
         # ---- the NEXT card shows the guest one serve before ----
-        await page.evaluate(f"{S}.guestEvery = 2; {S}.serve(); {FREEZE}")
+        await page.evaluate(f"{S}.setLevel(4); {S}.guestEvery = 2; {S}.serve(); {FREEZE}")  # (the card shows from level 3 on)
         nx = await page.evaluate(f"{S}.guestNext"); await frames(page, 2)
         card = await page.evaluate(f"{S}.ui.nextCard")
         check('one serve before a guest: guestNext.in = 1 and the NEXT card shows that guest (icon drawn) even with extrasOff', nx and nx['in'] == 1 and card and card['kind'] == 'guest' and card['guest'] == nx['kind'] and card.get('icon'), [nx, card])
-        await page.screenshot(path='tests/out/guests_next_card.png', clip={'x': 440, 'y': 240, 'width': 400, 'height': 160})
+        await page.screenshot(path='tests/out/guests_next_card.png', clip={'x': 640, 'y': 40, 'width': 640, 'height': 200})
         await page.evaluate(f"{S}.serve(); {FREEZE}"); await frames(page, 2)
         sv = await page.evaluate(f"({{ g: {S}.ball.guest, card: {S}.ui.nextCard }})")
         check('...and the next serve is that guest; the card goes away (extrasOff, no guest next)', sv['g'] == nx['kind'] and sv['card'] is None, sv)
@@ -87,10 +89,18 @@ async def main():
         hit = await page.evaluate(f"""(() => {{ const s = {S}, b = s.ball, c0 = __grasp.profile.coins, e0 = __grasp.events.length; __sfx.length = 0; const f0 = s.floaters.length;
           strikeHit(b, performance.now()); return {{ dir: b.dir, tier: b.tier, hits: s.guestHits, coins: __grasp.profile.coins - c0, ev: __grasp.events.slice(e0), sfx: __sfx.slice(), bub: s.floaters.filter(f => f.bubble).map(f => f.text), speed: b.speed, pace: s.pace }}; }})()""")
         check('slapping a cow: it reverses (dir -1), at least medium power, guestHits 1', hit['dir'] == -1 and hit['tier'] in ('medium', 'hard', 'super') and hit['hits'] == 1, hit)
-        check("slap: a 'MOO!' speech bubble, the 'moo' sound requested, +5 coins, track('guest', 1)", 'MOO!' in hit['bub'] and 'moo' in hit['sfx'] and hit['coins'] == 5 and ['guest', 1] in hit['ev'], hit)
+        check("slap: a 'MOO!' speech bubble, the 'moo' sound requested, +2 coins, track('guest', 1)", 'MOO!' in hit['bub'] and 'moo' in hit['sfx'] and hit['coins'] == 2 and ['guest', 1] in hit['ev'], hit)
         await frames(page, 2); fc = await page.evaluate(f"guestFace({S}.ball, performance.now())")
         await page.wait_for_function(f"performance.now() - {S}.ball.guestHitAt > 400"); fd = await page.evaluate(f"guestFace({S}.ball, performance.now())")
         check('faces: happy right after the slap, dizzy (spiral eyes) flying back', fc == 'happy' and fd == 'dizzy', [fc, fd])
+        # ---- the painted cow art (assets/guests/cow_<face>.png) replaces the drawn cow; the monkey (no art yet) stays drawn ----
+        await page.wait_for_function(f"['in', 'happy', 'dizzy', 'squash'].every(f => {S}.guestArt('cow', f) === 'img') || ['in', 'happy', 'dizzy', 'squash'].some(f => GUEST_ART['cow_' + f].state === 'failed')", timeout=8000)
+        art = await page.evaluate(f"({{ cow: ['in', 'happy', 'dizzy', 'squash'].map(f => {S}.guestArt('cow', f)), monkey: ['in', 'happy', 'dizzy', 'squash'].map(f => {S}.guestArt('monkey', f)), w: GUEST_ART.cow_in.img.naturalWidth }})")
+        check("the cow uses its painted art for every face ('img'); the monkey, with no art files yet, falls back to the drawn sprite", art['cow'] == ['img'] * 4 and art['monkey'] == ['drawn'] * 4 and art['w'] == 256, art)
+        await page.evaluate(f"(() => {{ const s = {S}; s.guestEvery = 0; s.serve(); s.spawnGuest('cow'); s.floaters.length = 0; }})()"); sc2 = await page.evaluate(PARK + "(160, 640, 430)")
+        await frames(page, 3); await page.screenshot(path='tests/out/guests_cow_art_2d.png')
+        pa = await page.evaluate(PROBE + f"({json.dumps(HEAD(sc2))})")
+        check('2D: the painted cow reads white + black at its head', pa['white'] >= 4 and pa['black'] >= 3, pa)
         await page.evaluate(f"(() => {{ const s = {S}; s.serve(); s.spawnGuest('monkey'); }})()"); await page.evaluate(PARK + "(30, 640, 420)")
         hm = await page.evaluate(f"(() => {{ const s = {S}; __sfx.length = 0; strikeHit(s.ball, performance.now()); return {{ sfx: __sfx.slice(), bub: s.floaters.filter(f => f.bubble).map(f => f.text) }}; }})()")
         check("monkey slap: 'OOH OOH!' bubble and the 'monkey' chirps", 'OOH OOH!' in hm['bub'] and 'monkey' in hm['sfx'], hm)
@@ -131,11 +141,11 @@ async def main():
 
         # ---- pixel probes, 2D: the cow white + black, the monkey brown ----
         await page.evaluate(f"(() => {{ const s = {S}; s.serve(); s.spawnGuest('cow'); s.floaters.length = 0; }})()"); sc = await page.evaluate(PARK + "(160, 640, 430)")
-        await frames(page, 3); pc = await page.evaluate(PROBE + f"({json.dumps(sc)})")
-        check('2D: the cow reads white with black patches at its screen point', pc['white'] >= 4 and pc['black'] >= 3, pc)
+        await frames(page, 3); pc = await page.evaluate(PROBE + f"({json.dumps(HEAD(sc))})")
+        check('2D: the cow reads white with black patches at its head', pc['white'] >= 4 and pc['black'] >= 3, pc)
         await page.evaluate(f"(() => {{ const s = {S}; s.serve(); s.spawnGuest('monkey'); s.floaters.length = 0; }})()"); sc = await page.evaluate(PARK + "(160, 640, 430)")
         await frames(page, 3); pm = await page.evaluate(PROBE + f"({json.dumps(sc)})")
-        check('2D: the monkey reads brown (with its beige face) at its screen point', pm['brown'] >= 6 and pm['beige'] >= 2 and pm['white'] < pc['white'], pm)
+        check('2D: the monkey reads brown (with its beige face) at its screen point', pm['brown'] >= 6 and pm['beige'] >= 2 and pm['white'] < pm['brown'], pm)
         check('no page errors (desktop EN)', not errs, errs)
         await ctx.close()
 
@@ -167,9 +177,12 @@ async def main():
         if not webgl: print('INFO no WebGL here: the 3D probes are skipped', await page.evaluate(f"{S}.gfxInfo"))
         else:
             await page.evaluate(f"(() => {{ const s = {S}; s.guestEvery = 0; s.serve(); s.spawnGuest('cow'); s.floaters.length = 0; }})()"); sc = await page.evaluate(PARK + "(160, 640, 430)")
-            await frames(page, 3); pc = await page.evaluate(PROBE + f"({json.dumps(sc)})")
+            await frames(page, 3); pc = await page.evaluate(PROBE + f"({json.dumps(HEAD(sc))})")
             ov = await page.evaluate(f"(() => {{ const s = {S}; const q = __grasp.strike.pixel3d({sc['x']}, {sc['y']}); return q; }})()")
             check('3D: the cow is a WebGL sprite (white + black at its screen point, in the WebGL layer)', pc['white'] >= 4 and pc['black'] >= 3 and ov is not None, [pc, ov])
+            a3 = await page.evaluate(f"(() => {{ const g = G3.guestPool[0], b = {S}.ball; return {{ art: {S}.guestArt('cow', guestFace(b, performance.now())), same: !!(g && g.material.map && g.material.map.image === guestSprite('cow', guestFace(b, performance.now())).c) }}; }})()")
+            check('3D: the guest sprite carries the painted cow art (sRGB texture of the art canvas)', a3['art'] == 'img' and a3['same'], a3)
+            await page.screenshot(path='tests/out/guests_cow_art_3d.png')
             await page.evaluate(f"(() => {{ const s = {S}; s.serve(); s.spawnGuest('monkey'); s.floaters.length = 0; }})()"); sc = await page.evaluate(PARK + "(160, 640, 430)")
             await frames(page, 3); pm = await page.evaluate(PROBE + f"({json.dumps(sc)})")
             check('3D: the monkey reads brown at its screen point', pm['brown'] >= 6 and pm['beige'] >= 2, pm)

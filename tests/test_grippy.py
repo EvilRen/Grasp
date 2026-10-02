@@ -8,7 +8,7 @@ DATE = '2026-10-02'
 ALL_CHEAP = ['ball_beach', 'ball_soccer', 'hand_mint', 'hand_sky', 'hand_lilac', 'hand_robot', 'blade_neon', 'blade_rainbow', 'trail_sparkle', 'trail_fire']
 
 def prof(coins=0, xp=0, unlocked=(), missions=None):
-    p = {'v': 1, 'coins': coins, 'xp': xp, 'unlocked': list(unlocked)}
+    p = {'v': 1, 'xpv': 2, 'coins': coins, 'xp': xp, 'unlocked': list(unlocked)}
     if missions is not None: p['missions'] = {'date': DATE, 'list': [dict(id=i, progress=pr, goal=g, reward=20, done=False, claimed=False) for i, pr, g in missions]}
     return "localStorage.setItem('grasp.profile', " + json.dumps(json.dumps(p)) + ");"
 
@@ -21,8 +21,8 @@ async def fresh(b, mobile=False, he=False, init=''):
     return ctx, page, errs
 async def play(page, m, mobile=False):
     await page.evaluate("__grasp.setGameMode('" + m + "')")
-    if mobile: await page.tap('#mouseBtn')
-    else: await page.click('#mouseBtn')
+    if mobile: await page.evaluate(START_MOUSE)
+    else: await page.evaluate(START_MOUSE)
     await page.wait_for_function("mode === 'mouse'", timeout=8000); await page.evaluate(SFX_JS)
 async def end_strike(page, score=0, lives=1):
     await page.evaluate(f"(() => {{ const s = {S}; s.score = {score}; s.lives = {lives}; s.setBallZ(-500); }})()")
@@ -66,7 +66,7 @@ async def main():
         st = await page.evaluate(G + ".last")
         check("round start on a fresh profile's first Strike run: Grippy pops up with the onboarding serve tip (the start line from then on)", st['text'] in ln['en']['tip_serve'] and await page.evaluate(G + ".on"), st)
         bx = await page.evaluate(G + ".box()")
-        check('desktop: the mascot at the bottom start corner, inside the screen', bx and bx['x'] <= 16 and bx['y'] + bx['h'] <= 800 and bx['mascot']['w'] >= 50 and bx['bubble']['x'] > bx['mascot']['x'], bx)
+        check('desktop: the mascot at the bottom start corner, inside the screen', bx and bx['x'] <= 16 and bx['y'] + bx['h'] <= 800 and 38 <= bx['mascot']['w'] <= 44.5 and bx['bubble']['x'] > bx['mascot']['x'], bx)
         await page.screenshot(path='tests/out/grippy_desktop_start.png')
         said = await page.evaluate("(evs => evs.map(e => { __grasp.grippy.cool(); const ok = __grasp.grippy.say(e); return [e, ok, __grasp.grippy.last.event, __grasp.grippy.last.text]; }))(" + json.dumps(need) + ")")
         badsay = [x for x in said if not x[1] or x[2] != x[0] or (x[0] != 'daily' and x[3] not in ln['en'][x[0]])]
@@ -81,7 +81,7 @@ async def main():
           r.minor = g.say('pu_big'); r.gap = g.gapMs; r.show = g.showMs; return r; })()""")
         check('rate limit: two events within 1 s give one line (the second and third are dropped)', rl['a'] and not rl['b'] and not rl['c'] and rl['after'] == 'combo', rl)
         check('important events cut in: boss, new best, last life', rl['boss'] and rl['best'] and rl['last'] and rl['ev'] == 'lastLife' and not rl['minor'], rl)
-        check('one line per 4 s, each shown 2.2 s', rl['gap'] == 4000 and rl['show'] == 2200, rl)
+        check('one line per 8 s in play (a calmer screen), each shown 2.2 s', rl['gap'] == 8000 and rl['show'] == 2200, rl)
         await page.evaluate(G + ".say('boss')")
         await page.wait_for_function("!" + G + ".visible", timeout=6000)
         hid = await page.evaluate("performance.now() - " + G + ".last.t")
@@ -164,10 +164,10 @@ async def main():
 
         # ---- "One more?" teaser: the nearest goal for crafted profiles; Play again dominant and pulsing ----
         cases = [
-            ('coins', prof(coins=263, unlocked=ALL_CHEAP, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), 'Only 37 coins to the Disco ball!', 'רק עוד 37 מטבעות לכדור דיסקו!'),
-            ('xp', prof(xp=438, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), '12 XP to Level 4', 'עוד 12 XP לרמה 4'),
+            ('coins', prof(coins=963, unlocked=ALL_CHEAP, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), 'Only 37 coins to the Disco ball!', 'רק עוד 37 מטבעות לכדור דיסקו!'),
+            ('xp', prof(xp=568, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), '12 XP to Level 4', 'עוד 12 XP לרמה 4'),
             ('mission', prof(missions=[('walls', 4, 6), ('fruit', 10, 40), ('boss', 0, 1)]), '2 more walls for the mission', 'עוד 2 קירות למשימה'),
-            ('buy', prof(coins=420, unlocked=ALL_CHEAP, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), 'You can buy the Disco ball now!', 'יש לכם מספיק מטבעות לכדור דיסקו!'),
+            ('buy', prof(coins=1020, unlocked=ALL_CHEAP, missions=[('walls', 0, 6), ('fruit', 0, 40), ('boss', 0, 1)]), 'You can buy the Disco ball now!', 'יש לכם מספיק מטבעות לכדור דיסקו!'),
         ]
         for kind, init, en, hetext in cases:
             for he in ((False, True) if kind in ('coins', 'mission') else (False,)):
@@ -194,7 +194,7 @@ async def main():
         for he in (False, True):
             for m in ('strike', 'slice', 'daily'):
                 tag = 'phone ' + ('he' if he else 'en') + ' ' + m
-                ctx, page, errs = await fresh(b, True, he, prof(coins=10, xp=45, missions=[('rounds', 2, 3), ('fruit', 0, 40), ('boss', 0, 1)]))
+                ctx, page, errs = await fresh(b, True, he, prof(coins=10, xp=175, missions=[('rounds', 2, 3), ('fruit', 0, 40), ('boss', 0, 1)]))
                 if m == 'daily':
                     await page.evaluate("__grasp.setGameMode('strike')"); await page.tap('#dailyBtn'); await page.wait_for_timeout(300); await page.tap('#dailyMouse')
                     await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)

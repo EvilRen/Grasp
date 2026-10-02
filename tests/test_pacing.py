@@ -16,10 +16,11 @@ async def new_page(b, gfx=None, ctx=None):
     page = await ctx.new_page(); await routes(page); errs = []
     page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + (f"window.__graspGfx = {gfx};" if gfx else ''))
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     return ctx, page, errs
 
 async def play(page):
-    await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate(SFX_JS); await page.mouse.move(640, 760)
 
@@ -89,10 +90,10 @@ async def main():
         await page.evaluate(f"{S}.walls.find(q => q.final).final = false"); await frames(page, 2); g2 = await page.evaluate(rim)
         await page.evaluate(f"{S}.walls.filter(q => q.left > 0).sort((a, b) => a.z - b.z)[0].final = true"); await frames(page, 1)
         check('the final wall glows: a gold pixel on its rim, not there on an ordinary wall', g1[0] > 170 and g1[0] > g1[2] + 70 and g1[1] > 110 and sum(g1) > sum(g2) + 80, [g1, g2])
-        # ---- the release: clearing the final wall -> 2.5 s calm: no ball served, the heartbeat stops, a chime and the level-up; then a serve ----
+        # ---- the release: completing a level -> 2.5 s calm: no ball served, the heartbeat stops, a chime and the level-up; then a serve ----
         await page.evaluate("__sfx.length = 0")
-        r0 = await page.evaluate(f"(() => {{ const s = {S}, n = s.cleared; s.setCleared(n + 1); return {{ now: performance.now(), rel: s.releaseUntil, level: s.level, balls: s.balls.length, beats: s.beats, up: !!s.ui.levelUp, sfx: __sfx.slice(), perkAt: s.perkAt }}; }})()")
-        check('final wall cleared: level 7, the release starts (2.5 s), the ball in play pops away, a soft chime and the level-up fanfare', r0['level'] == 7 and abs(r0['rel'] - r0['now'] - 2500) < 5 and r0['balls'] == 0 and r0['up'] and 'chime' in r0['sfx'] and 'levelup' in r0['sfx'], r0)
+        r0 = await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(4); s.setCleared(s.cleared + 7); return {{ now: performance.now(), rel: s.releaseUntil, level: s.level, balls: s.balls.length, beats: s.beats, up: !!s.ui.levelUp, sfx: __sfx.slice(), perkAt: s.perkAt }}; }})()")
+        check('a level completed (level 4 -> 5; level 6 now ends in the world boss): the release starts (2.5 s), the ball in play pops away, a soft chime and the level-up fanfare', r0['level'] == 5 and abs(r0['rel'] - r0['now'] - 2500) < 5 and r0['balls'] == 0 and r0['up'] and 'chime' in r0['sfx'] and 'levelup' in r0['sfx'], r0)
         seen = []
         while True:
             q = await page.evaluate(f"({{ t: performance.now(), balls: {S}.balls.length, beats: {S}.beats, over: {S}.over, offer: !!{S}.perkOffer }})")

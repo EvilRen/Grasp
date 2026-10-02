@@ -27,9 +27,9 @@ async def camera_page(b, mobile):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + HAND_JS + POINT_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.click('#camBtn') if not mobile else await page.tap('#camBtn')
     if mobile: await page.tap('.modes button[data-mode=slice]')
     else: await page.click('.modes button[data-mode=slice]')
-    await page.click('#camBtn') if not mobile else await page.tap('#camBtn')
     await page.wait_for_function("mode === 'camera'", timeout=15000)
     return ctx, page, errs
 
@@ -42,7 +42,7 @@ async def main():
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
         await page.click('.modes button[data-mode=slice]')
         check('menu shows slice selected + description', await page.evaluate("document.querySelector('[data-mode=slice]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('Fruit')"))
-        await page.click('#mouseBtn'); await page.wait_for_timeout(2500)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(2500)
         if not await page.evaluate("__grasp.slice.fruits.length > 0"): await page.evaluate("__grasp.spawnWave()"); await page.wait_for_timeout(300)  # spawn timing is random
         check('fruit spawns and flies up from below', await page.evaluate("__grasp.slice.fruits.some(f => f.vy < 0) || __grasp.slice.fruits.length > 0"), await page.evaluate("__grasp.slice.fruits.map(f=>[Math.round(f.y), +f.vy.toFixed(2)])"))
         await page.evaluate("parkFruit(640, 400)")
@@ -104,7 +104,7 @@ async def main():
         await end_round(page); bt = await page.evaluate("__grasp.slice.ui.buttons")
         await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(200)
         check('click Home on the card: back to the start screen', await page.evaluate("mode === 'none' && !$('start').hidden && document.body.classList.contains('home')"))
-        await page.click('#mouseBtn'); await page.wait_for_timeout(300)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(300)
         check('start again: a fresh round', await page.evaluate("mode === 'mouse' && gameMode === 'slice' && __grasp.slice.lives === 3 && !__grasp.slice.over"))
         await page.click('#hudBtn'); await page.wait_for_timeout(700)
         check('HUD shows slice lives', 'lives' in await page.inner_text('#hud')); await page.click('#hudBtn')
@@ -158,7 +158,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + POINT_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            await page.tap('.modes button[data-mode=slice]'); await page.tap('#mouseBtn'); await page.wait_for_timeout(300)
+            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=slice]'); await page.wait_for_timeout(300)
             await page.evaluate("parkBomb(180, 400); __grasp.slice.fruits[0].vy = -0.001"); await page.wait_for_timeout(120)
             await page.screenshot(path='tests/out/slice_bomb_phone_' + tag + '.png')
             await page.evaluate("__grasp.slice.fruits.length = 0; __grasp.slice.score = 7"); await end_round(page)

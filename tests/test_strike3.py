@@ -17,11 +17,12 @@ async def new_page(b, mobile=False, lang='en'):
     ctx = await b.new_context(**opts); page = await ctx.new_page(); await routes(page); errs = []
     page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + f"try {{ localStorage.setItem('lang', '{lang}'); }} catch (e) {{}}")
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     return ctx, page, errs
 
 async def play_strike(page, tap=False):
-    if tap: await page.tap('.modes button[data-mode=strike]'); await page.tap('#mouseBtn')
-    else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    if tap: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.ball", timeout=8000)
     await page.evaluate(SFX_JS + ";\n" + HELP_JS + f"\n__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.extrasOff = true; park()")
 
@@ -176,12 +177,13 @@ async def main():
         await page.evaluate("__grasp.setStrikeDiff('easy')")
         check('normal/daily: no page errors', not errs, errs); await ctx.close()
 
-        # ===== phone screenshots: levels 1, 4, 7 in EN and HE =====
+        # ===== phone screenshots: levels 1, 4, 8 in EN and HE =====
         for lang in ('en', 'he'):
             ctx, page, errs = await new_page(b, mobile=True, lang=lang); await play_strike(page, tap=True)
+            await page.evaluate(f"(() => {{ const s = {S}; s.ui.levelBanner = {{ t: performance.now(), level: 1, goal: s.ui.levelBanner ? s.ui.levelBanner.goal : 5 }}; }})()")  # re-arm (a slow 3D start can outlive the first slide-in)
             await page.wait_for_function(f"{S}.ui.levelBanner && performance.now() > {S}.ui.levelBanner.t + 500", timeout=6000)
             await page.screenshot(path=f'tests/out/strike7_level1_{lang}.png')
-            for lvl in (4, 7):
+            for lvl in (4, 8):  # (level 7 comes after world 1's boss now)
                 await page.evaluate(f"(() => {{ const s = {S}; s.ui.newsBox = null; s.ui.levelBanner = null; s.setLevel({lvl - 1}); s.setCleared(clearedAtLevel({lvl})); park(); s.lives = s.maxLives; }})()")
                 await page.wait_for_function(f"{S}.ui.newsBox && performance.now() > {S}.ui.levelBanner.t + 450", timeout=6000)
                 nb = await page.evaluate(f"({{ box: {S}.ui.newsBox, news: {S}.ui.levelBanner.news, level: {S}.level }})")

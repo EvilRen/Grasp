@@ -23,12 +23,13 @@ async def open_page(b, mobile=False, query='', gfx="{ pr: 0.5, auto: false }", b
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + (f"window.__graspGfx = {gfx};" if gfx else "window.__graspGfx = {};"))
     await page.goto('http://localhost:8765/index.html' + query); await page.wait_for_timeout(600)
+    await page.evaluate("__grasp.setPlayerLevel(20)")  # every wall kind / power-up unlocked on the road
     await page.evaluate(f"{S}.extrasOff = true; __grasp.CONFIG.STRIKE_PU_RATE = 0")
     return ctx, page, errs
 
 async def start(page, mobile=False):
-    if mobile: await page.tap('.modes button[data-mode=strike]'); await page.tap('#mouseBtn')
-    else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
     await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
 
 
