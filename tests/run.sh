@@ -19,4 +19,5 @@ python3 tests/test_chrome.py
 python3 tests/test_start.py
 python3 tests/test_meta.py
 python3 tests/test_daily.py
+python3 tests/test_grippy.py
 echo "ALL TESTS PASSED"

@@ -250,6 +250,33 @@ html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px
 .mt.ok .ic{ background:var(--mint); color:#062b1c; }
 .mt.ok .ic svg{ stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
 .mt b{ color:var(--saffron); }
+/* while a round-over card is up, toasts shrink to one line in the gap between the toolbar and the card and show one at a time (the rest wait) */
+#metaToast.compact{ gap:0; grid-template-columns:minmax(0,1fr); }
+#metaToast.compact .mt{ min-width:0; height:34px; padding:6px; padding-inline-end:12px; gap:8px; font-size:13px; white-space:nowrap; }
+#metaToast.compact .mt .tx{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
+#metaToast.compact .mt .ic{ width:22px; height:22px; }
+#metaToast.compact .mt .ic svg{ width:14px; height:14px; }
+#metaToast .mt.wait{ display:none; }
+#metaToast.compact .mt.out{ transform:none; } /* fades in place: never up into the toolbar */
+/* Grippy: the commentator, a little hand with big eyes (drawn on its own canvas) and a speech bubble, at the bottom start corner */
+#grippy{ position:fixed; left:12px; bottom:16px; z-index:4; display:flex; align-items:flex-end; gap:4px; pointer-events:none; max-width:calc(100% - 24px); transition:opacity .25s; }
+html[dir="rtl"] #grippy{ left:auto; right:12px; }
+#grippy[hidden]{ display:none; }
+#grippy.out, #grippy.blocked{ opacity:0; }
+#grippy canvas{ flex:none; width:60px; height:60px; display:block; }
+#grippy .bub{ position:relative; margin-bottom:24px; min-width:0; max-width:min(250px, calc(100vw - 100px)); padding:8px 12px; border-radius:16px; background:#fff8ec; color:#241a00;
+  font-size:14px; font-weight:600; line-height:1.3; box-shadow:0 6px 18px rgba(0,0,0,.35); transform-origin:0% 100%; animation:gpop .3s cubic-bezier(.2,1.5,.4,1) both; }
+html[dir="rtl"] #grippy .bub{ transform-origin:100% 100%; }
+#grippy .bub::after{ content:''; position:absolute; bottom:9px; inset-inline-start:-5px; width:11px; height:11px; background:#fff8ec; transform:rotate(45deg); border-radius:2px; }
+@keyframes gpop{ from{ transform:scale(.35); opacity:0; } }
+.sheet .gripBtn{ flex:none; display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 10px 0 4px; padding-inline:4px 10px; border-radius:999px; background:rgba(29,37,71,.85); color:var(--bone);
+  box-shadow:inset 0 0 0 1.5px var(--saffron); font-size:12px; font-weight:700; }
+.sheet .gripBtn canvas{ width:28px; height:28px; display:block; }
+.sheet .gripBtn .st{ min-width:22px; text-align:center; }
+.sheet .gripBtn[aria-pressed="false"]{ box-shadow:inset 0 0 0 1.5px var(--line); color:var(--muted); }
+.sheet .gripBtn[aria-pressed="false"] canvas{ filter:grayscale(1); opacity:.45; }
+@media (max-width:520px){ .sheet .gripBtn .nm{ display:none; } }
+@media (prefers-reduced-motion: reduce){ #grippy .bub{ animation:none; } }
 /* the Daily button (first in the meta row, the widest) and its panel */
 .dailyBtn{ --mod:#ffc24b; position:relative; flex:1.7; display:inline-flex; align-items:center; gap:8px; padding:5px 10px; min-width:0; border-radius:12px; color:var(--bone); text-align:start;
   background:linear-gradient(135deg, rgba(255,138,61,.22), rgba(255,194,75,.1) 60%, rgba(29,37,71,.5)); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.55); transition:background .15s, transform .1s; }
@@ -383,7 +410,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 </div>
 <div class="ov" id="collection" hidden role="dialog" aria-modal="true" aria-labelledby="collectionTitle">
   <div class="sheet">
-    <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><button class="gripBtn" id="grippyBtn" type="button" aria-pressed="true"><canvas aria-hidden="true"></canvas><span class="nm" data-i18n="grippyName">Grippy</span><span class="st"></span></button><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <p class="sub" data-i18n="collectionSub">Spend coins on new looks. Tap to buy, tap to wear.</p>
     <div id="ctypes"></div>
   </div>
@@ -400,6 +427,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   </div>
 </div>
 <div id="metaToast" aria-live="polite"></div>
+<div id="grippy" hidden role="status" aria-live="polite"><canvas aria-hidden="true"></canvas><div class="bub"><span class="tx"></span></div></div>
 
 <script>
 /* ============================================================
@@ -562,6 +590,12 @@ const I18N = {
     mod_glass: 'Glass day', mod_steel: 'Steel day', mod_tnt: 'TNT party', mod_tiny: 'Tiny ball', mod_bighands: 'Big hands', mod_speedy: 'Speedy', mod_rain: 'Power-up rain',
     modd_glass: 'Every wall is glass: it shatters on any hit.', modd_steel: 'Steel walls from the first level: hit them hard.', modd_tnt: 'TNT crates from the first level, and more of them. Boom!',
     modd_tiny: 'The ball is 30% smaller.', modd_bighands: 'Your hands reach 40% further.', modd_speedy: 'The ball flies 25% faster.', modd_rain: 'Three times the power-up bricks, from the first level.',
+    grippyName: 'Grippy', grippyAria: 'Grippy, the cheering helper', grippyOn: 'On', grippyOff: 'Off',
+    teaseCoins: 'Only {n} coins to the {i}!', teaseBuy: 'You can buy the {i} now!', teaseXp: '{n} XP to Level {l}',
+    tm_fruit: '{n} more fruit for the mission', tm_bricks: '{n} more bricks for the mission', tm_bricks1: '1 more brick for the mission', tm_cars: '{n} more cars for the mission', tm_cars1: '1 more car for the mission',
+    tm_walls: '{n} more walls for the mission', tm_walls1: '1 more wall for the mission', tm_powerups: '{n} more power-ups for the mission', tm_powerups1: '1 more power-up for the mission',
+    tm_boss: 'Beat a boss for the mission', tm_strikeLevel: 'Reach level {g} in Strike for the mission', tm_rounds: '{n} more rounds for the mission', tm_rounds1: '1 more round for the mission',
+    tm_combo: 'One ×3 combo for the mission', tm_close: '{n} more "Close one!" hits for the mission', tm_close1: '1 more "Close one!" hit for the mission', tm_daily: "Play today's daily for the mission",
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -644,6 +678,12 @@ const I18N = {
     mod_glass: 'יום זכוכית', mod_steel: 'יום פלדה', mod_tnt: 'מסיבת TNT', mod_tiny: 'כדור קטנטן', mod_bighands: 'ידיים גדולות', mod_speedy: 'מהירות', mod_rain: 'גשם חיזוקים',
     modd_glass: 'כל הקירות מזכוכית: מתנפצים בכל מכה.', modd_steel: 'קירות פלדה כבר מהשלב הראשון: הכו חזק.', modd_tnt: 'ארגזי TNT כבר מהשלב הראשון, ויותר מהם. בום!',
     modd_tiny: 'הכדור קטן ב-30%.', modd_bighands: 'הידיים מגיעות רחוק יותר ב-40%.', modd_speedy: 'הכדור טס מהר יותר ב-25%.', modd_rain: 'פי שלושה לבני חיזוק, כבר מהשלב הראשון.',
+    grippyName: 'גריפי', grippyAria: 'גריפי, העוזר המעודד', grippyOn: 'פועל', grippyOff: 'כבוי',
+    teaseCoins: 'רק עוד {n} מטבעות ל{i}!', teaseBuy: 'יש לכם מספיק מטבעות ל{i}!', teaseXp: 'עוד {n} XP לרמה {l}',
+    tm_fruit: 'עוד {n} פירות למשימה', tm_fruit1: 'עוד פרי אחד למשימה', tm_bricks: 'עוד {n} לבנים למשימה', tm_bricks1: 'עוד לבנה אחת למשימה', tm_cars: 'עוד {n} מכוניות למשימה', tm_cars1: 'עוד מכונית אחת למשימה',
+    tm_walls: 'עוד {n} קירות למשימה', tm_walls1: 'עוד קיר אחד למשימה', tm_powerups: 'עוד {n} חיזוקים למשימה', tm_powerups1: 'עוד חיזוק אחד למשימה',
+    tm_boss: 'נצחו בוס כדי להשלים את המשימה', tm_strikeLevel: 'הגיעו לשלב {g} במכה כדי להשלים את המשימה', tm_rounds: 'עוד {n} סיבובים למשימה', tm_rounds1: 'עוד סיבוב אחד למשימה',
+    tm_combo: 'קומבו ‎×3 אחד למשימה', tm_close: 'עוד {n} מכות "היה קרוב!" למשימה', tm_close1: 'עוד מכת "היה קרוב!" אחת למשימה', tm_daily: 'שחקו באתגר היומי כדי להשלים את המשימה',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -1078,6 +1118,7 @@ function frame(now) {
   updateParticles(dt);
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else render(now);
   if (pause.resumeT) drawResume(now);
+  syncToastLayout(); grippyTick(now);
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -1356,7 +1397,7 @@ function resetSlice() {
   try { slice.best = Math.max(slice.best, +localStorage.getItem('sliceBest') || 0); } catch {}
   slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
   slice.lives = SLICE_LIVES; slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
-  slice.combo.n = 0; slice.combo.t = -1e9; roundStart();
+  slice.combo.n = 0; slice.combo.t = -1e9; roundStart(); grippySay('start');
   const ui = slice.ui; ui.heartLost = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
 }
 function spawnWave(now) {
@@ -1378,10 +1419,10 @@ function spawnWave(now) {
 }
 function sliceLoseLife(now) { // a missed fruit or a sliced bomb; the last life ends the round
   slice.lives--; slice.ui.heartLost = { i: slice.lives, t: now }; slice.combo.n = 0;
-  if (slice.lives > 0) return;
+  if (slice.lives > 0) { grippySay(slice.lives === 1 ? 'lastLife' : 'miss'); return; }
   slice.lives = 0; slice.over = true; slice.overAt = now; hideHint(); slice.last = null; slice.blade.length = 0;
   const ui = slice.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = slice.score > slice.best;
-  if (ui.newBest) { slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); }
+  if (ui.newBest) { slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
   else sfx('chime');
   roundDone(slice.score);
 }
@@ -1424,7 +1465,7 @@ function cutFruit(f, ux, uy, now) {
   }
   slice.score++;
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now; slice.bestCombo = Math.max(slice.bestCombo, slice.combo.n);
-  addCoins(1); track('fruit', 1); if (slice.combo.n === 3) track('combo', 1); // a coin per fruit; a ×3 combo counts once per chain
+  addCoins(1); track('fruit', 1); if (slice.combo.n === 3) { track('combo', 1); grippySay('combo'); } else if (slice.score === 1) grippySay('firstHit'); // a coin per fruit; a ×3 combo counts once per chain
   slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
 }
 function sliceTick(now, dt) {
@@ -1744,7 +1785,7 @@ function resetSmash(now) {
   if (bodies.length) { M.Composite.remove(world, bodies); bodies = []; } // sandbox objects make way
   clearSmash(); particles.length = 0;
   try { smash.best = Math.max(smash.best, +localStorage.getItem('smashBest') || 0); } catch {}
-  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0; roundStart();
+  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0; roundStart(); grippySay('start');
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
   smash.endAt = now + CONFIG.SMASH_ROUND_S * 1000;
   smash.nextCar = now + 1500 + Math.random() * 1500;
@@ -1837,6 +1878,7 @@ function smashBricks(p, dir, v, now) {
     burst(b.position.x, b.position.y, BRICK.dust, 6 + v * 6);
   }
   if (n) {
+    if (!smash.bricksOut && n > 0) grippySay('firstHit');
     smash.bricksOut += n; smash.bigHit = Math.max(smash.bigHit, n); addCoins(n); track('brick', n);
     smash.floaters.push({ x: p.x, y: p.y - 30, text: '+' + n, big: false, life: 1 });
     if (now - smash.lastCrunch > 60) { // one shockwave + dust cloud + shake per punch, not per brick group
@@ -1876,7 +1918,7 @@ function crumpleCar(car, p, dir, v, now) {
 function endRound(now) {
   smash.over = true; smash.overAt = now; smash.punching = false; hideHint();
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = smash.score > smash.best;
-  if (ui.newBest) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} sfx('fanfare'); }
+  if (ui.newBest) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
   else sfx('chime');
   roundDone(smash.score);
 }
@@ -3096,6 +3138,7 @@ function resetStrike(now) {
   ui.dailyBannerBox = ui.strip = ui.streakChip = null; ui.dailyBanner = daily.on ? { t: now + 200, ms: 2400, mod: daily.modifier, date: daily.date } : null; // the daily: 'Glass day' + 'Daily · 2026-10-02' first
   ui.levelBanner = { t: now + (daily.on ? 2700 : 200), level: 1, goal: levelGoal(1) }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
+  grippySay(daily.on ? 'daily' : 'start', daily.on ? { mod: t('mod_' + daily.modifier) } : null);
 }
 function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBest = strike.level; try { localStorage.setItem('strikeLevelBest', String(strike.levelBest)); } catch {} } }
 function syncLevel(now, fx) { // the level and the progress within it follow the total cleared count; a level completed (fx) gets the burst, the bonus, the fanfare and the next level's banner
@@ -3107,7 +3150,7 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
     const bonus = 50 * level; strike.score += bonus; strike.ui.scoreAt = now;
     const perk = !strike.extrasOff && availablePerks().length > 0; if (perk) strike.perkAt = now + PERK_DELAY_MS; // the perk cards come after the burst; the level banner waits for the pick
     strike.ui.levelUp = { t: now, level, bonus }; strike.ui.levelBanner = { t: now + (perk ? PERK_DELAY_MS : 700), level, goal: levelGoal(level), up: true };
-    sfx('levelup'); ring(W / 2, H * 0.32, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.4, 700, 6); burst(W / 2, H * 0.32, '#ffc24b', 22); burst(W / 2, H * 0.32, '#fff3c4', 14); saveLevelBest();
+    sfx('levelup'); grippySay('levelUp'); ring(W / 2, H * 0.32, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.4, 700, 6); burst(W / 2, H * 0.32, '#ffc24b', 22); burst(W / 2, H * 0.32, '#fff3c4', 14); saveLevelBest();
   }
 }
 function wallCleared(now) { // one more wall down: the level progress ticks (a pulse on the bar), a level may complete, and every STRIKE_BOSS_EVERY walls the boss comes
@@ -3240,7 +3283,7 @@ function sparkChip(now) { // Spark Trail: every return zaps a random brick (one 
 function streakUp(now) { // one more return without a miss; milestones at 5 / 10 / 20 get a toast
   strike.streak++; strike.bestStreak = Math.max(strike.bestStreak, strike.streak); strike.ui.streakLost = null; strike.ui.streakAt = now;
   const key = STREAK_TOASTS[strike.streak]; if (!key || strike.extrasOff) return;
-  strike.ui.streakToast = { t: now, key, n: strike.streak }; sfx('streak', strike.streak);
+  strike.ui.streakToast = { t: now, key, n: strike.streak }; sfx('streak', strike.streak); if (strike.streak === 5 || strike.streak === 10) grippySay('streak' + strike.streak);
   const bx = strike.ui.streakBox, x = bx ? bx.x + bx.w / 2 : W / 2, y = bx ? bx.y + bx.h / 2 : H * 0.2; burst(x, y, '#ff8a3d', 16); burst(x, y, '#ffe07a', 10);
 }
 function streakReset(now) { // a miss: the streak is gone, with a small grey fizzle where the chip was
@@ -3250,7 +3293,7 @@ function streakReset(now) { // a miss: the streak is gone, with a small grey fiz
 function closeOne(b, now, why) { // a hit at the very end of the window or the edge of the reach: 'Close one!', a moment of slow motion, +2 coins
   strike.closeOnes++; strike.slowUntil = now + CLOSE_MS; strike.ui.closeAt = now; strike.lastClose = why;
   const sc = ballScreen(b); strike.floaters.push({ x: sc.x, y: Math.max(strike.ui.top + 120, sc.y - sc.r - 34), text: t('closeOne'), big: true, life: 1.3 });
-  ring(sc.x, sc.y, 'rgba(120,220,255,0.9)', sc.r * 2.4, 420, 4); sfx('close'); addCoins(2); track('close', 1);
+  ring(sc.x, sc.y, 'rgba(120,220,255,0.9)', sc.r * 2.4, 420, 4); sfx('close'); addCoins(2); track('close', 1); grippySay('close');
 }
 function pathDist(x, y, now, win) { // the closest the cursor came to (x, y) in the last win ms (Infinity with no hand)
   if (!cursor.present) return Infinity;
@@ -3271,7 +3314,7 @@ function catchCapsule(c, now) { // the hand closes on a capsule: a burst in its 
   c.caught = true; const i = strike.capsules.indexOf(c); if (i >= 0) strike.capsules.splice(i, 1);
   const sc = capsuleScreen(c, now), col = PU_COL[c.kind]; strike.caught++;
   sfx('powerup'); burst(sc.x, sc.y, col, 16); burst(sc.x, sc.y, '#ffffff', 8); ring(sc.x, sc.y, hexA(col, 0.9), sc.r * 3, 380, 4); ring(sc.x, sc.y, 'rgba(255,255,255,0.8)', sc.r * 1.6, 260, 2); shakeScreen(1);
-  strike.ui.tag = { t: now, kind: c.kind, pu: true }; addCoins(3); track('powerup', 1);
+  strike.ui.tag = { t: now, kind: c.kind, pu: true }; addCoins(3); track('powerup', 1); grippySay('pu_' + c.kind);
   activatePower(c.kind, now);
 }
 function activatePower(kind, now) {
@@ -3377,7 +3420,7 @@ function smashWall(w, b, now) {
   }
   if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points (with a combo banner)
     b.combo++; strike.superFlash = now; strike.bestCombo = Math.max(strike.bestCombo, b.combo); if (b.combo === 3) track('combo', 1);
-    if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); }
+    if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); if (b.combo === 3) grippySay('combo'); }
   }
   pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the hit streak
   if (kind === 'glass') return 'pass';
@@ -3425,7 +3468,7 @@ function spawnBoss(n, now) { // boss number n (default the next): hp = 12 + 4n o
   n = n > 0 ? n | 0 : strike.bosses + 1;
   const maxHp = Math.max(1, Math.round((12 + 4 * n) * sd('STRIKE_BOSS_HP'))), Z = CONFIG.STRIKE_Z_FAR, z = Z * BOSS_Z0;
   const b = { n, hp: maxHp, maxHp, z, pz: z, angry: false, look: { x: 0, y: 0 }, hitAt: -1e9, roarAt: -1e9, nextRoar: now + 4000, retreat: false, slamAt: -1e9, born: now, speed: (z - CONFIG.STRIKE_HIT_Z * 3) / CONFIG.STRIKE_BOSS_MS };
-  strike.boss = b; strike.ui.tag = { t: now, kind: 'boss' }; strike.seenKinds.add('boss');
+  strike.boss = b; strike.ui.tag = { t: now, kind: 'boss' }; strike.seenKinds.add('boss'); grippySay('boss');
   sfx('roar'); shakeScreen(2.5);
   for (const w of strike.walls.slice()) if (w.z < Z) crumbleWall(w, now, false); // it smashes through every wall in view on its way in: nothing stands in front of it
   strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(Math.max(Z, b.z + CONFIG.STRIKE_WALL_GAP) + i * CONFIG.STRIKE_WALL_GAP); // the queue waits behind it, out of view
@@ -3485,7 +3528,7 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n;
   strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(25); track('boss', 1);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; strike.floaters.push({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
-  sfx('bossdown'); shakeScreen(4); strike.tntAt = now;
+  sfx('bossdown'); shakeScreen(4); strike.tntAt = now; grippySay('bossDown');
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
   burst(p.x, p.y, '#ffc24b', 30); burst(p.x, p.y, '#ff6f59', 22); burst(p.x, p.y, '#c05ce6', 22); dust(p.x, p.y, 16, 1 + p.s); confetti(W / 2, H * 0.3, 90, 1);
   const cw = W / 8, ch = H / 8; // the face's bricks fly at the camera
@@ -3533,6 +3576,7 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3);
   burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
   if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = now; }
+  if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
   streakUp(now); sparkChip(now);
 }
 function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life
@@ -3545,13 +3589,14 @@ function strikeMiss(b, now) { // a ball flew past: gone; with other balls still 
 function loseLife(now) { // a life gone (a missed ball, or the boss reaching the player): the heart shakes hollow, a red flash; the last one ends the round
   strike.lives--; strike.flash = now;
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
-  if (strike.lives > 0) return;
+  if (strike.lives > 0) { grippySay(strike.lives === 1 ? 'lastLife' : 'miss'); return; }
   strike.over = true; strike.overAt = now; hideHint(); strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null; saveLevelBest();
   strike.ui.newBest = strike.score > strike.best;
   if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
   roundDone(strike.score);
   if (daily.on) dailyDone(strike.score, strike.level);
+  if (strike.ui.newBest) grippySay('newBest'); // (a daily: a new best for today)
 }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
@@ -4339,10 +4384,10 @@ function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichev
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff, dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = dly ? 456 : (pill ? 372 : 316) + 34, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, ch = (dly ? 456 : (pill ? 372 : 316) + 34) + TZ, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
-  blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
+  blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null); blit(ts, cx, y0 + 40, 0, Math.min(1, (cw - 150) / ts.tw)); blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64); }
   else blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
   blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
@@ -4365,8 +4410,17 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
       ui.streakChip = { x: sx, y: py, w: sw, h: ph, n: dly.streak };
     }
   }
+  { // "One more?": the nearest goal (an item's coins, the next level's XP, or a mission) in a slim pill under the stats, with its little picture
+    const q = teaser(); ui.teaser = null;
+    if (q) {
+      const ty = y0 + 247, maxW = cw - 32, ts = textSprite(q.text, 13, q.kind === 'buy' ? '#43d9a3' : '#ffd77a', null, 600), sc = Math.min(1, (maxW - 50) / ts.tw), pw = Math.min(maxW, ts.tw * sc + 50), ph = 26, px = cx - pw / 2;
+      blit(glassSprite(pw, ph, 13), px - 1, ty - ph / 2 - 1); blit(teaserIconSprite(q), rtl ? px + pw - 16 : px + 16, ty, 0, q.item ? 0.42 : 0.36);
+      edgeText(ts, rtl ? px + pw - 34 : px + 34, ty, rtl, sc);
+      ui.teaser = { kind: q.kind, text: q.text, item: q.item || null, frac: q.frac, n: q.n, x: px, y: ty - ph / 2, w: pw, h: ph };
+    }
+  }
   { // today's missions: three compact columns (name, bar, count) above the buttons
-    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240; ui.missionRow = [];
+    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240 + TZ; ui.missionRow = [];
     ms.forEach((m, i) => {
       const mx = x0 + 16 + (rtl ? 2 - i : i) * colw + colw / 2, frac = Math.min(1, m.progress / m.goal), bw = colw - 14, sp = textSprite(missionText(m), 11, m.done ? '#43d9a3' : 'rgba(241,233,218,0.75)', null, 500);
       blit(sp, mx, my, 0, Math.min(1, bw / sp.tw));
@@ -4377,7 +4431,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     });
   }
   if (dly) { // the last 7 days: a tile per date with that day's best (empty if not played); today highlighted
-    const n = dly.strip.length, gap = 6, tw = (cw - 32 - gap * (n - 1)) / n, th = 46, sy = y0 + 272; ui.strip = [];
+    const n = dly.strip.length, gap = 6, tw = (cw - 32 - gap * (n - 1)) / n, th = 46, sy = y0 + 272 + TZ; ui.strip = [];
     dly.strip.forEach((d, i) => {
       const tx = rtl ? x0 + cw - 16 - (i + 1) * tw - i * gap : x0 + 16 + i * (tw + gap), mx = tx + tw / 2, played = d.best !== null;
       resetView(); ctx.beginPath(); ctx.roundRect(tx, sy, tw, th, 9); ctx.fillStyle = d.today ? 'rgba(255,194,75,0.2)' : played ? 'rgba(67,217,163,0.14)' : 'rgba(8,11,28,0.55)'; ctx.fill();
@@ -4387,8 +4441,8 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
       ui.strip.push({ date: d.date, best: d.best, today: d.today, x: tx, y: sy, w: tw, h: th });
     });
   } else ui.strip = null;
-  const bw = (cw - 52) / 2, bh = 50, by = y0 + (dly ? 332 : 280), ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
-  ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
+  const aw = (cw - 52) * 0.58, hw = (cw - 52) - aw, bh = 50, by = y0 + (dly ? 332 : 280) + TZ, ax = rtl ? x0 + cw - 20 - aw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - hw; // Play again: the wider, pulsing one
+  ui.buttons = { again: { x: ax, y: by, w: aw, h: bh }, home: { x: hx, y: by, w: hw, h: bh } };
   if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
     const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
     ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
@@ -4397,9 +4451,15 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share') };
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
-    blit(overButtonSprite(key === 'again' ? 'again' : on || key === 'share' ? 'on' : 'home', r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
+    let bk = hot ? 1.04 : 1;
+    if (key === 'again') { // a gentle pulse and a breathing glow, so the next round is the obvious tap
+      const ph = 0.5 + 0.5 * Math.sin(now / 280); if (!hot) bk = 1 + 0.035 * ph; ui.againPulse = bk;
+      resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)';
+      ctx.beginPath(); ctx.roundRect(mx - r.w * bk / 2, my - r.h * bk / 2, r.w * bk, r.h * bk, 14); ctx.fill(); ctx.restore();
+    }
+    blit(overButtonSprite(key === 'again' ? 'again' : on || key === 'share' ? 'on' : 'home', r.w, r.h), mx, my, 0, bk);
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
-    blit(textSprite(label[key], key === 'again' || key === 'home' ? 16 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' ? 700 : 500), mx, my);
+    blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' ? 700 : 500), mx, my);
   }
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
@@ -4514,6 +4574,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       f.type = 'highpass'; f.frequency.value = 1800; env(f, 0.14, 40, t0); noise(t0, 40, f);
       tone('sine', 190, 60, 0.2, 110, t0 + 0.005);
     }
+    else if (kind === 'grippy') { tone('sine', 660, 990, 0.08, 90, t0); tone('sine', 990, 1320, 0.06, 110, t0 + 0.09); } // Grippy pops up: a soft two-note 'boop-beep'
     else if (kind === 'note') { tone('sine', arg || 440, 0, 0.18, 700, t0); tone('triangle', (arg || 440) * 2, 0, 0.05, 320, t0); } // soft musical note
     else if (kind === 'ratchet') { f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 2; env(f, 0.1, 30, t0); noise(t0, 30, f); tone('square', 700, 350, 0.035, 30, t0); }
     else if (kind === 'car') {
@@ -4637,7 +4698,7 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
   return { v: PROFILE_V, coins: 0, xp: 0, level: 1, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
-    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {} }; // daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true }; // grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -4649,6 +4710,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (p.missions && typeof p.missions.date === 'string' && Array.isArray(p.missions.list)) d.missions = { date: p.missions.date, list: p.missions.list.filter((m) => m && MISSION_POOL.some((q) => q.id === m.id)).map((m) => ({ id: m.id, progress: +m.progress || 0, goal: +m.goal || 1, reward: +m.reward || 0, done: !!m.done, claimed: !!m.claimed })) };
     if (p.stats) for (const k in d.stats) if (Number.isFinite(p.stats[k]) && p.stats[k] >= 0) d.stats[k] = p.stats[k];
     if (p.daily && typeof p.daily === 'object') for (const k of Object.keys(p.daily)) { const r = p.daily[k]; if (/^\d{4}-\d{2}-\d{2}$/.test(k) && r && +r.attempts > 0) d.daily[k] = { best: Math.max(0, +r.best || 0), attempts: Math.max(1, +r.attempts | 0), level: Math.max(1, +r.level || 1) }; }
+    if (typeof p.grippy === 'boolean') d.grippy = p.grippy;
     d.level = levelOf(d.xp);
   } catch {}
   return d;
@@ -4683,7 +4745,7 @@ function addXp(n) { // XP, and the level-ups it brings: reward coins, a toast, a
   while (profile.level < lv) {
     profile.level++; const reward = levelReward(profile.level);
     profile.coins += reward; meta.roundCoins += reward;
-    toast('levelUpToast', { n: profile.level, c: reward }, 'star'); sfx('levelup');
+    toast('levelUpToast', { n: profile.level, c: reward }, 'star'); sfx('levelup'); grippySay('levelUp');
     for (const it of ITEMS) if (it.level && it.level <= profile.level && !profile.unlocked.includes(it.id)) { profile.unlocked.push(it.id); toast('unlockedToast', { n: t('it_' + it.id) }, 'star'); }
   }
   saveProfile(); syncMeta();
@@ -4738,7 +4800,7 @@ function track(event, n = 1) { // one call from the modes for every countable th
   for (const m of profile.missions.list) {
     const def = MISSION_POOL.find((q) => q.id === m.id); if (!def || def.ev !== event || m.done) continue;
     m.progress = def.max ? Math.max(m.progress, n) : m.progress + n; changed = true;
-    if (m.progress >= m.goal) { m.progress = m.goal; m.done = true; toast('missionDone', { m: missionText(m), c: m.reward }, 'check'); sfx('mission'); }
+    if (m.progress >= m.goal) { m.progress = m.goal; m.done = true; toast('missionDone', { m: missionText(m), c: m.reward }, 'check'); sfx('mission'); grippySay('mission'); }
   }
   saveProfile(); if (changed && mode === 'none') syncMeta();
 }
@@ -4827,9 +4889,177 @@ function toast(key, vars, icon = 'star') {
   const el = document.createElement('div'); el.className = 'mt' + (icon === 'check' ? ' ok' : ''); el.setAttribute('role', 'status');
   const ic = document.createElement('span'); ic.className = 'ic'; ic.innerHTML = TOAST_ICONS[icon] || TOAST_ICONS.star;
   const tx = document.createElement('span'); tx.className = 'tx'; tx.textContent = t(key, vars); el.append(ic, tx);
-  $('metaToast').appendChild(el); meta.toasts.push({ key, text: tx.textContent, at: performance.now() }); if (meta.toasts.length > 20) meta.toasts.shift();
-  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 450); }, 3000);
+  meta.toasts.push({ key, text: tx.textContent, at: performance.now() }); if (meta.toasts.length > 20) meta.toasts.shift();
+  const host = $('metaToast'); host.appendChild(el);
+  if (toastQ.compact && [...host.children].some((e) => e !== el && !e.classList.contains('wait'))) el.classList.add('wait'); // a card is up and a toast already shows: this one waits its turn
+  else runToast(el);
 }
+/* Over a round-over card the toasts go compact: one line each, one at a time (TOAST_CARD_MS each) in the gap between the toolbar and the card. */
+const TOAST_MS = 3000, TOAST_CARD_MS = 1600, toastQ = { compact: false, top: 0 };
+function runToast(el) { // show it now; it fades after its time, then the next waiting one (if any) gets its turn
+  el.classList.remove('wait', 'out'); clearTimeout(el._t);
+  el._t = setTimeout(() => { el.classList.add('out'); el._t = setTimeout(() => { el.remove(); pumpToasts(); }, 450); }, toastQ.compact ? TOAST_CARD_MS : TOAST_MS);
+}
+function pumpToasts() {
+  const host = $('metaToast'), wait = [...host.querySelectorAll('.mt.wait')];
+  if (!toastQ.compact) { wait.forEach(runToast); return; }
+  if (wait.length && ![...host.children].some((e) => !e.classList.contains('wait'))) runToast(wait[0]);
+}
+function setToastCompact(on, top) { // called every frame: on while a round-over card is showing; top = the toolbar's (or camera preview's) bottom
+  const host = $('metaToast');
+  if (on && Math.abs(top - toastQ.top) > 0.5) { toastQ.top = top; host.style.top = top + 'px'; }
+  if (on === toastQ.compact) return;
+  toastQ.compact = on; host.classList.toggle('compact', on);
+  if (on) { // the toasts already up: fading ones go, the first live one stays (for its card time), the others wait
+    const live = [...host.children].filter((e) => !e.classList.contains('wait'));
+    live.filter((e) => e.classList.contains('out')).forEach((e) => { clearTimeout(e._t); e.remove(); });
+    live.filter((e) => !e.classList.contains('out')).forEach((e, i) => { if (i) { clearTimeout(e._t); e.classList.add('wait'); } else runToast(e); });
+  } else { host.style.top = ''; toastQ.top = 0; }
+  pumpToasts();
+}
+function syncToastLayout() { const E = mode !== 'none' ? endState() : null; setToastCompact(!!(E && E.over && E.ui.card), Math.max(56, chromeRow.bottom) + 6); }
+/* --- "One more?": the nearest goal for the round-over card: the cheapest locked item by coins, the next player level, or the closest unfinished mission (the highest fraction wins) --- */
+function teaser() {
+  const c = [];
+  const it = ITEMS.filter((q) => !q.level && q.cost > 0 && !profile.unlocked.includes(q.id)).sort((a, b) => a.cost - b.cost)[0];
+  if (it) { const n = it.cost - profile.coins; c.push({ kind: n <= 0 ? 'buy' : 'coins', frac: Math.min(1, profile.coins / it.cost), n: Math.max(0, n), item: it.id, text: t(n <= 0 ? 'teaseBuy' : 'teaseCoins', { n, i: t('it_' + it.id) }) }); }
+  const lv = profile.level, a = xpForLevel(lv), b = xpForLevel(lv + 1);
+  c.push({ kind: 'xp', frac: Math.max(0, (profile.xp - a) / (b - a)), n: b - profile.xp, level: lv + 1, text: t('teaseXp', { n: b - profile.xp, l: lv + 1 }) });
+  for (const m of profile.missions.list) if (!m.done) {
+    const n = Math.max(1, m.goal - m.progress), k1 = 'tm_' + m.id + '1';
+    c.push({ kind: 'mission', id: m.id, frac: m.progress / m.goal, n, text: t(n === 1 && I18N[lang][k1] ? k1 : 'tm_' + m.id, { n, g: m.goal }) });
+  }
+  let best = null; for (const q of c) if (!best || q.frac > best.frac + 1e-9) best = q;
+  return best;
+}
+function teaserIconSprite(q) { // the item's own art (as on its Collection tile), or a star for XP / a check for a mission
+  if (q.item) { const it = ITEMS.find((x) => x.id === q.item); return makeSprite('tz|' + it.id, 56, 56, 28, 28, (g) => drawItemPreview(g, it)); }
+  return makeSprite('tz|' + q.kind, 56, 56, 28, 28, (g) => {
+    g.beginPath(); g.arc(0, 0, 24, 0, TAU); g.fillStyle = q.kind === 'xp' ? '#ffc24b' : '#43d9a3'; g.fill();
+    g.strokeStyle = q.kind === 'xp' ? '#7a4a05' : '#062b1c'; g.fillStyle = g.strokeStyle; g.lineWidth = 5;
+    if (q.kind === 'xp') { g.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 6.5 : 15, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); }
+    else { g.beginPath(); g.moveTo(-11, 1); g.lineTo(-3, 9); g.lineTo(12, -8); g.stroke(); }
+  });
+}
+/* --- Grippy, the commentator: a little hand with big eyes pops up at the bottom start corner with a short line for 2.2 s.
+   At most one line per 4 s; boss / new best / last life (and a round's start) cut in. Lines show even when muted (only its pop sound is muted).
+   The Collection panel's Grippy button turns him off (saved in the profile). --- */
+const GRIPPY_MS = 2200, GRIPPY_GAP = 4000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily']);
+const GRIPPY = {
+  en: {
+    start: ["Let's go! Hands ready?", 'Wiggle those fingers!', 'I believe in your hands!', 'Ready, set, high five!', "Show 'em what hands can do!", 'Here we go! No pressure. Some pressure.', 'Warm up those palms!'],
+    daily: ["Daily time! Today: {mod}!", '{mod} today. Ooh, spicy!', "Today's twist: {mod}!", 'Same run for everyone today: {mod}!', '{mod}? I was born for this!', 'New day, new twist: {mod}!'],
+    firstHit: ['First one! Nice!', 'Boom! There it is!', "And we're rolling!", 'Great start!', "That's how it's done!", 'Ooh, smooth!'],
+    combo: ['Combo! Wow!', 'Two birds, one hand!', 'Combo time!', 'Look at that combo!', 'Whoa, a chain!', 'Bam bam bam!'],
+    streak5: ['Five in a row! On fire!', 'High five! Literally!', '5 streak! Keep it up!', "You're warming up!", 'Five! Can you do ten?', 'Hot hands!'],
+    streak10: ['TEN! Unstoppable!', 'Ten in a row?! Wow!', 'Double high five!', 'Your hands are legends!', "10 streak! I'm dizzy!", 'Is this a world record?'],
+    super: ['SUPER slap!', 'Whoa, what a smack!', 'That ball felt it!', 'Mega power!', 'Kapow!', 'Speedy hands!'],
+    close: ['Phew! Close one!', 'Just in time!', 'By a whisker!', 'Ooh, so close!', 'Saved it!', 'My heart! Ha!'],
+    boss: ['Uh oh, a BOSS!', 'Big face incoming!', 'Boss time! Hit it hard!', 'He looks grumpy!', 'The brick boss is here!', "Don't blink! Boss!"],
+    bossDown: ['Boss down! Yay!', 'Bye bye, Boss!', 'You crushed it!', 'Boss? What boss?', 'Bricks everywhere!', 'Hero hands!'],
+    levelUp: ['Level up!', 'Up we go!', 'New level, new fun!', "You're getting good!", 'Higher and higher!', 'Ding! Level up!'],
+    pu_multi: ['Multi-ball! Chaos!', 'Three balls! Yikes!', 'Balls everywhere!', 'Triple trouble!', 'So many balls!', 'Juggle time!'],
+    pu_big: ['Big ball! Huge!', 'That ball ate breakfast!', 'Giant ball time!', 'Whoa, chonky ball!', 'Big ball, big smash!', 'Easy to hit now!'],
+    pu_slow: ['Slow-mo! Sooo sloooow!', 'Time goes zzz…', 'Slow motion, smooth moves!', 'Take your time!', 'Matrix hands!', 'Everything is slow. Except you!'],
+    pu_fire: ['Fireball! Hot hot hot!', 'Ouch, spicy ball!', 'Burn those bricks!', 'Fire power!', 'Toasty!', 'Flaming fast!'],
+    pu_life: ['Extra heart! Yay!', 'A spare heart!', 'Heart caught! Phew!', 'One more life!', 'Love it! Literally!', 'Heart power!'],
+    miss: ['Oops! Next one!', 'Whoosh! Missed it.', 'Shake it off!', 'No worries, try again!', 'That one was sneaky!', 'Almost! Keep going!'],
+    lastLife: ['Last heart! Focus!', 'One heart left! You got this!', 'Careful now!', 'Deep breath. Last life!', 'All or nothing!', 'Last chance! I believe!'],
+    newBest: ['NEW BEST! Woohoo!', 'Record smashed!', 'Best ever! Wow!', 'Gold star for you!', 'History made!', 'You beat yourself!'],
+    mission: ['Mission done!', 'Check! Mission complete!', 'You did the thing!', 'Mission? Accomplished!', 'Coins for you! Go claim them!', 'Nailed the mission!'],
+  },
+  he: {
+    start: ['יאללה! הידיים מוכנות?', 'תנענעו את האצבעות!', 'אני מאמין בידיים שלכם!', 'היכון, הכן, כיף!', 'תראו להם מה ידיים יודעות!', 'מתחילים! בלי לחץ. טוב, קצת.', 'חממו את כפות הידיים!'],
+    daily: ['זמן אתגר יומי! היום: {mod}!', 'היום {mod}. אוהו, חריף!', 'הטוויסט של היום: {mod}!', 'אותו משחק לכולם היום: {mod}!', '{mod}? נולדתי בשביל זה!', 'יום חדש, טוויסט חדש: {mod}!'],
+    firstHit: ['הראשונה! יפה!', 'בום! הנה זה!', 'התחלנו להתגלגל!', 'פתיחה מעולה!', 'ככה עושים את זה!', 'וואו, חלק!'],
+    combo: ['קומבו! וואו!', 'שתי ציפורים, יד אחת!', 'זמן קומבו!', 'תראו את הקומבו הזה!', 'וואו, שרשרת!', 'בם בם בם!'],
+    streak5: ['חמש ברצף! בוערים!', 'תנו חמש! ממש!', 'רצף של 5! תמשיכו!', 'אתם מתחממים!', 'חמש! מגיעים לעשר?', 'ידיים חמות!'],
+    streak10: ['עשר! אין עצירה!', 'עשר ברצף?! וואו!', 'תנו עשר!', 'הידיים שלכם אגדה!', 'רצף של 10! מסתובב לי הראש!', 'זה שיא עולם?'],
+    super: ['סופר מכה!', 'וואו, איזו סטירה!', 'הכדור הרגיש את זה!', 'כוח מגה!', 'קה-פאו!', 'ידיים מהירות!'],
+    close: ['פיו! היה קרוב!', 'בדיוק בזמן!', 'בשערה!', 'אוי, כמעט!', 'הצלתם!', 'הלב שלי! חה!'],
+    boss: ['אוי אוי, בוס!', 'פרצוף ענק בדרך!', 'זמן בוס! הכו חזק!', 'הוא נראה עצבני!', 'בוס הלבנים הגיע!', 'לא למצמץ! בוס!'],
+    bossDown: ['הבוס הובס! יש!', 'ביי ביי, בוס!', 'ריסקתם אותו!', 'בוס? איזה בוס?', 'לבנים בכל מקום!', 'ידיים של גיבורים!'],
+    levelUp: ['עליתם שלב!', 'למעלה למעלה!', 'שלב חדש, כיף חדש!', 'אתם משתפרים!', 'גבוה יותר ויותר!', 'דינג! עליתם!'],
+    pu_multi: ['כדורים כפולים! בלגן!', 'שלושה כדורים! אוי!', 'כדורים בכל מקום!', 'צרה משולשת!', 'כמה הרבה כדורים!', "זמן ג'אגלינג!"],
+    pu_big: ['כדור ענק! עצום!', 'הכדור הזה אכל ארוחת בוקר!', 'זמן כדור ענק!', 'וואו, כדור שמנמן!', 'כדור גדול, ניפוץ גדול!', 'עכשיו קל לפגוע!'],
+    pu_slow: ['הילוך איטי! לאאאט!', 'הזמן נרדם…', 'הילוך איטי, תנועות חלקות!', 'בלי למהר!', 'ידיים של מטריקס!', 'הכול איטי. חוץ מכם!'],
+    pu_fire: ['כדור אש! חם חם חם!', "אאוץ', כדור חריף!", 'תשרפו את הלבנים!', 'כוח אש!', 'קלוי!', 'לוהט ומהיר!'],
+    pu_life: ['לב נוסף! יש!', 'לב רזרבי!', 'תפסתם לב! פיו!', 'עוד חיים!', 'אוהבים את זה! ממש!', 'כוח הלב!'],
+    miss: ['אופס! הבא בתור!', 'ווש! פספוס.', 'לנער ולהמשיך!', 'לא נורא, עוד פעם!', 'הוא היה ערמומי!', 'כמעט! תמשיכו!'],
+    lastLife: ['לב אחרון! להתרכז!', 'נשאר לב אחד! אתם יכולים!', 'בזהירות עכשיו!', 'נשימה עמוקה. לב אחרון!', 'הכול או כלום!', 'הזדמנות אחרונה! אני מאמין!'],
+    newBest: ['שיא חדש! יוהו!', 'ריסקתם את השיא!', 'הכי טוב אי פעם! וואו!', 'כוכב זהב בשבילכם!', 'נכנסתם להיסטוריה!', 'ניצחתם את עצמכם!'],
+    mission: ['משימה הושלמה!', 'וי! המשימה בוצעה!', 'עשיתם את זה!', 'משימה? בוצעה!', 'מטבעות בשבילכם! לכו לאסוף!', 'פיצחתם את המשימה!'],
+  },
+};
+const grippy = { last: null, lastAt: -1e9, shownAt: -1e9, until: -1e9, prev: {}, bottom: 16, visible: false, blinkAt: 0, said: [] };
+function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike'); }
+function grippySay(ev, vars, now = performance.now()) { // a line for the event, if Grippy is on, a game is running and the rate limit allows it; returns whether he spoke
+  if (!profile.grippy || !grippyActive()) return false;
+  const L = GRIPPY[lang] || GRIPPY.en, lines = L[ev]; if (!lines) return false;
+  if (!GRIPPY_CUT.has(ev) && now - grippy.lastAt < GRIPPY_GAP) return false;
+  if (ev === 'daily' && !vars) vars = { mod: t('mod_' + (daily.modifier || modifierFor(missionDay()))) };
+  let i = Math.floor(Math.random() * lines.length); if (lines.length > 1 && i === grippy.prev[ev]) i = (i + 1 + Math.floor(Math.random() * (lines.length - 1))) % lines.length; // never the same line twice in a row
+  grippy.prev[ev] = i;
+  const text = lines[i].replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k]) ?? '');
+  grippy.last = { event: ev, text, t: now, i }; grippy.lastAt = grippy.shownAt = now; grippy.until = now + GRIPPY_MS;
+  grippy.said.push(grippy.last); if (grippy.said.length > 40) grippy.said.shift();
+  const el = $('grippy'), bub = el.querySelector('.bub'); el.querySelector('.tx').textContent = text;
+  bub.style.animation = 'none'; void bub.offsetWidth; bub.style.animation = ''; // the bubble pops in again
+  el.hidden = false; el.classList.remove('out'); grippy.visible = true; grippy.bottom = 0; grippyPlace(now);
+  sfx('grippy');
+  return true;
+}
+function grippyHide() { grippy.until = -1e9; grippy.visible = false; const el = $('grippy'); el.hidden = true; el.classList.remove('out', 'blocked'); }
+function grippyPlace(now) { // bottom start corner: above Strike's power meter and the hint toast; under a round-over card it sits below the card, or keeps quiet if there is no room
+  const el = $('grippy'), E = endState(), card = E && E.over && E.ui.card;
+  let bottom = 16, blocked = gameMode === 'strike' && !!strike.perkOffer; // never over the perk cards
+  if (E && E.over) { if (card) blocked = blocked || H - bottom - el.offsetHeight < card.y + card.h + 36; grippy.bottom = bottom; }
+  else {
+    if (gameMode === 'strike') bottom = Math.max(bottom, Math.round(H - (strike.ui.meterTop || H - 100)) + 8);
+    if (hintEl.classList.contains('show')) bottom = Math.max(bottom, hintBottom() + hintEl.offsetHeight + 8);
+    bottom = grippy.bottom = Math.max(grippy.bottom, bottom); // while a line shows he only moves up (the hint fading must not drop him)
+  }
+  el.style.bottom = 'calc(env(safe-area-inset-bottom,0px) + ' + grippy.bottom + 'px)';
+  el.classList.toggle('blocked', blocked); grippy.blocked = blocked;
+}
+function grippyTick(now) { // per frame while visible: place, animate, and fade out after GRIPPY_MS
+  if (!grippy.visible) return;
+  if (!grippyActive() || !profile.grippy) { grippyHide(); return; }
+  const el = $('grippy');
+  if (now > grippy.until) { el.classList.add('out'); if (now > grippy.until + 260) { grippyHide(); return; } }
+  grippyPlace(now);
+  const cv = el.querySelector('canvas'), px = Math.round(60 * DPR); if (cv.width !== px) { cv.width = cv.height = px; }
+  const g = cv.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, 60, 60);
+  const age = now - grippy.shownAt, pop = Math.min(1, age / 320), k = pop < 1 ? 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2) : 1; // ease-out-back pop
+  drawGrippy(g, 30, 34 - 3 * Math.abs(Math.sin(now / 170)), 0.9 * Math.max(0.05, k), now, age < GRIPPY_MS - 600);
+}
+function drawGrippy(g, cx, cy, k, now, talking) { // the mascot at (cx, cy), scale k (1 = a ~64 px figure): four waving fingers and a thumb on a round palm, big blinking eyes, rosy cheeks, a smile that chatters while he talks
+  g.save(); g.translate(cx, cy); g.scale(k, k); g.lineCap = g.lineJoin = 'round';
+  const skin = '#ffc24b', rim = '#b8730f', wave = Math.sin(now / 150);
+  const finger = (x, len, ang) => { g.save(); g.translate(x, -10); g.rotate(ang); g.beginPath(); g.roundRect(-4, -len, 8, len + 6, 4); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke(); g.restore(); };
+  finger(-12, 15, -0.25 + 0.08 * wave); finger(-4, 19, -0.08 + 0.06 * wave); finger(4, 19, 0.06 + 0.06 * wave); finger(12, 15, 0.22 + 0.08 * wave);
+  g.save(); g.translate(-17, 4); g.rotate(-0.9 - 0.15 * wave); g.beginPath(); g.roundRect(-4, -14, 8, 16, 4); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke(); g.restore(); // the thumb
+  const gr = g.createRadialGradient(-6, -6, 2, 0, 0, 20); gr.addColorStop(0, '#ffe7a8'); gr.addColorStop(1, skin);
+  g.beginPath(); g.arc(0, 4, 17, 0, TAU); g.fillStyle = gr; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke();
+  const blink = (now % 2600) < 130; // a quick blink every 2.6 s
+  for (const s of [-1, 1]) {
+    g.beginPath(); if (blink) { g.moveTo(s * 6 - 4, 1); g.lineTo(s * 6 + 4, 1); g.lineWidth = 2; g.strokeStyle = '#3a2400'; g.stroke(); continue; }
+    g.ellipse(s * 6, 0, 4.6, 5.6, 0, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = rim; g.stroke();
+    g.beginPath(); g.arc(s * 6 + 0.8, 1, 2.6, 0, TAU); g.fillStyle = '#241a00'; g.fill(); g.beginPath(); g.arc(s * 6 + 1.6, -0.2, 0.9, 0, TAU); g.fillStyle = '#fff'; g.fill();
+  }
+  g.fillStyle = 'rgba(255,111,89,0.45)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 11, 8, 3.2, 2, 0, 0, TAU); g.fill(); }
+  const open = talking ? 1.5 + 2.5 * Math.abs(Math.sin(now / 70)) : 0;
+  g.beginPath(); if (open > 0.5) { g.ellipse(0, 10, 4, open, 0, 0, TAU); g.fillStyle = '#7a2a1a'; g.fill(); } else { g.arc(0, 7, 5, 0.2 * Math.PI, 0.8 * Math.PI); g.lineWidth = 2; g.strokeStyle = '#3a2400'; g.stroke(); }
+  g.restore();
+}
+function setGrippy(on) { profile.grippy = !!on; saveProfile(); syncGrippyBtn(); if (!on) grippyHide(); }
+function syncGrippyBtn() {
+  const b = $('grippyBtn'), on = profile.grippy !== false; b.setAttribute('aria-pressed', String(on));
+  b.querySelector('.st').textContent = t(on ? 'grippyOn' : 'grippyOff'); b.setAttribute('aria-label', t('grippyAria') + ': ' + t(on ? 'grippyOn' : 'grippyOff')); b.title = b.getAttribute('aria-label');
+  const cv = b.querySelector('canvas'), px = Math.round(28 * (window.devicePixelRatio || 1)); if (cv.width !== px) { cv.width = cv.height = px; }
+  const g = cv.getContext('2d'); g.setTransform(px / 28, 0, 0, px / 28, 0, 0); g.clearRect(0, 0, 28, 28); drawGrippy(g, 14, 16, 0.42, 1000, false);
+}
+$('grippyBtn').addEventListener('click', () => { setGrippy(profile.grippy === false); sfx('click'); });
 /* --- start screen: the coins + level pill, the Missions / Collection buttons and their panels --- */
 function syncMeta() {
   ensureMissions();
@@ -4840,7 +5070,7 @@ function syncMeta() {
   for (const el of document.querySelectorAll('.wallet b')) el.textContent = String(profile.coins);
   if (!$('missions').hidden) renderMissions();
   if (!$('collection').hidden) renderCollection();
-  syncDaily();
+  syncDaily(); syncGrippyBtn();
 }
 function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
 function closePanel(id) { $(id).hidden = true; }
@@ -5302,7 +5532,7 @@ function goHome() {
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
-  hideHint(); syncHudBtn(); syncLiveDot(); updateHudOffset();
+  hideHint(); grippyHide(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   $('start').hidden = false; document.body.classList.add('home');
   syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews();
@@ -5531,7 +5761,7 @@ function onLangChange() {
   renderBanner();
   if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
   if (!hudEl.hidden) updateHud();
-  syncMuteBtn(); syncMeta();
+  syncMuteBtn(); syncMeta(); syncGrippyBtn();
 }
 applyLang();
 for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
@@ -5568,7 +5798,13 @@ window.__grasp = {
     get level() { const r = dailyRec(this.date); return r ? r.level : 0; }, get streak() { return dailyStreak(this.date); }, get forceModifier() { return daily.forceModifier; },
     set forceModifier(v) { daily.forceModifier = DAILY_MODS.includes(v) ? v : null; syncDaily(); }, mods: DAILY_MODS, modifierFor, strip: (d) => dailyStrip(d), shareText, share: shareDaily, get lastShare() { return daily.lastShare; }, open: openDaily },
   startDaily, strikeRand,
+  // step 4: Grippy the commentator (on: the saved toggle; last: { event, text, t }; say(event): a line now, if the rate limit allows; cool(): test-only, clears the limit) and the end card's "One more?" teaser
+  grippy: { get on() { return profile.grippy !== false; }, set on(v) { setGrippy(v); }, get last() { return grippy.last; }, get said() { return grippy.said; }, get visible() { return grippy.visible && !$('grippy').hidden; },
+    get blocked() { return !!grippy.blocked; }, say(ev, vars) { return grippySay(ev, vars); }, cool() { grippy.lastAt = -1e9; }, lines: GRIPPY, events: Object.keys(GRIPPY.en), gapMs: GRIPPY_GAP, showMs: GRIPPY_MS,
+    box() { const el = $('grippy'); if (el.hidden) return null; const r = el.getBoundingClientRect(), c = el.querySelector('canvas').getBoundingClientRect(), b = el.querySelector('.bub').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height, mascot: { x: c.left, y: c.top, w: c.width, h: c.height }, bubble: { x: b.left, y: b.top, w: b.width, h: b.height } }; } },
+  teaser, get toastCompact() { return toastQ.compact; },
 };
+syncGrippyBtn();
 </script>
 </body>
 </html>
