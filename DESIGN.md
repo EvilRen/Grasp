@@ -76,3 +76,11 @@ Idea from the player: *all the walls break, and when they are broken you move on
 - *World travel:* when a world's boss falls, the far wall bursts into a portal. The corridor flies through it and morphs into the next world's look, with a banner.
 - *Map:* the Strike tile opens a winding map with the current stage pulsing and stars under each node. Star chests sit on the path. "Endless" keeps the old run.
 - *Daily:* a 7-day gift calendar on the first open of the day, a streak flame, and a "3 stages today" chest.
+
+**Applied: the daily habit**
+- *Gift calendar:* on the first open of each local day a calendar of 7 boxes pops up on the start screen; today's box glows and bounces, and a tap anywhere on it opens the box with a burst, a sound and the coins flying to the coin pill (a look flies to the Shop). Prizes: 5, 8, 10 coins, a cheap look (or 12 coins), 15, 20, then a big chest (40 coins + a look). A missed day starts the week again at day 1, with a gentle line; after day 7 it cycles. The gift chip in the top bar reopens it any time.
+- *Play streak:* a flame in the top bar counts the days in a row with a finished round of any game. It pulses the first time it grows on a day; a "Play today to keep your 4-day streak!" line shows while today is still to play. (The daily challenge keeps its own streak.)
+- *3 stages today:* a chest in the Adventure map's header fills with every stage cleared today (replays count) and shakes at 3; it pays 10 coins.
+- *Star chests:* chests beside the path at 10 / 25 / 45 / 70 / 100 stars (15 / 25 / 35 / 50 / 80 coins; the last one also a look). The next one shows "26 / 45".
+- *Come back tomorrow:* once today's gift is open, the stage card and the round-over card say "Tomorrow: day 3 gift".
+- All the numbers are in `ECONOMY` (gifts, stageChest, starChests): about 100 coins and 2 looks a week for showing up, next to the 15-35 a run.

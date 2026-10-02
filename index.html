@@ -487,6 +487,99 @@ html[dir="rtl"] #metaPill{ left:auto; right:auto; }
   #start .panel > #metaPill{ align-self:center; margin:0; }
   #start .panel > .metaRow, #start .panel > .modes, #start .panel > .link{ margin:0; }
 }
+/* the daily habit: the play-streak flame and the gift chip beside the language button, the 'play today' hint, the 7-day gift calendar,
+   the '3 stages today' chest in the Adventure map's header and the star chests beside its path */
+.habitBar{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); right:84px; display:flex; gap:6px; z-index:1; }
+html[dir="rtl"] .habitBar{ right:auto; left:84px; }
+.habitBar button{ height:42px; min-width:42px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:3px; padding:0 9px; background:rgba(29,37,71,.6); color:#ffd77a; box-shadow:inset 0 0 0 1.5px var(--line); font-size:17px; font-weight:800; transition:transform .1s; }
+.habitBar button:active{ transform:scale(.95); }
+.hbFlame{ direction:ltr; box-shadow:inset 0 0 0 1.5px rgba(255,138,61,.55) !important; background:linear-gradient(135deg, rgba(255,138,61,.22), rgba(29,37,71,.6)) !important; }
+.hbFlame .fl, .flameHint .fl{ display:inline-block; width:24px; height:24px; }
+.hbFlame .fl svg, .flameHint .fl svg{ display:block; width:100%; height:100%; }
+.hbFlame.zero{ color:var(--muted); box-shadow:inset 0 0 0 1.5px var(--line) !important; background:rgba(29,37,71,.6) !important; }
+.hbFlame.zero .fl{ filter:grayscale(1); opacity:.45; }
+.hbFlame:not(.today):not(.zero) .fl{ opacity:.6; } /* alive but not fed today */
+.hbFlame.grow{ animation:hgrow 1s cubic-bezier(.2,1.4,.4,1); }
+.hbFlame.grow .fl{ animation:hflick 1s ease-out; }
+@keyframes hgrow{ 0%{ transform:scale(1); } 30%{ transform:scale(1.35); box-shadow:0 0 22px rgba(255,138,61,.9); } 100%{ transform:scale(1); } }
+@keyframes hflick{ 0%,100%{ transform:none; } 30%{ transform:translateY(-3px) scale(1.25); filter:brightness(1.4); } }
+.hbGift{ position:relative; padding:0 !important; width:42px; }
+.hbGift svg{ width:28px; height:28px; }
+.hbGift.ready{ box-shadow:inset 0 0 0 2px var(--saffron), 0 0 14px rgba(255,194,75,.45); animation:gbounce 1.4s ease-in-out infinite; }
+.hbGift .dot{ position:absolute; top:-4px; inset-inline-end:-4px; width:12px; height:12px; border-radius:50%; background:#ff4d3d; box-shadow:0 0 0 2px var(--ink); }
+.hbGift .dot[hidden]{ display:none; }
+@keyframes gbounce{ 0%,100%{ transform:translateY(0) rotate(0); } 20%{ transform:translateY(-4px) rotate(-6deg); } 40%{ transform:translateY(0) rotate(5deg); } 55%{ transform:rotate(0); } }
+.flameHint{ display:flex; align-items:center; justify-content:center; gap:6px; margin:-4px auto 8px; padding:5px 12px; width:max-content; max-width:100%; border-radius:999px; background:rgba(255,138,61,.14); box-shadow:inset 0 0 0 1px rgba(255,138,61,.45); color:#ffd77a; font-size:13px; font-weight:600; }
+.flameHint .fl{ width:18px; height:18px; flex:none; }
+.flameHint .tx{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.flameHint[hidden]{ display:none; }
+@media (max-width:520px){ #start .panel > .flameHint{ margin:0 auto; } }
+#gifts{ z-index:14; }
+.giftSheet{ width:min(400px,100%); text-align:center; background:radial-gradient(120% 70% at 50% 0%, rgba(255,111,89,.25), rgba(22,29,61,1) 62%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.6), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
+.giftSheet header h2{ text-align:start; font-size:21px; font-weight:800; }
+.giftSheet .sub{ text-align:center; font-size:14px; color:var(--bone); opacity:.85; min-height:1.3em; }
+.giftSheet .sub.missed{ color:#ffd77a; opacity:1; }
+.gboxes{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:4px 0 12px; }
+.gbox{ --gc:#ff6f59; --gc2:#ff8a76; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:2px; min-width:0; height:96px; padding:6px 3px 6px; border-radius:16px; background:rgba(29,37,71,.6); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); font-size:12px; font-weight:700; cursor:default; }
+.gbox[data-day="7"]{ grid-column:span 2; --gc:#a98bff; --gc2:#c3adff; }
+.gbox .dn{ font-size:11px; color:var(--muted); font-weight:700; white-space:nowrap; }
+.gbox .art{ position:relative; width:46px; height:46px; }
+.gbox[data-day="7"] .art{ width:60px; height:52px; }
+.gbox .art svg{ width:100%; height:100%; display:block; overflow:visible; }
+.gbox .pz{ display:inline-flex; align-items:center; gap:3px; font-size:13px; font-weight:800; color:#ffd77a; direction:ltr; white-space:nowrap; max-width:100%; overflow:hidden; }
+.gbox .pz svg{ width:14px; height:14px; flex:none; }
+.gbox .pz.it{ font-size:10px; color:#bfe3ff; direction:inherit; }
+.gbox.past{ background:rgba(67,217,163,.12); box-shadow:inset 0 0 0 1.5px rgba(67,217,163,.5); }
+.gbox.past .art{ opacity:.55; }
+.gbox .ck{ position:absolute; top:24px; inset-inline-end:3px; z-index:1; width:20px; height:20px; border-radius:50%; background:var(--mint); color:#062b1c; display:inline-flex; align-items:center; justify-content:center; }
+.gbox .ck svg{ width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.gbox.future{ opacity:.8; }
+.gbox.today{ cursor:pointer; background:radial-gradient(circle at 50% 45%, rgba(255,214,120,.38), rgba(29,37,71,.7) 70%); box-shadow:inset 0 0 0 2.5px var(--saffron), 0 0 20px rgba(255,194,75,.55); }
+.gbox.today .dn{ color:var(--saffron); }
+.gbox.today:not(.opened) .art{ animation:gbig 1.1s ease-in-out infinite; }
+.gbox.today:not(.opened)::after{ content:''; position:absolute; inset:-5px; border-radius:20px; border:2.5px solid var(--saffron); animation:wpulse 1.1s ease-in-out infinite; pointer-events:none; }
+@keyframes gbig{ 0%,100%{ transform:translateY(0) scale(1.08); } 30%{ transform:translateY(-7px) scale(1.16) rotate(-5deg); } 50%{ transform:translateY(0) scale(1.1) rotate(4deg); } }
+.gbox .lid{ transform-box:fill-box; transform-origin:50% 100%; transition:transform .45s cubic-bezier(.2,1.4,.4,1), opacity .45s; }
+.gbox.shaking .art{ animation:shake .35s; }
+.gbox.opened .lid{ transform:translate(6px,-16px) rotate(28deg); opacity:0; }
+.gbox.opened .art{ animation:gpopin .5s cubic-bezier(.2,1.6,.4,1); }
+@keyframes gpopin{ 0%{ transform:scale(.7); } 60%{ transform:scale(1.25); } 100%{ transform:scale(1); } }
+.gbox .won{ position:absolute; left:50%; top:34px; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; animation:gwon .6s cubic-bezier(.2,1.6,.4,1) both; pointer-events:none; }
+.gbox .won canvas{ width:44px; height:44px; }
+.gbox .won svg{ width:30px; height:30px; }
+@keyframes gwon{ from{ transform:translate(-50%,0) scale(.2); opacity:0; } }
+.giftSheet .nuGrip{ margin:0 0 10px; }
+.giftSheet .primary{ width:100%; min-height:54px; font-size:19px; border-radius:16px; }
+.gfly{ position:fixed; left:0; top:0; z-index:20; width:26px; height:26px; margin:-13px 0 0 -13px; pointer-events:none; }
+.gfly svg, .gfly canvas{ width:100%; height:100%; display:block; }
+#metaPill.bump, #collectionBtn.bump, #advStarTotal.bump{ animation:hgrow .45s ease-out; }
+.amHead h2{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.amDay{ position:relative; flex:none; width:48px; height:48px; border-radius:14px; background:rgba(29,37,71,.9); box-shadow:inset 0 0 0 1.5px var(--line); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:3px 0 2px; color:var(--bone); }
+.amDay svg{ width:30px; height:26px; overflow:visible; }
+.amDay .lid{ transform-box:fill-box; transform-origin:0% 100%; transition:transform .4s; }
+.amDay .pr{ font-size:11px; font-weight:800; line-height:1; direction:ltr; color:var(--muted); }
+.amDay.ready{ box-shadow:inset 0 0 0 2px var(--saffron), 0 0 16px rgba(255,194,75,.6); animation:cshake 1.2s ease-in-out infinite; }
+.amDay.ready .pr{ color:#ffd77a; }
+.amDay.done svg{ opacity:.5; }
+.amDay.done .lid{ transform:rotate(-28deg) translateY(-2px); }
+.amDay.done .pr{ color:var(--mint); }
+@keyframes cshake{ 0%,60%,100%{ transform:rotate(0); } 66%{ transform:rotate(-9deg) scale(1.06); } 74%{ transform:rotate(8deg) scale(1.06); } 82%{ transform:rotate(-6deg); } 90%{ transform:rotate(4deg); } }
+@media (max-width:400px){ .amHead{ gap:8px; } .amHead h2{ font-size:20px; } .amStars{ padding:8px 11px; } .amStars small{ display:none; } } /* (a phone: the '/ 120' gives way to the day's chest) */
+.achest{ position:absolute; z-index:2; transform:translate(-50%,-50%); width:64px; padding:0; background:none; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--bone); -webkit-tap-highlight-color:transparent; }
+.achest .cbox{ position:relative; width:56px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:rgba(8,11,28,.6); box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.25); }
+.achest .cbox svg{ width:40px; height:35px; overflow:visible; }
+.achest .lid{ transform-box:fill-box; transform-origin:0% 100%; transition:transform .45s cubic-bezier(.2,1.4,.4,1); }
+.achest .lb{ display:inline-flex; align-items:center; gap:2px; padding:2px 7px; border-radius:999px; background:rgba(8,11,28,.78); font-size:11px; font-weight:800; color:var(--muted); direction:ltr; white-space:nowrap; }
+.achest .lb svg{ width:11px; height:11px; fill:#ffc24b; }
+.achest.locked .cbox svg{ filter:grayscale(1) brightness(.75); opacity:.6; }
+.achest.next .lb{ color:#ffd77a; box-shadow:inset 0 0 0 1px rgba(255,194,75,.5); }
+.achest.reached .cbox{ background:radial-gradient(circle, rgba(255,214,120,.45), rgba(8,11,28,.7) 75%); box-shadow:inset 0 0 0 2px var(--saffron), 0 0 18px rgba(255,194,75,.7); animation:cshake 1.2s ease-in-out infinite; }
+.achest.reached .lb{ background:var(--saffron); color:#241a00; }
+.achest.claimed .cbox svg{ opacity:.55; }
+.achest.claimed .lid{ transform:rotate(-30deg) translateY(-3px); }
+.achest.claimed .lb{ color:var(--mint); }
+.achest.shake{ animation:shake .4s; }
+@media (prefers-reduced-motion: reduce){ .hbGift.ready, .gbox.today .art, .gbox.today::after, .amDay.ready, .achest.reached .cbox, .giftSheet{ animation:none !important; } }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
@@ -524,9 +617,11 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 
 <section id="start" class="intro">
   <button class="chip icon langBtn" id="startLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
+  <div class="habitBar" id="habitBar"><button class="hbFlame zero" id="flameBtn" type="button"><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.2 4.8 5.3 4.8 10.4A4.8 4.8 0 0 1 12 21.5a4.8 4.8 0 0 1-4.8-4.8c0-2.4 1.3-3.6 2.2-5 .3 1.4.9 2.2 1.8 2.6-.6-3.6.8-6.4.8-11.8z" fill="#ff8a3d"/><path d="M12 13.5c1.6 1.4 2.4 2.6 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.3.9-2.3 2.4-4z" fill="#ffd23f"/></svg></span><b>0</b></button><button class="hbGift" id="giftBtn" type="button" data-i18n-aria="giftTitle" aria-label="Daily gift"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="1.6" fill="#ff6f59"/><rect x="3" y="7" width="18" height="4.4" rx="1.3" fill="#ff8a76"/><rect x="10.6" y="7" width="2.8" height="13.5" fill="#ffd23f"/><path d="M12 7c-1.4-3-5.4-3.6-5.4-1.1 0 1.5 3 1.5 5.4 1.1zM12 7c1.4-3 5.4-3.6 5.4-1.1 0 1.5-3 1.5-5.4 1.1z" fill="none" stroke="#ffd23f" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="dot" hidden></span></button></div>
   <div class="panel">
     <h1 style="--i:0">Grasp</h1>
     <button class="metaPill" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/><path d="M12 8.5v7M10 10.2h3a1.4 1.4 0 0 1 0 2.8h-2a1.4 1.4 0 0 0 0 2.8h3" fill="none" stroke="#7a4a05" stroke-width="1.4" stroke-linecap="round"/></svg><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i><span class="nx" id="nextUnlock" hidden></span></button>
+    <p class="flameHint" id="flameHint" hidden><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.2 4.8 5.3 4.8 10.4A4.8 4.8 0 0 1 12 21.5a4.8 4.8 0 0 1-4.8-4.8c0-2.4 1.3-3.6 2.2-5 .3 1.4.9 2.2 1.8 2.6-.6-3.6.8-6.4.8-11.8z" fill="#ff8a3d"/><path d="M12 13.5c1.6 1.4 2.4 2.6 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.3.9-2.3 2.4-4z" fill="#ffd23f"/></svg></span><span class="tx"></span></p>
     <p class="tagline" data-i18n="tagline" style="--i:1">Your hand is the controller</p>
     <div class="metaRow" style="--i:5">
       <button class="dailyBtn" id="dailyBtn" type="button"><span class="dIc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.2c.3 1.3 2 2.1 2 4.2a2 2 0 0 1-4 0c0-1 .5-1.5.9-2.1.1.6.4.9.8 1.1-.3-1.5.3-2.6.3-3.2z" fill="currentColor" stroke="none"/></svg></span><span class="dTx"><b data-i18n="dailyShort">Daily</b><small><span class="dDate"></span> · <span class="dMod"></span></small></span><span class="dStreak"><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.2 4.8 5.3 4.8 10.4A4.8 4.8 0 0 1 12 21.5a4.8 4.8 0 0 1-4.8-4.8c0-2.4 1.3-3.6 2.2-5 .3 1.4.9 2.2 1.8 2.6-.6-3.6.8-6.4.8-11.8z" fill="#ff8a3d"/><path d="M12 13.5c1.6 1.4 2.4 2.6 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.3.9-2.3 2.4-4z" fill="#ffd23f"/></svg></span><b>0</b></span><span class="dNew" data-i18n="dailyNew">NEW</span></button>
@@ -608,7 +703,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   </div>
 </div>
 <div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
-  <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
+  <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
   <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
   <footer class="amFoot"><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
   <div id="advDwell" hidden></div>
@@ -621,6 +716,15 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <p class="nuLine"></p>
     <div class="nuGrip"><canvas aria-hidden="true"></canvas><span class="bub"></span></div>
     <button class="primary" id="nuOk" type="button" data-i18n="nuOk">Awesome!</button>
+  </div>
+</div>
+<div class="ov" id="gifts" hidden role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+  <div class="sheet giftSheet">
+    <header><h2 id="giftTitle" data-i18n="giftTitle">Daily gift</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="sub" id="giftSub"></p>
+    <div class="gboxes" id="gboxes"></div>
+    <div class="nuGrip"><canvas aria-hidden="true"></canvas><span class="bub"></span></div>
+    <button class="primary" id="giftOk" type="button"></button>
   </div>
 </div>
 <div id="metaToast" aria-live="polite"></div>
@@ -708,6 +812,11 @@ const ECONOMY = {
   shapes: { level: 2, star3: 1 },                                          // Shapes: per level sorted, +1 for a 3-star level
   adv: { first: 3, star: 1, boss: 5 },                                     // Strike Adventure (no coins per wall): a first clear pays 3 + its stars (+5 a boss stage); a replay only the stars it adds, 1 each
   missions: [15, 22, 30], dailyFirst: 20, streak: { 3: 40, 7: 100, 14: 200 }, levelUp: 10, chest: [25, 60], // mission tiers (easy / mid / hard goal); the first daily of a day; daily-streak milestones; level-up = 10 x the new level; boss-chest coins
+  // the daily habit: the 7-day gift calendar (a number: coins; 'skin': a cheap look not owned yet, else skinFallback coins; 'chest': chest coins + a look not owned yet up to chestSkinMax, else chestFallback more),
+  // the '3 stages today' chest on the Adventure map, and the star chests on its path (stars: the thresholds; coins each; the last one also a look, else lastFallback more)
+  gifts: { days: [5, 8, 10, 'skin', 15, 20, 'chest'], skinMax: 150, skinFallback: 12, chest: 40, chestSkinMax: 420, chestFallback: 30 },
+  stageChest: { goal: 3, coins: 10 },
+  starChests: { stars: [10, 25, 45, 70, 100], coins: [15, 25, 35, 50, 80], lastFallback: 60 },
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_HP: 1 };
@@ -823,6 +932,13 @@ const I18N = {
     advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
     stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Break {n} walls, then the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
     nextBtn: 'Next', retryBtn: 'Try again', mapBtn: 'Map', advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
+    // the daily habit: the gift calendar, the play streak, the stage chest, the star chests
+    giftTitle: 'Daily gift', giftDayN: 'Day {n}', giftSub: 'A gift for every day you come. Day 7 is a big chest!', giftMissed: 'A new week of gifts! Come every day to reach the big chest.',
+    giftOpen: 'Open it!', giftYay: 'Yay!', giftTomorrow: 'Come back tomorrow for the day {n} gift', giftTap: 'Tap the shiny gift!', giftGot: 'See you tomorrow!', giftToast: 'Daily gift: +{c} coins',
+    giftMystery: 'New look', giftChest: 'Big chest', giftOpened: 'opened', tomorrowGift: 'Tomorrow: day {n} gift',
+    flameN: '{n}-day play streak', flameZero: 'Play a game today to light your flame!', keepFlame: 'Play today to keep your {n}-day streak!', flameToast: '{n} days in a row! Play every day to grow your flame.',
+    dayChest: 'Today: {a} of {b} stages', dayChestToast: 'Stage chest: +{c} coins', dayChestNeed: 'Clear {n} more stages today to open the chest', dayChestDone: 'Opened! A new chest tomorrow',
+    starChest: 'Star chest: {n} stars', starChestToast: 'Star chest: +{c} coins', starChestNeed: '{n} more stars to open this chest', starChestDone: 'Already opened',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -930,6 +1046,12 @@ const I18N = {
     advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
     stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'שברו {n} קירות ואז את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
     nextBtn: 'הבא', retryBtn: 'שוב', mapBtn: 'מפה', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
+    giftTitle: 'מתנה יומית', giftDayN: 'יום {n}', giftSub: 'מתנה על כל יום שבאים. ביום 7 תיבת אוצר גדולה!', giftMissed: 'שבוע מתנות חדש! בואו כל יום כדי להגיע לתיבה הגדולה.',
+    giftOpen: 'לפתוח!', giftYay: 'יש!', giftTomorrow: 'חזרו מחר למתנה של יום {n}', giftTap: 'הקישו על המתנה הנוצצת!', giftGot: 'נתראה מחר!', giftToast: 'מתנה יומית: ‎+{c} מטבעות',
+    giftMystery: 'מראה חדש', giftChest: 'תיבה גדולה', giftOpened: 'נפתחה', tomorrowGift: 'מחר: המתנה של יום {n}',
+    flameN: 'רצף משחק של {n} ימים', flameZero: 'שחקו משחק היום כדי להדליק את הלהבה!', keepFlame: 'שחקו היום כדי לשמור על רצף של {n} ימים!', flameToast: '{n} ימים ברצף! שחקו כל יום כדי שהלהבה תגדל.',
+    dayChest: 'היום: {a} מתוך {b} שלבים', dayChestToast: 'תיבת שלבים: ‎+{c} מטבעות', dayChestNeed: 'סיימו עוד {n} שלבים היום כדי לפתוח את התיבה', dayChestDone: 'נפתחה! תיבה חדשה מחר',
+    starChest: 'תיבת כוכבים: {n} כוכבים', starChestToast: 'תיבת כוכבים: ‎+{c} מטבעות', starChestNeed: 'עוד {n} כוכבים כדי לפתוח את התיבה', starChestDone: 'כבר נפתחה',
   },
 };
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
@@ -4710,7 +4832,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   if (!adv.on || adv.phase !== 'play') return null;
   const P = adv.plan, n = P.n, A = profile.adv, stars = adv.lost === 0 ? 3 : adv.lost === 1 ? 2 : 1, prev = A.stars[n] || 0, first = !prev, E = ECONOMY.adv;
   const coins = first ? E.first + stars + (P.boss ? E.boss : 0) : Math.max(0, stars - prev) * E.star;
-  A.stars[n] = Math.max(prev, stars); advOpenNode(A, n + 1); saveProfile();
+  A.stars[n] = Math.max(prev, stars); advOpenNode(A, n + 1); habitStageClear(); saveProfile(); // (today's stage chest counts every clear)
   adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
@@ -4849,6 +4971,7 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  drawTomorrow(E, cx, y0 + ch + 56); // 'Tomorrow: day 3 gift'
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
 }
@@ -5976,6 +6099,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  drawTomorrow(E, cx, y0 + ch + 56); // 'Tomorrow: day 3 gift'
   ctx.restore();
   if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
     const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round';
@@ -7041,7 +7165,8 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [],
-    adv: { stars: {}, unlocked: 1, open: [], seen: [] } }; // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    adv: { stars: {}, unlocked: 1, open: [], seen: [] },
+    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -7063,6 +7188,13 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(ADV_N, a.unlocked | 0));
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))]; }
+    if (p.habit && typeof p.habit === 'object') { const h = p.habit, D = d.habit, iso = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
+      if (h.gift && Number.isInteger(h.gift.day) && h.gift.day >= 1 && h.gift.day <= 7 && iso(h.gift.date)) D.gift = { day: h.gift.day, date: h.gift.date };
+      if (Array.isArray(h.play)) D.play = [...new Set(h.play.filter(iso))].sort().slice(-60);
+      if (h.flame && iso(h.flame.date) && Number.isInteger(h.flame.n) && h.flame.n >= 0) D.flame = { date: h.flame.date, n: h.flame.n };
+      if (h.stages && iso(h.stages.date)) D.stages = { date: h.stages.date, n: Math.max(0, Math.min(99, +h.stages.n | 0)), claimed: h.stages.claimed === true };
+      if (iso(h.seen)) D.seen = h.seen;
+      if (Array.isArray(h.starChests)) D.starChests = [...new Set(h.starChests.filter((x) => ECONOMY.starChests.stars.includes(x)))].sort((a, b) => a - b); }
     advSyncWorlds(d);
     d.level = levelOf(d.xp);
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
@@ -7118,7 +7250,7 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
 }
 function roundStart() { meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score, xp) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission
-  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); addXp(meta.roundXp); track('round', 1);
+  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1);
 }
 function coinSprite(r) {
   return makeSprite('coin|' + Math.round(r), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
@@ -7241,6 +7373,180 @@ function startDaily(how) { // test hook / panel buttons: play today's daily (how
   if (mode === 'none') { if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
   else { daily.armed = false; daily.on = true; hideHint(); resetStrike(performance.now()); }
   return daily.on;
+}
+/* --- the daily habit (DESIGN.md v3): a 7-day gift calendar on the first open of each day (a missed day starts it again at day 1; after day 7 it
+   cycles), the play-streak flame (days in a row with a finished round, any game), the '3 stages today' chest on the Adventure map and the star
+   chests beside its path. All in profile.habit. The calendar pops up by itself only for a real visitor (not under automation: navigator.webdriver,
+   unless window.__graspGiftAuto), so the suites see the plain start screen; __grasp.habit drives it. --- */
+const GIFT_DAYS = 7, habit = { pulses: 0, shown: 0, last: null, anim: false };
+const GIFT_SVG = (day) => '<svg viewBox="0 0 48 48" aria-hidden="true">' + (day === 7
+  ? '<g class="lid"><path d="M5 22V18C5 10 13 6 24 6s19 4 19 12v4z" fill="#c07a3c" stroke="#4a2810" stroke-width="2.2" stroke-linejoin="round"/><path d="M14 7.5V22M34 7.5V22" stroke="#ffc24b" stroke-width="3.6"/></g><rect x="4" y="21" width="40" height="23" rx="3" fill="#9a5426" stroke="#4a2810" stroke-width="2.2"/><path d="M14 21v23M34 21v23" stroke="#ffc24b" stroke-width="3.6"/><rect x="20" y="17" width="8" height="10" rx="2" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.6"/>'
+  : '<rect x="8" y="22" width="32" height="21" rx="3" fill="var(--gc)"/><rect x="21.5" y="22" width="5" height="21" fill="#ffd23f"/><g class="lid"><rect x="5" y="14" width="38" height="9" rx="2.5" fill="var(--gc2)"/><rect x="21.5" y="14" width="5" height="9" fill="#ffd23f"/><path d="M24 14c-3-6-11-7-11-2 0 3 6 3 11 2zM24 14c3-6 11-7 11-2 0 3-6 3-11 2z" fill="none" stroke="#ffd23f" stroke-width="3" stroke-linejoin="round"/></g>') + '</svg>';
+const CHEST_SVG = '<svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg>';
+function giftAutoOk() { try { return !navigator.webdriver || window.__graspGiftAuto === true; } catch { return true; } }
+function giftState(date = missionDay()) { // day: today's box (1..7); opened: today's is open; missed: a day was skipped since the last box (the calendar starts again at 1); tomorrow: the next box
+  const G = profile.habit.gift, y = addDays(date, -1), opened = !!G.date && G.date >= date; // (a stored date after today: the clock went back; no second gift)
+  const day = opened ? G.day : G.date === y ? G.day % GIFT_DAYS + 1 : 1;
+  return { date, day, opened, missed: !opened && !!G.date && G.date < y, tomorrow: (opened ? G.day : day) % GIFT_DAYS + 1, seen: profile.habit.seen === date };
+}
+function giftPick(max, r) { const pool = chestSkinPool().filter((it) => it.cost <= max); return pool.length ? pool[Math.min(pool.length - 1, Math.floor(r() * pool.length))].id : null; } // a look not owned yet (coin items only)
+function giftPrize(n, date = missionDay()) { // what box n holds today: coins, a look (picked by the date: the same all day), or the day-7 chest (coins + a look)
+  const E = ECONOMY.gifts, v = E.days[n - 1], r = rng(strSeed('gift|' + date + '|' + n));
+  if (v === 'skin') { const it = giftPick(E.skinMax, r); return it ? { coins: 0, item: it } : { coins: E.skinFallback, item: null }; }
+  if (v === 'chest') { const it = giftPick(E.chestSkinMax, r); return { coins: E.chest + (it ? 0 : E.chestFallback), item: it, chest: true }; }
+  return { coins: v, item: null };
+}
+function grantPrize(p, key) { // coins and / or a look into the profile, with their toasts
+  if (p.coins) { profile.coins += p.coins; toast(key, { c: p.coins }, 'coin'); }
+  if (p.item && !profile.unlocked.includes(p.item)) { profile.unlocked.push(p.item); toast('chestToastSkin', { i: t('it_' + p.item) }, 'star'); }
+  saveProfile(); syncMeta();
+}
+function openGift(date = missionDay()) { // today's box: its prize, once a day
+  const s = giftState(date); if (s.opened) return null;
+  const p = giftPrize(s.day, date); profile.habit.gift = { day: s.day, date }; profile.habit.seen = date;
+  grantPrize(p, 'giftToast'); habit.last = { day: s.day, ...p }; return habit.last;
+}
+function prizeHtml(p) { return p.item ? '' : TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"') + LRM + '+' + p.coins; }
+function renderGifts() {
+  const s = giftState(), P = $('gifts'), host = $('gboxes'), sub = $('giftSub');
+  sub.textContent = s.opened ? t('giftTomorrow', { n: s.tomorrow }) : s.missed ? t('giftMissed') : t('giftSub'); sub.classList.toggle('missed', s.missed);
+  host.replaceChildren(...Array.from({ length: GIFT_DAYS }, (_, i) => {
+    const n = i + 1, b = document.createElement('button'); b.type = 'button'; const st = n < s.day ? 'past' : n === s.day ? 'today' : 'future';
+    b.className = 'gbox ' + st + (st === 'today' && s.opened ? ' opened' : ''); b.dataset.day = String(n); b.dataset.st = st;
+    const dn = document.createElement('span'); dn.className = 'dn'; dn.textContent = t('giftDayN', { n });
+    const art = document.createElement('span'); art.className = 'art'; art.innerHTML = GIFT_SVG(n);
+    const v = ECONOMY.gifts.days[i], pz = document.createElement('span'); pz.className = 'pz';
+    if (st === 'today' && s.opened && habit.last && habit.last.day === n) { const L = habit.last; if (L.coins) { pz.innerHTML = prizeHtml(L); if (!L.item) { const w = document.createElement('span'); w.className = 'won'; w.innerHTML = TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b;filter:drop-shadow(0 0 6px rgba(255,194,75,.9))"'); art.appendChild(w); } } if (L.item) { if (!L.coins) { pz.classList.add('it'); pz.textContent = t('it_' + L.item); } const w = document.createElement('span'); w.className = 'won'; const c = document.createElement('canvas'); c.width = c.height = Math.round(56 * SS); drawItemPreview(c.getContext('2d'), ITEMS.find((q) => q.id === L.item)); w.appendChild(c); art.appendChild(w); } }
+    else if (typeof v === 'number') pz.innerHTML = prizeHtml({ coins: v });
+    else { pz.classList.add('it'); pz.textContent = t(v === 'chest' ? 'giftChest' : 'giftMystery'); }
+    if (st === 'past' || (st === 'today' && s.opened)) { const ck = document.createElement('span'); ck.className = 'ck'; ck.innerHTML = TOAST_ICONS.check; b.appendChild(ck); }
+    b.append(dn, art, pz);
+    b.setAttribute('aria-label', t('giftDayN', { n }) + (st === 'past' || (st === 'today' && s.opened) ? ', ' + t('giftOpened') : ''));
+    if (st === 'today' && !s.opened) b.addEventListener('click', (e) => { e.stopPropagation(); giftTap(); });
+    return b;
+  }));
+  $('giftOk').textContent = t(s.opened ? 'giftYay' : 'giftOpen');
+  P.querySelector('.nuGrip .bub').textContent = t(s.opened ? 'giftGot' : 'giftTap');
+}
+function openGifts(auto) { // the calendar (auto: the once-a-day pop-up)
+  const P = $('gifts'); if (!$('newCard').hidden) return false;
+  if (auto) { profile.habit.seen = missionDay(); saveProfile(); }
+  habit.shown++; renderGifts(); P.hidden = false;
+  const gc = P.querySelector('.nuGrip canvas'); gc.width = gc.height = Math.round(48 * SS); const g = gc.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, 48, 48); drawGrippy(g, 24, 28, 0.66, performance.now(), true);
+  sfx('grippy'); try { $('giftOk').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function closeGifts() { const P = $('gifts'); if (P.hidden) return false; P.hidden = true; syncMeta(); setTimeout(maybeNewCard, 350); return true; }
+function maybeGift() { // the first open of the day: the calendar pops up by itself (once a day; not over a game, a panel or a NEW UNLOCKED card)
+  if (!giftAutoOk() || mode !== 'none' || $('start').hidden || !$('gifts').hidden || !$('newCard').hidden || advMapOpen() || document.querySelector('.ov:not([hidden])')) return false;
+  const s = giftState(); if (s.opened || s.seen) return false;
+  return openGifts(true);
+}
+function giftTap() { // today's box: a shake, the lid flies, confetti, the prize pops out and flies to the coin pill (or the shop)
+  const box = $('gboxes').querySelector('.gbox.today'); if (!box || box.classList.contains('opened')) return null;
+  const p = openGift(); if (!p) return null;
+  audioInit(); sfx('tick'); box.classList.add('shaking'); habit.anim = true;
+  setTimeout(() => {
+    habit.anim = false; const r = box.getBoundingClientRect(); renderGifts(); sfx('unlock'); sfx(p.chest ? 'fanfare' : 'chime');
+    const sh = $('gifts').querySelector('.sheet'); domConfetti(sh, r); if (p.chest) setTimeout(() => domConfetti(sh, r), 180);
+    if (p.coins) domFly(r, $('metaPill'), TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"'), Math.min(8, 3 + Math.round(p.coins / 8)));
+    if (p.item) domFly(r, $('collectionBtn'), null, 1, p.item);
+  }, 330);
+  return p;
+}
+function domFly(from, to, html, n, item) { // little coins (or a look's picture) fly from a box to the coin pill / the shop button, which bumps as they land
+  const tr = to && !to.closest('[hidden]') ? to.getBoundingClientRect() : null, x0 = from.left + from.width / 2, y0 = from.top + from.height / 2, x1 = tr ? tr.left + Math.min(26, tr.width / 2) : innerWidth / 2, y1 = tr ? tr.top + tr.height / 2 : 20;
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div'); el.className = 'gfly';
+    if (item) { const c = document.createElement('canvas'); c.width = c.height = Math.round(56 * SS); drawItemPreview(c.getContext('2d'), ITEMS.find((q) => q.id === item)); el.style.width = el.style.height = '44px'; el.style.margin = '-22px 0 0 -22px'; el.appendChild(c); } else el.innerHTML = html;
+    document.body.appendChild(el); const dx = (Math.random() - 0.5) * 60, mid = { x: (x0 + x1) / 2 + dx, y: Math.min(y0, y1) - 40 - Math.random() * 30 };
+    const a = el.animate ? el.animate([{ transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(.6)', opacity: 0 }, { transform: 'translate(' + x0 + 'px,' + (y0 - 14) + 'px) scale(1.1)', opacity: 1, offset: 0.15 }, { transform: 'translate(' + mid.x + 'px,' + mid.y + 'px) scale(1)', opacity: 1, offset: 0.55 }, { transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.7)', opacity: 0.9 }], { duration: 750 + i * 70, delay: i * 60, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }) : null;
+    const done = () => { el.remove(); if (to) { to.classList.remove('bump'); void to.offsetWidth; to.classList.add('bump'); } if (!item && i % 2 === 0) sfx('coin'); };
+    if (a) a.onfinish = done; else setTimeout(done, 800);
+  }
+}
+/* the play streak: a day counts once a round of any game has finished in it */
+function habitPlayed(date = missionDay()) { const P = profile.habit.play; if (P.includes(date)) return false; P.push(date); P.sort(); while (P.length > 60) P.shift(); saveProfile(); return true; }
+function playStreak(date = missionDay()) { const P = new Set(profile.habit.play); let d = P.has(date) ? date : addDays(date, -1), n = 0; while (P.has(d)) { n++; d = addDays(d, -1); } return n; } // (up to yesterday while today is still to play)
+function syncHabit() { // the start screen's flame (a pulse the first time it shows today's growth), the 'play today' hint, the gift chip
+  const d = missionDay(), n = playStreak(d), played = profile.habit.play.includes(d), b = $('flameBtn'), F = profile.habit.flame;
+  b.querySelector('b').textContent = String(n); b.classList.toggle('zero', !n); b.classList.toggle('today', played); b.dataset.n = String(n); b.dataset.played = String(played);
+  b.setAttribute('aria-label', n ? t('flameN', { n }) : t('flameZero')); b.title = b.getAttribute('aria-label');
+  if (played && n > 0 && (F.date !== d || F.n < n) && mode === 'none' && !$('start').hidden) {
+    profile.habit.flame = { date: d, n }; saveProfile(); habit.pulses++;
+    b.classList.remove('grow'); void b.offsetWidth; b.classList.add('grow'); sfx('streak');
+  }
+  const h = $('flameHint'), show = !played && n > 0; h.hidden = !show; h.querySelector('.tx').textContent = show ? t('keepFlame', { n }) : '';
+  const g = giftState(d), gb = $('giftBtn'); gb.querySelector('.dot').hidden = g.opened; gb.classList.toggle('ready', !g.opened); gb.dataset.opened = String(g.opened);
+  if (!$('gifts').hidden && !habit.anim) renderGifts();
+}
+/* the Adventure's '3 stages today' chest (any stage, replays count) and the star chests on its path */
+function stagesToday(date = missionDay()) { const S = profile.habit.stages; return S.date === date ? S : { date, n: 0, claimed: false }; }
+function habitStageClear() { const S = stagesToday(); S.n = Math.min(99, S.n + 1); profile.habit.stages = S; saveProfile(); return S.n; }
+function claimStageChest() {
+  const S = stagesToday(), E = ECONOMY.stageChest; if (S.claimed || S.n < E.goal) return 0;
+  S.claimed = true; profile.habit.stages = S; grantPrize({ coins: E.coins }, 'dayChestToast'); sfx('unlock'); sfx('chime'); return E.coins;
+}
+function renderDayChest() {
+  const S = stagesToday(), E = ECONOMY.stageChest, b = $('advDayChest'), ready = !S.claimed && S.n >= E.goal;
+  b.className = 'amDay' + (ready ? ' ready' : '') + (S.claimed ? ' done' : ''); b.dataset.n = String(Math.min(S.n, E.goal)); b.dataset.state = S.claimed ? 'done' : ready ? 'ready' : 'filling';
+  b.querySelector('.pr').textContent = S.claimed ? '✓' : Math.min(S.n, E.goal) + '/' + E.goal;
+  b.setAttribute('aria-label', t('dayChest', { a: Math.min(S.n, E.goal), b: E.goal }));
+}
+function dayChestTap() {
+  const S = stagesToday(), E = ECONOMY.stageChest, b = $('advDayChest');
+  if (S.claimed) { toast('dayChestDone', null, 'check'); return 0; }
+  if (S.n < E.goal) { toast('dayChestNeed', { n: E.goal - S.n }, 'star'); sfx('whiff'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return 0; }
+  const r = b.getBoundingClientRect(), c = claimStageChest(); renderDayChest(); domConfetti($('advMap'), r); return c;
+}
+function starChestList() { const E = ECONOMY.starChests, tot = advStarTotal(); return E.stars.map((s, i) => ({ i, stars: s, coins: E.coins[i], last: i === E.stars.length - 1, reached: tot >= s, claimed: profile.habit.starChests.includes(s) })); }
+function claimStarChest(i) {
+  const c = starChestList()[i]; if (!c || !c.reached || c.claimed) return null;
+  let coins = c.coins, item = null;
+  if (c.last) { const pool = chestSkinPool(); if (pool.length) item = pool[Math.floor(rng(strSeed('stars|' + missionDay()))() * pool.length)].id; else coins += ECONOMY.starChests.lastFallback; }
+  profile.habit.starChests.push(c.stars); profile.habit.starChests.sort((a, b) => a - b);
+  grantPrize({ coins, item }, 'starChestToast'); sfx('unlock'); sfx(c.last ? 'fanfare' : 'chime'); return { coins, item };
+}
+function starChestTap(i, b) {
+  const c = starChestList()[i]; if (!c) return null;
+  if (c.claimed) { toast('starChestDone', null, 'check'); return null; }
+  if (!c.reached) { toast('starChestNeed', { n: c.stars - advStarTotal() }, 'star'); sfx('whiff'); if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } return null; }
+  const r = b ? b.getBoundingClientRect() : null, p = claimStarChest(i);
+  if (p && b) { domConfetti($('advPath'), r); const sc = $('advScroll'), y = sc.scrollTop; renderAdvMap(); sc.scrollTop = y; }
+  return p;
+}
+function advChestLayout(L) { // a star chest beside the stop where its stars can first be reached (3 a stop), on the far side of the path
+  const off = Math.min(96, Math.max(84, L.w * 0.25));
+  return ECONOMY.starChests.stars.map((s) => { const n = Math.min(ADV_N, Math.ceil(s / 3)), p = L.nodes[n - 1]; let x = p.x < L.w / 2 ? p.x + off : p.x - off; x = Math.max(36, Math.min(L.w - 36, x)); return { n, x, y: p.y }; });
+}
+function renderStarChests(host, L) {
+  const list = starChestList(), pos = advChestLayout(L), tot = advStarTotal(), next = list.findIndex((c) => !c.reached);
+  for (const c of list) {
+    const p = pos[c.i], b = document.createElement('button'); b.type = 'button';
+    b.className = 'achest ' + (c.claimed ? 'claimed' : c.reached ? 'reached' : 'locked') + (c.i === next ? ' next' : ''); b.dataset.i = String(c.i); b.dataset.stars = String(c.stars); b.dataset.state = c.claimed ? 'claimed' : c.reached ? 'reached' : 'locked';
+    b.style.left = p.x + 'px'; b.style.top = p.y + 'px';
+    const box = document.createElement('span'); box.className = 'cbox'; box.innerHTML = CHEST_SVG;
+    const lb = document.createElement('span'); lb.className = 'lb';
+    if (c.claimed) lb.innerHTML = TOAST_ICONS.check.replace('<svg', '<svg style="stroke:var(--mint);fill:none;stroke-width:3"');
+    else if (c.reached) lb.textContent = t('claim');
+    else lb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ADV_STAR_SVG + '</svg>' + (c.i === next ? tot + ' / ' + c.stars : String(c.stars));
+    b.append(box, lb); b.setAttribute('aria-label', t('starChest', { n: c.stars }) + (c.claimed ? ', ' + t('giftOpened') : ''));
+    b.addEventListener('click', () => starChestTap(c.i, b));
+    host.appendChild(b);
+  }
+}
+/* 'Tomorrow: day 3 gift' under a round-over / stage card once today's gift is open */
+function giftSprite(r) {
+  return makeSprite('gift|' + r, r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
+    const k = r / 12; g.scale(k, k); g.fillStyle = '#ff6f59'; g.beginPath(); g.roundRect(-9, -2, 18, 12, 2); g.fill(); g.fillStyle = '#ff8a76'; g.beginPath(); g.roundRect(-10.5, -6.5, 21, 5.5, 1.5); g.fill();
+    g.fillStyle = '#ffd23f'; g.fillRect(-1.6, -6.5, 3.2, 16.5); g.strokeStyle = '#ffd23f'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -6.5); g.bezierCurveTo(-2, -11, -7, -11, -6.5, -8); g.bezierCurveTo(-6, -6.5, -3, -6.5, 0, -6.5); g.bezierCurveTo(2, -11, 7, -11, 6.5, -8); g.bezierCurveTo(6, -6.5, 3, -6.5, 0, -6.5); g.stroke();
+  });
+}
+function drawTomorrow(E, cx, y) {
+  const g = giftState(), rtl = lang === 'he'; E.ui.tomorrow = null; if (!g.opened) return;
+  y = Math.min(y, H - 20); const ts = textSprite(t('tomorrowGift', { n: g.tomorrow }), 13, '#ffd77a', null, 600), pw = Math.min(W - 24, ts.tw + 48), ph = 28, px = cx - pw / 2, sc = Math.min(1, (pw - 48) / ts.tw);
+  blit(glassSprite(pw, ph, 14), px - 1, y - ph / 2 - 1); blit(giftSprite(10), rtl ? px + pw - 18 : px + 18, y); edgeText(ts, rtl ? px + pw - 34 : px + 34, y, rtl, sc);
+  E.ui.tomorrow = { day: g.tomorrow, text: t('tomorrowGift', { n: g.tomorrow }), x: px, y: y - ph / 2, w: pw, h: ph };
 }
 /* --- collection: buy with coins (or earn at a level), equip one per type --- */
 function shopAffordable() { return ITEMS.find((it) => !it.level && it.cost > 0 && !profile.unlocked.includes(it.id) && it.cost <= profile.coins) || null; } // the cheapest... any item not owned yet the coins can buy
@@ -7486,7 +7792,7 @@ function syncMeta() {
   if (!$('collection').hidden) renderCollection();
   if (!$('road').hidden) renderRoad();
   if (!$('worldMap').hidden) renderWorldMap();
-  syncDaily(); syncGrippyBtn();
+  syncDaily(); syncGrippyBtn(); syncHabit();
 }
 function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else if (id === 'road') renderRoad(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
 function closePanel(id) { $(id).hidden = true; }
@@ -7508,7 +7814,7 @@ function renderRoad() {
 }
 const newCard = { id: null, at: 0, timer: 0 };
 function newCardOk() { // may the NEW UNLOCKED card show now? on the start screen, or over Strike's round-over card (after it has risen in)
-  if (!profile.road.cards.length || !$('newCard').hidden) return false;
+  if (!profile.road.cards.length || !$('newCard').hidden || !$('gifts').hidden) return false;
   if (mode === 'none') return !$('start').hidden;
   const E = endState(); return !!(E === strike && E.over && performance.now() - E.overAt > 900); // (Strike's round-over card; after Slice / Smash it waits for the start screen)
 }
@@ -7527,7 +7833,7 @@ function maybeNewCard() {
 function closeNewCard() {
   const P = $('newCard'); if (P.hidden) return false; P.hidden = true; clearTimeout(newCard.timer);
   const i = profile.road.cards.indexOf(newCard.id); if (i >= 0) profile.road.cards.splice(i, 1); saveProfile(); newCard.id = null;
-  setTimeout(maybeNewCard, 350); return true;
+  setTimeout(() => { if (!maybeNewCard()) maybeGift(); }, 350); return true;
 }
 const WMAP_POS = [[10, 33], [30, 70], [50, 33], [70, 70], [90, 33]]; // node centres in % of the map box (on the dashed path)
 const wmap = { how: 'mouse' };
@@ -7599,6 +7905,7 @@ function renderAdvMap() {
     b.addEventListener('click', () => advNodeTap(n, b));
     host.appendChild(b);
   }
+  renderStarChests(host, L); renderDayChest();
   $('advStarTotal').querySelector('b').textContent = String(advStarTotal()); $('advStarTotal').querySelector('small').textContent = '/ ' + ADV_N * 3;
 }
 function advNodeY(n) { const p = amap.layout && amap.layout.nodes[n - 1]; return p ? p.y : 0; }
@@ -7753,9 +8060,15 @@ for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) {
   $(id).addEventListener('pointerdown', (e) => { if (e.target === $(id)) closePanel(id); }); // a tap on the backdrop closes
 }
 $('advBack').addEventListener('click', () => closeAdvMap());
+$('advDayChest').addEventListener('click', dayChestTap);
+$('giftBtn').addEventListener('click', () => { audioInit(); sfx('click'); openGifts(false); });
+$('flameBtn').addEventListener('click', () => { const n = playStreak(); sfx('click'); toast(n ? 'flameToast' : 'flameZero', { n }, 'star'); });
+$('giftOk').addEventListener('click', () => { if (giftState().opened) closeGifts(); else giftTap(); });
+$('gifts').querySelector('.xBtn').addEventListener('click', closeGifts);
+$('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) { closeGifts(); return; } if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box; on the backdrop it closes
 $('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
 window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
-window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeGifts()) return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
@@ -8130,7 +8443,7 @@ function goHome() {
   hideHint(); grippyHide(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   $('start').hidden = false; document.body.classList.add('home');
-  syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); maybeNewCard();
+  syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); if (!maybeNewCard()) maybeGift();
 }
 $('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); }); // (Shapes: the round-over card first)
 
@@ -8434,6 +8747,12 @@ window.__grasp = {
     get travel() { const T = adv.travel; return T ? { from: T.from, to: T.to, q: T.q, switched: T.switched } : null; }, get lastTravel() { return adv.lastTravel; },
     finishTest(livesLost = 0) { if (!adv.on || adv.phase !== 'play') return null; adv.lost = Math.max(0, livesLost | 0); strike.lives = Math.max(1, ADV_LIVES - adv.lost); if (adv.plan.boss) { adv.bossDone = true; strike.boss = null; } strike.walls.length = 0; strike.progress = adv.plan.walls; strike.cleared = strike.cleared0 + adv.plan.walls; return advClear(performance.now()); },
     failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; while (!strike.over && i++ < 20) loseLife(performance.now()); return adv.result; } },
+  // the daily habit: the gift calendar (state / prize(n) / open: the calendar / tap: today's box with its animation / claim: today's prize at once / maybe: the once-a-day pop-up check),
+  // the play streak, the '3 stages today' chest, the star chests; everything follows __grasp.setDate
+  gifts: { get state() { return giftState(); }, prize: (n) => giftPrize(n), open: () => openGifts(false), close: closeGifts, tap: giftTap, claim: () => openGift(), maybe: maybeGift, get shown() { return !$('gifts').hidden; }, get shownCount() { return habit.shown; }, get auto() { return giftAutoOk(); }, economy: ECONOMY.gifts },
+  habit: { get streak() { return playStreak(); }, get playedToday() { return profile.habit.play.includes(missionDay()); }, get pulses() { return habit.pulses; }, played: habitPlayed,
+    get stages() { const S = stagesToday(); return { n: S.n, claimed: S.claimed, goal: ECONOMY.stageChest.goal }; }, claimStages: claimStageChest, tapStages: dayChestTap,
+    get starChests() { return starChestList(); }, claimStar: claimStarChest, economy: { stageChest: ECONOMY.stageChest, starChests: ECONOMY.starChests } },
   // Shapes: the level, the shapes (kind, colour, x / y, angle, size, placed) and holes (kind, x / y, angle on screen, size, filled), the held shape's index (-1: none),
   // placeTest(i): shape i straight onto its hole at the hole's angle, then let go; spoken: the last shape name said; setLevel(n): level n now (test-only)
   shapes: { get level() { return shapes.level; }, get phase() { return shapes.phase; }, get held() { return shapes.held ? shapes.shapes.indexOf(shapes.held.s) : -1; },
@@ -8446,7 +8765,7 @@ window.__grasp = {
     placeTest(i) { const s = shapes.shapes[i]; if (!s || s.placed || shapes.phase !== 'play') return false; const j = shapes.holes.findIndex((h) => !h.filled && h.kind === s.kind); if (j < 0) return false;
       const h = shapes.holes[j]; s.anim = null; s.x = h.x; s.y = h.y; s.angle = h.wa; shapes.held = { i, s, ox: 0, oy: 0, roll: hand.roll, tw: 0, two: false, t0: performance.now(), overSince: 0, overHole: -1 }; shapesRelease(performance.now()); return s.placed; } },
 };
-syncGrippyBtn(); maybeNewCard(); // a NEW UNLOCKED card not seen yet (the tab closed before it showed)
+syncGrippyBtn(); if (!maybeNewCard()) maybeGift(); // the day's gift calendar (a real visitor's first open of the day); a NEW UNLOCKED card not seen yet (the tab closed before it showed)
 </script>
 </body>
 </html>
