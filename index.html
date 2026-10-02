@@ -543,7 +543,8 @@ const I18N = {
     wk_brick: 'Brick wall', wk_glass: 'Glass wall!', wk_steel: 'Steel wall!', wk_holed: 'Wall with a hole!', wk_moving: 'Moving wall!', wk_tnt: 'TNT wall!',
     pu_multi: 'Multi-ball!', pu_big: 'Big ball!', pu_slow: 'Slow-mo!', pu_fire: 'Fireball!', pu_life: '+1 life!',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
-    levelN: 'Level {n}', levelGoal: 'Clear {n} walls', levelUp: 'Level up!', bossDown: 'Boss down!', wk_boss: 'Boss!', bosses: 'Bosses', levelBest: 'Best level {n}',
+    levelN: 'Level {n}', levelGoal: 'Clear {n} walls', hd_faster: 'Faster!', hd_tougher: 'Tougher walls!', hd_curve: 'Curving balls!', hd_wobble: 'Wobbly balls!',
+    nw_glass: 'New: glass walls!', nw_steel: 'New: steel walls!', nw_holed: 'New: walls with holes!', nw_moving: 'New: moving walls!', nw_tnt: 'New: TNT walls!', levelUp: 'Level up!', bossDown: 'Boss down!', wk_boss: 'Boss!', bosses: 'Bosses', levelBest: 'Best level {n}',
     perkTitle: 'Pick a power!', perkSub: 'Tap a card, or point at it and hold',
     pk_wide: 'Wider Hands', pk_heavy: 'Heavy Ball', pk_magnet: 'Sticky Magnet', pk_skin: 'Thick Skin', pk_lucky: 'Lucky', pk_spark: 'Spark Trail', pk_slow: 'Slow Start', pk_coins: 'Coin Magnet',
     pkd_wide: 'Reach the ball from further away', pkd_heavy: 'Every hit breaks one more brick', pkd_magnet: 'The ball drifts to your hand', pkd_skin: 'One more heart, and one back now',
@@ -631,7 +632,8 @@ const I18N = {
     wk_brick: 'קיר לבנים', wk_glass: 'קיר זכוכית!', wk_steel: 'קיר פלדה!', wk_holed: 'קיר עם חור!', wk_moving: 'קיר נע!', wk_tnt: 'קיר TNT!',
     pu_multi: 'כדורים כפולים!', pu_big: 'כדור ענק!', pu_slow: 'הילוך איטי!', pu_fire: 'כדור אש!', pu_life: 'לב נוסף!',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
-    levelN: 'שלב {n}', levelGoal: 'נפצו {n} קירות', levelUp: 'עליתם שלב!', bossDown: 'הבוס הובס!', wk_boss: 'בוס!', bosses: 'בוסים', levelBest: 'שלב שיא {n}',
+    levelN: 'שלב {n}', levelGoal: 'נפצו {n} קירות', hd_faster: 'מהר יותר!', hd_tougher: 'קירות קשים יותר!', hd_curve: 'הכדור מתעקל!', hd_wobble: 'הכדור מתפתל!',
+    nw_glass: 'חדש: קירות זכוכית!', nw_steel: 'חדש: קירות פלדה!', nw_holed: 'חדש: קירות עם חור!', nw_moving: 'חדש: קירות זזים!', nw_tnt: 'חדש: קירות TNT!', levelUp: 'עליתם שלב!', bossDown: 'הבוס הובס!', wk_boss: 'בוס!', bosses: 'בוסים', levelBest: 'שלב שיא {n}',
     perkTitle: 'בחרו כוח!', perkSub: 'הקישו על קלף, או הצביעו עליו והחזיקו',
     pk_wide: 'ידיים רחבות', pk_heavy: 'כדור כבד', pk_magnet: 'מגנט דביק', pk_skin: 'עור עבה', pk_lucky: 'מזל', pk_spark: 'שובל ניצוצות', pk_slow: 'התחלה איטית', pk_coins: 'מגנט מטבעות',
     pkd_wide: 'מגיעים לכדור ממרחק גדול יותר', pkd_heavy: 'כל מכה שוברת עוד לבנה', pkd_magnet: 'הכדור נמשך אל היד', pkd_skin: 'עוד לב, ולב אחד חוזר עכשיו',
@@ -3019,6 +3021,58 @@ function strikeRand(ch = 'misc') {
 function dailyMod() { return daily.on ? daily.modifier : null; }
 function strikeEasy() { return strike.diff !== 'normal' && !daily.on; } // the daily is always Normal
 function paceMul() { return dailyMod() === 'speedy' ? 1.25 : 1; }
+// The difficulty curve: everything that gets harder level by level, derived in one place from the level-1 values (CONFIG on Easy, STRIKE_NORMAL
+// on Normal and the daily). Level 1 is exactly those values; the ramp runs to level 8, then only the pace creeps up. Perks and daily modifiers
+// multiply on top where the values are used (paceMul, serveMul, reachMul, the magnet perk), never in here.
+const STRIKE_EDGE = [[120, 170, 255], [128, 160, 255], [146, 138, 255], [172, 112, 250], [208, 92, 222], [238, 80, 160], [255, 78, 96]]; // edge-light / fog tint per level 1..7+: cool blue -> purple -> red
+const STRIKE_RAMP = { // per-level steps (Normal / Easy)
+  normal: { pace: 0.12, post: 0.02, max: 0.05, drift: 0.035, curve0: 0.06, curve: 0.025, waves: 6, gap: 0.06, boss: 0.02, bossSpd: 0.06, reach: 0.04, reachMin: 0.75, magFade: 0, magMin: 1, beat: 60 },
+  easy: { pace: 0.06, post: 0.01, max: 0.03, drift: 0.018, curve0: 0.03, curve: 0.012, waves: 99, gap: 0.03, boss: 0.01, bossSpd: 0.03, reach: 0.025, reachMin: 0.85, magFade: 0.06, magMin: 0.6, beat: 45 },
+};
+function strikeDiffKey() { return strikeEasy() ? 'easy' : 'normal'; }
+function strikeBaseVal(key, diff) { return diff === 'normal' && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; }
+function strikeTuning(level = strike.level, diff = strikeDiffKey()) {
+  diff = diff === 'normal' ? 'normal' : 'easy';
+  const L = Math.max(1, level | 0), q = Math.min(L, 8) - 1, post = Math.max(0, L - 8), R = STRIKE_RAMP[diff], base = (k) => strikeBaseVal(k, diff);
+  const paceK = (n) => 1 + R.pace * (Math.min(n, 8) - 1) + R.post * Math.max(0, n - 8);
+  const pace = base('STRIKE_BASE_SPEED') * paceK(L), next = base('STRIKE_BASE_SPEED') * paceK(L + 1);
+  const kinds = STRIKE_KINDS.slice(0, Math.min(STRIKE_KINDS.length, L)), hard = diff === 'normal' ? Math.max(0, L - 5) : Math.max(0, L - 6);
+  const weights = {}; for (const k of kinds) weights[k] = k === 'brick' ? Math.max(diff === 'normal' ? 1 : 2, 3 - (diff === 'normal' ? 0.4 : 0.2) * hard) : (k === 'steel' || k === 'moving' || k === 'tnt') && diff === 'normal' ? 2 + 0.3 * hard : 2;
+  const ci = Math.min(STRIKE_EDGE.length - 1, L - 1);
+  return {
+    level: L, diff,
+    speedMul: paceK(L),                                   // x the level-1 serve speed
+    pace,                                                 // depth units / ms: this level's base serve speed (the pace resets to it on a level-up)
+    paceCap: pace + 0.75 * (next - pace),                 // the far-wall growth stops here, so the next level's base is always a step up
+    grow: base('STRIKE_PACE_GROW'),                       // pace growth per far-wall bounce (within the cap)
+    maxSpeed: base('STRIKE_MAX_SPEED') * (1 + R.max * q), // cap on the incoming / return speed
+    drift: 1 + R.drift * q,                               // x the level-1 aim range (how far from the centre a serve heads)
+    curve: L >= 4 ? R.curve0 + R.curve * (Math.min(L, 8) - 4) : 0, // from level 4: the incoming ball bows sideways by this share of the corridor width
+    waves: L >= R.waves ? 2 : 1,                          // Normal from level 6: an S-shaped wobble instead of one bow
+    wallGap: CONFIG.STRIKE_WALL_GAP * (1 - R.gap * q),    // depth between the queued walls (closer = less time between walls)
+    brickHp: L,                                           // hit points of a plain brick (glass 1, steel 3 and power-up bricks 1 at every level)
+    kindWeights: weights,                                 // the random mix once the level's own kind has been shown
+    bossHpMul: 1 + R.boss * q * q,                        // x the boss's hp (12 + 4n, x0.6 on Easy); gentle at first, steep later
+    bossSpeed: 1 + R.bossSpd * q,                         // x the boss's advance speed
+    bossMs: CONFIG.STRIKE_BOSS_MS / (1 + R.bossSpd * q),  // ms for the boss to cross the corridor
+    magnet: base('STRIKE_MAGNET') * Math.max(R.magMin, 1 - R.magFade * Math.max(0, L - 2)), // magnet assist (Easy: full on levels 1-2, then fades slowly, never below 60% of level 1)
+    reach: Math.max(R.reachMin, 1 - R.reach * q),         // x the hit reach (Easy: never below 85% of level 1)
+    beatMs: 1000 - R.beat * q,                            // heartbeat interval (it plays from level 2)
+    edge: STRIKE_EDGE[ci].slice(),                        // edge-light colour
+    fog: Math.min(0.3, 0.05 * (L - 1)),                   // strength of the level's tint in the far fog (none on level 1)
+    post,
+  };
+}
+function strikeLevelBase() { return strikeTuning().pace * paceMul(); } // the current level's base pace, daily 'Speedy' included
+function levelNews(L) { // what got harder at level L: up to 3 keys for the level banner's sub-line
+  const T = strikeTuning(L), P = strikeTuning(L - 1), out = [];
+  if (L <= STRIKE_KINDS.length && L > 1) out.push('nw_' + STRIKE_KINDS[L - 1]);
+  if (T.curve > 0 && !P.curve) out.push('hd_curve'); else if (T.waves > P.waves) out.push('hd_wobble');
+  if (T.pace > P.pace) out.push('hd_faster');
+  if (T.brickHp > P.brickHp) out.push('hd_tougher');
+  return out.slice(0, 3);
+}
+function levelNewsText(keys) { return (keys || []).map((k) => t(k)).join('  ·  '); }
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
 const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
@@ -3037,6 +3091,9 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
     perkCards: null, perkHover: -1, perkDwell: null, perkTimer: 0, perkIcons: [], streakBox: null, streakToast: null, streakLost: null, nextCard: null, nextShown: null, nextAt: -1e9, closeAt: -1e9 }, // perk cards / hover / dwell / auto-pick time left; HUD perk icons; streak chip, milestone toast, fizzle; the NEXT card
   // step 2 (roguelite run): perks { id: stacks }, the open offer (3 ids) or null, a pending offer time; the hit streak; 'Close one!' count and slow-mo end; the pre-rolled kind of the next wall
   perks: {}, perkOffer: null, perkOfferAt: 0, perkAt: 0, perkAutoMs: null, streak: 0, bestStreak: 0, closeOnes: 0, slowUntil: -1e9, upcoming: null,
+  levelBase: 0, beatAt: 0, beats: 0, // the current level's base pace (the pace resets to it on a level-up); the next heartbeat; heartbeats played this round
+  tuning(level, diff) { return strikeTuning(level === undefined ? strike.level : level, diff); }, // the derived difficulty values for a level (default: the current one)
+  get beatMs() { return strikeTuning().beatMs; }, trailMs(b) { return trailMs(b || strike.balls[0] || {}); },
   extrasOff: false, // test-only: no perk offers, no streak multiplier, no 'Close one!' (the older suites check exact scores and timings)
   get next() { return upcomingKind(); }, // the kind of the wall that enters next ('boss' when the boss comes next)
   pickPerk(i) { return pickPerk(i, performance.now()); }, // pick card i of the open offer
@@ -3047,7 +3104,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
-    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; b.spin = 0; b.speed = strike.pace; b.trail.length = 0; // always an incoming ball at the current pace
+    const b = strike.ball; b.z = z; b.dir = 1; b.super = false; b.tier = ''; b.combo = 0; b.spin = 0; b.speed = strike.pace; b.curve = 0; b.trail.length = 0; // always an incoming ball at the current pace (no sideways bow)
     if (sx !== undefined) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); b.x = b.x0 = b.tx = (sx - v.x) / s; b.y = b.y0 = b.ty = (sy - v.y) / s; }
   },
   ballScreen() { return strike.ball ? ballScreen(strike.ball) : null },
@@ -3074,6 +3131,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
     strike.level = Math.max(1, n | 0); strike.cleared = clearedAtLevel(strike.level); strike.progress = 0; strike.nextKind = strike.level > 1 && strike.level <= STRIKE_KINDS.length ? STRIKE_KINDS[strike.level - 1] : null;
     strike.seenKinds.clear(); strike.ui.tag = strike.ui.tagBox = null; strike.upcoming = null;
     const zs = strike.walls.map((w) => w.z); strike.walls.length = 0; zs.forEach((z) => spawnStrikeWall(z)); wallsTick(0);
+    strike.levelBase = strikeLevelBase(); strike.pace = strike.levelBase; // the level's base pace
   },
   setCleared(n) { strike.cleared = Math.max(0, (n | 0) - 1); wallCleared(performance.now()); }, // test helper: as if the n-th wall was just cleared (level-ups and the boss on its multiples included)
   spawnBoss(n) { return spawnBoss(n, performance.now()); }, // test helper / hook: a boss wall now (number n, default the next one)
@@ -3124,7 +3182,7 @@ function resetStrike(now) {
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
-  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED') * paceMul(); strike.speed = strike.pace;
+  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.level = 1; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
@@ -3145,11 +3203,12 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
   const { level, progress } = levelFor(strike.cleared), lv = strike.level; strike.progress = progress;
   if (level === lv) return;
   strike.level = level; if (level > lv) track('strikeLevel', level);
+  strike.levelBase = strikeLevelBase(); strike.pace = strike.levelBase; // a new level starts at its own base pace (no runaway from the last one)
   if (level > lv && level <= STRIKE_KINDS.length) { strike.nextKind = STRIKE_KINDS[level - 1]; strike.upcoming = null; } // the first wall of a new level is the kind it unlocks (the telegraph switches to it)
   if (fx && level > lv) {
     const bonus = 50 * level; strike.score += bonus; strike.ui.scoreAt = now;
     const perk = !strike.extrasOff && availablePerks().length > 0; if (perk) strike.perkAt = now + PERK_DELAY_MS; // the perk cards come after the burst; the level banner waits for the pick
-    strike.ui.levelUp = { t: now, level, bonus }; strike.ui.levelBanner = { t: now + (perk ? PERK_DELAY_MS : 700), level, goal: levelGoal(level), up: true };
+    strike.ui.levelUp = { t: now, level, bonus }; strike.ui.levelBanner = { t: now + (perk ? PERK_DELAY_MS : 700), level, goal: levelGoal(level), up: true, news: levelNews(level) };
     sfx('levelup'); grippySay('levelUp'); ring(W / 2, H * 0.32, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.4, 700, 6); burst(W / 2, H * 0.32, '#ffc24b', 22); burst(W / 2, H * 0.32, '#fff3c4', 14); saveLevelBest();
   }
 }
@@ -3158,10 +3217,11 @@ function wallCleared(now) { // one more wall down: the level progress ticks (a p
   if (!strike.boss && strike.cleared > 0 && strike.cleared % sd('STRIKE_BOSS_EVERY') === 0) spawnBoss(0, now);
 }
 /* --- walls: grids of bricks across the corridor --- */
-function wallSlotZ(i) { return CONFIG.STRIKE_Z_FAR * 0.4 + i * CONFIG.STRIKE_WALL_GAP; }
+function wallGap() { return strikeTuning().wallGap; } // depth between queued walls: shrinks with the level
+function wallSlotZ(i) { return CONFIG.STRIKE_Z_FAR * 0.4 + i * wallGap(); }
 function nextWallZ() { // where a replacement wall spawns: its slot, or beyond the last wall in the queue, and never in front of a live boss
-  let z = Math.max(wallSlotZ(strike.walls.length), strike.walls.reduce((m, q) => Math.max(m, q.z), 0) + CONFIG.STRIKE_WALL_GAP);
-  if (strike.boss) z = Math.max(z, strike.boss.z + CONFIG.STRIKE_WALL_GAP);
+  let z = Math.max(wallSlotZ(strike.walls.length), strike.walls.reduce((m, q) => Math.max(m, q.z), 0) + wallGap());
+  if (strike.boss) z = Math.max(z, strike.boss.z + CONFIG.STRIKE_WALL_GAP); // (the boss keeps the full gap in front of the queue)
   return z;
 }
 function wallGrid() { // ~20 bricks about twice as wide as tall: 4x5 on a laptop, 3x8 on a phone
@@ -3174,14 +3234,14 @@ function wallKindFor(level) { // level 1: brick only; each level to 6 unlocks th
   if (strike.nextKind) { const k = strike.nextKind; strike.nextKind = null; return k; }
   if ((mod === 'steel' || mod === 'tnt') && strikeRand('walls') < (mod === 'steel' ? 0.4 : 0.5)) return mod; // 'Steel day' / 'TNT party': that kind from level 1 on, in 40% / 50% of the walls
   const n = Math.min(STRIKE_KINDS.length, Math.max(1, level)); if (n <= 1) return 'brick';
-  const pool = STRIKE_KINDS.slice(0, n), wts = pool.map((k) => (k === 'brick' ? 3 : 2)); let r = strikeRand('walls') * wts.reduce((a, b) => a + b, 0);
+  const pool = STRIKE_KINDS.slice(0, n), kw = strikeTuning(level).kindWeights, wts = pool.map((k) => kw[k] || 2); let r = strikeRand('walls') * wts.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
   return 'brick';
 }
 function spawnStrikeWall(z, kind) {
   kind = STRIKE_KINDS.includes(kind) ? kind : takeUpcoming();
   const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
-  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : level; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
+  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : strikeTuning(level).brickHp; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
   const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: strikeRand('bricks') * TAU };
   const at = (c, r) => bricks[r * cols + c];
@@ -3223,7 +3283,7 @@ function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every 
 /* --- perks, the hit streak, 'Close one!' --- */
 function perkN(id) { return strike.perks[id] || 0; }
 function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1); }                       // Wider Hands
-function magnetVal() { return sd('STRIKE_MAGNET') + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
+function magnetVal() { return strikeTuning().magnet + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
 function puRate() { return CONFIG.STRIKE_PU_RATE * (strikeEasy() ? 1.5 : 1) * (1 + 0.5 * perkN('lucky')) * (dailyMod() === 'rain' ? 3 : 1); } // share of bricks with a power-up (Easy x1.5, Lucky +50% each)
 function serveMul() { return Math.pow(0.85, perkN('slow')); }                 // Slow Start
 function coinMul() { return 1 + 0.5 * perkN('coins'); }                       // Coin Magnet
@@ -3353,7 +3413,7 @@ function capsulesTick(now, dt) { // capsules fly toward the player; on the plane
     c.z -= CONFIG.STRIKE_PU_SPEED * dt;
     const k = 1 - Math.max(0, c.z) / c.z0; c.x = c.x0 + (c.tx - c.x0) * Math.min(1, k); c.y = c.y0 + (c.ty - c.y0) * Math.min(1, k);
     if (c.z <= hz * sd('STRIKE_HIT_WINDOW')) {
-      const sc = capsuleScreen(c, now), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul();
+      const sc = capsuleScreen(c, now), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach;
       if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) { catchCapsule(c, now); continue; }
       if (c.z <= -hz) c.missed = true;
     }
@@ -3364,7 +3424,7 @@ function wallsTick(dt) { // walls sit in slots in depth order; a cleared one lea
   const Z = CONFIG.STRIKE_Z_FAR, { L, R } = corridor(), now = performance.now();
   const bs = strike.boss;
   strike.walls.forEach((w, i) => {
-    let tz = wallSlotZ(i); if (bs && w.z > bs.z) tz = Math.max(tz, bs.z + CONFIG.STRIKE_WALL_GAP); // a wall behind the boss keeps its distance: nothing slides in front of it
+    let tz = wallSlotZ(i); if (bs && w.z > bs.z) tz = Math.max(tz, bs.z + CONFIG.STRIKE_WALL_GAP + i * wallGap()); // a wall behind the boss keeps its distance: nothing slides in front of it
     w.pz = w.z; if (w.z > tz) w.z = Math.max(tz, w.z - STRIKE_SLIDE * dt);
     if (w.kind === 'moving') { w.phase += dt * 0.0011; w.ox = (R - L) / w.span * (0.5 + 0.5 * Math.sin(w.phase)); } // one brick's width side to side on a slow sine, the free column with it
     if (w.z < Z && !bs && w.kind !== 'brick' && !strike.seenKinds.has(w.kind)) { strike.seenKinds.add(w.kind); strike.ui.tag = { t: now, kind: w.kind }; } // (the boss keeps its own tag while it lives)
@@ -3441,7 +3501,8 @@ function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
   b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
-  b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
+  const dr = strikeTuning().drift, fx = Math.min(0.95, 0.75 * dr), fy = Math.min(0.85, 0.6 * dr); b.curve = 0;
+  b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25 * dr, (L + r) * fx, (R - r) * fx); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25 * dr, (T + r) * fy, (B - r) * fy);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
   b.speed = strike.pace;
 }
@@ -3466,12 +3527,12 @@ function debrisTick(dt) {
 /* --- the boss: a wide brick wall with a face that creeps toward the player; hp by tier; angry at half health; walls it reaches crumble --- */
 function spawnBoss(n, now) { // boss number n (default the next): hp = 12 + 4n on Normal, 60% of that on Easy; starts near the far end, tagged 'Boss!' with a roar
   n = n > 0 ? n | 0 : strike.bosses + 1;
-  const maxHp = Math.max(1, Math.round((12 + 4 * n) * sd('STRIKE_BOSS_HP'))), Z = CONFIG.STRIKE_Z_FAR, z = Z * BOSS_Z0;
-  const b = { n, hp: maxHp, maxHp, z, pz: z, angry: false, look: { x: 0, y: 0 }, hitAt: -1e9, roarAt: -1e9, nextRoar: now + 4000, retreat: false, slamAt: -1e9, born: now, speed: (z - CONFIG.STRIKE_HIT_Z * 3) / CONFIG.STRIKE_BOSS_MS };
+  const T = strikeTuning(), maxHp = Math.max(1, Math.round((12 + 4 * n) * sd('STRIKE_BOSS_HP') * T.bossHpMul)), Z = CONFIG.STRIKE_Z_FAR, z = Z * BOSS_Z0;
+  const b = { n, hp: maxHp, maxHp, z, pz: z, angry: false, look: { x: 0, y: 0 }, hitAt: -1e9, roarAt: -1e9, nextRoar: now + 4000, retreat: false, slamAt: -1e9, born: now, speed: (z - CONFIG.STRIKE_HIT_Z * 3) / T.bossMs };
   strike.boss = b; strike.ui.tag = { t: now, kind: 'boss' }; strike.seenKinds.add('boss'); grippySay('boss');
   sfx('roar'); shakeScreen(2.5);
   for (const w of strike.walls.slice()) if (w.z < Z) crumbleWall(w, now, false); // it smashes through every wall in view on its way in: nothing stands in front of it
-  strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(Math.max(Z, b.z + CONFIG.STRIKE_WALL_GAP) + i * CONFIG.STRIKE_WALL_GAP); // the queue waits behind it, out of view
+  strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(Math.max(Z, b.z + CONFIG.STRIKE_WALL_GAP) + i * wallGap()); // the queue waits behind it, out of view
   return b;
 }
 function bossRoar(b, now) { b.roarAt = now; b.nextRoar = now + 3500 + strikeRand('boss') * 2500; sfx('roar'); shakeScreen(3); }
@@ -3483,7 +3544,7 @@ function bossTick(now, dt) {
     b.z -= b.speed * (b.angry ? 1.6 : 1) * dt;
     if (b.z <= near) { // it reached the player: a life lost, a slam and a roar, and it backs off
       b.z = near; b.retreat = true; b.slamAt = now; bossRoar(b, now); shakeScreen(4); sfx('tnt'); loseLife(now);
-      for (const bl of strike.balls) if (bl.dir < 0) { bl.dir = 1; bl.z = Math.min(bl.z, near - ballR()); bl.super = false; bl.tier = ''; bl.speed = strike.pace; }
+      for (const bl of strike.balls) if (bl.dir < 0) { bl.dir = 1; bl.z = Math.min(bl.z, near - ballR()); bl.super = false; bl.tier = ''; bl.curve = 0; bl.speed = strike.pace; }
       if (strike.over) return;
     }
   }
@@ -3537,11 +3598,12 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
     strike.debris.push({ x: (Math.random() - 0.5) * W * 0.8, y: (Math.random() - 0.5) * H * 0.6, z: b.z, vx: (Math.random() - 0.5) * 0.5, vy: -0.15 - Math.random() * 0.35, vz: -(0.8 + Math.random() * 1), rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.03, k: 0.35 + Math.random() * 0.35, level: 1, kind: 'boss', shard: false, w: cw, h: ch, life: 1, decay: 1 / (700 + Math.random() * 500) });
   }
   for (const w of strike.walls.slice()) if (w.z < CONFIG.STRIKE_Z_FAR) crumbleWall(w, now, false);
-  strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(CONFIG.STRIKE_Z_FAR + i * CONFIG.STRIKE_WALL_GAP * 0.5); // normal walls resume, sliding in from the far end
+  strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(CONFIG.STRIKE_Z_FAR + i * wallGap() * 0.5); // normal walls resume, sliding in from the far end
 }
 function strikeTarget(b) { // where the incoming ball drifts to: a random spot inside the corridor, so the player has to move
-  const { L, R, T, B } = corridor(), r = ballR();
-  b.tx = (L + r) * 0.75 + strikeRand('serve') * ((R - L) - 2 * r) * 0.75; b.ty = (T + r) * 0.6 + strikeRand('serve') * ((B - T) - 2 * r) * 0.6;
+  const { L, R, T, B } = corridor(), r = ballR(), tu = strikeTuning(), fx = Math.min(0.95, 0.75 * tu.drift), fy = Math.min(0.85, 0.6 * tu.drift); // the aim range widens with the level
+  b.tx = (L + r) * fx + strikeRand('serve') * ((R - L) - 2 * r) * fx; b.ty = (T + r) * fy + strikeRand('serve') * ((B - T) - 2 * r) * fy;
+  b.curve = 0; b.waves = tu.waves; if (tu.curve > 0) b.curve = (strikeRand('serve') < 0.5 ? -1 : 1) * tu.curve * (R - L); // from level 4 the path bows sideways (zero at both ends: it still lands on the target)
 }
 function serveBall(now) {
   const { L, R, T, B } = corridor();
@@ -3567,7 +3629,7 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
   b.vx = latx * W * 0.00035 * (0.6 + pw); b.vy = laty * H * 0.00035 * (0.6 + pw);
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
-  b.speed = Math.min(sd('STRIKE_MAX_SPEED') * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
+  b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
   const pts = scorePts(1 + STRIKE_BONUS[tier]); strike.score += pts; // (x the streak multiplier: the returns before this one)
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
@@ -3605,6 +3667,7 @@ function strikeTick(now, dt) {
   if (strike.perkAt && now >= strike.perkAt) { strike.perkAt = 0; if (openPerkOffer(now)) return; }
   if (pause.on) { strike.serveAt += dt; powerupsTick(now, dt); return; } // the ball (and the next serve) waits while the hand is missing
   if (now < strike.slowUntil) dt *= CLOSE_SLOW; // 'Close one!': a moment of slow motion
+  if (strike.level >= 2 && now >= strike.beatAt) { const ms = strikeTuning().beatMs; if (strike.beatAt) { sfx('beat'); strike.beats++; } strike.beatAt = now + ms; } // a soft heartbeat from level 2, quicker each level
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
   bossTick(now, dt); wallsTick(dt); powerupsTick(now, dt); capsulesTick(now, dt);
   if (strike.over) return; // the boss reached the player with the last life
@@ -3629,9 +3692,9 @@ function ballTick(b, now, dt, fire, mul) {
         b.tx += (clamp(cursor.x - v.x, L + r, R - r) - b.tx) * q; b.ty += (clamp(cursor.y - v.y, T + r, B - r) - b.ty) * q;
       }
     }
-    b.x = b.x0 + (b.tx - b.x0) * k; b.y = b.y0 + (b.ty - b.y0) * k;
+    b.x = b.x0 + (b.tx - b.x0) * k + (b.curve ? b.curve * Math.sin(Math.PI * k * (b.waves || 1)) : 0); b.y = b.y0 + (b.ty - b.y0) * k; // (+ the level's sideways bow / wobble)
     if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
-      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul(), d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
+      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach, d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
       if (d <= reach) { // any cursor position from the last 160 ms counts, not only this frame's
         const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'), late = b.z <= zl + 0.15 * (zo - zl), edge = d > 0.8 * reach;
         strikeHit(b, now); if ((late || edge) && !strike.extrasOff) closeOne(b, now, late ? 'late' : 'edge'); // the last 15% of the window, or the outer 20% of the reach
@@ -3653,7 +3716,7 @@ function ballTick(b, now, dt, fire, mul) {
     if (bs && b.dir < 0 && z0 < bs.pz && b.z >= bs.z) { bossHit(b.fire ? 'super' : b.tier || 'soft', b, now); bounceOffWall(b, { z: bs.z }); }
     if (b.dir < 0 && b.z >= Z) {
       b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
-      if (b === strike.balls[0]) strike.pace = Math.min(sd('STRIKE_MAX_SPEED') * paceMul(), strike.pace * sd('STRIKE_PACE_GROW')); // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
+      if (b === strike.balls[0]) { const T = strikeTuning(); strike.pace = Math.max(strike.pace, Math.min(Math.min(T.maxSpeed, T.paceCap) * paceMul(), strike.pace * T.grow)); } // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
       b.speed = strike.pace;
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
@@ -3661,11 +3724,15 @@ function ballTick(b, now, dt, fire, mul) {
   b.rot = (b.rot || 0) + dt * (0.002 * b.dir + (b.spin || 0) * 0.012); // the seams (and the spin stripe) turn with the spin
   const sc = ballScreen(b), tr = b.trail; tr.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
   if (sc.s > 0.08 && b.dir < 0) trailFx(skinOf('trail'), sc.x, sc.y, 0, 0); // embers / stars behind the returning ball
-  while (tr.length && now - tr[0].t > (b.super || b.fire || Math.abs(b.spin || 0) > 0.08 ? 320 : 160)) tr.shift();
+  while (tr.length && now - tr[0].t > trailMs(b)) tr.shift();
   if (b.fire && sc.s > 0.08) for (let i = 0; i < 2 && particles.length < 300; i++) { // flames licking off a fireball
     const a = Math.random() * TAU, d = sc.r * (0.4 + Math.random() * 0.5);
     particles.push({ x: sc.x + Math.cos(a) * d, y: sc.y + Math.sin(a) * d, vx: (Math.random() - 0.5) * 0.06, vy: -0.05 - Math.random() * 0.12 * sc.s, life: 0.9, decay: 0.003 + Math.random() * 0.003, r: Math.max(1.5, sc.r * (0.12 + Math.random() * 0.14)), color: i ? '#ffe07a' : '#ff8a3d' });
   }
+}
+function trailMs(b) { // how long the ball's trail lasts: 160 ms at the level-1 pace (320 for a SUPER / fire / spinning ball), longer as the pace climbs
+  const k = Math.max(1, Math.min(2.5, strike.pace / (sd('STRIKE_BASE_SPEED') * paceMul())));
+  return (b.super || b.fire || Math.abs(b.spin || 0) > 0.08 ? 320 : 160) * k;
 }
 function ricochet(b, now, side) { // the returning ball glances off the corridor: sparks and a ping; a side wall mirrors the spin (the curve carries on the other way)
   if (side) b.spin = -(b.spin || 0);
@@ -4282,10 +4349,14 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : '#f1e9da', null, 500);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
     if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
-    blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - ph / 2 - 1, 0, 1, a);
+    let news = !boss && Bn.news && Bn.news.length ? [textSprite(levelNewsText(Bn.news), 17, '#ffb36b', null, 700)] : null; // what got harder: 'New: glass walls!  ·  Faster!'
+    if (news && news[0].tw + 40 > W - 24 && Bn.news.length > 1) news = [textSprite(t(Bn.news[0]), 17, '#ffb36b', null, 700), textSprite(levelNewsText(Bn.news.slice(1)), 17, '#ffb36b', null, 700)]; // too wide (a phone): two lines
+    const ntw = news ? Math.max(...news.map((q) => q.tw)) : 0, nw = news ? Math.min(W - 24, Math.max(pw, ntw + 40)) : pw, nh = news ? ph + 8 + 24 * news.length : ph, ns = news ? Math.min(1, (nw - 28) / ntw) : 1;
+    blit(glassSprite(nw, nh, 20), x - nw / 2 - 1, y - ph / 2 - 1, 0, 1, a);
     if (boss) blit(burstSprite(), x, y, now * 0.0012, 0.9, a * 0.7);
     blit(main, x, y - 14, 0, 1 + (boss ? 0.04 * Math.sin(k * Math.PI * 6) * (1 - k) : 0), a);
     blit(sub, x, y + 30, 0, 1, a);
+    if (news) { news.forEach((q, i) => blit(q, x, y + 58 + 24 * i, 0, ns * (1 + 0.08 * Math.max(0, 1 - k * 5)), a)); ui.newsBox = { x: x - nw / 2, y: y - ph / 2, w: nw, h: nh, text: levelNewsText(Bn.news), scale: ns, lines: news.length }; }
   }
 }
 function bossBodySprite(w, h) { // the boss's body: a purple brick grid the size of the corridor's mouth, cached
@@ -4481,7 +4552,10 @@ function renderStrike(now) {
     ctx.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);
   }
   { // light strips along the four corridor edges, pulsing faster the faster the ball flies
-    const rate = 0.003 * (0.6 + strike.speed / CONFIG.STRIKE_BASE_SPEED), p = 0.5 + 0.5 * Math.sin(now * rate), col = sup ? '255,194,75' : '120,170,255';
+    const tu = strikeTuning(), rate = 0.003 * (0.6 + strike.speed / CONFIG.STRIKE_BASE_SPEED), p = 0.5 + 0.5 * Math.sin(now * rate), col = sup ? '255,194,75' : tu.edge.join(','); // the level's colour: cool blue -> purple -> red
+    if (tu.fog > 0) { const v = vanish(), f = proj(R, B, Z), gr = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, Math.max(f.x - v.x, f.y - v.y) * 4 + Math.min(W, H) * 0.2); // the far fog takes on the level's colour
+      gr.addColorStop(0, 'rgba(' + tu.edge.join(',') + ',' + tu.fog.toFixed(3) + ')'); gr.addColorStop(1, 'rgba(' + tu.edge.join(',') + ',0)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); }
+    strike.ui.edgeCol = sup ? [255, 194, 75] : tu.edge;
     ctx.lineCap = 'round';
     for (const [z0, z1, k] of [[0, Z * 0.12, 1], [Z * 0.12, Z * 0.3, 0.5], [Z * 0.3, Z * 0.5, 0.22]]) { // fading into the depth
       ctx.beginPath();
@@ -4583,6 +4657,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
     }
     else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'beat') { tone('sine', 72, 48, 0.09, 120, t0); tone('sine', 64, 44, 0.06, 120, t0 + 0.16); } // Strike's heartbeat: a soft low lub-dub
     else if (kind === 'chime') { tone('sine', 660, 0, 0.12, 420, t0); tone('sine', 880, 0, 0.12, 520, t0 + 0.14); tone('sine', 1320, 0, 0.08, 620, t0 + 0.28); }
     else if (kind === 'tone') toneOn(arg || 440);
     else if (kind === 'toneOff') toneOff();
