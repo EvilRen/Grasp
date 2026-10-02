@@ -62,6 +62,8 @@ html[dir="rtl"] .tagline{ text-transform:none; letter-spacing:0; font-size:15px;
   .modes::-webkit-scrollbar{ display:none; }
   .modes button{ flex:0 0 136px; scroll-snap-align:center; font-size:14px; gap:8px; }
   .dots{ display:flex; }
+  .panel{ padding-top:20px; } /* the title clears the coins pill and the language button */
+  .diff{ margin-bottom:10px; } .desc{ margin-bottom:12px; }
 }
 /* description card: what the mode is, then the gestures it uses as an icon row */
 .desc{ background:rgba(29,37,71,.45); box-shadow:inset 0 0 0 1.5px var(--line); border-radius:16px; padding:12px 14px 11px; margin:0 0 14px; text-align:start; }
@@ -176,6 +178,78 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #status button{ pointer-events:auto; font-size:14px; padding:11px 16px; width:100%; }
 @media (max-height:520px){ #status .camSlot{ width:min(100%, 160px, 40vh); } #status h2{ font-size:16px; margin-bottom:8px; } #status .tips{ gap:4px; } }
 @media (prefers-reduced-motion: reduce){ #status .handGuide svg, #liveDot{ animation:none; } #hint{ transition:opacity .3s; } }
+/* meta progression: coins + level pill (start screen, opposite the language button), Missions / Collection buttons, their panels, toasts */
+#metaPill{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); left:12px; display:inline-flex; align-items:center; gap:7px; padding:7px 12px 7px 9px; border-radius:999px;
+  background:rgba(29,37,71,.85); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); font-size:13px; font-weight:700; line-height:1; z-index:1; }
+html[dir="rtl"] #metaPill{ left:auto; right:12px; }
+#metaPill svg{ width:18px; height:18px; flex:none; }
+#metaPill .lvl{ color:var(--muted); font-weight:500; padding-inline-start:5px; border-inline-start:1px solid var(--line); }
+#metaPill .xp{ display:block; width:34px; height:4px; border-radius:2px; background:rgba(241,233,218,.14); overflow:hidden; }
+#metaPill .xp i{ display:block; height:100%; width:0; border-radius:2px; background:linear-gradient(90deg,var(--saffron),var(--coral)); transition:width .4s; }
+.metaRow{ display:flex; gap:8px; margin:-6px 0 8px; }
+.metaBtn{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:9px 10px; min-width:0; border-radius:12px; background:rgba(29,37,71,.5); color:var(--bone);
+  box-shadow:inset 0 0 0 1.5px var(--line); font-size:14px; font-weight:500; transition:background .15s, transform .1s; }
+.metaBtn:hover{ background:rgba(29,37,71,.85); }
+.metaBtn:active{ transform:scale(.97); }
+.metaBtn svg{ width:18px; height:18px; flex:none; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; color:var(--saffron); }
+.metaBtn .nb{ min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--saffron); color:#241a00; font-size:11px; font-weight:700; line-height:18px; }
+.metaBtn .nb[hidden]{ display:none; }
+.ov{ position:fixed; inset:0; z-index:12; display:flex; align-items:center; justify-content:center; padding:16px; padding-top:calc(env(safe-area-inset-top,0px) + 16px);
+  background:rgba(8,11,28,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+.ov[hidden]{ display:none; }
+.sheet{ position:relative; width:min(440px,100%); max-height:100%; overflow:hidden auto; overscroll-behavior:contain; background:#161d3d; border-radius:20px; padding:14px 16px 16px; text-align:start;
+  box-shadow:inset 0 0 0 1px var(--line), 0 20px 50px rgba(0,0,0,.5); animation:rise .3s cubic-bezier(.2,.8,.2,1) both; }
+.sheet header{ display:flex; align-items:center; gap:10px; margin:0 0 10px; }
+.sheet h2{ flex:1; margin:0; font-size:19px; font-weight:700; }
+.sheet .xBtn{ flex:none; width:36px; height:36px; border-radius:50%; background:rgba(241,233,218,.08); color:var(--bone); display:inline-flex; align-items:center; justify-content:center; }
+.sheet .xBtn svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
+.sheet .wallet{ display:inline-flex; align-items:center; gap:5px; padding:6px 10px; border-radius:999px; background:rgba(29,37,71,.85); box-shadow:inset 0 0 0 1px var(--line); font-size:13px; font-weight:700; }
+.sheet .wallet svg{ width:16px; height:16px; }
+.sheet .sub{ margin:0 0 10px; color:var(--muted); font-size:13px; }
+.mlist{ list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+.mrow{ display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:center; padding:10px 12px; border-radius:14px; background:rgba(29,37,71,.5); box-shadow:inset 0 0 0 1px var(--line); }
+.mrow .nm{ font-size:14px; font-weight:500; }
+.mrow .bar{ grid-column:1; height:6px; border-radius:3px; background:rgba(241,233,218,.12); overflow:hidden; }
+.mrow .bar i{ display:block; height:100%; width:0; border-radius:3px; background:linear-gradient(90deg,var(--saffron),#ff8a3d); transition:width .3s; }
+.mrow .pr{ grid-column:1; font-size:12px; color:var(--muted); direction:ltr; text-align:start; }
+.mrow .rw{ grid-column:2; grid-row:1 / span 3; display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:700; color:var(--saffron); white-space:nowrap; }
+.mrow .rw svg{ width:16px; height:16px; }
+.mrow .claim{ grid-column:2; grid-row:1 / span 3; padding:9px 14px; border-radius:10px; background:var(--saffron); color:#241a00; font-size:14px; font-weight:700; animation:pulse 1.4s infinite; }
+.mrow.done{ box-shadow:inset 0 0 0 1.5px var(--mint); }
+.mrow.done .bar i{ background:var(--mint); }
+.mrow .ok{ grid-column:2; grid-row:1 / span 3; width:28px; height:28px; border-radius:50%; background:var(--mint); color:#062b1c; display:inline-flex; align-items:center; justify-content:center; }
+.mrow .ok svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.sheet h3{ margin:12px 0 6px; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px; }
+.tiles{ display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px; }
+.tile{ position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 6px 7px; border-radius:14px; background:rgba(29,37,71,.5); color:var(--bone); min-width:0;
+  box-shadow:inset 0 0 0 1.5px var(--line); font-size:11px; font-weight:500; line-height:1.2; text-align:center; transition:transform .1s, box-shadow .15s; }
+.tile:active{ transform:scale(.96); }
+.tile canvas{ display:block; width:56px; height:56px; border-radius:10px; background:#0e1328; }
+.tile .nm{ max-width:100%; min-height:2.4em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+.tile .st{ display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:var(--saffron); }
+.tile .st svg{ width:12px; height:12px; }
+.tile.locked canvas{ opacity:.35; filter:grayscale(.6); }
+.tile.locked .lk{ position:absolute; top:24px; left:50%; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; background:rgba(14,19,40,.85); display:inline-flex; align-items:center; justify-content:center; }
+.tile.locked .lk svg{ width:12px; height:12px; stroke:var(--bone); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.tile.locked.poor .st{ color:var(--muted); }
+.tile.owned .st{ color:var(--muted); font-weight:500; }
+.tile.equipped{ box-shadow:inset 0 0 0 2px var(--saffron); background:var(--ink-2); }
+.tile.equipped .st{ color:var(--saffron); }
+.tile.shake{ animation:shake .4s; }
+@keyframes shake{ 20%,60%{ transform:translateX(-4px); } 40%,80%{ transform:translateX(4px); } }
+.cf{ position:absolute; width:7px; height:7px; border-radius:2px; pointer-events:none; animation:cf .9s ease-out forwards; }
+@keyframes cf{ to{ transform:translate(var(--dx),var(--dy)) rotate(540deg); opacity:0; } }
+#metaToast{ position:fixed; left:50%; top:calc(env(safe-area-inset-top,0px) + 68px); transform:translateX(-50%); z-index:13; display:grid; gap:8px; pointer-events:none; width:max-content; max-width:min(420px, calc(100% - 32px)); }
+.mt{ display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:14px; background:rgba(14,19,40,.94); color:var(--bone); font-size:14px; line-height:1.3;
+  box-shadow:inset 0 0 0 1px var(--line), 0 8px 24px rgba(0,0,0,.35); animation:rise .35s cubic-bezier(.2,.8,.2,1) both; }
+.mt.out{ transition:opacity .4s, transform .4s; opacity:0; transform:translateY(-8px); }
+.mt .ic{ flex:none; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(255,194,75,.16); color:var(--saffron); }
+.mt .ic svg{ width:18px; height:18px; }
+.mt.ok .ic{ background:var(--mint); color:#062b1c; }
+.mt.ok .ic svg{ stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
+.mt b{ color:var(--saffron); }
+@media (prefers-reduced-motion: reduce){ .sheet, .mt{ animation:none; } .mrow .claim{ animation:none; } }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
@@ -212,6 +286,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 
 <section id="start" class="intro">
   <button class="chip icon langBtn" id="startLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
+  <button class="metaPill" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/><path d="M12 8.5v7M10 10.2h3a1.4 1.4 0 0 1 0 2.8h-2a1.4 1.4 0 0 0 0 2.8h3" fill="none" stroke="#7a4a05" stroke-width="1.4" stroke-linecap="round"/></svg><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i></button>
   <div class="panel">
     <h1 style="--i:0">Grasp</h1>
     <p class="tagline" data-i18n="tagline" style="--i:1">Your hand is the controller</p>
@@ -228,6 +303,10 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <ul class="hints" id="modeHints" data-i18n-aria="hintsAria" aria-label="Controls"></ul>
     </div>
     <div class="diff" id="strikeDiff" role="group" data-i18n-aria="diffAria" aria-label="Strike difficulty" hidden style="--i:5"><button type="button" data-diff="easy" aria-pressed="true" data-i18n="diffEasy">Easy</button><button type="button" data-diff="normal" aria-pressed="false" data-i18n="diffNormal">Normal</button></div>
+    <div class="metaRow" style="--i:5">
+      <button class="metaBtn" id="missionsBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11.5l2 2 4-4.5"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><span data-i18n="missions">Missions</span><span class="nb" hidden>0</span></button>
+      <button class="metaBtn" id="collectionBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span data-i18n="collection">Collection</span></button>
+    </div>
     <div class="actions" style="--i:6">
       <div class="camWrap"><button class="primary" id="camBtn" type="button"><span data-i18n="camBtn">Enable camera</span></button><span class="camHint" id="camHint" hidden></span></div>
       <button class="secondary" id="mouseBtn" type="button" data-i18n="mouseBtn">Play with mouse or touch</button>
@@ -248,6 +327,21 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <svg data-g="fist" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11M10 11V7.5a1.5 1.5 0 0 1 3 0V11M13 11V8.5a1.5 1.5 0 0 1 3 0V11M16 11a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 12.5 21h-1A6.5 6.5 0 0 1 5 14.5V13a1.5 1.5 0 0 1 3 0"/><path d="M7 13v-2M4.5 10.5 7 11"/></svg>
   </div>
 </section>
+<div class="ov" id="missions" hidden role="dialog" aria-modal="true" aria-labelledby="missionsTitle">
+  <div class="sheet">
+    <header><h2 id="missionsTitle" data-i18n="missionsTitle">Today's missions</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="sub" data-i18n="missionsSub">New missions every day. Finish one and claim its coins.</p>
+    <ul class="mlist" id="mlist"></ul>
+  </div>
+</div>
+<div class="ov" id="collection" hidden role="dialog" aria-modal="true" aria-labelledby="collectionTitle">
+  <div class="sheet">
+    <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="sub" data-i18n="collectionSub">Spend coins on new looks. Tap to buy, tap to wear.</p>
+    <div id="ctypes"></div>
+  </div>
+</div>
+<div id="metaToast" aria-live="polite"></div>
 
 <script>
 /* ============================================================
@@ -389,6 +483,14 @@ const I18N = {
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
     g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
     m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', gm_strike: 'strike', Left: 'Left', Right: 'Right',
+    coinsN: '{n} coins', lvShort: 'Lv {n}', missions: 'Missions', collection: 'Collection', missionsTitle: "Today's missions", missionsSub: 'New missions every day. Finish one and claim its coins.',
+    collectionSub: 'Spend coins on new looks. Tap to buy, tap to wear.', claim: 'Claim', claimed: 'Claimed', equip: 'Equip', equipped: 'Equipped', close: 'Close', roundCoins: 'Coins this round',
+    ms_fruit: 'Slice {n} fruit', ms_bricks: 'Smash {n} bricks', ms_cars: 'Crumple {n} cars', ms_walls: 'Clear {n} walls', ms_powerups: 'Catch {n} power-ups', ms_boss: 'Beat a boss', ms_strikeLevel: 'Reach level {n} in Strike', ms_rounds: 'Play {n} rounds', ms_combo: 'Get a ×3 combo',
+    missionDone: 'Mission complete! {m} (+{c})', claimedToast: '+{c} coins', levelUpToast: 'Level up! Level {n}: +{c} coins', unlockedToast: 'Unlocked: {n}', needLevel: 'Reach level {n} to unlock', notEnough: '{n} more coins needed',
+    ct_ball: 'Balls', ct_hand: 'Hands', ct_blade: 'Blades', ct_trail: 'Trails',
+    it_ball_classic: 'Classic ball', it_ball_beach: 'Beach ball', it_ball_soccer: 'Soccer ball', it_ball_planet: 'Planet', it_ball_disco: 'Disco ball',
+    it_hand_classic: 'Classic hand', it_hand_mint: 'Mint glove', it_hand_sky: 'Sky glove', it_hand_lilac: 'Lilac glove', it_hand_robot: 'Robot hand', it_hand_cat: 'Cat paw',
+    it_blade_steel: 'Steel katana', it_blade_neon: 'Neon katana', it_blade_rainbow: 'Rainbow katana', it_trail_none: 'Plain trail', it_trail_sparkle: 'Sparkle trail', it_trail_fire: 'Fire trail', it_trail_rainbow: 'Rainbow trail',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -450,6 +552,14 @@ const I18N = {
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
     m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', gm_strike: 'מכה', Left: 'שמאל', Right: 'ימין',
+    coinsN: '{n} מטבעות', lvShort: 'רמה {n}', missions: 'משימות', collection: 'אוסף', missionsTitle: 'המשימות של היום', missionsSub: 'משימות חדשות בכל יום. סיימו משימה ואספו את המטבעות שלה.',
+    collectionSub: 'קנו מראה חדש במטבעות. הקישו כדי לקנות, הקישו כדי ללבוש.', claim: 'איסוף', claimed: 'נאסף', equip: 'ללבוש', equipped: 'לבוש', close: 'סגירה', roundCoins: 'מטבעות בסיבוב',
+    ms_fruit: 'חתכו {n} פירות', ms_bricks: 'נפצו {n} לבנים', ms_cars: 'מעכו {n} מכוניות', ms_walls: 'פנו {n} קירות', ms_powerups: 'תפסו {n} חיזוקים', ms_boss: 'נצחו בוס', ms_strikeLevel: 'הגיעו לשלב {n} במכה', ms_rounds: 'שחקו {n} סיבובים', ms_combo: 'עשו קומבו ‎×3',
+    missionDone: 'משימה הושלמה! {m} (+{c})', claimedToast: '+{c} מטבעות', levelUpToast: 'עליתם רמה! רמה {n}: +{c} מטבעות', unlockedToast: 'נפתח: {n}', needLevel: 'הגיעו לרמה {n} כדי לפתוח', notEnough: 'חסרים {n} מטבעות',
+    ct_ball: 'כדורים', ct_hand: 'ידיים', ct_blade: 'להבים', ct_trail: 'שובלים',
+    it_ball_classic: 'כדור קלאסי', it_ball_beach: 'כדור ים', it_ball_soccer: 'כדורגל', it_ball_planet: 'כוכב לכת', it_ball_disco: 'כדור דיסקו',
+    it_hand_classic: 'יד קלאסית', it_hand_mint: 'כפפת מנטה', it_hand_sky: 'כפפת שמיים', it_hand_lilac: 'כפפת לילך', it_hand_robot: 'יד רובוט', it_hand_cat: 'כף חתול',
+    it_blade_steel: 'קטאנה פלדה', it_blade_neon: 'קטאנה ניאון', it_blade_rainbow: 'קטאנה קשת', it_trail_none: 'שובל רגיל', it_trail_sparkle: 'שובל נוצץ', it_trail_fire: 'שובל אש', it_trail_rainbow: 'שובל קשת',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -1159,7 +1269,7 @@ function resetSlice() {
   try { slice.best = Math.max(slice.best, +localStorage.getItem('sliceBest') || 0); } catch {}
   slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
   slice.lives = SLICE_LIVES; slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
-  slice.combo.n = 0; slice.combo.t = -1e9;
+  slice.combo.n = 0; slice.combo.t = -1e9; roundStart();
   const ui = slice.ui; ui.heartLost = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
 }
 function spawnWave(now) {
@@ -1186,6 +1296,7 @@ function sliceLoseLife(now) { // a missed fruit or a sliced bomb; the last life 
   const ui = slice.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = slice.score > slice.best;
   if (ui.newBest) { slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
+  roundDone(slice.score);
 }
 function hitBomb(f, now) { // slicing a bomb: flash, boom, smoke, sparks, shake, one life gone
   slice.bombsHit++; slice.flash = now;
@@ -1226,6 +1337,7 @@ function cutFruit(f, ux, uy, now) {
   }
   slice.score++;
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now; slice.bestCombo = Math.max(slice.bestCombo, slice.combo.n);
+  addCoins(1); track('fruit', 1); if (slice.combo.n === 3) track('combo', 1); // a coin per fruit; a ×3 combo counts once per chain
   slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
 }
 function sliceTick(now, dt) {
@@ -1240,7 +1352,7 @@ function sliceTick(now, dt) {
     if (!slice.last) { slice.last = p; slice.blade.push(p); }
     else if (p.x !== slice.last.x || p.y !== slice.last.y) {
       let d = Math.atan2(p.y - slice.last.y, p.x - slice.last.x) - slice.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); slice.ang += d * 0.3; // blade follows the motion
-      cutAlong(slice.last, p, now); slice.last = p; slice.blade.push(p);
+      cutAlong(slice.last, p, now); trailFx(skinOf('trail'), p.x, p.y, p.x - slice.last.x, p.y - slice.last.y); slice.last = p; slice.blade.push(p);
     }
   } else slice.last = null;
   while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
@@ -1427,16 +1539,20 @@ function splatSprite(color) {
     for (let i = 0; i < 9; i++) { const a = r() * TAU, d = 20 + r() * 40; g.beginPath(); g.arc(Math.cos(a) * d, Math.sin(a) * d * 0.5, 3 + r() * 9, 0, TAU); g.fill(); }
   });
 }
-function katanaSprite() {
-  return makeSprite('katana', 136, 24, 40, 12, (g) => {
-    g.strokeStyle = '#2a2138'; g.lineWidth = 7; g.beginPath(); g.moveTo(-34, 0); g.lineTo(-9, 0); g.stroke();          // wrapped handle
+function katanaSprite(skin = skinOf('blade')) { // the blade in the equipped skin: steel, neon (a glowing cyan edge) or rainbow
+  return makeSprite('katana|' + skin, 136, 24, 40, 12, (g) => {
+    g.strokeStyle = skin === 'neon' ? '#1a2a3a' : skin === 'rainbow' ? '#3a2a4a' : '#2a2138'; g.lineWidth = 7; g.beginPath(); g.moveTo(-34, 0); g.lineTo(-9, 0); g.stroke();          // wrapped handle
     g.strokeStyle = 'rgba(241,233,218,0.4)'; g.lineWidth = 1.2; g.lineCap = 'butt';
     for (let i = -31; i < -10; i += 5) { g.beginPath(); g.moveTo(i, -3.5); g.lineTo(i + 3, 3.5); g.stroke(); }
     g.beginPath(); g.arc(-7, 0, 5.5, 0, TAU); const tg = g.createRadialGradient(-9, -2, 1, -7, 0, 6); tg.addColorStop(0, '#ffe08a'); tg.addColorStop(1, '#d99a1e'); g.fillStyle = tg; g.fill(); // tsuba
     g.strokeStyle = 'rgba(20,27,52,0.6)'; g.lineWidth = 1.5; g.stroke();
-    g.beginPath(); g.moveTo(-2, -3); g.quadraticCurveTo(48, -6.5, 90, -1.5); g.lineTo(85, 3); g.quadraticCurveTo(48, 3.5, -2, 3); g.closePath();
-    const bg = g.createLinearGradient(0, -4, 0, 4); bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.5, '#dfe6f2'); bg.addColorStop(1, '#9aa6bd'); g.fillStyle = bg; g.fill();
-    g.strokeStyle = 'rgba(20,27,52,0.45)'; g.lineWidth = 1; g.stroke();
+    const blade = () => { g.beginPath(); g.moveTo(-2, -3); g.quadraticCurveTo(48, -6.5, 90, -1.5); g.lineTo(85, 3); g.quadraticCurveTo(48, 3.5, -2, 3); g.closePath(); };
+    if (skin === 'neon') { g.save(); g.shadowColor = '#54f0ff'; g.shadowBlur = 9; blade(); g.fillStyle = '#54f0ff'; g.fill(); g.restore(); }
+    let bg;
+    if (skin === 'rainbow') { bg = g.createLinearGradient(-2, 0, 90, 0); ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1'].forEach((c, i) => bg.addColorStop(i / 5, c)); }
+    else { bg = g.createLinearGradient(0, -4, 0, 4); if (skin === 'neon') { bg.addColorStop(0, '#dffcff'); bg.addColorStop(0.5, '#7ff4ff'); bg.addColorStop(1, '#1fb8d8'); } else { bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.5, '#dfe6f2'); bg.addColorStop(1, '#9aa6bd'); } }
+    blade(); g.fillStyle = bg; g.fill();
+    g.strokeStyle = skin === 'neon' ? 'rgba(10,60,80,0.6)' : 'rgba(20,27,52,0.45)'; g.lineWidth = 1; g.stroke();
     g.beginPath(); g.moveTo(0, -2.2); g.quadraticCurveTo(48, -5.5, 89, -1.4); g.strokeStyle = 'rgba(255,255,255,0.95)'; g.lineWidth = 1.4; g.stroke(); // edge highlight
   });
 }
@@ -1486,23 +1602,14 @@ function renderSlice(now) {
     ctx.strokeStyle = 'rgba(255,255,255,' + (0.95 * k).toFixed(3) + ')'; ctx.lineWidth = 1.5 + k;
     ctx.beginPath(); ctx.moveTo(c.x - dx, c.y - dy); ctx.lineTo(c.x + dx, c.y + dy); ctx.stroke();
   }
-  // glowing trail: wide soft saffron stroke under a thin white core
+  // glowing trail: wide soft stroke under a thin bright core, in the equipped trail's colours
   const pts = slice.blade;
-  if (pts.length > 1) {
-    ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    for (const [col, wid] of [['255,194,75', 16], ['255,255,255', 2.5]]) {
-      for (let i = 1; i < pts.length; i++) {
-        const k = Math.max(0, 1 - (now - pts[i].t) / CONFIG.BLADE_TRAIL_MS);
-        ctx.strokeStyle = 'rgba(' + col + ',' + ((wid > 4 ? 0.28 : 0.95) * k).toFixed(3) + ')'; ctx.lineWidth = 1 + wid * k;
-        ctx.beginPath(); ctx.moveTo(pts[i - 1].x, pts[i - 1].y); ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
-      }
-    }
-    ctx.restore();
-  }
+  strokeTrail(ctx, pts, skinOf('trail'), now, (i) => Math.max(0, 1 - (now - pts[i].t) / CONFIG.BLADE_TRAIL_MS));
   if (slice.bladeOn && cursor.present) { drawKatana(cursor.x, cursor.y, slice.ang); slice.drawn++; }
   drawFloaters(slice.floaters);
   const sy = scoreY(); drawScore(String(slice.score), sy, t('missed', { n: slice.missed }));
   drawHearts(slice.ui, slice.lives, SLICE_LIVES, W / 2, sy + 44, now); // lives under the score
+  drawCoinPill(now);
   const fk = Math.max(0, 1 - (now - slice.flash) / 420);
   if (fk > 0) { // a bomb went off: white flash, then a red glow creeping in from the edges
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1550,7 +1657,7 @@ function resetSmash(now) {
   if (bodies.length) { M.Composite.remove(world, bodies); bodies = []; } // sandbox objects make way
   clearSmash(); particles.length = 0;
   try { smash.best = Math.max(smash.best, +localStorage.getItem('smashBest') || 0); } catch {}
-  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0;
+  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0; roundStart();
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
   smash.endAt = now + CONFIG.SMASH_ROUND_S * 1000;
   smash.nextCar = now + 1500 + Math.random() * 1500;
@@ -1627,6 +1734,7 @@ function smashBricks(p, dir, v, now) {
     const b = smash.bricks[i], dx = b.position.x - p.x, dy = b.position.y - p.y, d = Math.hypot(dx, dy);
     if (d > R) continue;
     smash.bricks.splice(i, 1); b.plugin.wall.left--; n++;
+    if (b.plugin.wall.left <= 0) { addCoins(5); track('wall', 1); } // the whole wall is down
     const k = 1 - d / R * 0.6, ox = dx / (d || 1), oy = dy / (d || 1);
     const vel = { x: (dir.x * kick + ox * kick * 0.4) * k, y: (dir.y * kick + oy * kick * 0.4) * k - 3 * k };
     smash.score++;
@@ -1642,7 +1750,7 @@ function smashBricks(p, dir, v, now) {
     burst(b.position.x, b.position.y, BRICK.dust, 6 + v * 6);
   }
   if (n) {
-    smash.bricksOut += n; smash.bigHit = Math.max(smash.bigHit, n);
+    smash.bricksOut += n; smash.bigHit = Math.max(smash.bigHit, n); addCoins(n); track('brick', n);
     smash.floaters.push({ x: p.x, y: p.y - 30, text: '+' + n, big: false, life: 1 });
     if (now - smash.lastCrunch > 60) { // one shockwave + dust cloud + shake per punch, not per brick group
       smash.lastCrunch = now; sfx('crunch');
@@ -1672,7 +1780,7 @@ function crumpleCar(car, p, dir, v, now) {
     const dx = body.position.x - p.x, dy = body.position.y - p.y, d = Math.hypot(dx, dy) || 1, k = small ? 1.4 : 0.9;
     addPiece(body, { x: (dir.x * kick * 0.7 + dx / d * kick * 0.5) * k, y: (dir.y * kick * 0.5 + dy / d * kick * 0.5 - 5) * k }, now, small);
   }
-  const pts = 25 + mk.length; smash.score += pts; smash.carsOut++; smash.bigHit = Math.max(smash.bigHit, pts);
+  const pts = 25 + mk.length; smash.score += pts; smash.carsOut++; smash.bigHit = Math.max(smash.bigHit, pts); addCoins(mk.length); track('car', 1); // a coin per part
   smash.floaters.push({ x: b.x, y: c.y - 30 * s, text: '+' + pts, big: true, life: 1 });
   burst(p.x, p.y, GLASS, 20); burst(b.x, b.y, color, 16); sfx('car');
   ring(p.x, p.y, 'rgba(255,255,255,0.95)', 110 * s, 340, 5); ring(b.x, b.y, 'rgba(255,194,75,0.8)', 70 * s, 260, 3); dust(b.x, b.y, 14, 1.6); shakeScreen(4);
@@ -1683,6 +1791,7 @@ function endRound(now) {
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = smash.score > smash.best;
   if (ui.newBest) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
+  roundDone(smash.score);
 }
 function smashTick(now, dt) {
   tickFloaters(smash.floaters, dt);
@@ -1800,19 +1909,24 @@ function carSprite(p) { // faces +x; wheels are separate sprites; origin = body 
     g.fillStyle = 'rgba(255,255,255,0.45)'; g.fillRect(-w / 2 + 2.5, -h * 0.3, 1.5, 4 * s);
   });
 }
-function gloveSprite() {
-  const R = CONFIG.FIST_RADIUS, col = '#ff6f59';
-  return makeSprite('glove', R * 2.6, R * 2.2, R * 1.3, R * 1.1, (g) => {
+function gloveSprite(skin = skinOf('hand')) { // Smash's fist: a boxing glove in the equipped hand skin's colour (robot: a steel fist; cat: a paw with toe beans)
+  const R = CONFIG.FIST_RADIUS, col = GLOVE_COLS[skin] || GLOVE_COLS.classic, robot = skin === 'robot', cat = skin === 'cat', dark = robot ? 'rgba(20,27,52,0.5)' : 'rgba(90,20,10,0.35)';
+  return makeSprite('glove|' + skin, R * 2.6, R * 2.2, R * 1.3, R * 1.1, (g) => {
     const cuff = () => { g.beginPath(); g.roundRect(-R * 1.22, -R * 0.55, R * 0.6, R * 1.1, R * 0.14); };
-    const cg = g.createLinearGradient(0, -R * 0.55, 0, R * 0.55); cg.addColorStop(0, '#fff8ea'); cg.addColorStop(1, '#cbbfa8'); cuff(); g.fillStyle = cg; g.fill(); outline(g, cuff, '#f1e9da');
-    g.strokeStyle = 'rgba(120,60,40,0.35)'; g.lineWidth = 1.2; for (const x of [-R * 1.06, -R * 0.9]) { g.beginPath(); g.moveTo(x, -R * 0.5); g.lineTo(x, R * 0.5); g.stroke(); }
+    const cg = g.createLinearGradient(0, -R * 0.55, 0, R * 0.55); if (robot) { cg.addColorStop(0, '#6f788c'); cg.addColorStop(1, '#3a4154'); } else { cg.addColorStop(0, '#fff8ea'); cg.addColorStop(1, '#cbbfa8'); } cuff(); g.fillStyle = cg; g.fill(); outline(g, cuff, robot ? '#6f788c' : '#f1e9da');
+    g.strokeStyle = robot ? 'rgba(255,255,255,0.25)' : 'rgba(120,60,40,0.35)'; g.lineWidth = 1.2; for (const x of [-R * 1.06, -R * 0.9]) { g.beginPath(); g.moveTo(x, -R * 0.5); g.lineTo(x, R * 0.5); g.stroke(); }
     const fist = () => { g.beginPath(); g.ellipse(-R * 0.05, 0, R * 0.9, R * 0.8, 0, 0, TAU); };
     shadedFill(g, fist, col, R); rimLight(g, fist, R, 0.3);
     const thumb = () => { g.beginPath(); g.ellipse(R * 0.05, R * 0.55, R * 0.46, R * 0.3, 0.35, 0, TAU); };
-    shadedFill(g, thumb, col, R * 0.5); g.strokeStyle = 'rgba(90,20,10,0.35)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-R * 0.2, R * 0.45); g.quadraticCurveTo(R * 0.05, R * 0.55, R * 0.25, R * 0.4); g.stroke();
-    for (const y of [-0.58, -0.2, 0.18, 0.5]) { const k = () => { g.beginPath(); g.arc(R * 0.66, R * y, R * 0.23, 0, TAU); }; shadedFill(g, k, col, R * 0.3); g.beginPath(); g.arc(R * 0.6, R * y - R * 0.07, R * 0.08, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.5)'; g.fill(); }
+    shadedFill(g, thumb, col, R * 0.5); g.strokeStyle = dark; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-R * 0.2, R * 0.45); g.quadraticCurveTo(R * 0.05, R * 0.55, R * 0.25, R * 0.4); g.stroke();
+    for (const y of [-0.58, -0.2, 0.18, 0.5]) { const k = () => { g.beginPath(); g.arc(R * 0.66, R * y, R * 0.23, 0, TAU); }; shadedFill(g, k, col, R * 0.3);
+      if (cat) { g.fillStyle = '#f29ab8'; g.beginPath(); g.arc(R * 0.68, R * y, R * 0.13, 0, TAU); g.fill(); }
+      else if (robot) { g.fillStyle = 'rgba(20,27,52,0.55)'; g.beginPath(); g.arc(R * 0.7, R * y, R * 0.07, 0, TAU); g.fill(); }
+      else { g.beginPath(); g.arc(R * 0.6, R * y - R * 0.07, R * 0.08, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.5)'; g.fill(); } }
+    if (cat) { g.fillStyle = '#f29ab8'; g.beginPath(); g.ellipse(-R * 0.1, 0, R * 0.42, R * 0.34, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.3)'; g.beginPath(); g.ellipse(-R * 0.22, -R * 0.1, R * 0.12, R * 0.07, -0.5, 0, TAU); g.fill(); }
+    if (robot) { g.strokeStyle = 'rgba(20,27,52,0.5)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-R * 0.6, -R * 0.4); g.lineTo(R * 0.3, -R * 0.4); g.moveTo(-R * 0.7, R * 0.1); g.lineTo(R * 0.3, R * 0.1); g.stroke(); g.fillStyle = '#54c6eb'; g.beginPath(); g.arc(-R * 0.35, -R * 0.15, R * 0.1, 0, TAU); g.fill(); }
     outline(g, fist, col, 2); outline(g, thumb, col, 1.5);
-    g.strokeStyle = 'rgba(90,20,10,0.45)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(R * 0.72, -R * 0.4); g.quadraticCurveTo(R * 0.9, 0, R * 0.72, R * 0.35); g.stroke();
+    g.strokeStyle = robot ? 'rgba(20,27,52,0.6)' : 'rgba(90,20,10,0.45)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(R * 0.72, -R * 0.4); g.quadraticCurveTo(R * 0.9, 0, R * 0.72, R * 0.35); g.stroke();
   });
 }
 const glassPieces = [];
@@ -1858,6 +1972,7 @@ function renderSmash(now) {
   drawFloaters(smash.floaters);
   const sec = Math.ceil(smashLeft(now) / 1000);
   drawScore(String(smash.score), scoreY(), smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
+  drawCoinPill(now);
   if (smash.over) drawEndCard(now, smash, { score: smash.score, best: smash.best, stats: [[smash.bricksOut, 'bricks'], [smash.carsOut, 'cars'], [smash.bigHit, 'bigHit']], again: 'playAgain' });
   drawFist(now); // the glove stays on top so it can aim at the card buttons
 }
@@ -2847,7 +2962,7 @@ function resetStrike(now) {
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
-  strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9;
+  strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; roundStart();
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + 600; strike.cued = false;
   const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = ui.heartPop = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false; ui.puIcons.length = 0;
@@ -2859,7 +2974,7 @@ function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBe
 function syncLevel(now, fx) { // the level and the progress within it follow the total cleared count; a level completed (fx) gets the burst, the bonus, the fanfare and the next level's banner
   const { level, progress } = levelFor(strike.cleared), lv = strike.level; strike.progress = progress;
   if (level === lv) return;
-  strike.level = level;
+  strike.level = level; if (level > lv) track('strikeLevel', level);
   if (level > lv && level <= STRIKE_KINDS.length) strike.nextKind = STRIKE_KINDS[level - 1]; // the first wall of a new level is the kind it unlocks
   if (fx && level > lv) {
     const bonus = 50 * level; strike.score += bonus; strike.ui.scoreAt = now;
@@ -2938,7 +3053,7 @@ function catchCapsule(c, now) { // the hand closes on a capsule: a burst in its 
   c.caught = true; const i = strike.capsules.indexOf(c); if (i >= 0) strike.capsules.splice(i, 1);
   const sc = capsuleScreen(c, now), col = PU_COL[c.kind]; strike.caught++;
   sfx('powerup'); burst(sc.x, sc.y, col, 16); burst(sc.x, sc.y, '#ffffff', 8); ring(sc.x, sc.y, hexA(col, 0.9), sc.r * 3, 380, 4); ring(sc.x, sc.y, 'rgba(255,255,255,0.8)', sc.r * 1.6, 260, 2); shakeScreen(1);
-  strike.ui.tag = { t: now, kind: c.kind, pu: true };
+  strike.ui.tag = { t: now, kind: c.kind, pu: true }; addCoins(3); track('powerup', 1);
   activatePower(c.kind, now);
 }
 function activatePower(kind, now) {
@@ -3032,15 +3147,15 @@ function smashWall(w, b, now) {
   if (kind === 'glass') { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
   else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shakeScreen(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
   else { sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
-  if (destroyed) strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
+  if (destroyed) { strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 }); addCoins(destroyed); track('brick', destroyed); }
   if (w.left <= 0) { // wall down: bonus, chime; a fresh wall (tougher per level, a new kind unlocked per level) spawns beyond the far end (or behind the boss) and the queue slides forward
     const bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); pts += bonus;
     strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
-    strike.walls.splice(strike.walls.indexOf(w), 1);
+    strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(5); track('wall', 1);
     wallCleared(now); spawnStrikeWall(nextWallZ());
   }
   if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points (with a combo banner)
-    b.combo++; strike.superFlash = now; strike.bestCombo = Math.max(strike.bestCombo, b.combo);
+    b.combo++; strike.superFlash = now; strike.bestCombo = Math.max(strike.bestCombo, b.combo); if (b.combo === 3) track('combo', 1);
     if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); }
   }
   strike.score += pts; strike.ui.scoreAt = now;
@@ -3147,7 +3262,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
 }
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n;
-  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now;
+  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(25); track('boss', 1);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; strike.floaters.push({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
   sfx('bossdown'); shakeScreen(4); strike.tntAt = now;
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
@@ -3212,6 +3327,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   strike.ui.newBest = strike.score > strike.best;
   if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
+  roundDone(strike.score);
 }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
@@ -3269,6 +3385,7 @@ function ballTick(b, now, dt, fire, mul) {
   }
   b.rot = (b.rot || 0) + dt * (0.002 * b.dir + (b.spin || 0) * 0.012); // the seams (and the spin stripe) turn with the spin
   const sc = ballScreen(b), tr = b.trail; tr.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
+  if (sc.s > 0.08 && b.dir < 0) trailFx(skinOf('trail'), sc.x, sc.y, 0, 0); // embers / stars behind the returning ball
   while (tr.length && now - tr[0].t > (b.super || b.fire || Math.abs(b.spin || 0) > 0.08 ? 320 : 160)) tr.shift();
   if (b.fire && sc.s > 0.08) for (let i = 0; i < 2 && particles.length < 300; i++) { // flames licking off a fireball
     const a = Math.random() * TAU, d = sc.r * (0.4 + Math.random() * 0.5);
@@ -3282,16 +3399,51 @@ function ricochet(b, now, side) { // the returning ball glances off the corridor
   sfx('ricochet'); burst(sc.x, sc.y, '#fff3c4', 8 + 6 * sc.s); ring(sc.x, sc.y, 'rgba(255,240,200,0.75)', sc.r * 1.2, 200, 2);
 }
 /* ---------------- Strike rendering: corridor stripes, walls, debris, ball, hand, hearts ---------------- */
-function strikeBallSprite(sup, stripe) { // stripe: a broad band across the ball, so a spinning ball visibly turns
+function strikeBallSprite(sup, stripe, skin = skinOf('ball')) { // stripe: a broad band across the ball, so a spinning ball visibly turns; skin: the equipped ball from the collection
   const R = 64, col = sup ? '#ffc24b' : '#ff6f59';
-  return makeSprite('strikeBall|' + (sup ? 1 : 0) + (stripe ? '|s' : ''), R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
+  return makeSprite('strikeBall|' + skin + '|' + (sup ? 1 : 0) + (stripe ? '|s' : ''), R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
     if (sup) { const glow = g.createRadialGradient(0, 0, R * 0.8, 0, 0, R * 1.2); glow.addColorStop(0, 'rgba(255,194,75,0.55)'); glow.addColorStop(1, 'rgba(255,194,75,0)'); g.fillStyle = glow; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4); }
-    ball(g, R, col);
+    if (skin === 'planet') planetRing(g, R, false);
+    ballSkinArt(g, R, skin, sup ? col : null);
     g.save(); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = R * 0.06; // two seams so spin and speed read
-    g.beginPath(); g.ellipse(-R * 0.55, 0, R * 0.55, R * 1.05, 0.25, 0, TAU); g.stroke(); g.beginPath(); g.ellipse(R * 0.55, 0, R * 0.55, R * 1.05, -0.25, 0, TAU); g.stroke();
+    if (skin === 'classic') { g.beginPath(); g.ellipse(-R * 0.55, 0, R * 0.55, R * 1.05, 0.25, 0, TAU); g.stroke(); g.beginPath(); g.ellipse(R * 0.55, 0, R * 0.55, R * 1.05, -0.25, 0, TAU); g.stroke(); }
     if (stripe) { g.rotate(0.6); g.fillStyle = 'rgba(255,255,255,0.32)'; g.fillRect(-R, -R * 0.17, R * 2, R * 0.34); g.fillStyle = 'rgba(60,10,10,0.22)'; g.fillRect(-R, R * 0.17, R * 2, R * 0.07); g.fillRect(-R, -R * 0.24, R * 2, R * 0.07); }
-    g.restore(); shine(g, R, 1, 1, 0.5); rim(g, R, sup ? 'rgba(120,80,0,0.6)' : 'rgba(90,20,10,0.6)', 1, 1, 2);
+    g.restore(); shine(g, R, 1, 1, skin === 'disco' ? 0.7 : 0.5); rim(g, R, sup ? 'rgba(120,80,0,0.6)' : skin === 'classic' ? 'rgba(90,20,10,0.6)' : 'rgba(10,14,30,0.55)', 1, 1, 2);
+    if (skin === 'planet') planetRing(g, R, true);
   });
+}
+function ballSkinArt(g, R, skin, tint) { // the face of each ball skin; tint: the SUPER ball's saffron wash over a non-classic skin
+  const clipBall = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); };
+  if (skin === 'beach') { // six coloured gores meeting at the pole
+    ball(g, R, '#f7f3ea'); g.save(); clipBall(); const cols = ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1'], px = -R * 0.18, py = -R * 0.3;
+    for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(px, py); g.arc(px, py, R * 2.2, i * TAU / 6 + 0.3, (i + 1) * TAU / 6 + 0.3); g.closePath(); g.fillStyle = cols[i]; g.fill(); }
+    g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,0.55)'; for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + 0.3; g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(a) * R * 2.2, py + Math.sin(a) * R * 2.2); g.stroke(); }
+    g.beginPath(); g.arc(px, py, R * 0.1, 0, TAU); g.fillStyle = '#f7f3ea'; g.fill();
+    const sh = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R); sh.addColorStop(0, 'rgba(255,255,255,0.25)'); sh.addColorStop(0.6, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(10,14,30,0.5)'); g.fillStyle = sh; g.fillRect(-R, -R, R * 2, R * 2); g.restore();
+  } else if (skin === 'soccer') { // white ball, a black pentagon in the middle and five more foreshortened around it
+    ball(g, R, '#f4f4f2', 1, 1, 0.3, 0.4); g.save(); clipBall();
+    const pent = (cx, cy, r, sq, rot) => { g.save(); g.translate(cx, cy); g.rotate(rot); g.scale(sq, 1); g.beginPath(); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * TAU / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.restore(); };
+    g.fillStyle = '#1e2236'; pent(0, 0, R * 0.3, 1, 0); g.fill();
+    g.strokeStyle = 'rgba(30,34,54,0.5)'; g.lineWidth = R * 0.04;
+    for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * TAU / 5, d = R * 0.78, cx = Math.cos(a) * d, cy = Math.sin(a) * d; g.save(); g.translate(cx, cy); g.rotate(a + Math.PI / 2); g.scale(1, 0.55); g.beginPath(); for (let k = 0; k < 5; k++) { const q = -Math.PI / 2 + k * TAU / 5 + Math.PI; g.lineTo(Math.cos(q) * R * 0.3, Math.sin(q) * R * 0.3); } g.closePath(); g.restore(); g.fillStyle = '#1e2236'; g.fill(); g.beginPath(); g.moveTo(Math.cos(a) * R * 0.3, Math.sin(a) * R * 0.3); g.lineTo(cx * 0.8, cy * 0.8); g.stroke(); }
+    g.restore();
+  } else if (skin === 'planet') { // a blue world with green continents and a soft atmosphere
+    ball(g, R, '#3b7bd4', 1, 1, 0.4, 0.5); g.save(); clipBall(); const r = rng(77); g.fillStyle = '#5ec46a';
+    for (let i = 0; i < 7; i++) { const cx = (r() - 0.5) * R * 1.6, cy = (r() - 0.5) * R * 1.6; g.beginPath(); for (let k = 0; k < 8; k++) { const a = k * TAU / 8, d = R * (0.18 + r() * 0.22); g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.8); } g.closePath(); g.fill(); }
+    g.fillStyle = 'rgba(255,255,255,0.35)'; for (let i = 0; i < 5; i++) { g.beginPath(); g.ellipse((r() - 0.5) * R * 1.5, (r() - 0.5) * R * 1.5, R * (0.15 + r() * 0.2), R * 0.07, r() * 3, 0, TAU); g.fill(); } // clouds
+    const at = g.createRadialGradient(0, 0, R * 0.8, 0, 0, R); at.addColorStop(0, 'rgba(120,200,255,0)'); at.addColorStop(1, 'rgba(120,200,255,0.5)'); g.fillStyle = at; g.fillRect(-R, -R, R * 2, R * 2); g.restore();
+  } else if (skin === 'disco') { // a mirror ball: a grid of little tiles, each catching the light a bit differently
+    ball(g, R, '#c9d1df', 1, 1, 0.4, 0.5); g.save(); clipBall(); const r = rng(55), s = R * 0.2;
+    for (let y = -R; y < R; y += s) for (let x = -R; x < R; x += s) { const d = Math.hypot(x + s / 2, y + s / 2) / R, l = 0.2 + r() * 0.6; g.fillStyle = 'rgba(' + (d < 0.5 ? '255,255,255' : '180,200,235') + ',' + (l * (1 - d * 0.5)).toFixed(2) + ')'; g.fillRect(x + 1, y + 1, s - 2, s - 2); }
+    g.strokeStyle = 'rgba(40,50,80,0.55)'; g.lineWidth = 1.5; g.beginPath(); for (let v = -R; v <= R; v += s) { g.moveTo(v, -R); g.lineTo(v, R); g.moveTo(-R, v); g.lineTo(R, v); } g.stroke(); g.restore();
+    for (const [x, y, q] of [[-R * 0.45, -R * 0.4, 9], [R * 0.35, R * 0.1, 6], [-R * 0.1, R * 0.5, 5]]) { g.globalAlpha = 0.9; g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(x, y - q); g.lineTo(x + q * 0.28, y - q * 0.28); g.lineTo(x + q, y); g.lineTo(x + q * 0.28, y + q * 0.28); g.lineTo(x, y + q); g.lineTo(x - q * 0.28, y + q * 0.28); g.lineTo(x - q, y); g.lineTo(x - q * 0.28, y - q * 0.28); g.closePath(); g.fill(); g.globalAlpha = 1; }
+  } else ball(g, R, tint || '#ff6f59');
+  if (tint && skin !== 'classic') { g.save(); clipBall(); g.fillStyle = 'rgba(255,194,75,0.4)'; g.fillRect(-R, -R, R * 2, R * 2); g.restore(); } // SUPER: a golden wash over any skin
+}
+function planetRing(g, R, front) { // a tilted ring: the back half behind the ball, the front half over it
+  g.save(); g.beginPath(); g.rect(-R * 1.2, front ? R * 0.05 : -R * 1.2, R * 2.4, front ? R * 1.2 : R * 1.25); g.clip();
+  g.rotate(-0.35); g.lineWidth = R * 0.11; g.strokeStyle = 'rgba(241,233,218,0.75)'; g.beginPath(); g.ellipse(0, 0, R * 1.15, R * 0.3, 0, 0, TAU); g.stroke();
+  g.lineWidth = R * 0.04; g.strokeStyle = 'rgba(169,139,255,0.8)'; g.beginPath(); g.ellipse(0, 0, R * 1.02, R * 0.26, 0, 0, TAU); g.stroke(); g.restore();
 }
 function strikeBrickSprite(level, w, h, raw, kind = 'brick') { // one brick / glass pane / steel plate / TNT crate face at the player's plane (drawn scaled by depth); bricks tinted per level; raw = a loose fragment
   const base = kind === 'glass' || kind === 'steel' || kind === 'tnt' ? kind : 'brick';
@@ -3388,11 +3540,12 @@ function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeSha
 function drawStrikeBall(bl, now) {
   const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, fire = !!bl.fire, tw = bl.super || fire || curving ? 320 : 160;
   drawShadow(fl.x, fl.y, sc.r * 2.4, sc.r * 0.9, 0.5 + 0.35 * sc.s); // a firm floor shadow: depth reads against the walls
-  const tr = bl.trail || [];
-  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, orange flames behind a fireball, a lilac curve line while the ball spins)
+  const tr = bl.trail || [], tskin = skinOf('trail');
+  if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, orange flames behind a fireball, a lilac curve line while the ball spins) in the equipped trail's colours
     resetView();
-    for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw) * 0.35; ctx.globalAlpha = k * (bl.super || fire ? 1.4 : 1); ctx.fillStyle = fire ? (i % 2 ? '#ffe07a' : '#ff8a3d') : bl.super ? '#ffc24b' : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (fire ? 1.05 : 0.9), 0, TAU); ctx.fill(); }
+    for (let i = 0; i < tr.length - 1; i++) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw) * 0.35; ctx.globalAlpha = k * (bl.super || fire ? 1.4 : 1); ctx.fillStyle = fire || tskin === 'fire' ? (i % 2 ? '#ffe07a' : '#ff8a3d') : bl.super ? '#ffc24b' : tskin === 'rainbow' ? hslHex((i * 28 + now * 0.25) % 360) : '#ff6f59'; ctx.beginPath(); ctx.arc(q.x, q.y, q.r * (fire ? 1.05 : 0.9), 0, TAU); ctx.fill(); }
     ctx.globalAlpha = 1;
+    if (tskin === 'sparkle') for (let i = 0; i < tr.length - 1; i += 3) { const q = tr[i], k = Math.max(0, 1 - (now - q.t) / tw); sparkle(q.x + Math.sin(i * 7.3 + now * 0.01) * q.r * 0.8, q.y + Math.cos(i * 5.1 + now * 0.013) * q.r * 0.8, q.r * (0.18 + 0.1 * Math.sin(now * 0.02 + i)), '#fff3c4', k * 0.9); }
     if (bl.super || fire) { ctx.lineCap = 'round'; ctx.strokeStyle = fire ? 'rgba(255,170,60,0.55)' : 'rgba(255,230,150,0.6)'; ctx.lineWidth = Math.max(2, sc.r * 0.25); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
     if (curving) { ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(169,139,255,0.6)'; ctx.lineWidth = Math.max(1.5, sc.r * 0.16); ctx.beginPath(); ctx.moveTo(tr[0].x, tr[0].y); for (let i = 1; i < tr.length; i++) ctx.lineTo(tr[i].x, tr[i].y); ctx.lineTo(sc.x, sc.y); ctx.stroke(); }
   }
@@ -3451,17 +3604,21 @@ function drawPowerIcons(now, x, y, rtl) { // under the HUD card at the start edg
   });
   ctx.globalAlpha = 1;
 }
-function strikeHandSprite() { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre
-  const S = 1;
-  return makeSprite('strikeHand', 104, 128, 52, 74, (g) => {
+function strikeHandSprite(skin = skinOf('hand')) { // open hand seen from the back: palm + four fingers + thumb, semi-transparent; origin at the palm centre; skin: the equipped hand from the collection
+  return makeSprite('strikeHand|' + skin, 104, 128, 52, 74, (g) => {
     g.globalAlpha = 0.62;
-    const skin = '#f1e9da', line = 'rgba(20,27,52,0.55)';
-    const finger = (x, y, w, len, a) => { g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); g.roundRect(-w / 2, -len, w, len + w * 0.3, w / 2); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke(); g.restore(); };
-    finger(-29, -8, 15, 54, 0.14); finger(-10, -10, 16, 64, 0.04); finger(9, -10, 16, 61, -0.04); finger(27, -8, 14, 52, -0.16);
-    finger(-32, 18, 16, 46, 1.05); // thumb
-    g.beginPath(); g.roundRect(-38, -20, 76, 66, 24); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke(); // palm
-    g.strokeStyle = 'rgba(20,27,52,0.22)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-26, 4); g.quadraticCurveTo(0, 14, 24, 0); g.stroke(); // palm crease
-    g.beginPath(); g.moveTo(-14, 42); g.quadraticCurveTo(-4, 18, 18, 8); g.stroke();
+    const col = HAND_COLS[skin] || HAND_COLS.classic, line = skin === 'robot' ? 'rgba(20,27,52,0.75)' : 'rgba(20,27,52,0.55)', cat = skin === 'cat', robot = skin === 'robot', glove = skin === 'mint' || skin === 'sky' || skin === 'lilac';
+    const finger = (x, y, w, len, a) => { g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); if (cat) g.ellipse(0, -len * 0.55, w * 0.62, w * 0.72, 0, 0, TAU); else g.roundRect(-w / 2, -len, w, len + w * 0.3, w / 2); g.fillStyle = col; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke();
+      if (robot) { g.strokeStyle = 'rgba(20,27,52,0.6)'; g.lineWidth = 1.5; for (const q of [0.35, 0.65]) { g.beginPath(); g.moveTo(-w / 2, -len * q); g.lineTo(w / 2, -len * q); g.stroke(); } }
+      if (cat) { g.fillStyle = '#f29ab8'; g.beginPath(); g.ellipse(0, -len * 0.55, w * 0.34, w * 0.4, 0, 0, TAU); g.fill(); }
+      g.restore(); };
+    if (cat) { finger(-30, -6, 17, 50, 0.3); finger(-11, -10, 18, 58, 0.1); finger(9, -10, 18, 58, -0.1); finger(28, -6, 17, 50, -0.3); }
+    else { finger(-29, -8, 15, 54, 0.14); finger(-10, -10, 16, 64, 0.04); finger(9, -10, 16, 61, -0.04); finger(27, -8, 14, 52, -0.16); finger(-32, 18, 16, 46, 1.05); } // thumb
+    g.beginPath(); if (cat) g.ellipse(0, 14, 40, 34, 0, 0, TAU); else g.roundRect(-38, -20, 76, 66, 24); g.fillStyle = col; g.fill(); g.lineWidth = 2; g.strokeStyle = line; g.stroke(); // palm
+    if (cat) { g.fillStyle = '#f29ab8'; g.beginPath(); g.ellipse(0, 18, 24, 19, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(-8, 10, 7, 4, -0.5, 0, TAU); g.fill(); }
+    else if (robot) { g.fillStyle = 'rgba(20,27,52,0.35)'; g.beginPath(); g.roundRect(-30, -12, 60, 20, 6); g.fill(); g.fillStyle = '#54c6eb'; g.beginPath(); g.arc(0, 22, 8, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.arc(-2, 20, 3, 0, TAU); g.fill(); for (const x of [-26, 26]) { g.fillStyle = 'rgba(20,27,52,0.5)'; g.beginPath(); g.arc(x, 36, 3, 0, TAU); g.fill(); } }
+    else if (glove) { g.fillStyle = '#fff8ea'; g.beginPath(); g.roundRect(-36, 34, 72, 14, 5); g.fill(); g.strokeStyle = line; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-36, 38); g.lineTo(36, 38); g.moveTo(-36, 43); g.lineTo(36, 43); g.stroke(); g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.roundRect(-20, -8, 40, 22, 8); g.fill(); }
+    else { g.strokeStyle = 'rgba(20,27,52,0.22)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-26, 4); g.quadraticCurveTo(0, 14, 24, 0); g.stroke(); g.beginPath(); g.moveTo(-14, 42); g.quadraticCurveTo(-4, 18, 18, 8); g.stroke(); } // palm creases
   });
 }
 function heartSprite(on) {
@@ -3733,7 +3890,7 @@ function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichev
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = pill ? 372 : 316, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 84, (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (pill ? 372 : 316) + 34, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 84, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
@@ -3748,7 +3905,23 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     const tp = at(0, 45); blit(textSprite(t('newBest'), 11, '#2a1a00', null), tp.x, tp.y, ang); ui.ribbon = at(0, 38);
   } else ui.ribbon = null;
   (o.stats || []).slice(0, 4).forEach(([val, key], i, all) => { const four = all.length > 3, sx = cx + (i - (all.length - 1) / 2) * cw * (four ? 0.235 : 0.3) * (rtl ? -1 : 1); blit(textSprite(String(val), four ? 20 : 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), four ? 11 : 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
-  const bw = (cw - 52) / 2, bh = 50, by = y0 + 246, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
+  { // the coins earned this round: a small pill in the top start corner
+    const sp = textSprite(LRM + '+' + meta.roundCoins, 13, '#ffd77a', null, 700), pw = sp.tw + 36, ph = 24, px = rtl ? x0 + cw - 14 - pw : x0 + 14, py = y0 + 14;
+    blit(glassSprite(pw, ph, 12), px - 1, py - 1); blit(coinSprite(7), rtl ? px + pw - 13 : px + 13, py + ph / 2); edgeText(sp, rtl ? px + pw - 25 : px + 25, py + ph / 2, rtl);
+    ui.coinBox = { x: px, y: py, w: pw, h: ph, n: meta.roundCoins };
+  }
+  { // today's missions: three compact columns (name, bar, count) above the buttons
+    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240; ui.missionRow = [];
+    ms.forEach((m, i) => {
+      const mx = x0 + 16 + (rtl ? 2 - i : i) * colw + colw / 2, frac = Math.min(1, m.progress / m.goal), bw = colw - 14, sp = textSprite(missionText(m), 11, m.done ? '#43d9a3' : 'rgba(241,233,218,0.75)', null, 500);
+      blit(sp, mx, my, 0, Math.min(1, bw / sp.tw));
+      resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(mx - bw / 2, my + 9, bw, 4, 2); ctx.fill();
+      if (frac > 0) { ctx.fillStyle = m.done ? '#43d9a3' : '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? mx + bw / 2 - bw * frac : mx - bw / 2, my + 9, bw * frac, 4, 2); ctx.fill(); }
+      blit(textSprite(m.progress + '/' + m.goal, 10, m.done ? '#43d9a3' : 'rgba(241,233,218,0.6)', null, 500), mx, my + 21);
+      ui.missionRow.push({ id: m.id, x: mx - colw / 2, y: my - 8, w: colw, h: 36, frac, done: m.done });
+    });
+  }
+  const bw = (cw - 52) / 2, bh = 50, by = y0 + 280, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
   ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
   if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
     const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
@@ -3810,7 +3983,7 @@ function renderStrike(now) {
     gr.addColorStop(0, 'rgba(40,80,220,0)'); gr.addColorStop(1, 'rgba(40,80,220,' + (0.42 + 0.12 * k).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
   const dt = Math.min(100, now - strike.ui.lastDraw || 16); strike.ui.lastDraw = now;
-  drawStrikeHud(now, dt);
+  drawStrikeHud(now, dt); drawCoinPill(now);
   drawPowerMeter(now, dt);
   drawComboBanner(now); drawLevelBanners(now);
   drawStrikeHand(now);
@@ -3924,6 +4097,9 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'fire') { f.type = 'bandpass'; f.frequency.setValueAtTime(400, t0); f.frequency.exponentialRampToValueAtTime(2400, t0 + 0.25); f.Q.value = 0.9; env(f, 0.14, 300, t0); noise(t0, 300, f); tone('sawtooth', 110, 60, 0.06, 320, t0); tone('sine', 70, 40, 0.12, 300, t0); } // the fireball roars through a wall
     else if (kind === 'life') { tone('sine', 784, 0, 0.12, 200, t0); tone('sine', 1175, 0, 0.12, 380, t0 + 0.12); tone('triangle', 2350, 0, 0.03, 300, t0 + 0.12); } // an extra heart: two warm notes
     else if (kind === 'tick3') { tone('sine', 660, 0, 0.06, 110, t0); tone('sine', 1320, 0, 0.02, 60, t0); } // one soft tick of the resume countdown
+    else if (kind === 'coin') { tone('sine', 1760, 0, 0.05, 70, t0); tone('sine', 2637, 0, 0.035, 110, t0 + 0.045); } // a coin: two soft high pings
+    else if (kind === 'mission') { [783.99, 1046.5, 1318.5].forEach((q, i) => tone('triangle', q, 0, 0.08, 220, t0 + i * 0.09)); f.type = 'highpass'; f.frequency.value = 3200; env(f, 0.035, 160, t0 + 0.2); noise(t0 + 0.2, 160, f); } // mission done: three notes up with a sparkle
+    else if (kind === 'unlock') { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260, t0 + i * 0.06); tone('triangle', q * 2, 0, 0.025, 180, t0 + i * 0.06); }); tone('sine', 2093, 0, 0.04, 500, t0 + 0.3); } // something new in the collection
     else if (kind === 'go') { tone('sine', 880, 0, 0.08, 220, t0); tone('sine', 1320, 0, 0.05, 260, t0 + 0.05); } // countdown done, play on
     else if (kind === 'levelup') { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((q, i) => { tone('triangle', q, 0, 0.09, 200 + i * 50, t0 + i * 0.07); tone('sine', q * 2, 0, 0.03, 160, t0 + i * 0.07); }); f.type = 'highpass'; f.frequency.value = 3000; env(f, 0.04, 200, t0 + 0.3); noise(t0 + 0.3, 200, f); } // level up: five quick rising notes with a sparkle
     else if (kind === 'roar') { tone('sawtooth', 75, 42, 0.16, 650, t0); tone('square', 118, 62, 0.05, 600, t0 + 0.02); f.type = 'lowpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(140, t0 + 0.6); env(f, 0.2, 620, t0); noise(t0, 620, f); } // the boss roars: a low growl sliding down under a rumble
@@ -3954,6 +4130,273 @@ function toneOff() {
   const { osc, gain } = liveTone; if (!osc) return; liveTone.osc = liveTone.gain = null;
   try { const t0 = audio.currentTime; gain.gain.cancelScheduledValues(t0); gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), t0); gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08); osc.stop(t0 + 0.12); } catch {}
 }
+
+/* ---------------- Meta progression: profile, coins + XP, daily missions, collection ----------------
+   One profile object in localStorage ('grasp.profile', schema-versioned, safe defaults). Slice / Smash / Strike pay a coin for every
+   fruit, brick and car part (5 per wall, 25 per boss, 3 per power-up caught) and XP = score / 10 at the end of a round; the player level
+   is floor(sqrt(xp / 50)) + 1. Three daily missions (seeded by the date) tick along through track(event, n) and pay coins when claimed.
+   The collection holds ball / hand / blade / trail skins bought with coins (a few unlock at a level); the equipped ones are the sprites
+   the modes draw. The start screen shows the coins + level pill, a Missions panel and a Collection panel. */
+const PROFILE_KEY = 'grasp.profile', PROFILE_V = 1, XP_PER_LEVEL = 50;
+const ITEM_TYPES = ['ball', 'hand', 'blade', 'trail'];
+const ITEMS = [ // cost: coins; level: free once the player reaches it; the first of each type is owned from the start
+  { id: 'ball_classic', type: 'ball', skin: 'classic', cost: 0 }, { id: 'ball_beach', type: 'ball', skin: 'beach', cost: 60 }, { id: 'ball_soccer', type: 'ball', skin: 'soccer', cost: 120 },
+  { id: 'ball_planet', type: 'ball', skin: 'planet', level: 3 }, { id: 'ball_disco', type: 'ball', skin: 'disco', cost: 300 },
+  { id: 'hand_classic', type: 'hand', skin: 'classic', cost: 0 }, { id: 'hand_mint', type: 'hand', skin: 'mint', cost: 50 }, { id: 'hand_sky', type: 'hand', skin: 'sky', cost: 50 }, { id: 'hand_lilac', type: 'hand', skin: 'lilac', cost: 50 },
+  { id: 'hand_robot', type: 'hand', skin: 'robot', cost: 150 }, { id: 'hand_cat', type: 'hand', skin: 'cat', level: 5 },
+  { id: 'blade_steel', type: 'blade', skin: 'steel', cost: 0 }, { id: 'blade_neon', type: 'blade', skin: 'neon', cost: 100 }, { id: 'blade_rainbow', type: 'blade', skin: 'rainbow', cost: 250 },
+  { id: 'trail_none', type: 'trail', skin: 'none', cost: 0 }, { id: 'trail_sparkle', type: 'trail', skin: 'sparkle', cost: 80 }, { id: 'trail_fire', type: 'trail', skin: 'fire', cost: 160 }, { id: 'trail_rainbow', type: 'trail', skin: 'rainbow', level: 4 },
+];
+const HAND_COLS = { classic: '#f1e9da', mint: '#43d9a3', sky: '#54c6eb', lilac: '#a98bff', robot: '#b4bccb', cat: '#f0b06a' }, GLOVE_COLS = { classic: '#ff6f59', mint: '#43d9a3', sky: '#54c6eb', lilac: '#a98bff', robot: '#9aa3b5', cat: '#f0b06a' };
+const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by tier; max: the progress is the highest value reported, not a sum
+  { id: 'fruit', ev: 'fruit', goals: [15, 25, 40], rewards: [20, 30, 45] }, { id: 'bricks', ev: 'brick', goals: [30, 60, 100], rewards: [20, 30, 45] },
+  { id: 'cars', ev: 'car', goals: [2, 4, 6], rewards: [20, 30, 45] }, { id: 'walls', ev: 'wall', goals: [3, 6, 10], rewards: [20, 30, 45] },
+  { id: 'powerups', ev: 'powerup', goals: [2, 4, 6], rewards: [25, 35, 50] }, { id: 'boss', ev: 'boss', goals: [1], rewards: [60] },
+  { id: 'strikeLevel', ev: 'strikeLevel', goals: [3, 4, 5], rewards: [30, 45, 60], max: true }, { id: 'rounds', ev: 'round', goals: [3], rewards: [25] }, { id: 'combo', ev: 'combo', goals: [1], rewards: [30] },
+];
+const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
+function defaultProfile() {
+  return { v: PROFILE_V, coins: 0, xp: 0, level: 1, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
+    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 } };
+}
+function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
+  const d = defaultProfile();
+  try {
+    const p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); if (!p || typeof p !== 'object' || p.v !== PROFILE_V) return d;
+    for (const k of ['coins', 'xp', 'level']) if (Number.isFinite(p[k]) && p[k] >= 0) d[k] = p[k];
+    if (Array.isArray(p.unlocked)) for (const id of p.unlocked) if (ITEMS.some((it) => it.id === id) && !d.unlocked.includes(id)) d.unlocked.push(id);
+    if (p.equipped) for (const ty of ITEM_TYPES) { const it = ITEMS.find((q) => q.type === ty && q.skin === p.equipped[ty]); if (it && d.unlocked.includes(it.id)) d.equipped[ty] = it.skin; }
+    if (p.missions && typeof p.missions.date === 'string' && Array.isArray(p.missions.list)) d.missions = { date: p.missions.date, list: p.missions.list.filter((m) => m && MISSION_POOL.some((q) => q.id === m.id)).map((m) => ({ id: m.id, progress: +m.progress || 0, goal: +m.goal || 1, reward: +m.reward || 0, done: !!m.done, claimed: !!m.claimed })) };
+    if (p.stats) for (const k in d.stats) if (Number.isFinite(p.stats[k]) && p.stats[k] >= 0) d.stats[k] = p.stats[k];
+    d.level = levelOf(d.xp);
+  } catch {}
+  return d;
+}
+let profile = loadProfile();
+function saveProfile() { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch {} }
+function levelOf(xp) { return Math.floor(Math.sqrt(Math.max(0, xp) / XP_PER_LEVEL)) + 1; }
+function xpForLevel(lv) { return (lv - 1) * (lv - 1) * XP_PER_LEVEL; } // xp at which level lv begins
+function levelReward(lv) { return 20 * lv; }
+function profileReset() { profile = defaultProfile(); try { localStorage.removeItem(PROFILE_KEY); } catch {} ensureMissions(); saveProfile(); syncMeta(); }
+function skinOf(type) { return profile.equipped[type] || ITEMS.find((it) => it.type === type).skin; }
+/* --- coins: a HUD pill that counts up, with a +n floater and a soft chime (throttled) --- */
+const meta = { roundCoins: 0, lastCoinSfx: -1e9, dateOverride: null, toasts: [], events: [] }; // events: the last track() calls, for the tests
+try { meta.dateOverride = sessionStorage.getItem('grasp.testDate') || null; } catch {}
+const coinUi = { shown: 0, pop: -1e9, floaters: [], box: null };
+function addCoins(n, quiet) {
+  n = Math.round(+n || 0); if (!n) return profile.coins;
+  profile.coins = Math.max(0, profile.coins + n); const now = performance.now();
+  if (n > 0 && !quiet) {
+    meta.roundCoins += n; coinUi.pop = now;
+    const last = coinUi.floaters[coinUi.floaters.length - 1];
+    if (last && now - last.t < 150) { last.n += n; last.text = LRM + '+' + last.n; last.life = 1; } // a burst of coins reads as one rising number
+    else { const bx = coinUi.box; coinUi.floaters.push({ x: bx ? (bx.x + bx.w / 2 < W / 2 ? bx.x + bx.w + 22 : bx.x - 22) : W / 2, y: bx ? bx.y + bx.h / 2 + 12 : 80, text: LRM + '+' + n, n, t: now, big: false, life: 1 }); } // rises beside the pill, on its inward side (never over the HUD card above it)
+    if (now - meta.lastCoinSfx > 90) { meta.lastCoinSfx = now; sfx('coin'); }
+  }
+  saveProfile(); if (mode === 'none') syncMeta();
+  return profile.coins;
+}
+function addXp(n) { // XP, and the level-ups it brings: reward coins, a toast, and any level-gated item unlocking
+  n = Math.max(0, Math.round(+n || 0)); if (!n) return;
+  profile.xp += n; const lv = levelOf(profile.xp);
+  while (profile.level < lv) {
+    profile.level++; const reward = levelReward(profile.level);
+    profile.coins += reward; meta.roundCoins += reward;
+    toast('levelUpToast', { n: profile.level, c: reward }, 'star'); sfx('levelup');
+    for (const it of ITEMS) if (it.level && it.level <= profile.level && !profile.unlocked.includes(it.id)) { profile.unlocked.push(it.id); toast('unlockedToast', { n: t('it_' + it.id) }, 'star'); }
+  }
+  saveProfile(); syncMeta();
+}
+function roundStart() { meta.roundCoins = 0; coinUi.floaters.length = 0; }
+function roundDone(score) { // a round ended: XP, the rounds stat and mission
+  addXp(Math.floor(Math.max(0, score) / 10)); track('round', 1);
+}
+function coinSprite(r) {
+  return makeSprite('coin|' + Math.round(r), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
+    const gr = g.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r); gr.addColorStop(0, '#fff1b8'); gr.addColorStop(0.55, '#ffc24b'); gr.addColorStop(1, '#d08a12');
+    g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fillStyle = gr; g.fill(); g.lineWidth = Math.max(1, r * 0.12); g.strokeStyle = '#b8730f'; g.stroke();
+    g.beginPath(); g.arc(0, 0, r * 0.62, 0, TAU); g.lineWidth = Math.max(1, r * 0.1); g.strokeStyle = 'rgba(184,115,15,0.8)'; g.stroke();
+    g.beginPath(); g.ellipse(-r * 0.3, -r * 0.38, r * 0.3, r * 0.14, -0.7, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.6)'; g.fill();
+  });
+}
+function coinPillPos() { // where the coin pill sits: beside the score at the start edge (Slice / Smash); under Strike's HUD card at the end edge, opposite the power-up badges
+  const rtl = lang === 'he';
+  if (gameMode === 'strike' && strike.ui.hud) { const h = strike.ui.hud; return { x: rtl ? h.x + 10 : h.x + h.w - 10, y: h.y + h.h + 31, end: true }; }
+  return { x: rtl ? W - 16 : 16, y: scoreY() - 15, end: false };
+}
+function drawCoinPill(now) {
+  const rtl = lang === 'he', p = coinPillPos(), target = profile.coins, dt = Math.min(100, now - (coinUi.lastDraw || now)); coinUi.lastDraw = now;
+  if (coinUi.shown !== target) { const d = target - coinUi.shown; coinUi.shown = Math.abs(d) < 0.6 || d < 0 ? target : coinUi.shown + d * Math.min(1, dt / 120); }
+  const sp = textSprite(String(Math.round(coinUi.shown)), 15, '#fff8ec', null, 700), h = 28, w = sp.tw + 42, pop = Math.max(0, 1 - (now - coinUi.pop) / 260), k = 1 + 0.1 * Math.sin(Math.PI * pop);
+  const left = p.end !== rtl ? p.x - w : p.x; // end edge in LTR / start edge in RTL anchors the pill's right side
+  coinUi.box = { x: left, y: p.y - h / 2, w, h };
+  resetView(); blit(glassSprite(w, h, 14), left - 1, p.y - h / 2 - 1);
+  const cx = rtl ? left + w - 15 : left + 15; blit(coinSprite(9), cx, p.y, 0, k);
+  edgeText(sp, rtl ? left + w - 30 : left + 30, p.y, rtl, k);
+  tickFloaters(coinUi.floaters, dt); drawFloaters(coinUi.floaters);
+}
+/* --- missions: three a day, the same three all day (seeded by the date) --- */
+function localDate(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function missionDay() { return meta.dateOverride || localDate(); }
+function makeMissions(date) {
+  const r = rng(strSeed('missions|' + date)), picks = shuffled(MISSION_POOL, r).slice(0, 3);
+  return picks.map((m) => { const i = Math.floor(r() * m.goals.length); return { id: m.id, progress: 0, goal: m.goals[i], reward: m.rewards[i], done: false, claimed: false }; });
+}
+function ensureMissions() { // a new day brings a new list
+  const day = missionDay(); if (profile.missions.date === day && profile.missions.list.length === 3) return false;
+  profile.missions = { date: day, list: makeMissions(day) }; saveProfile(); return true;
+}
+function missionText(m) { return t('ms_' + m.id, { n: m.goal }); }
+function claimable() { return profile.missions.list.filter((m) => m.done && !m.claimed).length; }
+function track(event, n = 1) { // one call from the modes for every countable thing; stats, missions and their completion toast
+  n = Math.max(0, +n || 0); if (!n) return;
+  const sk = STAT_KEYS[event]; if (sk) profile.stats[sk] += n;
+  meta.events.push([event, n]); if (meta.events.length > 60) meta.events.shift();
+  ensureMissions();
+  let changed = false;
+  for (const m of profile.missions.list) {
+    const def = MISSION_POOL.find((q) => q.id === m.id); if (!def || def.ev !== event || m.done) continue;
+    m.progress = def.max ? Math.max(m.progress, n) : m.progress + n; changed = true;
+    if (m.progress >= m.goal) { m.progress = m.goal; m.done = true; toast('missionDone', { m: missionText(m), c: m.reward }, 'check'); sfx('mission'); }
+  }
+  saveProfile(); if (changed && mode === 'none') syncMeta();
+}
+function claimMission(id) {
+  const m = profile.missions.list.find((q) => q.id === id); if (!m || !m.done || m.claimed) return false;
+  m.claimed = true; profile.coins += m.reward; saveProfile(); sfx('coin'); sfx('chime'); toast('claimedToast', { c: m.reward }, 'coin'); syncMeta(); renderMissions(); return true;
+}
+/* --- collection: buy with coins (or earn at a level), equip one per type --- */
+function itemState(it) { return !profile.unlocked.includes(it.id) ? 'locked' : profile.equipped[it.type] === it.skin ? 'equipped' : 'owned'; }
+function buyItem(id) {
+  const it = ITEMS.find((q) => q.id === id); if (!it || profile.unlocked.includes(id)) return false;
+  if (it.level) { if (profile.level < it.level) return false; } else if (profile.coins < it.cost) return false; else profile.coins -= it.cost;
+  profile.unlocked.push(id); saveProfile(); sfx('unlock'); toast('unlockedToast', { n: t('it_' + id) }, 'star'); syncMeta(); return true;
+}
+function equipItem(id) {
+  const it = ITEMS.find((q) => q.id === id); if (!it || !profile.unlocked.includes(id)) return false;
+  if (profile.equipped[it.type] === it.skin) return true;
+  profile.equipped[it.type] = it.skin; saveProfile(); syncMeta(); return true;
+}
+/* --- toasts: a small card at the top (over the game or the start screen) that fades after 3 s --- */
+const TOAST_ICONS = { check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>', star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" fill="currentColor"/></svg>',
+  coin: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#7a4a05" stroke-width="1.5"/></svg>' };
+function toast(key, vars, icon = 'star') {
+  const el = document.createElement('div'); el.className = 'mt' + (icon === 'check' ? ' ok' : ''); el.setAttribute('role', 'status');
+  const ic = document.createElement('span'); ic.className = 'ic'; ic.innerHTML = TOAST_ICONS[icon] || TOAST_ICONS.star;
+  const tx = document.createElement('span'); tx.className = 'tx'; tx.textContent = t(key, vars); el.append(ic, tx);
+  $('metaToast').appendChild(el); meta.toasts.push({ key, text: tx.textContent, at: performance.now() }); if (meta.toasts.length > 20) meta.toasts.shift();
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 450); }, 3000);
+}
+/* --- start screen: the coins + level pill, the Missions / Collection buttons and their panels --- */
+function syncMeta() {
+  ensureMissions();
+  const lv = profile.level, a = xpForLevel(lv), b = xpForLevel(lv + 1), frac = Math.max(0, Math.min(1, (profile.xp - a) / (b - a)));
+  const pill = $('metaPill'); pill.querySelector('.coins').textContent = String(profile.coins); pill.querySelector('.lvl').textContent = t('lvShort', { n: lv }); pill.querySelector('.xp i').style.width = Math.round(frac * 100) + '%';
+  pill.title = t('coinsN', { n: profile.coins }) + ' · ' + t('levelN', { n: lv }) + ' · ' + (profile.xp - a) + '/' + (b - a) + ' XP';
+  const nb = $('missionsBtn').querySelector('.nb'), c = claimable(); nb.hidden = !c; nb.textContent = String(c);
+  for (const el of document.querySelectorAll('.wallet b')) el.textContent = String(profile.coins);
+  if (!$('missions').hidden) renderMissions();
+  if (!$('collection').hidden) renderCollection();
+}
+function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
+function closePanel(id) { $(id).hidden = true; }
+function renderMissions() {
+  const list = $('mlist'); list.replaceChildren(...profile.missions.list.map((m) => {
+    const li = document.createElement('li'); li.className = 'mrow' + (m.done ? ' done' : ''); li.dataset.id = m.id;
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = missionText(m);
+    const bar = document.createElement('span'); bar.className = 'bar'; const fill = document.createElement('i'); fill.style.width = Math.round(Math.min(1, m.progress / m.goal) * 100) + '%'; bar.appendChild(fill);
+    const pr = document.createElement('span'); pr.className = 'pr'; pr.textContent = m.progress + ' / ' + m.goal;
+    li.append(nm, bar, pr);
+    if (m.claimed) { const ok = document.createElement('span'); ok.className = 'ok'; ok.innerHTML = TOAST_ICONS.check; ok.title = t('claimed'); li.appendChild(ok); }
+    else if (m.done) { const b = document.createElement('button'); b.type = 'button'; b.className = 'claim'; b.textContent = t('claim'); b.addEventListener('click', () => claimMission(m.id)); li.appendChild(b); }
+    else { const rw = document.createElement('span'); rw.className = 'rw'; rw.innerHTML = TOAST_ICONS.coin; rw.append('+' + m.reward); li.appendChild(rw); }
+    return li;
+  }));
+}
+function renderCollection() {
+  const host = $('ctypes'); host.replaceChildren(...ITEM_TYPES.map((ty) => {
+    const sec = document.createElement('section'); const h = document.createElement('h3'); h.textContent = t('ct_' + ty); const grid = document.createElement('div'); grid.className = 'tiles';
+    for (const it of ITEMS.filter((q) => q.type === ty)) {
+      const st = itemState(it), b = document.createElement('button'); b.type = 'button'; b.className = 'tile ' + st + (st === 'locked' && !it.level && profile.coins < it.cost ? ' poor' : ''); b.dataset.id = it.id;
+      const c = document.createElement('canvas'); c.width = c.height = Math.round(56 * SS); c.setAttribute('aria-hidden', 'true'); drawItemPreview(c.getContext('2d'), it);
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t('it_' + it.id);
+      const s = document.createElement('span'); s.className = 'st';
+      if (st === 'locked') { if (it.level) s.textContent = t('lvShort', { n: it.level }); else { s.innerHTML = TOAST_ICONS.coin; s.append(String(it.cost)); } const lk = document.createElement('span'); lk.className = 'lk'; lk.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'; b.appendChild(lk); }
+      else s.textContent = t(st === 'equipped' ? 'equipped' : 'equip');
+      b.append(c, nm, s); b.title = nm.textContent;
+      b.addEventListener('click', () => onTile(it, b));
+      grid.appendChild(b);
+    }
+    sec.append(h, grid); return sec;
+  }));
+}
+function onTile(it, b) {
+  const st = itemState(it);
+  if (st === 'locked') {
+    if (it.level && profile.level < it.level) { toast('needLevel', { n: it.level }, 'star'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
+    if (!it.level && profile.coins < it.cost) { toast('notEnough', { n: it.cost - profile.coins }, 'coin'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
+    const r = b.getBoundingClientRect(), sheet = b.closest('.sheet'); // measured before the panel re-renders
+    if (buyItem(it.id)) { equipItem(it.id); domConfetti(sheet, r); renderCollection(); }
+    return;
+  }
+  equipItem(it.id); sfx('click'); renderCollection();
+}
+function domConfetti(sheet, r) { // a shower of coloured squares from a tile's box r (the canvas is under the start screen here)
+  const s = sheet.getBoundingClientRect();
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('i'); p.className = 'cf'; p.style.background = COLORS[i % COLORS.length];
+    p.style.left = r.left - s.left + r.width / 2 + sheet.scrollLeft + 'px'; p.style.top = r.top - s.top + r.height / 2 + sheet.scrollTop + 'px';
+    const a = Math.random() * TAU, d = 50 + Math.random() * 70; p.style.setProperty('--dx', Math.cos(a) * d + 'px'); p.style.setProperty('--dy', Math.sin(a) * d - 40 + 'px');
+    sheet.appendChild(p); setTimeout(() => p.remove(), 1000);
+  }
+}
+function drawItemPreview(g, it) { // the tile art: the real sprite, scaled into a 56 px square
+  const S = 56; g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, S, S); g.lineJoin = g.lineCap = 'round';
+  if (it.type === 'ball') pvBlit(g, strikeBallSprite(false, false, it.skin), S / 2, S / 2, -0.3, 21 / 64);
+  else if (it.type === 'hand') pvBlit(g, strikeHandSprite(it.skin), S / 2, S / 2 + 6, 0, 0.4);
+  else if (it.type === 'blade') pvBlit(g, katanaSprite(it.skin), S / 2 - 4, S / 2 + 2, -0.75, 0.42);
+  else { // a trail: a curved stroke in the style, drawn as the game draws the blade trail
+    const pts = []; for (let i = 0; i <= 12; i++) { const q = i / 12; pts.push({ x: 8 + q * 40, y: 40 - 24 * Math.sin(q * Math.PI * 0.9), t: 0 }); }
+    strokeTrail(g, pts, it.skin, 0, (i) => 1 - i / 13, 9, 1.6);
+    if (it.skin === 'sparkle') for (const [x, y, r] of [[18, 25, 4], [36, 16, 3], [44, 30, 2.5]]) pvSparkle(g, x, y, r, '#fff3c4', 0.9);
+  }
+}
+function pvSparkle(g, x, y, r, col, alpha) { g.globalAlpha = alpha; g.fillStyle = col; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.28, y - r * 0.28); g.lineTo(x + r, y); g.lineTo(x + r * 0.28, y + r * 0.28); g.lineTo(x, y + r); g.lineTo(x - r * 0.28, y + r * 0.28); g.lineTo(x - r, y); g.lineTo(x - r * 0.28, y - r * 0.28); g.closePath(); g.fill(); g.globalAlpha = 1; }
+/* --- trails: the stroke colours per skin, shared by Slice's blade trail and Strike's ball trail --- */
+function trailCols(skin, i, now) { // [wide soft colour, thin bright core] as 'r,g,b'
+  if (skin === 'fire') return ['255,110,40', '255,230,140'];
+  if (skin === 'rainbow') { const h = (i * 28 + now * 0.25) % 360, c = hexRgb(hslHex(h)); return [c.join(','), '255,255,255']; }
+  return ['255,194,75', '255,255,255'];
+}
+function hslHex(h) { // hue (0..360) at full saturation, 60% lightness, as '#rrggbb'
+  const f = (n) => { const k = (n + h / 30) % 12, c = 0.6 - 0.4 * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return Math.round(c * 255).toString(16).padStart(2, '0'); };
+  return '#' + f(0) + f(8) + f(4);
+}
+function strokeTrail(g, pts, skin, now, fade, wide = 16, core = 2.5) { // a polyline that fades along its age: wide soft stroke under a thin bright core
+  if (pts.length < 2) return;
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  for (const pass of [0, 1]) for (let i = 1; i < pts.length; i++) {
+    const k = fade(i), col = trailCols(skin, i, now)[pass], wid = pass ? core : wide, a = (pass ? 0.95 : skin === 'fire' ? 0.4 : 0.28) * k;
+    if (k <= 0) continue;
+    g.strokeStyle = 'rgba(' + col + ',' + a.toFixed(3) + ')'; g.lineWidth = 1 + wid * k;
+    g.beginPath(); g.moveTo(pts[i - 1].x, pts[i - 1].y); g.lineTo(pts[i].x, pts[i].y); g.stroke();
+  }
+  g.restore();
+}
+function trailFx(skin, x, y, dx, dy) { // particles shed by a moving trail: embers for fire, little stars for sparkle
+  if (skin === 'fire') { for (let i = 0; i < 2 && particles.length < 320; i++) particles.push({ x: x + (Math.random() - 0.5) * 8, y: y + (Math.random() - 0.5) * 8, vx: -dx * 0.02 + (Math.random() - 0.5) * 0.08, vy: -0.08 - Math.random() * 0.12, life: 0.9, decay: 0.003 + Math.random() * 0.003, r: 2 + Math.random() * 3, color: i ? '#ffe07a' : '#ff8a3d' }); }
+  else if (skin === 'sparkle' && Math.random() < 0.5 && particles.length < 320) particles.push({ x: x + (Math.random() - 0.5) * 14, y: y + (Math.random() - 0.5) * 14, vx: (Math.random() - 0.5) * 0.05, vy: -0.02 - Math.random() * 0.04, life: 1, decay: 0.0035 + Math.random() * 0.003, r: 1.2 + Math.random() * 1.8, color: Math.random() < 0.5 ? '#ffffff' : '#ffe9a8' });
+}
+/* --- panel wiring --- */
+$('missionsBtn').addEventListener('click', () => openPanel('missions'));
+$('collectionBtn').addEventListener('click', () => openPanel('collection'));
+$('metaPill').addEventListener('click', () => openPanel('collection'));
+for (const id of ['missions', 'collection']) {
+  $(id).querySelector('.xBtn').addEventListener('click', () => closePanel(id));
+  $(id).addEventListener('pointerdown', (e) => { if (e.target === $(id)) closePanel(id); }); // a tap on the backdrop closes
+}
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') for (const id of ['missions', 'collection']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
@@ -4314,7 +4757,7 @@ function goHome() {
   hideHint(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   $('start').hidden = false; document.body.classList.add('home');
-  syncBests(); syncCamBtn(); scrollCardIntoView(gameMode, true); startPreviews();
+  syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews();
 }
 $('homeBtn').addEventListener('click', goHome);
 
@@ -4539,7 +4982,7 @@ function onLangChange() {
   renderBanner();
   if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
   if (!hudEl.hidden) updateHud();
-  syncMuteBtn();
+  syncMuteBtn(); syncMeta();
 }
 applyLang();
 for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
@@ -4564,6 +5007,12 @@ window.__grasp = {
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
   slice, smash, busy, strike, pause, previews, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  // meta progression: the profile, coins / XP, missions, the collection; setDate is test-only (it picks the mission day and survives a reload in the tab)
+  get profile() { return profile; }, profileReset, addCoins, addXp, levelOf, track, claimMission, coinUi, get events() { return meta.events; }, get toasts() { return meta.toasts; },
+  get missions() { ensureMissions(); return profile.missions.list; }, missionPool: MISSION_POOL,
+  collection: { items: ITEMS, buy: buyItem, equip: equipItem, state: itemState, skinOf },
+  setDate(iso) { meta.dateOverride = iso || null; try { if (iso) sessionStorage.setItem('grasp.testDate', iso); else sessionStorage.removeItem('grasp.testDate'); } catch {} ensureMissions(); syncMeta(); },
+  openPanel, closePanel,
 };
 </script>
 </body>

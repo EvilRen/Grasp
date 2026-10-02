@@ -297,7 +297,7 @@ async def main():
         c1 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, z: {S}.ball.z, dir: {S}.ball.dir, rot: {S}.ball.rot }})"); await page.wait_for_timeout(300)
         c2 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, z: {S}.ball.z, dir: {S}.ball.dir, rot: {S}.ball.rot, ric: {S}.ricochets - {r0} }})")
         check('off-centre slap: the ball goes left with spin > 0, and the spin curves it (vx drifts back toward the right over the flight, no ricochet)', c1['dir'] == -1 and c1['vx'] < 0 and c1['spin'] > 0.1 and c2['dir'] == -1 and c2['spin'] == c1['spin'] and c2['vx'] - c1['vx'] > 0.01 and c2['ric'] == 0, [c1, c2])
-        check('the ball sprite turns with the spin (rotation runs on)', c2['rot'] != c1['rot'] and await page.evaluate("[...SPRITES.keys()].some(k => k === 'strikeBall|0|s')"))
+        check('the ball sprite turns with the spin (rotation runs on)', c2['rot'] != c1['rot'] and await page.evaluate("[...SPRITES.keys()].some(k => k === 'strikeBall|classic|0|s')"))
         await page.screenshot(path='tests/out/strike3_spin.png')
         await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(250)
         await page.mouse.move(380, 400); await page.wait_for_timeout(200); r0 = await page.evaluate(f"{S}.ricochets"); n0 = await page.evaluate("particles.length")
