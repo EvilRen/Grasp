@@ -51,7 +51,7 @@ async def main():
         ctx, page, errs = await fresh(b)
         ln = await page.evaluate(G + ".lines")
         evs = await page.evaluate(G + ".events")
-        need = ['start', 'daily', 'firstHit', 'combo', 'streak5', 'streak10', 'super', 'close', 'boss', 'bossDown', 'levelUp', 'pu_multi', 'pu_big', 'pu_slow', 'pu_fire', 'pu_life', 'miss', 'lastLife', 'newBest', 'mission']
+        need = ['start', 'daily', 'firstHit', 'combo', 'streak5', 'streak10', 'super', 'close', 'boss', 'bossDown', 'levelUp', 'pu_multi', 'pu_big', 'pu_slow', 'pu_fire', 'pu_life', 'miss', 'lastLife', 'newBest', 'mission', 'final', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest']
         check('Grippy has lines for every event (power-ups per kind)', set(need) <= set(evs) and set(evs) == set(ln['he']), evs)
         bad = [e + ':' + l for e in need for l in ('en', 'he') if len(ln[l][e]) < 6 or any(not x.strip() or len(x) > 48 for x in ln[l][e]) or len(set(ln[l][e])) != len(ln[l][e])]
         check('>= 6 distinct, short, non-empty lines per event in EN and HE', not bad, bad)
@@ -62,9 +62,9 @@ async def main():
 
         # ---- in a Strike round: appears on round start, a line for each event, no repeat, rate limit ----
         await play(page, 'strike')
-        await page.wait_for_function(G + ".visible && " + G + ".last && " + G + ".last.event === 'start'", timeout=5000)
+        await page.wait_for_function(G + ".visible && " + G + ".last && " + G + ".last.event === 'tip_serve'", timeout=5000)
         st = await page.evaluate(G + ".last")
-        check('round start: Grippy pops up with a start line', st['text'] in ln['en']['start'] and await page.evaluate(G + ".on"), st)
+        check("round start on a fresh profile's first Strike run: Grippy pops up with the onboarding serve tip (the start line from then on)", st['text'] in ln['en']['tip_serve'] and await page.evaluate(G + ".on"), st)
         bx = await page.evaluate(G + ".box()")
         check('desktop: the mascot at the bottom start corner, inside the screen', bx and bx['x'] <= 16 and bx['y'] + bx['h'] <= 800 and bx['mascot']['w'] >= 50 and bx['bubble']['x'] > bx['mascot']['x'], bx)
         await page.screenshot(path='tests/out/grippy_desktop_start.png')

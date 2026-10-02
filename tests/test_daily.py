@@ -65,7 +65,7 @@ async def main():
         dy = await page.evaluate("(() => { const o = Math.random; Math.random = () => 0.123; const v = __grasp.strikeRand('walls'); Math.random = o; return { v, lives: " + S + ".lives, max: " + S + ".maxLives, radius: sd('STRIKE_HIT_RADIUS'), speed: sd('STRIKE_BASE_SPEED'), easyPill: !!(" + S + ".ui.buttons && " + S + ".ui.buttons.easy), rate: " + S + ".perkStats().puRate, diff: " + S + ".diff }; })()")
         check('daily mode: strikeRand is the seeded generator, not Math.random', dy['v'] != 0.123 and 0 <= dy['v'] < 1, dy)
         check('normal Strike on Easy: the Easy lives (4), for contrast', ez['lives'] == 4, ez)
-        check('daily: 3 lives, Normal hit radius / speed / power-up rate', dy['lives'] == 3 and dy['max'] == 3 and dy['radius'] == 1.3 and abs(dy['speed'] - 1.1) < 1e-9 and dy['rate'] < ez['rate'] and dy['diff'] == 'easy', [dy, ez])
+        check('daily: 3 lives, Normal hit radius / speed; the same power-up curve as Easy (none on level 1)', dy['lives'] == 3 and dy['max'] == 3 and dy['radius'] == 1.3 and abs(dy['speed'] - 1.1) < 1e-9 and dy['rate'] == ez['rate'] == 0 and dy['diff'] == 'easy', [dy, ez])
         sv = await page.evaluate("({ d: " + S + ".serveAt - performance.now(), b: !!" + S + ".ui.dailyBanner, mod: " + S + ".ui.dailyBanner && " + S + ".ui.dailyBanner.mod })")
         check('daily: the pre-run banner (modifier) is up and the first serve waits for it', sv['b'] and sv['mod'] == 'tiny' and sv['d'] > 1500, sv)
         await page.evaluate("__grasp.setGameMode('strike')")
@@ -94,7 +94,7 @@ async def main():
         check('Speedy: pace x1.25', abs(m['speedy'] - m['base'] * 1.25) < 1e-9, m)
         check('Big hands: reach x1.4', abs(m['reach'] - 1.4) < 1e-9 and m['reach0'] == 1, m)
         check('Tiny ball: ball x0.7', abs(m['tiny'] - m['ball'] * 0.7) < 1e-6, m)
-        check('Power-up rain: x3 power-up rate, power-up bricks already on level 1', abs(m['rate'] - m['rate0'] * 3) < 1e-9 and m['lv'] == 1 and m['pu'] > 0, m)
+        check('Power-up rain: power-up bricks already on level 1 (x3 the level-3 rate = one a wall), where other days have none', abs(m['rate'] - 1) < 1e-9 and m['rate0'] == 0 and m['lv'] == 1 and m['pu'] > 0, m)
         await page.evaluate(D + ".forceModifier = null")
         check('no page errors (modifiers)', not errs, errs); await ctx.close()
 

@@ -55,9 +55,9 @@ async def main():
         i18n = await page.evaluate("(() => { const ids = " + str(PERK_IDS) + "; return ['en', 'he'].every(l => ids.every(id => I18N[l]['pk_' + id] && I18N[l]['pkd_' + id]) && ['perkTitle', 'next', 'nk_boss', 'streak5', 'streak10', 'streakLost', 'closeOne', 'ms_close'].every(k => I18N[l][k])); })()")
         check('I18N: every perk has an EN + HE name and one-line description; NEXT / BOSS / streak / Close one strings in both', i18n)
         # level-up -> the burst first, then the cards; everything waits
-        await page.evaluate(f"__sfx.length = 0; park(); {S}.setCleared(5)")
+        await page.evaluate(f"__sfx.length = 0; park(); {S}.setLevel(3); {S}.setCleared(15)")  # level 3 done (perk picks come after levels 3, 5, 7 ...)
         lu = await page.evaluate(f"({{ level: {S}.level, offer: {S}.perkOffer, at: {S}.perkAt - performance.now(), up: !!{S}.ui.levelUp }})")
-        check('setCleared(5): level 2 with the Level up! burst; the perk cards wait for the burst (~1 s)', lu['level'] == 2 and lu['offer'] is None and 500 < lu['at'] <= 1000 and lu['up'], lu)
+        check('level 3 cleared: level 4 with the Level up! burst; the perk cards wait for the calm release beat (2.5 s)', lu['level'] == 4 and lu['offer'] is None and 2000 < lu['at'] <= 2500 and lu['up'], lu)
         await page.evaluate(f"(() => {{ const s = {S}; s.setBallZ(2000, 640, 400); s.lives = 40; }})()")  # a moving ball, to see the freeze
         await page.wait_for_function(f"{S}.perkOffer", timeout=5000)
         of = await page.evaluate(f"({{ offer: {S}.perkOffer, z: {S}.ball.z, held: {S}.ui.levelBanner && {S}.ui.levelBanner.held, sfx: __sfx }})")
@@ -94,10 +94,10 @@ async def main():
         await page.evaluate("forceOffer(['skin'])"); lv0 = await page.evaluate(f"[{S}.lives, {S}.maxLives]"); await page.evaluate(f"{S}.lives = 3; {S}.pickPerk(0)")
         await page.evaluate("forceOffer(['lucky'])"); await page.evaluate(f"{S}.pickPerk(0)")
         st = await page.evaluate(f"({{ s: {S}.perkStats(), base: __grasp.CONFIG.STRIKE_PU_RATE }})")
-        check('Sticky Magnet: magnet 0.5 -> 0.65', abs(st0['magnet'] - 0.5) < 1e-9 and abs(st['s']['magnet'] - 0.65) < 1e-9, [st0['magnet'], st['s']['magnet']])
+        check('Sticky Magnet: the magnet +0.15 (level 4: 0.325 -> 0.475)', abs(st0['magnet'] - 0.325) < 1e-9 and abs(st['s']['magnet'] - st0['magnet'] - 0.15) < 1e-9, [st0['magnet'], st['s']['magnet']])
         check('Thick Skin: +1 max life (4 -> 5) and one heart back (3 -> 4)', lv0[1] == 4 and st['s']['maxLives'] == 5 and st['s']['lives'] == 4, [lv0, st['s']])
-        await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 1 / 12"); r = await page.evaluate(f"{S}.perkStats().puRate"); await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
-        check('Lucky: power-up brick rate x1.5 (Easy 1/8 -> 3/16)', abs(r - (1 / 12) * 1.5 * 1.5) < 1e-9, r)
+        await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 1 / 12"); r, L = await page.evaluate(f"[{S}.perkStats().puRate, {S}.level]"); await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
+        check(f'Lucky: power-up rate x1.5 (level {L}: 1/3 a wall -> 1/2)', abs(r - min(1 / 3 + max(0, L - 4) / 24, 0.5) * 1.5) < 1e-9, [r, L])
         await page.evaluate("forceOffer(['heavy'])"); await page.evaluate(f"{S}.pickPerk(0)")
         await page.evaluate(f"park(); {S}.setLevel(1)")  # 1-hp bricks
         w = await page.evaluate(f"(() => {{ const w = {S}.smashTest('soft'); return {{ id: w.id, left: w.left }}; }})()"); await page.wait_for_function(f"{S}.ball.dir === 1", timeout=4000)
@@ -148,10 +148,10 @@ async def main():
         await page.evaluate("park()"); await frames(page, 2)
         nc = await page.evaluate(f"({{ next: {S}.next, card: {S}.ui.nextCard, v: vanish() }})")
         check('NEXT card: level 1 telegraphs a brick wall, centred above the vanishing point', nc['next'] == 'brick' and nc['card'] and nc['card']['kind'] == 'brick' and nc['card']['y'] + nc['card']['h'] <= nc['v']['y'] and abs(nc['card']['x'] + nc['card']['w'] / 2 - 640) < 2, nc)
-        await page.evaluate(f"__sfx.length = 0; park(); {S}.setCleared(5)"); await frames(page, 2)
+        await page.evaluate(f"__sfx.length = 0; park(); {S}.setLevel(2); {S}.setCleared(9)"); await frames(page, 2)  # level 2 done: level 3 unlocks glass
         nc = await page.evaluate(f"({{ next: {S}.next, card: {S}.ui.nextCard, at: performance.now() - {S}.ui.nextAt }})")
-        check('level 2: the next wall is the new kind (glass), and the card pulses as it changes', nc['next'] == 'glass' and nc['card']['kind'] == 'glass' and nc['at'] < 600 and nc['card']['pulse'] > 0, nc)
-        await page.wait_for_function(f"{S}.perkOffer", timeout=5000); await page.evaluate(f"{S}.pickPerk(0); park()")
+        check('level 3: the next wall is the new kind (glass), and the card pulses as it changes', nc['next'] == 'glass' and nc['card']['kind'] == 'glass' and nc['at'] < 600 and nc['card']['pulse'] > 0, nc)
+        check('no perk pick after level 2', await page.evaluate(f"!{S}.perkAt && !{S}.perkOffer")); await page.evaluate("park()")
         ids0 = await page.evaluate(f"{S}.walls.map(w => w.id)")
         await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(80); await page.evaluate("park()")
         nw = await page.evaluate(f"(() => {{ const w = {S}.walls.filter(q => !{ids0}.includes(q.id)); return w.map(q => q.kind); }})()")
@@ -219,7 +219,7 @@ async def main():
             ctx, page, errs = await new_page(b, mobile=True)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
             await play_strike(page, tap=True)
-            await page.evaluate(f"park(); {S}.setCleared(5)"); await page.wait_for_function(f"{S}.perkOffer", timeout=5000)
+            await page.evaluate(f"park(); {S}.setLevel(3); {S}.setCleared(15)"); await page.wait_for_function(f"{S}.perkOffer", timeout=8000)  # level 3 done: a perk pick after the release
             await page.evaluate("forceOffer(['spark', 'skin', 'coins'])"); await wait_offer(page, 'spark')
             await page.evaluate("showHint()"); await frames(page, 2)
             hn = await page.evaluate("({ show: hintEl.classList.contains('show'), op: hintEl.style.opacity || '0' })")

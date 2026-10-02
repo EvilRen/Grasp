@@ -31,6 +31,106 @@ async def start(page, mobile=False):
     else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
     await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
 
+
+CLEAR = "(() => { G3.chunks.forEach(c => c.on = false); G3.pAdd.length = G3.pDust.length = 0; })()"
+LIVE = "G3.chunks.filter(c => c.on)"
+
+async def hold(page, ms):  # let the effects clock run ms, then hold the effects still
+    t = await page.evaluate("G3.fxT")
+    await page.wait_for_function(f"G3.fxT >= {t} + {ms}", timeout=30000, polling=40)
+    await page.evaluate(f"{S}.gfxFreeze = true")
+
+async def smash_kind(page, kind, power):  # a fresh wall of the kind at z 900 (others behind it), smashed by the ball at the given tier; resolves once chunks fly
+    await page.evaluate(f"""(() => {{ const s = {S}; __grasp.CONFIG.STRIKE_BOSS_EVERY = 1000; {CLEAR}; s.boss = null; s.walls.length = 0; s.debris.length = 0; s.ui.tag = s.ui.levelBanner = null;
+      s.spawnWall('{kind}', 900); s.spawnWall('brick', 1300); s.spawnWall('steel', 1700); const w = s.walls[0], t = '{kind}' === 'tnt' ? w.bricks.find(k => k.tnt) : null; if (t) s.smashTest('{power}', t.col, t.row); else s.smashTest('{power}'); }})()""")
+    await page.wait_for_function(f"{S}.chunks3d > 0", timeout=15000, polling=30)
+
+async def step2(page):  # Strike 3D step 2: shatter chunks, glow, impact juice, the 3D boss, capsule shells, quality tiers
+    S_ = S
+    # quality tier rule (pure) and the tier switch
+    qp = await page.evaluate(f"[[1, 8, 0], [2, 8, 0], [3, 8, 0], [1, 4, 0], [2, 2, 0], [1, 0, 0], [1, 8, 60], [1, 8, 45], [1, 8, 30], [3, 8, 60], [1, 2, 60]].map(a => {S}.gfxQualityPick(...a))")
+    check('gfxQuality rule: 8 cores -> high (dpr 3 -> medium), 4 cores -> medium, 2 -> low, unknown -> medium; the first-3-s fps caps it (60 keeps, 45 -> medium, 30 -> low; never above the device tier)',
+          qp == ['high', 'high', 'medium', 'medium', 'low', 'medium', 'high', 'medium', 'low', 'medium', 'low'], qp)
+    q0 = await page.evaluate(f"{S}.gfxQuality"); print('INFO gfxQuality picked on SwiftShader:', q0, await page.evaluate(f"{S}.gfxInfo.qFps"))
+    lo = await page.evaluate(f"(() => {{ const s = {S}; s.gfxQuality = 'low'; const r = {{ q: s.gfxQuality, lights: G3.flashes.length, inScene: G3.flashAll.filter(f => f.L.parent).length, shadow: G3.key.castShadow, cap: G3.qc.chunks }}; s.gfxQuality = 'high'; r.hi = {{ q: s.gfxQuality, lights: G3.flashes.length, cap: G3.qc.chunks, ball: !!G3.ballLight.parent }}; return r; }})()")
+    check('strike.gfxQuality: low drops the flash lights, shadows and most of the chunk pool; high has 3 flash lights, a light on the SUPER ball and 160 chunks', q0 in ('high', 'medium', 'low') and lo['q'] == 'low' and lo['lights'] == 0 and lo['inScene'] == 0 and not lo['shadow'] and lo['cap'] < 80 and lo['hi'] == {'q': 'high', 'lights': 3, 'cap': 160, 'ball': True}, lo)
+    await frames(page, 2)
+    # a brick breaks: chunks that move, fall, bounce once on the floor and recycle
+    await smash_kind(page, 'brick', 'hard')
+    a = await page.evaluate(f"(() => {{ const L = {LIVE}; return {{ n: L.length, cls: [...new Set(L.map(c => c.cls))], kinds: [...new Set(L.map(c => c.kind))], pos: L.slice(0, 8).map(c => [c.x, c.y, c.z]), b0: G3.chBounces, d0: G3.chDone, geos: G3.chunkGeos.map(g => g.tris), sets: G3.chunkSets.map(t => t.length) }}; }})()")
+    await hold(page, 300); await page.evaluate(f"{S}.gfxFreeze = false")
+    b = await page.evaluate(f"(() => {{ const L = G3.chunks.slice(0, 8); return L.map(c => [c.x, c.y, c.z]); }})()")
+    moved = sum(1 for p, q in zip(a['pos'], b) if abs(p[0] - q[0]) + abs(p[1] - q[1]) + abs(p[2] - q[2]) > 5)
+    check(f"a brick breaks in 3D: {a['n']} convex chunks (patterns of {a['sets']} cells; every cell a closed polyhedron of >= 4 triangles), stone material, flying ({moved}/8 moved within 300 ms of effects time)",
+          a['n'] >= 4 and a['cls'] == ['stone'] and a['sets'] == [4, 6, 8] and min(a['geos']) >= 4 and moved >= 6, a)
+    await page.wait_for_function("G3.chBounces > " + str(a['b0']), timeout=40000, polling=60)
+    fall = await page.evaluate(f"(() => {{ const {{ B }} = corridor(); return G3.chunks.filter(c => c.on && c.bounced).map(c => +(c.y + B).toFixed(1)).slice(0, 5); }})()")
+    check('chunks fall under gravity and bounce once on the corridor floor (a bounced chunk sits just above the floor plane)', all(-1 <= v < 200 for v in fall) and len(fall) > 0, fall)
+    await page.wait_for_function(f"{S}.chunks3d === 0", timeout=60000, polling=100)
+    rc = await page.evaluate("({ done: G3.chDone, n: __grasp.strike.chunks3d })")
+    check('the chunks fade, shrink and recycle: the live count goes back to 0', rc['n'] == 0 and rc['done'] - a['d0'] >= a['n'], rc)
+    # the pool cap: a SUPER through a whole wall plus 60 more bricks never exceeds 160
+    cap = await page.evaluate(f"(() => {{ const s = {S}; {CLEAR}; s.walls.length = 0; const w = s.spawnWall('brick', 900); for (const k of w.bricks) g3Shatter(w, k, {{ x: 0, y: 0 }}, 'super'); for (let i = 0; i < 60; i++) g3Shatter(w, w.bricks[i % w.bricks.length], {{ x: 0, y: 0 }}, 'hard'); return {{ n: s.chunks3d, bricks: w.bricks.length }}; }})()")
+    check(f"chunk pool capped: {cap['bricks'] + 60} bricks shattered at once -> {cap['n']} live chunks (<= 160; the most faded recycle first)", 0 < cap['n'] <= 160, cap)
+    await page.evaluate(CLEAR)
+    # glass / steel / TNT variants
+    await smash_kind(page, 'glass', 'medium'); await page.evaluate(f"{S}.gfxFreeze = true"); await frames(page, 1)
+    gl = await page.evaluate(f"(() => {{ const L = {LIVE}; return {{ n: L.length, cls: [...new Set(L.map(c => c.cls))], thin: L.every(c => c.sz < c.sy * 0.25), mat: G3.chMats.glass.transparent && G3.chMats.glass.opacity < 0.6, glints: G3.fxAdd.count }}; }})()")
+    check('glass breaks into thin translucent shards (8-cell pattern, transparent physical material) with sparkle glints', gl['n'] >= 8 and gl['cls'] == ['glass'] and gl['thin'] and gl['mat'] and gl['glints'] > 0, gl)
+    await page.evaluate(f"{S}.gfxFreeze = false")
+    await smash_kind(page, 'steel', 'hard'); await page.evaluate(f"{S}.gfxFreeze = true")
+    st = await page.evaluate(f"(() => {{ const L = {LIVE}; return {{ n: L.length, cls: [...new Set(L.map(c => c.cls))], metal: G3.chMats.steel.metalness, sparks: G3.pAdd.filter(p => p.cell === 1).length, dark: L.every(c => c.col.r < 0.4) }}; }})()")
+    check('steel breaks into darker metallic plates with sparks (streaks)', st['n'] >= 4 and st['cls'] == ['steel'] and st['metal'] > 0.8 and st['sparks'] >= 4 and st['dark'], st)
+    await page.evaluate(f"{S}.gfxFreeze = false")
+    t0 = await page.evaluate("G3.tnts || 0")
+    await smash_kind(page, 'tnt', 'medium'); await page.evaluate(f"{S}.gfxFreeze = true"); await frames(page, 1)
+    tn = await page.evaluate(f"(() => {{ const L = {LIVE}.filter(c => c.kind === 'tnt'); return {{ tnts: G3.tnts, charred: L.length, dark: L.every(c => c.col.r < 0.15 && c.col.g < 0.05), light: Math.max(...G3.flashes.map(f => f.L.intensity)), boom: G3.booms.some(b => b.on && b.shell.visible) }}; }})()")
+    check(f"TNT: charred chunks, an expanding emissive fireball and a point-light flash (peak {tn['light']:.2f})", tn['tnts'] > t0 and tn['charred'] >= 4 and tn['dark'] and tn['light'] > 0.5 and tn['boom'], tn)
+    await page.evaluate(f"{S}.gfxFreeze = false")
+    await page.wait_for_function("G3.flashes.every(f => !f.on && f.L.intensity === 0) && G3.booms.every(b => !b.on && !b.shell.visible)", timeout=30000, polling=60)
+    check('... and the flash light and the fireball fade out (intensity 0, hidden)', True)
+    await page.evaluate(f"(() => {{ {CLEAR}; __grasp.strike.walls.length = 0; }})()")
+    # the SUPER ball: glow sprite, bloom halo, light trail ribbon, a light riding it
+    await page.evaluate(f"(() => {{ const s = {S}; s.setBallZ(500, innerWidth * 0.45, innerHeight * 0.5); const b = s.ball; b.super = true; b.tier = 'super'; b.dir = -1; b.speed = 0.4; }})()")
+    await frames(page, 4)
+    su = await page.evaluate(f"(() => {{ const o = G3.balls[0]; return {{ glow: o.glow.visible, halo: o.halo.visible, haloBig: o.halo.scale.x > o.glow.scale.x, rib: o.rib.visible, tris: o.rib.geometry.drawRange.count / 3, add: o.rib.material.blending === G3.T.AdditiveBlending, light: G3.ballLight.intensity }}; }})()")
+    check('SUPER ball: glow sprite + a wider bloom halo + an additive trail ribbon through its recent positions + a light riding it', su['glow'] and su['halo'] and su['haloBig'] and su['rib'] and su['tris'] >= 2 and su['add'] and su['light'] > 0, su)
+    await page.evaluate(f"{S}.ball.super = false; {S}.ball.tier = ''"); await frames(page, 2)
+    nb = await page.evaluate("({ glow: G3.balls[0].glow.visible, rib: G3.balls[0].rib.visible, light: G3.ballLight.intensity })")
+    check('a plain ball: no glow, no ribbon, no ball light', not nb['glow'] and not nb['rib'] and nb['light'] == 0, nb)
+    # the boss in 3D: a body of real bricks (with depth) behind the face plane; a hit pops bricks off as chunks
+    await page.evaluate(f"(() => {{ const s = {S}; {CLEAR}; __grasp.CONFIG.STRIKE_BOSS_EVERY = 8; const b = s.spawnBoss(1); b.z = 900; b.speed = 0; s.ui.tag = null; s.setBallZ(300, innerWidth * 0.45, innerHeight * 0.5); }})()"); await page.evaluate(FREEZE)
+    await frames(page, 3)
+    bo = await page.evaluate(f"(() => {{ const bb = G3.bossB; return {{ n: G3.bossBody.count, list: bb.list.length, depth: bb.d, body: G3.bossBody.visible, back: G3.bossBack.visible, face: G3.boss.visible, faceZ: G3.boss.position.z, bodyZ: new G3.T.Vector3().setFromMatrixPosition((() => {{ const m = new G3.T.Matrix4(); G3.bossBody.getMatrixAt(0, m); return m; }})()).z, bossZ: {S}.boss.z }}; }})()")
+    check(f"boss in 3D: {bo['n']} instanced bricks with depth ({bo['depth']:.0f}) and a dark back plate; the face plane at the boss depth, just in front of the bricks", bo['n'] == bo['list'] and bo['n'] >= 40 and bo['depth'] > 10 and bo['body'] and bo['back'] and bo['face'] and abs(bo['faceZ'] + bo['bossZ']) < 0.01 and bo['bodyZ'] < bo['faceZ'], bo)
+    await page.evaluate(f"{S}.bossHit('hard')"); await frames(page, 2)
+    bh = await page.evaluate(f"({{ n: G3.bossBody.count, chunks: {LIVE}.filter(c => c.kind === 'boss').length, ui: !!{S}.ui.boss, bar: !!({S}.ui.boss && {S}.ui.boss.bar) }})")
+    check(f"a boss hit pops bricks off its body as chunks ({bo['n']} -> {bh['n']} bricks, {bh['chunks']} chunks); the face boxes and health bar stay on the 2D overlay", bh['n'] < bo['n'] and bh['chunks'] >= 6 and bh['ui'] and bh['bar'], bh)
+    await page.evaluate(f"(() => {{ const s = {S}; s.boss = null; {CLEAR}; s.walls.length = 0; }})()"); await frames(page, 2)
+    # capsules: a glossy transparent shell, the icon inside, a glow
+    await page.evaluate(f"{S}.spawnCapsule('multi', 700, 0, 0)"); await frames(page, 3)
+    cp = await page.evaluate(f"(() => {{ const o = G3.capPool[0], c = {S}.capsules[0]; const r0 = o.shell.rotation.y; return {{ shell: o.shell.visible, tr: o.shell.material.transparent && o.shell.material.opacity < 1, gloss: o.shell.material.clearcoat, icon: o.icon.visible && !!o.icon.material.map, glow: o.glow.visible && o.glow.material.blending === G3.T.AdditiveBlending, at: [o.shell.position.x - c.x, o.shell.position.z + c.z], r0 }}; }})()")
+    await frames(page, 2); r1 = await page.evaluate("G3.capPool[0].shell.rotation.y")
+    check('power-up capsule in 3D: a glossy transparent shell (clearcoat) that spins, the icon sprite inside, an additive glow', cp['shell'] and cp['tr'] and cp['gloss'] >= 1 and cp['icon'] and cp['glow'] and abs(cp['at'][0]) < 0.5 and abs(cp['at'][1]) < 0.5 and r1 != cp['r0'], [cp, r1])
+    await page.evaluate(f"{S}.capsules.length = 0"); await frames(page, 1)
+    # parity still exact with every effect in the scene
+    par = await page.evaluate(f"""(() => {{ const {{ L, R, T, B }} = corridor(); let worst = 0; for (const z of [0, 400, 1500]) for (const [x, y] of [[L, T], [R, B], [0, 0]]) {{ const a = proj(x, y, z), q = {S}.project3d(x, y, z); worst = Math.max(worst, Math.hypot(a.x - q.x, a.y - q.y)); }} return worst; }})()""")
+    check(f'projection parity unchanged by step 2 (worst {par:.4f} px)', par < 1.5, par)
+    await page.evaluate(f"(() => {{ const s = {S}; __grasp.CONFIG.STRIKE_BOSS_EVERY = 8; s.setLevel(1); s.walls.length = 0; s.spawnWall('brick', 900); }})()")
+
+async def shatter_shots(page, tag, pr):  # mid-shatter screenshots at full resolution: brick, glass, TNT, a SUPER smash, the boss
+    await page.evaluate(f"{S}.gfxQuality = 'high'; {S}.setLevel(6)")
+    for name, kind, power, ms in [('brick', 'brick', 'hard', 220), ('glass', 'glass', 'medium', 200), ('tnt', 'tnt', 'medium', 150), ('super', 'brick', 'super', 220)]:
+        await smash_kind(page, kind, power); await hold(page, ms)
+        if name == 'super':
+            await page.evaluate(f"(() => {{ const b = {S}.ball; b.super = true; b.dir = -1; b.speed = 0; b.z = 520; b.x = -innerWidth * 0.12; b.y = innerHeight * 0.08; b.trail.length = 0; G3.balls[0].hist.length = 0; for (let i = 8; i >= 0; i--) G3.balls[0].hist.push({{ x: b.x + 40 * i, y: -b.y - 28 * i, z: -b.z + 60 * i, t: performance.now() - 25 * i }}); }})()")
+        await page.evaluate(f"{S}.gfxPr = {pr}"); await frames(page, 2); await page.screenshot(path=f'tests/out/strike3d2_{tag}_{name}.png'); await page.evaluate(f"{S}.gfxPr = 0.5; {S}.gfxFreeze = false")
+        await page.evaluate(f"{S}.ball = null; {S}.serve(); {S}.setBallZ(2300, 30, 30)")
+    await page.evaluate(f"(() => {{ const s = {S}; __grasp.CONFIG.STRIKE_BOSS_EVERY = 8; {CLEAR}; s.walls.length = 0; const b = s.spawnBoss(1); b.z = 900; b.speed = 0; s.ui.tag = null; s.setBallZ(300, innerWidth * 0.45, innerHeight * 0.5); s.serveAt = performance.now() + 1e9; for (const q of s.balls) q.speed = 0; }})()")
+    await frames(page, 2); await page.evaluate(f"{S}.bossHit('hard'); {S}.bossHit('super')"); await hold(page, 180)
+    await page.evaluate(f"{S}.gfxPr = {pr}"); await frames(page, 2); await page.screenshot(path=f'tests/out/strike3d2_{tag}_boss.png'); await page.evaluate(f"{S}.gfxPr = 0.5; {S}.gfxFreeze = false")
+    await page.evaluate(f"(() => {{ const s = {S}; s.boss = null; {CLEAR}; }})()")
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'])
@@ -84,10 +184,7 @@ async def main():
             check('glass / steel / TNT walls: instanced glass panes, steel plates, and TNT crates among the bricks', kd[0]['ims'].get('glass', 0) > 0 and kd[1]['ims'].get('steel', 0) > 0 and kd[2]['ims'].get('tnt', 0) >= 2, kd)
             gl = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls[0], r = s.brickScreen(w, 1, 1); return {{ glass: s.pixel(r.x, r.y), mat: G3.mats.glass.transparent && G3.mats.glass.opacity < 1 }}; }})()")
             check('glass is translucent (a transparent material; the pane pixel is pale blue, not opaque brick)', gl['mat'] and gl['glass'][2] >= gl['glass'][0], gl)
-            await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; s.spawnWall('brick', 900); s.smashTest('hard'); }})()")
-            await page.wait_for_function(f"{S}.debris.length > 4", timeout=5000); await frames(page, 1)
-            db = await page.evaluate(f"({{ n: {S}.debris.length, d: G3.deb.count, g: G3.shards.count }})")
-            check('debris: every fragment in strike.debris is a 3D box (instanced)', db['n'] > 4 and db['d'] + db['g'] == db['n'], db)
+            await step2(page)
             await page.evaluate(f"{S}.ball = null; {S}.serve(); {S}.setBallZ(2300, 30, 30)"); await page.evaluate(FREEZE)
             # one renderer, reused across rounds; pixel ratio
             r0 = await page.evaluate("G3.r"); await page.click('#resetBtn'); await page.wait_for_timeout(300)
@@ -103,6 +200,7 @@ async def main():
             for lv in (1, 6):
                 await stage(page, lv); await page.evaluate(f"{S}.gfxPr = 1"); await frames(page, 2)
                 await page.screenshot(path=f'tests/out/strike3d_desktop_l{lv}.png'); await page.evaluate(f"{S}.gfxPr = 0.5")
+            await shatter_shots(page, 'desktop', 1)
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
         if webgl:
@@ -115,11 +213,12 @@ async def main():
               let worst = 0; for (const [x, y, z] of pts) {{ const a = proj(x, y, z), q = {S}.project3d(x, y, z); worst = Math.max(worst, Math.hypot(a.x - q.x, a.y - q.y)); }} return worst; }})()""")
             check(f'phone projection parity within 1.5 px (worst {par:.4f})', par < 1.5, par)
             await page.evaluate(f"{S}.setBallZ(420, 200, 470)"); await page.evaluate(FREEZE); await frames(page, 2)
-            bl = await page.evaluate(f"(() => {{ const s = {S}, q = s.ballScreen(); return s.pixel(q.x, q.y); }})()")
-            check('phone: the ball pixel at ballScreen() is the coral ball', coral(bl), bl)
+            bl = await page.evaluate(f"(() => {{ const s = {S}, q = s.ballScreen(); return [[0, 0], [-0.45, 0.1], [0.4, -0.2]].map(([a, b]) => s.pixel(q.x + a * q.r, q.y + b * q.r)); }})()")
+            check('phone: the pixels at ballScreen() are the coral ball (2 of 3 probes: the spinning seam may cross one)', sum(1 for c in bl if coral(c)) >= 2, bl)
             for lv in (1, 6):
                 await stage(page, lv); await page.evaluate(f"{S}.gfxPr = 2"); await frames(page, 2)
                 await page.screenshot(path=f'tests/out/strike3d_phone_l{lv}.png'); await page.evaluate(f"{S}.gfxPr = 0.4")
+            await shatter_shots(page, 'phone', 2)
             check('phone: no page errors', not errs, errs); await ctx.close()
 
             # ===== the low-fps fallback: full resolution on a software GPU stays < 24 fps, so after 4 s Strike goes back to 2D =====
