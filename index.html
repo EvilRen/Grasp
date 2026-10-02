@@ -211,7 +211,8 @@ html[dir="rtl"] #metaPill{ left:auto; right:12px; }
 .mrow .nm{ font-size:14px; font-weight:500; }
 .mrow .bar{ grid-column:1; height:6px; border-radius:3px; background:rgba(241,233,218,.12); overflow:hidden; }
 .mrow .bar i{ display:block; height:100%; width:0; border-radius:3px; background:linear-gradient(90deg,var(--saffron),#ff8a3d); transition:width .3s; }
-.mrow .pr{ grid-column:1; font-size:12px; color:var(--muted); direction:ltr; text-align:start; }
+.mrow .pr{ grid-column:1; font-size:12px; color:var(--muted); direction:ltr; text-align:left; }
+html[dir="rtl"] .mrow .pr{ text-align:right; }
 .mrow .rw{ grid-column:2; grid-row:1 / span 3; display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:700; color:var(--saffron); white-space:nowrap; }
 .mrow .rw svg{ width:16px; height:16px; }
 .mrow .claim{ grid-column:2; grid-row:1 / span 3; padding:9px 14px; border-radius:10px; background:var(--saffron); color:#241a00; font-size:14px; font-weight:700; animation:pulse 1.4s infinite; }
@@ -483,7 +484,7 @@ const I18N = {
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
     g_none: 'none', g_open: 'open', g_pinch: 'pinch', g_point: 'point', g_fist: 'fist',
     m_none: 'none', m_camera: 'camera', m_mouse: 'mouse', gm_sandbox: 'sandbox', gm_slice: 'slice', gm_smash: 'smash', gm_busy: 'busy board', gm_strike: 'strike', Left: 'Left', Right: 'Right',
-    coinsN: '{n} coins', lvShort: 'Lv {n}', missions: 'Missions', collection: 'Collection', missionsTitle: "Today's missions", missionsSub: 'New missions every day. Finish one and claim its coins.',
+    coinsN: '{n} coins', lvShort: 'Lv {n}', playerLevelN: 'Level {n}', missions: 'Missions', collection: 'Collection', missionsTitle: "Today's missions", missionsSub: 'New missions every day. Finish one and claim its coins.',
     collectionSub: 'Spend coins on new looks. Tap to buy, tap to wear.', claim: 'Claim', claimed: 'Claimed', equip: 'Equip', equipped: 'Equipped', close: 'Close', roundCoins: 'Coins this round',
     ms_fruit: 'Slice {n} fruit', ms_bricks: 'Smash {n} bricks', ms_cars: 'Crumple {n} cars', ms_walls: 'Clear {n} walls', ms_powerups: 'Catch {n} power-ups', ms_boss: 'Beat a boss', ms_strikeLevel: 'Reach level {n} in Strike', ms_rounds: 'Play {n} rounds', ms_combo: 'Get a ×3 combo',
     missionDone: 'Mission complete! {m} (+{c})', claimedToast: '+{c} coins', levelUpToast: 'Level up! Level {n}: +{c} coins', unlockedToast: 'Unlocked: {n}', needLevel: 'Reach level {n} to unlock', notEnough: '{n} more coins needed',
@@ -552,10 +553,10 @@ const I18N = {
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
     m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', gm_strike: 'מכה', Left: 'שמאל', Right: 'ימין',
-    coinsN: '{n} מטבעות', lvShort: 'רמה {n}', missions: 'משימות', collection: 'אוסף', missionsTitle: 'המשימות של היום', missionsSub: 'משימות חדשות בכל יום. סיימו משימה ואספו את המטבעות שלה.',
+    coinsN: '{n} מטבעות', lvShort: 'רמה {n}', playerLevelN: 'רמה {n}', missions: 'משימות', collection: 'אוסף', missionsTitle: 'המשימות של היום', missionsSub: 'משימות חדשות בכל יום. סיימו משימה ואספו את המטבעות שלה.',
     collectionSub: 'קנו מראה חדש במטבעות. הקישו כדי לקנות, הקישו כדי ללבוש.', claim: 'איסוף', claimed: 'נאסף', equip: 'ללבוש', equipped: 'לבוש', close: 'סגירה', roundCoins: 'מטבעות בסיבוב',
     ms_fruit: 'חתכו {n} פירות', ms_bricks: 'נפצו {n} לבנים', ms_cars: 'מעכו {n} מכוניות', ms_walls: 'פנו {n} קירות', ms_powerups: 'תפסו {n} חיזוקים', ms_boss: 'נצחו בוס', ms_strikeLevel: 'הגיעו לשלב {n} במכה', ms_rounds: 'שחקו {n} סיבובים', ms_combo: 'עשו קומבו ‎×3',
-    missionDone: 'משימה הושלמה! {m} (+{c})', claimedToast: '+{c} מטבעות', levelUpToast: 'עליתם רמה! רמה {n}: +{c} מטבעות', unlockedToast: 'נפתח: {n}', needLevel: 'הגיעו לרמה {n} כדי לפתוח', notEnough: 'חסרים {n} מטבעות',
+    missionDone: 'משימה הושלמה! {m} (‎+{c})', claimedToast: '‎+{c} מטבעות', levelUpToast: 'עליתם רמה! רמה {n}: +{c} מטבעות', unlockedToast: 'נפתח: {n}', needLevel: 'הגיעו לרמה {n} כדי לפתוח', notEnough: 'חסרים {n} מטבעות',
     ct_ball: 'כדורים', ct_hand: 'ידיים', ct_blade: 'להבים', ct_trail: 'שובלים',
     it_ball_classic: 'כדור קלאסי', it_ball_beach: 'כדור ים', it_ball_soccer: 'כדורגל', it_ball_planet: 'כוכב לכת', it_ball_disco: 'כדור דיסקו',
     it_hand_classic: 'יד קלאסית', it_hand_mint: 'כפפת מנטה', it_hand_sky: 'כפפת שמיים', it_hand_lilac: 'כפפת לילך', it_hand_robot: 'יד רובוט', it_hand_cat: 'כף חתול',
@@ -4207,7 +4208,7 @@ function addXp(n) { // XP, and the level-ups it brings: reward coins, a toast, a
   }
   saveProfile(); syncMeta();
 }
-function roundStart() { meta.roundCoins = 0; coinUi.floaters.length = 0; }
+function roundStart() { meta.roundCoins = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score) { // a round ended: XP, the rounds stat and mission
   addXp(Math.floor(Math.max(0, score) / 10)); track('round', 1);
 }
@@ -4225,7 +4226,7 @@ function coinPillPos() { // where the coin pill sits: beside the score at the st
   return { x: rtl ? W - 16 : 16, y: scoreY() - 15, end: false };
 }
 function drawCoinPill(now) {
-  const rtl = lang === 'he', p = coinPillPos(), target = profile.coins, dt = Math.min(100, now - (coinUi.lastDraw || now)); coinUi.lastDraw = now;
+  const rtl = lang === 'he', p = coinPillPos(), target = profile.coins, dt = Math.min(100, now - (coinUi.lastDraw || now)); if (now - (coinUi.lastDraw || -1e9) > 500) coinUi.shown = target; coinUi.lastDraw = now; // back after a pause / the start screen: no count-up from a stale value
   if (coinUi.shown !== target) { const d = target - coinUi.shown; coinUi.shown = Math.abs(d) < 0.6 || d < 0 ? target : coinUi.shown + d * Math.min(1, dt / 120); }
   const sp = textSprite(String(Math.round(coinUi.shown)), 15, '#fff8ec', null, 700), h = 28, w = sp.tw + 42, pop = Math.max(0, 1 - (now - coinUi.pop) / 260), k = 1 + 0.1 * Math.sin(Math.PI * pop);
   const left = p.end !== rtl ? p.x - w : p.x; // end edge in LTR / start edge in RTL anchors the pill's right side
@@ -4292,7 +4293,7 @@ function syncMeta() {
   ensureMissions();
   const lv = profile.level, a = xpForLevel(lv), b = xpForLevel(lv + 1), frac = Math.max(0, Math.min(1, (profile.xp - a) / (b - a)));
   const pill = $('metaPill'); pill.querySelector('.coins').textContent = String(profile.coins); pill.querySelector('.lvl').textContent = t('lvShort', { n: lv }); pill.querySelector('.xp i').style.width = Math.round(frac * 100) + '%';
-  pill.title = t('coinsN', { n: profile.coins }) + ' · ' + t('levelN', { n: lv }) + ' · ' + (profile.xp - a) + '/' + (b - a) + ' XP';
+  pill.title = t('coinsN', { n: profile.coins }) + ' · ' + t('playerLevelN', { n: lv }) + ' · ' + (profile.xp - a) + '/' + (b - a) + ' XP';
   const nb = $('missionsBtn').querySelector('.nb'), c = claimable(); nb.hidden = !c; nb.textContent = String(c);
   for (const el of document.querySelectorAll('.wallet b')) el.textContent = String(profile.coins);
   if (!$('missions').hidden) renderMissions();
@@ -4309,7 +4310,7 @@ function renderMissions() {
     li.append(nm, bar, pr);
     if (m.claimed) { const ok = document.createElement('span'); ok.className = 'ok'; ok.innerHTML = TOAST_ICONS.check; ok.title = t('claimed'); li.appendChild(ok); }
     else if (m.done) { const b = document.createElement('button'); b.type = 'button'; b.className = 'claim'; b.textContent = t('claim'); b.addEventListener('click', () => claimMission(m.id)); li.appendChild(b); }
-    else { const rw = document.createElement('span'); rw.className = 'rw'; rw.innerHTML = TOAST_ICONS.coin; rw.append('+' + m.reward); li.appendChild(rw); }
+    else { const rw = document.createElement('span'); rw.className = 'rw'; rw.innerHTML = TOAST_ICONS.coin; rw.append(LRM + '+' + m.reward); li.appendChild(rw); }
     return li;
   }));
 }

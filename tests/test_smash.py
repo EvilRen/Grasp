@@ -76,13 +76,13 @@ async def main():
         check('never more than 2 cars', await page.evaluate("__grasp.smash.cars.length") <= 2)
         await page.screenshot(path='tests/out/smash_mouse.png')
         # round end
-        await page.evaluate("__grasp.setRoundEnd(performance.now() + 1000)"); await page.wait_for_timeout(1500)
+        await page.evaluate("__grasp.setRoundEnd(performance.now() + 1000)"); await page.wait_for_function("__grasp.smash.over", timeout=5000)  # polled, not a fixed sleep: the tap below must land inside the card's first second even on a slow machine
         st = await page.evaluate(STATE); best = await page.evaluate("[__grasp.smash.best, localStorage.getItem('smashBest')]")
         check('round over after the timer', st['over'] and best[0] == st['score'] and best[1] == str(st['score']), [st, best])
-        await page.screenshot(path='tests/out/smash_over.png')
         s_over = st['score']
         await page.mouse.move(300, 300); await page.mouse.down(); await page.mouse.up(); await page.wait_for_timeout(200)
         check('taps in the first second are ignored', await page.evaluate("__grasp.smash.over"))
+        await page.screenshot(path='tests/out/smash_over.png')
         ov = await page.evaluate("({nb: __grasp.smash.ui.newBest, rb: __grasp.smash.ui.ribbon, bt: __grasp.smash.ui.buttons, bricks: __grasp.smash.bricksOut, cars: __grasp.smash.carsOut, big: __grasp.smash.bigHit})")
         rbp = await page.evaluate(PIX + f"({ov['rb']['x']}, {ov['rb']['y']})") if ov['rb'] else None
         check('round-over card with a NEW BEST ribbon (saffron pixel on the card corner)', ov['nb'] and rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, [ov, rbp])

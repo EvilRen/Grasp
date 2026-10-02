@@ -4,6 +4,7 @@ STATE = "(() => { const s = " + S + ", b = s.ball; return { z: b ? b.z : null, x
 PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
 ROWS = "new Set([...document.querySelectorAll('.modes button')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the pressed card is lifted 2 px
 FITS = "(() => { const bs = [...document.querySelectorAll('.modes button')], m = document.querySelector('.modes').getBoundingClientRect(); const a = document.querySelector('#start a.link').getBoundingClientRect(); const sel = document.querySelector('.modes button[aria-pressed=true]').getBoundingClientRect(); return bs.length === 5 && bs.every(b => b.scrollWidth <= b.clientWidth + 1) && m.right <= innerWidth && m.left >= 0 && sel.right <= innerWidth && sel.left >= 0 && a.bottom <= innerHeight && a.width > 0; })()"  # phones: a scrollable snap row; the selected card is in view
+FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
 """
@@ -252,7 +253,7 @@ async def main():
         check('spawnWall(holed): a 1-2 brick hole, those bricks dead, left counts the rest, tag', hw['kind'] == 'holed' and 1 <= len(holes) <= 2 and all(not k['alive'] for k in holes) and hw['left'] == hw['bricks'].__len__() - len(holes) and await page.evaluate(f"{S}.ui.tag.kind === 'holed'"), [len(holes), hw['left']])
         hc = holes[0]; await page.evaluate(f"{S}.setBallZ(2300, 30, 30); {S}.walls.slice(1).forEach(w => (w.pz = w.z = 3200))"); await page.wait_for_timeout(80)  # the ball and the walls behind out of the probes (the queue slides back on its own)
         pt = await page.evaluate(f"{S}.brickScreen({S}.walls[0], {hc['col']}, {hc['row']})"); edge = [0, 0, 0]
-        for _ in range(8):  # the glow pulses over ~1 s: keep the most saffron sample
+        for _ in range(16):  # the glow pulses with a ~1.05 s period: sample over a whole period (more than one on a slow machine) and keep the most saffron sample
             e = await page.evaluate(PIX + f"({pt['x'] - pt['w'] / 2 + pt['w'] * 0.05}, {pt['y']})"); edge = max(edge, e, key=lambda c: c[0] - c[2]); await page.wait_for_timeout(70)
         mid = await page.evaluate(PIX + f"({pt['x']}, {pt['y']})")
         check('hole edges glow saffron, the hole itself shows the corridor', edge[0] > 150 and edge[1] > 100 and edge[0] > edge[2] + 40 and sum(mid) < 260, [edge, mid])
@@ -289,7 +290,8 @@ async def main():
         # spin: an off-centre slap curves the ball; a side-wall ricochet mirrors the spin and sparks
         await page.evaluate(f"{S}.walls.forEach(w => (w.left = 0))")  # the walls stand aside for the flight
         await page.mouse.move(640, 400); await page.wait_for_timeout(250)
-        await page.evaluate(hit_js(640, 400, 50)); await page.wait_for_timeout(60)
+        await page.evaluate("(() => { const now = performance.now(); cursor.history.length = 0; cursor.history.push({ t: now - 60, x: 640, y: 400 }, { t: now, x: 640, y: 400 }); })()")  # the hand held still on the ball's centre: no sideways motion left in the history to read as the hand's direction (a slow machine's frames would otherwise still see an earlier sweep)
+        await page.evaluate(hit_js(640, 400)); await page.wait_for_timeout(60)
         c0 = await page.evaluate(f"({{ spin: {S}.ball.spin, vx: {S}.ball.vx, lh: {S}.lastHit, speed: {S}.speed, pace: {S}.pace }})")
         check('dead-centre slap: near-zero spin and lateral speed, a straight fast ball (speed bonus)', abs(c0['spin']) < 0.25 and abs(c0['lh']['offx']) < 0.15 and c0['speed'] > c0['pace'] * (0.55 + 1.45 * c0['lh']['pw']) * 1.02, c0)
         await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(250)
@@ -318,10 +320,10 @@ async def main():
         check('a medium pass-through clears every brick the ball\'s footprint overlaps (hole at least ball-sized)', fp['dir'] == -1 and fp['z'] > fp['wz'] and fp['gone'] >= 6 and fp['over'] == 0, fp)
         await page.wait_for_function(f"{S}.ball && {S}.ball.dir === 1", timeout=9000); await page.wait_for_timeout(100)
         iw = await page.evaluate(f"{S}.spawnWall('brick')"); await page.evaluate(f"{S}.setBallZ(1500, 640, 400)"); await page.wait_for_timeout(200)  # an intact wall; the ball parked just past it, flying away
-        await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {iw['id']}), b = {S}.ball, c = brickCell(w, 1, 1); b.dir = -1; b.x = c.x; b.y = c.y; b.vx = b.vy = 0; b.z = w.z + 8; b.tier = 'hard'; {S}.speed = {S}.pace; }})()"); await page.wait_for_timeout(40)
+        await page.evaluate(f"(() => {{ const w = {S}.walls.find(w => w.id === {iw['id']}), b = {S}.ball, c = brickCell(w, 1, 1); b.dir = -1; b.x = c.x; b.y = c.y; b.vx = b.vy = 0; b.z = w.z + 8; b.tier = 'hard'; {S}.speed = 0; }})()"); await page.evaluate(FRAMES)  # parked (speed 0) just past the wall, so a slow frame cannot carry it out of the 'just passed' window before the probe; two frames drawn
         bs = await page.evaluate(f"{S}.ballScreen()"); px = await page.evaluate(PIX + f"({bs['x']}, {bs['y']})"); ov = await page.evaluate(f"({{ over: {S}.ui.ballOver, z: {S}.ball.z, wz: {S}.walls.find(w => w.id === {iw['id']}).z }})")
         check('just past a wall the ball is drawn on top of it: ball colour at its centre, the wall listed as drawn behind it', ov['z'] > ov['wz'] and iw['id'] in ov['over'] and px[0] > 170 and px[0] > px[2] + 40, [ov, px])
-        await page.evaluate(f"{S}.ball.z = {ov['wz']} + __grasp.CONFIG.STRIKE_WALL_GAP * 0.3"); await page.wait_for_timeout(40)
+        await page.evaluate(f"{S}.ball.z = {ov['wz']} + __grasp.CONFIG.STRIKE_WALL_GAP * 0.3"); await page.evaluate(FRAMES)
         check('further on, the wall is in front of the ball again (ordinary depth order)', await page.evaluate(f"{S}.ui.ballOver.length === 0"))
         await page.evaluate(f"{S}.setBallZ(1500, 640, 400)")
         check('kinds: no page errors', not errs, errs); await ctx.close()
@@ -713,8 +715,8 @@ async def main():
             check(tag + ' phone: two power-ups active: HUD icons under the card inside the screen, "' + ('כדור אש!' if he else 'Fireball!') + '" tag below them, three balls, power-up bricks on the level-2 walls', pw['n'] == 3 and len(pi['icons']) == 2 and all(8 <= i['x'] - i['r'] and i['x'] + i['r'] <= 352 and i['y'] - i['r'] >= pi['hud']['y'] + pi['hud']['h'] for i in pi['icons']) and ((pi['icons'][0]['x'] > pi['icons'][1]['x']) == he) and pi['tb'] and pi['tb']['pu'] and pi['tb']['kind'] == 'fire' and pi['tb']['y'] >= pi['icons'][0]['y'] + pi['icons'][0]['r'] and pi['tb']['x'] >= 8 and pi['tb']['x'] + pi['tb']['w'] <= 352 and pi['pu'] and await page.evaluate("t('pu_fire')") == ('כדור אש!' if he else 'Fireball!'), [pw, pi])
             await page.screenshot(path='tests/out/strike4_phone_' + tag + '.png')
             await page.evaluate(f"{S}.powerups.length = 0; {S}.balls.length = 1; {S}.capsules.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.setLevel(1)"); await page.wait_for_timeout(60)  # power-ups off again: the checks below expect one plain ball
-            mixed = await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(6); s.walls.length = 0; s.seenKinds.clear(); ['tnt', 'steel', 'holed'].forEach((k, i) => s.spawnWall(k, __grasp.CONFIG.STRIKE_Z_FAR * 0.4 + (i + 1) * __grasp.CONFIG.STRIKE_WALL_GAP)); s.spawnWall('glass'); s.setBallZ(600, 180, 300); return s.walls.map(w => w.kind); }})()"); await page.wait_for_timeout(120)
-            tb = await page.evaluate(f"{S}.ui.tagBox")
+            mixed = await page.evaluate(f"(() => {{ const s = {S}; s.boss = null; s.setLevel(6); s.walls.length = 0; s.seenKinds.clear(); ['tnt', 'steel', 'holed'].forEach((k, i) => s.spawnWall(k, __grasp.CONFIG.STRIKE_Z_FAR * 0.4 + (i + 1) * __grasp.CONFIG.STRIKE_WALL_GAP)); s.spawnWall('glass'); s.setBallZ(600, 180, 300); return s.walls.map(w => w.kind); }})()"); await page.wait_for_timeout(120)  # (a boss left over from the walls the earlier power-up balls cleared would suppress new-kind tags: none here)
+            await page.evaluate(FRAMES); tb = await page.evaluate(f"{S}.ui.tagBox")
             check(tag + ' phone: a mixed queue of wall kinds, "' + ('קיר זכוכית!' if he else 'Glass wall!') + '" tag under the HUD inside the screen', mixed[0] == 'glass' and set(mixed) >= {'tnt', 'steel', 'holed'} and tb and tb['kind'] == 'glass' and tb['x'] >= 8 and tb['x'] + tb['w'] <= 352 and await page.evaluate("t('wk_glass')") == ('קיר זכוכית!' if he else 'Glass wall!'), [mixed, tb])
             await page.screenshot(path='tests/out/strike3_phone_' + tag + '.png')
             await page.evaluate(f"{S}.setLevel(1)"); await page.wait_for_timeout(50)
