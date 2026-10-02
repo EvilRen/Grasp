@@ -2865,6 +2865,14 @@ const PU_KINDS = ['multi', 'big', 'slow', 'fire', 'life'], PU_WEIGHTS = { multi:
 const PU_MS = { multi: 20000, big: 20000, slow: 15000, fire: 15000, life: 0 }; // how long each runs (life is instant)
 const PU_COL = { multi: '#54c6eb', big: '#a98bff', slow: '#5b8def', fire: '#ff8a3d', life: '#ff6f59' };
 const PU_BIG = 1.7, PU_SLOW = 0.55;     // big: ball radius factor; slow: ball speed factor
+// Perks: after each level-up the game stops and offers 3 of these (1 of 3 picked by a tap or a 600 ms point / pinch dwell; the first card after 12 s);
+// each stacks up to PERK_MAX and lasts the round. wide: +20% reach; heavy: +1 brick per hit; magnet: +0.15 magnet assist; skin: +1 max life and a heart back;
+// lucky: +50% power-up bricks; spark: every return chips a random brick on the next wall; slow: serves 15% slower; coins: +50% coins
+const PERKS = ['wide', 'heavy', 'magnet', 'skin', 'lucky', 'spark', 'slow', 'coins'], PERK_MAX = 3;
+const PERK_COL = { wide: '#43d9a3', heavy: '#a98bff', magnet: '#ff6f59', skin: '#ff8fb1', lucky: '#7ed957', spark: '#ffd23f', slow: '#54c6eb', coins: '#ffc24b' };
+const PERK_AUTO_MS = 12000, PERK_DWELL_MS = 600, PERK_ARM_MS = 450, PERK_DELAY_MS = 1000; // auto-pick, dwell, input ignored right after the cards appear, wait after the level-up (the burst)
+const STREAK_TOASTS = { 5: 'streak5', 10: 'streak10', 20: 'streak20' }; // hit-streak milestones
+const CLOSE_SLOW = 0.4, CLOSE_MS = 250; // 'Close one!': the game runs at 40% for 250 ms
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
 const strike = { balls: [], _speed: 0, _trail: [], walls: [], debris: [], capsules: [], powerups: [], floaters: [], pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
@@ -2879,7 +2887,17 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], debris: [], capsul
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
   ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
     banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null, puIcons: [], heartPop: null,
-    levelBanner: null, levelUp: null, bossBanner: null, progressAt: -1e9, progShown: 0, progBar: null, boss: null }, // level banner / level-up burst / boss-down banner; progress bar pulse, eased fill and box; the boss's screen boxes
+    levelBanner: null, levelUp: null, bossBanner: null, progressAt: -1e9, progShown: 0, progBar: null, boss: null, // level banner / level-up burst / boss-down banner; progress bar pulse, eased fill and box; the boss's screen boxes
+    perkCards: null, perkHover: -1, perkDwell: null, perkTimer: 0, perkIcons: [], streakBox: null, streakToast: null, streakLost: null, nextCard: null, nextShown: null, nextAt: -1e9, closeAt: -1e9 }, // perk cards / hover / dwell / auto-pick time left; HUD perk icons; streak chip, milestone toast, fizzle; the NEXT card
+  // step 2 (roguelite run): perks { id: stacks }, the open offer (3 ids) or null, a pending offer time; the hit streak; 'Close one!' count and slow-mo end; the pre-rolled kind of the next wall
+  perks: {}, perkOffer: null, perkOfferAt: 0, perkAt: 0, perkAutoMs: null, streak: 0, bestStreak: 0, closeOnes: 0, slowUntil: -1e9, upcoming: null,
+  extrasOff: false, // test-only: no perk offers, no streak multiplier, no 'Close one!' (the older suites check exact scores and timings)
+  get next() { return upcomingKind(); }, // the kind of the wall that enters next ('boss' when the boss comes next)
+  pickPerk(i) { return pickPerk(i, performance.now()); }, // pick card i of the open offer
+  offerPerks() { strike.perkAt = 0; return openPerkOffer(performance.now()); }, // test helper / hook: open an offer now
+  setPerkTimeout(ms) { strike.perkAutoMs = ms > 0 ? ms : null; }, // test-only: the auto-pick fires after ms (null = 12 s)
+  perkStats() { return { reach: reachMul(), magnet: magnetVal(), lives: strike.lives, maxLives: strike.maxLives, puRate: puRate(), footprint: 1 + perkN('heavy'), serve: serveMul(), coins: coinMul(), spark: perkN('spark') }; },
+  get streakMul() { return streakMul(); },
   serve() { serveBall(performance.now()); },
   setBallZ(z, sx, sy) { // test helper: park the ball at depth z (and, optionally, at screen point sx/sy with no drift)
     if (!strike.ball) serveBall(performance.now());
@@ -2908,7 +2926,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], debris: [], capsul
   },
   setLevel(n) { // test helper: jump to level n (its first wall still to clear); the queued walls respawn for it (the first as the kind that level unlocks)
     strike.level = Math.max(1, n | 0); strike.cleared = clearedAtLevel(strike.level); strike.progress = 0; strike.nextKind = strike.level > 1 && strike.level <= STRIKE_KINDS.length ? STRIKE_KINDS[strike.level - 1] : null;
-    strike.seenKinds.clear(); strike.ui.tag = strike.ui.tagBox = null;
+    strike.seenKinds.clear(); strike.ui.tag = strike.ui.tagBox = null; strike.upcoming = null;
     const zs = strike.walls.map((w) => w.z); strike.walls.length = 0; zs.forEach((z) => spawnStrikeWall(z)); wallsTick(0);
   },
   setCleared(n) { strike.cleared = Math.max(0, (n | 0) - 1); wallCleared(performance.now()); }, // test helper: as if the n-th wall was just cleared (level-ups and the boss on its multiples included)
@@ -2964,10 +2982,12 @@ function resetStrike(now) {
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; roundStart();
+  strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + 600; strike.cued = false;
   const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = ui.heartPop = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false; ui.puIcons.length = 0;
   ui.levelUp = ui.bossBanner = ui.boss = ui.progBar = null; ui.progressAt = -1e9; ui.progShown = 0;
+  ui.perkCards = ui.perkDwell = ui.streakBox = ui.streakToast = ui.streakLost = ui.nextCard = ui.nextShown = null; ui.perkHover = -1; ui.perkIcons.length = 0; ui.nextAt = ui.closeAt = -1e9;
   ui.levelBanner = { t: now + 200, level: 1, goal: levelGoal(1) }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
@@ -2976,10 +2996,11 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
   const { level, progress } = levelFor(strike.cleared), lv = strike.level; strike.progress = progress;
   if (level === lv) return;
   strike.level = level; if (level > lv) track('strikeLevel', level);
-  if (level > lv && level <= STRIKE_KINDS.length) strike.nextKind = STRIKE_KINDS[level - 1]; // the first wall of a new level is the kind it unlocks
+  if (level > lv && level <= STRIKE_KINDS.length) { strike.nextKind = STRIKE_KINDS[level - 1]; strike.upcoming = null; } // the first wall of a new level is the kind it unlocks (the telegraph switches to it)
   if (fx && level > lv) {
     const bonus = 50 * level; strike.score += bonus; strike.ui.scoreAt = now;
-    strike.ui.levelUp = { t: now, level, bonus }; strike.ui.levelBanner = { t: now + 700, level, goal: levelGoal(level), up: true };
+    const perk = !strike.extrasOff && availablePerks().length > 0; if (perk) strike.perkAt = now + PERK_DELAY_MS; // the perk cards come after the burst; the level banner waits for the pick
+    strike.ui.levelUp = { t: now, level, bonus }; strike.ui.levelBanner = { t: now + (perk ? PERK_DELAY_MS : 700), level, goal: levelGoal(level), up: true };
     sfx('levelup'); ring(W / 2, H * 0.32, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.4, 700, 6); burst(W / 2, H * 0.32, '#ffc24b', 22); burst(W / 2, H * 0.32, '#fff3c4', 14); saveLevelBest();
   }
 }
@@ -3007,7 +3028,7 @@ function wallKindFor(level) { // level 1: brick only; each level to 6 unlocks th
   return 'brick';
 }
 function spawnStrikeWall(z, kind) {
-  kind = STRIKE_KINDS.includes(kind) ? kind : wallKindFor(strike.level);
+  kind = STRIKE_KINDS.includes(kind) ? kind : takeUpcoming();
   const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
   const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : level; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
@@ -3023,7 +3044,7 @@ function spawnStrikeWall(z, kind) {
     for (const k of order.slice(0, n)) { k.tnt = true; k.hp = 1; }
   }
   if (level >= 2) { // power-up bricks: gold-rimmed, an icon on the face; ~1 in 12 (Easy: 1 in 8, and never two walls in a row without one)
-    const easy = strike.diff !== 'normal', rate = CONFIG.STRIKE_PU_RATE * (easy ? 1.5 : 1), free = bricks.filter((k) => k.alive && !k.tnt); let n = 0;
+    const easy = strike.diff !== 'normal', rate = puRate(), free = bricks.filter((k) => k.alive && !k.tnt); let n = 0;
     for (const k of free) if (Math.random() < rate) { k.pu = puKind(); n++; }
     if (!n && easy && rate > 0 && strike.puDrought >= 1 && free.length) { free[Math.floor(Math.random() * free.length)].pu = puKind(); n++; }
     for (const k of free) if (k.pu) k.hp = 1; // a power-up brick breaks on any hit, however tough its wall
@@ -3031,6 +3052,13 @@ function spawnStrikeWall(z, kind) {
   }
   strike.walls.push(w); strike.walls.sort((a, b) => a.z - b.z);
   return w;
+}
+function peekUpcoming() { return strike.upcoming || (strike.upcoming = wallKindFor(strike.level)); } // the kind the next spawned wall will be, rolled ahead so the telegraph can show it
+function takeUpcoming() { const k = peekUpcoming(); strike.upcoming = null; return k; }
+function upcomingKind() { // what enters the corridor next: the boss (the next wall cleared brings it), else the nearest wall still beyond the far end, else the next spawn
+  if (!strike.boss && (strike.cleared + 1) % sd('STRIKE_BOSS_EVERY') === 0) return 'boss';
+  const Z = CONFIG.STRIKE_Z_FAR; let w = null; for (const q of strike.walls) if (q.z >= Z && (!w || q.z < w.z)) w = q;
+  return w ? w.kind : peekUpcoming();
 }
 function puKind() { // weighted pick; an extra life only while there is room for one
   const pool = PU_KINDS.filter((k) => k !== 'life' || strike.lives < strike.maxLives + 2), wts = pool.map((k) => PU_WEIGHTS[k]);
