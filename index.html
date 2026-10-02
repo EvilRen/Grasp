@@ -552,6 +552,7 @@ const I18N = {
     pkd_wide: 'Reach the ball from further away', pkd_heavy: 'Every hit breaks one more brick', pkd_magnet: 'The ball drifts to your hand', pkd_skin: 'One more heart, and one back now',
     pkd_lucky: 'More power-up bricks', pkd_spark: 'Each hit zaps a brick on the next wall', pkd_slow: 'Serves come in slower', pkd_coins: '+50% coins this round',
     next: 'NEXT', nk_brick: 'Bricks', nk_glass: 'Glass', nk_steel: 'Steel', nk_holed: 'Hole', nk_moving: 'Moving', nk_tnt: 'TNT', nk_boss: 'BOSS',
+    guest_cow: 'Cow!', guest_monkey: 'Monkey!', say_cow: 'MOO!', say_monkey: 'OOH OOH!', guestIncoming: 'Incoming!', boing: 'BOING!', ms_guest: 'Hit {n} flying animals', tm_guest: '{n} more flying animals for the mission', tm_guest1: '1 more flying animal for the mission',
     streak5: 'On fire!', streak10: 'Unstoppable!', streak20: 'Legendary!', streakLost: 'Streak lost', closeOne: 'Close one!',
     bricks: 'Bricks', cars: 'Cars', bigHit: 'Biggest hit', fruit: 'Fruit', bombsAvoided: 'Bombs dodged', playAgainSwipe: 'Tap or swipe to play again',
     paused: 'Paused – show your hand', getReady: 'Get ready',
@@ -641,6 +642,7 @@ const I18N = {
     pkd_wide: 'מגיעים לכדור ממרחק גדול יותר', pkd_heavy: 'כל מכה שוברת עוד לבנה', pkd_magnet: 'הכדור נמשך אל היד', pkd_skin: 'עוד לב, ולב אחד חוזר עכשיו',
     pkd_lucky: 'יותר לבני חיזוק', pkd_spark: 'כל מכה מזפזפת לבנה בקיר הבא', pkd_slow: 'ההגשות מגיעות לאט יותר', pkd_coins: '‎+50% מטבעות בסיבוב',
     next: 'הבא', nk_brick: 'לבנים', nk_glass: 'זכוכית', nk_steel: 'פלדה', nk_holed: 'חור', nk_moving: 'זז', nk_tnt: 'TNT', nk_boss: 'בוס',
+    guest_cow: 'פרה!', guest_monkey: 'קוף!', say_cow: 'מווו!', say_monkey: 'או או!', guestIncoming: 'זהירות, מגיע!', boing: 'בוינג!', ms_guest: 'פגעו ב-{n} חיות מעופפות', tm_guest: 'עוד {n} חיות מעופפות למשימה', tm_guest1: 'עוד חיה מעופפת אחת למשימה',
     streak5: 'בוערים!', streak10: 'אין עצירה!', streak20: 'אגדי!', streakLost: 'הרצף נשבר', closeOne: 'היה קרוב!',
     bricks: 'לבנים', cars: 'מכוניות', bigHit: 'המכה הגדולה', fruit: 'פירות', bombsAvoided: 'פצצות שנמנעו', playAgainSwipe: 'הקישו או החליקו כדי לשחק שוב',
     paused: 'מושהה – הראו את היד', getReady: 'להתכונן',
@@ -1715,6 +1717,7 @@ function drawFruit(f, now) { if (f.bomb) drawBomb(f, now); else blit(fruitSprite
 function drawHalf(h) { blit(fruitSprite(h.kind, h.side), h.x, h.y, h.ang + h.rot, h.r / FR); }
 function drawFloaters(list) {
   for (const f of list) {
+    if (f.bubble) { drawBubble(f); continue; }
     const sp = textSprite(f.text, f.big ? 26 : 20, f.big ? '#ffd166' : '#f1e9da', f.big ? 'rgba(255,170,40,0.9)' : 'rgba(255,255,255,0.55)');
     blit(sp, f.x, f.y - 8, 0, 1, Math.max(0, f.life));
   }
@@ -3003,6 +3006,10 @@ const PU_KINDS = ['multi', 'big', 'slow', 'fire', 'life'], PU_WEIGHTS = { multi:
 const PU_MS = { multi: 20000, big: 20000, slow: 15000, fire: 15000, life: 0 }; // how long each runs (life is instant)
 const PU_COL = { multi: '#54c6eb', big: '#a98bff', slow: '#5b8def', fire: '#ff8a3d', life: '#ff6f59' };
 const PU_BIG = 1.7, PU_SLOW = 0.55;     // big: ball radius factor; slow: ball speed factor
+// Surprise guests: every 4-6 serves (a serve = every launch from the far end: a fresh serve or the far-wall rebound; seeded on the 'guest' channel,
+// so the daily has them on the same serves for everyone) a flying cow or monkey comes instead of the ball: x1.35 the radius, x0.9 the speed, tumbling.
+// Slapped, it flies back screaming and smashes like a Big ball (at least medium power), +5 coins; missed, it boings off the screen (no life lost).
+const GUEST_KINDS = ['cow', 'monkey'], GUEST_R = 1.35, GUEST_SPD = 0.9, GUEST_COINS = 5;
 // Perks: after each level-up the game stops and offers 3 of these (1 of 3 picked by a tap or a 600 ms point / pinch dwell; the first card after 12 s);
 // each stacks up to PERK_MAX and lasts the round. wide: +20% reach; heavy: +1 brick per hit; magnet: +0.15 magnet assist; skin: +1 max life and a heart back;
 // lucky: +50% power-up bricks; spark: every return chips a random brick on the next wall; slow: serves 15% slower; coins: +50% coins
@@ -3103,7 +3110,13 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   levelBase: 0, beatAt: 0, beats: 0, // the current level's base pace (the pace resets to it on a level-up); the next heartbeat; heartbeats played this round
   tuning(level, diff) { return strikeTuning(level === undefined ? strike.level : level, diff); }, // the derived difficulty values for a level (default: the current one)
   get beatMs() { return strikeTuning().beatMs; }, trailMs(b) { return trailMs(b || strike.balls[0] || {}); },
-  extrasOff: false, // test-only: no perk offers, no streak multiplier, no 'Close one!' (the older suites check exact scores and timings)
+  extrasOff: false, // test-only: no perk offers, no streak multiplier, no 'Close one!', no surprise guests (the older suites check exact scores and timings)
+  // surprise guests: serves launched (pitches), the pre-rolled next guest { at: pitch, kind }, the kinds so far, hits / misses / served this round, the missed ones boinging off the screen
+  pitches: 0, guestQ: null, guestKinds: [], guestHits: 0, guestMisses: 0, guestsServed: 0, bouncers: [], lastGuest: null, _guestEvery: null,
+  get guestEvery() { return strike._guestEvery; }, // test override: null = every 4-6 serves (seeded), n > 0 = every n serves (even with extrasOff), 0 = no guests
+  set guestEvery(v) { strike._guestEvery = v === null || v === undefined ? null : Math.max(0, v | 0); guestRoll(); },
+  get guestNext() { const q = strike.guestQ; return q && guestsOn() ? { at: q.at, kind: q.kind, in: q.at - strike.pitches } : null; }, // serves until the next guest (1 = the next serve)
+  spawnGuest(kind) { return spawnGuest(kind, performance.now()); }, // test helper / hook: a guest ('cow' | 'monkey') served now
   get next() { return upcomingKind(); }, // the kind of the wall that enters next ('boss' when the boss comes next)
   pickPerk(i) { return pickPerk(i, performance.now()); }, // pick card i of the open offer
   offerPerks() { strike.perkAt = 0; return openPerkOffer(performance.now()); }, // test helper / hook: open an offer now
@@ -3152,7 +3165,8 @@ function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y,
 function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
 function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
 function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1) * (dailyMod() === 'tiny' ? 0.7 : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
-function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballR() * p.s, s: p.s }; }
+function ballRad(b) { return ballR() * (b && b.guest ? GUEST_R : 1); } // one ball's radius: a guest is x1.35
+function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballRad(b) * p.s, s: p.s }; }
 function drawCorridor(g) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish();
   const P = (x, y, z) => { const s = STRIKE_F / (STRIKE_F + z); return [v.x + x * s, v.y + y * s]; };
@@ -3197,6 +3211,7 @@ function resetStrike(now) {
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; strike.runReturns = strike.paceUps = 0; strike.ui.faster = null; roundStart();
+  strike.pitches = strike.guestHits = strike.guestMisses = strike.guestsServed = 0; strike.guestKinds.length = strike.bouncers.length = 0; strike.lastGuest = null; guestRoll(); // (after the daily's generators reset: the same guests on the same serves)
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + (daily.on ? 2400 : 600); strike.cued = false; // (the daily's banner reads before the first serve)
@@ -3401,7 +3416,7 @@ function addClones() { // Multi-ball: two more balls beside the current one (or 
   const b = strike.balls[0]; if (!b) return;
   const { L, R } = corridor(), r = ballR(), off = (R - L) * 0.16, clamp = (v) => Math.max(L + r, Math.min(R - r, v));
   while (strike.balls.length < 3) {
-    const s = strike.balls.length === 1 ? -1 : 1, c = { ...b, trail: [], x: clamp(b.x + s * off), x0: clamp(b.x0 + s * off), tx: clamp(b.tx + s * off), vx: (b.vx || 0) + s * 0.04, combo: 0, born: performance.now() };
+    const s = strike.balls.length === 1 ? -1 : 1, c = { ...b, trail: [], x: clamp(b.x + s * off), x0: clamp(b.x0 + s * off), tx: clamp(b.tx + s * off), vx: (b.vx || 0) + s * 0.04, combo: 0, born: performance.now(), guest: null, speed: b.guest ? b.speed / GUEST_SPD : b.speed }; // (the clones are plain balls)
     strike.balls.push(c);
   }
   const sc = ballScreen(b); ring(sc.x, sc.y, 'rgba(84,198,235,0.8)', sc.r * 2.5, 320, 3);
@@ -3447,7 +3462,7 @@ function wallsTick(dt) { // walls sit in slots in depth order; a cleared one lea
 // SUPER; a TNT crate that breaks blows a radius-2 area (chaining into other crates); a hole (holed, or a moving wall's free column)
 // lets the ball through with a whoosh. Returns what the ball does next: bounce / slow / pass.
 function smashWall(w, b, now) {
-  const fire = !!b.fire, tier = fire ? 'super' : b.tier || 'soft', kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballR(); // a fireball burns through any wall like a SUPER slap
+  const fire = !!b.fire, tier0 = fire ? 'super' : b.tier || 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0, kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballRad(b); // (a guest: x1.35 the footprint, never softer than medium) a fireball burns through any wall like a SUPER slap
   const edgeDist = (k) => { const c = brickCell(w, k.col, k.row); return Math.hypot(Math.max(0, Math.abs(b.x - c.x) - c.w / 2), Math.max(0, Math.abs(b.y - c.y) - c.h / 2)); };
   const nearest = (within) => { let best = null, bd = within; for (const k of w.bricks) { if (!k.alive) continue; const d = edgeDist(k); if (d < bd || (d === 0 && !best)) { bd = d; best = k; } } return best; };
   const ac = Math.floor((b.x - L - (w.ox || 0)) / cw), ar = Math.floor((b.y - T) / ch), under = w.bricks.find((k) => k.col === ac && k.row === ar); // the cell under the ball's centre
@@ -3510,12 +3525,12 @@ function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 
   return n;
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
-  const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
+  const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballRad(b), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
   b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
   const dr = strikeTuning().drift, fx = Math.min(0.95, 0.75 * dr), fy = Math.min(0.85, 0.6 * dr); b.curve = 0;
   b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25 * dr, (L + r) * fx, (R - r) * fx); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25 * dr, (T + r) * fy, (B - r) * fy);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
-  b.speed = strike.pace;
+  b.speed = strike.pace * (b.guest ? GUEST_SPD : 1);
 }
 function spawnDebris(w, k, b, tier) { // one or two fragments per brick (a glass pane: 3-5 fine sparkling shards), flung off the wall toward the camera, tumbling and fading
   const c = brickCell(w, k.col, k.row), kick = { soft: 0.5, medium: 0.8, hard: 1.1, super: 1.5 }[tier], glass = w.kind === 'glass', n = glass ? 3 + Math.floor(Math.random() * 3) : Math.random() < 0.5 ? 2 : 1;
@@ -3612,15 +3627,16 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
   strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(CONFIG.STRIKE_Z_FAR + i * wallGap() * 0.5); // normal walls resume, sliding in from the far end
 }
 function strikeTarget(b) { // where the incoming ball drifts to: a random spot inside the corridor, so the player has to move
-  const { L, R, T, B } = corridor(), r = ballR(), tu = strikeTuning(), fx = Math.min(0.95, 0.75 * tu.drift), fy = Math.min(0.85, 0.6 * tu.drift); // the aim range widens with the level
+  const { L, R, T, B } = corridor(), r = ballRad(b), tu = strikeTuning(), fx = Math.min(0.95, 0.75 * tu.drift), fy = Math.min(0.85, 0.6 * tu.drift); // the aim range widens with the level
   b.tx = (L + r) * fx + strikeRand('serve') * ((R - L) - 2 * r) * fx; b.ty = (T + r) * fy + strikeRand('serve') * ((B - T) - 2 * r) * fy;
   b.curve = 0; b.waves = tu.waves; if (tu.curve > 0) b.curve = (strikeRand('serve') < 0.5 ? -1 : 1) * tu.curve * (R - L); // from level 4 the path bows sideways (zero at both ends: it still lands on the target)
 }
 function serveBall(now) {
   const { L, R, T, B } = corridor();
-  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (strikeRand('serve') - 0.5) * (R - L) * 0.3, y0: (strikeRand('serve') - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now, speed: strike.pace * serveMul(), trail: [], fire: false }; // Slow Start: served slower
+  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (strikeRand('serve') - 0.5) * (R - L) * 0.3, y0: (strikeRand('serve') - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now, speed: strike.pace * serveMul(), trail: [], fire: false, guest: null }; // Slow Start: served slower
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
   strike.balls.length = 0; strike.balls.push(b); strike.serves++; strike.cued = false; strike.ui.cue = null;
+  guestPitch(b, now); // (a surprise guest instead of the ball on its serve)
   if (powerOn('multi')) addClones();
 }
 function handSpeed(now, win) { return Math.max(cursorSpeed(now, win), mode === 'camera' ? hand.rawSpeed : 0); } // px/ms: the smoothed cursor or, on camera, the raw tracker samples, whichever is faster
@@ -3633,14 +3649,14 @@ function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at a
 }
 function strikeHit(b, now) { // the palm meets the ball: power from the hand speed over the last 100 ms; direction and sidespin from where on the ball it landed and which way the hand was moving
   const sc = ballScreen(b), s = strikeScale(), v = handSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
-  const tier = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft';
+  const tier0 = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0; // a guest always goes back at least medium
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   const hv = cursorVel(now, 100), hx = Math.max(-1, Math.min(1, hv.x / (1.6 * s))), hy = Math.max(-1, Math.min(1, hv.y / (1.6 * s))); // the hand's own direction, -1..1 per axis
   const latx = -offx * 1.2 + hx * 0.7, laty = -offy * 1.2 + hy * 0.7, straight = Math.max(0, 1 - Math.hypot(latx, laty) / 0.5); // dead centre with a hand moving straight in = a straight, faster ball
   b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
   b.vx = latx * W * 0.00035 * (0.6 + pw); b.vy = laty * H * 0.00035 * (0.6 + pw);
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
-  b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight));
+  b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight)) * (b.guest ? GUEST_SPD : 1);
   const pts = scorePts(1 + STRIKE_BONUS[tier]); strike.score += pts; // (x the streak multiplier: the returns before this one)
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
@@ -3649,7 +3665,8 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3);
   burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
   if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = now; }
-  if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
+  if (b.guest) guestHit(b, sc, now);
+  else if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
   streakUp(now); sparkChip(now); paceUp(now);
 }
 const PACE_UP_EVERY = 5, PACE_UP = 1.05; // every 5 returns in a row on a level the pace steps up 5% (within the level's cap)
@@ -3665,6 +3682,62 @@ function strikeMiss(b, now) { // a ball flew past: gone; with other balls still 
   loseLife(now);
   if (!strike.over) { strike.serveAt = now + 800; strike.cued = false; }
 }
+/* --- surprise guests: a flying cow or monkey instead of the ball every 4-6 serves --- */
+function guestsOn() { const e = strike._guestEvery; return e === 0 ? false : e > 0 ? true : !strike.extrasOff; }
+function guestRoll() { // pre-roll the next guest: on which serve (4-6 from now, or the test override) and which animal (never three of a kind in a row)
+  if (!guestsOn()) { strike.guestQ = null; return; }
+  const e = strike._guestEvery, n = e > 0 ? e : 4 + Math.floor(strikeRand('guest') * 3), h = strike.guestKinds;
+  let kind = strikeRand('guest') < 0.5 ? 'cow' : 'monkey';
+  if (h.length >= 2 && h[h.length - 1] === kind && h[h.length - 2] === kind) kind = kind === 'cow' ? 'monkey' : 'cow';
+  strike.guestQ = { at: strike.pitches + n, kind };
+}
+function guestPitch(b, now) { // every launch from the far end is a serve for the guests; on the scheduled one this ball becomes the guest
+  if (!strike.guestQ && guestsOn()) guestRoll(); // (guests just switched on)
+  strike.pitches++;
+  const q = strike.guestQ;
+  if (q && guestsOn() && strike.pitches >= q.at) { strike.guestKinds.push(q.kind); makeGuest(b, q.kind, now); guestRoll(); }
+  else if (b.guest) { b.guest = null; b.tumble = 0; } // a guest that flew back comes in again as the ball (its speed was just reset)
+}
+function makeGuest(b, kind, now) {
+  const { L, R, T, B } = corridor(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
+  b.guest = kind; b.speed *= GUEST_SPD; b.guestAt = now; b.guestHitAt = -1e9; b.trail.length = 0;
+  b.tumble = (Math.random() < 0.5 ? -1 : 1) * (0.0022 + Math.random() * 0.0018); // (visual only: Math.random keeps the daily's channels untouched)
+  const r = ballRad(b); b.tx = clamp(b.tx, L + r, R - r); b.ty = clamp(b.ty, T + r, B - r); // the bigger guest still lands inside the corridor
+  strike.guestsServed++; strike.lastGuest = { kind, t: now, pitch: strike.pitches };
+  const v = vanish(); strike.floaters.push({ x: v.x, y: v.y - 46, text: t('guestIncoming'), big: true, life: 1.3 });
+  sfx('whistle'); grippySay(kind);
+}
+function spawnGuest(kind, now) { // hook: a guest served right now
+  kind = GUEST_KINDS.includes(kind) ? kind : 'cow';
+  serveBall(now); const b = strike.balls[0];
+  if (!b.guest) { strike.guestKinds.push(kind); makeGuest(b, kind, now); } else { b.guest = kind; strike.guestKinds[strike.guestKinds.length - 1] = kind; strike.lastGuest.kind = kind; }
+  return b;
+}
+function guestHit(b, sc, now) { // slapped: it flies back screaming, a speech bubble, +5 coins, the mission
+  b.guestHitAt = now; strike.guestHits++;
+  sfx(b.guest === 'cow' ? 'moo' : 'monkey');
+  strike.floaters.push({ x: sc.x + sc.r * (sc.x < W / 2 ? 0.9 : -0.9), y: sc.y - sc.r * 1.05, text: t('say_' + b.guest), big: true, life: 1.5, bubble: true });
+  addCoins(GUEST_COINS); track('guest', 1);
+  burst(sc.x, sc.y, b.guest === 'cow' ? '#ffffff' : '#c08a4a', 10);
+}
+function guestMiss(b, now) { // a guest flew past: it splats on the 'screen' with a squashed face, boings and bounces off; no life lost, no streak broken
+  const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
+  const sc = ballScreen(b), side = sc.x < W / 2 ? -1 : 1;
+  strike.bouncers.push({ kind: b.guest, x: sc.x, y: sc.y, r: Math.min(sc.r, Math.min(W, H) * 0.3), t: now, vx: side * (0.22 + Math.random() * 0.12), vy: -0.75, rot: b.rot || 0, vr: side * 0.012 });
+  strike.guestMisses++; strike.power = '';
+  sfx('boing'); shakeScreen(0.8);
+  strike.floaters.push({ x: sc.x, y: Math.max(strike.ui.top + 100, sc.y - sc.r * 1.1), text: t('boing'), big: true, life: 1.1, bubble: true });
+  if (!B.length && !strike.over) { strike.serveAt = now + 800; strike.cued = false; }
+}
+const GUEST_SQUASH_MS = 220;
+function bouncersTick(now, dt) { // the missed guests: squashed for a moment, then off the screen in a tumbling arc
+  const Q = strike.bouncers;
+  for (let i = Q.length - 1; i >= 0; i--) {
+    const q = Q[i]; if (now - q.t < GUEST_SQUASH_MS) continue;
+    q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 0.0024 * dt; q.rot += q.vr * dt;
+    if (q.y - q.r > H + 40 || now - q.t > 4000) Q.splice(i, 1);
+  }
+}
 function loseLife(now) { // a life gone (a missed ball, or the boss reaching the player): the heart shakes hollow, a red flash; the last one ends the round
   strike.lives--; strike.flash = now;
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
@@ -3678,7 +3751,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   if (strike.ui.newBest) grippySay('newBest'); // (a daily: a new best for today)
 }
 function strikeTick(now, dt) {
-  tickFloaters(strike.floaters, dt); debrisTick(dt);
+  tickFloaters(strike.floaters, dt); debrisTick(dt); bouncersTick(now, dt);
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
   if (strike.perkOffer) { perkTick(now, dt); return; } // perk cards up: everything waits for the pick (the auto-pick clock runs even while the hand is missing)
   if (strike.perkAt && now >= strike.perkAt) { strike.perkAt = 0; if (openPerkOffer(now)) return; }
@@ -3697,7 +3770,7 @@ function strikeTick(now, dt) {
   for (const b of strike.balls.slice()) ballTick(b, now, dt, fire, mul); // every ball in play (three on Multi-ball)
 }
 function ballTick(b, now, dt, fire, mul) {
-  const dz = b.speed * mul * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR();
+  const dz = b.speed * mul * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballRad(b);
   b.fire = fire && b.dir < 0;
   if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane); walls never block it
     b.z -= dz;
@@ -3716,7 +3789,7 @@ function ballTick(b, now, dt, fire, mul) {
         const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'), late = b.z <= zl + 0.15 * (zo - zl), edge = d > 0.8 * reach;
         strikeHit(b, now); if ((late || edge) && !strike.extrasOff) closeOne(b, now, late ? 'late' : 'edge'); // the last 15% of the window, or the outer 20% of the reach
       }
-      else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { strikeMiss(b, now); return; }
+      else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { if (b.guest) guestMiss(b, now); else strikeMiss(b, now); return; } // a missed guest boings off the screen: no life lost
     }
   } else { // outgoing: lateral velocity from the hit, curved by the spin, ricocheting off the corridor sides, through the walls, then off the far wall
     const z0 = b.z;
@@ -3735,10 +3808,11 @@ function ballTick(b, now, dt, fire, mul) {
       b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
       if (b === strike.balls[0]) { const T = strikeTuning(); strike.pace = Math.max(strike.pace, Math.min(Math.min(T.maxSpeed, T.paceCap) * paceMul(), strike.pace * T.grow)); } // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
       b.speed = strike.pace;
+      if (b === strike.balls[0]) guestPitch(b, now); // the rebound is the next serve: a guest may come instead (and a guest that went back comes as a ball)
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
   }
-  b.rot = (b.rot || 0) + dt * (0.002 * b.dir + (b.spin || 0) * 0.012); // the seams (and the spin stripe) turn with the spin
+  b.rot = (b.rot || 0) + dt * (b.guest ? (b.tumble || 0) * (b.dir < 0 ? 2.2 : 1) : 0.002 * b.dir + (b.spin || 0) * 0.012); // a guest tumbles (faster on the way back); the seams (and the spin stripe) turn with the spin
   const sc = ballScreen(b), tr = b.trail; tr.push({ x: sc.x, y: sc.y, r: sc.r, t: now });
   if (sc.s > 0.08 && b.dir < 0) trailFx(skinOf('trail'), sc.x, sc.y, 0, 0); // embers / stars behind the returning ball
   while (tr.length && now - tr[0].t > trailMs(b)) tr.shift();
@@ -3899,6 +3973,7 @@ function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeSha
 function drawStrikeBall(bl, now) {
   const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, fire = !!bl.fire, tw = bl.super || fire || curving ? 320 : 160;
   drawShadow(fl.x, fl.y, sc.r * 2.4, sc.r * 0.9, 0.5 + 0.35 * sc.s); // a firm floor shadow: depth reads against the walls
+  if (bl.guest) { drawGuest(bl, sc, now); return; } // a surprise guest: the cartoon head instead of the ball
   const tr = bl.trail || [], tskin = skinOf('trail');
   if (tr.length > 1) { // motion trail: fading discs (a long saffron streak after a SUPER hit, orange flames behind a fireball, a lilac curve line while the ball spins) in the equipped trail's colours
     resetView();
@@ -3914,6 +3989,89 @@ function drawStrikeBall(bl, now) {
   resetView();
   if (powerOn('slow')) { ctx.globalAlpha = 0.28; ctx.fillStyle = '#5b8def'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } // Slow-mo: a blue tint on the ball
   ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
+}
+/* --- surprise guests: cartoon cow / monkey heads (front-facing, cached per face), the bubble floaters, the missed ones boinging off --- */
+const GUEST_INK = '#2a2230';
+function guestEyes(g, R, xs, y, er, face) { // a pair of eyes by mood: 'in' big and round, 'happy' closed arcs, 'dizzy' spirals, 'squash' squeezed > <
+  g.lineCap = g.lineJoin = 'round';
+  for (const s of [-1, 1]) {
+    const x = s * xs * R, r = er * R;
+    if (face === 'happy') { g.strokeStyle = GUEST_INK; g.lineWidth = R * 0.075; g.beginPath(); g.arc(x, y * R + r * 0.35, r * 0.75, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); continue; }
+    if (face === 'squash') { g.strokeStyle = GUEST_INK; g.lineWidth = R * 0.075; g.beginPath(); g.moveTo(x - s * r * 0.7, y * R - r * 0.6); g.lineTo(x + s * r * 0.5, y * R); g.lineTo(x - s * r * 0.7, y * R + r * 0.6); g.stroke(); continue; }
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y * R, r, 0, TAU); g.fill(); g.lineWidth = R * 0.04; g.strokeStyle = GUEST_INK; g.stroke();
+    if (face === 'dizzy') { g.lineWidth = R * 0.035; g.beginPath(); for (let a = 0; a < TAU * 2.3; a += 0.25) { const q = r * 0.85 * a / (TAU * 2.3); g.lineTo(x + Math.cos(a * s) * q, y * R + Math.sin(a * s) * q); } g.stroke(); continue; }
+    g.fillStyle = '#16121c'; g.beginPath(); g.arc(x + s * r * 0.08, y * R + r * 0.12, r * 0.6, 0, TAU); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x + s * r * 0.08 - r * 0.22, y * R - r * 0.12, r * 0.22, 0, TAU); g.fill();
+  }
+}
+function guestMouth(g, R, y, w, face, tongueCol) { // the mouth by mood, centred at (0, y R), w R wide
+  g.lineCap = g.lineJoin = 'round'; g.strokeStyle = GUEST_INK; g.lineWidth = R * 0.06; const hw = w * R / 2, yy = y * R;
+  if (face === 'happy' || face === 'in') { // an open grin (bigger when happy) with a tongue
+    const d = (face === 'happy' ? 0.36 : 0.24) * R; g.beginPath(); g.moveTo(-hw, yy); g.quadraticCurveTo(0, yy + d * 1.9, hw, yy); g.quadraticCurveTo(0, yy + d * 0.35, -hw, yy); g.closePath(); g.fillStyle = '#5a1a24'; g.fill();
+    g.save(); g.clip(); g.fillStyle = tongueCol; g.beginPath(); g.ellipse(0, yy + d * 1.05, hw * 0.5, d * 0.45, 0, 0, TAU); g.fill(); g.fillStyle = '#ffffff'; g.fillRect(-hw, yy - R * 0.02, hw * 2, d * 0.42); g.restore(); g.stroke();
+  } else if (face === 'dizzy') { // a wobbly line with the tongue hanging out
+    g.fillStyle = tongueCol; g.beginPath(); g.ellipse(hw * 0.25, yy + R * 0.09, R * 0.09, R * 0.12, 0.2, 0, TAU); g.fill(); g.lineWidth = R * 0.035; g.stroke(); g.lineWidth = R * 0.06;
+    g.beginPath(); g.moveTo(-hw, yy); for (let i = 1; i <= 4; i++) g.quadraticCurveTo(-hw + (i - 0.5) * hw / 2, yy + (i % 2 ? -1 : 1) * R * 0.06, -hw + i * hw / 2, yy); g.stroke();
+  } else { g.fillStyle = '#5a1a24'; g.beginPath(); g.ellipse(0, yy + R * 0.04, R * 0.1, R * 0.08, 0, 0, TAU); g.fill(); g.stroke(); } // squashed: a small 'o'
+}
+function guestSprite(kind, face) { // R = 64 at the ball's scale (the head fills the guest's radius; ears and horns poke out a little)
+  const R = 64;
+  return makeSprite('guest|' + kind + '|' + face, R * 3, R * 3, R * 1.5, R * 1.5, (g) => {
+    g.lineJoin = g.lineCap = 'round'; const ink = (w) => { g.lineWidth = R * w; g.strokeStyle = GUEST_INK; g.stroke(); };
+    if (kind === 'cow') {
+      for (const s of [-1, 1]) { // horns, then ears (pink inside)
+        g.beginPath(); g.moveTo(s * R * 0.32, -R * 0.7); g.quadraticCurveTo(s * R * 0.42, -R * 1.12, s * R * 0.72, -R * 1.18); g.quadraticCurveTo(s * R * 0.58, -R * 0.98, s * R * 0.6, -R * 0.62); g.closePath(); g.fillStyle = '#f3e3b5'; g.fill(); ink(0.045);
+        g.save(); g.translate(s * R * 0.92, -R * 0.38); g.rotate(s * 0.45); g.beginPath(); g.ellipse(0, 0, R * 0.36, R * 0.18, 0, 0, TAU); g.fillStyle = '#fbfbf7'; g.fill(); ink(0.045);
+        g.beginPath(); g.ellipse(s * R * 0.04, 0, R * 0.22, R * 0.09, 0, 0, TAU); g.fillStyle = '#ff9fb5'; g.fill(); g.restore();
+      }
+      const head = () => { g.beginPath(); g.ellipse(0, -R * 0.05, R * 0.82, R * 0.88, 0, 0, TAU); };
+      head(); g.fillStyle = '#fbfbf7'; g.fill();
+      g.save(); head(); g.clip(); g.fillStyle = '#1c1b22'; // black patches: round the left eye, on the right cheek, a spot on top
+      g.beginPath(); g.ellipse(-R * 0.4, -R * 0.3, R * 0.34, R * 0.3, -0.3, 0, TAU); g.fill();
+      g.beginPath(); g.ellipse(R * 0.7, R * 0.02, R * 0.3, R * 0.36, 0.4, 0, TAU); g.fill();
+      g.beginPath(); g.ellipse(R * 0.18, -R * 0.82, R * 0.22, R * 0.16, 0.2, 0, TAU); g.fill();
+      const sh = g.createRadialGradient(-R * 0.3, -R * 0.4, R * 0.1, 0, 0, R * 1.05); sh.addColorStop(0, 'rgba(255,255,255,0)'); sh.addColorStop(0.75, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(60,50,80,0.28)'); g.fillStyle = sh; g.fillRect(-R, -R, R * 2, R * 2);
+      g.restore(); head(); ink(0.06);
+      guestEyes(g, R, 0.34, -0.26, 0.19, face);
+      if (face === 'happy') { g.fillStyle = 'rgba(255,120,150,0.45)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * R * 0.58, R * 0.05, R * 0.12, R * 0.08, 0, 0, TAU); g.fill(); } }
+      g.beginPath(); g.ellipse(0, R * 0.44, R * 0.62, R * 0.38, 0, 0, TAU); g.fillStyle = '#ffb3c4'; g.fill(); ink(0.05); // the pink snout, its nostrils, the mouth under them
+      g.fillStyle = '#8a3a50'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * R * 0.24, R * 0.36, R * 0.08, R * 0.11, s * 0.3, 0, TAU); g.fill(); }
+      guestMouth(g, R, 0.58, 0.42, face === 'in' ? 'in' : face, '#ff6f8a');
+    } else { // monkey
+      for (const s of [-1, 1]) { g.beginPath(); g.arc(s * R * 0.9, -R * 0.05, R * 0.3, 0, TAU); g.fillStyle = '#8a5a2b'; g.fill(); ink(0.05); g.beginPath(); g.arc(s * R * 0.9, -R * 0.05, R * 0.17, 0, TAU); g.fillStyle = '#f1c99a'; g.fill(); }
+      g.beginPath(); g.moveTo(-R * 0.2, -R * 0.78); g.quadraticCurveTo(-R * 0.05, -R * 1.12, R * 0.05, -R * 0.82); g.quadraticCurveTo(R * 0.15, -R * 1.05, R * 0.24, -R * 0.78); g.closePath(); g.fillStyle = '#7a4c22'; g.fill(); ink(0.04); // a tuft on top
+      g.beginPath(); g.arc(0, 0, R * 0.85, 0, TAU); g.fillStyle = '#8a5a2b'; g.fill();
+      g.save(); g.beginPath(); g.arc(0, 0, R * 0.85, 0, TAU); g.clip(); const sh = g.createRadialGradient(-R * 0.3, -R * 0.4, R * 0.1, 0, 0, R * 0.95); sh.addColorStop(0, 'rgba(255,220,170,0.18)'); sh.addColorStop(0.7, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(30,10,0,0.3)'); g.fillStyle = sh; g.fillRect(-R, -R, R * 2, R * 2); g.restore();
+      g.beginPath(); g.arc(0, 0, R * 0.85, 0, TAU); ink(0.06);
+      const face2 = () => { g.beginPath(); g.arc(-R * 0.27, -R * 0.2, R * 0.3, 0, TAU); g.moveTo(R * 0.57, -R * 0.2); g.arc(R * 0.27, -R * 0.2, R * 0.3, 0, TAU); g.moveTo(R * 0.6, R * 0.3); g.ellipse(0, R * 0.3, R * 0.6, R * 0.42, 0, 0, TAU); };
+      face2(); g.fillStyle = '#f3d2a2'; g.fill('nonzero');
+      guestEyes(g, R, 0.27, -0.2, 0.17, face);
+      g.fillStyle = '#5a3416'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * R * 0.08, R * 0.1, R * 0.045, R * 0.06, 0, 0, TAU); g.fill(); }
+      if (face === 'happy') { g.fillStyle = 'rgba(255,110,120,0.4)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * R * 0.42, R * 0.18, R * 0.1, R * 0.07, 0, 0, TAU); g.fill(); } }
+      guestMouth(g, R, 0.3, 0.7, face, '#ff6f8a');
+    }
+  });
+}
+function guestFace(b, now) { return b.dir > 0 ? 'in' : now - (b.guestHitAt || -1e9) < 320 ? 'happy' : 'dizzy'; } // coming in / just slapped / flying back
+function drawGuest(bl, sc, now) { // the 2D guest: its floor shadow is drawn by the caller; the head tumbles, with a little pop when slapped
+  const pop = Math.max(0, 1 - (now - (bl.guestHitAt || -1e9)) / 200);
+  blit(guestSprite(bl.guest, guestFace(bl, now)), sc.x, sc.y, bl.rot || 0, sc.r / 64 * (1 + 0.18 * pop));
+}
+function drawBouncers(now) { // missed guests: squashed flat against the screen, then springing off it
+  for (const q of strike.bouncers) {
+    const e = now - q.t, sq = e < GUEST_SQUASH_MS ? Math.sin(Math.PI * e / GUEST_SQUASH_MS) : 0, kx = q.r / 64 * (1 + 0.35 * sq), ky = q.r / 64 * (1 - 0.35 * sq);
+    const sp = guestSprite(q.kind, 'squash'), c = Math.cos(q.rot), s = Math.sin(q.rot);
+    ctx.setTransform(c * kx * DPR, s * kx * DPR, -s * ky * DPR, c * ky * DPR, (q.x + view.x) * DPR, (q.y + view.y) * DPR); ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
+  }
+  resetView();
+}
+function drawBubble(f) { // a speech-bubble floater: white rounded box with a tail and dark bold text (MOO! / OOH OOH! / BOING!)
+  const sp = textSprite(f.text, 22, '#2a1a10', null, 800), w = sp.tw + 26, h = 38, a = Math.max(0, Math.min(1, f.life * 1.5)), x = f.x - w / 2, y = f.y - h / 2;
+  resetView(); ctx.globalAlpha = a; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = GUEST_INK; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 14); ctx.moveTo(f.x - 8, y + h - 1); ctx.lineTo(f.x - 2, y + h + 12); ctx.lineTo(f.x + 8, y + h - 1); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 14); ctx.stroke(); ctx.beginPath(); ctx.moveTo(f.x - 8, y + h); ctx.lineTo(f.x - 2, y + h + 12); ctx.lineTo(f.x + 8, y + h); ctx.stroke();
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(f.x - 7, y + h - 3, 14, 4); ctx.globalAlpha = 1;
+  blit(sp, f.x, f.y, 0, 1, a);
 }
 /* --- power-ups: the icon glyphs, the gold-rimmed brick overlay, the capsule, the HUD timers --- */
 function puIcon(g, kind, r, col = '#fff8ec') { // a simple glyph inside radius r: three balls / a big ball with arrows / a clock / a flame / a heart
@@ -4162,20 +4320,22 @@ function nextIconSprite(kind) { // a tiny picture of the wall kind for the NEXT 
 }
 function drawNextCard(now) { // above the far end of the corridor: 'NEXT' + the kind of the wall that enters next (the boss's face when it comes next); a pulse when it changes
   const ui = strike.ui;
-  if (strike.over || strike.extrasOff || (strike.boss && strike.boss.z < CONFIG.STRIKE_Z_FAR)) { ui.nextCard = null; return; } // (the boss fills the far end while it lives)
-  const kind = upcomingKind(); if (kind !== ui.nextShown) { if (ui.nextShown) { ui.nextAt = now; sfx('tick'); } ui.nextShown = kind; }
-  const rtl = lang === 'he', boss = kind === 'boss', col = STRIKE_KIND_COL[kind] || '#c8654a', { L, T } = corridor(), a = proj(L, T, CONFIG.STRIKE_Z_FAR);
-  const name = textSprite(t('nk_' + kind), 15, boss ? '#ffd8f6' : '#fff8ec', boss ? 'rgba(192,92,230,0.95)' : null, 800), lab = textSprite(t('next'), 10, 'rgba(241,233,218,0.72)', null, 700);
+  const gq = strike.guestNext, gk = gq && gq.in === 1 ? gq.kind : null; // a surprise guest on the next serve: the card shows it instead of the wall
+  if (strike.over || (strike.extrasOff && !gk) || (strike.boss && strike.boss.z < CONFIG.STRIKE_Z_FAR)) { ui.nextCard = null; return; } // (the boss fills the far end while it lives)
+  const kind = gk ? 'guest_' + gk : upcomingKind(); if (kind !== ui.nextShown) { if (ui.nextShown) { ui.nextAt = now; sfx('tick'); } ui.nextShown = kind; }
+  const rtl = lang === 'he', boss = kind === 'boss', col = gk ? '#ffc24b' : STRIKE_KIND_COL[kind] || '#c8654a', { L, T } = corridor(), a = proj(L, T, CONFIG.STRIKE_Z_FAR);
+  const name = textSprite(gk ? t(kind) : t('nk_' + kind), 15, boss ? '#ffd8f6' : '#fff8ec', boss ? 'rgba(192,92,230,0.95)' : null, 800), lab = textSprite(t('next'), 10, 'rgba(241,233,218,0.72)', null, 700);
   const w = Math.max(100, Math.max(name.tw, lab.tw) + 66), h = 44, cx = W / 2, cy = a.y - 10 - h / 2, x = cx - w / 2, y = cy - h / 2;
   const pk = Math.max(0, 1 - (now - ui.nextAt) / 600), k = 1 + 0.22 * Math.sin(Math.PI * Math.min(1, pk * 1.6)) * pk, glow = boss ? 0.55 + 0.45 * Math.sin(now * 0.008) : pk;
-  ui.nextCard = { x, y, w, h, kind, pulse: pk };
+  ui.nextCard = { x, y, w, h, kind: gk ? 'guest' : kind, guest: gk, pulse: pk };
   resetView(); ctx.save(); ctx.translate(cx, cy); ctx.scale(k, k); ctx.translate(-cx, -cy);
   if (glow > 0.02) { ctx.shadowColor = hexA(boss ? '#c05ce6' : col, 0.9 * glow); ctx.shadowBlur = 16; }
   ctx.fillStyle = boss ? 'rgba(46,16,70,0.9)' : 'rgba(12,17,38,0.82)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 14); ctx.fill(); ctx.shadowColor = 'transparent';
   ctx.lineWidth = boss ? 2 : 1.5; ctx.strokeStyle = hexA(boss ? '#c05ce6' : col, 0.55 + 0.45 * glow); ctx.stroke();
   ctx.restore();
   const ix = rtl ? x + w - 26 : x + 26, tx = rtl ? ix - 24 : ix + 24;
-  blit(nextIconSprite(kind), ix, cy, 0, k * (boss ? 1 + 0.06 * Math.sin(now * 0.012) : 1));
+  if (gk) { blit(guestSprite(gk, 'in'), ix, cy, 0.25 * Math.sin(now * 0.01), k * 0.2); ui.nextCard.icon = { x: ix, y: cy, r: 64 * 0.2 * k }; } // the guest's head, wobbling
+  else blit(nextIconSprite(kind), ix, cy, 0, k * (boss ? 1 + 0.06 * Math.sin(now * 0.012) : 1));
   edgeText(lab, tx, cy - 8, rtl, k); edgeText(name, tx, cy + 8, rtl, k);
   if (pk > 0.6 && !ui.nextRing) { ui.nextRing = true; ring(cx, cy, hexA(boss ? '#c05ce6' : col, 0.85), w * 0.75, 420, 3); } else if (pk <= 0.6) ui.nextRing = false;
 }
@@ -4607,6 +4767,7 @@ function renderStrike(now) {
   if (g3) { for (const c of strike.capsules) capsuleRing(c, now); } // (3D: everything but the capsules' 'grab me' ring is in the WebGL scene)
   else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
   if (strike.boss) drawBossBar(strike.boss, now);
+  drawBouncers(now); // missed guests boinging off the screen (on the overlay in both renderers)
   drawParticles(); drawRings(now);
   drawSparks(now); drawFloaters(strike.floaters);
   const ck = Math.max(0, 1 - (now - strike.ui.closeAt) / 450);
@@ -4879,7 +5040,7 @@ function gfx3dBuild(T) {
   const stencilOff = { stencilWrite: true, stencilRef: 1, stencilFunc: T.NotEqualStencilFunc, stencilFail: T.KeepStencilOp, stencilZFail: T.KeepStencilOp, stencilZPass: T.KeepStencilOp };
   S.trailPool = []; S.trailN = 0; S.mkTrail = () => { const m = new T.Sprite(new T.SpriteMaterial(Object.assign({ map: S.discTex, transparent: true, depthWrite: false, toneMapped: false, fog: false }, stencilOff))); m.renderOrder = 3; scene.add(m); return m; };
   S.stencilOff = stencilOff;
-  S.capPool = []; S.capTex = new WeakMap();
+  S.capPool = []; S.capTex = new WeakMap(); S.guestPool = []; // (capsule and guest art share the texture cache)
   // the boss: its 2D face, captured into a texture each frame, on a plane at its depth (so balls and debris pass in front of it properly)
   S.bossCanvas = document.createElement('canvas'); S.bossCanvas.width = S.bossCanvas.height = 4; S.bossTex = g3Tex(S.bossCanvas, true);
   S.boss = new T.Mesh(S.plane, new T.MeshBasicMaterial({ map: S.bossTex, transparent: true, toneMapped: false, fog: false })); S.boss.visible = false; scene.add(S.boss);
@@ -5056,6 +5217,16 @@ function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any ov
   const skin = skinOf('ball'), rB = ballR(), tskin = skinOf('trail'), v = vanish(); let tn = 0;
   balls.forEach((bl, i) => {
     const o = g3BallSlot(i); if (o.skin !== skin) { if (o.mesh.material) o.mesh.material.dispose(); o.mesh.material = g3BallMat(skin, i); o.skin = skin; if (o.ring) { o.mesh.remove(o.ring); o.ring = null; } if (skin === 'planet') { o.ring = g3Ring(); o.mesh.add(o.ring); } }
+    let gs = S.guestPool[i];
+    if (bl.guest) { // a surprise guest: its 2D cartoon head as a camera-facing sprite at the ball's spot (tumbling), with the soft floor blob under it
+      if (!gs) { gs = S.guestPool[i] = new T.Sprite(new T.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false })); gs.renderOrder = 2; S.scene.add(gs); }
+      const art = guestSprite(bl.guest, guestFace(bl, now)).c; let tex = S.capTex.get(art); if (!tex) { tex = g3Tex(art, true); S.capTex.set(art, tex); } if (gs.material.map !== tex) { gs.material.map = tex; gs.material.needsUpdate = true; }
+      const gp = Math.max(0, 1 - (now - (bl.guestHitAt || -1e9)) / 200), gr = rB * GUEST_R * (1 + 0.18 * gp), lifted = lift && bl.dir < 0 && bl.z > lift.z;
+      gs.visible = true; gs.position.set(bl.x, -bl.y, -bl.z); gs.scale.setScalar(gr * 3); gs.material.rotation = -(bl.rot || 0); gs.material.depthTest = !lifted; gs.renderOrder = lifted ? 3 : 2;
+      o.mesh.visible = o.glow.visible = false;
+      o.blob.visible = true; o.blob.position.set(bl.x, -B + 1.5, -bl.z); o.blob.scale.set(gr * 2.6, gr * 1.6, 1); o.blob.material.opacity = Math.max(0.25, 0.9 - Math.abs(B - bl.y) / (B - top) * 0.5);
+      return;
+    } else if (gs) gs.visible = false;
     const fire = !!bl.fire, pop = Math.max(0, 1 - (now - strike.hitAt) / 160), rad = rB * (1 + 0.12 * pop), mat = o.mesh.material;
     o.mesh.visible = true; g3Matrix(o, bl.x, bl.y, bl.z, rad, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, (bl.spin || 0) * 2);
     mat.color.set(bl.super && skin !== 'classic' ? '#ffd89a' : bl.super ? '#ffe2a0' : '#ffffff').convertSRGBToLinear();
@@ -5070,6 +5241,7 @@ function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any ov
       sp.visible = true; sp.position.set((q.x - v.x) / s, -(q.y - v.y) / s, -(STRIKE_F / s - STRIKE_F)); sp.scale.setScalar(rB * 2 * (fire ? 1.05 : 0.9)); sp.material.color.set(col); sp.material.opacity = Math.min(1, kk * 1.6); }
   });
   for (let i = balls.length; i < S.balls.length; i++) { const o = S.balls[i]; o.mesh.visible = o.glow.visible = o.blob.visible = false; }
+  for (let i = balls.length; i < S.guestPool.length; i++) if (S.guestPool[i]) S.guestPool[i].visible = false;
   for (let i = tn; i < S.trailPool.length; i++) S.trailPool[i].visible = false;
   // debris: small boxes tumbling where strike.debris says
   { const m4 = new T.Matrix4(), q = new T.Quaternion(), eu = new T.Euler(), p = new T.Vector3(), s = new T.Vector3(), c = new T.Color(); let n = 0, g = 0;
@@ -5197,6 +5369,17 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'streak') { const n = Math.min(20, arg || 5), f0 = 520 * Math.pow(1.04, n); [1, 1.25, 1.5, 2].forEach((m, i) => tone('triangle', f0 * m, 0, 0.08, 200, t0 + i * 0.06)); f.type = 'bandpass'; f.frequency.setValueAtTime(500, t0); f.frequency.exponentialRampToValueAtTime(2500, t0 + 0.3); f.Q.value = 0.9; env(f, 0.08, 320, t0); noise(t0, 320, f); } // a streak milestone: a rising run over a whoosh of flame
     else if (kind === 'fizzle') { tone('sine', 520, 140, 0.07, 380, t0); f.type = 'highpass'; f.frequency.value = 3000; env(f, 0.04, 260, t0); noise(t0, 260, f); } // streak lost: a sinking note and a hiss
     else if (kind === 'close') { tone('sine', 700, 1700, 0.08, 160, t0); tone('sine', 1700, 900, 0.06, 260, t0 + 0.16); tone('triangle', 2600, 0, 0.025, 200, t0 + 0.05); } // 'Close one!': a whistle up and down
+    else if (kind === 'moo' || kind === 'boing' || kind === 'whistle') { // the cow's 'moooo' (a low sawtooth sliding down with vibrato), the missed guest's 'boing', the guest's slide-whistle cue
+      const o = audio.createOscillator(), lfo = audio.createOscillator(), lg = audio.createGain(), g = audio.createGain(), moo = kind === 'moo', boing = kind === 'boing', end = moo ? 1.05 : boing ? 0.5 : 0.6;
+      o.type = moo ? 'sawtooth' : 'sine'; lfo.connect(lg); lg.connect(o.frequency);
+      if (moo) { o.frequency.setValueAtTime(150, t0); o.frequency.linearRampToValueAtTime(205, t0 + 0.25); o.frequency.exponentialRampToValueAtTime(105, t0 + 1); lfo.frequency.value = 6; lg.gain.setValueAtTime(3, t0); lg.gain.linearRampToValueAtTime(12, t0 + 0.9); }
+      else if (boing) { o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(430, t0 + 0.12); o.frequency.exponentialRampToValueAtTime(260, t0 + 0.45); lfo.frequency.setValueAtTime(18, t0); lfo.frequency.linearRampToValueAtTime(8, t0 + 0.45); lg.gain.setValueAtTime(70, t0); lg.gain.exponentialRampToValueAtTime(4, t0 + 0.45); }
+      else { o.frequency.setValueAtTime(700, t0); o.frequency.exponentialRampToValueAtTime(1750, t0 + 0.3); o.frequency.exponentialRampToValueAtTime(950, t0 + 0.58); lfo.frequency.value = 9; lg.gain.value = 20; }
+      const pk = moo ? 0.2 : boing ? 0.18 : 0.09; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(pk, t0 + (moo ? 0.08 : 0.02)); g.gain.setValueAtTime(pk, t0 + end * 0.65); g.gain.exponentialRampToValueAtTime(0.001, t0 + end);
+      if (moo) { f.type = 'lowpass'; f.frequency.setValueAtTime(500, t0); f.frequency.linearRampToValueAtTime(1300, t0 + 0.3); f.frequency.linearRampToValueAtTime(600, t0 + 1); f.Q.value = 3; o.connect(f); f.connect(g); } else o.connect(g);
+      g.connect(audio.destination); o.start(t0); lfo.start(t0); o.stop(t0 + end + 0.03); lfo.stop(t0 + end + 0.03);
+    }
+    else if (kind === 'monkey') [[420, 720], [440, 760], [640, 1080], [680, 1180]].forEach(([a, b], i) => tone('square', a, b, 0.06, 95, t0 + i * 0.13)); // 'ooh-ooh-ah-ah!': quick rising square chirps
     else if (kind === 'roar') { tone('sawtooth', 75, 42, 0.16, 650, t0); tone('square', 118, 62, 0.05, 600, t0 + 0.02); f.type = 'lowpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(140, t0 + 0.6); env(f, 0.2, 620, t0); noise(t0, 620, f); } // the boss roars: a low growl sliding down under a rumble
     else if (kind === 'bossdown') { f.type = 'lowpass'; f.frequency.setValueAtTime(2400, t0); f.frequency.exponentialRampToValueAtTime(80, t0 + 0.7); env(f, 0.25, 760, t0); noise(t0, 760, f); tone('sine', 110, 26, 0.25, 800, t0); tone('triangle', 2600, 400, 0.05, 200, t0); [659.25, 783.99, 1046.5, 1318.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 70, t0 + 0.35 + i * 0.1); tone('triangle', q / 2, 0, 0.025, 220, t0 + 0.35 + i * 0.1); }); } // the boss goes down: a deep blast, then a fanfare
   } catch {}
@@ -5248,7 +5431,7 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
   { id: 'cars', ev: 'car', goals: [2, 4, 6], rewards: [20, 30, 45] }, { id: 'walls', ev: 'wall', goals: [3, 6, 10], rewards: [20, 30, 45] },
   { id: 'powerups', ev: 'powerup', goals: [2, 4, 6], rewards: [25, 35, 50] }, { id: 'boss', ev: 'boss', goals: [1], rewards: [60] },
   { id: 'strikeLevel', ev: 'strikeLevel', goals: [3, 4, 5], rewards: [30, 45, 60], max: true }, { id: 'rounds', ev: 'round', goals: [3], rewards: [25] }, { id: 'combo', ev: 'combo', goals: [1], rewards: [30] },
-  { id: 'close', ev: 'close', goals: [3], rewards: [30] }, { id: 'daily', ev: 'daily', goals: [1], rewards: [30] },
+  { id: 'close', ev: 'close', goals: [3], rewards: [30] }, { id: 'daily', ev: 'daily', goals: [1], rewards: [30] }, { id: 'guest', ev: 'guest', goals: [3], rewards: [30] },
 ];
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
@@ -5522,6 +5705,8 @@ const GRIPPY = {
     lastLife: ['Last heart! Focus!', 'One heart left! You got this!', 'Careful now!', 'Deep breath. Last life!', 'All or nothing!', 'Last chance! I believe!'],
     newBest: ['NEW BEST! Woohoo!', 'Record smashed!', 'Best ever! Wow!', 'Gold star for you!', 'History made!', 'You beat yourself!'],
     mission: ['Mission done!', 'Check! Mission complete!', 'You did the thing!', 'Mission? Accomplished!', 'Coins for you! Go claim them!', 'Nailed the mission!'],
+    cow: ['Holy cow!', 'A flying cow?! Moo-ve!', 'Udderly amazing!', 'Cow incoming! Slap it!', 'Is that... a COW?!', "Cows can't fly! Can they?", 'Moo-tastic!'],
+    monkey: ['Monkey business!', 'Banana-rama!', 'A flying monkey! Eek!', 'Ooh ooh ah ah!', 'Go bananas! Slap it!', 'Cheeky monkey incoming!', 'Monkey see, monkey fly!'],
   },
   he: {
     start: ['יאללה! הידיים מוכנות?', 'תנענעו את האצבעות!', 'אני מאמין בידיים שלכם!', 'היכון, הכן, כיף!', 'תראו להם מה ידיים יודעות!', 'מתחילים! בלי לחץ. טוב, קצת.', 'חממו את כפות הידיים!'],
@@ -5544,6 +5729,8 @@ const GRIPPY = {
     lastLife: ['לב אחרון! להתרכז!', 'נשאר לב אחד! אתם יכולים!', 'בזהירות עכשיו!', 'נשימה עמוקה. לב אחרון!', 'הכול או כלום!', 'הזדמנות אחרונה! אני מאמין!'],
     newBest: ['שיא חדש! יוהו!', 'ריסקתם את השיא!', 'הכי טוב אי פעם! וואו!', 'כוכב זהב בשבילכם!', 'נכנסתם להיסטוריה!', 'ניצחתם את עצמכם!'],
     mission: ['משימה הושלמה!', 'וי! המשימה בוצעה!', 'עשיתם את זה!', 'משימה? בוצעה!', 'מטבעות בשבילכם! לכו לאסוף!', 'פיצחתם את המשימה!'],
+    cow: ['פרה עפה! מה קורה פה?!', 'מוו! פרה באוויר!', 'פרה מעופפת! תנו לה כאפה!', 'זו ציפור? זה מטוס? זו פרה!', 'איזו פרה מוזרה!', 'פרות לא עפות! או שכן?', 'חלב בטיסה מהירה!'],
+    monkey: ['עסק של קופים!', 'קוף מעופף! איי!', 'או או אה אה!', 'משתגעים על בננות!', 'קוף שובב בדרך!', 'קופיקו בא לבקר!', 'תפסו את הקוף!'],
   },
 };
 const grippy = { last: null, lastAt: -1e9, shownAt: -1e9, until: -1e9, prev: {}, bottom: 16, visible: false, blinkAt: 0, said: [] };
