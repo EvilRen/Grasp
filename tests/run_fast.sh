@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 mkdir -p tests/out/logs
 JOBS=${JOBS:-3}
 tests/fix_browsers.sh || exit 1
-ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit"
+ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album"
 if [ $# -gt 0 ]; then LIST="$*"; else LIST="$ALL strike2:3d strike3:3d"; fi
 
 python3 -m http.server 8765 --bind 127.0.0.1 >/dev/null 2>&1 &
@@ -24,7 +24,7 @@ run_one() {
 export -f run_one
 T0=$SECONDS
 # slowest first so the long ones don't finish last
-printf '%s\n' $LIST | awk '{p=/strike|busy|road|meta|adventure|habit/?0:1; print p, $0}' | sort -s -k1,1 | cut -d' ' -f2 \
+printf '%s\n' $LIST | awk '{p=/strike|busy|road|meta|adventure|habit|album/?0:1; print p, $0}' | sort -s -k1,1 | cut -d' ' -f2 \
   | xargs -P "$JOBS" -I{} bash -c 'run_one {}' | tee tests/out/logs/summary.txt
 echo "total $((SECONDS - T0))s with $JOBS jobs"
 if grep -q '^FAIL' tests/out/logs/summary.txt; then

@@ -84,3 +84,7 @@ Idea from the player: *all the walls break, and when they are broken you move on
 - *Star chests:* chests beside the path at 10 / 25 / 45 / 70 / 100 stars (15 / 25 / 35 / 50 / 80 coins; the last one also a look). The next one shows "26 / 45".
 - *Come back tomorrow:* once today's gift is open, the stage card and the round-over card say "Tomorrow: day 3 gift".
 - All the numbers are in `ECONOMY` (gifts, stageChest, starChests): about 100 coins and 2 looks a week for showing up, next to the 15-35 a run.
+
+**Applied: the sticker album and world music**
+- *Sticker album:* the first 3-star clear of each Adventure stage peels a sticker onto the clear card (40 drawn stickers, 8 per world: tools, glass garden, robots, jungle animals, volcano dragons and gems). The Album button in the map header opens one page per world. Missing stickers show as silhouettes with the stage number and three stars ("Get 3 ★ on stage 12"). A full page pays `ECONOMY.album.page` (30 coins) once, with confetti. Players who had 3-star stages before the album get those stickers as new ones.
+- *World music:* each world has its own quiet loop (playful square lead, airy bells, mechanical saw, marimba, dramatic minor). It plays only while a stage is being played and ducks under the stage and boss banners. A 100 ms lookahead timer schedules the notes, so nothing runs per frame. Mute silences it.

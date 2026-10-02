@@ -553,7 +553,7 @@ html[dir="rtl"] .habitBar{ right:auto; left:84px; }
 .gfly{ position:fixed; left:0; top:0; z-index:20; width:26px; height:26px; margin:-13px 0 0 -13px; pointer-events:none; }
 .gfly svg, .gfly canvas{ width:100%; height:100%; display:block; }
 #metaPill.bump, #collectionBtn.bump, #advStarTotal.bump{ animation:hgrow .45s ease-out; }
-.amHead h2{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.amHead h2{ min-width:0; padding-inline-start:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .amDay{ position:relative; flex:none; width:48px; height:48px; border-radius:14px; background:rgba(29,37,71,.9); box-shadow:inset 0 0 0 1.5px var(--line); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:3px 0 2px; color:var(--bone); }
 .amDay svg{ width:30px; height:26px; overflow:visible; }
 .amDay .lid{ transform-box:fill-box; transform-origin:0% 100%; transition:transform .4s; }
@@ -564,7 +564,48 @@ html[dir="rtl"] .habitBar{ right:auto; left:84px; }
 .amDay.done .lid{ transform:rotate(-28deg) translateY(-2px); }
 .amDay.done .pr{ color:var(--mint); }
 @keyframes cshake{ 0%,60%,100%{ transform:rotate(0); } 66%{ transform:rotate(-9deg) scale(1.06); } 74%{ transform:rotate(8deg) scale(1.06); } 82%{ transform:rotate(-6deg); } 90%{ transform:rotate(4deg); } }
-@media (max-width:400px){ .amHead{ gap:8px; } .amHead h2{ font-size:20px; } .amStars{ padding:8px 11px; } .amStars small{ display:none; } } /* (a phone: the '/ 120' gives way to the day's chest) */
+/* the sticker album (an overlay on the Adventure map) and its button in the map's header */
+.amAlbum{ position:relative; flex:none; width:48px; height:48px; border-radius:14px; background:rgba(29,37,71,.9); box-shadow:inset 0 0 0 1.5px var(--line); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:3px 0 2px; color:var(--bone); }
+.amAlbum svg{ width:30px; height:26px; }
+.amAlbum .pr{ font-size:10px; font-weight:800; line-height:1; direction:ltr; color:var(--muted); }
+.amAlbum .dot, .albTab .dot{ position:absolute; top:3px; inset-inline-end:3px; width:10px; height:10px; border-radius:50%; background:#ff4d3d; box-shadow:0 0 0 2px #161d3d; }
+.amAlbum .dot[hidden]{ display:none; }
+.albOv{ position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; padding:12px; padding-top:calc(env(safe-area-inset-top,0px) + 12px); background:rgba(8,11,28,.72); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+.albOv[hidden]{ display:none; }
+#advDwell{ z-index:6; }
+.albOv{ --wc:#ef9a78; }
+.albSheet{ width:min(520px,100%); text-align:center; background:radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--wc) 30%, transparent), rgba(22,29,61,1) 62%); box-shadow:inset 0 0 0 2px var(--wc), 0 20px 50px rgba(0,0,0,.55); animation:nupop .4s cubic-bezier(.2,1.4,.4,1) both; }
+.albSheet header h2{ text-align:start; font-size:21px; font-weight:800; }
+.albTabs{ display:flex; gap:6px; justify-content:center; margin:0 0 10px; }
+.albTab{ position:relative; flex:1; max-width:76px; min-height:48px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; background:rgba(29,37,71,.7); box-shadow:inset 0 0 0 1.5px var(--line); color:var(--bone); padding:2px 0; }
+.albTab b{ font-size:18px; font-weight:800; color:var(--tc); line-height:1.1; }
+.albTab small{ font-size:10px; font-weight:700; color:var(--muted); direction:ltr; }
+.albTab.on{ background:color-mix(in srgb, var(--tc) 26%, rgba(29,37,71,.9)); box-shadow:inset 0 0 0 2.5px var(--tc), 0 0 14px color-mix(in srgb, var(--tc) 50%, transparent); }
+.albTab.full small{ color:var(--mint); }
+.albPageHead{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin:0 2px 8px; }
+.albPageHead b{ font-size:16px; font-weight:800; color:var(--wc); text-align:start; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.albPageHead span{ flex:none; font-size:14px; font-weight:800; color:var(--bone); direction:ltr; }
+.albGrid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; padding:10px 8px; border-radius:18px; background:repeating-linear-gradient(0deg, rgba(241,233,218,.05) 0 1px, transparent 1px 22px), rgba(8,11,28,.45); box-shadow:inset 0 0 0 1.5px var(--line); }
+.albSlot{ position:relative; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 1px 5px; border-radius:14px; background:none; color:var(--bone); -webkit-tap-highlight-color:transparent; }
+.albSlot canvas{ width:64px; height:64px; max-width:100%; aspect-ratio:1; }
+.albSlot .lb{ display:flex; align-items:center; justify-content:center; gap:2px; max-width:100%; font-size:11px; font-weight:700; line-height:1.15; text-align:center; overflow-wrap:anywhere; min-height:2.3em; }
+.albSlot.miss .lb{ color:var(--muted); font-size:10px; }
+.albSlot.miss .lb svg{ width:14px; height:14px; flex:none; fill:#ffc24b; stroke:#b8730f; stroke-width:1; }
+.albSlot .lb.need{ gap:0; }
+.albSlot .num{ position:absolute; top:50px; left:50%; transform:translateX(-50%); min-width:30px; padding:1px 7px; border-radius:999px; background:rgba(8,11,28,.88); box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.35); font-size:14px; font-weight:800; color:var(--bone); pointer-events:none; direction:ltr; }
+.albSlot.boss::after{ content:''; position:absolute; top:0; left:50%; width:18px; height:12px; transform:translateX(-50%); background:#ffc24b; clip-path:polygon(0 100%,0 20%,25% 60%,50% 0,75% 60%,100% 20%,100% 100%); }
+.albSlot.fresh canvas{ animation:stpeel .7s cubic-bezier(.2,1.5,.4,1) both; animation-delay:inherit; }
+.albSlot.wiggle canvas{ animation:stwig .45s; }
+@keyframes stpeel{ 0%{ transform:translateY(-30px) rotate(-35deg) scale(1.7); opacity:0; } 40%{ opacity:1; } 75%{ transform:rotate(6deg) scale(.92); } 100%{ transform:none; opacity:1; } }
+@keyframes stwig{ 30%{ transform:rotate(-10deg) scale(1.12); } 65%{ transform:rotate(8deg) scale(1.08); } }
+.albReward{ display:flex; align-items:center; justify-content:center; gap:6px; margin:12px 0 4px; padding:9px 12px; border-radius:999px; background:rgba(29,37,71,.85); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.45); font-size:14px; font-weight:800; color:#ffd77a; }
+.albReward em{ font-style:normal; display:inline-flex; align-items:center; gap:3px; direction:ltr; }
+.albReward svg{ width:18px; height:18px; }
+.albReward .ck{ stroke:var(--mint); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.albReward.done{ color:var(--mint); box-shadow:inset 0 0 0 2px var(--mint), 0 0 16px rgba(67,217,163,.35); }
+.albNext{ margin:6px 0 0; font-size:13px; color:var(--muted); min-height:1.2em; }
+@media (max-width:400px){ .amAlbum, .amDay{ width:44px; } .amBack{ width:44px; height:44px; } .albSlot canvas{ width:56px; height:56px; } .albSlot .num{ top:43px; font-size:13px; } .albGrid{ gap:4px; padding:8px 4px; } }
+@media (max-width:400px){ .amHead{ gap:6px; } .amHead h2{ font-size:18px; } .amStars{ padding:8px 9px; } .amStars small{ display:none; } } /* (a phone: the '/ 120' gives way to the day's chest) */
 .achest{ position:absolute; z-index:2; transform:translate(-50%,-50%); width:64px; padding:0; background:none; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--bone); -webkit-tap-highlight-color:transparent; }
 .achest .cbox{ position:relative; width:56px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:rgba(8,11,28,.6); box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.25); }
 .achest .cbox svg{ width:40px; height:35px; overflow:visible; }
@@ -703,9 +744,19 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   </div>
 </div>
 <div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
-  <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
+  <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amAlbum" id="advAlbumBtn" type="button" aria-label="Sticker album"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M5 4.5C5 3.1 6.1 2 7.5 2H27v22H7.5C6.1 24 5 25.1 5 26.5z" fill="#5a7cff" stroke="#1d2547" stroke-width="1.6" stroke-linejoin="round"/><path d="M5 26.5C5 25.1 6.1 24 7.5 24H27v3H7.5" fill="#f1e9da" stroke="#1d2547" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16.5" cy="12" r="6.2" fill="#fbf8f2" stroke="#1d2547" stroke-width="1.3"/><path d="M16.5 8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" fill="#ffc24b"/></svg><b class="pr">0/40</b><i class="dot" hidden></i></button><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
   <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
   <footer class="amFoot"><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
+  <div id="album" class="albOv" hidden role="dialog" aria-modal="true" aria-labelledby="albumTitle">
+    <div class="sheet albSheet">
+      <header><h2 id="albumTitle" data-i18n="albumTitle">Sticker album</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+      <div class="albTabs" id="albumTabs"></div>
+      <div class="albPageHead"><b id="albumPageTitle"></b><span id="albumCount"></span></div>
+      <div class="albGrid" id="albumGrid"></div>
+      <p class="albReward" id="albumReward"></p>
+      <p class="albNext" id="albumNext"></p>
+    </div>
+  </div>
   <div id="advDwell" hidden></div>
 </div>
 <div class="ov" id="newCard" hidden role="dialog" aria-modal="true" aria-labelledby="nuName">
@@ -817,6 +868,7 @@ const ECONOMY = {
   gifts: { days: [5, 8, 10, 'skin', 15, 20, 'chest'], skinMax: 150, skinFallback: 12, chest: 40, chestSkinMax: 420, chestFallback: 30 },
   stageChest: { goal: 3, coins: 10 },
   starChests: { stars: [10, 25, 45, 70, 100], coins: [15, 25, 35, 50, 80], lastFallback: 60 },
+  album: { page: 30 },                                                      // the sticker album: a world's page of 8 stickers (3 stars on each of its stages) filled, once
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_HP: 1 };
@@ -939,6 +991,14 @@ const I18N = {
     flameN: '{n}-day play streak', flameZero: 'Play a game today to light your flame!', keepFlame: 'Play today to keep your {n}-day streak!', flameToast: '{n} days in a row! Play every day to grow your flame.',
     dayChest: 'Today: {a} of {b} stages', dayChestToast: 'Stage chest: +{c} coins', dayChestNeed: 'Clear {n} more stages today to open the chest', dayChestDone: 'Opened! A new chest tomorrow',
     starChest: 'Star chest: {n} stars', starChestToast: 'Star chest: +{c} coins', starChestNeed: '{n} more stars to open this chest', starChestDone: 'Already opened',
+    album: 'Album', albumTitle: 'Sticker album', albumAria: 'Sticker album: {a} of {b}', albumPage: 'World {n} · {w}', albumNeed: 'Get 3 ★ on stage {n}', albumNext: 'Next sticker: get 3 ★ on stage {n}',
+    albumStage: 'Stage {n}', albumReward: 'Fill this page: +{c} coins', albumDone: 'Page complete!', albumDoneToast: 'Album page complete: +{c} coins', albumAllDone: 'Every sticker found!', newSticker: 'New sticker!',
+    stickerToast: 'New sticker: {n}', pageDoneCard: 'Page complete! +{c}', albumTab: 'World {n}: {a} of {b} stickers', albumLocked: 'A sticker still to find',
+    st_brick: 'Brick', st_hammer: 'Hammer', st_wrench: 'Wrench', st_hardhat: 'Hard hat', st_cone: 'Cone', st_paint: 'Paint', st_saw: 'Saw', st_goldbrick: 'Gold bricks',
+    st_tulip: 'Tulip', st_butterfly: 'Butterfly', st_daisy: 'Daisy', st_ladybug: 'Ladybug', st_crystal: 'Crystal', st_bfly2: 'Blue butterfly', st_sunflower: 'Sunflower', st_rainbow: 'Rainbow',
+    st_gear: 'Gear', st_nut: 'Nut', st_battery: 'Battery', st_magnet: 'Magnet', st_bulb: 'Light bulb', st_rocket: 'Rocket', st_robot: 'Robot', st_kingbot: 'Robot king',
+    st_cow: 'Cow', st_monkey: 'Monkey', st_frog: 'Frog', st_parrot: 'Parrot', st_banana: 'Banana', st_snake: 'Snake', st_turtle: 'Turtle', st_lion: 'Lion',
+    st_flame: 'Fire', st_ruby: 'Ruby', st_volcano: 'Volcano', st_egg: 'Dragon egg', st_diamond: 'Diamond', st_crown: 'Crown', st_dragon: 'Dragon', st_dragonking: 'Dragon king',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -1052,6 +1112,14 @@ const I18N = {
     flameN: 'רצף משחק של {n} ימים', flameZero: 'שחקו משחק היום כדי להדליק את הלהבה!', keepFlame: 'שחקו היום כדי לשמור על רצף של {n} ימים!', flameToast: '{n} ימים ברצף! שחקו כל יום כדי שהלהבה תגדל.',
     dayChest: 'היום: {a} מתוך {b} שלבים', dayChestToast: 'תיבת שלבים: ‎+{c} מטבעות', dayChestNeed: 'סיימו עוד {n} שלבים היום כדי לפתוח את התיבה', dayChestDone: 'נפתחה! תיבה חדשה מחר',
     starChest: 'תיבת כוכבים: {n} כוכבים', starChestToast: 'תיבת כוכבים: ‎+{c} מטבעות', starChestNeed: 'עוד {n} כוכבים כדי לפתוח את התיבה', starChestDone: 'כבר נפתחה',
+    album: 'אלבום', albumTitle: 'אלבום מדבקות', albumAria: 'אלבום מדבקות: {a} מתוך {b}', albumPage: 'עולם {n} · {w}', albumNeed: 'השיגו 3 ★ בשלב {n}', albumNext: 'המדבקה הבאה: 3 ★ בשלב {n}',
+    albumStage: 'שלב {n}', albumReward: 'מלאו את הדף: ‎+{c} מטבעות', albumDone: 'הדף מלא!', albumDoneToast: 'דף באלבום הושלם: ‎+{c} מטבעות', albumAllDone: 'מצאתם את כל המדבקות!', newSticker: 'מדבקה חדשה!',
+    stickerToast: 'מדבקה חדשה: {n}', pageDoneCard: 'הדף מלא! ‎+{c}', albumTab: 'עולם {n}: {a} מתוך {b} מדבקות', albumLocked: 'מדבקה שעוד מחכה לכם',
+    st_brick: 'לבנה', st_hammer: 'פטיש', st_wrench: 'מפתח ברגים', st_hardhat: 'קסדה', st_cone: 'קונוס', st_paint: 'צבע', st_saw: 'מסור', st_goldbrick: 'לבני זהב',
+    st_tulip: 'צבעוני', st_butterfly: 'פרפר', st_daisy: 'חיננית', st_ladybug: 'פרת משה רבנו', st_crystal: 'גביש', st_bfly2: 'פרפר כחול', st_sunflower: 'חמנייה', st_rainbow: 'קשת בענן',
+    st_gear: 'גלגל שיניים', st_nut: 'אום', st_battery: 'סוללה', st_magnet: 'מגנט', st_bulb: 'נורה', st_rocket: 'טיל', st_robot: 'רובוט', st_kingbot: 'מלך הרובוטים',
+    st_cow: 'פרה', st_monkey: 'קוף', st_frog: 'צפרדע', st_parrot: 'תוכי', st_banana: 'בננה', st_snake: 'נחש', st_turtle: 'צב', st_lion: 'אריה',
+    st_flame: 'אש', st_ruby: 'אודם', st_volcano: 'הר געש', st_egg: 'ביצת דרקון', st_diamond: 'יהלום', st_crown: 'כתר', st_dragon: 'דרקון', st_dragonking: 'מלך הדרקונים',
   },
 };
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
@@ -4833,7 +4901,8 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const P = adv.plan, n = P.n, A = profile.adv, stars = adv.lost === 0 ? 3 : adv.lost === 1 ? 2 : 1, prev = A.stars[n] || 0, first = !prev, E = ECONOMY.adv;
   const coins = first ? E.first + stars + (P.boss ? E.boss : 0) : Math.max(0, stars - prev) * E.star;
   A.stars[n] = Math.max(prev, stars); advOpenNode(A, n + 1); habitStageClear(); saveProfile(); // (today's stage chest counts every clear)
-  adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
+  const stk = stars === 3 ? albumAward(n) : null; // the first 3-star clear: the album's sticker (a full page: its bonus)
+  adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null };
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
   adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
@@ -4842,13 +4911,13 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
   if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true)); // (Coin Magnet never applies: no perks in a stage)
-  grippySay(stars === 3 ? 'advPerfect' : 'advClear');
+  grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (the loop stops: the clear's fanfare plays alone)
   return adv.result;
 }
 function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
   const P = adv.plan; adv.phase = 'card'; adv.result = { clear: false, n: P.n, stars: 0, best: profile.adv.stars[P.n] || 0, coins: 0, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
   strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null; ui.newBest = false; sfx('chime');
-  roundDone(strike.score, advXp(false)); grippySay('advFail');
+  roundDone(strike.score, advXp(false)); grippySay('advFail'); musicSync();
   return adv.result;
 }
 function advClearTick(now, dt) { // between the clear and the card: the walls are gone, the corridor flies forward (the stripes race), a world's boss stage travels on
@@ -4927,7 +4996,7 @@ function advPipsDraw(now, cx, cy) { // the stage's walls as a row of small brick
 function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, coins, XP; Next / Try again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
   const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = clear ? 372 : 352, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  const stk = clear && r.sticker ? 84 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
@@ -4959,7 +5028,8 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     const ws = items.map((it) => it.sp.tw + (it.coin ? 40 : 22)), tot = ws.reduce((a, b) => a + b, 0) + 8 * Math.max(0, items.length - 1); let x = cx - tot / 2; ui.advPay = [];
     items.forEach((it, i) => { const w = ws[i], bx = rtl ? cx + tot / 2 - (x - (cx - tot / 2)) - w : x; blit(glassSprite(w, ph, 13), bx - 1, py - 1); if (it.coin) { blit(coinSprite(8), rtl ? bx + w - 14 : bx + 14, py + ph / 2); edgeText(it.sp, rtl ? bx + w - 27 : bx + 27, py + ph / 2, rtl); } else blit(it.sp, bx + w / 2, py + ph / 2); ui.advPay.push({ x: bx, y: py, w, h: ph }); x += w + 8; });
   }
-  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 : 230), bh = 56, sh = 46, hw = (bw - 10) / 2;
+  ui.advSticker = null; if (stk) drawCardSticker(now, r, E, cx, y0 + 270, cw, rtl); // a new sticker for the album, between what it paid and the buttons
+  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 : 230) + stk, bh = 56, sh = 46, hw = (bw - 10) / 2;
   ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
     : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
   const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t('retryBtn'), map: t('mapBtn') };
@@ -5279,7 +5349,10 @@ function guestArt(kind, face) { const a = GUEST_ART[kind + '_' + face]; return a
 function guestSprite(kind, face) { // R = 64 at the ball's scale (the head fills the guest's radius; ears and horns poke out a little)
   const R = 64, art = GUEST_ART[kind + '_' + face];
   if (art && art.state === 'img') return makeSprite('guest|' + kind + '|' + face, R * 3, R * 3, R * 1.5, R * 1.5, (g) => { const d = R * 2.2; g.drawImage(art.img, -d / 2, -d / 2, d, d); }); // the painted art (it fills ~95% of its square): about the drawn head plus its ears and horns
-  return makeSprite('guest|' + kind + '|' + face, R * 3, R * 3, R * 1.5, R * 1.5, (g) => {
+  return makeSprite('guest|' + kind + '|' + face, R * 3, R * 3, R * 1.5, R * 1.5, (g) => guestHead(g, kind, face, R));
+}
+function guestHead(g, kind, face, R) { // the drawn cow / monkey head at (0, 0), radius R (also the album's stickers)
+  {
     g.lineJoin = g.lineCap = 'round'; const ink = (w) => { g.lineWidth = R * w; g.strokeStyle = GUEST_INK; g.stroke(); };
     if (kind === 'cow') {
       for (const s of [-1, 1]) { // horns, then ears (pink inside)
@@ -5313,7 +5386,7 @@ function guestSprite(kind, face) { // R = 64 at the ball's scale (the head fills
       if (face === 'happy') { g.fillStyle = 'rgba(255,110,120,0.4)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * R * 0.42, R * 0.18, R * 0.1, R * 0.07, 0, 0, TAU); g.fill(); } }
       guestMouth(g, R, 0.3, 0.7, face, '#ff6f8a');
     }
-  });
+  }
 }
 function guestFace(b, now) { return b.dir > 0 ? 'in' : now - (b.guestHitAt || -1e9) < 320 ? 'happy' : 'dizzy'; } // coming in / just slapped / flying back
 function drawGuest(bl, sc, now) { // the 2D guest: its floor shadow is drawn by the caller; the head tumbles, with a little pop when slapped
@@ -6015,14 +6088,15 @@ function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichev
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff, dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, ch = (dly ? 456 : (pill ? 372 : 316) + 34) + TZ, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill ? 372 : 316) + 34) + TZ + OY, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
-  if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null); blit(ts, cx, y0 + 40, 0, Math.min(1, (cw - 150) / ts.tw)); blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64); }
-  else blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
-  blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
-  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
+  // the title sits under the coin / XP / streak pills (y0 + 14 .. 38), never across them
+  if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 40 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 40 + OY - 22 * k * 0.6, w: ts.tw * k, h: 22 * k * 1.2 }; blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64 + OY); }
+  else { const ts = textSprite(t('roundOver'), 26, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 44 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 44 + OY - 26 * k * 0.6, w: ts.tw * k, h: 26 * k * 1.2 }; }
+  blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108 + OY);
+  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156 + OY);
   if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
     const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
     resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
@@ -6030,7 +6104,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     const c = Math.cos(ang), s = Math.sin(ang), at = (lx, ly) => ({ x: ox + lx * c - ly * s, y: y0 + lx * s + ly * c });
     const tp = at(0, 45); blit(textSprite(t('newBest'), 11, '#2a1a00', null), tp.x, tp.y, ang); ui.ribbon = at(0, 38);
   } else ui.ribbon = null;
-  (o.stats || []).slice(0, 4).forEach(([val, key], i, all) => { const four = all.length > 3, sx = cx + (i - (all.length - 1) / 2) * cw * (four ? 0.235 : 0.3) * (rtl ? -1 : 1); blit(textSprite(String(val), four ? 20 : 22, '#f1e9da', null), sx, y0 + 196); blit(textSprite(t(key), four ? 11 : 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219); });
+  (o.stats || []).slice(0, 4).forEach(([val, key], i, all) => { const four = all.length > 3, sx = cx + (i - (all.length - 1) / 2) * cw * (four ? 0.235 : 0.3) * (rtl ? -1 : 1); blit(textSprite(String(val), four ? 20 : 22, '#f1e9da', null), sx, y0 + 196 + OY); blit(textSprite(t(key), four ? 11 : 12, 'rgba(241,233,218,0.6)', null, 500), sx, y0 + 219 + OY); });
   { // the coins earned this round: a small pill in the top start corner
     const sp = textSprite(LRM + '+' + meta.roundCoins, 13, '#ffd77a', null, 700), pw = sp.tw + 36, ph = 24, px = rtl ? x0 + cw - 14 - pw : x0 + 14, py = y0 + 14;
     blit(glassSprite(pw, ph, 12), px - 1, py - 1); blit(coinSprite(7), rtl ? px + pw - 13 : px + 13, py + ph / 2); edgeText(sp, rtl ? px + pw - 25 : px + 25, py + ph / 2, rtl);
@@ -6048,14 +6122,14 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   { // "One more?": the nearest goal (an item's coins, the next level's XP, or a mission) in a slim pill under the stats, with its little picture
     const q = teaser(); ui.teaser = null;
     if (q) {
-      const ty = y0 + 247, maxW = cw - 32, ts = textSprite(q.text, 13, q.kind === 'buy' ? '#43d9a3' : '#ffd77a', null, 600), sc = Math.min(1, (maxW - 50) / ts.tw), pw = Math.min(maxW, ts.tw * sc + 50), ph = 26, px = cx - pw / 2;
+      const ty = y0 + 247 + OY, maxW = cw - 32, ts = textSprite(q.text, 13, q.kind === 'buy' ? '#43d9a3' : '#ffd77a', null, 600), sc = Math.min(1, (maxW - 50) / ts.tw), pw = Math.min(maxW, ts.tw * sc + 50), ph = 26, px = cx - pw / 2;
       blit(glassSprite(pw, ph, 13), px - 1, ty - ph / 2 - 1); blit(teaserIconSprite(q), rtl ? px + pw - 16 : px + 16, ty, 0, q.item ? 0.42 : 0.36);
       edgeText(ts, rtl ? px + pw - 34 : px + 34, ty, rtl, sc);
       ui.teaser = { kind: q.kind, text: q.text, item: q.item || null, frac: q.frac, n: q.n, x: px, y: ty - ph / 2, w: pw, h: ph };
     }
   }
   { // today's missions: three compact columns (name, bar, count) above the buttons
-    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240 + TZ; ui.missionRow = [];
+    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240 + TZ + OY; ui.missionRow = [];
     ms.forEach((m, i) => {
       const mx = x0 + 16 + (rtl ? 2 - i : i) * colw + colw / 2, frac = Math.min(1, m.progress / m.goal), bw = colw - 14, sp = textSprite(missionText(m), 11, m.done ? '#43d9a3' : 'rgba(241,233,218,0.75)', null, 500);
       blit(sp, mx, my, 0, Math.min(1, bw / sp.tw));
@@ -6066,7 +6140,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     });
   }
   if (dly) { // the last 7 days: a tile per date with that day's best (empty if not played); today highlighted
-    const n = dly.strip.length, gap = 6, tw = (cw - 32 - gap * (n - 1)) / n, th = 46, sy = y0 + 272 + TZ; ui.strip = [];
+    const n = dly.strip.length, gap = 6, tw = (cw - 32 - gap * (n - 1)) / n, th = 46, sy = y0 + 272 + TZ + OY; ui.strip = [];
     dly.strip.forEach((d, i) => {
       const tx = rtl ? x0 + cw - 16 - (i + 1) * tw - i * gap : x0 + 16 + i * (tw + gap), mx = tx + tw / 2, played = d.best !== null;
       resetView(); ctx.beginPath(); ctx.roundRect(tx, sy, tw, th, 9); ctx.fillStyle = d.today ? 'rgba(255,194,75,0.2)' : played ? 'rgba(67,217,163,0.14)' : 'rgba(8,11,28,0.55)'; ctx.fill();
@@ -6076,7 +6150,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
       ui.strip.push({ date: d.date, best: d.best, today: d.today, x: tx, y: sy, w: tw, h: th });
     });
   } else ui.strip = null;
-  const aw = (cw - 52) * 0.58, hw = (cw - 52) - aw, bh = 50, by = y0 + (dly ? 332 : 280) + TZ, ax = rtl ? x0 + cw - 20 - aw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - hw; // Play again: the wider, pulsing one
+  const aw = (cw - 52) * 0.58, hw = (cw - 52) - aw, bh = 50, by = y0 + (dly ? 332 : 280) + TZ + OY, ax = rtl ? x0 + cw - 20 - aw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - hw; // Play again: the wider, pulsing one
   ui.buttons = { again: { x: ax, y: by, w: aw, h: bh }, home: { x: hx, y: by, w: hw, h: bh } };
   if (shopAffordable()) { const sw = (hw - 6) / 2; ui.buttons.home = { x: rtl ? hx + sw + 6 : hx, y: by, w: sw, h: bh }; ui.buttons.shop = { x: rtl ? hx : hx + sw + 6, y: by, w: sw, h: bh }; } // something new is affordable: a Shop button beside Home
   if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
@@ -6980,7 +7054,7 @@ let muted = false; try { muted = localStorage.getItem('muted') === '1'; } catch 
 function setMuted(m) {
   muted = !!m; try { localStorage.setItem('muted', muted ? '1' : '0'); } catch {}
   if (muted) toneOff();
-  syncMuteBtn();
+  syncMuteBtn(); musicSync();
 }
 function syncMuteBtn() { const b = $('muteBtn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
 $('muteBtn').addEventListener('click', () => setMuted(!muted));
@@ -7006,6 +7080,10 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
   try {
     const t0 = audio.currentTime, f = audio.createBiquadFilter();
     if (kind === 'crunch') { f.type = 'bandpass'; f.frequency.value = 900 + Math.random() * 600; f.Q.value = 0.7; env(f, 0.2, 130, t0); noise(t0, 130, f); }
+    else if (kind === 'peel') { // a sticker peeled off and slapped down: a rising papery rip, then a soft thump and a sparkle
+      f.type = 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(1100, t0); f.frequency.exponentialRampToValueAtTime(4200, t0 + 0.22); env(f, 0.12, 240, t0); noise(t0, 240, f);
+      tone('sine', 190, 70, 0.2, 130, t0 + 0.25); tone('triangle', 1320, 1760, 0.05, 120, t0 + 0.27);
+    }
     else if (kind === 'click') { // mechanical switch: short bright burst + low thunk
       f.type = 'highpass'; f.frequency.value = 1800; env(f, 0.14, 40, t0); noise(t0, 40, f);
       tone('sine', 190, 60, 0.2, 110, t0 + 0.005);
@@ -7165,7 +7243,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [],
-    adv: { stars: {}, unlocked: 1, open: [], seen: [] },
+    adv: { stars: {}, unlocked: 1, open: [], seen: [] }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -7195,7 +7273,11 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (h.stages && iso(h.stages.date)) D.stages = { date: h.stages.date, n: Math.max(0, Math.min(99, +h.stages.n | 0)), claimed: h.stages.claimed === true };
       if (iso(h.seen)) D.seen = h.seen;
       if (Array.isArray(h.starChests)) D.starChests = [...new Set(h.starChests.filter((x) => ECONOMY.starChests.stars.includes(x)))].sort((a, b) => a - b); }
-    advSyncWorlds(d);
+    if (p.album && typeof p.album === 'object') { const a = p.album, ok = (n) => Number.isInteger(n) && n >= 1 && n <= ADV_N;
+      if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
+      if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
+      if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= WORLD_N))].sort((x, y) => x - y); }
+    advSyncWorlds(d); albumSync(d);
     d.level = levelOf(d.xp);
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
     for (const it of ITEMS) if (it.level && it.level <= d.level && !d.unlocked.includes(it.id)) d.unlocked.push(it.id);
@@ -7535,6 +7617,285 @@ function renderStarChests(host, L) {
     host.appendChild(b);
   }
 }
+/* --- the sticker album: a sticker for each Adventure stage cleared with 3 stars (the first time), 8 to a world's page; a full page pays ECONOMY.album.page once.
+   Every sticker is drawn here (a die-cut badge in its world's colour, a glossy cartoon motif on it); a missing one is its dark silhouette. --- */
+const STICKERS = ['brick', 'hammer', 'wrench', 'hardhat', 'cone', 'paint', 'saw', 'goldbrick', 'tulip', 'butterfly', 'daisy', 'ladybug', 'crystal', 'bfly2', 'sunflower', 'rainbow',
+  'gear', 'nut', 'battery', 'magnet', 'bulb', 'rocket', 'robot', 'kingbot', 'cow', 'monkey', 'frog', 'parrot', 'banana', 'snake', 'turtle', 'lion',
+  'flame', 'ruby', 'volcano', 'egg', 'diamond', 'crown', 'dragon', 'dragonking']; // sticker n (1..40) belongs to stage n
+const ST_INK = '#2a2230';
+function albumSync(p) { // a 3-star stage always has its sticker (a player from before the album gets theirs, new); a paid page must be full
+  const A = p.album;
+  for (let n = 1; n <= ADV_N; n++) if (p.adv.stars[n] === 3 && !A.got.includes(n)) { A.got.push(n); A.fresh.push(n); }
+  A.got.sort((x, y) => x - y); A.pages = A.pages.filter((w) => albumPageCount(w, p) === ADV_WORLD);
+}
+function albumPageCount(w, p = profile) { let c = 0; for (let n = (w - 1) * ADV_WORLD + 1; n <= w * ADV_WORLD; n++) if (p.album.got.includes(n)) c++; return c; }
+function albumAward(n) { // advClear's 3-star clear: the sticker (once); its page full: the bonus. Returns { sticker, page } or null
+  const A = profile.album; if (!Number.isInteger(n) || n < 1 || n > ADV_N || A.got.includes(n)) return null;
+  A.got.push(n); A.got.sort((x, y) => x - y); if (!A.fresh.includes(n)) A.fresh.push(n); saveProfile();
+  const w = advWorldOf(n), coins = albumClaimPage(w);
+  return { sticker: n, world: w, page: coins ? { w, coins } : null };
+}
+function albumClaimPage(w) { // a full page not paid yet: its coins (once)
+  const A = profile.album; if (!(w >= 1 && w <= WORLD_N) || A.pages.includes(w) || albumPageCount(w) < ADV_WORLD) return 0;
+  A.pages.push(w); A.pages.sort((x, y) => x - y); grantPrize({ coins: ECONOMY.album.page }, 'albumDoneToast'); return ECONOMY.album.page;
+}
+// --- the art: each motif in a 100-unit box centred on (0, 0) (about +-40), on its own layer so cut-outs and the silhouette work ---
+function stEye(g, x, y, r) { g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); g.lineWidth = 2; g.strokeStyle = ST_INK; g.stroke(); g.fillStyle = '#16121c'; g.beginPath(); g.arc(x + r * 0.12, y + r * 0.15, r * 0.58, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(x - r * 0.12, y - r * 0.15, r * 0.22, 0, TAU); g.fill(); }
+function stSmile(g, x, y, w) { g.lineWidth = 2.6; g.strokeStyle = ST_INK; g.beginPath(); g.arc(x, y - w * 0.4, w * 0.6, 0.35 * Math.PI, 0.65 * Math.PI); g.stroke(); }
+function stFill(g, fill, lw = 3) { g.fillStyle = fill; g.fill(); if (lw) { g.lineWidth = lw; g.strokeStyle = ST_INK; g.stroke(); } }
+function stGloss(g, x, y, rx, ry, a = 0.45) { g.fillStyle = 'rgba(255,255,255,' + a + ')'; g.beginPath(); g.ellipse(x, y, rx, ry, -0.5, 0, TAU); g.fill(); }
+function stGrad(g, y0, y1, c0, c1) { const q = g.createLinearGradient(0, y0, 0, y1); q.addColorStop(0, c0); q.addColorStop(1, c1); return q; }
+function stCut(g, f) { g.save(); g.globalCompositeOperation = 'destination-out'; f(); g.fill(); g.restore(); }
+function stButterfly(g, c0, c1) {
+  for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 17, -10, 17, 20, s * 0.5, 0, TAU); stFill(g, stGrad(g, -30, 10, c0, c1)); g.beginPath(); g.ellipse(s * 14, 15, 11, 13, -s * 0.5, 0, TAU); stFill(g, c1); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(s * 19, -12, 5, 0, TAU); g.fill(); }
+  g.beginPath(); g.ellipse(0, 2, 5, 25, 0, 0, TAU); stFill(g, '#3a2a48');
+  g.lineWidth = 2.4; g.strokeStyle = ST_INK; g.beginPath(); g.moveTo(-2, -21); g.quadraticCurveTo(-8, -34, -14, -34); g.moveTo(2, -21); g.quadraticCurveTo(8, -34, 14, -34); g.stroke();
+}
+function stGem(g, c0, c1, w, h) { // a cut gem: a crown (table + facets) over a pointed pavilion
+  g.beginPath(); g.moveTo(-w, -h * 0.25); g.lineTo(-w * 0.55, -h); g.lineTo(w * 0.55, -h); g.lineTo(w, -h * 0.25); g.lineTo(0, h); g.closePath(); stFill(g, stGrad(g, -h, h, c0, c1));
+  g.lineWidth = 1.6; g.strokeStyle = 'rgba(42,34,48,.55)'; g.beginPath(); g.moveTo(-w, -h * 0.25); g.lineTo(w, -h * 0.25); g.moveTo(-w * 0.55, -h); g.lineTo(-w * 0.3, -h * 0.25); g.lineTo(0, h); g.lineTo(w * 0.3, -h * 0.25); g.lineTo(w * 0.55, -h); g.moveTo(-w * 0.3, -h * 0.25); g.lineTo(0, -h); g.lineTo(w * 0.3, -h * 0.25); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.moveTo(-w * 0.5, -h * 0.85); g.lineTo(-w * 0.15, -h * 0.85); g.lineTo(-w * 0.3, -h * 0.35); g.closePath(); g.fill();
+}
+function stCrown(g, y, s, jewel) {
+  g.save(); g.translate(0, y); g.scale(s, s); g.beginPath(); g.moveTo(-20, 10); g.lineTo(-22, -10); g.lineTo(-10, 0); g.lineTo(0, -16); g.lineTo(10, 0); g.lineTo(22, -10); g.lineTo(20, 10); g.closePath(); stFill(g, stGrad(g, -16, 10, '#ffe27a', '#e09a12'), 2.6);
+  for (const x of [-11, 0, 11]) { g.beginPath(); g.arc(x, 4, 3, 0, TAU); stFill(g, jewel, 1.4); } g.restore();
+}
+function stRobot(g, body, eye) {
+  g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.moveTo(0, -22); g.lineTo(0, -32); g.stroke(); g.beginPath(); g.arc(0, -34, 4.5, 0, TAU); stFill(g, '#ff6f59', 2);
+  for (const s of [-1, 1]) { g.beginPath(); g.roundRect(s * 30 - 5, -6, 10, 16, 3); stFill(g, '#8a90a8', 2.4); }
+  g.beginPath(); g.roundRect(-27, -22, 54, 44, 12); stFill(g, stGrad(g, -22, 22, lighten(body, 0.25), body));
+  g.beginPath(); g.roundRect(-20, -14, 40, 18, 8); stFill(g, '#1d2547', 2);
+  for (const s of [-1, 1]) { g.fillStyle = eye; g.beginPath(); g.arc(s * 9, -5, 4.5, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(s * 9 - 1.5, -6.5, 1.6, 0, TAU); g.fill(); }
+  g.beginPath(); g.roundRect(-12, 9, 24, 7, 3); stFill(g, '#f1e9da', 2); g.lineWidth = 1.6; g.beginPath(); for (const x of [-6, 0, 6]) { g.moveTo(x, 9); g.lineTo(x, 16); } g.stroke();
+  stGloss(g, -16, -16, 6, 3, 0.5);
+}
+function stDragon(g, c0, c1, horn) {
+  for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * 12, -22); g.quadraticCurveTo(s * 20, -40, s * 30, -38); g.quadraticCurveTo(s * 24, -28, s * 24, -14); g.closePath(); stFill(g, horn, 2.4); }
+  for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * 26, -8); g.lineTo(s * 40, -16); g.lineTo(s * 32, 2); g.closePath(); stFill(g, c1, 2.4); }
+  g.beginPath(); g.ellipse(0, -2, 28, 26, 0, 0, TAU); stFill(g, stGrad(g, -28, 24, c0, c1));
+  g.beginPath(); g.ellipse(0, 16, 20, 13, 0, 0, TAU); stFill(g, lighten(c0, 0.35), 2.4);
+  g.fillStyle = ST_INK; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 7, 12, 2.4, 3.2, 0, 0, TAU); g.fill(); }
+  stEye(g, -11, -10, 7); stEye(g, 11, -10, 7); stSmile(g, 0, 26, 14);
+  g.beginPath(); g.moveTo(-6, 22); g.lineTo(-3, 27); g.lineTo(0, 22); g.closePath(); g.fillStyle = '#fff'; g.fill();
+  stGloss(g, -14, -18, 6, 3);
+}
+const ST_ART = {
+  brick(g) { g.beginPath(); g.roundRect(-32, -18, 64, 36, 6); stFill(g, stGrad(g, -18, 18, '#f07a50', '#c24a2a')); g.lineWidth = 2.4; g.strokeStyle = 'rgba(80,25,12,.6)'; g.beginPath(); g.moveTo(-32, 0); g.lineTo(32, 0); g.moveTo(-6, -18); g.lineTo(-6, 0); g.moveTo(10, 0); g.lineTo(10, 18); g.moveTo(-20, 0); g.lineTo(-20, 18); g.stroke(); stGloss(g, -18, -11, 9, 3.5); },
+  hammer(g) { g.save(); g.rotate(-0.6); g.beginPath(); g.roundRect(-5, -10, 10, 46, 4); stFill(g, stGrad(g, -10, 36, '#e0a060', '#9a5a26')); g.beginPath(); g.roundRect(-24, -26, 48, 18, 5); stFill(g, stGrad(g, -26, -8, '#c8cede', '#7a8298')); g.beginPath(); g.roundRect(-30, -24, 8, 14, 2); stFill(g, '#8a90a8', 2.4); stGloss(g, -8, -21, 9, 2.5); g.restore(); },
+  wrench(g) { g.save(); g.rotate(-0.75); const sh = () => { g.beginPath(); g.roundRect(-6, -10, 12, 48, 6); g.moveTo(16, -20); g.arc(0, -20, 16, 0, TAU); };
+    sh(); g.lineWidth = 6; g.strokeStyle = ST_INK; g.stroke(); sh(); g.fillStyle = stGrad(g, -36, 38, '#e4e8f2', '#8a92a8'); g.fill();
+    stCut(g, () => { g.beginPath(); g.roundRect(-5, -42, 10, 22, 2); }); stCut(g, () => { g.beginPath(); g.arc(0, 30, 3.5, 0, TAU); }); stGloss(g, -8, -26, 4, 7); g.restore(); },
+  hardhat(g) { g.beginPath(); g.moveTo(-26, 8); g.bezierCurveTo(-26, -30, 26, -30, 26, 8); g.closePath(); stFill(g, stGrad(g, -24, 8, '#ffe066', '#f0a818')); g.beginPath(); g.roundRect(-38, 6, 76, 10, 5); stFill(g, '#f5b62a'); g.beginPath(); g.roundRect(-5, -22, 10, 28, 4); stFill(g, '#ffd23f', 2.2); stGloss(g, -13, -11, 7, 4); },
+  cone(g) { g.beginPath(); g.moveTo(-8, -32); g.lineTo(8, -32); g.lineTo(24, 22); g.lineTo(-24, 22); g.closePath(); stFill(g, stGrad(g, -32, 22, '#ffa060', '#f05a1c')); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(-12.5, -16); g.lineTo(12.5, -16); g.lineTo(15.5, -6); g.lineTo(-15.5, -6); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-18, 2); g.lineTo(18, 2); g.lineTo(20.5, 11); g.lineTo(-20.5, 11); g.closePath(); g.fill();
+    g.beginPath(); g.roundRect(-34, 20, 68, 10, 4); stFill(g, '#d94a14'); },
+  paint(g) { g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.arc(0, -10, 24, Math.PI, 0); g.stroke(); g.beginPath(); g.moveTo(-26, -12); g.lineTo(26, -12); g.lineTo(21, 30); g.lineTo(-21, 30); g.closePath(); stFill(g, stGrad(g, -12, 30, '#7fb4ff', '#3a6ad8'));
+    g.beginPath(); g.ellipse(0, -12, 26, 7, 0, 0, TAU); stFill(g, '#ff6f9a'); g.beginPath(); g.moveTo(-18, -10); g.quadraticCurveTo(-17, 6, -13, 8); g.quadraticCurveTo(-9, 6, -9, -9); g.closePath(); stFill(g, '#ff6f9a', 2.4); stGloss(g, 12, 4, 4, 9, 0.35); },
+  saw(g) { g.save(); g.rotate(-0.25); g.beginPath(); g.moveTo(-34, -6); for (let i = 0; i < 9; i++) { g.lineTo(-34 + i * 6 + 3, 12); g.lineTo(-34 + i * 6 + 6, 6); } g.lineTo(20, -14); g.lineTo(-30, -14); g.closePath(); stFill(g, stGrad(g, -14, 12, '#e4e8f2', '#9aa2b6'));
+    g.beginPath(); g.roundRect(14, -20, 24, 30, 9); stFill(g, '#e0574a'); stCut(g, () => { g.beginPath(); g.roundRect(21, -12, 10, 14, 4); }); g.lineWidth = 2.4; g.strokeStyle = ST_INK; g.beginPath(); g.roundRect(21, -12, 10, 14, 4); g.stroke(); stGloss(g, -14, -9, 12, 2.5); g.restore(); },
+  goldbrick(g) { const bar = (x, y) => { g.beginPath(); g.moveTo(x - 18, y + 9); g.lineTo(x - 13, y - 9); g.lineTo(x + 13, y - 9); g.lineTo(x + 18, y + 9); g.closePath(); stFill(g, stGrad(g, y - 9, y + 9, '#ffe98a', '#e0a020'), 2.6); stGloss(g, x - 4, y - 4, 7, 2.2, 0.6); };
+    bar(-17, 14); bar(17, 14); bar(0, -4); g.fillStyle = '#fff'; for (const [x, y, r] of [[-24, -20, 5], [26, -14, 4]]) { g.beginPath(); g.moveTo(x, y - r * 2); g.lineTo(x + r * 0.5, y - r * 0.5); g.lineTo(x + r * 2, y); g.lineTo(x + r * 0.5, y + r * 0.5); g.lineTo(x, y + r * 2); g.lineTo(x - r * 0.5, y + r * 0.5); g.lineTo(x - r * 2, y); g.lineTo(x - r * 0.5, y - r * 0.5); g.closePath(); g.fill(); } },
+  tulip(g) { g.lineWidth = 5; g.strokeStyle = '#2f9a4a'; g.beginPath(); g.moveTo(0, 4); g.lineTo(0, 36); g.stroke(); for (const s of [-1, 1]) { g.beginPath(); g.moveTo(0, 32); g.quadraticCurveTo(s * 24, 26, s * 20, 6); g.quadraticCurveTo(s * 8, 18, 0, 32); stFill(g, '#43c46a', 2.4); }
+    g.beginPath(); g.moveTo(-20, -24); g.lineTo(-10, -12); g.lineTo(0, -28); g.lineTo(10, -12); g.lineTo(20, -24); g.quadraticCurveTo(24, 6, 0, 8); g.quadraticCurveTo(-24, 6, -20, -24); stFill(g, stGrad(g, -28, 8, '#ff8aa8', '#e8365a')); stGloss(g, -9, -10, 4, 8); },
+  butterfly(g) { stButterfly(g, '#ffb0d8', '#ff5aa8'); },
+  daisy(g) { for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; g.save(); g.rotate(a); g.beginPath(); g.ellipse(0, -21, 8, 15, 0, 0, TAU); stFill(g, '#ffffff', 2.2); g.restore(); } g.beginPath(); g.arc(0, 0, 12, 0, TAU); stFill(g, stGrad(g, -12, 12, '#ffe066', '#f0a018')); stGloss(g, -4, -5, 4, 2.5); },
+  ladybug(g) { g.beginPath(); g.arc(0, -24, 12, 0, TAU); stFill(g, '#2a2230'); g.beginPath(); g.ellipse(0, 4, 28, 30, 0, 0, TAU); stFill(g, stGrad(g, -26, 34, '#ff6a5a', '#d42a2a')); g.lineWidth = 3; g.beginPath(); g.moveTo(0, -26); g.lineTo(0, 34); g.stroke();
+    g.fillStyle = ST_INK; for (const [x, y, r] of [[-13, -6, 5], [13, -6, 5], [-15, 14, 4.5], [15, 14, 4.5], [-6, 26, 3.5], [6, 26, 3.5]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); } stEye(g, -5, -27, 3.5); stEye(g, 5, -27, 3.5); stGloss(g, -13, -14, 6, 3); },
+  crystal(g) { g.beginPath(); g.moveTo(0, -36); g.lineTo(20, -14); g.lineTo(16, 30); g.lineTo(-16, 30); g.lineTo(-20, -14); g.closePath(); stFill(g, stGrad(g, -36, 30, '#c8fff2', '#38c8b0')); g.lineWidth = 1.8; g.strokeStyle = 'rgba(42,34,48,.5)'; g.beginPath(); g.moveTo(-20, -14); g.lineTo(0, -6); g.lineTo(20, -14); g.moveTo(0, -36); g.lineTo(0, 30); g.stroke();
+    g.beginPath(); g.moveTo(-22, 30); g.lineTo(-30, 6); g.lineTo(-22, -4); g.lineTo(-14, 30); g.closePath(); stFill(g, '#9ae8ff', 2.4); stGloss(g, -8, -16, 3, 9, 0.6); },
+  bfly2(g) { stButterfly(g, '#a8f0ff', '#3a8cff'); },
+  sunflower(g) { for (let i = 0; i < 14; i++) { g.save(); g.rotate(i / 14 * TAU); g.beginPath(); g.ellipse(0, -24, 6.5, 13, 0, 0, TAU); stFill(g, '#ffcc22', 2); g.restore(); } g.beginPath(); g.arc(0, 0, 16, 0, TAU); stFill(g, stGrad(g, -16, 16, '#8a5a2b', '#4a2a10'));
+    g.fillStyle = 'rgba(255,220,120,.5)'; for (let i = 0; i < 9; i++) { const a = i * 2.4, r = 3 + i * 1.2; g.beginPath(); g.arc(Math.cos(a) * r, Math.sin(a) * r, 1.6, 0, TAU); g.fill(); } },
+  rainbow(g) { const C = ['#ff5a5a', '#ffa23a', '#ffe14a', '#4ad07a', '#4aa8ff', '#9a6aff']; g.lineWidth = 5.5; C.forEach((c, i) => { g.strokeStyle = c; g.beginPath(); g.arc(0, 18, 36 - i * 5.2, Math.PI, 0); g.stroke(); }); g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.arc(0, 18, 39, Math.PI, 0); g.stroke(); g.beginPath(); g.arc(0, 18, 7, Math.PI, 0); g.stroke();
+    for (const s of [-1, 1]) { g.beginPath(); g.arc(s * 30, 20, 9, 0, TAU); g.arc(s * 20, 22, 8, 0, TAU); g.arc(s * 38, 24, 6, 0, TAU); stFill(g, '#ffffff', 0); g.beginPath(); g.roundRect(s * 30 - 16, 20, 32, 9, 4); stFill(g, '#ffffff', 0); } },
+  gear(g) { const N = 9; g.beginPath(); for (let i = 0; i < N * 4; i++) { const a = i / (N * 4) * TAU, r = i % 4 < 2 ? 36 : 28; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); stFill(g, stGrad(g, -36, 36, '#a8e4ff', '#3a8cd8')); stCut(g, () => { g.beginPath(); g.arc(0, 0, 10, 0, TAU); }); g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.arc(0, 0, 10, 0, TAU); g.stroke(); g.beginPath(); g.arc(0, 0, 20, 0, TAU); g.lineWidth = 1.8; g.strokeStyle = 'rgba(42,34,48,.4)'; g.stroke(); stGloss(g, -14, -16, 7, 3.5); },
+  nut(g) { g.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + Math.PI / 6; g.lineTo(Math.cos(a) * 34, Math.sin(a) * 34); } g.closePath(); stFill(g, stGrad(g, -34, 34, '#ffd77a', '#c88a20')); stCut(g, () => { g.beginPath(); g.arc(0, 0, 13, 0, TAU); }); g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.arc(0, 0, 13, 0, TAU); g.stroke(); g.lineWidth = 1.6; g.strokeStyle = 'rgba(42,34,48,.4)'; g.beginPath(); g.arc(0, 0, 18, 0, TAU); g.stroke(); stGloss(g, -12, -18, 8, 3.5); },
+  battery(g) { g.save(); g.rotate(-0.35); g.beginPath(); g.roundRect(-34, -16, 62, 32, 7); stFill(g, '#2a2f48'); g.beginPath(); g.roundRect(28, -7, 8, 14, 3); stFill(g, '#c8cede', 2.4); g.beginPath(); g.roundRect(-30, -12, 40, 24, 5); stFill(g, stGrad(g, -12, 12, '#7af0a8', '#22b05a'), 0);
+    g.beginPath(); g.moveTo(-6, -11); g.lineTo(-14, 2); g.lineTo(-6, 2); g.lineTo(-10, 12); g.lineTo(2, -3); g.lineTo(-6, -3); g.closePath(); stFill(g, '#ffe14a', 2); stGloss(g, -18, -10, 10, 2.5, 0.55); g.restore(); },
+  magnet(g) { g.lineCap = 'butt'; g.lineWidth = 24; g.strokeStyle = ST_INK; g.beginPath(); g.arc(0, -4, 22, Math.PI, 0, true); g.moveTo(-22, -4); g.lineTo(-22, -26); g.moveTo(22, -4); g.lineTo(22, -26); g.stroke();
+    g.lineWidth = 18; g.strokeStyle = '#e8364a'; g.beginPath(); g.arc(0, -4, 22, Math.PI, 0, true); g.moveTo(-22, -4); g.lineTo(-22, -12); g.moveTo(22, -4); g.lineTo(22, -12); g.stroke(); g.strokeStyle = '#d8dce8'; g.beginPath(); g.moveTo(-22, -12); g.lineTo(-22, -24.5); g.moveTo(22, -12); g.lineTo(22, -24.5); g.stroke(); g.lineCap = 'round';
+    g.lineWidth = 3; g.strokeStyle = '#ffe14a'; for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * 18, -34); g.lineTo(s * 14, -40); g.moveTo(s * 26, -34); g.lineTo(s * 30, -40); g.stroke(); } stGloss(g, -14, 12, 6, 3); },
+  bulb(g) { g.beginPath(); g.arc(0, -10, 24, 0.75 * Math.PI, 0.25 * Math.PI); g.lineTo(9, 16); g.lineTo(-9, 16); g.closePath(); stFill(g, stGrad(g, -34, 16, '#fff8b0', '#ffd23f')); g.beginPath(); g.roundRect(-11, 16, 22, 16, 4); stFill(g, '#aeb6c8'); g.lineWidth = 2; g.beginPath(); g.moveTo(-11, 21); g.lineTo(11, 21); g.moveTo(-11, 26); g.lineTo(11, 26); g.stroke();
+    g.lineWidth = 2.4; g.strokeStyle = '#e08a12'; g.beginPath(); g.moveTo(-6, 12); g.lineTo(-6, -6); g.lineTo(-2, -12); g.lineTo(2, -6); g.lineTo(6, -12); g.lineTo(6, 12); g.stroke(); stGloss(g, -10, -20, 6, 9, 0.6); },
+  rocket(g) { g.save(); g.rotate(0.6); g.beginPath(); g.moveTo(-8, 26); g.lineTo(0, 42); g.lineTo(8, 26); g.closePath(); stFill(g, '#ffb03a', 2); for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * 12, 8); g.lineTo(s * 24, 26); g.lineTo(s * 10, 24); g.closePath(); stFill(g, '#e8364a', 2.4); }
+    g.beginPath(); g.moveTo(0, -38); g.bezierCurveTo(18, -24, 16, 10, 12, 26); g.lineTo(-12, 26); g.bezierCurveTo(-16, 10, -18, -24, 0, -38); stFill(g, stGrad(g, -38, 26, '#ffffff', '#c8cede')); g.save(); g.beginPath(); g.moveTo(0, -38); g.bezierCurveTo(18, -24, 16, 10, 12, 26); g.lineTo(-12, 26); g.bezierCurveTo(-16, 10, -18, -24, 0, -38); g.clip(); g.fillStyle = '#e8364a'; g.fillRect(-20, -40, 40, 16); g.restore();
+    g.beginPath(); g.arc(0, -6, 7, 0, TAU); stFill(g, '#5ab8ff', 2.4); stGloss(g, -2, -8, 2.5, 1.6, 0.8); g.restore(); },
+  robot(g) { stRobot(g, '#7aa8d8', '#7af0ff'); },
+  kingbot(g) { g.save(); g.translate(0, 5); g.scale(0.92, 0.92); stRobot(g, '#e8564a', '#ffe14a'); g.restore(); stCrown(g, -34, 0.7, '#5ab8ff'); },
+  cow(g) { g.save(); g.translate(0, 6); guestHead(g, 'cow', 'happy', 27); g.restore(); },
+  monkey(g) { g.save(); g.translate(0, 2); guestHead(g, 'monkey', 'happy', 28); g.restore(); },
+  frog(g) { for (const s of [-1, 1]) { g.beginPath(); g.arc(s * 15, -20, 11, 0, TAU); stFill(g, '#5ad06a'); } g.beginPath(); g.ellipse(0, 4, 33, 24, 0, 0, TAU); stFill(g, stGrad(g, -20, 28, '#7ae87a', '#2fa84a')); stEye(g, -15, -21, 7.5); stEye(g, 15, -21, 7.5);
+    g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.moveTo(-18, 6); g.quadraticCurveTo(0, 22, 18, 6); g.stroke(); g.fillStyle = 'rgba(255,120,150,.5)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 22, 8, 5, 3.5, 0, 0, TAU); g.fill(); } stGloss(g, -14, -4, 7, 3.5); },
+  parrot(g) { g.beginPath(); g.moveTo(-6, 20); g.lineTo(-14, 40); g.lineTo(-2, 34); g.lineTo(4, 40); g.lineTo(6, 20); g.closePath(); stFill(g, '#3a8cff', 2.4); g.beginPath(); g.ellipse(-2, 4, 22, 28, 0.15, 0, TAU); stFill(g, stGrad(g, -26, 30, '#ff7a5a', '#e0302a'));
+    g.beginPath(); g.ellipse(-8, 12, 12, 17, 0.4, 0, TAU); stFill(g, stGrad(g, 0, 28, '#ffe14a', '#3ac06a'), 2.4); g.beginPath(); g.moveTo(14, -14); g.quadraticCurveTo(34, -14, 28, 6); g.quadraticCurveTo(24, -2, 14, -2); g.closePath(); stFill(g, '#ffe7a0', 2.4);
+    g.beginPath(); g.ellipse(6, -12, 9, 9, 0, 0, TAU); stFill(g, '#ffffff', 2); g.fillStyle = '#16121c'; g.beginPath(); g.arc(8, -12, 4, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(7, -13.5, 1.4, 0, TAU); g.fill(); stGloss(g, -12, -14, 6, 3.5); },
+  banana(g) { g.beginPath(); g.moveTo(-30, -18); g.quadraticCurveTo(-28, 30, 30, 22); g.quadraticCurveTo(34, 18, 28, 14); g.quadraticCurveTo(-14, 16, -20, -20); g.closePath(); stFill(g, stGrad(g, -20, 30, '#fff27a', '#f0c020')); g.beginPath(); g.roundRect(-33, -26, 9, 10, 2); stFill(g, '#7a5a20', 2.4);
+    g.lineWidth = 1.8; g.strokeStyle = 'rgba(160,110,10,.6)'; g.beginPath(); g.moveTo(-24, -12); g.quadraticCurveTo(-20, 18, 22, 19); g.stroke(); stGloss(g, -22, 4, 3, 9, 0.5); },
+  snake(g) { g.lineWidth = 20; g.strokeStyle = ST_INK; const path = () => { g.beginPath(); g.moveTo(-30, 30); g.bezierCurveTo(10, 36, 34, 18, 6, 8); g.bezierCurveTo(-22, -2, -20, -24, 10, -24); }; path(); g.stroke(); g.lineWidth = 14; g.strokeStyle = '#4ac05a'; path(); g.stroke();
+    g.setLineDash([3, 9]); g.lineWidth = 6; g.strokeStyle = '#ffe14a'; path(); g.stroke(); g.setLineDash([]); g.lineWidth = 2.4; g.strokeStyle = '#e8364a'; g.beginPath(); g.moveTo(30, -22); g.lineTo(38, -22); g.lineTo(41, -26); g.moveTo(38, -22); g.lineTo(41, -18); g.stroke();
+    g.beginPath(); g.ellipse(18, -24, 14, 11, 0, 0, TAU); stFill(g, '#5ad06a'); stEye(g, 15, -28, 5); stEye(g, 25, -27, 4); },
+  turtle(g) { g.fillStyle = '#7ad07a'; for (const [x, y] of [[-24, 18], [24, 18], [-20, -8], [20, -8]]) { g.beginPath(); g.ellipse(x, y, 8, 6, 0, 0, TAU); stFill(g, '#8ae07a', 2.4); } g.beginPath(); g.arc(30, 6, 11, 0, TAU); stFill(g, '#8ae07a'); stEye(g, 32, 2, 4.5); stSmile(g, 33, 12, 7);
+    g.beginPath(); g.moveTo(-30, 16); g.bezierCurveTo(-30, -26, 26, -26, 26, 16); g.closePath(); stFill(g, stGrad(g, -20, 16, '#3ab06a', '#1a7040')); g.lineWidth = 2; g.strokeStyle = 'rgba(255,240,170,.75)'; g.beginPath(); for (const [x, y] of [[-12, -2], [8, -2], [-2, -14]]) { for (let i = 0; i <= 6; i++) { const a = i / 6 * TAU; g.lineTo(x + Math.cos(a) * 7, y + Math.sin(a) * 7); } g.moveTo(x + 14, y); } g.stroke(); stGloss(g, -12, -12, 8, 3.5); },
+  lion(g) { g.beginPath(); for (let i = 0; i < 24; i++) { const a = i / 24 * TAU, r = i % 2 ? 34 : 38; g.lineTo(Math.cos(a) * r, 3 + Math.sin(a) * r); } g.closePath(); stFill(g, stGrad(g, -36, 40, '#ff9a3a', '#c85a12')); for (const s of [-1, 1]) { g.beginPath(); g.arc(s * 17, -14, 7, 0, TAU); stFill(g, '#ffc860', 2.4); }
+    g.beginPath(); g.arc(0, 4, 23, 0, TAU); stFill(g, stGrad(g, -20, 26, '#ffe08a', '#f0b040')); stEye(g, -9, -2, 5.5); stEye(g, 9, -2, 5.5); g.beginPath(); g.moveTo(-5, 7); g.lineTo(5, 7); g.lineTo(0, 12); g.closePath(); stFill(g, '#8a3a30', 2); stSmile(g, 0, 21, 12); stCrown(g, -30, 0.6, '#e8364a'); },
+  flame(g) { const f = (s, c0, c1) => { g.beginPath(); g.moveTo(0, -38 * s); g.bezierCurveTo(16 * s, -18 * s, 30 * s, -6 * s, 26 * s, 12 * s); g.bezierCurveTo(22 * s, 34 * s, -22 * s, 34 * s, -26 * s, 12 * s); g.bezierCurveTo(-28 * s, -4 * s, -14 * s, -10 * s, -10 * s, -24 * s); g.bezierCurveTo(-4 * s, -14 * s, -2 * s, -24 * s, 0, -38 * s); stFill(g, stGrad(g, -38 * s, 30 * s, c0, c1), s > 0.8 ? 3 : 0); };
+    g.save(); g.translate(0, 4); f(1, '#ffb03a', '#e8364a'); g.translate(0, 8); f(0.62, '#fff27a', '#ffa020'); g.restore(); stEye(g, -7, 18, 4); stEye(g, 7, 18, 4); },
+  ruby(g) { stGem(g, '#ff8aa0', '#c8102a', 32, 30); },
+  volcano(g) { g.fillStyle = 'rgba(200,200,215,.85)'; for (const [x, y, r] of [[-6, -34, 8], [6, -38, 9], [14, -30, 7]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); } g.beginPath(); g.moveTo(-38, 30); g.lineTo(-12, -18); g.lineTo(12, -18); g.lineTo(38, 30); g.closePath(); stFill(g, stGrad(g, -18, 30, '#a0624a', '#5a3020'));
+    g.beginPath(); g.moveTo(-12, -18); g.lineTo(12, -18); g.lineTo(16, -6); g.quadraticCurveTo(10, 2, 8, -4); g.quadraticCurveTo(4, 14, 0, -2); g.quadraticCurveTo(-6, 10, -8, -6); g.quadraticCurveTo(-14, 0, -16, -6); g.closePath(); stFill(g, stGrad(g, -20, 10, '#ffe14a', '#ff5a1a'), 2.4);
+    g.beginPath(); g.ellipse(0, -18, 12, 4, 0, 0, TAU); stFill(g, '#ff8a1a', 2.4); },
+  egg(g) { const e = () => { g.beginPath(); g.moveTo(0, -36); g.bezierCurveTo(26, -36, 30, 4, 28, 12); g.bezierCurveTo(26, 34, -26, 34, -28, 12); g.bezierCurveTo(-30, 4, -26, -36, 0, -36); }; e(); stFill(g, stGrad(g, -36, 34, '#d8c0ff', '#8a5ae0'));
+    g.save(); e(); g.clip(); g.fillStyle = '#ffd23f'; for (const [x, y, r] of [[-12, -14, 6], [12, -4, 7], [-8, 14, 8], [16, 20, 5]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); } g.restore(); e(); g.lineWidth = 3; g.strokeStyle = ST_INK; g.stroke();
+    g.lineWidth = 2.6; g.beginPath(); g.moveTo(-26, -2); g.lineTo(-16, -8); g.lineTo(-8, 0); g.lineTo(2, -8); g.lineTo(10, -2); g.stroke(); stGloss(g, -12, -24, 5, 8, 0.5); },
+  diamond(g) { stGem(g, '#c8f4ff', '#3a8cff', 34, 30); },
+  crown(g) { stCrown(g, 6, 1.5, '#e8364a'); g.fillStyle = '#fff'; g.beginPath(); g.arc(-18, -26, 3, 0, TAU); g.arc(22, -18, 2.4, 0, TAU); g.fill(); },
+  dragon(g) { stDragon(g, '#7ae87a', '#2fa84a', '#fff0b0'); },
+  dragonking(g) { g.save(); g.translate(0, 6); g.scale(0.9, 0.9); stDragon(g, '#ff7a5a', '#c8202a', '#ffe14a'); g.restore(); stCrown(g, -30, 0.62, '#5ab8ff'); g.fillStyle = 'rgba(255,170,40,.95)'; g.beginPath(); g.ellipse(-30, 26, 6, 3, 0.4, 0, TAU); g.ellipse(32, 26, 6, 3, -0.4, 0, TAU); g.fill(); },
+};
+function stickerSprite(n, sil, R = 32) { // sticker n (1..40) as a sprite of radius R: earned (sil false) or its silhouette (a slot still to fill)
+  const id = STICKERS[n - 1], w = advWorldOf(n), acc = WORLDS[w - 1].accent;
+  return makeSprite('stk|' + n + '|' + (sil ? 1 : 0) + '|' + R, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => {
+    if (sil) { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = 'rgba(8,11,28,0.55)'; g.fill(); g.setLineDash([R * 0.16, R * 0.12]); g.lineWidth = Math.max(1.5, R * 0.05); g.strokeStyle = 'rgba(241,233,218,0.35)'; g.stroke(); g.setLineDash([]); }
+    else { // the white die-cut rim with a soft shadow, the world-coloured disc, its gloss
+      g.save(); g.shadowColor = 'rgba(0,0,0,0.45)'; g.shadowBlur = R * 0.18; g.shadowOffsetY = R * 0.06; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = '#fbf8f2'; g.fill(); g.restore();
+      const q = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R * 0.9); q.addColorStop(0, lighten(acc, 0.55)); q.addColorStop(1, darken(acc, 0.25)); g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.fillStyle = q; g.fill();
+    }
+    const L = document.createElement('canvas'), px = Math.ceil(R * 2 * SS); L.width = L.height = px; const m = L.getContext('2d'); // the motif on its own layer
+    m.setTransform(px / 100, 0, 0, px / 100, px / 2, px / 2); m.scale(0.9, 0.9); m.lineJoin = m.lineCap = 'round'; try { ST_ART[id](m); } catch (e) {}
+    if (sil) { m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-in'; m.fillStyle = 'rgba(4,6,18,0.82)'; m.fillRect(0, 0, px, px); }
+    g.drawImage(L, -R, -R, R * 2, R * 2);
+    if (!sil) { g.save(); g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.clip(); g.fillStyle = 'rgba(255,255,255,0.22)'; g.beginPath(); g.ellipse(-R * 0.25, -R * 0.55, R * 0.7, R * 0.32, -0.25, 0, TAU); g.fill(); g.restore(); }
+  });
+}
+// --- the album: an overlay on the Adventure map, a page per world (tabs), 8 slots, the page's reward ---
+const album = { w: 1, shown: 0, peeled: [], anim: 0 };
+function albumOpen() { return !$('album').hidden; }
+function renderAlbumBtn() {
+  const b = $('advAlbumBtn'), A = profile.album; b.querySelector('.pr').textContent = A.got.length + '/' + ADV_N; b.querySelector('.dot').hidden = !A.fresh.length && !albumUnpaid().length;
+  b.setAttribute('aria-label', t('albumAria', { a: A.got.length, b: ADV_N })); b.title = t('albumTitle');
+}
+function albumUnpaid() { const r = []; for (let w = 1; w <= WORLD_N; w++) if (albumPageCount(w) === ADV_WORLD && !profile.album.pages.includes(w)) r.push(w); return r; }
+function openAlbum(w) { // w: the page to show (default: a page with a new sticker, else the current stage's world)
+  const A = profile.album, fw = albumUnpaid()[0] || (A.fresh.length ? advWorldOf(A.fresh[A.fresh.length - 1]) : advWorldOf(advCurrent()));
+  album.w = Math.max(1, Math.min(WORLD_N, (w | 0) || fw)); album.shown++; $('album').hidden = false; audioInit(); sfx('click'); renderAlbum(true);
+  try { $('album').querySelector('.xBtn').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function closeAlbum() { const P = $('album'); if (P.hidden) return false; P.hidden = true; clearTimeout(album.anim); renderAlbumBtn(); return true; }
+function albumPage(w) { album.w = Math.max(1, Math.min(WORLD_N, w | 0)); sfx('click'); renderAlbum(true); return album.w; }
+function renderAlbum(enter) {
+  const A = profile.album, w = album.w, WP = WORLDS[w - 1], base = (w - 1) * ADV_WORLD, have = albumPageCount(w), P = $('album');
+  P.style.setProperty('--wc', WP.accent);
+  $('albumTabs').replaceChildren(...Array.from({ length: WORLD_N }, (_, i) => { // the world tabs: their number in their colour, a check when the page is full, a dot for a new sticker
+    const wi = i + 1, c = albumPageCount(wi), b = document.createElement('button'); b.type = 'button'; b.className = 'albTab' + (wi === w ? ' on' : '') + (c === ADV_WORLD ? ' full' : ''); b.dataset.w = String(wi);
+    b.style.setProperty('--tc', WORLDS[i].accent); b.setAttribute('aria-pressed', String(wi === w)); b.setAttribute('aria-label', t('albumTab', { n: wi, a: c, b: ADV_WORLD }));
+    b.innerHTML = '<b>' + wi + '</b><small>' + c + '/' + ADV_WORLD + '</small>' + (A.fresh.some((n) => advWorldOf(n) === wi) && wi !== w ? '<i class="dot"></i>' : '');
+    b.addEventListener('click', () => albumPage(wi)); return b;
+  }));
+  $('albumPageTitle').textContent = t('albumPage', { n: w, w: t('wn_' + w) }); $('albumCount').textContent = have + ' / ' + ADV_WORLD;
+  const grid = $('albumGrid'), fresh = [];
+  grid.replaceChildren(...Array.from({ length: ADV_WORLD }, (_, i) => {
+    const n = base + i + 1, got = A.got.includes(n), d = document.createElement('button'); d.type = 'button'; d.className = 'albSlot' + (got ? ' got' : ' miss') + (advPlan(n).boss ? ' boss' : ''); d.dataset.n = String(n);
+    const c = document.createElement('canvas'), px = Math.round(64 * SS); c.width = c.height = px; c.setAttribute('aria-hidden', 'true'); const g = c.getContext('2d'), sp = stickerSprite(n, !got, 30); g.drawImage(sp.c, 0, 0, px, px);
+    const lb = document.createElement('span'); lb.className = 'lb';
+    if (got) lb.textContent = t('st_' + STICKERS[n - 1]);
+    else { lb.classList.add('need'); lb.innerHTML = ('<svg viewBox="0 0 24 24" aria-hidden="true">' + ADV_STAR_SVG + '</svg>').repeat(3); const nb = document.createElement('b'); nb.className = 'num'; nb.textContent = String(n); d.appendChild(nb); }
+    d.prepend(c); d.appendChild(lb); d.setAttribute('aria-label', got ? t('st_' + STICKERS[n - 1]) : t('albumNeed', { n }));
+    if (got && A.fresh.includes(n)) { d.classList.add('fresh'); fresh.push(n); }
+    d.addEventListener('click', () => { if (got) { sfx('blip'); d.classList.remove('wiggle'); void d.offsetWidth; d.classList.add('wiggle'); } else { toast('albumNeed', { n }, 'star'); sfx('whiff'); } });
+    return d;
+  }));
+  const miss = Array.from({ length: ADV_WORLD }, (_, i) => base + i + 1).find((n) => !A.got.includes(n)), paid = A.pages.includes(w), rw = $('albumReward');
+  rw.className = 'albReward' + (have === ADV_WORLD ? ' done' : '');
+  rw.innerHTML = ''; const coin = TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"'), sp = document.createElement('span');
+  if (have === ADV_WORLD) { sp.textContent = t('albumDone') + ' '; rw.append(sp); rw.insertAdjacentHTML('beforeend', '<em>' + coin + LRM + '+' + ECONOMY.album.page + '</em>' + TOAST_ICONS.check.replace('<svg', '<svg class="ck"')); }
+  else { sp.textContent = t('albumReward', { c: ECONOMY.album.page }); rw.append(sp); }
+  $('albumNext').textContent = miss ? t('albumNext', { n: miss }) : A.got.length === ADV_N ? t('albumAllDone') : '';
+  if (enter && fresh.length) { // the new stickers peel onto the page one after another, then they are no longer new
+    album.peeled = fresh.slice(); A.fresh = A.fresh.filter((n) => !fresh.includes(n)); saveProfile();
+    fresh.forEach((n, i) => { const el = grid.querySelector('.albSlot[data-n="' + n + '"]'); el.style.animationDelay = (0.15 + i * 0.18) + 's'; setTimeout(() => { if (!albumOpen()) return; sfx('peel'); }, 150 + i * 180); });
+  } else if (enter) album.peeled = [];
+  if (enter && have === ADV_WORLD && !paid) { // a full page not paid yet (stickers from before the album, or a page filled elsewhere): the bonus with confetti
+    clearTimeout(album.anim); album.anim = setTimeout(() => { if (!albumOpen() || album.w !== w) return; const c = albumClaimPage(w); if (!c) return; sfx('fanfare'); const r = rw.getBoundingClientRect(), sh = P.querySelector('.sheet'); domConfetti(sh, r); setTimeout(() => domConfetti(sh, r), 200); renderAlbum(false); }, 450 + fresh.length * 180);
+  }
+  renderAlbumBtn();
+}
+$('album').addEventListener('click', (e) => { if (e.target === $('album')) closeAlbum(); });
+$('album').querySelector('.xBtn').addEventListener('click', closeAlbum);
+$('advAlbumBtn').addEventListener('click', () => openAlbum());
+// --- the sticker on a stage's clear card: it drops in after the stars, peels down with a rip and a thump; a full page: 'Page complete! +30' with confetti ---
+function drawCardSticker(now, r, E, cx, y, cw, rtl) {
+  const ui = E.ui, at = E.overAt + 350 + 3 * 420 + 150, q = Math.max(0, Math.min(1, (now - at) / 520)), x = cx + (rtl ? 1 : -1) * (cw / 2 - 58), R = 32;
+  if (q > 0 && !adv.sfxAt.peel) { adv.sfxAt.peel = now; sfx('peel'); }
+  if (q >= 0.6 && r.page && !adv.sfxAt.page) { adv.sfxAt.page = now; sfx('fanfare'); confetti(cx, y, 70, 1); burst(x, y, '#ffd77a', 18); }
+  blit(stickerSprite(r.sticker, true, R), x, y, 0, 1, q < 1 ? 1 - q : 0); // its slot (the silhouette) until it lands
+  if (q > 0) { // fall + spin in, overshoot, settle; the corner flap still curling up until it lands
+    const e = 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2), sc = 1.7 - 0.7 * e, ang = (1 - q) * (rtl ? 0.9 : -0.9) - (rtl ? -0.12 : 0.12);
+    blit(stickerSprite(r.sticker, false, R), x, y - (1 - q) * 40, ang, sc, Math.min(1, q * 3));
+    if (q < 1) { const f = (1 - q) * R * 0.9, ca = ang + Math.PI * 0.25, fx = x + Math.cos(ca) * R * sc * 0.7, fy = y - (1 - q) * 40 + Math.sin(ca) * R * sc * 0.7; resetView(); ctx.save(); ctx.translate(fx, fy); ctx.rotate(ca + Math.PI * 0.75); ctx.fillStyle = '#fbf8f2'; ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-f / 2, 0); ctx.quadraticCurveTo(0, f * 0.9, f / 2, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+  }
+  const tx = rtl ? x - R - 14 : x + R + 14, tw = cw - 58 - R - 30, k1 = textSprite(t('newSticker'), 19, '#ffd77a', null, 800), k2 = textSprite(t('st_' + STICKERS[r.sticker - 1]), 14, 'rgba(241,233,218,0.85)', null, 600), ta = Math.min(1, q * 2);
+  edgeText(k1, tx, y - (r.page ? 18 : 9), rtl, Math.min(1, tw / k1.tw), ta); edgeText(k2, tx, y + (r.page ? 2 : 13), rtl, Math.min(1, tw / k2.tw), ta);
+  if (r.page) { const k3 = textSprite(t('pageDoneCard', { c: r.page.coins }), 14, '#43d9a3', null, 800); edgeText(k3, tx, y + 22, rtl, Math.min(1, tw / k3.tw), q >= 0.6 ? 1 : 0); }
+  ui.advSticker = { n: r.sticker, x: x - R, y: y - R, w: R * 2, h: R * 2, q, landed: q >= 1, page: r.page ? r.page.coins : 0 };
+}
+/* --- world music: a gentle loop per Adventure world (melody + bass + soft drums, generated), only while a stage is being played: off on pause / hand lost / the
+   stage's end / the map and menus / mute, ducked under the stage and boss banners. A 100 ms timer schedules the next ~0.3 s of notes (no per-frame work). --- */
+const MUSIC_VOL = 0.2, MUSIC_DUCK = 0.3, MUSIC_AHEAD = 0.3;
+const MUSIC = [ // per world: tempo (8th-note steps), the key (MIDI root of the melody), its lead voice, the melody (32 steps of semitones above the root, null a rest), the 4 bars' chord roots, the bass pattern (8 steps), drums (16 steps, repeated)
+  { name: 'playful', bpm: 116, root: 72, lead: 'square', bassV: 'tri', mel: [0, null, 4, null, 7, null, 4, 5, 7, null, 9, 7, 4, null, 2, null, 0, null, 4, null, 7, null, 12, null, 11, 9, 7, null, 5, 4, 2, null], chords: [0, 5, 7, 0], bass: [0, null, 7, null, 0, null, 7, null], k: 'x.......x.......', s: '....x.......x...', h: '..x...x...x...x.' },
+  { name: 'bells', bpm: 84, root: 77, lead: 'bell', bassV: 'sine', mel: [0, null, null, 7, null, null, 4, null, 2, null, null, 9, null, 7, null, null, 0, null, null, 7, null, null, 12, null, 11, null, 9, null, 7, null, null, null], chords: [0, 5, 7, 0], bass: [0, null, null, null, 7, null, null, null], k: 'x...............', s: '................', h: '..x...x...x...x.' },
+  { name: 'mechanical', bpm: 120, root: 62, lead: 'saw', bassV: 'sq', mel: [0, 0, null, 3, null, 0, 7, null, 5, null, 3, null, 0, null, -2, null, 0, 0, null, 3, null, 7, 10, null, 8, 7, 5, null, 3, null, 2, null], chords: [0, -4, -2, 0], bass: [0, 0, 12, 0, 0, 12, 0, 12], k: 'x...x...x...x...', s: '..c...c...c...c.', h: 'tttttttttttttttt' },
+  { name: 'marimba', bpm: 104, root: 67, lead: 'marimba', bassV: 'sine', mel: [0, 2, 4, null, 7, null, 4, 2, 0, null, -3, null, 0, null, null, null, 4, null, 7, 9, null, 7, 4, null, 2, 4, 2, null, 0, null, null, null], chords: [0, 5, 7, 0], bass: [0, null, null, 7, null, null, 0, null], k: 'b..b..b.b..b..b.', s: '..o...o...o..o.o', h: '.x.x.x.x.x.x.x.x' },
+  { name: 'dramatic', bpm: 96, root: 69, lead: 'drama', bassV: 'saw', mel: [0, null, null, 3, 7, null, null, 8, 7, null, 3, null, 2, null, null, null, 0, null, null, 3, 7, null, 12, null, 11, null, 8, null, 7, null, null, null], chords: [0, -4, -2, -5], bass: [0, null, 0, 12, 0, null, 0, 12], k: 'x.....x.x.......', s: '....m.......m.mm', h: '................' },
+];
+const music = { on: false, world: 0, bus: null, step: 0, next: 0, duck: false, target: 0, starts: 0, stops: 0, notes: 0, timer: 0 };
+function mFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+function mEnv(node, peak, t0, dur, att = 0.008) { const g = audio.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + att); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); node.connect(g); g.connect(music.bus); return g; }
+function mOsc(type, f, t0, dur, peak, lp) { const o = audio.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t0); let n = o; if (lp) { const fl = audio.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = lp; o.connect(fl); n = fl; } mEnv(n, peak, t0, dur); o.start(t0); o.stop(t0 + dur + 0.05); music.notes++; }
+function mNoise(t0, dur, peak, type, f, q = 1) { if (!noiseBuf) { noiseBuf = audio.createBuffer(1, audio.sampleRate, audio.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = audio.createBufferSource(), fl = audio.createBiquadFilter(); s.buffer = noiseBuf; fl.type = type; fl.frequency.value = f; fl.Q.value = q; s.connect(fl); mEnv(fl, peak, t0, dur, 0.002); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.05); music.notes++; }
+function mDrop(f0, f1, t0, dur, peak) { const o = audio.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur); mEnv(o, peak, t0, dur, 0.003); o.start(t0); o.stop(t0 + dur + 0.05); music.notes++; }
+function mLead(kind, f, t0, sd) {
+  if (kind === 'square') mOsc('square', f, t0, sd * 0.9, 0.16, 2400);
+  else if (kind === 'bell') { mOsc('sine', f, t0, 1.4, 0.32); mOsc('sine', f * 2.76, t0, 0.5, 0.07); mOsc('sine', f * 2, t0 + 0.002, 0.9, 0.06); }
+  else if (kind === 'saw') mOsc('sawtooth', f, t0, sd * 0.55, 0.15, 1500);
+  else if (kind === 'marimba') { mOsc('sine', f, t0, 0.45, 0.4); mOsc('sine', f * 3.92, t0, 0.07, 0.1); }
+  else { mOsc('triangle', f, t0, sd * 1.6, 0.3); mOsc('sawtooth', f, t0, sd * 1.4, 0.05, 1800); }
+}
+function mStep(T, i, t0, sd) { // one 8th-note step of track T at time t0
+  const bar = Math.floor(i / 8) % 4, m = T.mel[i % 32], b = T.bass[i % 8], d = i % 16, ch = T.chords[bar];
+  if (m !== null && m !== undefined) mLead(T.lead, mFreq(T.root + m), t0, sd);
+  if (b !== null && b !== undefined) { const f = mFreq(T.root - 24 + ch + b - (T.root >= 72 ? 12 : 0)); if (T.bassV === 'sine') mOsc('sine', f, t0, sd * 1.8, 0.4); else if (T.bassV === 'tri') mOsc('triangle', f, t0, sd * 0.9, 0.38); else if (T.bassV === 'sq') mOsc('square', f, t0, sd * 0.5, 0.12, 700); else mOsc('sawtooth', f, t0, sd * 1.5, 0.16, 500); }
+  const k = T.k[d], s = T.s[d], h = T.h[d];
+  if (k === 'x') mDrop(130, 45, t0, 0.16, 0.5); else if (k === 'b') mDrop(220, 170, t0, 0.12, 0.3);
+  if (s === 'x') mNoise(t0, 0.12, 0.16, 'bandpass', 1800, 0.8); else if (s === 'c') { mNoise(t0, 0.07, 0.14, 'bandpass', 3200, 9); mOsc('square', 620, t0, 0.05, 0.03); } else if (s === 'o') mDrop(330, 280, t0, 0.1, 0.25); else if (s === 'm') mDrop(110, 70, t0, 0.35, 0.45);
+  if (h === 'x') mNoise(t0, 0.035, 0.06, 'highpass', 7000); else if (h === 't') mNoise(t0, 0.02, 0.035, 'highpass', 9000);
+}
+function musicWant() { return !muted && !!audio && audio.state === 'running' && !document.hidden && mode !== 'none' && gameMode === 'strike' && adv.on && adv.phase === 'play' && !strike.over && !pause.on && !advMapOpen(); }
+function musicDucked(now) { const ui = strike.ui; if (ui.levelUp) return true; for (const k of ['dailyBanner', 'levelBanner', 'bossBanner']) { const B = ui[k]; if (B && !B.held && now < B.t + (B.ms || 1600)) return true; } return false; } // (a banner about to slide in too)
+function musicStart(w) {
+  try {
+    const t0 = audio.currentTime; music.bus = audio.createGain(); music.bus.gain.setValueAtTime(0.0001, t0); music.bus.connect(audio.destination);
+    music.on = true; music.world = w; music.step = 0; music.next = t0 + 0.1; music.duck = null; music.starts++;
+  } catch { music.on = false; }
+}
+function musicStop() {
+  if (!music.on) return; music.on = false; music.stops++; music.target = 0; const bus = music.bus; music.bus = null;
+  try { const t0 = audio.currentTime; bus.gain.cancelScheduledValues(t0); bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), t0); bus.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35); setTimeout(() => { try { bus.disconnect(); } catch {} }, 600); } catch {}
+}
+function musicSync() { // the 100 ms timer: start / stop / duck, then the notes of the next MUSIC_AHEAD seconds
+  if (!music.on && !adv.on) return;
+  const want = musicWant(), w = adv.world;
+  if (music.on && (!want || music.world !== w)) musicStop();
+  if (!want) return;
+  if (!music.on) musicStart(w); if (!music.on) return;
+  const duck = musicDucked(performance.now()), t0 = audio.currentTime;
+  if (duck !== music.duck) { music.duck = duck; music.target = MUSIC_VOL * (duck ? MUSIC_DUCK : 1); music.bus.gain.cancelScheduledValues(t0); music.bus.gain.setTargetAtTime(music.target, t0, duck ? 0.08 : 0.35); }
+  const T = MUSIC[w - 1], sd = 60 / T.bpm / 2;
+  if (music.next < t0 - 0.2) music.next = t0 + 0.05; // (the tab stalled: skip ahead, no burst of notes)
+  try { while (music.next < t0 + MUSIC_AHEAD) { mStep(T, music.step, music.next, sd); music.next += sd; music.step = (music.step + 1) % 32; } } catch {}
+}
+music.timer = setInterval(musicSync, 100);
 /* 'Tomorrow: day 3 gift' under a round-over / stage card once today's gift is open */
 function giftSprite(r) {
   return makeSprite('gift|' + r, r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
@@ -7905,7 +8266,7 @@ function renderAdvMap() {
     b.addEventListener('click', () => advNodeTap(n, b));
     host.appendChild(b);
   }
-  renderStarChests(host, L); renderDayChest();
+  renderStarChests(host, L); renderDayChest(); renderAlbumBtn();
   $('advStarTotal').querySelector('b').textContent = String(advStarTotal()); $('advStarTotal').querySelector('small').textContent = '/ ' + ADV_N * 3;
 }
 function advNodeY(n) { const p = amap.layout && amap.layout.nodes[n - 1]; return p ? p.y : 0; }
@@ -7925,7 +8286,7 @@ function openAdvMap(o = {}) { // o.how: the way a stop starts from the start scr
   return true;
 }
 function closeAdvMap(quiet) { // Back: from a stage card, home; from the start screen, just the map away
-  const M = $('advMap'); if (M.hidden) return false; M.hidden = true; clearTimeout(amap.anim); $('advDwell').hidden = true; adv.dwell = null;
+  const M = $('advMap'); if (M.hidden) return false; M.hidden = true; clearTimeout(amap.anim); closeAlbum(); $('advDwell').hidden = true; adv.dwell = null;
   if (!quiet && mode !== 'none' && gameMode === 'strike') goHome();
   return true;
 }
@@ -8068,7 +8429,7 @@ $('gifts').querySelector('.xBtn').addEventListener('click', closeGifts);
 $('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) { closeGifts(); return; } if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box; on the backdrop it closes
 $('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
 window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
-window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeGifts()) return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeGifts()) return; if (closeAlbum()) return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
@@ -8747,6 +9108,12 @@ window.__grasp = {
     get travel() { const T = adv.travel; return T ? { from: T.from, to: T.to, q: T.q, switched: T.switched } : null; }, get lastTravel() { return adv.lastTravel; },
     finishTest(livesLost = 0) { if (!adv.on || adv.phase !== 'play') return null; adv.lost = Math.max(0, livesLost | 0); strike.lives = Math.max(1, ADV_LIVES - adv.lost); if (adv.plan.boss) { adv.bossDone = true; strike.boss = null; } strike.walls.length = 0; strike.progress = adv.plan.walls; strike.cleared = strike.cleared0 + adv.plan.walls; return advClear(performance.now()); },
     failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; while (!strike.over && i++ < 20) loseLife(performance.now()); return adv.result; } },
+  // the sticker album: the stickers (ids by stage), the ones earned / new / pages paid, open(w) / close / page(w), award(n) as a 3-star clear of stage n would (test-only), the page bonus
+  album: { list: STICKERS, get got() { return profile.album.got.slice(); }, get fresh() { return profile.album.fresh.slice(); }, get pages() { return profile.album.pages.slice(); }, get shown() { return albumOpen(); }, get page() { return album.w; },
+    get peeled() { return album.peeled.slice(); }, count: (w) => albumPageCount(w), open: (w) => openAlbum(w), close: closeAlbum, setPage: albumPage, award: albumAward, claimPage: albumClaimPage, economy: ECONOMY.album, sprite: stickerSprite },
+  // world music: on (a loop playing), world, ducked, target (the bus level it is heading to), gain (the bus level now), notes (scheduled so far), starts / stops, want (should it play now), tracks
+  music: { get on() { return music.on; }, get world() { return music.world; }, get ducked() { return !!music.duck; }, get target() { return music.on ? music.target : 0; }, get gain() { return music.bus ? music.bus.gain.value : 0; }, get notes() { return music.notes; },
+    get starts() { return music.starts; }, get stops() { return music.stops; }, get want() { return musicWant(); }, get audio() { return audio ? audio.state : 'none'; }, sync: musicSync, vol: MUSIC_VOL, duck: MUSIC_DUCK, tracks: MUSIC.map((T) => ({ name: T.name, bpm: T.bpm, root: T.root, lead: T.lead })) },
   // the daily habit: the gift calendar (state / prize(n) / open: the calendar / tap: today's box with its animation / claim: today's prize at once / maybe: the once-a-day pop-up check),
   // the play streak, the '3 stages today' chest, the star chests; everything follows __grasp.setDate
   gifts: { get state() { return giftState(); }, prize: (n) => giftPrize(n), open: () => openGifts(false), close: closeGifts, tap: giftTap, claim: () => openGift(), maybe: maybeGift, get shown() { return !$('gifts').hidden; }, get shownCount() { return habit.shown; }, get auto() { return giftAutoOk(); }, economy: ECONOMY.gifts },
