@@ -18,7 +18,7 @@ async def new_page(b, gfx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
+    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })(); __grasp.grippy.on = false; __grasp.CONFIG.STRIKE_PU_RATE = 0")
     await page.mouse.move(640, 200)
@@ -98,7 +98,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e)))
             await page.add_init_script(INIT + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate("__grasp.setPlayerLevel(20)")
-            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
+            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
             await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
             await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(4); s.serve(); s.setBallZ(2300, 30, 30); s.ball.speed = 0; s.lives = 6; s.streak = 7; s.catchTest('big'); s.perks = {{ wide: 1, lucky: 2 }}; __grasp.addCoins(4); __grasp.grippy.cool(); __grasp.grippy.say('start'); toast('copied', null, 'check'); }})()")
             await frames(page, 3); await page.wait_for_timeout(300)

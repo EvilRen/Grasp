@@ -13,7 +13,7 @@ async def open_page(b, w, h, gfx=None):
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
     await page.evaluate("__grasp.setPlayerLevel(20)")  # the road unlocks everything (these suites test the run arc, not the meta gate)
     await page.evaluate(f"{S}.extrasOff = true; {S}.guestEvery = 0; __grasp.CONFIG.STRIKE_PU_RATE = 0; __grasp.CONFIG.STRIKE_MAGNET = 0")
-    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
+    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
     return ctx, page, errs
 

@@ -364,6 +364,68 @@ html[dir="rtl"] #daily .dmod small{ text-transform:none; letter-spacing:0; }
 .wnode.cur .dot::after{ content:''; position:absolute; inset:-7px; border-radius:50%; border:2.5px solid var(--saffron); animation:wpulse 1.2s ease-in-out infinite; }
 .wnode:not(.locked):hover .dot{ transform:scale(1.07); }
 @keyframes wpulse{ 0%,100%{ transform:scale(.92); opacity:.95; } 50%{ transform:scale(1.12); opacity:.35; } }
+#advMap{ position:fixed; inset:0; z-index:12; display:flex; flex-direction:column; background:#0b1028; color:var(--bone); overflow:hidden; }
+#advMap[hidden]{ display:none; }
+.amHead{ flex:none; position:relative; z-index:3; display:flex; align-items:center; gap:10px; padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px; background:linear-gradient(#161d3d,rgba(22,29,61,.94)); box-shadow:0 1px 0 var(--line), 0 6px 18px rgba(0,0,0,.35); }
+.amHead h2{ flex:1; margin:0; font-size:21px; font-weight:800; letter-spacing:.01em; }
+.amBack{ flex:none; width:46px; height:46px; border-radius:50%; background:rgba(241,233,218,.09); color:var(--bone); display:inline-flex; align-items:center; justify-content:center; }
+.amBack svg{ width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
+.amStars{ flex:none; display:inline-flex; align-items:center; gap:5px; padding:8px 13px; border-radius:999px; background:rgba(29,37,71,.9); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.45); font-size:16px; font-weight:800; color:#ffd77a; direction:ltr; unicode-bidi:isolate; }
+.amStars svg{ width:19px; height:19px; fill:#ffc24b; stroke:#b8730f; stroke-width:1; }
+.amStars small{ color:var(--muted); font-size:12px; font-weight:600; }
+.amScroll{ flex:1; min-height:0; overflow:hidden auto; overscroll-behavior:contain; position:relative; }
+.amPath{ position:relative; width:100%; overflow:hidden; }
+.aband{ position:absolute; left:0; right:0; background:linear-gradient(to top, var(--b0), var(--b1)); }
+.aband::before{ content:''; position:absolute; inset:0; opacity:.9; pointer-events:none; }
+.aband.m1::before{ background:repeating-linear-gradient(0deg, rgba(241,233,218,.06) 0 2px, transparent 2px 30px), repeating-linear-gradient(90deg, rgba(241,233,218,.04) 0 2px, transparent 2px 64px); }
+.aband.m2::before{ background:linear-gradient(rgba(150,255,220,.09) 2px, transparent 2px) 0 0/68px 68px, linear-gradient(90deg, rgba(150,255,220,.09) 2px, transparent 2px) 0 0/68px 68px; }
+.aband.m3::before{ background:radial-gradient(circle, rgba(230,236,250,.2) 2.2px, transparent 3.2px) 0 0/38px 38px, repeating-linear-gradient(0deg, rgba(220,230,245,.07) 0 2px, transparent 2px 76px); }
+.aband.m4::before{ background:radial-gradient(ellipse 16px 7px at 30% 40%, rgba(120,210,80,.28), transparent 70%) 0 0/92px 80px, radial-gradient(ellipse 12px 6px at 70% 75%, rgba(90,170,70,.25), transparent 70%) 0 0/92px 80px; }
+.aband.m5::before{ background:radial-gradient(circle at 20% 70%, rgba(255,110,30,.32), transparent 22%) 0 0/230px 260px, radial-gradient(circle at 80% 25%, rgba(255,80,20,.22), transparent 18%) 0 0/230px 260px; }
+.aband::after{ content:''; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg, transparent, var(--wc), transparent); opacity:.7; }
+.asign{ position:absolute; left:50%; bottom:16px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; padding:6px 16px; border-radius:16px; background:rgba(8,11,28,.66); box-shadow:inset 0 0 0 1.5px var(--wc), 0 6px 18px rgba(0,0,0,.35); white-space:nowrap; z-index:1; }
+.asign b{ color:var(--wc); font-size:15px; font-weight:800; }
+.asign small{ color:var(--bone); opacity:.75; font-size:11px; font-weight:600; }
+.apath{ position:absolute; left:0; top:0; pointer-events:none; z-index:1; }
+.apath .road{ fill:none; stroke:rgba(8,11,28,.5); stroke-width:18; stroke-linecap:round; }
+.apath .dash{ fill:none; stroke:rgba(241,233,218,.32); stroke-width:3.5; stroke-dasharray:1 11; stroke-linecap:round; }
+.apath .done{ fill:none; stroke:var(--saffron); stroke-width:4; stroke-dasharray:1 11; stroke-linecap:round; filter:drop-shadow(0 0 4px rgba(255,194,75,.8)); }
+.anode{ position:absolute; z-index:2; transform:translate(-50%,-50%); width:80px; padding:0; background:none; display:flex; flex-direction:column; align-items:center; gap:3px; color:#141b34; -webkit-tap-highlight-color:transparent; }
+.anode .disc{ position:relative; width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:800;
+  background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 46%), var(--wc); box-shadow:0 0 0 3px rgba(8,11,28,.85), 0 5px 0 rgba(0,0,0,.35), 0 0 16px var(--wc); transition:transform .15s; }
+.anode.boss .disc{ width:68px; height:68px; font-size:23px; background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.45), rgba(255,255,255,0) 46%), #c05ce6; box-shadow:0 0 0 3px rgba(8,11,28,.85), 0 0 0 6px var(--wc), 0 5px 0 6px rgba(0,0,0,.3), 0 0 22px #c05ce6; }
+.anode .mark{ position:absolute; left:50%; top:-20px; width:30px; height:24px; transform:translateX(-50%); filter:drop-shadow(0 2px 2px rgba(0,0,0,.5)); }
+.anode .st{ display:flex; gap:1px; height:16px; }
+.anode .st svg{ width:16px; height:16px; fill:rgba(8,11,28,.65); stroke:rgba(241,233,218,.4); stroke-width:1.4; }
+.anode .st svg.on{ fill:#ffc24b; stroke:#b8730f; stroke-width:1; filter:drop-shadow(0 0 3px rgba(255,194,75,.7)); }
+.anode .st svg:nth-child(2){ transform:translateY(-3px); }
+.anode.locked{ cursor:default; }
+.anode.locked .disc{ background:#30364f; color:#8a90a8; box-shadow:0 0 0 3px rgba(8,11,28,.85), 0 5px 0 rgba(0,0,0,.35); }
+.anode.locked.boss .disc{ background:#3a2f4f; }
+.anode.locked .disc svg{ width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.anode.locked .st{ visibility:hidden; }
+.anode.cur{ z-index:3; }
+.anode.cur .st{ margin-top:7px; }
+.anode.cur .disc{ animation:apulse 1.1s ease-in-out infinite; }
+.anode.cur .disc::after{ content:''; position:absolute; inset:-9px; border-radius:50%; border:3px solid var(--saffron); animation:wpulse 1.1s ease-in-out infinite; }
+.anode .hand{ position:absolute; top:-40px; inset-inline-start:46px; width:46px; height:46px; pointer-events:none; animation:abob 1.1s ease-in-out infinite; filter:drop-shadow(0 3px 3px rgba(0,0,0,.5)); }
+.anode.pop .disc{ animation:apop .7s cubic-bezier(.2,1.6,.4,1) both; }
+.anode.shake{ animation:shake .4s; }
+.anode:not(.locked):hover .disc{ transform:scale(1.07); }
+.anode.dwell .disc{ transform:scale(1.12); }
+@keyframes apulse{ 0%,100%{ transform:scale(1.12); } 50%{ transform:scale(1.22); } }
+@keyframes abob{ 0%,100%{ transform:translateY(0) rotate(-8deg); } 50%{ transform:translateY(-6px) rotate(4deg); } }
+@keyframes apop{ 0%{ transform:scale(.3); filter:brightness(2.2); } 60%{ transform:scale(1.35); } 100%{ transform:scale(1.12); filter:none; } }
+.amFoot{ flex:none; position:relative; z-index:3; display:flex; justify-content:center; padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 12px); background:linear-gradient(rgba(22,29,61,.94),#161d3d); box-shadow:0 -1px 0 var(--line); }
+.amEndless{ min-height:52px; padding:6px 22px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.4); color:var(--bone); display:inline-flex; align-items:center; gap:10px; text-align:start; }
+.amEndless svg{ width:26px; height:26px; stroke:var(--saffron); fill:none; stroke-width:2.2; stroke-linecap:round; flex:none; }
+.amEndless span{ display:flex; flex-direction:column; line-height:1.15; }
+.amEndless b{ font-size:16px; font-weight:800; }
+.amEndless small{ font-size:11px; color:var(--muted); font-weight:600; }
+#advDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:4;
+  background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
+#advDwell[hidden]{ display:none; }
 #newCard{ z-index:14; }
 .nuSheet{ text-align:center; width:min(340px,100%); overflow:hidden; background:radial-gradient(120% 80% at 50% 0%, rgba(255,194,75,.28), rgba(22,29,61,1) 60%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.7), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes nupop{ from{ transform:scale(.6); opacity:0; } }
@@ -545,6 +607,12 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <div class="wmap" id="wmap"><svg class="wpath" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path d="M10 20 L30 42 L50 20 L70 42 L90 20"/></svg></div>
   </div>
 </div>
+<div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
+  <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
+  <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
+  <footer class="amFoot"><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
+  <div id="advDwell" hidden></div>
+</div>
 <div class="ov" id="newCard" hidden role="dialog" aria-modal="true" aria-labelledby="nuName">
   <div class="sheet nuSheet">
     <p class="nuKick" data-i18n="newUnlocked">NEW UNLOCKED!</p>
@@ -638,6 +706,7 @@ const ECONOMY = {
   strike: { wall: 2, level: 5, boss: 20, guest: 2, powerup: 1, close: 1 }, // per wall cleared / level completed / boss / guest slapped / power-up caught / 'Close one!' (bricks pay none); Coin Magnet x1.5 on top
   slice: { fruitPerCoin: 5 }, smash: { bricksPerCoin: 10, car: 3 },        // Slice: a coin per 5 fruit; Smash: a coin per 10 bricks, 3 a car
   shapes: { level: 2, star3: 1 },                                          // Shapes: per level sorted, +1 for a 3-star level
+  adv: { first: 3, star: 1, boss: 5 },                                     // Strike Adventure (no coins per wall): a first clear pays 3 + its stars (+5 a boss stage); a replay only the stars it adds, 1 each
   missions: [15, 22, 30], dailyFirst: 20, streak: { 3: 40, 7: 100, 14: 200 }, levelUp: 10, chest: [25, 60], // mission tiers (easy / mid / hard goal); the first daily of a day; daily-streak milestones; level-up = 10 x the new level; boss-chest coins
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
@@ -750,6 +819,10 @@ const I18N = {
     chestTap: 'Tap to open!', chestPoint: 'Point at it to open!', chestCoins: '+{n} coins!', chestSkin: 'New look: {i}!', chestTicket: 'Golden ticket!', chestTicketSub: '+1 life on your next run',
     chestToastSkin: 'Treasure! The {i} is yours', chestToastTicket: 'Golden ticket: +1 life on your next run!', ticketUsed: 'Golden ticket: +1 life this run!', xpN: '+{n} XP',
     it_ball_lava: 'Lava ball', it_trail_lava: 'Lava trail', it_hand_legend: 'Legend hand',
+    // Strike Adventure: the saga map, the stages, their cards
+    advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
+    stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Break {n} walls, then the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
+    nextBtn: 'Next', retryBtn: 'Try again', mapBtn: 'Map', advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -854,6 +927,9 @@ const I18N = {
     chestTap: 'הקישו כדי לפתוח!', chestPoint: 'הצביעו עליה כדי לפתוח!', chestCoins: '‎+{n} מטבעות!', chestSkin: 'מראה חדש: {i}!', chestTicket: 'כרטיס זהב!', chestTicketSub: 'לב נוסף במשחק הבא',
     chestToastSkin: 'אוצר! {i} שלכם', chestToastTicket: 'כרטיס זהב: לב נוסף במשחק הבא!', ticketUsed: 'כרטיס זהב: לב נוסף במשחק הזה!', xpN: '‎+{n} XP',
     it_ball_lava: 'כדור לבה', it_trail_lava: 'שובל לבה', it_hand_legend: 'יד האגדה',
+    advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
+    stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'שברו {n} קירות ואז את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
+    nextBtn: 'הבא', retryBtn: 'שוב', mapBtn: 'מפה', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
   },
 };
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
@@ -1236,7 +1312,7 @@ function inputTick(now) {
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); resetHandCursor(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
-    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden) endCardAction('again', now);
+    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !advMapOpen()) endCardAction('again', now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -1466,9 +1542,9 @@ function textSprite(text, size, color, glow, weight = 700) {
   sp = { c, w, h, ox: w / 2, oy: h / 2, tw }; TEXTS.set(key, sp); return sp;
 }
 if (document.fonts) { document.fonts.ready.then(() => TEXTS.clear()).catch(() => {}); document.fonts.addEventListener?.('loadingdone', () => TEXTS.clear()); }
-function bgSprite(kind) {
-  const key = 'bg|' + kind + (kind === 'strike' ? '|w' + strike.world : ''); // (Strike: one per world palette; the last world's goes when a new one is drawn)
-  if (kind === 'strike' && !SPRITES.has(key)) for (const k of [...SPRITES.keys()]) if (k.startsWith('bg|strike|')) SPRITES.delete(k);
+function bgSprite(kind, wo) {
+  const wi = wo || strike.world, key = 'bg|' + kind + (kind === 'strike' ? '|w' + wi : ''); // (Strike: one per world palette; the others go when a new one is drawn, but the current one stays: a trip to the next world draws both)
+  if (kind === 'strike' && !SPRITES.has(key)) for (const k of [...SPRITES.keys()]) if (k.startsWith('bg|strike|') && k !== 'bg|strike|w' + strike.world) SPRITES.delete(k);
   return makeSprite(key, W, H, 0, 0, (g) => {
     g.fillStyle = '#141b34'; g.fillRect(0, 0, W, H);
     const top = g.createRadialGradient(W * 0.5, -H * 0.25, 10, W * 0.5, 0, Math.max(W, H));
@@ -1482,7 +1558,7 @@ function bgSprite(kind) {
       g.fillStyle = gr; g.fillRect(0, H - 70, W, 70);
       g.strokeStyle = 'rgba(241,233,218,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, H - 1); g.lineTo(W, H - 1); g.stroke();
     }
-    if (kind === 'strike') drawCorridor(g);
+    if (kind === 'strike') drawCorridor(g, wi);
     if (kind === 'shapes') { const fl = g.createLinearGradient(0, H * 0.55, 0, H); fl.addColorStop(0, 'rgba(255,190,120,0)'); fl.addColorStop(1, 'rgba(255,190,120,0.12)'); g.fillStyle = fl; g.fillRect(0, H * 0.55, W, H * 0.45); } // a warm play-room floor under the box
     const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.hypot(W, H) * 0.62);
     v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.6)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
@@ -3588,7 +3664,51 @@ const daily = { on: false, armed: false, date: '', modifier: null, forceModifier
 function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let q = Math.imul(a ^ (a >>> 15), 1 | a); q = (q + Math.imul(q ^ (q >>> 7), 61 | q)) ^ q; return ((q ^ (q >>> 14)) >>> 0) / 4294967296; }; }
 function dailySeed(date) { return strSeed('daily|' + date); }
 function modifierFor(date) { return DAILY_MODS[Math.floor(mulberry32(strSeed('dailymod|' + date))() * DAILY_MODS.length)]; }
+// Strike Adventure: a saga ladder of ADV_N fixed stages (5 worlds x 8; each world's 8th is its boss stage). A stage is a plan made from its number
+// alone (advPlan: its own generator, never the run's or the daily's channels): how many walls (4 at first, 10 by world 5), which kinds (what the
+// world brings in: w1 brick, w2 + glass, w3 + steel, w4 + holed / moving, w5 + TNT), how tough the bricks are and the tuning level its pace and serves
+// follow. The goal: break every wall. Once the plan's walls are out no more come; the last one down clears the stage (a boss stage: then the boss).
+// 3 lives a stage; 3 stars for none lost, 2 for one, 1 for more. Inside a stage strikeRand() is seeded per channel by the stage number, so a retry
+// replays the same serves, bricks and guests. The road does not gate it (the stage defines its content), there are no perk picks.
+const ADV_WORLD = 8, ADV_N = WORLD_N * ADV_WORLD, ADV_LIVES = 3, ADV_BURST_MS = 900, ADV_BOSS_BURST_MS = 1700, ADV_WHOOSH_MS = 700, ADV_TRAVEL_MS = 2600;
+const ADV_NEW = [['brick'], ['glass'], ['steel'], ['holed', 'moving'], ['tnt']]; // the wall kinds each world brings in (a world keeps the earlier ones)
+const adv = { on: false, armed: false, n: 1, plan: null, world: 1, spawned: 0, lost: 0, phase: 'play', clearAt: 0, cardAt: 0, travel: null, lastTravel: null, result: null, bossDone: false, rngs: {}, how: 'mouse', dwell: null, sfxAt: {} };
+function advWorldOf(n) { return Math.max(1, Math.min(WORLD_N, Math.ceil(Math.max(1, n | 0) / ADV_WORLD))); }
+function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
+  n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); const w = advWorldOf(n), i = n - (w - 1) * ADV_WORLD, boss = i === ADV_WORLD, r = mulberry32(strSeed('advplan|' + n));
+  const level = (w - 1) * WORLD_LEVELS + Math.max(1, Math.round(i * WORLD_LEVELS / ADV_WORLD)); // the tuning level: world 1 runs levels 1-6 (its boss stage at the old boss level 6), world 5 up to 30
+  const full = Math.min(10, 3 + w + Math.floor((i - 1) / 2)), walls = boss ? Math.max(3, full - 2) : full; // 4 walls on stage 1, a step every other stage, 10 at most; the boss stage: two fewer, then the boss
+  const intro = (k) => { const wi = ADV_NEW.findIndex((ks) => ks.includes(k)), j = ADV_NEW[wi].indexOf(k); return wi * ADV_WORLD + 1 + 2 * j; }; // the stage a kind comes in on (world 4's moving walls two stages after its holed ones)
+  const pool = STRIKE_KINDS.filter((k) => intro(k) <= n), fresh = pool.filter((k) => k !== 'brick' && intro(k) === n), kinds = [];
+  for (let k = 0; k < walls; k++) {
+    if (k === 0) { kinds.push('brick'); continue; } // every stage opens on a plain brick wall
+    if (k <= fresh.length) { kinds.push(fresh[k - 1]); continue; } // the kind this stage brings in comes second (its spotlight)
+    const wts = pool.map((q) => q === 'brick' ? Math.max(1, 3 - 0.3 * (i - 1)) : ADV_NEW[w - 1].includes(q) ? 3 : 2); let x = r() * wts.reduce((a, b) => a + b, 0), pick = pool[0];
+    for (let j = 0; j < pool.length; j++) { x -= wts[j]; if (x < 0) { pick = pool[j]; break; } }
+    kinds.push(pick);
+  }
+  return { n, world: w, index: i, boss, level, walls, kinds, hp: Math.min(4, 1 + Math.floor((n + 3) / 10)), // plain bricks: 1 hp up to stage 6, 4 from stage 27
+    pu: n >= 3 ? Math.min(0.4, 0.2 + 0.05 * (w - 1)) : 0, guests: n >= 2, monkey: w >= 2, curve: w >= 2, wobble: w >= 4 }; // power-up bricks from stage 3 and rare; the cow from stage 2, the monkey from world 2; bending serves from world 2, S-wobbles from world 4
+}
+function advOpen(id) { // what a stage may use in place of the road: everything, but the monkey, power-ups and serve shapes come with the worlds; no perks
+  const w = adv.plan ? adv.plan.world : 1;
+  if (id === 'monkey' || id === 'curve' || id === 'pu_multi') return w >= 2;
+  if (id === 'pu_fire') return w >= 3;
+  if (id === 'wobble' || id === 'pu_life') return w >= 4;
+  return !/^perks/.test(id);
+}
+function advPlayable(n) { const A = profile.adv; return n >= 1 && n <= ADV_N && (n <= A.unlocked || A.open.includes(n)); }
+function advCurrent() { const A = profile.adv; let c = 0; for (let n = 1; n <= ADV_N; n++) if (advPlayable(n) && !A.stars[n]) c = n; return c || Math.min(ADV_N, A.unlocked); } // the next unplayed stage (the furthest one, for a player with worlds opened in Endless)
+function advStarTotal() { let s = 0; for (const k in profile.adv.stars) s += profile.adv.stars[k]; return s; }
+function advOpenNode(A, n) { // stage n becomes playable: the frontier moves on, or (past a gap: a world opened in Endless) it is kept on its own
+  if (n < 1 || n > ADV_N || n <= A.unlocked || A.open.includes(n)) return;
+  if (n === A.unlocked + 1) A.unlocked = n; else A.open.push(n);
+  while (A.open.includes(A.unlocked + 1) && A.unlocked < ADV_N) A.unlocked++; A.open = A.open.filter((q) => q > A.unlocked).sort((a, b) => a - b);
+}
+function advSyncWorlds(p) { for (let w = 2; w <= p.worlds.unlocked; w++) advOpenNode(p.adv, (w - 1) * ADV_WORLD + 1); } // worlds opened in Endless (or before the Adventure): their first stage is open on the map, so nobody loses access
+function advXp(clear) { return runXp({ walls: strike.progress, levels: 0, bosses: adv.bossDone ? 1 : 0 }) + (clear && adv.result ? 10 * adv.result.stars : 0); } // 20 for playing, 4 a wall, 30 the boss, 10 a star
 function strikeRand(ch = 'misc') {
+  if (adv.on) { const r = adv.rngs[ch] || (adv.rngs[ch] = mulberry32(strSeed('adv|' + adv.n) ^ strSeed(ch))); return r(); } // an Adventure stage: its own seeded channels
   if (!daily.on) return Math.random();
   const r = daily.rngs[ch] || (daily.rngs[ch] = mulberry32(dailySeed(daily.date) ^ strSeed(ch)));
   return r();
@@ -3659,7 +3779,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
   level: 1, cleared: 0, wallId: 0, bestCombo: 0, ricochets: 0, ricochetAt: -1e9, explosions: 0, tntAt: -1e9, seenKinds: new Set(), nextKind: null,
   progress: 0, levelBest: 0, boss: null, bosses: 0, bossDownAt: -1e9, // walls cleared in the current level; best level reached (saved); the live boss (null between bosses); bosses beaten this round
-  get goal() { return levelGoal(strike.level); }, // walls to clear in the current level
+  get goal() { return adv.on && adv.plan ? adv.plan.walls : levelGoal(strike.level); }, // walls to clear in the current level (an Adventure stage: all of its walls)
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
   ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null,
     banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null, puIcons: [], heartPop: null,
@@ -3672,7 +3792,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   get beatMs() { return strikeTuning().beatMs; }, trailMs(b) { return trailMs(b || strike.balls[0] || {}); },
   gate: WORLD_LEVELS, startWorld: 1, runWorld: 1, cleared0: 0, worldUp: 0, ticket: false, // the world's last level (its boss holds the way on); the world a run starts in (the map / worlds.start); walls cleared before the run's first level; a world unlocked this run; a Golden ticket used
   chest: null, chests: 0, lastChest: null, chestAutoMs: null, spots: [], lastSpot: null, previewed: new Set(), // the boss chest (with open()); opened this run; its last prize; test-only auto-open time; the spotlight queue ('New! Glass walls'); the daily's previews shown
-  get world() { return worldOf(strike.level); }, get runXp() { return strikeRunXp(); },
+  get world() { return adv.on ? adv.world : worldOf(strike.level); }, get runXp() { return strikeRunXp(); }, // (an Adventure stage: its world, the next one once the trip there has passed its midpoint)
   dropChest() { return dropChest(performance.now()); }, chestPrize(seed) { return chestPrize(mulberry32(seed >>> 0)); }, chestTable: null, // test helpers: a chest now; the prize a seeded roll gives (not applied)
   extrasOff: false, // test-only: no perk offers, no streak multiplier, no 'Close one!', no surprise guests (the older suites check exact scores and timings)
   // surprise guests: serves launched (pitches), the pre-rolled next guest { at: pitch, kind }, the kinds so far, hits / misses / served this round, the missed ones boinging off the screen
@@ -3741,13 +3861,13 @@ function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) /
 function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1) * (dailyMod() === 'tiny' ? 0.7 : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
 function ballRad(b) { return ballR() * (b && b.guest ? GUEST_R : 1); } // one ball's radius: a guest is x1.35
 function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballRad(b) * p.s, s: p.s }; }
-function drawCorridor(g) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
+function drawCorridor(g, wi = strike.world) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish();
   const P = (x, y, z) => { const s = STRIKE_F / (STRIKE_F + z); return [v.x + x * s, v.y + y * s]; };
   const quad = (pts, grad) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fillStyle = grad; g.fill(); };
   const far = { x0: P(L, T, Z)[0], y0: P(L, T, Z)[1], x1: P(R, B, Z)[0], y1: P(R, B, Z)[1] };
   const lin = (x0, y0, x1, y1, a, b) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, a); gr.addColorStop(1, b); return gr; };
-  const WP = WORLDS[strike.world - 1] || WORLDS[0]; // the world's palette
+  const WP = WORLDS[wi - 1] || WORLDS[0]; // the world's palette
   quad([P(L, B, 0), P(R, B, 0), P(R, B, Z), P(L, B, Z)], lin(0, H, 0, far.y1, WP.floor[0], WP.floor[1]));      // floor
   quad([P(L, T, 0), P(R, T, 0), P(R, T, Z), P(L, T, Z)], lin(0, 0, 0, far.y0, WP.ceil[0], WP.ceil[1]));      // ceiling
   quad([P(L, T, 0), P(L, T, Z), P(L, B, Z), P(L, B, 0)], lin(0, 0, far.x0, 0, WP.wall[0], WP.wall[1]));      // left wall
@@ -3820,14 +3940,15 @@ document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListene
 function resetStrike(now) {
   loadGuestArt(); gfx3dBoot(); // Strike starts: the guests' painted art loads (once); three.js loads now (once), then the corridor renders in WebGL
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
+  const A = adv.on ? advBegin() : null; // an Adventure stage: its plan, its seeded channels afresh
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
-  const w0 = daily.on ? 1 : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
-  strike.waiting = false; strike.runWorld = w0; strike.gate = worldGate(L0); strike.worldUp = 0; strike.chest = null; strike.chests = 0; strike.lastChest = null; strike.spots.length = 0; strike.lastSpot = null; strike.previewed.clear();
-  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
+  const w0 = A ? A.world : daily.on ? 1 : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
+  strike.waiting = false; strike.runWorld = w0; strike.gate = A ? 0 : worldGate(L0); strike.worldUp = 0; strike.chest = null; strike.chests = 0; strike.lastChest = null; strike.spots.length = 0; strike.lastSpot = null; strike.previewed.clear();
+  strike.score = 0; strike.lives = strike.maxLives = A ? ADV_LIVES : sd('STRIKE_LIVES'); strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = L0; strike.cleared = strike.cleared0 = clearedAtLevel(L0); strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
-  strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = L0 > 1 ? kindNewAt(L0) : null;
+  strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = L0 > 1 && !A ? kindNewAt(L0) : null;
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; strike.runReturns = strike.paceUps = 0; strike.ui.faster = null; roundStart();
   strike.pitches = strike.guestHits = strike.guestMisses = strike.guestsServed = 0; strike.guestKinds.length = strike.bouncers.length = 0; strike.lastGuest = null; guestRoll(); // (after the daily's generators reset: the same guests on the same serves)
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
@@ -3837,9 +3958,10 @@ function resetStrike(now) {
   ui.levelUp = ui.bossBanner = ui.boss = ui.progBar = null; ui.progressAt = -1e9; ui.progShown = 0;
   ui.perkCards = ui.perkDwell = ui.streakBox = ui.streakToast = ui.streakLost = ui.nextCard = ui.nextShown = null; ui.perkHover = -1; ui.perkIcons.length = 0; ui.nextAt = ui.closeAt = -1e9;
   ui.dailyBannerBox = ui.strip = ui.streakChip = null; ui.dailyBanner = daily.on ? { t: now + 200, ms: 2400, mod: daily.modifier, date: daily.date } : null; // the daily: 'Glass day' + 'Daily · 2026-10-02' first
-  ui.levelBanner = { t: now + (daily.on ? 2700 : 200), level: L0, goal: levelGoal(L0), world: w0 > 1 ? w0 : 0 }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level); a later world's start names the world
+  ui.levelBanner = A ? { t: now + 200, level: L0, stage: A.n, goal: A.walls, boss: A.boss, world: A.index === 1 && A.world > 1 ? A.world : 0 } : { t: now + (daily.on ? 2700 : 200), level: L0, goal: levelGoal(L0), world: w0 > 1 ? w0 : 0 }; // (an Adventure stage: 'Stage 5' + 'Break all 6 walls')
+  ui.advPips = null; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level); a later world's start names the world
   strike.ticket = false;
-  if (!daily.on && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
+  if (!daily.on && !A && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
   strike.releaseUntil = -1e9;
   if (daily.on || !tipOnce('serve')) grippySay(daily.on ? 'daily' : 'start', daily.on ? { mod: t('mod_' + daily.modifier) } : null); // (a profile's first run: 'Slap the ball!' instead)
@@ -3868,7 +3990,9 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
   }
 }
 function wallCleared(now) { // one more wall down: the level progress ticks (a pulse on the bar), a level may complete, and the last wall of a world's last level brings its boss
-  strike.cleared++; strike.ui.progressAt = now; syncLevel(now, true);
+  strike.cleared++; strike.ui.progressAt = now;
+  if (adv.on) { strike.progress = strike.cleared - strike.cleared0; if (strike.progress >= strike.goal && adv.phase === 'play') { if (adv.plan.boss && !adv.bossDone) { if (!strike.boss) spawnBoss(adv.plan.world, now); } else advClear(now); } return; } // an Adventure stage: no levels; its last wall clears it (or brings its boss)
+  syncLevel(now, true);
   if (bossDue()) spawnBoss(strike.gate / WORLD_LEVELS, now);
 }
 function bossDue() { return !strike.boss && strike.level === strike.gate && strike.progress >= levelGoal(strike.level); } // the world's last level is complete and its boss is not up yet
@@ -3879,11 +4003,17 @@ function runXp(r) { return Math.max(0, Math.round(20 + 4 * Math.max(0, r.walls |
 /* --- the spotlight: the first time something newly unlocked on the road shows up in a run, a big 'New! Glass walls' tag (the daily, which
    ignores the road, labels what this player has not unlocked yet 'Preview!', once a run) --- */
 function roadSpot(id, now = performance.now()) {
+  if (adv.on) return advSpot(id, now);
   if (!ROAD_BY[id] || strike.extrasOff || mode === 'none') return false;
   const pre = daily.on && !roadHas(id);
   if (pre) { if (strike.previewed.has(id)) return false; strike.previewed.add(id); }
   else { const F = profile.road.fresh, i = F.indexOf(id); if (i < 0) return false; F.splice(i, 1); saveProfile(); }
   if (strike.spots.length < 4) strike.spots.push({ id, preview: pre, t: 0 }); strike.lastSpot = { id, preview: pre, at: now };
+  return true;
+}
+function advSpot(id, now) { // an Adventure stage: the first time a wall kind shows up in the Adventure, the same spotlight ('New! Glass walls'), once per profile
+  const S = profile.adv.seen; if (!STRIKE_KINDS.includes(id) || id === 'brick' || S.includes(id) || strike.extrasOff || mode === 'none') return false;
+  S.push(id); saveProfile(); if (strike.spots.length < 4) strike.spots.push({ id, preview: false, t: 0 }); strike.lastSpot = { id, preview: false, at: now };
   return true;
 }
 /* --- the boss chest: after each boss a treasure chest drops; a tap on it (or a point / pinch / fist held 600 ms, or 10 s) opens it: a shake, a glow,
@@ -3941,6 +4071,7 @@ function wallGrid() { // ~20 bricks about twice as wide as tall: 4x5 on a laptop
 }
 function brickCell(w, col, row) { const { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows; return { x: L + (w.ox || 0) + (col + 0.5) * cw, y: T + (row + 0.5) * ch, w: cw, h: ch }; } // span: cells across the corridor (a moving wall is one short); ox: its lateral offset
 function wallKindFor(level) { // level 1: brick only; a kind unlocks at its KIND_AT level (the first wall of that level is it), then a weighted random mix of everything unlocked
+  if (adv.on) return adv.plan.kinds[adv.spawned] || 'brick'; // an Adventure stage: the plan's next wall
   const mod = dailyMod(); if (mod === 'glass') { strike.nextKind = null; return 'glass'; } // daily 'Glass day': every wall is glass
   if (strike.nextKind) { const k = strike.nextKind; strike.nextKind = null; return k; }
   if ((mod === 'steel' || mod === 'tnt') && strikeRand('walls') < (mod === 'steel' ? 0.4 : 0.5)) return mod; // 'Steel day' / 'TNT party': that kind from level 1 on, in 40% / 50% of the walls
@@ -3950,9 +4081,10 @@ function wallKindFor(level) { // level 1: brick only; a kind unlocks at its KIND
   return 'brick';
 }
 function spawnStrikeWall(z, kind) {
-  kind = STRIKE_KINDS.includes(kind) ? kind : takeUpcoming();
+  if (adv.on && !STRIKE_KINDS.includes(kind) && adv.spawned >= adv.plan.walls) return null; // an Adventure stage: its walls are all out, no more come
+  kind = STRIKE_KINDS.includes(kind) ? kind : takeUpcoming(); if (adv.on) adv.spawned++;
   const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
-  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : strikeTuning(level).brickHp; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
+  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : adv.on ? adv.plan.hp : strikeTuning(level).brickHp; // glass shatters on any hit, steel plates take 3, bricks toughen with the level (an Adventure stage: its plan's)
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
   const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: strikeRand('bricks') * TAU };
   const at = (c, r) => bricks[r * cols + c];
@@ -3980,6 +4112,7 @@ function peekUpcoming() { return strike.upcoming || (strike.upcoming = wallKindF
 function takeUpcoming() { const k = peekUpcoming(); strike.upcoming = null; return k; }
 function upcomingKind() { // what enters the corridor next: the boss (the next wall cleared brings it), else the nearest wall still beyond the far end, else the next spawn
   if (!strike.boss && strike.level === strike.gate && strike.progress >= levelGoal(strike.level) - 1) return 'boss'; // the world's final wall is up (or done): the boss comes next
+  if (adv.on && adv.plan.boss && !strike.boss && !adv.bossDone && strike.progress >= strike.goal - 1) return 'boss'; // an Adventure boss stage: after its last wall
   const Z = CONFIG.STRIKE_Z_FAR; let w = null; for (const q of strike.walls) if (q.z >= Z && (!w || q.z < w.z)) w = q;
   return w ? w.kind : peekUpcoming();
 }
@@ -3998,6 +4131,7 @@ function perkN(id) { return strike.perks[id] || 0; }
 function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1); }                       // Wider Hands
 function magnetVal() { return strikeTuning().magnet + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
 function puRate(L = strike.level) { // power-up bricks per wall at level L: none on levels 1-2 (the pure core), ~1/3 a wall at levels 3-4 rising to 1/2 by level 8; Lucky +50% each, 'Power-up rain' x3 from level 1 (CONFIG.STRIKE_PU_RATE scales it: 1/12 = as designed, 0 = none)
+  if (adv.on) return adv.plan.pu * CONFIG.STRIKE_PU_RATE * 12; // an Adventure stage: its plan's (from stage 3, rare)
   const rain = dailyMod() === 'rain'; if ((L < PU_FROM && !rain) || !puPool().length) return 0; // (none until the first power-up is unlocked on the road)
   return Math.min(1 / 3 + Math.max(0, L - 4) / 24, 0.5) * CONFIG.STRIKE_PU_RATE * 12 * (1 + 0.5 * perkN('lucky')) * (rain ? 3 : 1);
 }
@@ -4185,7 +4319,7 @@ function smashWall(w, b, now) {
       strike.lastClip = { wall: w.id, n, open: gc.open }; g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind, dent: false, destroyed: n, tier, sup: false });
       const sc = ballScreen(b), pts = scorePts(n * (steel ? 3 : 1)); strike.score += pts; strike.ui.scoreAt = now; track('brick', n); sfx('crack', 0.3); sfx('whoosh');
       strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
-      if (w.left <= 0) { const bonus = 10 * strike.level; strike.score += scorePts(bonus); strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(ECONOMY.strike.wall); track('wall', 1); sfx('chime'); wallCleared(now); spawnStrikeWall(nextWallZ()); }
+      if (w.left <= 0) { const bonus = 10 * strike.level; strike.score += scorePts(bonus); strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1); sfx('chime'); wallCleared(now); spawnStrikeWall(nextWallZ()); }
       return 'pass';
     }
   }
@@ -4224,7 +4358,7 @@ function smashWall(w, b, now) {
   if (w.left <= 0) { // wall down: bonus, chime; a fresh wall (tougher per level, a new kind unlocked per level) spawns beyond the far end (or behind the boss) and the queue slides forward
     const bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); pts += bonus;
     strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
-    strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(ECONOMY.strike.wall); track('wall', 1);
+    strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
     wallCleared(now); spawnStrikeWall(nextWallZ());
   }
   if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points (with a combo banner)
@@ -4253,7 +4387,7 @@ function incomingWalls(b, z0, x0, y0, now) { // an incoming ball crossing a stan
 function wallDown(w, now) { // a wall knocked out completely (from in front or behind): its bonus, the chime, the coins; a fresh wall queues up
   const { T, B } = corridor(), bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); strike.score += scorePts(bonus); strike.ui.scoreAt = now;
   strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
-  const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(ECONOMY.strike.wall); track('wall', 1);
+  const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
   wallCleared(now); spawnStrikeWall(nextWallZ());
 }
 function sweptDist(w, k, b) { // the closest the ball's centre came to brick k's cell over this frame's lateral path (b.lx/ly -> b.x/y)
@@ -4375,7 +4509,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
 }
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n; g3Fx('bossdown', { z: b.z });
-  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(ECONOMY.strike.boss); track('boss', 1);
+  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; strike.floaters.push({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
   sfx('bossdown'); shakeScreen(4); strike.tntAt = now; grippySay('bossDown');
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
@@ -4386,10 +4520,11 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
     strike.debris.push({ x: (Math.random() - 0.5) * W * 0.8, y: (Math.random() - 0.5) * H * 0.6, z: b.z, vx: (Math.random() - 0.5) * 0.5, vy: -0.15 - Math.random() * 0.35, vz: -(0.8 + Math.random() * 1), rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.03, k: 0.35 + Math.random() * 0.35, level: 1, kind: 'boss', shard: false, w: cw, h: ch, life: 1, decay: 1 / (700 + Math.random() * 500) });
   }
   for (const w of strike.walls.slice()) if (w.z < CONFIG.STRIKE_Z_FAR) crumbleWall(w, now, false);
+  if (adv.on) { strike.walls.length = 0; adv.bossDone = true; advClear(now); return; } // an Adventure boss stage: cleared (and off to the next world)
   if (b.gate) { // the world's boss: the next world opens (its first level, with the release beat and a banner naming it; a checkpoint on the world map)
     const wb = strike.gate / WORLD_LEVELS; strike.gate += WORLD_LEVELS; syncLevel(now, true);
     const Lb = strike.ui.levelBanner; if (Lb && Lb.up) { Lb.t = Math.max(Lb.t, now + 2000); strike.ui.levelUp = null; } // 'Boss down!' first, then the new world's banner (no second burst)
-    if (wb + 1 <= WORLD_N && profile.worlds.unlocked < wb + 1) { profile.worlds.unlocked = wb + 1; saveProfile(); strike.worldUp = wb + 1; toast('worldToast', { n: wb + 1, w: t('wn_' + (wb + 1)) }, 'star'); }
+    if (wb + 1 <= WORLD_N && profile.worlds.unlocked < wb + 1) { profile.worlds.unlocked = wb + 1; advOpenNode(profile.adv, wb * ADV_WORLD + 1); saveProfile(); strike.worldUp = wb + 1; toast('worldToast', { n: wb + 1, w: t('wn_' + (wb + 1)) }, 'star'); }
   }
   strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(CONFIG.STRIKE_Z_FAR + i * wallGap() * 0.5); // normal walls resume, sliding in from the far end
   if (!strike.extrasOff) dropChest(now + 900); // a treasure chest drops after the boss (the older suites' exact timings: none)
@@ -4550,10 +4685,12 @@ function bouncersTick(now, dt) { // the missed guests: squashed for a moment, th
   }
 }
 function loseLife(now) { // a life gone (a missed ball, or the boss reaching the player): the heart shakes hollow, a red flash; the last one ends the round
-  strike.lives--; strike.flash = now;
+  if (adv.on && adv.phase !== 'play') return; // (an Adventure stage already cleared: nothing more to lose)
+  strike.lives--; strike.flash = now; if (adv.on) adv.lost++;
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   if (strike.lives > 0) { grippySay(strike.lives === 1 ? 'lastLife' : 'miss'); return; }
   if (strike.chest) { if (strike.chest.state !== 'open') openChest(strike.chest, now); strike.chest = null; } // (a chest still shut when the round ends: its prize is paid all the same)
+  if (adv.on) return advFail(now);
   strike.over = true; strike.overAt = now; hideHint(); strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null; saveLevelBest();
   strike.ui.newBest = strike.score > strike.best;
   if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
@@ -4562,17 +4699,170 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   if (daily.on) dailyDone(strike.score, strike.level);
   if (strike.ui.newBest) grippySay('newBest'); // (a daily: a new best for today)
 }
-function tension() { const g = levelGoal(strike.level); return strike.boss ? 0 : Math.max(0, Math.min(1, strike.progress / Math.max(1, g - 1))); } // 0 at a level's start .. 1 on its final wall
+function tension() { const g = strike.goal; return strike.boss ? 0 : Math.max(0, Math.min(1, strike.progress / Math.max(1, g - 1))); } // 0 at a level's start .. 1 on its final wall
 function beatMs() { return strikeTuning().beatMs * (1 - 0.22 * tension()); } // each cleared wall nudges the heartbeat faster
+/* --- Strike Adventure: a stage's start, its clear (burst, whoosh or world travel, then the card) and its fail --- */
+function advBegin() { // resetStrike for a stage: its plan, its seeded channels afresh, nothing spawned or lost yet
+  const P = adv.plan = advPlan(adv.n); adv.world = P.world; adv.spawned = adv.lost = 0; adv.phase = 'play'; adv.travel = adv.result = null; adv.bossDone = false; adv.rngs = {}; adv.clearAt = adv.cardAt = 0; adv.sfxAt = {};
+  return P;
+}
+function advClear(now) { // the stage's last wall (or its boss) is down: stars (3 / 2 / 1 for 0 / 1 / more lives lost), coins (a first clear: a few + the stars; a replay: only the stars it adds), XP; then the card
+  if (!adv.on || adv.phase !== 'play') return null;
+  const P = adv.plan, n = P.n, A = profile.adv, stars = adv.lost === 0 ? 3 : adv.lost === 1 ? 2 : 1, prev = A.stars[n] || 0, first = !prev, E = ECONOMY.adv;
+  const coins = first ? E.first + stars + (P.boss ? E.boss : 0) : Math.max(0, stars - prev) * E.star;
+  A.stars[n] = Math.max(prev, stars); advOpenNode(A, n + 1); saveProfile();
+  adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
+  const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
+  adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
+  adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
+  strike.releaseUntil = adv.cardAt; strike.slowUntil = now + 600; // the debris tumbles on in slow motion
+  for (const b of strike.balls) { const sc = ballScreen(b); burst(sc.x, sc.y, '#fff3c4', 14); ring(sc.x, sc.y, 'rgba(255,240,200,0.8)', sc.r * 2, 420, 3); }
+  strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
+  if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
+  if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true)); // (Coin Magnet never applies: no perks in a stage)
+  grippySay(stars === 3 ? 'advPerfect' : 'advClear');
+  return adv.result;
+}
+function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
+  const P = adv.plan; adv.phase = 'card'; adv.result = { clear: false, n: P.n, stars: 0, best: profile.adv.stars[P.n] || 0, coins: 0, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
+  strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null; ui.newBest = false; sfx('chime');
+  roundDone(strike.score, advXp(false)); grippySay('advFail');
+  return adv.result;
+}
+function advClearTick(now, dt) { // between the clear and the card: the walls are gone, the corridor flies forward (the stripes race), a world's boss stage travels on
+  const T = adv.travel, fly = now >= adv.cardAt - (T ? ADV_TRAVEL_MS : ADV_WHOOSH_MS), k = fly ? 1 : 0.15;
+  strike.scroll = (strike.scroll + strike.pace * dt * (0.5 + 6 * k)) % STRIPE_GAP; powerupsTick(now, dt);
+  if (fly && !adv.sfxAt.fly) { adv.sfxAt.fly = now; sfx('whoosh'); if (T) sfx('rise'); }
+  if (T) {
+    T.q = Math.max(0, Math.min(1, (now - T.t) / T.ms));
+    if (T.q >= 0.55 && !T.switched) { T.switched = true; adv.world = T.to; sfx('fanfare'); grippySay('world'); shakeScreen(2.5); } // the cross-fade is done: the corridor is the next world's (in 3D it re-themes under the flash)
+  }
+  if (now >= adv.cardAt) { // the card
+    if (T) { adv.lastTravel = { from: T.from, to: T.to, at: now }; adv.world = T.to; adv.travel = null; }
+    adv.phase = 'card'; strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null; ui.newBest = false;
+    if (adv.result.stars === 3) sfx('chime');
+  }
+}
+function advNext() { // the clear card's Next: the next stage at once; after a world's boss (or the last stage) the map first, where the new world's first stage pops open
+  const r = adv.result, n = r ? r.n : adv.n;
+  if (!r || !r.clear) return advStart(n);
+  if (r.boss || n >= ADV_N) return openAdvMap({ from: n, pop: n < ADV_N ? n + 1 : 0 });
+  return advStart(n + 1);
+}
+function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motion burst, speed streaks on the whoosh forward, and the trip to the next world (a portal at the far end, the corridor cross-fading, 'World 2 - Glass Garden')
+  if (!adv.on || adv.phase !== 'clear') return;
+  const r = adv.result, T = adv.travel, v = vanish(), D = Math.hypot(W, H), g3 = gfx3dActive(), rtl = lang === 'he';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const flyMs = T ? ADV_TRAVEL_MS : ADV_WHOOSH_MS, fq = Math.max(0, Math.min(1, 1 - (adv.cardAt - now) / flyMs)), acc = T ? WORLDS[T.to - 1].accent : '#fff3c4';
+  if (T && !g3) { // the next world's corridor fades in over this one (2D; the 3D corridor switches palettes under the flash)
+    const a = Math.max(0, Math.min(1, (T.q - 0.3) / 0.25)); if (a > 0 && !T.switched) { ctx.globalAlpha = a; ctx.drawImage(bgSprite('strike', T.to).c, 0, 0, W, H); ctx.globalAlpha = 1; }
+  }
+  if (T && T.q > 0) { // the portal: a swirl in the next world's colour opens at the far end, grows until it swallows the screen, then thins away
+    const q = T.q, R = q < 0.45 ? Math.min(W, H) * (0.04 + 0.32 * ease(q / 0.45)) : Math.min(D, Math.min(W, H) * 0.36 + D * ease(Math.min(1, (q - 0.45) / 0.18))), fade = q > 0.62 ? Math.max(0, 1 - (q - 0.62) / 0.2) : 1;
+    if (fade > 0) {
+      const gr = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, R); gr.addColorStop(0, 'rgba(255,255,255,' + (0.95 * fade).toFixed(3) + ')'); gr.addColorStop(0.35, hexA(acc, 0.85 * fade)); gr.addColorStop(0.8, hexA(acc, 0.35 * fade)); gr.addColorStop(1, hexA(acc, 0));
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(v.x, v.y, R, 0, TAU); ctx.fill();
+      ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,255,255,' + (0.7 * fade).toFixed(3) + ')';
+      for (let a = 0; a < 6; a++) { ctx.lineWidth = Math.min(9, 2 + R * 0.025); ctx.beginPath(); for (let j = 0; j <= 24; j++) { const u = j / 24, ang = a * TAU / 6 + u * 3.2 - now * 0.006, rr = R * 0.92 * u; const x = v.x + Math.cos(ang) * rr, y = v.y + Math.sin(ang) * rr; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }
+    }
+    const fl = Math.max(0, 1 - Math.abs(q - 0.55) / 0.1); if (fl > 0) { ctx.fillStyle = hexA(acc, 0.85 * fl); ctx.fillRect(0, 0, W, H); ctx.fillStyle = 'rgba(255,255,255,' + (0.6 * fl).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); } // the flash as it passes through
+  }
+  if (fq > 0) { // speed streaks rushing past from the far end
+    const n = T ? 70 : 44, k = T ? Math.sin(Math.PI * Math.min(1, fq * 1.15)) : Math.sin(Math.PI * fq); ctx.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const a = (i * 2.399963) % TAU, sp = 0.6 + ((i * 0.618034) % 1) * 0.9, d = Math.pow(((i * 0.381966 + now * 0.0011 * sp) % 1), 2) * D * 0.75, len = (30 + 140 * sp) * (0.4 + k), x0 = v.x + Math.cos(a) * d, y0 = v.y + Math.sin(a) * d;
+      ctx.strokeStyle = i % 3 ? 'rgba(255,255,255,' + (0.55 * k * Math.min(1, d / 80)).toFixed(3) + ')' : hexA(acc, 0.7 * k * Math.min(1, d / 80)); ctx.lineWidth = 1.5 + 2.5 * (d / D);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + Math.cos(a) * len, y0 + Math.sin(a) * len); ctx.stroke();
+    }
+  }
+  const y = H * 0.3, bk = (now - adv.clearAt) / ADV_BURST_MS;
+  if (!r.boss && bk < 1.6) { // 'Stage clear!' pops in over a light burst and rides the whoosh away
+    const a = bk < 0.12 ? bk / 0.12 : bk > 1.2 ? Math.max(0, (1.6 - bk) / 0.4) : 1, pop = Math.max(0, 1 - bk * 3);
+    blit(burstSprite(), W / 2, y, now * 0.0016, 0.8 + 0.4 * Math.min(1, bk * 3), a * 0.9);
+    blit(bigTextSprite(t('stageClear'), 44), W / 2, y, 0, (1 + 0.3 * Math.sin(Math.PI * pop)) * (1 + 0.25 * fq), a);
+  }
+  if (T && T.q >= 0.5) { // 'World 2' + 'Glass Garden' in its colour
+    const k = (T.q - 0.5) / 0.5, [off, a] = bannerSlide(Math.min(0.84, k)), x = W / 2 + off, main = bigTextSprite(t('worldN', { n: T.to }), 44), sub = textSprite(t('wn_' + T.to), 22, acc, 'rgba(8,11,28,0.9)', 800);
+    const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72); strike.ui.travelBox = { x: x - pw / 2, y: y - 52, w: pw, h: 112, a };
+    blit(glassSprite(pw, 112, 20), x - pw / 2 - 1, y - 53, 0, 1, a); blit(burstSprite(), x, y - 10, now * 0.0012, 0.9, a * 0.6);
+    blit(main, x, y - 12, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 32, 0, Math.min(1, (pw - 24) / sub.tw), a);
+  } else strike.ui.travelBox = null;
+  void rtl;
+}
+function advPipsDraw(now, cx, cy) { // the stage's walls as a row of small bricks under the HUD bar: broken ones lit saffron (the newest pops), the rest dim; a boss stage ends on a purple crown
+  const P = adv.plan, n = P.walls, done = Math.min(n, strike.progress), rtl = lang === 'he', bw = n > 8 ? 11 : 13, bh = 8, gap = 3, extra = P.boss ? 18 : 0, tw = n * bw + (n - 1) * gap + extra, x0 = cx - tw / 2, pk = Math.max(0, 1 - (now - strike.ui.progressAt) / 450);
+  const pips = []; resetView();
+  for (let i = 0; i < n; i++) {
+    const x = rtl ? x0 + tw - (i + 1) * bw - i * gap : x0 + i * (bw + gap), on = i < done, s = on && i === done - 1 ? 1 + 0.35 * pk : 1;
+    ctx.save(); ctx.translate(x + bw / 2, cy); ctx.scale(s, s); ctx.beginPath(); ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 2.5);
+    ctx.fillStyle = on ? '#ffc24b' : 'rgba(8,11,28,0.62)'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = on ? 'rgba(255,255,255,0.55)' : 'rgba(241,233,218,0.35)'; ctx.stroke();
+    if (!on) { ctx.fillStyle = 'rgba(241,233,218,0.18)'; ctx.fillRect(-0.5, -bh / 2 + 1, 1, bh - 2); } ctx.restore(); // (a mortar line: a little brick)
+    pips.push({ x, y: cy - bh / 2, w: bw, h: bh, on });
+  }
+  if (P.boss) { const bx = rtl ? x0 + 7 : x0 + tw - 7, on = adv.bossDone; ctx.save(); ctx.translate(bx, cy); ctx.fillStyle = on ? '#ffc24b' : '#c05ce6'; ctx.beginPath(); ctx.moveTo(-7, 4); ctx.lineTo(-7, -4); ctx.lineTo(-3.5, -0.5); ctx.lineTo(0, -6); ctx.lineTo(3.5, -0.5); ctx.lineTo(7, -4); ctx.lineTo(7, 4); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  strike.ui.advPips = { x: x0, y: cy - bh / 2, w: tw, h: bh, n, done, boss: P.boss, pips };
+}
+function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, coins, XP; Next / Try again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
+  const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = clear ? 372 : 352, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
+  blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
+  const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
+  const title = clear ? (r.boss ? t('worldClear', { n: r.world }) : t('stageClear')) : t('soClose'), ts = bigTextSprite(title, 34);
+  blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
+  blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('wn_' + r.world), 14, acc, null, 700), cx, y0 + 84);
+  ui.advStars = null; ui.advWalls = null;
+  if (clear) { // three star slots; the earned ones fly in one by one, each with a note (the third with a chord)
+    const sy = y0 + 134, gap = 72, st = [];
+    for (let i = 0; i < 3; i++) {
+      const at = E.overAt + 350 + i * 420, q = Math.min(1, Math.max(0, (now - at) / 320)), on = i < r.stars, sx = cx + (i - 1) * gap * (rtl ? -1 : 1), big = i === 1 ? 1.15 : 1;
+      if (on && q > 0 && !adv.sfxAt['star' + i]) { adv.sfxAt['star' + i] = now; sfx('xylo', [784, 988, 1175][i]); if (i === 2) sfx('chord'); burst(sx, sy, '#ffd77a', 12); ring(sx, sy, 'rgba(255,214,120,0.9)', 40, 380, 3); }
+      blit(shapeStarSprite(26, false), sx, sy - (i === 1 ? 8 : 0), 0, big);
+      if (on && q > 0) { const sc = (1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2)) * big; blit(shapeStarSprite(26, true), sx, sy - (i === 1 ? 8 : 0) - (1 - q) * 70, (1 - q) * 2.5, sc); }
+      st.push({ x: sx, y: sy, on: on && q >= 1 });
+    }
+    ui.advStars = { n: r.stars, shown: st.filter((s) => s.on).length, stars: st };
+  } else { // how far it got: the walls as bricks, the broken ones lit
+    const n = r.walls, bw = Math.min(26, (cw - 60 - (n - 1) * 6) / n), bh = 16, tw = n * bw + (n - 1) * 6, wy = y0 + 140, ws = [];
+    blit(textSprite(t('wallsOf', { a: r.cleared, b: r.walls }), 22, '#fff8ec', null, 800), cx, y0 + 118);
+    for (let i = 0; i < n; i++) { const x = rtl ? cx + tw / 2 - (i + 1) * bw - i * 6 : cx - tw / 2 + i * (bw + 6), on = i < r.cleared; resetView(); ctx.beginPath(); ctx.roundRect(x, wy, bw, bh, 4); ctx.fillStyle = on ? '#ffc24b' : 'rgba(8,11,28,0.6)'; ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = on ? 'rgba(255,255,255,0.6)' : 'rgba(241,233,218,0.35)'; ctx.stroke(); ws.push({ x, y: wy, w: bw, h: bh, on }); }
+    ui.advWalls = { cleared: r.cleared, walls: r.walls, pips: ws };
+  }
+  { // what it paid: coins (a first clear, or the stars a replay adds) and XP; a replay that adds nothing shows the best
+    const py = y0 + (clear ? 196 : 180), ph = 26, items = [];
+    if (r.coins) items.push({ sp: textSprite(LRM + '+' + r.coins, 14, '#ffd77a', null, 800), coin: true });
+    if (meta.roundXp > 0) items.push({ sp: textSprite(t('xpN', { n: meta.roundXp }), 14, '#bfe3ff', null, 800) });
+    if (clear && !r.first) items.push({ sp: textSprite(t('advBest', { n: r.best }), 13, 'rgba(241,233,218,0.8)', null, 700) });
+    const ws = items.map((it) => it.sp.tw + (it.coin ? 40 : 22)), tot = ws.reduce((a, b) => a + b, 0) + 8 * Math.max(0, items.length - 1); let x = cx - tot / 2; ui.advPay = [];
+    items.forEach((it, i) => { const w = ws[i], bx = rtl ? cx + tot / 2 - (x - (cx - tot / 2)) - w : x; blit(glassSprite(w, ph, 13), bx - 1, py - 1); if (it.coin) { blit(coinSprite(8), rtl ? bx + w - 14 : bx + 14, py + ph / 2); edgeText(it.sp, rtl ? bx + w - 27 : bx + 27, py + ph / 2, rtl); } else blit(it.sp, bx + w / 2, py + ph / 2); ui.advPay.push({ x: bx, y: py, w, h: ph }); x += w + 8; });
+  }
+  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 : 230), bh = 56, sh = 46, hw = (bw - 10) / 2;
+  ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
+    : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
+  const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t('retryBtn'), map: t('mapBtn') };
+  for (const key in ui.buttons) {
+    const b = ui.buttons[key], hot = ui.hover === key, mx = b.x + b.w / 2, my = b.y + b.h / 2, pri = key === main; let bk = hot ? 1.04 : 1;
+    if (pri) { const ph = 0.5 + 0.5 * Math.sin(now / 280); if (!hot) bk = 1 + 0.035 * ph; ui.againPulse = bk; resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)'; ctx.beginPath(); ctx.roundRect(mx - b.w * bk / 2, my - b.h * bk / 2, b.w * bk, b.h * bk, 14); ctx.fill(); ctx.restore(); }
+    blit(overButtonSprite(pri ? 'again' : 'home', b.w, b.h), mx, my, 0, bk);
+    if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 14); ctx.fill(); }
+    const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
+  }
+  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  ctx.restore();
+  if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
+}
 function finalWallTick(now) { // the last wall of a level: flagged 'final' (a glowing, pulsing outline; 'Final wall!'), a bit tougher from level 2 (+1 hp on a third of its bricks)
-  if (strike.boss || strike.progress !== levelGoal(strike.level) - 1) return;
+  if (strike.boss || strike.progress !== strike.goal - 1 || (adv.on && adv.phase !== 'play')) return;
   const Z = CONFIG.STRIKE_Z_FAR, w = strike.walls.find((q) => q.left > 0 && q.z < Z); if (!w || w.finalAt || strike.walls.some((q) => q.final && q.left > 0)) return;
   w.final = true; w.finalAt = now; strike.ui.tag = { t: now, kind: 'final' }; grippySay('final'); sfx('whoosh'); // (flagged once per wall)
   if (strike.level >= 2 && !strike.extrasOff) for (const k of w.bricks) if (k.alive && !k.pu && !k.tnt && (k.col + k.row) % 3 === 0) k.hp++;
 }
 function strikeTick(now, dt) {
   const rel = now < strike.releaseUntil; tickFloaters(strike.floaters, dt); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
+  if (advMapOpen()) { advMapTick(now); return; } // the Adventure map over the game (from a stage card): everything waits
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
+  if (adv.on && adv.phase === 'clear') { advClearTick(now, dt); return; } // an Adventure stage just cleared: the burst, the whoosh or the trip to the next world, then its card
   if (strike.perkOffer) { perkTick(now, dt); return; } // perk cards up: everything waits for the pick (the auto-pick clock runs even while the hand is missing)
   if (strike.perkAt && now >= strike.perkAt) { strike.perkAt = 0; if (openPerkOffer(now)) return; }
   if (strike.chest && !pause.on) chestTick(now, dt); // the boss chest: the calm holds (no serve) until it is opened
@@ -4596,6 +4886,7 @@ function strikeTick(now, dt) {
   for (const b of strike.balls.slice()) ballTick(b, now, dt, fire, mul); // every ball in play (three on Multi-ball)
 }
 function ballTick(b, now, dt, fire, mul) {
+  if (adv.on && adv.phase !== 'play') return; // (a ball still in this frame's loop after the stage cleared)
   const dz = b.speed * mul * dt, Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballRad(b);
   b.fire = fire && b.dir < 0;
   if (b.dir > 0) { // incoming: drifts from x0/y0 (at the far wall) to tx/ty (at the player's plane); a wall it meets from behind loses the bricks it overlaps
@@ -5173,8 +5464,8 @@ function drawNextCard(now) { // a small card in the top end corner under the bar
   const ui = strike.ui;
   const gq = strike.guestNext, gk = gq && gq.in === 1 ? gq.kind : null; // a surprise guest on the next serve: the card shows it instead of the wall
   const close = strike.balls.some((b) => b.dir > 0 && b.z < CONFIG.STRIKE_Z_FAR * 0.45);
-  if (strike.over || strike.chest || (strike.extrasOff && !gk) || (strike.boss && strike.boss.z < CONFIG.STRIKE_Z_FAR) || strike.level <= 2 || close || !ui.hud) { ui.nextCard = null; return; }
-  const kind = gk ? 'guest_' + gk : upcomingKind(); if (kind !== ui.nextShown) { ui.nextAt = now; if (ui.nextShown) sfx('tick'); ui.nextShown = kind; } // (a pulse when it changes, or first shows)
+  if (strike.over || strike.chest || (adv.on && adv.phase !== 'play') || (strike.extrasOff && !gk) || (strike.boss && strike.boss.z < CONFIG.STRIKE_Z_FAR) || strike.level <= 2 || close || !ui.hud) { ui.nextCard = null; return; }
+  const kind = gk ? 'guest_' + gk : upcomingKind(); if (!kind) { ui.nextCard = null; return; } if (kind !== ui.nextShown) { ui.nextAt = now; if (ui.nextShown) sfx('tick'); ui.nextShown = kind; } // (a pulse when it changes, or first shows)
   const rtl = lang === 'he', boss = kind === 'boss', col = gk ? '#ffc24b' : STRIKE_KIND_COL[kind] || '#c8654a', hd = ui.hud;
   const name = textSprite(gk ? t(kind) : t('nk_' + kind), 12, boss ? '#ffd8f6' : '#fff8ec', boss ? 'rgba(192,92,230,0.95)' : null, 800), lab = textSprite(t('next'), 8, 'rgba(241,233,218,0.72)', null, 700);
   const w = 90, h = 34, x = rtl ? hd.x : hd.x + hd.w - w, y = hd.y + hd.h + 8, cx = x + w / 2, cy = y + h / 2;
@@ -5252,11 +5543,15 @@ function drawStrikeHud(now, dt) { // one slim glass bar under the toolbar: score
     ui.heartsRow = { x: x + w / 2 - ((nL - 1) * gap + 22) / 2, w: (nL - 1) * gap + 22, compact: false };
   }
   const tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? x + 30 : x + w - 30, ly = y + h / 2 - 1;
-  blit(pillSprite(tint, 40, 20), px, ly); blit(textSprite('L' + strike.level, 12, '#141b34', null), px, ly);
+  if (adv.on && adv.plan) { // an Adventure stage: walls broken / walls in the stage on a pill in its world's colour (the bricks under the bar show the same)
+    const tx = LRM + Math.min(strike.progress, strike.goal) + '/' + strike.goal, pw = tx.length > 5 ? 48 : 42, pk = Math.max(0, 1 - (now - ui.progressAt) / 450);
+    blit(pillSprite(WORLDS[adv.world - 1].accent, pw, 20), px, ly, 0, 1 + 0.15 * pk); blit(textSprite(tx, 12, '#141b34', null, 800), px, ly, 0, 1 + 0.15 * pk); ui.advPill = { x: px - pw / 2, y: ly - 10, w: pw, h: 20, text: tx };
+  } else { ui.advPill = null;
+  blit(pillSprite(tint, 40, 20), px, ly); blit(textSprite('L' + strike.level, 12, '#141b34', null), px, ly); }
   drawStreakChip(now, rtl ? x + 76 : x + w - 76, ly); // the hit streak: a small flame + n inside the bar, from 3 in a row
   drawProgressBar(now, dt, x + 12, y + h - 5, w - 24, rtl, 2.5); // level progress: a thin line along the bar's bottom edge
   drawPowerIcons(now, rtl ? x + w - 10 : x + 10, y + h + 16, rtl); // active power-ups with their timers, under the bar at the start edge
-  drawPerkIcons(x + w / 2, y + h + 11); // this run's perks, tiny, under the bar's middle
+  if (adv.on && adv.plan) advPipsDraw(now, x + w / 2, y + h + 11); else drawPerkIcons(x + w / 2, y + h + 11); // this run's perks, tiny, under the bar's middle (an Adventure stage: its walls as little bricks)
   drawFaster(now, rtl ? x + w - 64 : x + 64, y + h + 40);
   const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
@@ -5376,6 +5671,11 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     const k = (now - Bn.t) / (Bn.ms || 1600); if (k >= 1) { ui[key] = null; continue; }
     const [off, a] = bannerSlide(k), x = W / 2 + off, boss = key === 'bossBanner', dly = key === 'dailyBanner';
     const wld = !boss && !dly && Bn.world > 1 ? Bn.world : 0; // a new world: 'World 2' + 'Glass Garden · Level 7'
+    if (Bn.stage) { // an Adventure stage: 'Stage 5' + 'Break all 6 walls' (a world's first stage: 'World 2' + 'Glass Garden · Stage 9')
+      const main = bigTextSprite(wld ? t('worldN', { n: wld }) : t('stageN', { n: Bn.stage }), 40), sub = textSprite(wld ? t('wn_' + wld) + '  ·  ' + t('stageN', { n: Bn.stage }) : t(Bn.boss ? 'stageGoalBoss' : 'stageGoal', { n: Bn.goal }), 18, wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
+      const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104; ui.stageBannerBox = { x: x - pw / 2, y: y - ph / 2, w: pw, h: ph, a };
+      blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(main, x, y - 14, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 30, 0, Math.min(1, (pw - 24) / sub.tw), a); continue;
+    }
     const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : wld ? t('worldN', { n: wld }) : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : wld ? t('wn_' + wld) + '  ·  ' + t('levelN', { n: Bn.level }) : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
     if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
@@ -5569,6 +5869,10 @@ function endCardAt(px, py) { // which card button (if any) is under a screen poi
   return null;
 }
 function endCardAction(key, now) {
+  if (gameMode === 'strike' && adv.on && adv.result) { // an Adventure stage's card: Next / Try again / Map (a wave: the next stage after a clear, a retry after a fail)
+    if (key === 'again') key = adv.result.clear ? 'next' : 'retry';
+    if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap({});
+  }
   if (key === 'home') return goHome();
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
@@ -5576,7 +5880,7 @@ function endCardAction(key, now) {
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
-  if (!$('newCard').hidden) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
+  if (!$('newCard').hidden || advMapOpen()) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
   const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
   ui.hover = btn;
   if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
@@ -5728,7 +6032,7 @@ function renderStrike(now) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.6);
     gr.addColorStop(0, 'rgba(120,220,255,0)'); gr.addColorStop(1, 'rgba(120,220,255,' + (0.32 * ck).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  drawNextCard(now);
+  drawNextCard(now); drawAdvFx(now); // (an Adventure stage cleared: the burst, the whoosh, the trip to the next world)
   if (powerOn('slow')) { // Slow-mo: a cool blue wash and a time-warp vignette breathing at the edges
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(70,120,255,0.1)'; ctx.fillRect(0, 0, W, H);
     const k = 0.5 + 0.5 * Math.sin(now * 0.004), gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * (0.3 + 0.05 * k), W / 2, H / 2, Math.hypot(W, H) * 0.6);
@@ -5756,7 +6060,8 @@ function renderStrike(now) {
     gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  if (strike.over) { // the hand stays on top so it can aim at the buttons
+  if (strike.over && adv.on && adv.result) { drawAdvCard(now); drawStrikeHand(now); } // an Adventure stage's card
+  else if (strike.over) { // the hand stays on top so it can aim at the buttons
     drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
   }
@@ -6721,7 +7026,7 @@ const ROAD = [
 ];
 const ROAD_BY = Object.fromEntries(ROAD.map((r) => [r.id, r])), PERK_ROAD = {}; for (const r of ROAD) for (const id of r.perks || []) PERK_ROAD[id] = r.id;
 function roadHas(id) { return profile.road.got.includes(id); }
-function roadOpen(id) { return daily.on || !ROAD_BY[id] || roadHas(id); } // may a run use it? (the daily ignores the road)
+function roadOpen(id) { return adv.on ? advOpen(id) : daily.on || !ROAD_BY[id] || roadHas(id); } // may a run use it? (the daily ignores the road; an Adventure stage has its world's set)
 function roadNext(lv = profile.level) { return ROAD.find((r) => r.lv > lv) || null; } // the next unlock
 const HAND_COLS = { classic: '#f1e9da', mint: '#43d9a3', sky: '#54c6eb', lilac: '#a98bff', robot: '#b4bccb', cat: '#f0b06a', legend: '#ffcf3f' }, GLOVE_COLS = { classic: '#ff6f59', mint: '#43d9a3', sky: '#54c6eb', lilac: '#a98bff', robot: '#9aa3b5', cat: '#f0b06a', legend: '#ffcf3f' };
 const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by tier; max: the progress is the highest value reported, not a sum
@@ -6735,7 +7040,8 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
-    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [] }; // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [],
+    adv: { stars: {}, unlocked: 1, open: [], seen: [] } }; // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -6752,6 +7058,12 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (p.daily && typeof p.daily === 'object') for (const k of Object.keys(p.daily)) { const r = p.daily[k]; if (/^\d{4}-\d{2}-\d{2}$/.test(k) && r && +r.attempts > 0) d.daily[k] = { best: Math.max(0, +r.best || 0), attempts: Math.max(1, +r.attempts | 0), level: Math.max(1, +r.level || 1) }; }
     if (typeof p.grippy === 'boolean') d.grippy = p.grippy;
     if (Array.isArray(p.tips)) d.tips = p.tips.filter((x) => typeof x === 'string').slice(0, 20);
+    if (p.adv && typeof p.adv === 'object') { const a = p.adv, A = d.adv;
+      if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
+      if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(ADV_N, a.unlocked | 0));
+      if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
+      if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))]; }
+    advSyncWorlds(d);
     d.level = levelOf(d.xp);
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
     for (const it of ITEMS) if (it.level && it.level <= d.level && !d.unlocked.includes(it.id)) d.unlocked.push(it.id);
@@ -6925,7 +7237,7 @@ function renderDailyPanel() {
 function openDaily() { setGameMode('strike'); renderDailyPanel(); $('daily').hidden = false; $('daily').querySelector('.sheet').scrollTop = 0; $('daily').querySelector('.xBtn').focus({ preventScroll: true }); }
 function startDaily(how) { // test hook / panel buttons: play today's daily (how: 'camera' | 'mouse'; default: the mouse, or a restart when a game is running)
   if (gameMode !== 'strike') setGameMode('strike');
-  $('daily').hidden = true; daily.armed = true;
+  $('daily').hidden = true; daily.armed = true; adv.on = adv.armed = false; closeAdvMap(true);
   if (mode === 'none') { if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
   else { daily.armed = false; daily.on = true; hideHint(); resetStrike(performance.now()); }
   return daily.on;
@@ -7005,7 +7317,7 @@ function teaserIconSprite(q) { // the item's own art (as on its Collection tile)
 /* --- Grippy, the commentator: a little hand with big eyes pops up at the bottom start corner with a short line for 2.2 s.
    At most one line per 4 s; boss / new best / last life (and a round's start) cut in. Lines show even when muted (only its pop sound is muted).
    The Collection panel's Grippy button turns him off (saved in the profile). --- */
-const GRIPPY_MS = 2200, GRIPPY_GAP = 8000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily', 'final', 'chest', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest', 'shapesLevel']);
+const GRIPPY_MS = 2200, GRIPPY_GAP = 8000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily', 'final', 'chest', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest', 'shapesLevel', 'advClear', 'advPerfect', 'advFail']);
 const GRIPPY = {
   en: {
     start: ["Let's go! Hands ready?", 'Wiggle those fingers!', 'I believe in your hands!', 'Ready, set, high five!', "Show 'em what hands can do!", 'Here we go! No pressure. Some pressure.', 'Warm up those palms!'],
@@ -7040,6 +7352,9 @@ const GRIPPY = {
     shapesMatch: ['It fits!', 'Clunk! Perfect fit!', 'Right in the hole!', 'You found its home!', 'Great matching!', 'In it goes!', 'Shape master!'],
     shapesLevel: ['All sorted! Hooray!', 'Every shape is home!', 'Box full! Well done!', 'Super sorting!', 'Level done! Next one!', 'You matched them all!'],
     world: ['A whole new world!', 'New world, new colours!', 'Next world unlocked!', 'Onward, explorer!', 'Ooh, where are we now?', 'Pack your hands, we travel!'],
+    advClear: ['Stage cleared! Onward!', 'Every wall down! Yay!', 'All broken! Next stop!', 'Bricks? Gone!', 'Stage done! Nice hands!', 'Up the map we go!'],
+    advPerfect: ['Three stars! Perfect!', 'Not one heart lost! Wow!', 'Flawless! Three stars!', 'Perfect stage! Hero hands!', 'Gold, gold, gold!', 'Three for three! Amazing!'],
+    advFail: ['So close! Try again?', 'Almost there! One more go!', 'Those walls got lucky!', "Shake it off, let's retry!", 'Next try is the one!', 'Nearly! You can do it!'],
   },
   he: {
     start: ['יאללה! הידיים מוכנות?', 'תנענעו את האצבעות!', 'אני מאמין בידיים שלכם!', 'היכון, הכן, כיף!', 'תראו להם מה ידיים יודעות!', 'מתחילים! בלי לחץ. טוב, קצת.', 'חממו את כפות הידיים!'],
@@ -7074,6 +7389,9 @@ const GRIPPY = {
     shapesMatch: ['זה מתאים!', 'קלאנק! בול בפנים!', 'ישר לתוך החור!', 'מצאתם לה בית!', 'התאמה מעולה!', 'פנימה!', 'אלופי הצורות!'],
     shapesLevel: ['הכול ממוין! הידד!', 'כל הצורות בבית!', 'הקופסה מלאה! כל הכבוד!', 'מיון מדהים!', 'השלב הושלם! לשלב הבא!', 'התאמתם את כולן!'],
     world: ['עולם חדש לגמרי!', 'עולם חדש, צבעים חדשים!', 'העולם הבא נפתח!', 'קדימה, חוקרים!', 'אוהו, איפה אנחנו עכשיו?', 'תארזו ידיים, יוצאים לדרך!'],
+    advClear: ['השלב הושלם! ממשיכים!', 'כל הקירות נפלו! יש!', 'הכול שבור! לתחנה הבאה!', 'לבנים? נעלמו!', 'סיימתם שלב! ידיים טובות!', 'עולים במפה!'],
+    advPerfect: ['שלושה כוכבים! מושלם!', 'אף לב לא אבד! וואו!', 'בלי טעות! שלושה כוכבים!', 'שלב מושלם! ידיים של גיבורים!', 'זהב, זהב, זהב!', 'שלושה משלושה! מדהים!'],
+    advFail: ['כמעט! עוד פעם?', 'כמעט שם! עוד ניסיון!', 'לקירות היה מזל!', 'לנער ולנסות שוב!', 'הניסיון הבא יצליח!', 'ממש קרוב! אתם יכולים!'],
   },
 };
 const grippy = { last: null, lastAt: -1e9, shownAt: -1e9, until: -1e9, prev: {}, bottom: 16, visible: false, blinkAt: 0, said: [] };
@@ -7228,17 +7546,110 @@ function renderWorldMap() {
 }
 function openWorldMap(how) { wmap.how = how === 'camera' ? 'camera' : 'mouse'; renderWorldMap(); $('worldMap').hidden = false; const c = $('wmap').querySelector('.wnode.cur') || $('wmap').querySelector('.wnode'); try { c.focus({ preventScroll: true }); } catch {} }
 function startWorld(n, how) { // play Strike from world n's first level (n: an unlocked world); from the start screen with the camera or the mouse, or a restart in a game
-  n = Math.max(1, Math.min(profile.worlds.unlocked, n | 0 || 1)); strike.startWorld = n; profile.worlds.last = n; saveProfile(); $('worldMap').hidden = true;
+  n = Math.max(1, Math.min(profile.worlds.unlocked, n | 0 || 1)); strike.startWorld = n; profile.worlds.last = n; saveProfile(); $('worldMap').hidden = true; closeAdvMap(true); adv.on = adv.armed = false;
   if (gameMode !== 'strike') setGameMode('strike');
   daily.armed = false;
   if (mode === 'none') { audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
   else { daily.on = false; hideHint(); resetStrike(performance.now()); }
   return strike.level;
 }
-function strikeStart(how) { // the start screen's buttons: in Strike, once a second world is open, the world map comes first
-  if (gameMode === 'strike' && !daily.armed && profile.worlds.unlocked > 1) { openWorldMap(how); return; }
+function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel)
+  if (gameMode === 'strike' && !daily.armed) { openAdvMap({ how }); return; }
   if (how === 'camera') enableCamera(); else fallbackToMouse([]);
 }
+/* --- Strike Adventure: the saga map. A full-screen overlay: a winding path from the bottom up, 40 numbered stops in five world bands (each in its
+   world's colours, with its texture and its name), 3 stars under each, locked ones grey with a lock, the current one big and pulsing with the
+   player's hand on it; boss stops larger with a crown. Opened by the Strike tile (and a stage card's Map); Endless plays the old run. --- */
+const ADV_STAR_SVG = '<path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/>';
+const ADV_LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const ADV_CROWN_SVG = '<svg class="mark" viewBox="0 0 30 24" aria-hidden="true"><path d="M3 20V7l6.5 6L15 3l5.5 10L27 7v13z" fill="#ffc24b" stroke="#7a4a05" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15" cy="15.5" r="2.2" fill="#c05ce6"/></svg>';
+const amap = { layout: null, how: 'mouse', fromGame: false, anim: 0 };
+function advMapOpen() { return !$('advMap').hidden; }
+function advLayout(w) { // node centres (px in the map box), bottom to top, world 1 at the bottom; each world a band with its sign under its first stop
+  const G = w < 520 ? 92 : 100, HB = 92, PAD = 60, bandH = ADV_WORLD * G + HB, total = WORLD_N * bandH + PAD * 2, amp = Math.min(w * 0.3, 210), rtl = lang === 'he', nodes = [], bands = [];
+  for (let wi = 1; wi <= WORLD_N; wi++) { const bot = total - PAD - (wi - 1) * bandH; bands.push({ w: wi, top: wi === WORLD_N ? 0 : bot - bandH, bottom: wi === 1 ? total : bot }); }
+  for (let n = 1; n <= ADV_N; n++) { const wi = advWorldOf(n), i = n - (wi - 1) * ADV_WORLD, bot = total - PAD - (wi - 1) * bandH, sx = Math.sin((n - 1) * 0.9) * amp; nodes.push({ n, x: w / 2 + (rtl ? -sx : sx), y: bot - HB - (i - 0.5) * G }); }
+  return { w, total, nodes, bands, G };
+}
+function renderAdvMap() {
+  const sc = $('advScroll'), host = $('advPath'), w = sc.clientWidth || innerWidth, L = amap.layout = advLayout(w), A = profile.adv, cur = advCurrent();
+  host.style.height = L.total + 'px'; host.replaceChildren();
+  for (const b of L.bands) { // the world bands: its corridor colours, its texture, its name
+    const WP = WORLDS[b.w - 1], el = document.createElement('div'); el.className = 'aband m' + b.w; el.dataset.world = String(b.w);
+    el.style.top = b.top + 'px'; el.style.height = (b.bottom - b.top) + 'px'; el.style.setProperty('--b0', WP.floor[0]); el.style.setProperty('--b1', WP.far); el.style.setProperty('--wc', WP.accent);
+    const sg = document.createElement('div'); sg.className = 'asign'; const nb = document.createElement('b'); nb.textContent = t('wn_' + b.w); const sm = document.createElement('small'); sm.textContent = t('worldN', { n: b.w }); sg.append(sm, nb); el.appendChild(sg);
+    host.appendChild(el);
+  }
+  const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'apath'); svg.setAttribute('width', String(w)); svg.setAttribute('height', String(L.total)); svg.setAttribute('viewBox', '0 0 ' + w + ' ' + L.total); svg.setAttribute('aria-hidden', 'true');
+  const seg = (a, b) => ' C ' + a.x + ' ' + (a.y - L.G * 0.5) + ', ' + b.x + ' ' + (b.y + L.G * 0.5) + ', ' + b.x + ' ' + b.y;
+  let d = 'M ' + L.nodes[0].x + ' ' + (L.nodes[0].y + L.G), dd = d; L.nodes.forEach((p, i) => { const q = i ? L.nodes[i - 1] : { x: p.x, y: p.y + L.G }; d += seg(q, p); if (p.n <= cur) dd += seg(q, p); });
+  for (const [cls, path] of [['road', d], ['dash', d], ['done', dd]]) { const pe = document.createElementNS(NS, 'path'); pe.setAttribute('class', cls); pe.setAttribute('d', path); svg.appendChild(pe); }
+  host.appendChild(svg);
+  for (const p of L.nodes) { // the stops
+    const n = p.n, P = advPlan(n), st = A.stars[n] || 0, open = advPlayable(n), b = document.createElement('button'); b.type = 'button';
+    b.className = 'anode' + (P.boss ? ' boss' : '') + (open ? '' : ' locked') + (st ? ' done' : '') + (n === cur && open ? ' cur' : ''); b.dataset.n = String(n); b.dataset.stars = String(st);
+    b.style.left = p.x + 'px'; b.style.top = p.y + 'px'; b.style.setProperty('--wc', WORLDS[P.world - 1].accent);
+    const disc = document.createElement('span'); disc.className = 'disc'; if (open) disc.textContent = String(n); else disc.innerHTML = ADV_LOCK_SVG;
+    if (P.boss) disc.insertAdjacentHTML('afterbegin', ADV_CROWN_SVG);
+    const ss = document.createElement('span'); ss.className = 'st'; ss.innerHTML = [0, 1, 2].map((i) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (i < st ? ' class="on"' : '') + '>' + ADV_STAR_SVG + '</svg>').join('');
+    b.append(disc, ss);
+    if (n === cur && open) { const c = document.createElement('canvas'); c.className = 'hand'; c.width = c.height = Math.round(56 * SS); c.setAttribute('aria-hidden', 'true'); const it = ITEMS.find((q) => q.type === 'hand' && q.skin === skinOf('hand')); if (it) drawItemPreview(c.getContext('2d'), it); b.appendChild(c); }
+    b.setAttribute('aria-label', t('stageN', { n }) + (P.boss ? ' · ' + t('advBoss') : '') + ' · ' + (open ? t('advStarsN', { n: st }) : t('advLockedAria')));
+    if (!open) b.setAttribute('aria-disabled', 'true');
+    b.addEventListener('click', () => advNodeTap(n, b));
+    host.appendChild(b);
+  }
+  $('advStarTotal').querySelector('b').textContent = String(advStarTotal()); $('advStarTotal').querySelector('small').textContent = '/ ' + ADV_N * 3;
+}
+function advNodeY(n) { const p = amap.layout && amap.layout.nodes[n - 1]; return p ? p.y : 0; }
+function advScrollTo(n, smooth) { const sc = $('advScroll'), y = Math.max(0, advNodeY(n) - sc.clientHeight * 0.55); if (smooth && sc.scrollTo) sc.scrollTo({ top: y, behavior: 'smooth' }); else sc.scrollTop = y; }
+function advNodeTap(n, b) {
+  if (!advPlayable(n)) { toast('advLocked', { n: Math.max(1, n - 1) }, 'star'); sfx('whiff'); if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } return false; }
+  sfx('click'); return advStart(n, amap.how);
+}
+function openAdvMap(o = {}) { // o.how: the way a stop starts from the start screen; o.from / o.pop: after a world's boss, the map rises from stop `from` to the new world's first stop, which pops open
+  amap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : amap.how; amap.fromGame = mode !== 'none'; adv.dwell = null;
+  advSyncWorlds(profile); const M = $('advMap'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim);
+  if (o.pop && advPlayable(o.pop)) {
+    advScrollTo(o.from || o.pop - 1, false); amap.popped = o.pop;
+    amap.anim = setTimeout(() => { advScrollTo(o.pop, true); amap.anim = setTimeout(() => { const b = $('advPath').querySelector('.anode[data-n="' + o.pop + '"]'); if (!b) return; b.classList.add('pop'); sfx('unlock'); sfx('levelup'); try { domConfetti($('advPath'), b.getBoundingClientRect()); } catch {} setTimeout(() => b.classList.remove('pop'), 900); }, 750); }, 450);
+  } else { amap.popped = 0; advScrollTo(advCurrent(), false); }
+  try { M.querySelector('.anode.cur, #advBack').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function closeAdvMap(quiet) { // Back: from a stage card, home; from the start screen, just the map away
+  const M = $('advMap'); if (M.hidden) return false; M.hidden = true; clearTimeout(amap.anim); $('advDwell').hidden = true; adv.dwell = null;
+  if (!quiet && mode !== 'none' && gameMode === 'strike') goHome();
+  return true;
+}
+function advStart(n, how) { // play stage n (a playable one): from the start screen with the camera or the mouse, or at once in a game
+  n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); if (!advPlayable(n)) return false;
+  closeAdvMap(true); adv.n = n; $('worldMap').hidden = true;
+  if (gameMode !== 'strike') setGameMode('strike');
+  daily.armed = daily.on = false;
+  if (mode === 'none') { adv.armed = true; audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
+  else { adv.on = true; adv.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); }
+  return true;
+}
+function strikeEndless(how) { // the map's Endless: the old run, exactly as before (the world map first once a second world is open)
+  closeAdvMap(true); adv.on = adv.armed = false;
+  if (gameMode !== 'strike') setGameMode('strike');
+  if (profile.worlds.unlocked > 1) { openWorldMap(how || amap.how); return; }
+  if (mode !== 'none') { daily.on = false; hideHint(); resetStrike(performance.now()); return; }
+  if ((how || amap.how) === 'camera') enableCamera(); else fallbackToMouse([]);
+}
+function advMapTick(now) { // camera play over the map: a ring follows the hand; a point / pinch / fist held 600 ms on a stop (or Back / Endless) presses it; near the top or bottom edge the map scrolls
+  const ring = $('advDwell'); if (mode !== 'camera' || !cursor.present) { ring.hidden = true; adv.dwell = null; return; }
+  ring.hidden = false; ring.style.transform = 'translate(' + Math.round(cursor.x) + 'px,' + Math.round(cursor.y) + 'px)';
+  const sc = $('advScroll'), r = sc.getBoundingClientRect(); if (cursor.y < r.top + 70 && cursor.y > r.top) sc.scrollTop -= 6; else if (cursor.y > r.bottom - 70 && cursor.y < r.bottom) sc.scrollTop += 6;
+  const el = document.elementFromPoint(cursor.x, cursor.y), btn = el && el.closest && el.closest('#advMap button'), on = btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist');
+  $('advMap').querySelectorAll('.anode.dwell').forEach((q) => { if (q !== btn) q.classList.remove('dwell'); });
+  if (!on) { adv.dwell = null; ring.style.setProperty('--q', '0'); return; }
+  if (!adv.dwell || adv.dwell.el !== btn) adv.dwell = { el: btn, t: now }; btn.classList.add('dwell');
+  const q = Math.min(1, (now - adv.dwell.t) / 600); ring.style.setProperty('--q', q.toFixed(3));
+  if (q >= 1) { adv.dwell = null; btn.classList.remove('dwell'); btn.click(); }
+}
+
 function renderMissions() {
   const list = $('mlist'); list.replaceChildren(...profile.missions.list.map((m) => {
     const li = document.createElement('li'); li.className = 'mrow' + (m.done ? ' done' : ''); li.dataset.id = m.id;
@@ -7341,14 +7752,17 @@ for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) {
   $(id).querySelector('.xBtn').addEventListener('click', () => closePanel(id));
   $(id).addEventListener('pointerdown', (e) => { if (e.target === $(id)) closePanel(id); }); // a tap on the backdrop closes
 }
-window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeNewCard()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
+$('advBack').addEventListener('click', () => closeAdvMap());
+$('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
+window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
 const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'shapes', shapes: 'sandbox' };
 function setGameMode(m) {
-  const was = gameMode; gameMode = m; daily.on = daily.armed = false; // picking a mode (or the same one again) leaves the daily
+  const was = gameMode; gameMode = m; daily.on = daily.armed = false; adv.on = adv.armed = false; // picking a mode (or the same one again) leaves the daily (and the Adventure)
   if (held) dropHeld();
   particles.length = 0; rings.length = 0;
   if (m === 'slice') resetSlice();
@@ -7709,7 +8123,7 @@ function goHome() {
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false;
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -7732,6 +8146,7 @@ function startGame(m) {
   }
   syncLiveDot(); requestAnimationFrame(updateHudOffset);
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
+  adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
@@ -7962,6 +8377,7 @@ function onLangChange() {
   if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
   if (!hudEl.hidden) updateHud();
   syncMuteBtn(); syncMeta(); syncGrippyBtn();
+  if (advMapOpen()) { const sc = $('advScroll'), y = sc.scrollTop; renderAdvMap(); sc.scrollTop = y; } // (the map: its names and its mirrored path)
 }
 applyLang();
 for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
@@ -8009,6 +8425,15 @@ window.__grasp = {
     state: (id) => roadState(ROAD_BY[id]), show: () => openPanel('road'), get card() { return $('newCard').hidden ? null : newCard.id; }, closeCard: closeNewCard },
   worlds: { get unlocked() { return profile.worlds.unlocked; }, set unlocked(v) { profile.worlds.unlocked = Math.max(1, Math.min(WORLD_N, v | 0)); saveProfile(); }, get last() { return profile.worlds.last; }, start: startWorld, open: openWorldMap, list: WORLDS, levels: WORLD_LEVELS },
   setPlayerLevel, xpForLevel, runXp,
+  // Strike Adventure: 40 fixed stages (plan(n)), start(n) plays one, the profile's stars / unlocked / open, the map (open / close, its layout), and test helpers:
+  // finishTest(livesLost) clears the running stage now as if that many lives were lost (a boss stage: its boss too); failTest() loses its last life; travel: the trip after a world's boss
+  adventure: { count: ADV_N, perWorld: ADV_WORLD, lives: ADV_LIVES, plan: advPlan, start: advStart, endless: strikeEndless, playable: advPlayable, economy: ECONOMY.adv, travelMs: ADV_TRAVEL_MS,
+    get on() { return adv.on; }, get stage() { return adv.on ? adv.n : null; }, get phase() { return adv.on ? adv.phase : null; }, get result() { return adv.result; }, get lost() { return adv.lost; }, get spawned() { return adv.spawned; }, get world() { return adv.world; },
+    get stars() { return { ...profile.adv.stars }; }, get unlocked() { return profile.adv.unlocked; }, get open() { return profile.adv.open.slice(); }, get seen() { return profile.adv.seen.slice(); }, get current() { return advCurrent(); }, get total() { return advStarTotal(); },
+    openMap: (o) => openAdvMap(o || {}), closeMap: () => closeAdvMap(), get mapOpen() { return advMapOpen(); }, get layout() { return amap.layout; },
+    get travel() { const T = adv.travel; return T ? { from: T.from, to: T.to, q: T.q, switched: T.switched } : null; }, get lastTravel() { return adv.lastTravel; },
+    finishTest(livesLost = 0) { if (!adv.on || adv.phase !== 'play') return null; adv.lost = Math.max(0, livesLost | 0); strike.lives = Math.max(1, ADV_LIVES - adv.lost); if (adv.plan.boss) { adv.bossDone = true; strike.boss = null; } strike.walls.length = 0; strike.progress = adv.plan.walls; strike.cleared = strike.cleared0 + adv.plan.walls; return advClear(performance.now()); },
+    failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; while (!strike.over && i++ < 20) loseLife(performance.now()); return adv.result; } },
   // Shapes: the level, the shapes (kind, colour, x / y, angle, size, placed) and holes (kind, x / y, angle on screen, size, filled), the held shape's index (-1: none),
   // placeTest(i): shape i straight onto its hole at the hole's angle, then let go; spoken: the last shape name said; setLevel(n): level n now (test-only)
   shapes: { get level() { return shapes.level; }, get phase() { return shapes.phase; }, get held() { return shapes.held ? shapes.shapes.indexOf(shapes.held.s) : -1; },

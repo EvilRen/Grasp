@@ -28,8 +28,8 @@ async def open_page(b, mobile=False, query='', gfx="{ pr: 0.5, auto: false }", b
     return ctx, page, errs
 
 async def start(page, mobile=False):
-    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
-    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
+    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
 
 

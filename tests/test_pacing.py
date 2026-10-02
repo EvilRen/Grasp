@@ -20,7 +20,7 @@ async def new_page(b, gfx=None, ctx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
+    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate(SFX_JS); await page.mouse.move(640, 760)
 

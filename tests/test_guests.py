@@ -27,8 +27,8 @@ async def new_page(b, mobile=False, lang='en', gfx=None):
     return ctx, page, errs
 
 async def play_strike(page, mobile=False):
-    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]')
-    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]')
+    if mobile: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function(f"mode === 'mouse' && gameMode === 'strike' && {S}.ball", timeout=10000)
     await page.evaluate(SFX_JS + f"; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.extrasOff = true; {S}.lives = 40; " + FREEZE)
 

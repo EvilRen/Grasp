@@ -19,7 +19,7 @@ async def routes(page):
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
 INIT += "try { if (!localStorage.getItem('inputPref')) localStorage.setItem('inputPref', 'mouse'); } catch (e) {}"  # the start screen's tiles start a game at once with the remembered input: the suites play with the mouse unless they pick the camera
-START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('.modes > button[aria-pressed=\"true\"]').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button)
+START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('.modes > button[aria-pressed=\"true\"]').click(); if (!$('advMap').hidden) $('advEndless').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button; Strike: the Adventure map's Endless, the old run)
 # Strike's renderer in the suites: by default (GRASP_GFX=2d) the 2D canvas; GRASP_GFX=3d runs the WebGL renderer at a low fixed pixel ratio, no
 # shadows and no low-fps fallback (headless Chromium's WebGL is SwiftShader, a CPU rasterizer: full resolution runs at ~2-5 fps and falls back
 # to 2D; even this light setup runs ~30 fps, so the frame-timing checks of test_strike.py flake in 3D here; test_strike3d.py sets its own)

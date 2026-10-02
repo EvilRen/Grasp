@@ -183,7 +183,7 @@ async def main():
         check('tap Normal: selected and saved (the game does not start)', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal' && localStorage.getItem('strikeDiff') === 'normal' && mode === 'none'"))
         await page.reload(); await page.wait_for_timeout(600)
         check('difficulty persists across a reload', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal'"))
-        await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.wait_for_timeout(300)
+        await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless'); await page.wait_for_timeout(300)
         check('Normal round starts with 3 lives', await page.evaluate("__grasp.strike.lives === 3 && __grasp.strikeParams().speed === 1.1"))
         await page.screenshot(path='tests/out/chrome_phone_strike_normal.png')
         check('difficulty: no page errors', not errs, errs); await ctx.close()

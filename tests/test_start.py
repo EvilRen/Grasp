@@ -87,9 +87,13 @@ async def main():
                 for m in ('sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes'):
                     if mobile: await page.tap('.modes button[data-mode=' + m + ']')
                     else: await page.click('.modes button[data-mode=' + m + ']')
+                    if m == 'strike':  # (Strike: the tile opens the Adventure map; its current stop starts the stage)
+                        await page.wait_for_function("!$('advMap').hidden", timeout=4000)
+                        if mobile: await page.tap('#advPath .anode.cur')
+                        else: await page.click('#advPath .anode.cur')
                     await page.wait_for_function("mode !== 'none'", timeout=8000); started[m] = await page.evaluate("[gameMode, mode, $('start').hidden]")
                     await page.evaluate("goHome()"); await page.wait_for_timeout(250)
-                check(tag + ': a tap on each tile starts that game at once, with touch', all(v == [m, 'mouse', True] for m, v in started.items()), started)
+                check(tag + ': a tap on each tile starts that game at once (Strike: via its map), with touch', all(v == [m, 'mouse', True] for m, v in started.items()), started)
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
 
         # ---- a real camera run sets camOk; reduced motion skips the entrance ----
