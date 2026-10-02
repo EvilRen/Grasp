@@ -250,7 +250,52 @@ html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px
 .mt.ok .ic{ background:var(--mint); color:#062b1c; }
 .mt.ok .ic svg{ stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
 .mt b{ color:var(--saffron); }
-@media (prefers-reduced-motion: reduce){ .sheet, .mt{ animation:none; } .mrow .claim{ animation:none; } }
+/* the Daily button (first in the meta row, the widest) and its panel */
+.dailyBtn{ --mod:#ffc24b; position:relative; flex:1.7; display:inline-flex; align-items:center; gap:8px; padding:5px 10px; min-width:0; border-radius:12px; color:var(--bone); text-align:start;
+  background:linear-gradient(135deg, rgba(255,138,61,.22), rgba(255,194,75,.1) 60%, rgba(29,37,71,.5)); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.55); transition:background .15s, transform .1s; }
+.dailyBtn:hover{ background:linear-gradient(135deg, rgba(255,138,61,.32), rgba(255,194,75,.16) 60%, rgba(29,37,71,.7)); }
+.dailyBtn:active{ transform:scale(.97); }
+.dailyBtn .dIc svg{ display:block; width:22px; height:22px; stroke:var(--saffron); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; color:#ff8a3d; }
+.dailyBtn .dTx{ flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.15; }
+.dailyBtn .dTx b{ font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dailyBtn .dTx small{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dailyBtn .dMod{ color:var(--mod); font-weight:600; }
+.dailyBtn .dStreak{ flex:none; display:inline-flex; align-items:center; gap:2px; font-size:14px; font-weight:700; color:#ffd77a; direction:ltr; }
+.dailyBtn .dStreak .fl, .dstats .fl{ display:inline-block; width:18px; height:18px; }
+.dailyBtn .dStreak .fl svg{ width:18px; height:18px; display:block; }
+.dailyBtn .dStreak.zero{ color:var(--muted); }
+.dailyBtn .dStreak.zero .fl{ filter:grayscale(1); opacity:.5; }
+.dailyBtn .dNew{ position:absolute; top:-7px; inset-inline-end:-4px; padding:3px 6px; border-radius:999px; background:var(--coral); color:#fff; font-size:9px; font-weight:700; line-height:1; letter-spacing:.03em; box-shadow:0 2px 8px rgba(0,0,0,.35); animation:pulse 1.6s infinite; }
+.dailyBtn .dNew[hidden]{ display:none; }
+#daily{ --mod:#ffc24b; }
+#daily .dDateBig{ font-size:13px; font-weight:700; color:var(--saffron); }
+#daily .dmod{ display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:rgba(29,37,71,.6); box-shadow:inset 0 0 0 1.5px var(--mod); margin:0 0 10px; }
+#daily .dmod .sw{ flex:none; width:38px; height:38px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #fff8, transparent 55%), var(--mod); box-shadow:0 0 16px var(--mod); }
+#daily .dmod .tx{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+#daily .dmod small{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+html[dir="rtl"] #daily .dmod small{ text-transform:none; letter-spacing:0; }
+#daily .dmod .nm{ font-size:17px; color:var(--mod); }
+#daily .dmod .ds{ font-size:13px; color:var(--bone); }
+#daily .dstats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+#daily .dstats div{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; border-radius:12px; background:rgba(29,37,71,.5); box-shadow:inset 0 0 0 1px var(--line); }
+#daily .dstats b{ font-size:20px; }
+#daily .dstats span{ font-size:11px; color:var(--muted); text-align:center; }
+#daily .strip{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+#daily .strip .st{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border-radius:10px; background:rgba(8,11,28,.55); box-shadow:inset 0 0 0 1px var(--line); min-width:0; }
+#daily .strip .st small{ font-size:10px; color:var(--muted); }
+#daily .strip .st b{ font-size:12px; color:rgba(241,233,218,.4); max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+#daily .strip .st.played{ background:rgba(67,217,163,.14); box-shadow:inset 0 0 0 1px rgba(67,217,163,.55); }
+#daily .strip .st.played b{ color:var(--bone); }
+#daily .strip .st.today{ background:rgba(255,194,75,.2); box-shadow:inset 0 0 0 2px var(--saffron); }
+#daily .strip .st.today small{ color:var(--saffron); }
+#daily .dActs{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+@media (max-width:520px){ /* phones: Missions / Collection shrink to icons beside the Daily button (their names stay for screen readers) */
+  .metaRow{ margin-bottom:6px; }
+  .metaBtn{ position:relative; flex:0 0 46px; padding:9px 0; }
+  .metaBtn > span[data-i18n]{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .metaBtn .nb{ position:absolute; top:-6px; inset-inline-end:-5px; }
+}
+@media (prefers-reduced-motion: reduce){ .sheet, .mt{ animation:none; } .mrow .claim, .dailyBtn .dNew{ animation:none; } }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
@@ -305,6 +350,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     </div>
     <div class="diff" id="strikeDiff" role="group" data-i18n-aria="diffAria" aria-label="Strike difficulty" hidden style="--i:5"><button type="button" data-diff="easy" aria-pressed="true" data-i18n="diffEasy">Easy</button><button type="button" data-diff="normal" aria-pressed="false" data-i18n="diffNormal">Normal</button></div>
     <div class="metaRow" style="--i:5">
+      <button class="dailyBtn" id="dailyBtn" type="button"><span class="dIc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.2c.3 1.3 2 2.1 2 4.2a2 2 0 0 1-4 0c0-1 .5-1.5.9-2.1.1.6.4.9.8 1.1-.3-1.5.3-2.6.3-3.2z" fill="currentColor" stroke="none"/></svg></span><span class="dTx"><b data-i18n="daily">Daily</b><small><span class="dDate"></span> · <span class="dMod"></span></small></span><span class="dStreak"><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.2 4.8 5.3 4.8 10.4A4.8 4.8 0 0 1 12 21.5a4.8 4.8 0 0 1-4.8-4.8c0-2.4 1.3-3.6 2.2-5 .3 1.4.9 2.2 1.8 2.6-.6-3.6.8-6.4.8-11.8z" fill="#ff8a3d"/><path d="M12 13.5c1.6 1.4 2.4 2.6 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.3.9-2.3 2.4-4z" fill="#ffd23f"/></svg></span><b>0</b></span><span class="dNew" data-i18n="dailyNew">NEW</span></button>
       <button class="metaBtn" id="missionsBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11.5l2 2 4-4.5"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><span data-i18n="missions">Missions</span><span class="nb" hidden>0</span></button>
       <button class="metaBtn" id="collectionBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span data-i18n="collection">Collection</span></button>
     </div>
@@ -340,6 +386,17 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <p class="sub" data-i18n="collectionSub">Spend coins on new looks. Tap to buy, tap to wear.</p>
     <div id="ctypes"></div>
+  </div>
+</div>
+<div class="ov" id="daily" hidden role="dialog" aria-modal="true" aria-labelledby="dailyTitle">
+  <div class="sheet">
+    <header><h2 id="dailyTitle" data-i18n="dailyTitle">Daily challenge</h2><span class="dDateBig"></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="sub" data-i18n="dailySub">One Strike run, the same all day.</p>
+    <div class="dmod"><span class="sw" aria-hidden="true"></span><span class="tx"><small data-i18n="dailyModLabel">Today's twist</small><b class="nm"></b><span class="ds"></span></span></div>
+    <div class="dstats"><div><b id="dStreakN">0</b><span data-i18n="dStreakL">Day streak</span></div><div><b id="dBestN">–</b><span data-i18n="dBestL">Today's best</span></div><div><b id="dAttN">0</b><span data-i18n="dAttL">Attempts</span></div></div>
+    <h3 data-i18n="last7">Last 7 days</h3>
+    <div class="strip" id="dStrip"></div>
+    <div class="dActs"><button class="primary" id="dailyCam" type="button">Enable camera</button><button class="secondary" id="dailyMouse" type="button" data-i18n="mouseBtn">Play with mouse or touch</button></div>
   </div>
 </div>
 <div id="metaToast" aria-live="polite"></div>
@@ -498,6 +555,13 @@ const I18N = {
     it_ball_classic: 'Classic ball', it_ball_beach: 'Beach ball', it_ball_soccer: 'Soccer ball', it_ball_planet: 'Planet', it_ball_disco: 'Disco ball',
     it_hand_classic: 'Classic hand', it_hand_mint: 'Mint glove', it_hand_sky: 'Sky glove', it_hand_lilac: 'Lilac glove', it_hand_robot: 'Robot hand', it_hand_cat: 'Cat paw',
     it_blade_steel: 'Steel katana', it_blade_neon: 'Neon katana', it_blade_rainbow: 'Rainbow katana', it_trail_none: 'Plain trail', it_trail_sparkle: 'Sparkle trail', it_trail_fire: 'Fire trail', it_trail_rainbow: 'Rainbow trail',
+    daily: 'Daily', dailyTitle: 'Daily challenge', dailyAria: 'Daily challenge', dailySub: 'One Strike run, the same all day. Play it as often as you like: your best counts.', dailyNew: 'NEW',
+    dailyBest: "Today's best {n}", attemptsN: 'Attempts: {n}', dailyStreak: '{n}-day streak', dailyBanner: 'Daily · {d}', dailyModLabel: "Today's twist", last7: 'Last 7 days',
+    dStreakL: 'Day streak', dBestL: "Today's best", dAttL: 'Attempts', dailyBonus: 'First daily today: +{c} coins', streakBonus: '{n}-day streak! +{c} coins',
+    share: 'Share', copied: 'Copied', shareFail: 'Could not share', shareText: 'Grasp daily {d}: 🧱 {s} · L{l} · 🔥{n}', ms_daily: "Play today's daily",
+    mod_glass: 'Glass day', mod_steel: 'Steel day', mod_tnt: 'TNT party', mod_tiny: 'Tiny ball', mod_bighands: 'Big hands', mod_speedy: 'Speedy', mod_rain: 'Power-up rain',
+    modd_glass: 'Every wall is glass: it shatters on any hit.', modd_steel: 'Steel walls from the first level: hit them hard.', modd_tnt: 'TNT crates from the first level, and more of them. Boom!',
+    modd_tiny: 'The ball is 30% smaller.', modd_bighands: 'Your hands reach 40% further.', modd_speedy: 'The ball flies 25% faster.', modd_rain: 'Three times the power-up bricks, from the first level.',
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
@@ -573,6 +637,13 @@ const I18N = {
     it_ball_classic: 'כדור קלאסי', it_ball_beach: 'כדור ים', it_ball_soccer: 'כדורגל', it_ball_planet: 'כוכב לכת', it_ball_disco: 'כדור דיסקו',
     it_hand_classic: 'יד קלאסית', it_hand_mint: 'כפפת מנטה', it_hand_sky: 'כפפת שמיים', it_hand_lilac: 'כפפת לילך', it_hand_robot: 'יד רובוט', it_hand_cat: 'כף חתול',
     it_blade_steel: 'קטאנה פלדה', it_blade_neon: 'קטאנה ניאון', it_blade_rainbow: 'קטאנה קשת', it_trail_none: 'שובל רגיל', it_trail_sparkle: 'שובל נוצץ', it_trail_fire: 'שובל אש', it_trail_rainbow: 'שובל קשת',
+    daily: 'אתגר יומי', dailyTitle: 'אתגר יומי', dailyAria: 'אתגר יומי', dailySub: 'משחק מכה אחד, אותו משחק כל היום. שחקו כמה שתרצו: התוצאה הטובה ביותר נחשבת.', dailyNew: 'חדש',
+    dailyBest: 'השיא של היום {n}', attemptsN: 'ניסיונות: {n}', dailyStreak: 'רצף של {n} ימים', dailyBanner: 'אתגר יומי · {d}', dailyModLabel: 'הטוויסט של היום', last7: '7 הימים האחרונים',
+    dStreakL: 'ימי רצף', dBestL: 'השיא של היום', dAttL: 'ניסיונות', dailyBonus: 'אתגר יומי ראשון היום: ‎+{c} מטבעות', streakBonus: 'רצף של {n} ימים! ‎+{c} מטבעות',
+    share: 'שיתוף', copied: 'הועתק', shareFail: 'השיתוף נכשל', shareText: 'Grasp אתגר יומי {d}: 🧱 {s} · L{l} · 🔥{n}', ms_daily: 'שחקו באתגר היומי',
+    mod_glass: 'יום זכוכית', mod_steel: 'יום פלדה', mod_tnt: 'מסיבת TNT', mod_tiny: 'כדור קטנטן', mod_bighands: 'ידיים גדולות', mod_speedy: 'מהירות', mod_rain: 'גשם חיזוקים',
+    modd_glass: 'כל הקירות מזכוכית: מתנפצים בכל מכה.', modd_steel: 'קירות פלדה כבר מהשלב הראשון: הכו חזק.', modd_tnt: 'ארגזי TNT כבר מהשלב הראשון, ויותר מהם. בום!',
+    modd_tiny: 'הכדור קטן ב-30%.', modd_bighands: 'הידיים מגיעות רחוק יותר ב-40%.', modd_speedy: 'הכדור טס מהר יותר ב-25%.', modd_rain: 'פי שלושה לבני חיזוק, כבר מהשלב הראשון.',
   },
 };
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
@@ -3018,11 +3089,11 @@ function resetStrike(now) {
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; roundStart();
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
-  strike.serveAt = now + 600; strike.cued = false;
+  strike.serveAt = now + (daily.on ? 2400 : 600); strike.cued = false; // (the daily's banner reads before the first serve)
   const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = ui.heartPop = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false; ui.puIcons.length = 0;
   ui.levelUp = ui.bossBanner = ui.boss = ui.progBar = null; ui.progressAt = -1e9; ui.progShown = 0;
   ui.perkCards = ui.perkDwell = ui.streakBox = ui.streakToast = ui.streakLost = ui.nextCard = ui.nextShown = null; ui.perkHover = -1; ui.perkIcons.length = 0; ui.nextAt = ui.closeAt = -1e9;
-  ui.dailyBanner = daily.on ? { t: now + 200, ms: 2400, mod: daily.modifier, date: daily.date } : null; // the daily: 'Glass day' + 'Daily · 2026-10-02' first
+  ui.dailyBannerBox = ui.strip = ui.streakChip = null; ui.dailyBanner = daily.on ? { t: now + 200, ms: 2400, mod: daily.modifier, date: daily.date } : null; // the daily: 'Glass day' + 'Daily · 2026-10-02' first
   ui.levelBanner = { t: now + (daily.on ? 2700 : 200), level: 1, goal: levelGoal(1) }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
@@ -4165,7 +4236,7 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     const [off, a] = bannerSlide(k), x = W / 2 + off, boss = key === 'bossBanner', dly = key === 'dailyBanner';
     const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : '#f1e9da', null, 500);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
-    if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.min(W - 24, d.tw + 40); ui.dailyBannerBox = { x: x - pw / 2, y: y - ph / 2, w: pw, h: ph + 34 }; blit(glassSprite(Math.max(pw, dw), ph + 34, 20), x - Math.max(pw, dw) / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
+    if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
     blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - ph / 2 - 1, 0, 1, a);
     if (boss) blit(burstSprite(), x, y, now * 0.0012, 0.9, a * 0.7);
     blit(main, x, y - 14, 0, 1 + (boss ? 0.04 * Math.sin(k * Math.PI * 6) * (1 - k) : 0), a);
@@ -4253,6 +4324,7 @@ function endCardAt(px, py) { // which card button (if any) is under a screen poi
 function endCardAction(key, now) {
   if (key === 'home') return goHome();
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
+  if (key === 'share') { strike.ui.dwell = null; return shareDaily(); }
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended
@@ -4265,15 +4337,16 @@ function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichev
   if (now - E.overAt > 1000 && cursor.present && !btn && cursorSpeed(now) >= 1.2) endCardAction('again', now);
 }
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
-  const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff;
+  const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff, dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (pill ? 372 : 316) + 34, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 84, (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = dly ? 456 : (pill ? 372 : 316) + 34, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1);
-  blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
+  if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null); blit(ts, cx, y0 + 40, 0, Math.min(1, (cw - 150) / ts.tw)); blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64); }
+  else blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
   blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
-  blit(textSprite(t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
+  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
   if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
     const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
     resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
@@ -4286,6 +4359,11 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     const sp = textSprite(LRM + '+' + meta.roundCoins, 13, '#ffd77a', null, 700), pw = sp.tw + 36, ph = 24, px = rtl ? x0 + cw - 14 - pw : x0 + 14, py = y0 + 14;
     blit(glassSprite(pw, ph, 12), px - 1, py - 1); blit(coinSprite(7), rtl ? px + pw - 13 : px + 13, py + ph / 2); edgeText(sp, rtl ? px + pw - 25 : px + 25, py + ph / 2, rtl);
     ui.coinBox = { x: px, y: py, w: pw, h: ph, n: meta.roundCoins };
+    if (dly) { // the daily streak: a flame and the count in the top end corner
+      const ss = textSprite(LRM + String(dly.streak), 14, dly.streak ? '#ffd77a' : 'rgba(241,233,218,0.6)', null, 700), sw = ss.tw + 34, sx = rtl ? x0 + 14 : x0 + cw - 14 - sw;
+      blit(glassSprite(sw, ph, 12), sx - 1, py - 1); blit(flameSprite(9, !dly.streak), rtl ? sx + sw - 13 : sx + 13, py + ph / 2); edgeText(ss, rtl ? sx + sw - 25 : sx + 25, py + ph / 2, rtl);
+      ui.streakChip = { x: sx, y: py, w: sw, h: ph, n: dly.streak };
+    }
   }
   { // today's missions: three compact columns (name, bar, count) above the buttons
     const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240; ui.missionRow = [];
@@ -4298,18 +4376,30 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
       ui.missionRow.push({ id: m.id, x: mx - colw / 2, y: my - 8, w: colw, h: 36, frac, done: m.done });
     });
   }
-  const bw = (cw - 52) / 2, bh = 50, by = y0 + 280, ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
+  if (dly) { // the last 7 days: a tile per date with that day's best (empty if not played); today highlighted
+    const n = dly.strip.length, gap = 6, tw = (cw - 32 - gap * (n - 1)) / n, th = 46, sy = y0 + 272; ui.strip = [];
+    dly.strip.forEach((d, i) => {
+      const tx = rtl ? x0 + cw - 16 - (i + 1) * tw - i * gap : x0 + 16 + i * (tw + gap), mx = tx + tw / 2, played = d.best !== null;
+      resetView(); ctx.beginPath(); ctx.roundRect(tx, sy, tw, th, 9); ctx.fillStyle = d.today ? 'rgba(255,194,75,0.2)' : played ? 'rgba(67,217,163,0.14)' : 'rgba(8,11,28,0.55)'; ctx.fill();
+      ctx.lineWidth = d.today ? 2 : 1; ctx.strokeStyle = d.today ? '#ffc24b' : played ? 'rgba(67,217,163,0.55)' : 'rgba(241,233,218,0.14)'; ctx.stroke();
+      blit(textSprite(String(+d.date.slice(8)), 10, d.today ? '#ffd77a' : 'rgba(241,233,218,0.55)', null, 500), mx, sy + 13);
+      const v = textSprite(played ? String(d.best) : '–', 12, played ? '#f1e9da' : 'rgba(241,233,218,0.35)', null, 700); blit(v, mx, sy + 31, 0, Math.min(1, (tw - 6) / v.tw));
+      ui.strip.push({ date: d.date, best: d.best, today: d.today, x: tx, y: sy, w: tw, h: th });
+    });
+  } else ui.strip = null;
+  const bw = (cw - 52) / 2, bh = 50, by = y0 + (dly ? 332 : 280), ax = rtl ? x0 + cw - 20 - bw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - bw;
   ui.buttons = { again: { x: ax, y: by, w: bw, h: bh }, home: { x: hx, y: by, w: bw, h: bh } };
   if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
     const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
     ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
   }
-  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal') };
+  if (dly) ui.buttons.share = { x: x0 + 20, y: by + bh + 12, w: cw - 40, h: 44 }; // the daily: Share under the buttons (no Easy / Normal: the daily is always Normal)
+  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share') };
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
-    blit(overButtonSprite(key === 'again' ? 'again' : on ? 'on' : 'home', r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
+    blit(overButtonSprite(key === 'again' ? 'again' : on || key === 'share' ? 'on' : 'home', r.w, r.h), mx, my, 0, hot ? 1.04 : 1);
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
-    blit(textSprite(label[key], key === 'again' || key === 'home' ? 16 : 14, key === 'again' ? '#2a1a00' : on ? '#ffd77a' : '#f1e9da', null, key === 'again' || on ? 700 : 500), mx, my);
+    blit(textSprite(label[key], key === 'again' || key === 'home' ? 16 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' ? 700 : 500), mx, my);
   }
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
@@ -4383,7 +4473,7 @@ function renderStrike(now) {
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
   if (strike.over) { // the hand stays on top so it can aim at the buttons
-    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo'], [strike.bosses, 'bosses']], diff: true, again: 'playAgainWave' });
+    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
   }
 }
@@ -4542,12 +4632,12 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
   { id: 'cars', ev: 'car', goals: [2, 4, 6], rewards: [20, 30, 45] }, { id: 'walls', ev: 'wall', goals: [3, 6, 10], rewards: [20, 30, 45] },
   { id: 'powerups', ev: 'powerup', goals: [2, 4, 6], rewards: [25, 35, 50] }, { id: 'boss', ev: 'boss', goals: [1], rewards: [60] },
   { id: 'strikeLevel', ev: 'strikeLevel', goals: [3, 4, 5], rewards: [30, 45, 60], max: true }, { id: 'rounds', ev: 'round', goals: [3], rewards: [25] }, { id: 'combo', ev: 'combo', goals: [1], rewards: [30] },
-  { id: 'close', ev: 'close', goals: [3], rewards: [30] },
+  { id: 'close', ev: 'close', goals: [3], rewards: [30] }, { id: 'daily', ev: 'daily', goals: [1], rewards: [30] },
 ];
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
   return { v: PROFILE_V, coins: 0, xp: 0, level: 1, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
-    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 } };
+    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {} }; // daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -4558,6 +4648,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (p.equipped) for (const ty of ITEM_TYPES) { const it = ITEMS.find((q) => q.type === ty && q.skin === p.equipped[ty]); if (it && d.unlocked.includes(it.id)) d.equipped[ty] = it.skin; }
     if (p.missions && typeof p.missions.date === 'string' && Array.isArray(p.missions.list)) d.missions = { date: p.missions.date, list: p.missions.list.filter((m) => m && MISSION_POOL.some((q) => q.id === m.id)).map((m) => ({ id: m.id, progress: +m.progress || 0, goal: +m.goal || 1, reward: +m.reward || 0, done: !!m.done, claimed: !!m.claimed })) };
     if (p.stats) for (const k in d.stats) if (Number.isFinite(p.stats[k]) && p.stats[k] >= 0) d.stats[k] = p.stats[k];
+    if (p.daily && typeof p.daily === 'object') for (const k of Object.keys(p.daily)) { const r = p.daily[k]; if (/^\d{4}-\d{2}-\d{2}$/.test(k) && r && +r.attempts > 0) d.daily[k] = { best: Math.max(0, +r.best || 0), attempts: Math.max(1, +r.attempts | 0), level: Math.max(1, +r.level || 1) }; }
     d.level = levelOf(d.xp);
   } catch {}
   return d;
@@ -4655,6 +4746,68 @@ function claimMission(id) {
   const m = profile.missions.list.find((q) => q.id === id); if (!m || !m.done || m.claimed) return false;
   m.claimed = true; profile.coins += m.reward; saveProfile(); sfx('coin'); sfx('chime'); toast('claimedToast', { c: m.reward }, 'coin'); syncMeta(); renderMissions(); return true;
 }
+/* --- the daily challenge: the record per date, the streak, the 7-day strip, the bonuses, sharing, the start-screen button and its panel --- */
+function addDays(iso, n) { const [y, m, d] = iso.split('-').map(Number); return localDate(new Date(y, m - 1, d + n)); }
+function dailyRec(date) { return profile.daily[date] || null; }
+function dailyStreak(date = missionDay()) { // consecutive days with a finished daily run, up to today (or up to yesterday while today is still to play)
+  let d = dailyRec(date) ? date : addDays(date, -1), n = 0;
+  while (dailyRec(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function dailyStrip(date = missionDay()) { const out = []; for (let i = 6; i >= 0; i--) { const d = addDays(date, -i), r = dailyRec(d); out.push({ date: d, best: r ? r.best : null, today: i === 0 }); } return out; }
+function dailyCardInfo() { const r = dailyRec(daily.date) || { best: 0, attempts: 0, level: 0 }; return { date: daily.date, mod: daily.modifier, best: r.best, attempts: r.attempts, level: r.level, streak: dailyStreak(daily.date), strip: dailyStrip(daily.date) }; }
+function dailyDone(score, level) { // a daily run finished: the day's record; the first one of the day pays a bonus (and a streak milestone its own); the mission
+  const date = daily.date, prev = dailyRec(date), first = !prev, r = prev || { best: 0, attempts: 0, level: 0 };
+  strike.ui.newBest = !first && score > r.best; // the ribbon on a daily: a new best for today
+  r.attempts++; r.best = Math.max(r.best, score); r.level = Math.max(r.level, level); profile.daily[date] = r;
+  const keys = Object.keys(profile.daily).sort(); while (keys.length > 60) delete profile.daily[keys.shift()]; // a couple of months is plenty
+  if (first) {
+    profile.coins += DAILY_FIRST_BONUS; meta.roundCoins += DAILY_FIRST_BONUS; toast('dailyBonus', { c: DAILY_FIRST_BONUS }, 'coin');
+    const n = dailyStreak(date), b = DAILY_STREAK_BONUS[n]; if (b) { profile.coins += b; meta.roundCoins += b; toast('streakBonus', { n, c: b }, 'star'); sfx('levelup'); }
+  }
+  saveProfile(); track('daily', 1);
+}
+function shareText() { const d = daily.on ? daily.date : missionDay(), r = dailyRec(d) || { best: 0, level: 1 }; return t('shareText', { d, s: r.best, l: r.level || 1, n: dailyStreak(d) }); }
+async function shareDaily() { // the system share sheet where there is one, else the clipboard with a 'Copied' toast (as in Tremorti)
+  const text = shareText(); daily.lastShare = text;
+  if (navigator.share) { try { await navigator.share({ text }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'aborted'; } }
+  try { await navigator.clipboard.writeText(text); toast('copied', null, 'check'); return 'copied'; } catch {}
+  try { const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); if (ok) { toast('copied', null, 'check'); return 'copied'; } } catch {}
+  toast('shareFail', null, 'star'); return 'failed';
+}
+function flameSprite(r, dim) { // a two-tone flame, r = half its height
+  return makeSprite('flame|' + Math.round(r) + '|' + (dim ? 1 : 0), r * 2 + 4, r * 2 + 4, r + 2, r + 2, (g) => {
+    const path = (k) => { g.beginPath(); g.moveTo(0, -r * k); g.bezierCurveTo(r * 0.9 * k, -r * 0.2 * k, r * 0.75 * k, r * 0.95 * k, 0, r * k); g.bezierCurveTo(-r * 0.75 * k, r * 0.95 * k, -r * 0.85 * k, -r * 0.05 * k, -r * 0.2 * k, -r * 0.45 * k); g.bezierCurveTo(-r * 0.1 * k, -r * 0.1 * k, r * 0.1 * k, -r * 0.6 * k, 0, -r * k); g.closePath(); };
+    path(1); g.fillStyle = dim ? 'rgba(241,233,218,0.35)' : '#ff8a3d'; g.fill(); g.translate(0, r * 0.38); path(0.5); g.fillStyle = dim ? 'rgba(241,233,218,0.2)' : '#ffd23f'; g.fill();
+  });
+}
+function shortDate(iso) { const [y, m, d] = iso.split('-').map(Number); try { return new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : 'en-US', { month: 'short', day: 'numeric' }).format(new Date(y, m - 1, d)); } catch { return iso; } }
+function syncDaily() { // the start-screen button: date, modifier of the day, streak flame + count, a NEW dot until today's daily is played; the panel when open
+  const date = missionDay(), mod = daily.forceModifier || modifierFor(date), played = !!dailyRec(date), n = dailyStreak(date), b = $('dailyBtn');
+  b.dataset.date = date; b.dataset.mod = mod; b.dataset.streak = String(n); b.dataset.played = String(played); b.style.setProperty('--mod', DAILY_MOD_COL[mod]);
+  b.querySelector('.dDate').textContent = shortDate(date); b.querySelector('.dMod').textContent = t('mod_' + mod);
+  b.querySelector('.dStreak b').textContent = String(n); b.querySelector('.dStreak').classList.toggle('zero', !n); b.querySelector('.dNew').hidden = played;
+  b.setAttribute('aria-label', t('dailyTitle') + ', ' + shortDate(date) + ', ' + t('mod_' + mod) + ', ' + t('dailyStreak', { n }) + (played ? '' : ', ' + t('dailyNew')));
+  if (!$('daily').hidden) renderDailyPanel();
+}
+function renderDailyPanel() {
+  const date = missionDay(), mod = daily.forceModifier || modifierFor(date), r = dailyRec(date), n = dailyStreak(date), P = $('daily');
+  P.querySelector('.dDateBig').textContent = shortDate(date); P.style.setProperty('--mod', DAILY_MOD_COL[mod]); P.dataset.mod = mod;
+  P.querySelector('.dmod .nm').textContent = t('mod_' + mod); P.querySelector('.dmod .ds').textContent = t('modd_' + mod);
+  $('dStreakN').textContent = String(n); $('dBestN').textContent = r ? String(r.best) : '–'; $('dAttN').textContent = String(r ? r.attempts : 0);
+  $('dStrip').replaceChildren(...dailyStrip(date).map((d) => { const el = document.createElement('div'); el.className = 'st' + (d.today ? ' today' : '') + (d.best !== null ? ' played' : ''); el.dataset.date = d.date;
+    const a = document.createElement('small'); a.textContent = String(+d.date.slice(8)); const v = document.createElement('b'); v.textContent = d.best !== null ? String(d.best) : '–'; el.append(a, v); return el; }));
+  let ok = false; try { ok = localStorage.getItem('camOk') === '1'; } catch {}
+  $('dailyCam').textContent = t(ok ? 'camBtnAgain' : 'camBtn');
+}
+function openDaily() { setGameMode('strike'); renderDailyPanel(); $('daily').hidden = false; $('daily').querySelector('.sheet').scrollTop = 0; $('daily').querySelector('.xBtn').focus({ preventScroll: true }); }
+function startDaily(how) { // test hook / panel buttons: play today's daily (how: 'camera' | 'mouse'; default: the mouse, or a restart when a game is running)
+  if (gameMode !== 'strike') setGameMode('strike');
+  $('daily').hidden = true; daily.armed = true;
+  if (mode === 'none') { if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
+  else { daily.armed = false; daily.on = true; hideHint(); resetStrike(performance.now()); }
+  return daily.on;
+}
 /* --- collection: buy with coins (or earn at a level), equip one per type --- */
 function itemState(it) { return !profile.unlocked.includes(it.id) ? 'locked' : profile.equipped[it.type] === it.skin ? 'equipped' : 'owned'; }
 function buyItem(id) {
@@ -4687,6 +4840,7 @@ function syncMeta() {
   for (const el of document.querySelectorAll('.wallet b')) el.textContent = String(profile.coins);
   if (!$('missions').hidden) renderMissions();
   if (!$('collection').hidden) renderCollection();
+  syncDaily();
 }
 function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
 function closePanel(id) { $(id).hidden = true; }
@@ -4781,18 +4935,21 @@ function trailFx(skin, x, y, dx, dy) { // particles shed by a moving trail: embe
 $('missionsBtn').addEventListener('click', () => openPanel('missions'));
 $('collectionBtn').addEventListener('click', () => openPanel('collection'));
 $('metaPill').addEventListener('click', () => openPanel('collection'));
-for (const id of ['missions', 'collection']) {
+$('dailyBtn').addEventListener('click', openDaily);
+$('dailyCam').addEventListener('click', () => { audioInit(); startDaily('camera'); });
+$('dailyMouse').addEventListener('click', () => { audioInit(); startDaily('mouse'); });
+for (const id of ['missions', 'collection', 'daily']) {
   $(id).querySelector('.xBtn').addEventListener('click', () => closePanel(id));
   $(id).addEventListener('pointerdown', (e) => { if (e.target === $(id)) closePanel(id); }); // a tap on the backdrop closes
 }
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') for (const id of ['missions', 'collection']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') for (const id of ['missions', 'collection', 'daily']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
 const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'sandbox' };
 function setGameMode(m) {
-  const was = gameMode; gameMode = m;
+  const was = gameMode; gameMode = m; daily.on = daily.armed = false; // picking a mode (or the same one again) leaves the daily
   if (held) dropHeld();
   particles.length = 0; rings.length = 0;
   if (m === 'slice') resetSlice();
@@ -5141,7 +5298,7 @@ function goHome() {
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0;
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -5163,6 +5320,7 @@ function startGame(m) {
     cameraStartedAt = performance.now();
   }
   syncLiveDot(); requestAnimationFrame(updateHudOffset);
+  daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
@@ -5404,6 +5562,12 @@ window.__grasp = {
   collection: { items: ITEMS, buy: buyItem, equip: equipItem, state: itemState, skinOf },
   setDate(iso) { meta.dateOverride = iso || null; try { if (iso) sessionStorage.setItem('grasp.testDate', iso); else sessionStorage.removeItem('grasp.testDate'); } catch {} ensureMissions(); syncMeta(); },
   openPanel, closePanel,
+  // the daily challenge: date / modifier / seed / today's record / streak; forceModifier (test-only) picks the modifier; startDaily() plays it
+  daily: { get on() { return daily.on; }, get date() { return daily.on ? daily.date : missionDay(); }, get modifier() { return daily.on ? daily.modifier : daily.forceModifier || modifierFor(missionDay()); },
+    get seed() { return dailySeed(this.date); }, get best() { const r = dailyRec(this.date); return r ? r.best : 0; }, get attempts() { const r = dailyRec(this.date); return r ? r.attempts : 0; },
+    get level() { const r = dailyRec(this.date); return r ? r.level : 0; }, get streak() { return dailyStreak(this.date); }, get forceModifier() { return daily.forceModifier; },
+    set forceModifier(v) { daily.forceModifier = DAILY_MODS.includes(v) ? v : null; syncDaily(); }, mods: DAILY_MODS, modifierFor, strip: (d) => dailyStrip(d), shareText, share: shareDaily, get lastShare() { return daily.lastShare; }, open: openDaily },
+  startDaily, strikeRand,
 };
 </script>
 </body>

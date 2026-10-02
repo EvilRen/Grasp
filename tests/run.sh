@@ -18,4 +18,5 @@ python3 tests/test_strike2.py
 python3 tests/test_chrome.py
 python3 tests/test_start.py
 python3 tests/test_meta.py
+python3 tests/test_daily.py
 echo "ALL TESTS PASSED"
