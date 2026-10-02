@@ -420,7 +420,7 @@ const CONFIG = {
   STRIKE_BOSS_HP: 0.6,        // boss hit points as a share of the Normal value 12 + 4 x boss number (Normal 1)
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_EVERY: 10, STRIKE_BOSS_HP: 1 };
-function sd(key) { return strike.diff === 'normal' && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
+function sd(key) { return (strike.diff === 'normal' || daily.on) && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
 
 /* ---------------- Language (English / Hebrew) ---------------- */
 const I18N = {
@@ -2888,6 +2888,24 @@ const PERK_COL = { wide: '#43d9a3', heavy: '#a98bff', magnet: '#ff6f59', skin: '
 const PERK_AUTO_MS = 12000, PERK_DWELL_MS = 600, PERK_ARM_MS = 450, PERK_DELAY_MS = 1000; // auto-pick, dwell, input ignored right after the cards appear, wait after the level-up (the burst)
 const STREAK_TOASTS = { 5: 'streak5', 10: 'streak10', 20: 'streak20' }; // hit-streak milestones
 const CLOSE_SLOW = 0.4, CLOSE_MS = 250; // 'Close one!': the game runs at 40% for 250 ms
+// Daily challenge: a Strike run seeded by the local date (YYYY-MM-DD), so every attempt that day is the same run. All of Strike's gameplay
+// randomness goes through strikeRand(channel): Math.random normally; in daily mode one seeded generator per channel (walls, bricks, perks,
+// serve, spark, boss, pu), so the wall queue does not shift when, say, one more ball is served. Always Normal with 3 lives, plus a modifier of the day.
+const DAILY_MODS = ['glass', 'steel', 'tnt', 'tiny', 'bighands', 'speedy', 'rain'];
+const DAILY_MOD_COL = { glass: '#9fdcff', steel: '#8fa3c4', tnt: '#ff6f59', tiny: '#a98bff', bighands: '#43d9a3', speedy: '#ffd23f', rain: '#54c6eb' };
+const DAILY_STREAK_BONUS = { 3: 100, 7: 250, 14: 500 }, DAILY_FIRST_BONUS = 50;
+const daily = { on: false, armed: false, date: '', modifier: null, forceModifier: null, rngs: {}, lastShare: null }; // armed: the next startGame() plays the daily
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let q = Math.imul(a ^ (a >>> 15), 1 | a); q = (q + Math.imul(q ^ (q >>> 7), 61 | q)) ^ q; return ((q ^ (q >>> 14)) >>> 0) / 4294967296; }; }
+function dailySeed(date) { return strSeed('daily|' + date); }
+function modifierFor(date) { return DAILY_MODS[Math.floor(mulberry32(strSeed('dailymod|' + date))() * DAILY_MODS.length)]; }
+function strikeRand(ch = 'misc') {
+  if (!daily.on) return Math.random();
+  const r = daily.rngs[ch] || (daily.rngs[ch] = mulberry32(dailySeed(daily.date) ^ strSeed(ch)));
+  return r();
+}
+function dailyMod() { return daily.on ? daily.modifier : null; }
+function strikeEasy() { return strike.diff !== 'normal' && !daily.on; } // the daily is always Normal
+function paceMul() { return dailyMod() === 'speedy' ? 1.25 : 1; }
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
 const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
@@ -2953,7 +2971,7 @@ function vanish() { return { x: W / 2, y: H * 0.46 }; } // vanishing point: cent
 function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y, B: H - v.y }; } // world bounds at z = 0 = the screen edges
 function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
 function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
-function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
+function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1) * (dailyMod() === 'tiny' ? 0.7 : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
 function ballScreen(b) { const p = proj(b.x, b.y, b.z); return { x: p.x, y: p.y, r: ballR() * p.s, s: p.s }; }
 function drawCorridor(g) { // static part of the corridor: floor, ceiling, side walls, converging edges, fog at the far end
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, v = vanish();
@@ -2990,9 +3008,10 @@ function setStrikeDiff(d) { // Easy / Normal: saved, shown on the start screen p
 function strikeParams() { return { diff: strike.diff, speed: sd('STRIKE_BASE_SPEED'), lives: sd('STRIKE_LIVES'), grow: sd('STRIKE_PACE_GROW'), max: sd('STRIKE_MAX_SPEED'), radius: sd('STRIKE_HIT_RADIUS'), near: sd('STRIKE_HIT_NEAR'), window: sd('STRIKE_HIT_WINDOW'), late: sd('STRIKE_LATE_Z'), magnet: sd('STRIKE_MAGNET'), hand: sd('STRIKE_HAND_SCALE') }; }
 document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListener('click', () => setStrikeDiff(b.dataset.diff)));
 function resetStrike(now) {
+  if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
-  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED'); strike.speed = strike.pace;
+  strike.score = 0; strike.lives = strike.maxLives = sd('STRIKE_LIVES'); strike.over = false; strike.pace = sd('STRIKE_BASE_SPEED') * paceMul(); strike.speed = strike.pace;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
@@ -3003,7 +3022,8 @@ function resetStrike(now) {
   const ui = strike.ui; ui.shown = ui.lastShown = 0; ui.scoreAt = -1e9; ui.heartLost = ui.heartPop = null; ui.tierFlash = ui.banner = ui.lastBanner = ui.cue = ui.buttons = ui.hover = ui.dwell = ui.ribbon = ui.tag = ui.tagBox = null; ui.newBest = false; ui.puIcons.length = 0;
   ui.levelUp = ui.bossBanner = ui.boss = ui.progBar = null; ui.progressAt = -1e9; ui.progShown = 0;
   ui.perkCards = ui.perkDwell = ui.streakBox = ui.streakToast = ui.streakLost = ui.nextCard = ui.nextShown = null; ui.perkHover = -1; ui.perkIcons.length = 0; ui.nextAt = ui.closeAt = -1e9;
-  ui.levelBanner = { t: now + 200, level: 1, goal: levelGoal(1) }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level)
+  ui.dailyBanner = daily.on ? { t: now + 200, ms: 2400, mod: daily.modifier, date: daily.date } : null; // the daily: 'Glass day' + 'Daily · 2026-10-02' first
+  ui.levelBanner = { t: now + (daily.on ? 2700 : 200), level: 1, goal: levelGoal(1) }; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
 }
 function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBest = strike.level; try { localStorage.setItem('strikeLevelBest', String(strike.levelBest)); } catch {} } }
@@ -3036,9 +3056,11 @@ function wallGrid() { // ~20 bricks about twice as wide as tall: 4x5 on a laptop
 }
 function brickCell(w, col, row) { const { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows; return { x: L + (w.ox || 0) + (col + 0.5) * cw, y: T + (row + 0.5) * ch, w: cw, h: ch }; } // span: cells across the corridor (a moving wall is one short); ox: its lateral offset
 function wallKindFor(level) { // level 1: brick only; each level to 6 unlocks the next kind (the first wall of that level is it), then a weighted random mix of everything unlocked
+  const mod = dailyMod(); if (mod === 'glass') { strike.nextKind = null; return 'glass'; } // daily 'Glass day': every wall is glass
   if (strike.nextKind) { const k = strike.nextKind; strike.nextKind = null; return k; }
+  if ((mod === 'steel' || mod === 'tnt') && strikeRand('walls') < (mod === 'steel' ? 0.4 : 0.5)) return mod; // 'Steel day' / 'TNT party': that kind from level 1 on, in 40% / 50% of the walls
   const n = Math.min(STRIKE_KINDS.length, Math.max(1, level)); if (n <= 1) return 'brick';
-  const pool = STRIKE_KINDS.slice(0, n), wts = pool.map((k) => (k === 'brick' ? 3 : 2)); let r = Math.random() * wts.reduce((a, b) => a + b, 0);
+  const pool = STRIKE_KINDS.slice(0, n), wts = pool.map((k) => (k === 'brick' ? 3 : 2)); let r = strikeRand('walls') * wts.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
   return 'brick';
 }
@@ -3047,21 +3069,21 @@ function spawnStrikeWall(z, kind) {
   const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
   const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : level; // glass shatters on any hit, steel plates take 3, bricks toughen with the level
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
-  const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: Math.random() * TAU };
+  const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: strikeRand('bricks') * TAU };
   const at = (c, r) => bricks[r * cols + c];
   if (kind === 'holed') { // a 1-2 brick gap somewhere: the ball flies through it untouched
-    const c = Math.floor(Math.random() * cols), r = Math.floor(Math.random() * rows), cells = [at(c, r)];
-    if (Math.random() < 0.6) cells.push(c + 1 < cols ? at(c + 1, r) : c > 0 ? at(c - 1, r) : r + 1 < rows ? at(c, r + 1) : at(c, r - 1));
+    const c = Math.floor(strikeRand('bricks') * cols), r = Math.floor(strikeRand('bricks') * rows), cells = [at(c, r)];
+    if (strikeRand('bricks') < 0.6) cells.push(c + 1 < cols ? at(c + 1, r) : c > 0 ? at(c - 1, r) : r + 1 < rows ? at(c, r + 1) : at(c, r - 1));
     for (const k of cells) if (k && k.alive) { k.alive = false; k.hp = 0; k.hole = true; w.left--; }
   }
   if (kind === 'tnt') { // 2-3 crates at random spots; a crate that breaks blows up everything within 2 bricks of it
-    const n = 2 + Math.floor(Math.random() * 2), order = bricks.slice().sort(() => Math.random() - 0.5);
+    const n = (dailyMod() === 'tnt' ? 3 : 2) + Math.floor(strikeRand('bricks') * 2), order = shuffled(bricks, () => strikeRand('bricks')); // (TNT party: 3-4)
     for (const k of order.slice(0, n)) { k.tnt = true; k.hp = 1; }
   }
-  if (level >= 2) { // power-up bricks: gold-rimmed, an icon on the face; ~1 in 12 (Easy: 1 in 8, and never two walls in a row without one)
-    const easy = strike.diff !== 'normal', rate = puRate(), free = bricks.filter((k) => k.alive && !k.tnt); let n = 0;
-    for (const k of free) if (Math.random() < rate) { k.pu = puKind(); n++; }
-    if (!n && easy && rate > 0 && strike.puDrought >= 1 && free.length) { free[Math.floor(Math.random() * free.length)].pu = puKind(); n++; }
+  if (level >= 2 || dailyMod() === 'rain') { // power-up bricks (from level 1 on 'Power-up rain'): gold-rimmed, an icon on the face; ~1 in 12 (Easy: 1 in 8, and never two walls in a row without one)
+    const easy = strikeEasy(), rate = puRate(), free = bricks.filter((k) => k.alive && !k.tnt); let n = 0;
+    for (const k of free) if (strikeRand('bricks') < rate) { k.pu = puKind(); n++; }
+    if (!n && easy && rate > 0 && strike.puDrought >= 1 && free.length) { free[Math.floor(strikeRand('bricks') * free.length)].pu = puKind(); n++; }
     for (const k of free) if (k.pu) k.hp = 1; // a power-up brick breaks on any hit, however tough its wall
     strike.puDrought = n ? 0 : strike.puDrought + 1;
   }
@@ -3077,7 +3099,7 @@ function upcomingKind() { // what enters the corridor next: the boss (the next w
 }
 function puKind() { // weighted pick; an extra life only while there is room for one
   const pool = PU_KINDS.filter((k) => k !== 'life' || strike.lives < strike.maxLives + 2), wts = pool.map((k) => PU_WEIGHTS[k]);
-  let r = Math.random() * wts.reduce((a, b) => a + b, 0);
+  let r = strikeRand('bricks') * wts.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
   return pool[0];
 }
@@ -3086,9 +3108,9 @@ function powerOn(kind) { const now = performance.now(); return strike.powerups.s
 function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every ball at 55% pace
 /* --- perks, the hit streak, 'Close one!' --- */
 function perkN(id) { return strike.perks[id] || 0; }
-function reachMul() { return 1 + 0.2 * perkN('wide'); }                       // Wider Hands
+function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1); }                       // Wider Hands
 function magnetVal() { return sd('STRIKE_MAGNET') + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
-function puRate() { return CONFIG.STRIKE_PU_RATE * (strike.diff !== 'normal' ? 1.5 : 1) * (1 + 0.5 * perkN('lucky')); } // share of bricks with a power-up (Easy x1.5, Lucky +50% each)
+function puRate() { return CONFIG.STRIKE_PU_RATE * (strikeEasy() ? 1.5 : 1) * (1 + 0.5 * perkN('lucky')) * (dailyMod() === 'rain' ? 3 : 1); } // share of bricks with a power-up (Easy x1.5, Lucky +50% each)
 function serveMul() { return Math.pow(0.85, perkN('slow')); }                 // Slow Start
 function coinMul() { return 1 + 0.5 * perkN('coins'); }                       // Coin Magnet
 function streakMul() { return strike.extrasOff ? 1 : 1 + 0.1 * Math.min(strike.streak, 10); } // x1.0 .. x2.0
@@ -3096,7 +3118,7 @@ function scorePts(p) { return Math.round(p * streakMul()); }
 function availablePerks() { return PERKS.filter((id) => perkN(id) < PERK_MAX); }
 function openPerkOffer(now) { // the run stops: 3 different perks that are not maxed yet, as cards
   const pool = availablePerks(); if (!pool.length || strike.over) return false;
-  strike.perkOffer = shuffled(pool, Math.random).slice(0, 3); strike.perkOfferAt = now;
+  strike.perkOffer = shuffled(pool, () => strikeRand('perks')).slice(0, 3); strike.perkOfferAt = now;
   const ui = strike.ui; ui.perkCards = null; ui.perkHover = -1; ui.perkDwell = null; ui.perkTimer = 1;
   if (ui.levelBanner && ui.levelBanner.up) ui.levelBanner.held = true; // 'Level 3 / Clear 7 walls' slides in once the pick is made
   hideHint(); sfx('cards'); return true; // (the hint toast would sit over the bottom card on a phone)
@@ -3132,7 +3154,7 @@ function sparkChip(now) { // Spark Trail: every return zaps a random brick (one 
   const sc = strike.ball ? ballScreen(strike.ball) : { x: W / 2, y: H - 40 }; // the bolt starts at the ball just hit
   for (let i = 0; i < n && w.left > 1; i++) {
     const live = w.bricks.filter((k) => k.alive && !k.tnt); if (!live.length) return;
-    const k = live[Math.floor(Math.random() * live.length)], c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z);
+    const k = live[Math.floor(strikeRand('spark') * live.length)], c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z);
     k.hp--; if (w.kind === 'steel') k.dent = (k.dent || 0) + 1;
     if (k.hp <= 0) {
       k.alive = false; w.left--; spawnDebris(w, k, { x: c.x, y: c.y }, 'soft');
@@ -3169,7 +3191,7 @@ function spawnCapsule(kind, z, x, y) { // the capsule pops out of a broken brick
   kind = PU_KINDS.includes(kind) ? kind : puKind();
   if (z === undefined) z = strike.walls.length ? strike.walls[0].z : wallSlotZ(0);
   const { L, R, T, B } = corridor(), r = ballR() * 0.6, clamp = (v, a, c) => Math.max(a, Math.min(c, v));
-  const c = { kind, x: x === undefined ? (Math.random() - 0.5) * (R - L) * 0.4 : x, y: y === undefined ? (Math.random() - 0.5) * (B - T) * 0.4 : y, z, born: performance.now(), phase: Math.random() * TAU, life: 1, missed: false, caught: false };
+  const c = { kind, x: x === undefined ? (strikeRand('pu') - 0.5) * (R - L) * 0.4 : x, y: y === undefined ? (strikeRand('pu') - 0.5) * (B - T) * 0.4 : y, z, born: performance.now(), phase: Math.random() * TAU, life: 1, missed: false, caught: false };
   c.tx = clamp(c.x * 0.7, L + r, R - r); c.ty = clamp(c.y * 0.7, T + r, B - r); c.x0 = c.x; c.y0 = c.y; c.z0 = Math.max(1, z);
   strike.capsules.push(c); return c;
 }
@@ -3305,7 +3327,7 @@ function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballR(), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
   b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
-  b.tx = clamp(b.x + (Math.random() - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (Math.random() - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
+  b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25, (L + r) * 0.75, (R - r) * 0.75); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25, (T + r) * 0.6, (B - r) * 0.6);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
   b.speed = strike.pace;
 }
@@ -3338,7 +3360,7 @@ function spawnBoss(n, now) { // boss number n (default the next): hp = 12 + 4n o
   strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(Math.max(Z, b.z + CONFIG.STRIKE_WALL_GAP) + i * CONFIG.STRIKE_WALL_GAP); // the queue waits behind it, out of view
   return b;
 }
-function bossRoar(b, now) { b.roarAt = now; b.nextRoar = now + 3500 + Math.random() * 2500; sfx('roar'); shakeScreen(3); }
+function bossRoar(b, now) { b.roarAt = now; b.nextRoar = now + 3500 + strikeRand('boss') * 2500; sfx('roar'); shakeScreen(3); }
 function bossTick(now, dt) {
   const b = strike.boss; if (!b) return;
   const Z = CONFIG.STRIKE_Z_FAR, near = CONFIG.STRIKE_HIT_Z * 3; b.pz = b.z;
@@ -3405,11 +3427,11 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
 }
 function strikeTarget(b) { // where the incoming ball drifts to: a random spot inside the corridor, so the player has to move
   const { L, R, T, B } = corridor(), r = ballR();
-  b.tx = (L + r) * 0.75 + Math.random() * ((R - L) - 2 * r) * 0.75; b.ty = (T + r) * 0.6 + Math.random() * ((B - T) - 2 * r) * 0.6;
+  b.tx = (L + r) * 0.75 + strikeRand('serve') * ((R - L) - 2 * r) * 0.75; b.ty = (T + r) * 0.6 + strikeRand('serve') * ((B - T) - 2 * r) * 0.6;
 }
 function serveBall(now) {
   const { L, R, T, B } = corridor();
-  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (Math.random() - 0.5) * (R - L) * 0.3, y0: (Math.random() - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now, speed: strike.pace * serveMul(), trail: [], fire: false }; // Slow Start: served slower
+  const b = { x: 0, y: 0, z: CONFIG.STRIKE_Z_FAR, dir: 1, x0: (strikeRand('serve') - 0.5) * (R - L) * 0.3, y0: (strikeRand('serve') - 0.5) * (B - T) * 0.3, tx: 0, ty: 0, vx: 0, vy: 0, spin: 0, rot: 0, super: false, tier: '', combo: 0, born: now, speed: strike.pace * serveMul(), trail: [], fire: false }; // Slow Start: served slower
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
   strike.balls.length = 0; strike.balls.push(b); strike.serves++; strike.cued = false; strike.ui.cue = null;
   if (powerOn('multi')) addClones();
@@ -3458,6 +3480,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
   roundDone(strike.score);
+  if (daily.on) dailyDone(strike.score, strike.level);
 }
 function strikeTick(now, dt) {
   tickFloaters(strike.floaters, dt); debrisTick(dt);
@@ -3514,7 +3537,7 @@ function ballTick(b, now, dt, fire, mul) {
     if (bs && b.dir < 0 && z0 < bs.pz && b.z >= bs.z) { bossHit(b.fire ? 'super' : b.tier || 'soft', b, now); bounceOffWall(b, { z: bs.z }); }
     if (b.dir < 0 && b.z >= Z) {
       b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
-      if (b === strike.balls[0]) strike.pace = Math.min(sd('STRIKE_MAX_SPEED'), strike.pace * sd('STRIKE_PACE_GROW')); // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
+      if (b === strike.balls[0]) strike.pace = Math.min(sd('STRIKE_MAX_SPEED') * paceMul(), strike.pace * sd('STRIKE_PACE_GROW')); // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
       b.speed = strike.pace;
       const sc = ballScreen(b); sfx('bounce'); ring(sc.x, sc.y, 'rgba(241,233,218,0.6)', sc.r * 2.5, 300, 2);
     }
@@ -3766,7 +3789,7 @@ function heartSprite(on) {
 }
 function drawStrikeHand(now) {
   if (!cursor.present) return;
-  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), hs = sd('STRIKE_HAND_SCALE'), sx = hs * (1 + 0.3 * k), sy = hs * (1 - 0.25 * k); // squash on a hit; bigger on Easy
+  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), hs = sd('STRIKE_HAND_SCALE') * (dailyMod() === 'bighands' ? 1.4 : 1), sx = hs * (1 + 0.3 * k), sy = hs * (1 - 0.25 * k); // squash on a hit; bigger on Easy
   ctx.setTransform(DPR * sx, 0, 0, DPR * sy, (cursor.x + view.x) * DPR, (cursor.y + view.y) * DPR);
   ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
   resetView();
@@ -4136,12 +4159,13 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     blit(bigTextSprite(t('levelUp'), 44), W / 2, y, 0, 1 + 0.3 * Math.sin(Math.PI * pop), a);
     blit(textSprite('+' + U.bonus, 22, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, y + 44 - 10 * uk, 0, 1, a);
   }
-  for (const key of ['levelBanner', 'bossBanner']) {
+  for (const key of ['dailyBanner', 'levelBanner', 'bossBanner']) {
     const Bn = ui[key]; if (!Bn || Bn.held || now < Bn.t) continue; // (held while the perk cards are up)
-    const k = (now - Bn.t) / 1600; if (k >= 1) { ui[key] = null; continue; }
-    const [off, a] = bannerSlide(k), x = W / 2 + off, boss = key === 'bossBanner';
-    const main = bigTextSprite(boss ? t('bossDown') : t('levelN', { n: Bn.level }), 40), sub = textSprite(boss ? '+' + Bn.bonus : t('levelGoal', { n: Bn.goal }), 18, boss ? '#ffd77a' : '#f1e9da', null, 500);
-    const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104;
+    const k = (now - Bn.t) / (Bn.ms || 1600); if (k >= 1) { ui[key] = null; continue; }
+    const [off, a] = bannerSlide(k), x = W / 2 + off, boss = key === 'bossBanner', dly = key === 'dailyBanner';
+    const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : '#f1e9da', null, 500);
+    const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
+    if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.min(W - 24, d.tw + 40); ui.dailyBannerBox = { x: x - pw / 2, y: y - ph / 2, w: pw, h: ph + 34 }; blit(glassSprite(Math.max(pw, dw), ph + 34, 20), x - Math.max(pw, dw) / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
     blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - ph / 2 - 1, 0, 1, a);
     if (boss) blit(burstSprite(), x, y, now * 0.0012, 0.9, a * 0.7);
     blit(main, x, y - 14, 0, 1 + (boss ? 0.04 * Math.sin(k * Math.PI * 6) * (1 - k) : 0), a);
