@@ -1,5 +1,5 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Strike's surprise guests: every 4-6 serves (a serve = a launch from the far end: a fresh serve or the far-wall rebound) a flying cow or
+# Strike's surprise guests: every 4-6 serves from level 2 (a serve = a launch from the far end: a fresh serve or the far-wall rebound) a flying cow or
 # monkey comes instead of the ball. x1.35 radius, x0.9 speed, tumbling; slapped it screams back (bubble, sound, +5 coins, track('guest'))
 # and smashes like a Big ball (never softer than medium); missed it boings off the screen (no life lost). Seeded on the 'guest' channel.
 # Timing-independent: the balls are parked (speed 0) or driven by direct calls; every wait is a condition.
@@ -161,12 +161,12 @@ async def main():
         # ===== daily: the same guests on the same serves on two runs of the same date =====
         ctx, page, errs = await new_page(b); await play_strike(page); await page.mouse.move(1240, 780)
         SEQ = f"""(() => {{ const s = {S}; s.extrasOff = false; s.guestEvery = null; __grasp.startDaily(); const out = [], early = [];
-          for (let i = 0; i < 20; i++) {{ s.serve(); if (s.ball.guest) early.push(s.pitches); }}  // levels 1-3: no flying animals
-          s.setLevel(4); const p0 = s.pitches;
+          for (let i = 0; i < 20; i++) {{ s.serve(); if (s.ball.guest) early.push(s.pitches); }}  // level 1: no flying animals
+          s.setLevel(2); const p0 = s.pitches;
           for (let i = 0; i < 100; i++) {{ s.serve(); if (s.ball.guest) out.push([s.pitches - p0, s.ball.guest]); }} s.extrasOff = true; {FREEZE}; s.lives = 40; return {{ out, early, on: __grasp.daily.on }}; }})()"""
         d1 = await page.evaluate(SEQ); d2 = await page.evaluate(SEQ)
         gaps = [b2[0] - a2[0] for a2, b2 in zip(d1['out'], d1['out'][1:])]
-        check('daily: no guests on level 1; from level 4 a guest every 8-12 serves, both kinds, seeded', d1['on'] and not d1['early'] and len(d1['out']) >= 6 and 8 <= d1['out'][0][0] <= 12 and all(8 <= x <= 12 for x in gaps) and {'cow', 'monkey'} <= {k for _, k in d1['out']}, d1)
+        check('daily: no guests on level 1; from level 2 a guest every 4-6 serves, both kinds, seeded', d1['on'] and not d1['early'] and len(d1['out']) >= 6 and 4 <= d1['out'][0][0] <= 6 and all(4 <= x <= 6 for x in gaps) and {'cow', 'monkey'} <= {k for _, k in d1['out']}, d1)
         check('daily: the same guest serves (and kinds) on a second run of the same date', d1['out'] == d2['out'], [d1['out'], d2['out']])
         check('no page errors (daily)', not errs, errs)
         await ctx.close()

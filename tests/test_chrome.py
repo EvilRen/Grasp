@@ -1,7 +1,11 @@
 import asyncio, subprocess, time, sys
 from playwright.async_api import async_playwright
 # In-game chrome: icon toolbar, hint toast, no-hand card, camera preview, and every mode's top UI clearing the top row.
-srv = subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
+import socket as _sk
+class _NoSrv:
+    def terminate(self): pass
+if _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
+else: srv = subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
 MATTER = open('tests/vendor/matter.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
 async def routes(page):
     async def h(route):

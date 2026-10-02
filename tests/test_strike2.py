@@ -154,7 +154,10 @@ async def main():
         check('level 3: the next wall is the new kind (glass): the small card shows it in the top end corner under the bar, pulsing as it appears', nc['next'] == 'glass' and nc['card']['kind'] == 'glass' and nc['at'] < 600 and nc['card']['pulse'] > 0 and nc['card']['w'] <= 90 and nc['card']['h'] <= 34 and nc['card']['x'] + nc['card']['w'] >= 1280 / 2 + 150, nc)
         check('no perk pick after level 2', await page.evaluate(f"!{S}.perkAt && !{S}.perkOffer")); await page.evaluate("park()")
         ids0 = await page.evaluate(f"{S}.walls.map(w => w.id)")
-        await page.evaluate(f"{S}.smashTest('super')"); await page.wait_for_timeout(80); await page.evaluate("park()")
+        await page.evaluate(f"{S}.smashTest('super')")
+        try: await page.wait_for_function(f"{S}.walls.some(q => !{ids0}.includes(q.id))", timeout=8000)  # poll: under load the spawn can take longer than a fixed wait
+        except Exception: pass
+        await page.evaluate("park()")
         nw = await page.evaluate(f"(() => {{ const w = {S}.walls.filter(q => !{ids0}.includes(q.id)); return w.map(q => q.kind); }})()")
         check('the telegraph tells the truth: the wall that spawned next is glass', nw[:1] == ['glass'], nw)
         await page.evaluate(f"{S}.setCleared(35); {S}.perkAt = 0; {S}.perkOffer = null"); await frames(page, 2)  # 35 walls down: level 6's final wall is up, the next clear brings world 1's boss

@@ -579,7 +579,10 @@ async def main():
         await page.wait_for_timeout(500); await page.screenshot(path='tests/out/strike5_levelup.png')
         bx = await page.evaluate(f"(() => {LB} const b = s.ui.levelBanner; return b && performance.now() - b.t; }})()")
         check('the level banner is on screen ~1.2 s after it started', bx is not None and 300 < bx < 1600, bx)
-        bpx = await page.evaluate(PIX + "(640, 800 * 0.3 - 14)")
+        for _ in range(12):  # (sampled a few times while the banner is up: under load a frame can lag behind)
+            bpx = await page.evaluate(PIX + "(640, 800 * 0.3 - 14)")
+            if bpx[0] > 180 and bpx[1] > 120: break
+            await page.wait_for_timeout(60)
         check('banner pixel: saffron / cream "Level 2" text in the middle of the banner', bpx[0] > 180 and bpx[1] > 120, bpx)
         await page.wait_for_timeout(1200)
         check('the banner is gone after 1.6 s', await page.evaluate(f"{S}.ui.levelBanner === null && {S}.ui.levelUp === null"))

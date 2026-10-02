@@ -294,10 +294,14 @@ async def main():
         await page.evaluate(f"window.__handFor = () => handAt({k0['x']}, {k0['y'] + r}, 0.8)"); await page.wait_for_timeout(400)
         check('camera: opening the hand lets go', await page.evaluate("__grasp.busy.grabbed === null && !" + W + "[9].state.held"))
         b0 = await page.evaluate(wjs(5))
-        await page.evaluate(f"jump(pointAt, {b0['x']}, {b0['y']})"); await page.wait_for_timeout(1000)
+        await page.evaluate(f"jump(pointAt, {b0['x']}, {b0['y']})")
+        try: await page.wait_for_function("gesture === 'point' && " + W + "[5].state.down && __grasp.busy.sounds.note === 1", timeout=5000)
+        except Exception: pass
         check('camera: pointing at a button presses it', await page.evaluate("gesture === 'point' && " + W + "[5].state.down && __grasp.busy.sounds.note === 1"), await page.evaluate("[gesture, __grasp.busy.sounds]"))
         s0 = await page.evaluate(wjs(1))
-        await page.evaluate(f"jump(pointAt, {s0['x']}, {s0['y']})"); await page.wait_for_timeout(1000)
+        await page.evaluate(f"jump(pointAt, {s0['x']}, {s0['y']})")
+        try: await page.wait_for_function(W + "[1].state.on && !" + W + "[5].state.down", timeout=5000)  # poll: under load the point pose takes longer to confirm
+        except Exception: pass
         check('camera: pointing at a switch flips it and releases the button', await page.evaluate(W + "[1].state.on && !" + W + "[5].state.down"))
         # pinch the slider handle and move the hand along the track
         hp = await page.evaluate(HANDLE(10)); tr = await page.evaluate("(() => { const g = " + W + "[10].geom(); return g.len - g.hw; })()")

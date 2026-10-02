@@ -46,3 +46,33 @@ roguelite meta-progression as in Hades and Vampire Survivors):
 - *Worlds:* 5 worlds × 6 levels, a boss closes each world, a world map shows progress, and
   beating a boss unlocks the next world as a checkpoint start.
 - *Rewards:* a treasure chest after each boss with a random prize (coins, a skin, a rare perk).
+
+## v3: a ladder to climb, and a reason to come back every day (after play-testing)
+
+**Feedback:** "This is still not the game I want to come back to, to climb the ladder of levels and play every day."
+Idea from the player: *all the walls break, and when they are broken you move on to another world.*
+
+**Why the current Strike does not pull you back**
+1. *Progress is lost.* A run ends when the lives run out and starts over (at best at a world checkpoint).
+   The climb is invisible: nothing on screen says "you are on step 17 of 40".
+2. *No clear finish line in a session.* Walls keep coming. A level ends after N walls, but you never "beat" a stage you can point at.
+3. *No mastery loop.* There is no score per stage to improve, so there is no reason to replay a stage.
+4. *Worlds change too quietly.* A new world is a palette change and a banner, not a trip somewhere new.
+5. *The daily reasons are weak.* The daily challenge and missions are there, but there is no gift for showing up and no streak to protect.
+
+**What saga and daily-habit games do** (Candy Crush, Angry Birds, Cut the Rope, Duolingo, Clash Royale chests):
+- *A saga map.* There is a winding path of numbered stages and you always see the next one. Progress is never lost: you only replay the stage you failed.
+- *Short, finishable stages* with a clear goal ("break every wall") and an instant retry.
+- *1–3 stars per stage.* Stars feed a meta goal (star chests) and pull you back to perfect old stages.
+- *Worlds as places.* Each world has its own look and a travel moment between worlds, plus a boss stage at the end of each world.
+- *Daily habit.* There is a 7-day gift calendar with a big day-7 prize and a streak to protect.
+  A small "play 3 stages today" chest gives every visit a goal.
+  The end card promises tomorrow's gift: "come back tomorrow".
+
+**Applied: Strike Adventure**
+- *Stages:* 5 worlds × 8 stages. Each stage is a fixed set of walls (4 at first, up to about 10), and you must break **all** of them.
+  Clearing the last wall ends the stage; the boss stage closes the world.
+- *Stars:* 3 for no lives lost, 2 for one lost, 1 for more. A fail offers "Try again" at once, and the map keeps every star.
+- *World travel:* when a world's boss falls, the far wall bursts into a portal. The corridor flies through it and morphs into the next world's look, with a banner.
+- *Map:* the Strike tile opens a winding map with the current stage pulsing and stars under each node. Star chests sit on the path. "Endless" keeps the old run.
+- *Daily:* a 7-day gift calendar on the first open of the day, a streak flame, and a "3 stages today" chest.

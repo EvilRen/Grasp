@@ -67,7 +67,8 @@ async def main():
         # ---- a tap serves in mouse mode ----
         await page.evaluate(f"{S}.serveReady()"); await page.wait_for_timeout(450)
         sc = await page.evaluate(f"{S}.ballScreen()")
-        await page.mouse.click(200, 300); await frames(page, 1)
+        await page.evaluate(f"{S}.serveReady()"); await page.mouse.move(200, 300); await frames(page, 3)  # (park the mouse first: a jump to it on a slow frame reads as a SUPER swing)
+        await page.evaluate(f"{S}.serveReady()"); await page.wait_for_timeout(450); await page.mouse.click(200, 300); await frames(page, 1)
         tp = await page.evaluate(f"({{ waiting: {S}.waiting, last: {S}.lastServe, dir: {S}.ball.dir }})")
         check('a tap / click serves the waiting ball in mouse mode (medium)', not tp['waiting'] and tp['dir'] == -1 and tp['last']['tier'] == 'medium', tp)
         # ---- after a miss: waiting again ----

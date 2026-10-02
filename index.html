@@ -3531,7 +3531,7 @@ const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
 const STRIKE_KINDS = ['brick', 'glass', 'steel', 'holed', 'moving', 'tnt']; // wall kinds: level 1 is brick only; each unlocks at its KIND_AT level (the first wall of that level is it), then a weighted random mix
 // The run arc: levels 1-2 are the pure core (brick walls, the ball, nothing else); then one visible new thing per level: L3 glass walls, L4 steel,
 // L5 curving balls, L6 holed walls, L7 moving walls, L8 TNT, L9 S-wobble + a faster boss
-const KIND_AT = { brick: 1, glass: 3, steel: 4, holed: 6, moving: 7, tnt: 8 }, STRIKE_WOBBLE_AT = 9, STRIKE_BOSS_FAST = 1.25, CURVE_AT = 5, PU_FROM = 3, GUEST_FROM = 4, RELEASE_MS = 2500;
+const KIND_AT = { brick: 1, glass: 3, steel: 4, holed: 6, moving: 7, tnt: 8 }, STRIKE_WOBBLE_AT = 9, STRIKE_BOSS_FAST = 1.25, CURVE_AT = 5, PU_FROM = 3, GUEST_FROM = 2, RELEASE_MS = 2500;
 function kindsAt(L) { return STRIKE_KINDS.filter((k) => KIND_AT[k] <= L); }           // the wall kinds the run arc allows by level L
 function kindsOpen(L) { return kindsAt(L).filter((k) => roadOpen(k)); }               // ... and of those, the ones this player has unlocked on the road (all of them in the daily)
 function kindNewAt(L) { const k = L > 1 ? STRIKE_KINDS.find((q) => KIND_AT[q] === L) || null : null; return k && roadOpen(k) ? k : null; } // the kind level L brings in (null: none, or not unlocked yet)
@@ -4487,17 +4487,17 @@ function strikeMiss(b, now) { // a ball flew past: gone; with other balls still 
 }
 /* --- surprise guests: a flying cow or monkey instead of the ball every 4-6 serves --- */
 function guestPool() { return GUEST_KINDS.filter((k) => roadOpen(k)); } // the flying animals this player has unlocked on the road (both in the daily)
-function guestsOn() { const e = strike._guestEvery; return e === 0 ? false : e > 0 ? true : !strike.extrasOff && strike.level >= GUEST_FROM && guestPool().length > 0; } // from level 4, once one is unlocked (a test override n > 0 forces them)
+function guestsOn() { const e = strike._guestEvery; return e === 0 ? false : e > 0 ? true : !strike.extrasOff && strike.level >= GUEST_FROM && guestPool().length > 0; } // from level 2, once one is unlocked (a test override n > 0 forces them)
 function guestRoll() { // pre-roll the next guest: on which serve (4-6 from now, or the test override) and which animal (never three of a kind in a row)
   if (!guestsOn()) { strike.guestQ = null; return; }
-  const e = strike._guestEvery, n = e > 0 ? e : 8 + Math.floor(strikeRand('guest') * 5), h = strike.guestKinds; // every 8-12 serves
+  const e = strike._guestEvery, n = e > 0 ? e : 4 + Math.floor(strikeRand('guest') * 3), h = strike.guestKinds; // every 4-6 serves
   let kind = strikeRand('guest') < 0.5 ? 'cow' : 'monkey'; const gp = guestPool();
   if (gp.length === 1) kind = gp[0]; // only one unlocked: always that one
   else if (h.length >= 2 && h[h.length - 1] === kind && h[h.length - 2] === kind) kind = kind === 'cow' ? 'monkey' : 'cow';
   strike.guestQ = { at: strike.pitches + n, kind };
 }
 function guestPitch(b, now) { // every launch from the far end is a serve for the guests; on the scheduled one this ball becomes the guest
-  if (!strike.guestQ && guestsOn()) guestRoll(); else if (strike.guestQ && !guestsOn()) strike.guestQ = null; // (guests just switched on / off: from level 4 the first one comes 8-12 serves in)
+  if (!strike.guestQ && guestsOn()) guestRoll(); else if (strike.guestQ && !guestsOn()) strike.guestQ = null; // (guests just switched on / off: from level 2 the first one comes 4-6 serves in)
   strike.pitches++;
   const q = strike.guestQ;
   if (q && guestsOn() && strike.pitches >= q.at) { strike.guestKinds.push(q.kind); makeGuest(b, q.kind, now); guestRoll(); }
@@ -6714,9 +6714,9 @@ const ITEMS = [ // cost: coins; level: free once the player reaches it; the firs
    road has unlocked (the daily ignores the road: everyone gets the full seeded run, with 'Preview!' on what is still locked). A level-up queues the
    NEW UNLOCKED card (profile.road.cards) and marks the thing fresh (profile.road.fresh) until its first appearance in a run gets the spotlight. */
 const ROAD = [
-  { id: 'brick', lv: 1 }, { id: 'glass', lv: 2 }, { id: 'pu_big', lv: 3, pu: 'big' }, { id: 'perks1', lv: 4, perks: ['wide', 'skin', 'slow'] }, { id: 'steel', lv: 5 },
-  { id: 'pu_slow', lv: 6, pu: 'slow' }, { id: 'cow', lv: 7, guest: 'cow' }, { id: 'curve', lv: 8 }, { id: 'pu_multi', lv: 9, pu: 'multi' }, { id: 'perks2', lv: 10, perks: ['heavy', 'magnet', 'lucky'] },
-  { id: 'holed', lv: 11 }, { id: 'pu_fire', lv: 12, pu: 'fire' }, { id: 'monkey', lv: 13, guest: 'monkey' }, { id: 'moving', lv: 14 }, { id: 'perks3', lv: 15, perks: ['spark', 'coins'] },
+  { id: 'brick', lv: 1 }, { id: 'cow', lv: 1, guest: 'cow' }, { id: 'glass', lv: 2 }, { id: 'pu_big', lv: 3, pu: 'big' }, { id: 'perks1', lv: 4, perks: ['wide', 'skin', 'slow'] }, { id: 'steel', lv: 5 },
+  { id: 'pu_slow', lv: 6, pu: 'slow' }, { id: 'monkey', lv: 7, guest: 'monkey' }, { id: 'curve', lv: 8 }, { id: 'pu_multi', lv: 9, pu: 'multi' }, { id: 'perks2', lv: 10, perks: ['heavy', 'magnet', 'lucky'] },
+  { id: 'holed', lv: 11 }, { id: 'pu_fire', lv: 12, pu: 'fire' }, { id: 'moving', lv: 14 }, { id: 'perks3', lv: 15, perks: ['spark', 'coins'] },
   { id: 'tnt', lv: 16 }, { id: 'pu_life', lv: 17, pu: 'life' }, { id: 'wobble', lv: 18 }, { id: 'w5set', lv: 19, items: ['ball_lava', 'trail_lava'] }, { id: 'legend', lv: 20, items: ['hand_legend'] },
 ];
 const ROAD_BY = Object.fromEntries(ROAD.map((r) => [r.id, r])), PERK_ROAD = {}; for (const r of ROAD) for (const id of r.perks || []) PERK_ROAD[id] = r.id;
@@ -6734,7 +6734,7 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
 ];
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
-  return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
+  return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [] }; // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game

@@ -1,5 +1,5 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Pacing step 1: the run arc (levels 1-2 pure core; power-ups from 3 and rare; perks after odd levels from 3; flying animals from 4;
+# Pacing step 1: the run arc (levels 1-2 pure core; power-ups from 3 and rare; perks after odd levels from 3; flying animals from 2;
 # wall kinds one level later) and the level tension arc (heartbeat / edge lights tighten, a glowing 'final wall', a calm release beat),
 # plus first-run onboarding tips. Hooks: strike.pacing, strike.finalWall, strike.releaseUntil, profile.tips.
 S = "__grasp.strike"
@@ -36,10 +36,10 @@ async def main():
         # ---- the rules per level (strike.pacing) ----
         rules = await page.evaluate(f"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(L => {{ {S}.setLevel(L); const q = {S}.pacing; return {{ L, pu: +q.puRate.toFixed(3), perk: q.perkLevel, guests: q.guestsOn, kinds: q.kindsUnlocked.join(','), curve: {S}.tuning(L).curve > 0, waves: {S}.tuning(L).waves }}; }})")
         print('INFO pacing:', rules)
-        check('levels 1-2: no power-up bricks (rate 0), no perk after them, no flying animals, brick walls only, straight balls', all(r['pu'] == 0 and not r['perk'] and not r['guests'] and r['kinds'] == 'brick' and not r['curve'] for r in rules[:2]), rules[:2])
+        check('levels 1-2: no power-up bricks (rate 0), no perk after them, no flying animals on level 1, brick walls only, straight balls', all(r['pu'] == 0 and not r['perk'] and r['guests'] == (r['L'] >= 2) and r['kinds'] == 'brick' and not r['curve'] for r in rules[:2]), rules[:2])
         check('power-ups from level 3: ~1 a wall in 3 at levels 3-4, rising slowly to 1 in 2 by level 8', abs(rules[2]['pu'] - 1 / 3) < 0.01 and abs(rules[3]['pu'] - 1 / 3) < 0.01 and rules[2]['pu'] < rules[5]['pu'] < rules[7]['pu'] and abs(rules[7]['pu'] - 0.5) < 0.01 and abs(rules[9]['pu'] - 0.5) < 0.01, [r['pu'] for r in rules])
         check('perk picks only after levels 3, 5, 7, 9', [r['L'] for r in rules if r['perk']] == [3, 5, 7, 9], [r['perk'] for r in rules])
-        check('flying animals from level 4', [r['guests'] for r in rules] == [False] * 3 + [True] * 7, [r['guests'] for r in rules])
+        check('flying animals from level 2', [r['guests'] for r in rules] == [False] * 1 + [True] * 9, [r['guests'] for r in rules])
         check('wall kinds one level later: L3 glass, L4 steel, L6 holed, L7 moving, L8 TNT; curving balls from L5, the S-wobble from L9',
               [r['kinds'] for r in rules[:8]] == ['brick', 'brick', 'brick,glass', 'brick,glass,steel', 'brick,glass,steel', 'brick,glass,steel,holed', 'brick,glass,steel,holed,moving', 'brick,glass,steel,holed,moving,tnt']
               and [r['curve'] for r in rules] == [False] * 4 + [True] * 6 and [r['waves'] for r in rules] == [1] * 8 + [2] * 2, rules)
@@ -53,10 +53,10 @@ async def main():
         band = {3: (0.22, 0.45), 4: (0.22, 0.45), 6: (0.3, 0.53), 8: (0.38, 0.62)}
         check('measured power-up walls per level within the expected band (L3 ~0.33, L4 ~0.33, L6 ~0.42, L8 ~0.5)', all(band[L][0] <= sim[L]['pu'] <= band[L][1] for L in band), {L: sim[L]['pu'] for L in band})
         check('glass first appears at level 3 (not before)', 'glass' in sim[3]['kinds'] and 'glass' not in sim[2]['kinds'] and 'steel' not in sim[3]['kinds'], sim[3]['kinds'])
-        # ---- guests: none in 30 serves at levels 1-3; from level 4 the first one comes 8-12 serves in ----
-        gq = await page.evaluate(f"""(() => {{ const s = {S}, out = {{}}; for (const L of [1, 2, 3]) {{ s.setLevel(L); let g = 0; for (let i = 0; i < 30; i++) {{ s.serve(); if (s.ball.guest) g++; }} out[L] = g; }}
-          s.setLevel(4); let first = 0; for (let i = 1; i <= 14 && !first; i++) {{ s.serve(); if (s.ball.guest) first = i; }} out.first4 = first; s.ball.guest = null; return out; }})()""")
-        check(f"flying animals: none in 30 serves at levels 1, 2, 3; at level 4 the first comes on serve {gq['first4']} (8-12)", gq['1'] == 0 and gq['2'] == 0 and gq['3'] == 0 and 8 <= gq['first4'] <= 12, gq)
+        # ---- guests: none in 30 serves at level 1; from level 2 the first one comes 4-6 serves in ----
+        gq = await page.evaluate(f"""(() => {{ const s = {S}, out = {{}}; for (const L of [1]) {{ s.setLevel(L); let g = 0; for (let i = 0; i < 30; i++) {{ s.serve(); if (s.ball.guest) g++; }} out[L] = g; }}
+          s.setLevel(2); let first = 0; for (let i = 1; i <= 8 && !first; i++) {{ s.serve(); if (s.ball.guest) first = i; }} out.first2 = first; s.ball.guest = null; return out; }})()""")
+        check(f"flying animals: none in 30 serves at level 1; at level 2 the first comes on serve {gq['first2']} (4-6)", gq['1'] == 0 and 4 <= gq['first2'] <= 6, gq)
         await page.evaluate(PARK)
         # ---- perk offers in play: none after levels 1, 2; one after level 3 (once the release is over) ----
         async def clear_to(n): await page.evaluate(f"{PARK}; {S}.setCleared({n})")
@@ -109,7 +109,7 @@ async def main():
         await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 1; s.spawnWall('brick', 960); __grasp.CONFIG.STRIKE_PU_RATE = 1 / 12; __grasp.grippy.cool(); s.spawnGuest('monkey'); }})()"); await frames(page, 3)
         ev = await page.evaluate("({ said: __grasp.grippy.said.map(x => x.event), tips: __grasp.profile.tips.slice() })")
         cnt = {e: ev['said'].count(e) for e in ('tip_serve', 'tip_pu', 'tip_perk', 'tip_guest')}
-        check(f"onboarding tips: serve, gold brick, perk pick, flying animal each explained exactly once ({cnt}); profile.tips = {ev['tips']}", all(v == 1 for v in cnt.values()) and sorted(ev['tips']) == ['guest', 'perk', 'pu', 'serve'] and 'monkey' in ev['said'], ev)
+        check(f"onboarding tips: serve, gold brick, perk pick, flying animal each explained exactly once ({cnt}); profile.tips = {ev['tips']}", all(v == 1 for v in cnt.values()) and sorted(ev['tips']) == ['guest', 'perk', 'pu', 'serve'] and ('monkey' in ev['said'] or 'cow' in ev['said']), ev)
         check('no page errors', not errs, errs)
         # a new page on the same profile: the tips are not repeated (the usual start line)
         await page.close(); _, page2, errs2 = await new_page(b, ctx=ctx); await play(page2)

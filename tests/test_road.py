@@ -11,8 +11,8 @@ FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))
 PARK = f"(() => {{ const s = {S}; if (!s.ball) s.serve(); s.setBallZ(2300, 30, 30); s.ball.speed = 0; s.lives = 40; }})()"
 PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 TOASTS = "[...document.querySelectorAll('#metaToast .mt .tx')].map(e => e.textContent)"
-LADDER = [('brick', 1), ('glass', 2), ('pu_big', 3), ('perks1', 4), ('steel', 5), ('pu_slow', 6), ('cow', 7), ('curve', 8), ('pu_multi', 9), ('perks2', 10),
-          ('holed', 11), ('pu_fire', 12), ('monkey', 13), ('moving', 14), ('perks3', 15), ('tnt', 16), ('pu_life', 17), ('wobble', 18), ('w5set', 19), ('legend', 20)]
+LADDER = [('brick', 1), ('cow', 1), ('glass', 2), ('pu_big', 3), ('perks1', 4), ('steel', 5), ('pu_slow', 6), ('monkey', 7), ('curve', 8), ('pu_multi', 9), ('perks2', 10),
+          ('holed', 11), ('pu_fire', 12), ('moving', 14), ('perks3', 15), ('tnt', 16), ('pu_life', 17), ('wobble', 18), ('w5set', 19), ('legend', 20)]
 # a low-level player's run at a high run level: what the walls, power-up bricks, serves and perk offers bring (many walls simulated)
 GATE_SIM = f"""((plv, L) => {{ const s = {S}; __grasp.setPlayerLevel(plv); s.setLevel(L); const lv0 = s.lives; s.lives = 1; const kinds = {{}}, pus = {{}}, guests = {{}};
   for (let i = 0; i < 300; i++) {{ const w = s.spawnWall(undefined, 9000 + i); kinds[w.kind] = (kinds[w.kind] || 0) + 1; for (const k of w.bricks) if (k.pu) pus[k.pu] = (pus[k.pu] || 0) + 1; s.walls.splice(s.walls.indexOf(w), 1); }}
@@ -48,9 +48,9 @@ async def main():
         # ---- the ladder: one unlock per player level 1..20; setPlayerLevel(n) earns exactly the ones up to n ----
         ctx, page, errs = await new_page(b)
         lad = await page.evaluate("__grasp.road.ladder.map(r => [r.id, r.lv])")
-        check('the road: 20 unlocks over player levels 1-20, in the designed order', [tuple(x) for x in lad] == LADDER, lad)
+        check('the road: 20 unlocks over player levels 1-20 (the cow from the start), in the designed order', [tuple(x) for x in lad] == LADDER, lad)
         fresh = await page.evaluate(f"({{ got: {P}.road.got, level: {P}.level, next: __grasp.road.next.id, nx: $('nextUnlock').textContent }})")
-        check('a fresh profile: level 1 with brick walls + the ball only; next: glass walls (180 XP to go, on the pill)', fresh['got'] == ['brick'] and fresh['level'] == 1 and fresh['next'] == 'glass' and fresh['nx'] == '180 XP to: Glass walls', fresh)
+        check('a fresh profile: level 1 with brick walls + the ball only; next: glass walls (180 XP to go, on the pill)', fresh['got'] == ['brick', 'cow'] and fresh['level'] == 1 and fresh['next'] == 'glass' and fresh['nx'] == '180 XP to: Glass walls', fresh)
         per = {}
         for n in (1, 2, 3, 4, 5, 8, 10, 12, 15, 16, 19, 20):
             per[n] = await page.evaluate(f"(() => {{ __grasp.setPlayerLevel({n}); return {{ got: __grasp.road.ladder.filter(r => __grasp.road.unlocked(r.id)).map(r => r.id), level: {P}.level, xp: {P}.xp, x0: __grasp.xpForLevel({n}), cards: {P}.road.cards.length, fresh: {P}.road.fresh.length, lv: __grasp.levelOf({P}.xp) }}; }})()")
@@ -78,18 +78,18 @@ async def main():
         ctx, page, errs = await new_page(b)
         await play(page); await page.evaluate(PARK)
         g1 = await page.evaluate(GATE_SIM + "(1, 12)")
-        check('a level-1 player at run level 12: 300 walls all brick, no power-up bricks, no flying animals, straight serves, no perk offers', list(g1['kinds']) == ['brick'] and not g1['pus'] and not g1['guests'] and g1['curved'] == 0 and not g1['offers'] and g1['puRate'] == 0 and not g1['guestsOn'], g1)
+        check('a level-1 player at run level 12: 300 walls all brick, no power-up bricks, the cow only, straight serves, no perk offers', list(g1['kinds']) == ['brick'] and not g1['pus'] and list(g1['guests']) == ['cow'] and g1['curved'] == 0 and not g1['offers'] and g1['puRate'] == 0 and g1['guestsOn'], g1)
         g3 = await page.evaluate(GATE_SIM + "(3, 12)")
-        check('a level-3 player at run level 12: only brick + glass walls and the Big ball power-up; no animals, no curves, no perks', set(g3['kinds']) == {'brick', 'glass'} and set(g3['pus']) == {'big'} and not g3['guests'] and g3['curved'] == 0 and not g3['offers'], g3)
+        check('a level-3 player at run level 12: only brick + glass walls and the Big ball power-up; the cow only, no curves, no perks', set(g3['kinds']) == {'brick', 'glass'} and set(g3['pus']) == {'big'} and list(g3['guests']) == ['cow'] and g3['curved'] == 0 and not g3['offers'], g3)
         g6 = await page.evaluate(GATE_SIM + "(3, 6)")
         check('the example: a level-6 run of a level-3 player has only brick + glass walls and Big ball', set(g6['kinds']) == {'brick', 'glass'} and set(g6['pus']) == {'big'}, g6)
         g8 = await page.evaluate(GATE_SIM + "(8, 12)")
-        check('a level-8 player at run level 12: brick / glass / steel walls, Big ball + Slow-mo, the cow only, curving (never wobbling) serves, the first perk pack only',
-              set(g8['kinds']) == {'brick', 'glass', 'steel'} and set(g8['pus']) == {'big', 'slow'} and list(g8['guests']) == ['cow'] and g8['guests']['cow'] >= 12 and g8['curved'] == g8['plain'] and g8['waves'] == 0 and g8['offers'] == ['skin', 'slow', 'wide'], g8)
+        check('a level-8 player at run level 12: brick / glass / steel walls, Big ball + Slow-mo, the cow and the monkey, curving (never wobbling) serves, the first perk pack only',
+              set(g8['kinds']) == {'brick', 'glass', 'steel'} and set(g8['pus']) == {'big', 'slow'} and set(g8['guests']) == {'cow', 'monkey'} and g8['guests']['cow'] >= 12 and g8['curved'] == g8['plain'] and g8['waves'] == 0 and g8['offers'] == ['skin', 'slow', 'wide'], g8)
         g20 = await page.evaluate(GATE_SIM + "(20, 12)")
         check('a level-20 player at run level 12: every wall kind, every power-up, both animals, the S-wobble, every perk', set(g20['kinds']) == {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'} and set(g20['pus']) == {'multi', 'big', 'slow', 'fire', 'life'} and set(g20['guests']) == {'cow', 'monkey'} and g20['waves'] == g20['plain'] and len(g20['offers']) == 8, g20)
-        g20b = await page.evaluate(GATE_SIM + "(20, 2)")
-        check('...but the run arc still holds: at run level 2 even a level-20 player gets brick walls only, no power-ups, no animals', list(g20b['kinds']) == ['brick'] and not g20b['pus'] and not g20b['guests'], g20b)
+        g20b = await page.evaluate(GATE_SIM + "(20, 1)")
+        check('...but the run arc still holds: at run level 1 even a level-20 player gets brick walls only, no power-ups, no animals', list(g20b['kinds']) == ['brick'] and not g20b['pus'] and not g20b['guests'], g20b)
         # in play: completing level 5 as a level-3 player brings no perk pick (none unlocked); the level-up's new kind is skipped when locked
         await page.evaluate(f"__grasp.setPlayerLevel(3); {S}.setLevel(5); {PARK}")
         await page.evaluate(f"{S}.setCleared({S}.cleared + 7)"); await frames(page, 2)
@@ -153,7 +153,7 @@ async def main():
                 rows: [...document.querySelectorAll('#rlist .rrow')].map(li => { const b = li.getBoundingClientRect(), nm = li.querySelector('.nm'), cv = li.querySelector('canvas'), lv = li.querySelector('.lv');
                   return { id: li.dataset.id, st: li.dataset.st, inSheet: b.left >= r.left - 0.5 && b.right <= r.right + 0.5, nmFits: nm.scrollWidth <= nm.clientWidth + 1, lvIn: lv.getBoundingClientRect().right <= b.right + 0.5 && lv.getBoundingClientRect().left >= b.left - 0.5, name: nm.firstChild ? nm.firstChild.textContent : '', lv: lv.textContent, cols: cv ? px(cv) : 0, q: li.querySelector('.q') ? li.querySelector('.q').textContent : null }; }) }; })()""")
             sts = [r['st'] for r in rp['rows']]
-            check(tag + ': the Road panel: levels 1-5 unlocked (in colour), the next 3 (6-8) as silhouettes, the rest hidden', sts == ['got'] * 5 + ['next'] * 3 + ['hide'] * 12, sts)
+            check(tag + ': the Road panel: levels 1-5 unlocked (in colour, the cow too), the next 3 (6-8) as silhouettes, the rest hidden', sts == ['got'] * 6 + ['next'] * 3 + ['hide'] * 11, sts)
             got, nxt, hid = [r for r in rp['rows'] if r['st'] == 'got'], [r for r in rp['rows'] if r['st'] == 'next'], [r for r in rp['rows'] if r['st'] == 'hide']
             check(tag + ': unlocked rows show the art in colour (many colours) and their level; silhouettes are one flat colour (edge rounding aside) with "Lv 6/7/8"; hidden rows are just "?"',
                   all(r['cols'] >= 6 for r in got) and all(1 <= r['cols'] <= 3 for r in nxt) and [r['lv'] for r in nxt] == (['רמה 6', 'רמה 7', 'רמה 8'] if he else ['Lv 6', 'Lv 7', 'Lv 8']) and all(r['q'] == '?' and r['name'] == '???' and r['lv'] == '?' for r in hid), [[r['cols'], r['lv']] for r in got + nxt])
@@ -304,7 +304,7 @@ async def main():
         await page.evaluate(f"{PARK}; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.spots.length = 0; {S}.previewed.clear(); {S}.seenKinds.clear(); {S}.lastSpot = null; {S}.walls.length = 0; {S}.spawnWall('steel')")
         await page.wait_for_function(f"{S}.ui.spot", timeout=3000)
         pv = await page.evaluate(f"({{ last: {S}.lastSpot, ui: {S}.ui.spot, got: {P}.road.got, fresh: {P}.road.fresh }})")
-        check("a locked thing in the daily gets 'Preview! Steel walls' (the profile's road unchanged)", pv['last']['id'] == 'steel' and pv['last']['preview'] and pv['ui']['text'] == 'Preview! Steel walls' and pv['got'] == ['brick'] and pv['fresh'] == [], pv)
+        check("a locked thing in the daily gets 'Preview! Steel walls' (the profile's road unchanged)", pv['last']['id'] == 'steel' and pv['last']['preview'] and pv['ui']['text'] == 'Preview! Steel walls' and pv['got'] == ['brick', 'cow'] and pv['fresh'] == [], pv)
         await page.screenshot(path='tests/out/road_daily_preview.png')
         await page.evaluate(f"{S}.lastSpot = null; {S}.seenKinds.clear(); {S}.walls.length = 0; {S}.spawnWall('steel')"); await frames(page, 2)
         check('...once a run', await page.evaluate(f"{S}.lastSpot") is None)
