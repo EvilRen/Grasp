@@ -24,6 +24,7 @@ html{ scroll-padding-top:env(safe-area-inset-top,0px); }
 html,body{ height:100%; margin:0; overflow:hidden; background:var(--ink); color:var(--bone);
   font-family:Rubik,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
 #stage{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:none; }
+#stage3d{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; } /* Strike's WebGL layer, under the 2D canvas */
 button{ font:inherit; cursor:pointer; border:0; border-radius:12px; }
 button:focus-visible{ outline:3px solid var(--saffron); outline-offset:3px; }
 
@@ -327,6 +328,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 </style>
 </head>
 <body class="home">
+<canvas id="stage3d" hidden aria-hidden="true"></canvas>
 <canvas id="stage" data-i18n-aria="stageAria" aria-label="Physics sandbox"></canvas>
 <video id="cam" playsinline muted autoplay></video>
 <canvas id="preview" hidden data-i18n-aria="previewAria" aria-label="Camera preview with hand landmarks"></canvas><span id="liveDot" hidden aria-hidden="true"></span>
@@ -495,14 +497,14 @@ const CONFIG = {
   STRIKE_SUPER_SPEED: 2.2,    // hand speed (px/ms on a ~950px screen) at contact for a SUPER hit
   STRIKE_MAX_SPEED: 2.2,      // cap on the incoming speed (Normal 2.8)
   STRIKE_PACE_GROW: 1.03,     // the pace grows by this factor per far-wall bounce (Normal 1.05)
-  STRIKE_LIVES: 5,            // (Normal 3)
+  STRIKE_LIVES: 4,            // (Normal 3)
   STRIKE_WALL_GAP: 400,       // depth between the brick walls (the first stands 40% of the way down the corridor; 4 in view)
   STRIKE_MAX_DEBRIS: 60,      // flying brick fragments cap; the oldest go first
   STRIKE_PU_RATE: 1 / 12,     // share of bricks that carry a power-up on walls from level 2 (Easy: x1.5, and at least one per two walls)
   STRIKE_PU_SPEED: 0.45,      // depth units per ms a released capsule flies toward the player
   STRIKE_BOSS_EVERY: 8,       // a boss wall every this many walls cleared (Normal 10)
   STRIKE_BOSS_MS: 40000,      // how long the boss takes to advance from the far end to the near plane (x1/1.6 once angry)
-  STRIKE_BOSS_HP: 0.6,        // boss hit points as a share of the Normal value 12 + 4 x boss number (Normal 1)
+  STRIKE_BOSS_HP: 0.85,       // boss hit points as a share of the Normal value 12 + 4 x boss number, at every level (Normal 1)
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_EVERY: 10, STRIKE_BOSS_HP: 1 };
 function sd(key) { return (strike.diff === 'normal' || daily.on) && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
@@ -543,7 +545,7 @@ const I18N = {
     wk_brick: 'Brick wall', wk_glass: 'Glass wall!', wk_steel: 'Steel wall!', wk_holed: 'Wall with a hole!', wk_moving: 'Moving wall!', wk_tnt: 'TNT wall!',
     pu_multi: 'Multi-ball!', pu_big: 'Big ball!', pu_slow: 'Slow-mo!', pu_fire: 'Fireball!', pu_life: '+1 life!',
     newBest: 'NEW BEST', hits: 'Hits', walls: 'Walls', bestCombo: 'Best combo', playAgainBtn: 'Play again', comboBig: '×{n} COMBO', power: 'Power',
-    levelN: 'Level {n}', levelGoal: 'Clear {n} walls', hd_faster: 'Faster!', hd_tougher: 'Tougher walls!', hd_curve: 'Curving balls!', hd_wobble: 'Wobbly balls!',
+    levelN: 'Level {n}', levelGoal: 'Clear {n} walls', hd_faster: 'Faster!', hd_tougher: 'Tougher walls!', hd_curve: 'Curving balls!', hd_wobble: 'Wobbly balls!', hd_boss: 'Faster boss!',
     nw_glass: 'New: glass walls!', nw_steel: 'New: steel walls!', nw_holed: 'New: walls with holes!', nw_moving: 'New: moving walls!', nw_tnt: 'New: TNT walls!', levelUp: 'Level up!', bossDown: 'Boss down!', wk_boss: 'Boss!', bosses: 'Bosses', levelBest: 'Best level {n}',
     perkTitle: 'Pick a power!', perkSub: 'Tap a card, or point at it and hold',
     pk_wide: 'Wider Hands', pk_heavy: 'Heavy Ball', pk_magnet: 'Sticky Magnet', pk_skin: 'Thick Skin', pk_lucky: 'Lucky', pk_spark: 'Spark Trail', pk_slow: 'Slow Start', pk_coins: 'Coin Magnet',
@@ -632,7 +634,7 @@ const I18N = {
     wk_brick: 'קיר לבנים', wk_glass: 'קיר זכוכית!', wk_steel: 'קיר פלדה!', wk_holed: 'קיר עם חור!', wk_moving: 'קיר נע!', wk_tnt: 'קיר TNT!',
     pu_multi: 'כדורים כפולים!', pu_big: 'כדור ענק!', pu_slow: 'הילוך איטי!', pu_fire: 'כדור אש!', pu_life: 'לב נוסף!',
     newBest: 'שיא חדש', hits: 'פגיעות', walls: 'קירות', bestCombo: 'קומבו שיא', playAgainBtn: 'שחקו שוב', comboBig: 'קומבו ‎×{n}', power: 'עוצמה',
-    levelN: 'שלב {n}', levelGoal: 'נפצו {n} קירות', hd_faster: 'מהר יותר!', hd_tougher: 'קירות קשים יותר!', hd_curve: 'הכדור מתעקל!', hd_wobble: 'הכדור מתפתל!',
+    levelN: 'שלב {n}', levelGoal: 'נפצו {n} קירות', hd_faster: 'מהר יותר!', hd_tougher: 'קירות קשים יותר!', hd_curve: 'הכדור מתעקל!', hd_wobble: 'הכדור מתפתל!', hd_boss: 'הבוס מהיר יותר!',
     nw_glass: 'חדש: קירות זכוכית!', nw_steel: 'חדש: קירות פלדה!', nw_holed: 'חדש: קירות עם חור!', nw_moving: 'חדש: קירות זזים!', nw_tnt: 'חדש: קירות TNT!', levelUp: 'עליתם שלב!', bossDown: 'הבוס הובס!', wk_boss: 'בוס!', bosses: 'בוסים', levelBest: 'שלב שיא {n}',
     perkTitle: 'בחרו כוח!', perkSub: 'הקישו על קלף, או הצביעו עליו והחזיקו',
     pk_wide: 'ידיים רחבות', pk_heavy: 'כדור כבד', pk_magnet: 'מגנט דביק', pk_skin: 'עור עבה', pk_lucky: 'מזל', pk_spark: 'שובל ניצוצות', pk_slow: 'התחלה איטית', pk_coins: 'מגנט מטבעות',
@@ -1119,6 +1121,7 @@ function frame(now) {
 
   updateParticles(dt);
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else render(now);
+  gfx3dSync();
   if (pause.resumeT) drawResume(now);
   syncToastLayout(); grippyTick(now);
   updateNoHand(now);
@@ -1289,6 +1292,7 @@ function beginFrame(kind, now) {
   if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); view.x = Math.sin(now * 0.11) * a; view.y = Math.cos(now * 0.17) * a; }
   else view.x = view.y = 0;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (kind === 'strike' && gfx3dActive()) { ctx.clearRect(0, 0, W, H); return; } // Strike in 3D: the corridor is WebGL, this canvas only carries the overlays
   if (view.x || view.y) { ctx.fillStyle = '#0c1026'; ctx.fillRect(0, 0, W, H); }
   const bg = bgSprite(kind);
   ctx.setTransform(DPR, 0, 0, DPR, view.x * DPR, view.y * DPR); ctx.drawImage(bg.c, 0, 0, W, H);
@@ -2981,10 +2985,14 @@ const STRIKE_BONUS = { soft: 0, medium: 1, hard: 2, super: 5 };
 const STRIKE_LEVELS = ['#c8654a', '#8f929e', '#5c7fb3', '#d9a441']; // brick tint per level: terracotta, grey stone, blue steel, gold
 const STRIKE_SLIDE = 0.5;               // depth units per ms a wall slides forward into a freed slot
 const STRIKE_PW = { soft: 0, medium: 0.35, hard: 0.7, super: 1 };
-const STRIKE_KINDS = ['brick', 'glass', 'steel', 'holed', 'moving', 'tnt']; // wall kinds: level 1 is brick only, each level to 6 unlocks the next (its first wall is that kind), then a weighted random mix
+const STRIKE_KINDS = ['brick', 'glass', 'steel', 'holed', 'moving', 'tnt']; // wall kinds: level 1 is brick only; each unlocks at its KIND_AT level (the first wall of that level is it), then a weighted random mix
+// Every level-up brings one visible new thing, in this order: L2 glass walls, L3 steel, L4 curving balls, L5 holed walls, L6 moving walls, L7 TNT, L8 S-wobble + a faster boss
+const KIND_AT = { brick: 1, glass: 2, steel: 3, holed: 5, moving: 6, tnt: 7 }, STRIKE_WOBBLE_AT = 8, STRIKE_BOSS_FAST = 1.25;
+function kindsAt(L) { return STRIKE_KINDS.filter((k) => KIND_AT[k] <= L); }           // the wall kinds unlocked by level L
+function kindNewAt(L) { return L > 1 ? STRIKE_KINDS.find((k) => KIND_AT[k] === L) || null : null; } // the kind level L unlocks (null: none)
 const STRIKE_KIND_COL = { brick: '#c8654a', glass: '#9fdcff', steel: '#8fa3c4', holed: '#ffc24b', moving: '#a98bff', tnt: '#ff6f59', boss: '#c05ce6' }; // tint of the 'new wall kind' tag
 // Levels: level n is done after clearing levelGoal(n) walls (5, 6, 7 ... capped at 10); the total cleared count drives the level and the progress within it
-function levelGoal(lv) { return Math.min(10, 4 + Math.max(1, lv | 0)); }
+function levelGoal(lv) { return Math.min(7, 3 + Math.max(1, lv | 0)); } // walls to clear: 4, 5, 6, then 7 a level
 function levelFor(cleared) { let lv = 1, c = Math.max(0, cleared | 0); while (c >= levelGoal(lv)) { c -= levelGoal(lv); lv++; } return { level: lv, progress: c }; }
 function clearedAtLevel(lv) { let n = 0; for (let i = 1; i < lv; i++) n += levelGoal(i); return n; } // walls cleared when level lv begins
 // Boss wall: every STRIKE_BOSS_EVERY walls a big cartoon face made of bricks spans the corridor and creeps toward the player; hits by tier take its hp down
@@ -3024,10 +3032,10 @@ function paceMul() { return dailyMod() === 'speedy' ? 1.25 : 1; }
 // The difficulty curve: everything that gets harder level by level, derived in one place from the level-1 values (CONFIG on Easy, STRIKE_NORMAL
 // on Normal and the daily). Level 1 is exactly those values; the ramp runs to level 8, then only the pace creeps up. Perks and daily modifiers
 // multiply on top where the values are used (paceMul, serveMul, reachMul, the magnet perk), never in here.
-const STRIKE_EDGE = [[120, 170, 255], [128, 160, 255], [146, 138, 255], [172, 112, 250], [208, 92, 222], [238, 80, 160], [255, 78, 96]]; // edge-light / fog tint per level 1..7+: cool blue -> purple -> red
+const STRIKE_EDGE = [[120, 170, 255], [60, 214, 206], [96, 222, 112], [255, 204, 70], [255, 146, 54], [255, 72, 72], [176, 98, 255], [200, 24, 56]]; // edge-light / fog tint per level 1..8+: blue, teal, green, gold, orange, red, purple, deep red
 const STRIKE_RAMP = { // per-level steps (Normal / Easy)
-  normal: { pace: 0.12, post: 0.02, max: 0.05, drift: 0.035, curve0: 0.06, curve: 0.025, waves: 6, gap: 0.06, boss: 0.02, bossSpd: 0.06, reach: 0.04, reachMin: 0.75, magFade: 0, magMin: 1, beat: 60 },
-  easy: { pace: 0.06, post: 0.01, max: 0.03, drift: 0.018, curve0: 0.03, curve: 0.012, waves: 99, gap: 0.03, boss: 0.01, bossSpd: 0.03, reach: 0.025, reachMin: 0.85, magFade: 0.06, magMin: 0.6, beat: 45 },
+  normal: { pace: 0.12, post: 0.02, max: 0.05, drift: 0.035, curve0: 0.06, curve: 0.025, waves: STRIKE_WOBBLE_AT, gap: 0.06, gapMin: 0, boss: 0.02, bossSpd: 0.06, reach: 0.04, reachMin: 0.75, magFade: 0, magMin: 1, beat: 60 },
+  easy: { pace: 0.10, post: 0.01, max: 0.04, drift: 0.018, curve0: 0.03, curve: 0.012, waves: STRIKE_WOBBLE_AT, gap: 0.02, gapMin: 300, boss: 0.02, bossSpd: 0.03, reach: 0.05, reachMin: 0.85, magFade: 0.175, magMin: 0.3, beat: 45 }, // close to Normal, just kinder: +10% pace a level, the magnet fades 0.5 -> 0.15 over levels 2-6, the reach to 85% by level 4, the gap -8 a level
 };
 function strikeDiffKey() { return strikeEasy() ? 'easy' : 'normal'; }
 function strikeBaseVal(key, diff) { return diff === 'normal' && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; }
@@ -3036,7 +3044,7 @@ function strikeTuning(level = strike.level, diff = strikeDiffKey()) {
   const L = Math.max(1, level | 0), q = Math.min(L, 8) - 1, post = Math.max(0, L - 8), R = STRIKE_RAMP[diff], base = (k) => strikeBaseVal(k, diff);
   const paceK = (n) => 1 + R.pace * (Math.min(n, 8) - 1) + R.post * Math.max(0, n - 8);
   const pace = base('STRIKE_BASE_SPEED') * paceK(L), next = base('STRIKE_BASE_SPEED') * paceK(L + 1);
-  const kinds = STRIKE_KINDS.slice(0, Math.min(STRIKE_KINDS.length, L)), hard = diff === 'normal' ? Math.max(0, L - 5) : Math.max(0, L - 6);
+  const kinds = kindsAt(L), hard = diff === 'normal' ? Math.max(0, L - 5) : Math.max(0, L - 6), bossK = L >= STRIKE_WOBBLE_AT ? STRIKE_BOSS_FAST : 1; // (from level 8 the boss advances a step faster)
   const weights = {}; for (const k of kinds) weights[k] = k === 'brick' ? Math.max(diff === 'normal' ? 1 : 2, 3 - (diff === 'normal' ? 0.4 : 0.2) * hard) : (k === 'steel' || k === 'moving' || k === 'tnt') && diff === 'normal' ? 2 + 0.3 * hard : 2;
   const ci = Math.min(STRIKE_EDGE.length - 1, L - 1);
   return {
@@ -3048,26 +3056,27 @@ function strikeTuning(level = strike.level, diff = strikeDiffKey()) {
     maxSpeed: base('STRIKE_MAX_SPEED') * (1 + R.max * q), // cap on the incoming / return speed
     drift: 1 + R.drift * q,                               // x the level-1 aim range (how far from the centre a serve heads)
     curve: L >= 4 ? R.curve0 + R.curve * (Math.min(L, 8) - 4) : 0, // from level 4: the incoming ball bows sideways by this share of the corridor width
-    waves: L >= R.waves ? 2 : 1,                          // Normal from level 6: an S-shaped wobble instead of one bow
-    wallGap: CONFIG.STRIKE_WALL_GAP * (1 - R.gap * q),    // depth between the queued walls (closer = less time between walls)
+    waves: L >= R.waves ? 2 : 1,                          // from level 8: an S-shaped wobble instead of one bow
+    wallGap: Math.max(R.gapMin, CONFIG.STRIKE_WALL_GAP * (1 - R.gap * q)), // depth between the queued walls (closer = less time between walls; Easy -8 a level, never under 300)
     brickHp: L,                                           // hit points of a plain brick (glass 1, steel 3 and power-up bricks 1 at every level)
     kindWeights: weights,                                 // the random mix once the level's own kind has been shown
     bossHpMul: 1 + R.boss * q * q,                        // x the boss's hp (12 + 4n, x0.6 on Easy); gentle at first, steep later
-    bossSpeed: 1 + R.bossSpd * q,                         // x the boss's advance speed
-    bossMs: CONFIG.STRIKE_BOSS_MS / (1 + R.bossSpd * q),  // ms for the boss to cross the corridor
-    magnet: base('STRIKE_MAGNET') * Math.max(R.magMin, 1 - R.magFade * Math.max(0, L - 2)), // magnet assist (Easy: full on levels 1-2, then fades slowly, never below 60% of level 1)
-    reach: Math.max(R.reachMin, 1 - R.reach * q),         // x the hit reach (Easy: never below 85% of level 1)
+    bossSpeed: (1 + R.bossSpd * q) * bossK,               // x the boss's advance speed (a step faster from level 8)
+    bossMs: CONFIG.STRIKE_BOSS_MS / ((1 + R.bossSpd * q) * bossK), // ms for the boss to cross the corridor
+    magnet: base('STRIKE_MAGNET') * Math.max(R.magMin, 1 - R.magFade * Math.max(0, L - 2)), // magnet assist (Easy: full on levels 1-2, then fades to 0.15 by level 6 and stays there)
+    reach: Math.max(R.reachMin, 1 - R.reach * q),         // x the hit reach (Easy: down to 85% of level 1 by level 4, then holds)
     beatMs: 1000 - R.beat * q,                            // heartbeat interval (it plays from level 2)
     edge: STRIKE_EDGE[ci].slice(),                        // edge-light colour
-    fog: Math.min(0.3, 0.05 * (L - 1)),                   // strength of the level's tint in the far fog (none on level 1)
+    fog: L > 1 ? Math.min(0.32, 0.14 + 0.03 * (L - 2)) : 0, // strength of the level's tint in the far fog (none on level 1; clearly there from level 2)
     post,
   };
 }
 function strikeLevelBase() { return strikeTuning().pace * paceMul(); } // the current level's base pace, daily 'Speedy' included
 function levelNews(L) { // what got harder at level L: up to 3 keys for the level banner's sub-line
   const T = strikeTuning(L), P = strikeTuning(L - 1), out = [];
-  if (L <= STRIKE_KINDS.length && L > 1) out.push('nw_' + STRIKE_KINDS[L - 1]);
+  const k = kindNewAt(L); if (k) out.push('nw_' + k);
   if (T.curve > 0 && !P.curve) out.push('hd_curve'); else if (T.waves > P.waves) out.push('hd_wobble');
+  if (L === STRIKE_WOBBLE_AT) out.push('hd_boss'); // (the boss's step up comes with the wobble)
   if (T.pace > P.pace) out.push('hd_faster');
   if (T.brickHp > P.brickHp) out.push('hd_tougher');
   return out.slice(0, 3);
@@ -3128,7 +3137,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
     const w = spawnStrikeWall(z, kind); wallsTick(0); return w;
   },
   setLevel(n) { // test helper: jump to level n (its first wall still to clear); the queued walls respawn for it (the first as the kind that level unlocks)
-    strike.level = Math.max(1, n | 0); strike.cleared = clearedAtLevel(strike.level); strike.progress = 0; strike.nextKind = strike.level > 1 && strike.level <= STRIKE_KINDS.length ? STRIKE_KINDS[strike.level - 1] : null;
+    strike.level = Math.max(1, n | 0); strike.cleared = clearedAtLevel(strike.level); strike.progress = 0; strike.nextKind = kindNewAt(strike.level); strike.runReturns = 0;
     strike.seenKinds.clear(); strike.ui.tag = strike.ui.tagBox = null; strike.upcoming = null;
     const zs = strike.walls.map((w) => w.z); strike.walls.length = 0; zs.forEach((z) => spawnStrikeWall(z)); wallsTick(0);
     strike.levelBase = strikeLevelBase(); strike.pace = strike.levelBase; // the level's base pace
@@ -3179,6 +3188,7 @@ function setStrikeDiff(d) { // Easy / Normal: saved, shown on the start screen p
 function strikeParams() { return { diff: strike.diff, speed: sd('STRIKE_BASE_SPEED'), lives: sd('STRIKE_LIVES'), grow: sd('STRIKE_PACE_GROW'), max: sd('STRIKE_MAX_SPEED'), radius: sd('STRIKE_HIT_RADIUS'), near: sd('STRIKE_HIT_NEAR'), window: sd('STRIKE_HIT_WINDOW'), late: sd('STRIKE_LATE_Z'), magnet: sd('STRIKE_MAGNET'), hand: sd('STRIKE_HAND_SCALE') }; }
 document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListener('click', () => setStrikeDiff(b.dataset.diff)));
 function resetStrike(now) {
+  gfx3dBoot(); // Strike starts: three.js loads now (once), then the corridor renders in WebGL
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
@@ -3186,7 +3196,7 @@ function resetStrike(now) {
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = 1; strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = null;
-  strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; roundStart();
+  strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; strike.runReturns = strike.paceUps = 0; strike.ui.faster = null; roundStart();
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + (daily.on ? 2400 : 600); strike.cued = false; // (the daily's banner reads before the first serve)
@@ -3204,7 +3214,8 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
   if (level === lv) return;
   strike.level = level; if (level > lv) track('strikeLevel', level);
   strike.levelBase = strikeLevelBase(); strike.pace = strike.levelBase; // a new level starts at its own base pace (no runaway from the last one)
-  if (level > lv && level <= STRIKE_KINDS.length) { strike.nextKind = STRIKE_KINDS[level - 1]; strike.upcoming = null; } // the first wall of a new level is the kind it unlocks (the telegraph switches to it)
+  strike.runReturns = 0; // the in-level speed-up counts afresh
+  if (level > lv && kindNewAt(level)) { strike.nextKind = kindNewAt(level); strike.upcoming = null; } // the first wall of a new level is the kind it unlocks (the telegraph switches to it)
   if (fx && level > lv) {
     const bonus = 50 * level; strike.score += bonus; strike.ui.scoreAt = now;
     const perk = !strike.extrasOff && availablePerks().length > 0; if (perk) strike.perkAt = now + PERK_DELAY_MS; // the perk cards come after the burst; the level banner waits for the pick
@@ -3229,12 +3240,12 @@ function wallGrid() { // ~20 bricks about twice as wide as tall: 4x5 on a laptop
   return { cols, rows: Math.max(3, Math.min(8, Math.round(2 * cols * H / W))) };
 }
 function brickCell(w, col, row) { const { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows; return { x: L + (w.ox || 0) + (col + 0.5) * cw, y: T + (row + 0.5) * ch, w: cw, h: ch }; } // span: cells across the corridor (a moving wall is one short); ox: its lateral offset
-function wallKindFor(level) { // level 1: brick only; each level to 6 unlocks the next kind (the first wall of that level is it), then a weighted random mix of everything unlocked
+function wallKindFor(level) { // level 1: brick only; a kind unlocks at its KIND_AT level (the first wall of that level is it), then a weighted random mix of everything unlocked
   const mod = dailyMod(); if (mod === 'glass') { strike.nextKind = null; return 'glass'; } // daily 'Glass day': every wall is glass
   if (strike.nextKind) { const k = strike.nextKind; strike.nextKind = null; return k; }
   if ((mod === 'steel' || mod === 'tnt') && strikeRand('walls') < (mod === 'steel' ? 0.4 : 0.5)) return mod; // 'Steel day' / 'TNT party': that kind from level 1 on, in 40% / 50% of the walls
-  const n = Math.min(STRIKE_KINDS.length, Math.max(1, level)); if (n <= 1) return 'brick';
-  const pool = STRIKE_KINDS.slice(0, n), kw = strikeTuning(level).kindWeights, wts = pool.map((k) => kw[k] || 2); let r = strikeRand('walls') * wts.reduce((a, b) => a + b, 0);
+  const pool = kindsAt(Math.max(1, level)); if (pool.length <= 1) return 'brick';
+  const kw = strikeTuning(level).kindWeights, wts = pool.map((k) => kw[k] || 2); let r = strikeRand('walls') * wts.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++) { r -= wts[i]; if (r < 0) return pool[i]; }
   return 'brick';
 }
@@ -3639,12 +3650,18 @@ function strikeHit(b, now) { // the palm meets the ball: power from the hand spe
   burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2);
   if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = now; }
   if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
-  streakUp(now); sparkChip(now);
+  streakUp(now); sparkChip(now); paceUp(now);
+}
+const PACE_UP_EVERY = 5, PACE_UP = 1.05; // every 5 returns in a row on a level the pace steps up 5% (within the level's cap)
+function paceUp(now) {
+  strike.runReturns = (strike.runReturns || 0) + 1; if (strike.runReturns % PACE_UP_EVERY) return false;
+  const T = strikeTuning(), cap = Math.min(T.maxSpeed, T.paceCap) * paceMul(); if (strike.pace >= cap - 1e-9) return false;
+  strike.pace = Math.min(cap, strike.pace * PACE_UP); strike.paceUps = (strike.paceUps || 0) + 1; strike.ui.faster = { t: now }; sfx('faster'); return true;
 }
 function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life
   const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
   if (B.length) { sfx('whiff'); return; }
-  strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now);
+  strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now); strike.runReturns = 0; // a miss breaks the run toward the next speed-up
   loseLife(now);
   if (!strike.over) { strike.serveAt = now + 800; strike.cued = false; }
 }
@@ -3930,6 +3947,9 @@ function drawCapsule(c, now) {
   const sc = capsuleScreen(c, now), { B } = corridor(), fl = proj(c.x, B, c.z), a = c.missed ? Math.max(0, c.life) : 1, pulse = 1 + 0.06 * Math.sin(now * 0.012 + c.phase);
   drawShadow(fl.x, fl.y, sc.r * 2, sc.r * 0.8, 0.35 * sc.s * a);
   blit(capsuleSprite(c.kind), sc.x, sc.y, 0, sc.r / 40 * pulse, a);
+  capsuleRing(c, now);
+}
+function capsuleRing(c, now) { const sc = capsuleScreen(c, now);
   if (!c.missed && c.z < CONFIG.STRIKE_HIT_Z * 3) { resetView(); ctx.globalAlpha = 0.5 + 0.4 * Math.sin(now * 0.02); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * 1.35, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; } // nearly here: a blinking ring says 'grab me'
 }
 function drawPowerIcons(now, x, y, rtl) { // under the HUD card at the start edge: one round badge per active power-up with a ring that runs down, blinking in the last 3 s
@@ -4234,6 +4254,7 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   drawPowerIcons(now, rtl ? x + w - 10 : x + 10, y + h + 16, rtl); // active power-ups with their timers, under the bar
   drawPerkIcons(x + w / 2, y + h - 8); // this run's perks, tiny, along the bottom of the card
   const chip = drawStreakChip(now, x + w / 2, y + h + 29); // the hit streak: flame + ×n, in the middle under the bar
+  drawFaster(now, rtl ? x + 52 : x + w - 52, y + h + 26);
   const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
   { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the card, dropping in and fading out
@@ -4241,6 +4262,11 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
     ui.tagBox = { x: x + w / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk };
     blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), x + w / 2, ty, 0, 1, a * e); blit(sp, x + w / 2, ty, 0, 1, a * e);
   }
+}
+function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops in, pulses twice, fades (1.1 s)
+  const f = strike.ui.faster, k = f ? (now - f.t) / 1100 : 1; if (k >= 1 || k < 0) { strike.ui.fasterBox = null; return; }
+  const sp = textSprite(t('hd_faster'), 17, '#ffd77a', 'rgba(255,138,61,0.95)', 800), sc = (k < 0.12 ? 0.6 + 0.4 * k / 0.12 : 1) * (1 + 0.12 * Math.abs(Math.sin(k * Math.PI * 2))), a = k > 0.75 ? (1 - k) / 0.25 : 1;
+  strike.ui.fasterBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, text: t('hd_faster') }; blit(sp, cx, cy, 0, sc, a);
 }
 function meterTrackSprite(w, h) { // dark rounded track with the four tier zones tinted and separated
   return makeSprite('meter|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
@@ -4544,6 +4570,9 @@ function renderStrike(now) {
   beginFrame('strike', now);
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, balls = strike.balls, sup = balls.some((b) => b.super || b.fire);
   if (frameCount % 30 === 0 || !strike.ui.hud) strike.ui.top = strikeTop();
+  const g3 = gfx3dActive() && gfx3dFrame(now); // the WebGL corridor, walls, balls, debris, capsules and boss (false: 2D draws them)
+  if (g3) { strike.ui.edgeCol = sup ? [255, 194, 75] : strikeTuning().edge; blit(g3Vignette(), 0, 0); }
+  else {
   resetView(); ctx.lineWidth = 1.5; // depth stripes scrolling toward the player; they throb saffron while the SUPER ball is out
   const pulse = sup ? 1.4 + 0.6 * Math.sin(now * 0.025) : 1;
   for (let z = STRIPE_GAP - strike.scroll; z < Z; z += STRIPE_GAP) {
@@ -4564,6 +4593,7 @@ function renderStrike(now) {
       ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(' + col + ',' + ((0.18 + 0.4 * p) * k).toFixed(3) + ')'; ctx.stroke();
     }
   }
+  }
   drawServeCue(now);
   const items = []; // walls, debris, capsules and the balls painted far to near, so a wall behind the ball is under it and one in front covers it
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
@@ -4574,7 +4604,8 @@ function renderStrike(now) {
   strike.ui.ballOver = []; // walls a ball flies through are drawn behind it for a moment after it passes, so it never looks as if it went behind the wall
   for (const bl of balls) if (bl.dir < 0) for (const it of items) if (it.w && it.w.z < bl.z && bl.z - it.w.z < CONFIG.STRIKE_WALL_GAP * 0.15) { it.z = Math.max(it.z, bl.z + 1); if (!strike.ui.ballOver.includes(it.w.id)) strike.ui.ballOver.push(it.w.id); }
   items.sort((a, b) => b.z - a.z);
-  for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
+  if (g3) { for (const c of strike.capsules) capsuleRing(c, now); } // (3D: everything but the capsules' 'grab me' ring is in the WebGL scene)
+  else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
   if (strike.boss) drawBossBar(strike.boss, now);
   drawParticles(); drawRings(now);
   drawSparks(now); drawFloaters(strike.floaters);
@@ -4610,6 +4641,454 @@ function renderStrike(now) {
     drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
   }
+}
+
+/* ---------------- Strike in 3D: a WebGL renderer (three.js r128, loaded on demand) ---------------- */
+// The game logic is untouched: gfx3dFrame() only reads the strike state each frame and mirrors it into a three.js scene drawn on
+// #stage3d under the 2D canvas; the 2D canvas then carries the overlays only (HUD, meter, banners, perk / end cards, Grippy, the
+// hand, text, particles). Camera parity: proj(x, y, z) is a pinhole with focal length STRIKE_F (px) at depth f + z whose principal
+// point is the vanishing point. The three.js camera sits at (0, 0, f) looking down -Z with an off-centre frustum built from those
+// same numbers (gfx3dCamera), and a world point (x, y, z) is placed at (x, -y, -z): its screen position is exactly proj(x, y, z),
+// so ballScreen(), brickScreen(), the hit tests and every ui.* rect hold in both renderers. ?gfx=2d (or __grasp.setGfx('2d'), a
+// failed load, no WebGL, a lost context, or < 24 fps for 4 s) keeps the 2D renderer.
+const THREE_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'];
+const G3_LOAD_MS = 8000, G3_LOW_FPS = 24, G3_LOW_MS = 4000, G3_OPT = window.__graspGfx || {}; // __graspGfx (tests only): { mode: '2d', pr: a fixed pixel ratio, auto: false = no low-fps fallback, shadows: false }
+const G3 = { want: /[?&]gfx=2d\b/.test(location.search) || G3_OPT.mode === '2d' ? '2d' : '3d', state: 'idle', on: false, err: '', fallback: '', auto: G3_OPT.auto !== false, loading: null,
+  fps: 0, win: { t: 0, n: 0 }, lowSince: 0, slowSince: 0, pr: 1, prMax: 1, prMin: 0.75, T: null, r: null, gl: null, w: 0, h: 0, shown: false, drawn: -1 };
+function gfx3dActive() { return G3.on && G3.state === 'ready'; }
+function loadThree() { // cdnjs first, jsDelivr as the fallback; each try gives up after G3_LOAD_MS (an offline or blocked CDN never hangs Strike: it simply stays 2D)
+  if (window.THREE && window.THREE.WebGLRenderer) return Promise.resolve(window.THREE);
+  if (G3.loading) return G3.loading;
+  const one = (url) => new Promise((res, rej) => {
+    const s = document.createElement('script'); let done = false;
+    const fin = (ok) => { if (done) return; done = true; clearTimeout(tm); if (ok && window.THREE && window.THREE.WebGLRenderer) res(window.THREE); else { s.remove(); rej(new Error('three.js failed to load from ' + url.split('/')[2])); } };
+    const tm = setTimeout(() => fin(false), G3_LOAD_MS); s.src = url; s.async = true; s.onload = () => fin(true); s.onerror = () => fin(false); document.head.appendChild(s);
+  });
+  G3.loading = THREE_URLS.reduce((p, u) => p.catch(() => one(u)), Promise.reject(new Error('start')));
+  return G3.loading;
+}
+function gfx3dBoot() { // called when Strike starts: loads three.js once, builds the renderer, switches to 3D (never with ?gfx=2d)
+  if (G3.want === '2d' || G3.state === 'loading' || G3.state === 'failed') return G3.loading || Promise.resolve();
+  if (G3.state === 'ready') { G3.on = true; return Promise.resolve(); }
+  G3.state = 'loading';
+  return loadThree().then((T) => { gfx3dInit(T); }).catch((e) => gfx3dFail(e && e.message || String(e)));
+}
+function gfx3dFail(msg) { G3.state = 'failed'; G3.on = false; G3.err = msg; G3.fallback = G3.fallback || 'error'; gfx3dShow(false); console.warn('Strike 3D off: ' + msg); }
+function gfx3dShow(on) { const c = $('stage3d'); if (!c) return; if (G3.shown !== on) { c.hidden = !on; G3.shown = on; } }
+function setGfx(m) { // test hook / settings: '2d' turns the WebGL renderer off; '3d' (re)enables it (loading three.js if needed). Resolves to the mode in use
+  if (m === '2d') { G3.want = '2d'; G3.on = false; gfx3dShow(false); return Promise.resolve('2d'); }
+  G3.want = '3d'; G3.fallback = ''; G3.lowSince = G3.slowSince = 0; if (G3.state === 'failed' && G3.err !== 'lost') { G3.state = 'idle'; G3.loading = null; }
+  return gfx3dBoot().then(() => strike.gfx);
+}
+Object.defineProperties(strike, {
+  gfx: { get() { return gfx3dActive() ? '3d' : '2d'; }, enumerable: true },             // the renderer in use
+  gfxFps: { get() { return G3.fps; }, enumerable: true },                                  // frames / s measured while the 3D renderer draws
+  gfxAuto: { get() { return G3.auto; }, set(v) { G3.auto = !!v; G3.lowSince = G3.slowSince = 0; } }, // the low-fps fallback (tests on a software GPU turn it off)
+  gfxPr: { get() { return G3.pr; }, set(v) { if (v > 0) { G3.pr = G3.prMax = v; G3.prMin = Math.min(v, 0.75); if (G3.r) gfx3dResize(); } } }, // the WebGL pixel ratio (tests: full resolution for a screenshot)
+  gfxInfo: { get() { return { state: G3.state, want: G3.want, err: G3.err, fallback: G3.fallback, pr: G3.pr, prMax: G3.prMax, inits: G3.inits || 0, initMs: G3.initMs || 0, onAt: G3.onAt || 0, fallbackAt: G3.fallbackAt || 0, gpu: G3.gpu || '' }; } },
+});
+// test hooks: where the WebGL camera puts a world point; one composited pixel (WebGL under the 2D overlay) at a CSS px point
+strike.project3d = (x, y, z) => { if (!gfx3dActive()) return null; const v = new G3.T.Vector3(x, -y, -z).project(G3.cam); return { x: (v.x + 1) / 2 * W, y: (1 - v.y) / 2 * H }; };
+strike.pixel = (x, y) => {
+  const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data;
+  if (!gfx3dActive()) return [d[0], d[1], d[2]];
+  const q = gfx3dPixel(x, y), a = d[3] / 255; return [0, 1, 2].map((i) => Math.round(d[i] * a + q[i] * (1 - a)));
+};
+strike.pixel3d = (x, y) => gfx3dActive() ? gfx3dPixel(x, y) : null;
+function gfx3dPixel(x, y) { // re-render the scene as it stands (the state only changes inside frame()) and read one pixel back
+  const r = G3.r, gl = G3.gl, pr = G3.pr, out = new Uint8Array(4), cl = (v, n) => Math.max(0, Math.min(n - 1, v)); r.render(G3.scene, G3.cam);
+  gl.readPixels(cl(Math.floor(x * pr), gl.drawingBufferWidth), cl(gl.drawingBufferHeight - 1 - Math.floor(y * pr), gl.drawingBufferHeight), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, out); return [out[0], out[1], out[2]];
+}
+
+/* --- generated textures: everything is painted on canvases (no image files) --- */
+function g3Canvas(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; }
+function g3NormalMap(hc, k) { // tangent-space normal map from a grey height canvas (k: bump strength)
+  const w = hc.width, h = hc.height, src = hc.getContext('2d').getImageData(0, 0, w, h).data;
+  return g3Canvas(w, h, (g) => {
+    const img = g.createImageData(w, h), d = img.data, H = (x, y) => src[(((y + h) % h) * w + ((x + w) % w)) * 4] / 255;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const nx = -(H(x + 1, y) - H(x - 1, y)) * k, ny = (H(x, y + 1) - H(x, y - 1)) * k, l = Math.hypot(nx, ny, 1), i = (y * w + x) * 4;
+      d[i] = (nx / l * 0.5 + 0.5) * 255; d[i + 1] = (ny / l * 0.5 + 0.5) * 255; d[i + 2] = (1 / l * 0.5 + 0.5) * 255; d[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  });
+}
+function g3Tex(c, srgb, wrap) { const T = G3.T, t = new T.CanvasTexture(c); if (srgb) t.encoding = T.sRGBEncoding; if (wrap) t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = G3.aniso; return t; }
+function g3Bevel(g, w, h, bv, lo = 0, hi = 255) { // height: a flat top with a bevel ramp of bv px down to the edges
+  for (let i = 0; i < bv; i++) { const v = Math.round(lo + (hi - lo) * Math.sin((i + 1) / bv * Math.PI / 2)); g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')'; g.fillRect(i, i, w - 2 * i, h - 2 * i); }
+}
+function g3Speckle(g, w, h, n, seed, a0, a1, maxS = 2) { const r = rng(seed); for (let i = 0; i < n; i++) { g.fillStyle = r() < 0.5 ? 'rgba(255,255,255,' + a0 + ')' : 'rgba(0,0,0,' + a1 + ')'; const s = 1 + r() * maxS; g.fillRect(r() * w, r() * h, s, s); } }
+function g3Cracks(g, w, h, seed, col, lw) { // the same kind of radiating cracks as the 2D crack overlay
+  const r = rng(seed), cx = w / 2 + (r() - 0.5) * w * 0.3, cy = h / 2 + (r() - 0.5) * h * 0.3, n = 5 + Math.floor(r() * 2);
+  g.strokeStyle = col; g.lineWidth = lw; g.lineCap = g.lineJoin = 'round';
+  for (let i = 0; i < n; i++) { const a = i * TAU / n + r() * 0.8, len = Math.min(w, h) * (0.45 + r() * 0.4); let x = cx, y = cy; g.beginPath(); g.moveTo(x, y);
+    for (let k = 1; k <= 5; k++) { x = cx + Math.cos(a) * len * k / 5 * (w / h > 1.5 ? 1.6 : 1) + (r() - 0.5) * w * 0.05; y = cy + Math.sin(a) * len * k / 5 + (r() - 0.5) * h * 0.08; g.lineTo(x, y); } g.stroke(); }
+}
+function g3StoneTex() { // corridor slabs: staggered stone panels with grooves, speckle and a bevel (albedo + height -> normal map)
+  const S = 512, rows = 4, rh = S / rows, sw = S / 2, rnd = rng(31);
+  const slabs = []; for (let r = 0; r < rows; r++) { const off = r % 2 ? sw / 2 : 0; for (let c = -1; c < 2; c++) slabs.push({ x: c * sw + off, y: r * rh, w: sw, h: rh, l: rnd() }); }
+  const map = g3Canvas(S, S, (g) => {
+    g.fillStyle = '#0b0f22'; g.fillRect(0, 0, S, S);
+    for (const s of slabs) { const l = 0.85 + s.l * 0.3, gr = g.createLinearGradient(s.x, s.y, s.x + s.w, s.y + s.h); gr.addColorStop(0, mix('#55639a', [10, 14, 32], 1 - l * 0.95)); gr.addColorStop(1, mix('#404c80', [10, 14, 32], 1 - l * 0.9)); g.fillStyle = gr; g.fillRect(s.x + 4, s.y + 4, s.w - 8, s.h - 8); }
+    g3Speckle(g, S, S, 9000, 5, 0.05, 0.12, 2.5);
+    g.strokeStyle = 'rgba(160,180,255,0.05)'; g.lineWidth = 1; for (const s of slabs) { const r = rng(Math.round(s.x * 7 + s.y)); for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(s.x + r() * s.w, s.y + 6); g.bezierCurveTo(s.x + r() * s.w, s.y + s.h * 0.4, s.x + r() * s.w, s.y + s.h * 0.6, s.x + r() * s.w, s.y + s.h - 6); g.stroke(); } }
+  });
+  const hgt = g3Canvas(S, S, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, S, S); for (const s of slabs) { g.save(); g.translate(s.x + 3, s.y + 3); g3Bevel(g, s.w - 6, s.h - 6, 10, 20, 210); g.restore(); } g3Speckle(g, S, S, 5000, 9, 0.08, 0.1, 3); });
+  return { map: g3Tex(map, true, true), normal: g3Tex(g3NormalMap(hgt, 3.2), false, true) };
+}
+function g3BrickTex(kind, cracked) { // one brick face (256 x 128); bricks are white-ish here and tinted per instance (level colour)
+  const w = 256, h = 128, seed = strSeed(kind + cracked);
+  const map = g3Canvas(w, h, (g) => {
+    if (kind === 'steel') { const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#e9eef7'); gr.addColorStop(1, '#aab4c6'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      const r = rng(seed); g.strokeStyle = 'rgba(255,255,255,0.18)'; g.lineWidth = 1; g.beginPath(); for (let y = 2; y < h; y += 2.5) { g.moveTo(0, y + r()); g.lineTo(w, y + r()); } g.stroke();
+      for (const [x, y] of [[18, 18], [w - 18, 18], [18, h - 18], [w - 18, h - 18]]) { const rg = g.createRadialGradient(x - 3, y - 3, 1, x, y, 9); rg.addColorStop(0, '#ffffff'); rg.addColorStop(1, '#6b768c'); g.fillStyle = rg; g.beginPath(); g.arc(x, y, 9, 0, TAU); g.fill(); }
+    } else if (kind === 'tnt') { g.fillStyle = '#d8362e'; g.fillRect(0, 0, w, h); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(255,200,170,0.25)'); gr.addColorStop(1, 'rgba(60,0,0,0.3)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.strokeStyle = 'rgba(70,10,10,0.6)'; g.lineWidth = 4; g.beginPath(); for (const q of [0.25, 0.75]) { g.moveTo(0, h * q); g.lineTo(w, h * q); } g.stroke();
+      g.fillStyle = 'rgba(40,10,10,0.4)'; g.fillRect(w * 0.42, 0, w * 0.16, h);
+      g.font = '800 54px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff3e0'; g.fillText('TNT', w / 2, h * 0.53);
+      g.strokeStyle = '#3a2a1a'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(w * 0.8, 6); g.quadraticCurveTo(w * 0.86, 16, w * 0.9, 30); g.stroke();
+      g.fillStyle = '#ffe07a'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, d = i % 2 ? 5 : 12; g.lineTo(w * 0.9 + Math.cos(a) * d, 30 + Math.sin(a) * d); } g.closePath(); g.fill();
+      g3Speckle(g, w, h, 600, seed, 0.06, 0.1);
+    } else if (kind === 'glass') { g.fillStyle = '#8fc6ea'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(235,248,255,0.85)'; g.beginPath(); g.moveTo(0, h * 0.75); g.lineTo(w * 0.32, 0); g.lineTo(w * 0.46, 0); g.lineTo(w * 0.12, h); g.lineTo(0, h); g.closePath(); g.fill(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.strokeRect(3, 3, w - 6, h - 6);
+    } else { g.fillStyle = '#efe6dc'; g.fillRect(0, 0, w, h); g3Speckle(g, w, h, 2600, seed, 0.18, 0.16, 2.5); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(255,255,255,0.12)'); gr.addColorStop(1, 'rgba(0,0,0,0.12)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }
+    if (kind !== 'glass') { g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,0.4)'; g.strokeRect(3, 3, w - 6, h - 6); }
+    if (cracked) { g3Cracks(g, w, h, seed, 'rgba(255,240,220,0.35)', 4); g.translate(-1, -1); g3Cracks(g, w, h, seed, 'rgba(25,8,4,0.85)', 3); }
+  });
+  const hgt = g3Canvas(w, h, (g) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g3Bevel(g, w, h, kind === 'glass' ? 8 : 16, 0, 220);
+    if (kind === 'brick') g3Speckle(g, w, h, 1800, seed + 1, 0.25, 0.25, 3);
+    if (kind === 'steel') for (const [x, y] of [[18, 18], [w - 18, 18], [18, h - 18], [w - 18, h - 18]]) { const rg = g.createRadialGradient(x, y, 0, x, y, 10); rg.addColorStop(0, '#ffffff'); rg.addColorStop(1, 'rgba(220,220,220,0)'); g.fillStyle = rg; g.beginPath(); g.arc(x, y, 10, 0, TAU); g.fill(); }
+    if (kind === 'tnt') { g.strokeStyle = '#555'; g.lineWidth = 4; g.beginPath(); for (const q of [0.25, 0.75]) { g.moveTo(0, h * q); g.lineTo(w, h * q); } g.stroke(); }
+    if (cracked) g3Cracks(g, w, h, seed, '#000', 5);
+  });
+  return { map: g3Tex(map, true), normal: g3Tex(g3NormalMap(hgt, kind === 'glass' ? 1.5 : 4), false) };
+}
+function g3BallTex(skin) { // the equipped ball skin wrapped round the sphere (equirectangular, 512 x 256)
+  const w = 512, h = 256;
+  const dir = (x, y) => { const u = (x + 0.5) / w * TAU, v = (y + 0.5) / h * Math.PI; return [Math.sin(v) * Math.cos(u), Math.cos(v), Math.sin(v) * Math.sin(u)]; };
+  return g3Canvas(w, h, (g) => {
+    if (skin === 'beach') { const cols = ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1']; for (let i = 0; i < 6; i++) { g.fillStyle = cols[i]; g.fillRect(i * w / 6, 0, w / 6 + 1, h); }
+      g.fillStyle = 'rgba(255,255,255,0.7)'; for (let i = 0; i < 6; i++) g.fillRect(i * w / 6 - 1.5, 0, 3, h); g.fillStyle = '#f7f3ea'; g.fillRect(0, 0, w, h * 0.07); g.fillRect(0, h * 0.93, w, h * 0.07); return; }
+    if (skin === 'disco') { const r = rng(55), nx = 40, ny = 20; g.fillStyle = '#2a3046'; g.fillRect(0, 0, w, h);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const l = 150 + r() * 105, b = Math.min(255, l + 20); g.fillStyle = 'rgb(' + Math.round(l * 0.92) + ',' + Math.round(l * 0.95) + ',' + Math.round(b) + ')'; g.fillRect(i * w / nx + 1, j * h / ny + 1, w / nx - 2, h / ny - 2); } return; }
+    const img = g.createImageData(w, h), d = img.data;
+    if (skin === 'soccer') { // a truncated icosahedron: the Voronoi cells of the 12 icosahedron vertices (black pentagons) and 20 face centres (white hexagons)
+      const p = (1 + Math.sqrt(5)) / 2, V = [], N = (a) => { const l = Math.hypot(...a); return a.map((q) => q / l); };
+      for (const a of [-1, 1]) for (const b of [-p, p]) V.push(N([0, a, b]), N([a, b, 0]), N([b, 0, a]));
+      const F = []; for (let i = 0; i < 12; i++) for (let j = i + 1; j < 12; j++) for (let k = j + 1; k < 12; k++) { const dt = (A, B) => A[0] * B[0] + A[1] * B[1] + A[2] * B[2]; if (dt(V[i], V[j]) > 0.4 && dt(V[j], V[k]) > 0.4 && dt(V[i], V[k]) > 0.4) F.push(N([0, 1, 2].map((c) => V[i][c] + V[j][c] + V[k][c]))); }
+      const P = V.map((q) => [q, 1]).concat(F.map((q) => [q, 0]));
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const n = dir(x, y); let b1 = -2, b2 = -2, pent = 0;
+        for (const [q, isV] of P) { const s = (n[0] * q[0] + n[1] * q[1] + n[2] * q[2]) * (isV ? 1.012 : 1); if (s > b1) { b2 = b1; b1 = s; pent = isV; } else if (s > b2) b2 = s; }
+        const seam = b1 - b2 < 0.012, c = seam ? [70, 74, 90] : pent ? [30, 34, 54] : [244, 244, 240], i = (y * w + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
+      }
+    } else if (skin === 'planet') { // blue ocean, green / sand continents from 3D value noise, white cloud bands and polar caps
+      const hash = (x, y, z) => { const s = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return s - Math.floor(s); };
+      const vn = (x, y, z) => { const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = x - xi, yf = y - yi, zf = z - zi, sm = (t) => t * t * (3 - 2 * t), u = sm(xf), v = sm(yf), ww = sm(zf);
+        let o = 0; for (let a = 0; a < 2; a++) for (let b = 0; b < 2; b++) for (let c = 0; c < 2; c++) o += hash(xi + a, yi + b, zi + c) * (a ? u : 1 - u) * (b ? v : 1 - v) * (c ? ww : 1 - ww); return o; };
+      const fbm = (x, y, z) => vn(x, y, z) * 0.55 + vn(x * 2.1, y * 2.1, z * 2.1) * 0.3 + vn(x * 4.3, y * 4.3, z * 4.3) * 0.15;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const n = dir(x, y), e = fbm(n[0] * 2.2 + 5, n[1] * 2.2 + 3, n[2] * 2.2 + 1), cl = fbm(n[0] * 3 + 11, n[1] * 6, n[2] * 3 + 7), i = (y * w + x) * 4;
+        let c = e > 0.52 ? (e > 0.62 ? [94, 170, 84] : e > 0.545 ? [72, 160, 98] : [214, 196, 128]) : [44, 104, 196 + (e - 0.5) * 120];
+        if (Math.abs(n[1]) > 0.88) c = [236, 244, 252];
+        const k = Math.max(0, Math.min(1, (cl - 0.56) * 6)); c = c.map((q) => q + (250 - q) * k * 0.85);
+        d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
+      }
+    } else { // classic: coral with a tennis-ball seam that shows the spin
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const n = dir(x, y), u = Math.atan2(n[2], n[0]), seam = Math.abs(n[1] - 0.62 * Math.sin(2 * u)) < 0.045, i = (y * w + x) * 4, c = seam ? [255, 182, 162] : [255, 111, 89];
+        d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+  });
+}
+function g3SoftDisc(inner = 0.0, a1 = 1) { return g3Canvas(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 64 * inner, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,' + a1 + ')'); gr.addColorStop(0.55, 'rgba(255,255,255,' + (a1 * 0.55) + ')'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }); }
+function g3EnvMap(r) { // a soft studio around the corridor for reflections (clearcoat, glass, steel, the disco ball): warm key over the player, cool far end
+  const T = G3.T, c = g3Canvas(256, 128, (g) => {
+    const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#fff1dc'); gr.addColorStop(0.35, '#6a78b8'); gr.addColorStop(0.6, '#1c2450'); gr.addColorStop(1, '#0a0e22'); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+    g.fillStyle = '#ffffff'; g.fillRect(40, 18, 50, 14); g.fillRect(166, 22, 40, 10); g.fillStyle = '#ffd28a'; g.fillRect(100, 40, 60, 8); g.fillStyle = '#7aa0ff'; g.fillRect(0, 60, 256, 3);
+  });
+  const t = new T.CanvasTexture(c); t.mapping = T.EquirectangularReflectionMapping; t.encoding = T.sRGBEncoding;
+  const pm = new T.PMREMGenerator(r), env = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return env;
+}
+
+/* --- the scene --- */
+function gfx3dInit(T) {
+  const t0 = performance.now(); try { gfx3dBuild(T); } finally { G3.initMs = Math.round(performance.now() - t0); }
+}
+function gfx3dBuild(T) {
+  const canvas = $('stage3d');
+  let r;
+  try {
+    const probe = document.createElement('canvas'), ok = probe.getContext('webgl2') || probe.getContext('webgl'); if (!ok) throw new Error('WebGL unavailable');
+    r = new T.WebGLRenderer({ canvas, antialias: (window.devicePixelRatio || 1) < 2, powerPreference: 'high-performance', stencil: true });
+  } catch (e) { gfx3dFail(e.message || 'WebGL unavailable'); return; }
+  G3.T = T; G3.r = r; G3.inits = (G3.inits || 0) + 1; G3.gl = r.getContext(); G3.aniso = Math.min(8, r.capabilities.getMaxAnisotropy());
+  try { const e = G3.gl.getExtension('WEBGL_debug_renderer_info'); G3.gpu = e ? G3.gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ''; } catch {}
+  G3.prMax = G3_OPT.pr > 0 ? G3_OPT.pr : Math.min(window.devicePixelRatio || 1, 2); G3.pr = G3.prMax; G3.prMin = Math.min(G3.prMax, 0.75); r.setPixelRatio(G3.pr);
+  r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 1.15;
+  r.shadowMap.enabled = G3_OPT.shadows !== false; r.shadowMap.type = T.PCFSoftShadowMap; // (tests on a software GPU may turn the shadows off) r.setClearColor(0x0b1030, 1);
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); G3.err = 'lost'; gfx3dFail('lost'); });
+  const lin = (hex) => new T.Color(hex).convertSRGBToLinear(), scene = new T.Scene(), S = G3;
+  S.lin = lin; S.scene = scene; S.env = g3EnvMap(r);
+  scene.fog = new T.Fog(0x0b1030, 1000, 3000); scene.background = new T.Color(0x0b1030);
+  S.cam = new T.PerspectiveCamera(60, 1, 10, 6000); S.cam.position.set(0, 0, STRIKE_F); S.cam.matrixAutoUpdate = false; S.cam.updateMatrix(); S.cam.updateMatrixWorld(true);
+  // lights: a warm key over the player (the shadow caster), a warm pool by the player, a cool fill from the far end, the level's tint light deep in the corridor
+  S.hemi = new T.HemisphereLight(lin('#6f7fc4'), lin('#1a1430'), 0.5); scene.add(S.hemi);
+  S.key = new T.DirectionalLight(lin('#ffe6c8'), 1.25); S.key.castShadow = true; S.key.shadow.mapSize.set(1024, 1024); S.key.shadow.bias = -0.0008; S.key.shadow.normalBias = 1.5;
+  scene.add(S.key); scene.add(S.key.target);
+  S.pool = new T.PointLight(lin('#ffb070'), 2.1, 2000, 1.3); scene.add(S.pool);
+  S.tint = new T.PointLight(lin('#7aaaff'), 0.8, 2600, 1.2); scene.add(S.tint);
+  // corridor: floor, ceiling, side walls, far wall (geometry sized in gfx3dResize), the light strips on its four edges, the scrolling depth frames
+  const stone = g3StoneTex(); S.stone = stone;
+  const corMat = (col, shine) => new T.MeshPhongMaterial({ color: lin(col), map: stone.map, normalMap: stone.normal, shininess: shine, specular: lin('#3a4260') }); // (Phong: the full-screen surfaces are the fill-rate cost on a phone)
+  S.cor = { floor: new T.Mesh(new T.PlaneGeometry(1, 1), corMat('#d4d8ee', 38)), ceil: new T.Mesh(new T.PlaneGeometry(1, 1), corMat('#7c84b0', 10)), left: new T.Mesh(new T.PlaneGeometry(1, 1), corMat('#7f86aa', 18)), right: new T.Mesh(new T.PlaneGeometry(1, 1), corMat('#7f86aa', 18)), far: new T.Mesh(new T.PlaneGeometry(1, 1), corMat('#5d6698', 6)) };
+  for (const k in S.cor) { S.cor[k].receiveShadow = true; S.cor[k].matrixAutoUpdate = false; scene.add(S.cor[k]); }
+  S.edgeMat = new T.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }); S.edges = [];
+  for (let i = 0; i < 4; i++) { const m = new T.Mesh(new T.BoxGeometry(1, 1, 1), S.edgeMat); m.matrixAutoUpdate = false; S.edges.push(m); scene.add(m); }
+  S.glowTex = g3Tex(g3Canvas(64, 64, (g) => { const gr = g.createLinearGradient(0, 0, 64, 0); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); }), false);
+  S.glowMat = new T.MeshBasicMaterial({ map: S.glowTex, color: 0xffffff, transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, opacity: 0.5 }); S.glows = [];
+  for (let i = 0; i < 8; i++) { const m = new T.Mesh(new T.PlaneGeometry(1, 1), S.glowMat); m.matrixAutoUpdate = false; S.glows.push(m); scene.add(m); }
+  S.frameMat = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false });
+  S.frames = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), S.frameMat, 64); S.frames.instanceMatrix.setUsage(T.DynamicDrawUsage); S.frames.frustumCulled = false; S.frames.setColorAt(0, new T.Color()); scene.add(S.frames);
+  // bricks: one shared box (front face at local z = 0, extending back), one material per look; each wall is a group of instanced meshes
+  S.box = new T.BoxGeometry(1, 1, 1); S.box.translate(0, 0, -0.5);
+  const tx = {}; for (const k of ['brick', 'steel', 'tnt', 'glass']) { tx[k] = g3BrickTex(k, false); if (k === 'brick' || k === 'steel') tx[k + 'Crack'] = g3BrickTex(k, true); }
+  const std = (o) => new T.MeshStandardMaterial(Object.assign({ envMap: S.env, envMapIntensity: 0.5 }, o));
+  S.mats = {
+    brick: std({ map: tx.brick.map, normalMap: tx.brick.normal, roughness: 0.78, metalness: 0 }),
+    brickCrack: std({ map: tx.brickCrack.map, normalMap: tx.brickCrack.normal, roughness: 0.85, metalness: 0 }),
+    steel: std({ map: tx.steel.map, normalMap: tx.steel.normal, roughness: 0.32, metalness: 0.85, envMapIntensity: 1.1 }),
+    steelCrack: std({ map: tx.steelCrack.map, normalMap: tx.steelCrack.normal, roughness: 0.42, metalness: 0.8, envMapIntensity: 1.1 }),
+    tnt: std({ map: tx.tnt.map, normalMap: tx.tnt.normal, roughness: 0.7, metalness: 0, emissive: lin('#3a0600'), emissiveIntensity: 1 }),
+    pu: std({ map: tx.brick.map, normalMap: tx.brick.normal, roughness: 0.35, metalness: 0.55, emissive: lin('#ffb020'), emissiveIntensity: 0.45, envMapIntensity: 1.2 }),
+    glass: new T.MeshPhysicalMaterial({ map: tx.glass.map, normalMap: tx.glass.normal, color: lin('#b8e2ff'), roughness: 0.05, metalness: 0, transparent: true, opacity: 0.24, envMap: S.env, envMapIntensity: 0.9, clearcoat: 1, clearcoatRoughness: 0.05, depthWrite: false, side: T.DoubleSide }),
+  };
+  S.holeMat = new T.MeshBasicMaterial({ color: lin('#ffc24b'), transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false });
+  S.iconMats = new Map(); S.plane = new T.PlaneGeometry(1, 1); S.walls = new Map(); S.wallPool = [];
+  // debris: brick-like chunks and glass shards (step 2 adds proper physics; these mirror strike.debris)
+  const DM = CONFIG.STRIKE_MAX_DEBRIS;
+  S.deb = new T.InstancedMesh(S.box, std({ map: tx.brick.map, normalMap: tx.brick.normal, roughness: 0.8 }), DM); S.deb.castShadow = true; S.deb.frustumCulled = false; S.deb.instanceMatrix.setUsage(T.DynamicDrawUsage); S.deb.setColorAt(0, new T.Color());
+  S.shards = new T.InstancedMesh(S.box, new T.MeshPhysicalMaterial({ color: lin('#cdeeff'), roughness: 0.05, transparent: true, opacity: 0.7, envMap: S.env, envMapIntensity: 1.8, clearcoat: 1, depthWrite: false }), DM); S.shards.frustumCulled = false; S.shards.instanceMatrix.setUsage(T.DynamicDrawUsage);
+  scene.add(S.deb); scene.add(S.shards);
+  // balls: a clearcoated sphere with the skin; a glow sprite (SUPER / fireball) and the trail discs draw only around it (stencil), never over it
+  S.sphere = new T.SphereGeometry(1, 48, 32); S.ballTex = new Map(); S.balls = [];
+  S.discTex = g3Tex(g3SoftDisc(0, 1), false); S.glowBallTex = g3Tex(g3SoftDisc(0.35, 0.9), false);
+  S.blobTex = g3Tex(g3Canvas(128, 128, (g) => { const gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }), false);
+  const stencilOff = { stencilWrite: true, stencilRef: 1, stencilFunc: T.NotEqualStencilFunc, stencilFail: T.KeepStencilOp, stencilZFail: T.KeepStencilOp, stencilZPass: T.KeepStencilOp };
+  S.trailPool = []; S.trailN = 0; S.mkTrail = () => { const m = new T.Sprite(new T.SpriteMaterial(Object.assign({ map: S.discTex, transparent: true, depthWrite: false, toneMapped: false, fog: false }, stencilOff))); m.renderOrder = 3; scene.add(m); return m; };
+  S.stencilOff = stencilOff;
+  S.capPool = []; S.capTex = new WeakMap();
+  // the boss: its 2D face, captured into a texture each frame, on a plane at its depth (so balls and debris pass in front of it properly)
+  S.bossCanvas = document.createElement('canvas'); S.bossCanvas.width = S.bossCanvas.height = 4; S.bossTex = g3Tex(S.bossCanvas, true);
+  S.boss = new T.Mesh(S.plane, new T.MeshBasicMaterial({ map: S.bossTex, transparent: true, toneMapped: false, fog: false })); S.boss.visible = false; scene.add(S.boss);
+  S.vig = null;
+  gfx3dResize(); g3Warm(); // every shader compiled now (a new wall kind's first appearance would otherwise hitch mid-game)
+  G3.state = 'ready'; G3.on = G3.want !== '2d'; G3.w = G3.h = 0; if (G3.on && gameMode === 'strike') gfx3dShow(true); G3.win = { t: 0, n: 0 }; G3.lowSince = G3.slowSince = 0;
+}
+function g3Warm() { // one hidden instance of every look (bricks, glass, steel, TNT, power-up, holes, debris, the ball, its glow / trail / blob, a capsule) compiled up front
+  const S = G3, T = S.T, e = { group: new T.Group(), ims: {}, icons: [], holes: null }, m4 = new T.Matrix4().makeScale(10, 10, 10).setPosition(0, 0, -800);
+  for (const k in S.mats) { const im = g3Im(e, k); im.setMatrixAt(0, m4); im.count = 1; }
+  e.holes = new T.InstancedMesh(S.box, S.holeMat, 1); e.holes.setMatrixAt(0, m4); e.group.add(e.holes);
+  const o = g3BallSlot(0); o.mesh.material = g3BallMat(skinOf('ball'), 0); o.skin = skinOf('ball'); o.mesh.matrix.copy(m4); o.mesh.matrixWorldNeedsUpdate = true; o.glow.visible = o.blob.visible = true;
+  const tr = S.mkTrail(); S.trailPool.push(tr); const cap = new T.Sprite(new T.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false, map: S.glowBallTex })); S.scene.add(cap);
+  S.deb.count = S.shards.count = 1; S.deb.setMatrixAt(0, m4); S.shards.setMatrixAt(0, m4); S.boss.visible = true;
+  S.scene.add(e.group);
+  try { S.r.compile(S.scene, S.cam); S.r.render(S.scene, S.cam); } catch {} // (the render also builds the shadow-pass programs)
+  S.scene.remove(e.group); S.scene.remove(cap); S.boss.visible = false; S.deb.count = S.shards.count = 0; o.mesh.visible = o.glow.visible = o.blob.visible = tr.visible = false;
+}
+function gfx3dCamera() { // the off-centre frustum whose projection equals proj(): focal length STRIKE_F px, principal point = vanishing point (+ the screen shake)
+  const S = G3, v = vanish(), n = 10, k = n / STRIKE_F, cx = v.x + view.x, cy = v.y + view.y, P = S.cam.projectionMatrix;
+  P.makePerspective(-cx * k, (W - cx) * k, cy * k, -(H - cy) * k, n, STRIKE_F + CONFIG.STRIKE_Z_FAR * 2.2);
+  S.cam.projectionMatrixInverse.copy(P).invert(); S.camKey = cx + ',' + cy;
+}
+function gfx3dResize() {
+  const S = G3, T = S.T; if (!S.r) return;
+  S.w = W; S.h = H; S.r.setPixelRatio(S.pr); S.r.setSize(W, H, false); gfx3dCamera();
+  const { L, R, T: top, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, Wc = R - L, Hc = B - top, z0 = -500, len = Z - z0, tile = Math.max(150, Math.min(Wc, Hc) * 0.42); // stone slabs sized to the corridor (phone and desktop alike)
+  const place = (m, sx, sy, x, y, z, rx, ry, ru, rv) => { // scale a unit plane, rotate it into place, and tile its texture ru x rv times (UVs are scaled, the texture stays shared)
+    m.geometry.dispose(); m.geometry = new T.PlaneGeometry(1, 1); const uv = m.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * ru, uv.getY(i) * rv);
+    m.position.set(x, y, z); m.rotation.set(rx, ry, 0); m.scale.set(sx, sy, 1); m.updateMatrix();
+  };
+  const c = S.cor, mid = -(z0 + Z) / 2;
+  place(c.floor, Wc, len, 0, -B, mid, -Math.PI / 2, 0, Wc / tile, len / tile);
+  place(c.ceil, Wc, len, 0, -top, mid, Math.PI / 2, 0, Wc / tile, len / tile);
+  place(c.left, len, Hc, L, -(top + B) / 2, mid, 0, Math.PI / 2, len / tile, Hc / tile);
+  place(c.right, len, Hc, R, -(top + B) / 2, mid, 0, -Math.PI / 2, len / tile, Hc / tile);
+  place(c.far, Wc, Hc, 0, -(top + B) / 2, -Z - 2, 0, 0, Wc / tile, Hc / tile);
+  const e = Math.max(4, Math.min(Wc, Hc) * 0.008); // light strips: a thin glowing bar along each long edge + a soft glow fanning onto the floor / ceiling and the side walls
+  [[L, top], [R, top], [L, B], [R, B]].forEach(([x, y], i) => { const m = S.edges[i]; m.position.set(x + (x < 0 ? e / 2 : -e / 2), -(y + (y < 0 ? e / 2 : -e / 2)), -(Z + z0) / 2); m.scale.set(e, e, Z - z0); m.updateMatrix(); });
+  const gw = Math.min(Wc, Hc) * 0.11;
+  [[L, B, 1, 'f'], [R, B, -1, 'f'], [L, top, 1, 'c'], [R, top, -1, 'c'], [L, B, -1, 'w'], [R, B, -1, 'w'], [L, top, 1, 'w'], [R, top, 1, 'w']].forEach(([x, y, s, kind], i) => {
+    const m = S.glows[i];
+    if (kind !== 'w') { m.position.set(x + s * gw / 2, -y + (kind === 'f' ? 1 : -1), mid); m.rotation.set(kind === 'f' ? -Math.PI / 2 : Math.PI / 2, 0, s > 0 ? 0 : Math.PI); m.scale.set(gw, len, 1); }
+    else { m.position.set(x + (x < 0 ? 1 : -1), y > 0 ? -y + gw / 2 : -y - gw / 2, mid); m.rotation.set(0, x < 0 ? Math.PI / 2 : -Math.PI / 2, 0); m.rotateZ(y > 0 ? Math.PI / 2 : -Math.PI / 2); m.scale.set(gw, len, 1); }
+    m.updateMatrix();
+  });
+  // key light: high over the player, slightly to the left, aimed down the corridor; its shadow camera hugs the corridor box
+  S.key.position.set(-Wc * 0.3, -top + Hc * 0.8, 900); S.key.target.position.set(0, -(top + B) * 0.5, -Z * 0.5); S.key.target.updateMatrixWorld(); S.key.updateMatrixWorld();
+  const sc = S.key.shadow.camera, inv = new T.Matrix4().lookAt(S.key.position, S.key.target.position, new T.Vector3(0, 1, 0)), m4 = new T.Matrix4().makeRotationFromQuaternion(new T.Quaternion().setFromRotationMatrix(inv)).invert();
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, d0 = 1e9, d1 = -1e9;
+  for (const x of [L, R]) for (const y of [-top, -B]) for (const z of [-z0 * 0 + 100, -Z]) { const p = new T.Vector3(x, y, z).sub(S.key.position).applyMatrix4(m4); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); d0 = Math.min(d0, -p.z); d1 = Math.max(d1, -p.z); }
+  sc.left = x0 - 20; sc.right = x1 + 20; sc.bottom = y0 - 20; sc.top = y1 + 20; sc.near = Math.max(1, d0 - 50); sc.far = d1 + 50; sc.updateProjectionMatrix();
+  S.pool.position.set(-Wc * 0.22, -B * 0.8, 60); // low and to the side: a warm pool on the near floor, its glint on the ball off-centre S.tint.position.set(0, -(top + B) / 2, -Z * 0.78);
+  S.scene.fog.near = STRIKE_F + Z * 0.3; S.scene.fog.far = STRIKE_F + Z * 1.08;
+  for (const [, e2] of S.walls) e2.sig = ''; // brick cells follow the corridor size
+  S.vig = null;
+}
+
+/* --- per-frame sync: read the strike state, mirror it into the scene, render --- */
+function g3WallEntry(id) {
+  const S = G3; let e = S.walls.get(id); if (e) return e;
+  e = S.wallPool.pop() || { group: new S.T.Group(), ims: {}, icons: [], holes: null };
+  e.sig = ''; e.id = id; e.used = 0; S.walls.set(id, e); S.scene.add(e.group); return e;
+}
+function g3Im(e, key) { // an instanced mesh per look in this wall (created on first need, 48 bricks max per wall)
+  let m = e.ims[key]; if (m) return m;
+  const T = G3.T; m = new T.InstancedMesh(G3.box, G3.mats[key], 48); m.castShadow = key !== 'glass'; m.receiveShadow = false; m.frustumCulled = false;
+  m.setColorAt(0, new T.Color()); m.count = 0; e.ims[key] = m; e.group.add(m); return m; // (the colour buffer is sized from count: colour first)
+}
+function g3BrickLook(w, k) { // which material a brick uses: TNT crate, power-up gold, a cracked variant once damaged, else the wall kind's
+  if (k.tnt) return 'tnt'; if (k.pu) return 'pu';
+  const base = w.kind === 'glass' ? 'glass' : w.kind === 'steel' ? 'steel' : 'brick';
+  const dmg = w.hp > 1 && (k.dent || k.hp < w.hp); return dmg && base !== 'glass' ? base + 'Crack' : base;
+}
+function g3BuildWall(e, w) { // instance matrices / colours: only when a brick changes (the group moves with z and the moving wall's ox)
+  const S = G3, T = S.T, { L, R, T: top, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - top) / w.rows, kind = w.kind || 'brick';
+  const depth = Math.min(cw, ch) * (kind === 'glass' ? 0.12 : kind === 'steel' ? 0.3 : 0.5), gap = Math.max(1, Math.min(cw, ch) * 0.025);
+  for (const k in e.ims) e.ims[k].count = 0;
+  const m4 = new T.Matrix4(), col = new T.Color(), lv = S.lin(STRIKE_LEVELS[(w.level - 1) % STRIKE_LEVELS.length]), gold = S.lin('#ffc24b'), steel = S.lin('#9aaccc'), white = new T.Color(1, 1, 1);
+  let ic = 0;
+  for (const k of w.bricks) {
+    if (!k.alive) continue;
+    const look = g3BrickLook(w, k), im = g3Im(e, look), x = L + (k.col + 0.5) * cw, y = top + (k.row + 0.5) * ch, rv = rng(w.id * 131 + k.col * 17 + k.row * 7)(), j = 0.88 + rv * 0.2;
+    m4.makeScale(cw - gap * 2, ch - gap * 2, depth); m4.setPosition(x, -y, 0); im.setMatrixAt(im.count, m4);
+    if (look === 'brick' || look === 'brickCrack') col.copy(lv).multiplyScalar(j); else if (look === 'pu') col.copy(gold); else if (look === 'steel' || look === 'steelCrack') col.copy(steel).multiplyScalar(0.9 + rv * 0.15); else col.copy(white);
+    im.setColorAt(im.count, col); im.count++;
+    if (k.pu) { // the power-up icon (gold rim + glyph from the 2D art) on a plane just in front of the face
+      let p = e.icons[ic]; if (!p) { p = new T.Mesh(S.plane, null); p.renderOrder = 2; e.icons.push(p); e.group.add(p); }
+      p.material = g3IconMat(puBrickSprite(k.pu, cw, ch).c); p.position.set(x, -y, 0.6); p.scale.set(cw - gap * 2, ch - gap * 2, 1); p.visible = true; ic++;
+    }
+  }
+  for (let i = ic; i < e.icons.length; i++) e.icons[i].visible = false;
+  for (const k in e.ims) { const im = e.ims[k]; im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; im.visible = im.count > 0; }
+  if (kind === 'holed') { // the gap's edges glow saffron so the kid can aim through it
+    if (!e.holes) { e.holes = new T.InstancedMesh(G3.box, S.holeMat, 16); e.holes.frustumCulled = false; e.group.add(e.holes); }
+    let n = 0; const lw = Math.max(2, cw * 0.05);
+    for (const k of w.bricks) if (k.hole && n < 13) { const x = L + (k.col + 0.5) * cw, y = top + (k.row + 0.5) * ch;
+      for (const [dx, dy, sx, sy] of [[0, -(ch / 2 - lw), cw - lw * 2, lw], [0, ch / 2 - lw, cw - lw * 2, lw], [-(cw / 2 - lw), 0, lw, ch - lw * 2], [cw / 2 - lw, 0, lw, ch - lw * 2]]) { m4.makeScale(sx, sy, depth * 0.6); m4.setPosition(x + dx, -(y + dy), -1); e.holes.setMatrixAt(n++, m4); } }
+    e.holes.count = n; e.holes.instanceMatrix.needsUpdate = true; e.holes.visible = n > 0;
+  } else if (e.holes) e.holes.visible = false;
+}
+function g3IconMat(c) { let m = G3.iconMats.get(c); if (!m) { const t = g3Tex(c, true); m = new G3.T.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false }); G3.iconMats.set(c, m); } return m; }
+function g3BallMat(skin, slot) { // one material per ball slot (so a ball can be lifted over the wall it just passed), rebuilt when the skin changes
+  const S = G3, T = S.T; let tex = S.ballTex.get(skin); if (!tex) { tex = g3Tex(g3BallTex(skin), true); S.ballTex.set(skin, tex); }
+  const disco = skin === 'disco', planet = skin === 'planet';
+  return new T.MeshPhysicalMaterial(Object.assign({ map: tex, roughness: disco ? 0.12 : planet ? 0.55 : 0.45, metalness: disco ? 0.95 : 0, clearcoat: disco ? 0 : 0.7, clearcoatRoughness: 0.12, envMap: S.env, envMapIntensity: disco ? 1.6 : 0.45, emissive: new T.Color(0), fog: false,
+    stencilWrite: true, stencilRef: 1, stencilFunc: T.AlwaysStencilFunc, stencilZPass: T.ReplaceStencilOp, stencilFail: T.KeepStencilOp, stencilZFail: T.KeepStencilOp }));
+}
+function g3BallSlot(i) {
+  const S = G3, T = S.T; let o = S.balls[i]; if (o) return o;
+  o = { mesh: new T.Mesh(S.sphere, null), glow: new T.Sprite(new T.SpriteMaterial(Object.assign({ map: S.glowBallTex, transparent: true, depthWrite: false, toneMapped: false, fog: false, blending: T.AdditiveBlending }, S.stencilOff))),
+    blob: new T.Mesh(S.plane, new T.MeshBasicMaterial({ map: S.blobTex, transparent: true, depthWrite: false })), ring: null, skin: '' };
+  o.mesh.castShadow = true; o.mesh.matrixAutoUpdate = false; o.glow.renderOrder = 2; o.blob.rotation.x = -Math.PI / 2; o.blob.renderOrder = 1;
+  S.scene.add(o.mesh); S.scene.add(o.glow); S.scene.add(o.blob); S.balls[i] = o; return o;
+}
+function g3Ring() { // the planet skin's ring: a tilted band (child of the ball, so it turns with it)
+  const T = G3.T, c = g3Canvas(256, 8, (g) => { const gr = g.createLinearGradient(0, 0, 256, 0); gr.addColorStop(0, 'rgba(241,233,218,0)'); gr.addColorStop(0.15, 'rgba(241,233,218,0.85)'); gr.addColorStop(0.5, 'rgba(200,180,255,0.9)'); gr.addColorStop(0.62, 'rgba(169,139,255,0.3)'); gr.addColorStop(0.75, 'rgba(241,233,218,0.8)'); gr.addColorStop(1, 'rgba(241,233,218,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 8); });
+  const geo = new T.RingGeometry(1.25, 1.75, 64, 1), uv = geo.attributes.uv, pos = geo.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (Math.hypot(pos.getX(i), pos.getY(i)) - 1.25) / 0.5, 0.5);
+  const m = new T.Mesh(geo, new T.MeshStandardMaterial({ map: g3Tex(c, true), transparent: true, side: T.DoubleSide, roughness: 0.5, fog: false })); m.rotation.set(-1.15, 0.35, 0); return m;
+}
+function g3Matrix(o, x, y, z, rad, rot, spin) { // the ball's matrix: rotation from b.rot / spin, and a squash that keeps its silhouette round off-axis (a sphere at angle θ projects stretched by 1/cosθ)
+  const T = G3.T, S = G3, p = new T.Vector3(x, -y, -z), d = p.clone().sub(S.cam.position), dist = d.length(), cos = Math.max(0.3, -d.z / dist), q = new T.Quaternion().setFromEuler(new T.Euler(rot * 1.6, rot * 0.6 + spin, rot * 0.25));
+  const M = new T.Matrix4().compose(new T.Vector3(), q, new T.Vector3(rad, rad, rad)), e = new T.Vector3(d.x, d.y, 0); let out = M;
+  if (e.lengthSq() > 1e-6 && cos < 0.999) { d.normalize(); e.normalize(); const a = e.sub(d.clone().multiplyScalar(e.dot(d))).normalize(), k = cos - 1, Sq = new T.Matrix4().set(1 + k * a.x * a.x, k * a.x * a.y, k * a.x * a.z, 0, k * a.y * a.x, 1 + k * a.y * a.y, k * a.y * a.z, 0, k * a.z * a.x, k * a.z * a.y, 1 + k * a.z * a.z, 0, 0, 0, 0, 1); out = Sq.multiply(M); }
+  out.setPosition(p); o.mesh.matrix.copy(out); o.mesh.matrixWorldNeedsUpdate = true;
+}
+function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any overlay is drawn
+  const S = G3, T = S.T; if (S.w !== W || S.h !== H) gfx3dResize();
+  // fps over 1 s windows. Below 40 for 2 s: the pixel ratio steps down (x0.75, not under 0.75); below 24 for 4 s: back to 2D for good
+  // (strike.gfxAuto = false keeps 3D on, for tests on a software GPU). A gap over 1.5 s (hidden tab) restarts the measure.
+  const wn = S.win; if (!wn.t || now - wn.last > 1500) { wn.t = now; wn.n = 0; S.lowSince = S.slowSince = 0; S.onAt = S.onAt || now; } wn.n++; wn.last = now;
+  if (now - wn.t >= 1000) { S.fps = Math.round(wn.n * 1000 / (now - wn.t)); wn.t = now; wn.n = 0;
+    if (S.auto && !pause.on) {
+      if (S.fps < 40 && S.pr > S.prMin) { S.slowSince = S.slowSince || now - 1000; if (now - S.slowSince >= 2000) { S.pr = Math.max(S.prMin, Math.round(S.pr * 0.75 * 100) / 100); S.slowSince = 0; gfx3dResize(); } } else S.slowSince = 0;
+      if (S.fps < G3_LOW_FPS) { S.lowSince = S.lowSince || now - 1000; if (now - S.lowSince >= G3_LOW_MS) { S.fallback = 'fps'; S.fallbackAt = now; S.on = false; gfx3dShow(false); return false; } } else S.lowSince = 0;
+    }
+  }
+  gfx3dShow(true); S.drawn = frameCount;
+  if (S.camKey !== (vanish().x + view.x) + ',' + (vanish().y + view.y)) gfx3dCamera();
+  const Z = CONFIG.STRIKE_Z_FAR, { L, R, T: top, B } = corridor(), tu = strikeTuning(), balls = strike.balls, sup = balls.some((b) => b.super || b.fire), lin = S.lin;
+  // level mood: the edge strips, the deep tint light and the fog take on the level's colour (saffron while a SUPER ball is out)
+  const edge = sup ? [255, 194, 75] : tu.edge, rate = 0.003 * (0.6 + strike.speed / CONFIG.STRIKE_BASE_SPEED), pul = 0.5 + 0.5 * Math.sin(now * rate), ec = new T.Color('rgb(' + edge.join(',') + ')').convertSRGBToLinear();
+  S.edgeMat.color.copy(ec).multiplyScalar(0.75 + 0.6 * pul); S.glowMat.color.copy(ec); S.glowMat.opacity = 0.3 + 0.25 * pul;
+  S.tint.color.copy(ec); S.tint.intensity = 0.7 + 4 * tu.fog + (sup ? 0.6 : 0);
+  const fogC = new T.Color('#0b1030').lerp(new T.Color('rgb(' + tu.edge.join(',') + ')'), tu.fog * 0.9); S.scene.fog.color.copy(fogC); S.scene.background.copy(fogC); S.r.setClearColor(fogC, 1);
+  // depth frames scrolling toward the player (they throb saffron with a SUPER ball out)
+  { const m4 = new T.Matrix4(), c = new T.Color(), fp = sup ? 1.4 + 0.6 * Math.sin(now * 0.025) : 1, base = sup ? lin('#ffc24b') : lin('#f1e9da'), t = 3; let n = 0;
+    for (let z = STRIPE_GAP - strike.scroll; z < Z && n < 60; z += STRIPE_GAP) { const s = STRIKE_F / (STRIKE_F + z), a = (0.03 + 0.12 * s * s) * fp * 0.35;
+      for (const [x, y, sx, sy] of [[0, -B + 1, R - L, t], [0, -top - 1, R - L, t], [L + 1, -(top + B) / 2, t, B - top], [R - 1, -(top + B) / 2, t, B - top]]) { m4.makeScale(sx, sy, t); m4.setPosition(x, y, -z); S.frames.setMatrixAt(n, m4); S.frames.setColorAt(n, c.copy(base).multiplyScalar(a)); n++; } }
+    S.frames.count = n; S.frames.instanceMatrix.needsUpdate = true; S.frames.instanceColor.needsUpdate = true; }
+  // walls (and which ones a just-passed ball must stay drawn over, as in 2D)
+  let lift = null; for (const bl of balls) if (bl.dir < 0) for (const w of strike.walls) if (w.z < bl.z && bl.z - w.z < CONFIG.STRIKE_WALL_GAP * 0.15 && (!lift || w.z > lift.z)) lift = w;
+  const seen = new Set();
+  for (const w of strike.walls) {
+    if (w.z >= Z) continue; seen.add(w.id);
+    const e = g3WallEntry(w.id); let sig = w.level + w.kind + w.rows + 'x' + w.cols; for (const k of w.bricks) sig += k.alive ? (k.hp * 2 + (k.dent ? 1 : 0)).toString(36) + (k.tnt ? 't' : k.pu ? 'p' : '') : '.';
+    if (sig !== e.sig) { g3BuildWall(e, w); e.sig = sig; }
+    e.group.position.set(w.ox || 0, 0, -w.z);
+    const ro = lift && w.z < lift.z ? 4 : 0; for (const k in e.ims) e.ims[k].renderOrder = ro;
+  }
+  if (S.holeMat) S.holeMat.opacity = 0.45 + 0.35 * Math.sin(now * 0.006);
+  for (const [id, e] of S.walls) if (!seen.has(id)) { S.scene.remove(e.group); S.walls.delete(id); S.wallPool.push(e); }
+  // boss: its face drawn by the 2D code into the (still empty) overlay, copied into a texture on a plane at the boss's depth
+  const bs = strike.boss;
+  if (bs && bs.z < Z) {
+    const vx = view.x, vy = view.y; view.x = view.y = 0; drawBoss(bs, now); view.x = vx; view.y = vy;
+    const a = proj(L, top, bs.z), c = proj(R, B, bs.z), sx = Math.max(1, (c.x - a.x) * DPR), sy = Math.max(1, (c.y - a.y) * DPR), k = Math.min(1, 1024 / Math.max(sx, sy)), bw = Math.max(2, Math.round(sx * k)), bh = Math.max(2, Math.round(sy * k));
+    const bc = S.bossCanvas; if (bc.width !== bw || bc.height !== bh) { bc.width = bw; bc.height = bh; S.bossTex.dispose(); S.bossTex = g3Tex(bc, true); S.boss.material.map = S.bossTex; }
+    const g = bc.getContext('2d'); g.clearRect(0, 0, bw, bh); g.drawImage(canvas, a.x * DPR, a.y * DPR, sx, sy, 0, 0, bw, bh); S.bossTex.needsUpdate = true;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); resetView();
+    S.boss.position.set(0, -(top + B) / 2, -bs.z); S.boss.scale.set(R - L, B - top, 1); S.boss.visible = true;
+  } else { S.boss.visible = false; if (!bs) strike.ui.boss = null; }
+  // balls, their floor blobs, glow and trails
+  const skin = skinOf('ball'), rB = ballR(), tskin = skinOf('trail'), v = vanish(); let tn = 0;
+  balls.forEach((bl, i) => {
+    const o = g3BallSlot(i); if (o.skin !== skin) { if (o.mesh.material) o.mesh.material.dispose(); o.mesh.material = g3BallMat(skin, i); o.skin = skin; if (o.ring) { o.mesh.remove(o.ring); o.ring = null; } if (skin === 'planet') { o.ring = g3Ring(); o.mesh.add(o.ring); } }
+    const fire = !!bl.fire, pop = Math.max(0, 1 - (now - strike.hitAt) / 160), rad = rB * (1 + 0.12 * pop), mat = o.mesh.material;
+    o.mesh.visible = true; g3Matrix(o, bl.x, bl.y, bl.z, rad, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, (bl.spin || 0) * 2);
+    mat.color.set(bl.super && skin !== 'classic' ? '#ffd89a' : bl.super ? '#ffe2a0' : '#ffffff').convertSRGBToLinear();
+    mat.emissive.set(fire ? '#ff6a1a' : bl.super ? '#ffb020' : powerOn('slow') ? '#2a4ad8' : '#000000').convertSRGBToLinear(); mat.emissiveIntensity = fire ? 0.6 : bl.super ? 0.45 : 0.35;
+    const lifted = lift && bl.dir < 0 && bl.z > lift.z; mat.depthTest = !lifted; o.mesh.renderOrder = lifted ? 3 : 0;
+    o.glow.visible = bl.super || fire; if (o.glow.visible) { o.glow.position.set(bl.x, -bl.y, -bl.z); o.glow.scale.setScalar(rad * (fire ? 4.2 : 3.6) * (1 + 0.06 * Math.sin(now * 0.03))); o.glow.material.color.set(fire ? '#ff8a3d' : '#ffc24b'); }
+    o.blob.visible = true; o.blob.position.set(bl.x, -B + 1.5, -bl.z); o.blob.scale.set(rad * 2.6, rad * 1.6, 1); o.blob.material.opacity = Math.max(0.25, 0.9 - Math.abs(B - bl.y) / (B - top) * 0.5);
+    const tr = bl.trail || [], curving = Math.abs(bl.spin || 0) > 0.08, tw = bl.super || fire || curving ? 320 : 160;
+    for (let j = 0; j < tr.length - 1; j++) { const q = tr[j], s = q.r / rB; if (!(s > 0)) continue; const kk = Math.max(0, 1 - (now - q.t) / tw) * 0.35 * (bl.super || fire ? 1.4 : 1); if (kk <= 0.01) continue;
+      let sp = S.trailPool[tn]; if (!sp) { sp = S.mkTrail(); S.trailPool.push(sp); } tn++;
+      const col = fire || tskin === 'fire' ? (j % 2 ? '#ffe07a' : '#ff8a3d') : bl.super ? '#ffc24b' : curving ? '#c0a6ff' : tskin === 'rainbow' ? hslHex((j * 28 + now * 0.25) % 360) : '#ff6f59';
+      sp.visible = true; sp.position.set((q.x - v.x) / s, -(q.y - v.y) / s, -(STRIKE_F / s - STRIKE_F)); sp.scale.setScalar(rB * 2 * (fire ? 1.05 : 0.9)); sp.material.color.set(col); sp.material.opacity = Math.min(1, kk * 1.6); }
+  });
+  for (let i = balls.length; i < S.balls.length; i++) { const o = S.balls[i]; o.mesh.visible = o.glow.visible = o.blob.visible = false; }
+  for (let i = tn; i < S.trailPool.length; i++) S.trailPool[i].visible = false;
+  // debris: small boxes tumbling where strike.debris says
+  { const m4 = new T.Matrix4(), q = new T.Quaternion(), eu = new T.Euler(), p = new T.Vector3(), s = new T.Vector3(), c = new T.Color(); let n = 0, g = 0;
+    for (const d of strike.debris) { const f = Math.min(1, d.life * 2), k = d.k * f; eu.set(d.rot * 0.7, d.rot * 1.3, d.rot); q.setFromEuler(eu); p.set(d.x, -d.y, -d.z);
+      if (d.shard) { s.set(d.w * k * 0.7, d.h * k * 0.7, 2); m4.compose(p, q, s); S.shards.setMatrixAt(g++, m4); continue; }
+      s.set(d.w * k * 0.8, d.h * k * 0.8, Math.min(d.w, d.h) * k * 0.45); m4.compose(p, q, s); S.deb.setMatrixAt(n, m4);
+      S.deb.setColorAt(n, c.copy(lin(d.kind === 'steel' ? '#9aaccc' : d.kind === 'tnt' ? '#d8362e' : STRIKE_LEVELS[(d.level - 1) % STRIKE_LEVELS.length]))); n++; }
+    S.deb.count = n; S.shards.count = g; S.deb.instanceMatrix.needsUpdate = S.shards.instanceMatrix.needsUpdate = true; if (S.deb.instanceColor) S.deb.instanceColor.needsUpdate = true; }
+  // capsules: the 2D capsule art as sprites at their depth (the 'grab me' ring stays on the overlay)
+  { let n = 0; for (const c of strike.capsules) { let sp = S.capPool[n]; if (!sp) { sp = new T.Sprite(new T.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false })); sp.renderOrder = 2; S.capPool.push(sp); S.scene.add(sp); } n++;
+      const art = capsuleSprite(c.kind).c; let tex = S.capTex.get(art); if (!tex) { tex = g3Tex(art, true); S.capTex.set(art, tex); } if (sp.material.map !== tex) { sp.material.map = tex; sp.material.needsUpdate = true; }
+      const yb = c.y + Math.sin(now * 0.005 + c.phase) * 14, pulse = 1 + 0.06 * Math.sin(now * 0.012 + c.phase); sp.visible = true; sp.position.set(c.x, -yb, -c.z); sp.scale.setScalar(rB * 0.6 * 3 * pulse); sp.material.opacity = c.missed ? Math.max(0, c.life) : 1; }
+    for (let i = n; i < S.capPool.length; i++) S.capPool[i].visible = false; }
+  S.r.render(S.scene, S.cam);
+  return true;
+}
+function gfx3dSync() { if (G3.shown && (gameMode !== 'strike' || !gfx3dActive())) gfx3dShow(false); } // after each frame: the WebGL layer hides when Strike is not the mode (on Strike's start screen it stays up, covered, so the first round never waits on its first present)
+function g3Vignette() { // the 2D background's dark vignette, drawn over the WebGL corridor on the overlay
+  return makeSprite('g3vig|' + W + 'x' + H, W, H, 0, 0, (g) => { const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.hypot(W, H) * 0.62); v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.55)'); g.fillStyle = v; g.fillRect(0, 0, W, H); });
 }
 
 /* ---------------- Sound (generated with Web Audio, no files) ---------------- */
@@ -4677,6 +5156,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('sine', 150 + pw * 260, 55, 0.14 + 0.1 * pw, 110 + pw * 60, t0);
       if (pw >= 0.999) { tone('triangle', 880, 1760, 0.05, 160, t0 + 0.02); tone('sine', 1320, 2640, 0.04, 200, t0 + 0.05); } // SUPER: rising shimmer
     }
+    else if (kind === 'faster') { f.type = 'bandpass'; f.frequency.setValueAtTime(380, t0); f.frequency.exponentialRampToValueAtTime(2600, t0 + 0.32); f.Q.value = 1.4; env(f, 0.13, 360, t0); noise(t0, 360, f); tone('triangle', 330, 880, 0.06, 300, t0 + 0.04); } // in-level speed-up: a rising whoosh
     else if (kind === 'whiff') { f.type = 'bandpass'; f.frequency.setValueAtTime(1400, t0); f.frequency.exponentialRampToValueAtTime(260, t0 + 0.2); f.Q.value = 1; env(f, 0.12, 220, t0); noise(t0, 220, f); tone('triangle', 330, 200, 0.07, 240, t0 + 0.04); } // the ball whooshes past
     else if (kind === 'bounce') { tone('sine', 320, 180, 0.1, 120, t0); f.type = 'lowpass'; f.frequency.value = 700; env(f, 0.06, 60, t0); noise(t0, 60, f); } // far wall, muffled by distance
     else if (kind === 'crack') { // bricks breaking: filtered noise burst over a thump, deeper and longer the bigger the hit (arg 0..1)
@@ -5860,7 +6340,7 @@ window.__grasp = {
   get muted() { return muted; }, set muted(v) { setMuted(v); }, chromeRow, chromeRowBottom, scoreY, hintBottom,
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, busy, strike, pause, previews, setGameMode, spawnWave, spawnCar, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  slice, smash, busy, strike, pause, previews, setGameMode, setGfx, spawnWave, spawnCar, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
   // meta progression: the profile, coins / XP, missions, the collection; setDate is test-only (it picks the mission day and survives a reload in the tab)
   get profile() { return profile; }, profileReset, addCoins, addXp, levelOf, track, claimMission, coinUi, get events() { return meta.events; }, get toasts() { return meta.toasts; },
   get missions() { ensureMissions(); return profile.missions.list; }, missionPool: MISSION_POOL,

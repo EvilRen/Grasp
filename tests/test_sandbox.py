@@ -1,11 +1,12 @@
 import asyncio, subprocess, time, json, sys, re
 from playwright.async_api import async_playwright
 srv = subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
-MATTER = open('tests/vendor/matter.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
+MATTER = open('tests/vendor/matter.min.js').read(); THREE = open('tests/vendor/three.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
 async def routes(page):
     async def h(route):
         u = route.request.url
         if 'matter' in u: return await route.fulfill(status=200, content_type='application/javascript', body=MATTER)
+        if 'three' in u and u.endswith('three.min.js'): return await route.fulfill(status=200, content_type='application/javascript', body=THREE)
         if 'vision_bundle.mjs' in u: return await route.fulfill(status=200, content_type='text/javascript', body=FAKE, headers={'Access-Control-Allow-Origin':'*'})
         if '.wasm' in u or 'hand_landmarker.task' in u: return await route.fulfill(status=200, body=b'x'*2048, headers={'Access-Control-Allow-Origin':'*'})
         if 'fonts.g' in u: return await route.fulfill(status=200, body='')
@@ -13,6 +14,12 @@ async def routes(page):
         return await route.continue_()
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
+# Strike's renderer in the suites: by default (GRASP_GFX=2d) the 2D canvas; GRASP_GFX=3d runs the WebGL renderer at a low fixed pixel ratio, no
+# shadows and no low-fps fallback (headless Chromium's WebGL is SwiftShader, a CPU rasterizer: full resolution runs at ~2-5 fps and falls back
+# to 2D; even this light setup runs ~30 fps, so the frame-timing checks of test_strike.py flake in 3D here; test_strike3d.py sets its own)
+import os
+GFX = os.environ.get('GRASP_GFX', '2d')
+INIT += "window.__graspGfx = { mode: '2d' };" if GFX == '2d' else "window.__graspGfx = { pr: 0.12, shadows: false, auto: false };"
 HAND_JS = """
 window.mkHand = (ax, ay, pd) => {  // ax, ay: pinch anchor in camera coords (0..1, NOT mirrored); pd: pinch distance / hand size
   const L = Array.from({length:21}, () => ({x: ax, y: ay + 0.12, z: 0}));

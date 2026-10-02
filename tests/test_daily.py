@@ -64,7 +64,7 @@ async def main():
         await page.evaluate(D + ".forceModifier = 'tiny'; __grasp.startDaily()")
         dy = await page.evaluate("(() => { const o = Math.random; Math.random = () => 0.123; const v = __grasp.strikeRand('walls'); Math.random = o; return { v, lives: " + S + ".lives, max: " + S + ".maxLives, radius: sd('STRIKE_HIT_RADIUS'), speed: sd('STRIKE_BASE_SPEED'), easyPill: !!(" + S + ".ui.buttons && " + S + ".ui.buttons.easy), rate: " + S + ".perkStats().puRate, diff: " + S + ".diff }; })()")
         check('daily mode: strikeRand is the seeded generator, not Math.random', dy['v'] != 0.123 and 0 <= dy['v'] < 1, dy)
-        check('normal Strike on Easy: the Easy lives (5), for contrast', ez['lives'] == 5, ez)
+        check('normal Strike on Easy: the Easy lives (4), for contrast', ez['lives'] == 4, ez)
         check('daily: 3 lives, Normal hit radius / speed / power-up rate', dy['lives'] == 3 and dy['max'] == 3 and dy['radius'] == 1.3 and abs(dy['speed'] - 1.1) < 1e-9 and dy['rate'] < ez['rate'] and dy['diff'] == 'easy', [dy, ez])
         sv = await page.evaluate("({ d: " + S + ".serveAt - performance.now(), b: !!" + S + ".ui.dailyBanner, mod: " + S + ".ui.dailyBanner && " + S + ".ui.dailyBanner.mod })")
         check('daily: the pre-run banner (modifier) is up and the first serve waits for it', sv['b'] and sv['mod'] == 'tiny' and sv['d'] > 1500, sv)

@@ -3,14 +3,14 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Timing-independent: the ball is parked (speed 0) between checks; every wait is a condition.
 S = "__grasp.strike"
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
-PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
+PIX = "((x, y) => __grasp.strike.pixel(x, y))"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
 SFX_JS = "(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()"
 HELP_JS = """
 window.park = (z = 2300, x = 30, y = 30) => { const s = __grasp.strike; s.setBallZ(z, x, y); s.ball.speed = 0; s.lives = 40; };
 window.tun = (l, d) => __grasp.strike.tuning(l, d);
 """
-EN_NEWS = {'nw_holed': 'New: walls with holes!', 'hd_curve': 'Curving balls!', 'hd_faster': 'Faster!', 'hd_tougher': 'Tougher walls!', 'nw_moving': 'New: moving walls!'}
-HE_NEWS = {'nw_holed': 'חדש: קירות עם חור!', 'hd_curve': 'הכדור מתעקל!', 'hd_faster': 'מהר יותר!', 'hd_tougher': 'קירות קשים יותר!', 'nw_moving': 'חדש: קירות זזים!'}
+EN_NEWS = {'nw_holed': 'New: walls with holes!', 'hd_curve': 'Curving balls!', 'hd_faster': 'Faster!', 'hd_tougher': 'Tougher walls!', 'nw_moving': 'New: moving walls!', 'nw_tnt': 'New: TNT walls!', 'hd_wobble': 'Wobbly balls!', 'hd_boss': 'Faster boss!'}
+HE_NEWS = {'nw_holed': 'חדש: קירות עם חור!', 'hd_curve': 'הכדור מתעקל!', 'hd_faster': 'מהר יותר!', 'hd_tougher': 'קירות קשים יותר!', 'nw_moving': 'חדש: קירות זזים!', 'nw_tnt': 'חדש: קירות TNT!', 'hd_wobble': 'הכדור מתפתל!', 'hd_boss': 'הבוס מהיר יותר!'}
 
 async def new_page(b, mobile=False, lang='en'):
     opts = dict(viewport={'width': 360, 'height': 740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': 1280, 'height': 800})
@@ -54,13 +54,22 @@ async def main():
             check(f'{d}: no curve on levels 1-3, a curve from level 4 that grows; brick hp = the level', all(x['curve'] == 0 for x in T[d][:3]) and mono(col('curve')[3:]) and col('brickHp') == list(range(1, 9)), col('curve'))
             check(f'{d}: each level\'s pace cap sits between its base and the next level\'s base', all(x['pace'] < x['paceCap'] < y['pace'] for x, y in zip(T[d], T[d][1:])))
         es, ns = [x['speedMul'] for x in T['easy']], [x['speedMul'] for x in T['normal']]
-        check('Normal ramps ~12% per level, Easy ~6% (level 8: x1.84 vs x1.42); Normal faster than Easy at every level from 2', abs(ns[1] - 1.12) < 1e-9 and abs(es[1] - 1.06) < 1e-9 and abs(ns[7] - 1.84) < 1e-9 and abs(es[7] - 1.42) < 1e-9 and all(a > b for a, b in zip(ns[1:], es[1:])), [ns, es])
-        check('Normal tightens faster than Easy: smaller wall gap, wider aim, tougher boss at level 8', T['normal'][7]['wallGap'] < T['easy'][7]['wallGap'] and T['normal'][7]['drift'] > T['easy'][7]['drift'] and T['normal'][7]['bossHpMul'] > T['easy'][7]['bossHpMul'])
+        check('Normal ramps 12% per level, Easy 10% (level 8: x1.84 vs x1.70); Normal faster than Easy at every level from 2', abs(ns[1] - 1.12) < 1e-9 and abs(es[1] - 1.10) < 1e-9 and abs(ns[7] - 1.84) < 1e-9 and abs(es[7] - 1.70) < 1e-9 and all(a > b for a, b in zip(ns[1:], es[1:])), [ns, es])
+        check('Normal tightens faster than Easy: smaller wall gap, wider aim at level 8; the boss level factor is the same (Easy\'s hp = 0.85 x Normal\'s)', T['normal'][7]['wallGap'] < T['easy'][7]['wallGap'] and T['normal'][7]['drift'] > T['easy'][7]['drift'] and all(abs(a['bossHpMul'] - b['bossHpMul']) < 1e-12 for a, b in zip(T['normal'], T['easy'])))
+        ev = lambda k: [round(x[k], 6) for x in T['easy']]
+        check('new Easy curve: max speed +4% a level, reach 1 / 0.95 / 0.90 / 0.85 then held, magnet 0.5 on levels 1-2 fading to 0.15 by level 6 (floor), gap 400 -8 a level',
+              ev('maxSpeed') == [round(2.2 * (1 + 0.04 * i), 6) for i in range(8)] and ev('reach') == [1, 0.95, 0.9, 0.85, 0.85, 0.85, 0.85, 0.85] and ev('magnet') == [0.5, 0.5, 0.4125, 0.325, 0.2375, 0.15, 0.15, 0.15] and all(x['magnet'] >= 0.15 - 1e-9 for x in T['far']) and ev('wallGap') == [400 - 8 * i for i in range(8)] and all(x['wallGap'] >= 300 for x in T['far']),
+              {k: ev(k) for k in ('maxSpeed', 'reach', 'magnet', 'wallGap')})
+        check('every level-up brings one new thing in order: L2 glass, L3 steel, L4 curve, L5 holed, L6 moving, L7 TNT, L8 S-wobble + a faster boss (both difficulties)',
+              [sorted(x['kindWeights']) for x in T['easy'][:7]] == [sorted(['brick', 'glass', 'steel', 'holed', 'moving', 'tnt'][:n]) for n in (1, 2, 3, 3, 4, 5, 6)] and all(x['curve'] == 0 for x in T['easy'][:3]) and T['easy'][3]['curve'] > 0
+              and [x['waves'] for x in T['easy']] == [1] * 7 + [2] and [x['waves'] for x in T['normal']] == [1] * 7 + [2] and T['easy'][7]['bossMs'] < T['easy'][6]['bossMs'] / 1.2, [x['waves'] for x in T['normal']])
+        tint = [tuple(x['edge']) for x in T['normal']]
+        check('corridor tint: a clearly different colour on each of levels 1-8 (blue, teal, green, gold, orange, red, purple, deep red), with fog from level 2', len(set(tint)) == 8 and all(sum(abs(a - b) for a, b in zip(p, q)) > 60 for p, q in zip(tint, tint[1:])) and T['normal'][0]['fog'] == 0 and all(x['fog'] >= 0.14 for x in T['normal'][1:]), tint)
         allE = T['easy'] + T['far']
-        check('Easy floors: the reach never below 85% of level 1, the magnet never below 60% of level 1 (0.3), at any level', all(x['reach'] >= 0.85 - 1e-9 for x in allE) and all(x['magnet'] >= 0.3 - 1e-9 for x in allE) and T['easy'][7]['reach'] < 1 and T['easy'][7]['magnet'] < 0.5, [(x['level'], round(x['reach'], 3), round(x['magnet'], 3)) for x in allE])
+        check('Easy floors: the reach never below 85% of level 1, the magnet never below 0.15, at any level', all(x['reach'] >= 0.85 - 1e-9 for x in allE) and all(x['magnet'] >= 0.15 - 1e-9 for x in allE) and T['easy'][7]['reach'] < 1 and T['easy'][7]['magnet'] < 0.5, [(x['level'], round(x['reach'], 3), round(x['magnet'], 3)) for x in allE])
         check('Normal: the magnet stays 0, the reach shrinks to a floor', all(x['magnet'] == 0 for x in T['normal']) and T['normal'][7]['reach'] < T['easy'][7]['reach'], [x['reach'] for x in T['normal']])
         check('past level 8 only the pace creeps up (no runaway): level 40 Easy under its max speed', T['far'][-1]['pace'] > T['easy'][7]['pace'] and T['far'][-1]['pace'] < T['far'][-1]['maxSpeed'] and T['far'][-1]['wallGap'] == T['easy'][7]['wallGap'])
-        check('the wall-kind mix: level 6 has all six kinds; Normal level 8 favours steel / moving / TNT over plain brick', set(T['easy'][5]['kindWeights']) == {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'} and T['normal'][7]['kindWeights']['steel'] > T['normal'][7]['kindWeights']['brick'], T['normal'][7]['kindWeights'])
+        check('the wall-kind mix: level 7 has all six kinds; Normal level 8 favours steel / moving / TNT over plain brick', set(T['easy'][6]['kindWeights']) == {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'} and T['normal'][7]['kindWeights']['steel'] > T['normal'][7]['kindWeights']['brick'], T['normal'][7]['kindWeights'])
 
         # ===== the pace inside a level: grows per far-wall bounce, capped; reset to the new base on a level-up =====
         await page.evaluate(f"{S}.setLevel(3); park()")
@@ -77,14 +86,14 @@ async def main():
         await page.evaluate(f"{S}.ui.newsBox = null; {S}.setCleared(clearedAtLevel(4)); park()")
         lu = await page.evaluate(f"({{ level: {S}.level, pace: {S}.pace, base: {S}.levelBase, news: {S}.ui.levelBanner && {S}.ui.levelBanner.news, text: levelNewsText({S}.ui.levelBanner.news) }})")
         check('level-up to 4: the pace resets to the level-4 base, above the old base and the old capped pace', lu['level'] == 4 and abs(lu['pace'] - nxt) < 1e-9 and lu['base'] == lu['pace'] and lu['pace'] > paces[-1] > b3['pace'], [lu, paces[-1]])
-        check('level 4 banner sub-line: "New: walls with holes!  ·  Curving balls!  ·  Faster!"', lu['news'] == ['nw_holed', 'hd_curve', 'hd_faster'] and lu['text'] == '  ·  '.join(EN_NEWS[k] for k in lu['news']), lu)
+        check('level 4 banner sub-line: "Curving balls!  ·  Faster!  ·  Tougher walls!"', lu['news'] == ['hd_curve', 'hd_faster', 'hd_tougher'] and lu['text'] == '  ·  '.join(EN_NEWS[k] for k in lu['news']), lu)
         await page.wait_for_function(f"{S}.ui.newsBox && performance.now() > {S}.ui.levelBanner.t + 450", timeout=6000)
         nb = await page.evaluate(f"{S}.ui.newsBox")
         check('the banner draws the sub-line inside the screen', nb['text'] == lu['text'] and nb['x'] >= 0 and nb['x'] + nb['w'] <= 1280, nb)
         await page.screenshot(path='tests/out/strike7_banner_desktop.png')
         allnews = await page.evaluate("[2,3,4,5,6,7,8,9].map(l => levelNews(l))")
-        check('every level-up 2 -> 9 names what got harder, "Faster!" every time; 5 = moving walls', all(len(x) >= 2 and 'hd_faster' in x for x in allnews) and allnews[3][0] == 'nw_moving' and allnews[0][0] == 'nw_glass', allnews)
-        he = await page.evaluate("(() => { setLang('he'); const r = ['nw_holed', 'hd_curve', 'hd_faster', 'hd_tougher', 'nw_moving'].map(k => t(k)); const all = ['glass', 'steel', 'holed', 'moving', 'tnt'].every(k => I18N.he['nw_' + k] && I18N.en['nw_' + k]) && ['faster', 'tougher', 'curve', 'wobble'].every(k => I18N.he['hd_' + k] && I18N.en['hd_' + k]); setLang('en'); return { r, all }; })()")
+        check('every level-up 2 -> 9 names what got harder, "Faster!" every time, the new thing first: glass, steel, curve, holed, moving, TNT, wobble + faster boss', all(len(x) >= 2 and 'hd_faster' in x for x in allnews) and [x[0] for x in allnews[:7]] == ['nw_glass', 'nw_steel', 'hd_curve', 'nw_holed', 'nw_moving', 'nw_tnt', 'hd_wobble'] and allnews[6][1] == 'hd_boss', allnews)
+        he = await page.evaluate("(() => { setLang('he'); const r = ['nw_holed', 'hd_curve', 'hd_faster', 'hd_tougher', 'nw_moving'].map(k => t(k)); const all = ['glass', 'steel', 'holed', 'moving', 'tnt'].every(k => I18N.he['nw_' + k] && I18N.en['nw_' + k]) && ['faster', 'tougher', 'curve', 'wobble', 'boss'].every(k => I18N.he['hd_' + k] && I18N.en['hd_' + k]); setLang('en'); return { r, all }; })()")
         check('Hebrew sub-lines (and every news string in EN + HE)', he['r'] == [HE_NEWS[k] for k in ['nw_holed', 'hd_curve', 'hd_faster', 'hd_tougher', 'nw_moving']] and he['all'], he)
 
         # ===== curve, drift, gap, brick hp, boss, magnet, trail, heartbeat at a level =====
@@ -101,8 +110,8 @@ async def main():
           s.boss = null; const bs = s.spawnBoss(1); r.boss = {{ hp: bs.maxHp, speed: bs.speed, z: bs.z }}; s.boss = null; s.setLevel(6);
           s.setLevel(1); r.trail1 = s.trailMs({{}}); r.gap1 = wallSlotZ(1) - wallSlotZ(0); s.setLevel(6); return r; }})()""")
         t6 = lv['t']
-        check('level 6 (Easy): brick hp 6, wall slots closer (tuned gap), magnet faded (full on levels 1-2) but >= 0.3', lv['hp'] == 6 and abs(lv['gap'] - t6['wallGap']) < 1e-9 and lv['gap'] < lv['gap1'] and abs(lv['magnet'] - t6['magnet']) < 1e-9 and 0.3 <= lv['magnet'] < 0.5, lv)
-        check('level 6 boss: hp 16 x 0.6 x the level factor, advancing faster (tuned crossing time)', lv['boss']['hp'] == round(16 * 0.6 * t6['bossHpMul']) and lv['boss']['hp'] > 10 and abs(lv['boss']['speed'] - (lv['boss']['z'] - 450) / t6['bossMs']) < 1e-12 and t6['bossMs'] < 40000, lv['boss'])
+        check('level 6 (Easy): brick hp 6, wall slots closer (tuned gap), magnet faded to its 0.15 floor (full on levels 1-2)', lv['hp'] == 6 and abs(lv['gap'] - t6['wallGap']) < 1e-9 and lv['gap'] < lv['gap1'] and abs(lv['magnet'] - t6['magnet']) < 1e-9 and abs(lv['magnet'] - 0.15) < 1e-9, lv)
+        check('level 6 boss: hp 16 x 0.85 x the level factor, advancing faster (tuned crossing time)', lv['boss']['hp'] == round(16 * 0.85 * t6['bossHpMul']) and lv['boss']['hp'] > 10 and abs(lv['boss']['speed'] - (lv['boss']['z'] - 450) / t6['bossMs']) < 1e-12 and t6['bossMs'] < 40000, lv['boss'])
         check('the ball trail is longer at the faster level-6 pace (160 ms at level 1)', lv['trail1'] == 160 and lv['trail6'] > 160 * 1.2, [lv['trail1'], lv['trail6']])
         # heartbeat: none on level 1, a soft beat from level 2, quicker each level
         await page.evaluate(f"{S}.setLevel(1); park(); __sfx.length = 0; {S}.beats = 0")
@@ -123,6 +132,27 @@ async def main():
         FOG = "(async () => { const s = __grasp.strike, keep = s.walls.splice(0); await " + FRAMES + "; const v = vanish(), r = " + PIX + "(v.x + 30, v.y + 30); s.walls.push(...keep); return r; })()"  # the walls set aside for the probe: they stand in front of the vanishing point
         fog = await page.evaluate(FOG); await edge(1); fog1 = await page.evaluate(FOG)
         check('the far fog takes the level\'s colour on level 6 (redder than level 1)', fog[0] - fog[2] > fog1[0] - fog1[2], [fog1, fog])
+
+        # ===== speed-up inside a level: every 5 returns in a row (no miss) the pace steps up 5%, within the level cap; 'Faster!' + a whoosh =====
+        RET = "(() => { const s = __grasp.strike; s.setBallZ(__grasp.CONFIG.STRIKE_HIT_Z, innerWidth / 2, innerHeight / 2); strikeHit(s.ball, performance.now()); park(); return s.pace; })()"
+        await page.evaluate(f"{S}.setLevel(2); park(); __sfx.length = 0"); p0 = await page.evaluate(f"{S}.pace")
+        ps = [await page.evaluate(RET) for _ in range(5)]
+        fu = await page.evaluate(f"({{ ui: {S}.ui.faster, ups: {S}.paceUps, sfx: __sfx.filter(k => k === 'faster').length, run: {S}.runReturns }})")
+        check('4 returns: same pace; the 5th: pace x1.05, "Faster!" pulse + a whoosh', ps[:4] == [p0] * 4 and abs(ps[4] - p0 * 1.05) < 1e-9 and fu['ui'] and fu['sfx'] == 1 and fu['run'] == 5, [p0, ps, fu])
+        await frames(page, 2); fb = await page.evaluate(f"{S}.ui.fasterBox"); hud = await page.evaluate(f"{S}.ui.hud")
+        check('"Faster!" is drawn just under the HUD card', fb and fb['text'] == 'Faster!' and hud['y'] + hud['h'] <= fb['y'] < hud['y'] + hud['h'] + 40 and hud['x'] <= fb['x'] and fb['x'] + fb['w'] <= hud['x'] + hud['w'] + 20, [fb, hud])
+        await page.screenshot(path='tests/out/strike7_faster_desktop.png')
+        ps2 = [await page.evaluate(RET) for _ in range(4)]
+        await page.evaluate(f"(() => {{ const s = {S}; s.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 2, 30, 30); strikeMiss(s.ball, performance.now()); s.serve(); park(); }})()")
+        ps3 = [await page.evaluate(RET) for _ in range(4)]
+        check('a miss breaks the run: 4 returns + a miss + 4 returns = no speed-up', ps2 == [ps[4]] * 4 and ps3 == [ps[4]] * 4, [ps[4], ps2, ps3])
+        cp = await page.evaluate(f"(() => {{ const s = {S}, T = tun(), cap = Math.min(T.maxSpeed, T.paceCap); s.pace = cap * 0.99; for (let i = 0; i < 20; i++) {{ s.setBallZ(150, innerWidth / 2, innerHeight / 2); strikeHit(s.ball, performance.now()); park(); }} return {{ pace: s.pace, cap, next: tun(3).pace }}; }})()")
+        check('the speed-ups stop at the level cap (base + 75% of the step), below the next level\'s base', abs(cp['pace'] - cp['cap']) < 1e-9 and cp['pace'] < cp['next'], cp)
+        await page.evaluate(f"{S}.ui.newsBox = null; {S}.setCleared(clearedAtLevel(3)); park()")
+        lr = await page.evaluate(f"({{ run: {S}.runReturns, pace: {S}.pace, base: tun(3).pace }})")
+        check('a level-up resets the run and the pace to the new level\'s base', lr['run'] == 0 and abs(lr['pace'] - lr['base']) < 1e-9, lr)
+        he2 = await page.evaluate("I18N.he.hd_faster")
+        check('"Faster!" in Hebrew: מהר יותר!', he2 == 'מהר יותר!', he2)
 
         # ===== perks multiply on top =====
         pk = await page.evaluate(f"""(() => {{ const s = {S}, r = {{}}; s.setLevel(5); park();

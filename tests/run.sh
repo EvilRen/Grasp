@@ -9,10 +9,19 @@ if [ ! -f tests/vendor/matter.min.js ]; then   # Matter.js served locally so tes
   (cd "$tmp" && npm pack matter-js@0.20.0 --silent >/dev/null && tar xzf matter-js-0.20.0.tgz)
   cp "$tmp/package/build/matter.min.js" tests/vendor/ && rm -rf "$tmp"
 fi
+if [ ! -f tests/vendor/three.min.js ]; then   # three.js r128 (Strike's WebGL renderer) served locally too
+  mkdir -p tests/vendor && tmp=$(mktemp -d)
+  (cd "$tmp" && npm pack three@0.128.0 --silent >/dev/null && tar xzf three-0.128.0.tgz)
+  cp "$tmp/package/build/three.min.js" tests/vendor/ && rm -rf "$tmp"
+fi
 # Run every suite even if one fails (timing checks can flake on slow machines), then report.
 failed=()
-for t in test_sandbox test_slice test_smash test_busy test_strike test_strike2 test_strike3 test_chrome test_start test_meta test_daily test_grippy; do
+for t in test_sandbox test_slice test_smash test_busy test_strike test_strike2 test_strike3 test_strike3d test_chrome test_start test_meta test_daily test_grippy; do
   python3 "tests/$t.py" || failed+=("$t")
+done
+# Strike's timing-independent suites again on the WebGL renderer (their pixel probes read the composited WebGL + 2D pixel)
+for t in test_strike2 test_strike3; do
+  GRASP_GFX=3d python3 "tests/$t.py" || failed+=("$t(3d)")
 done
 if [ ${#failed[@]} -gt 0 ]; then echo "FAILED SUITES: ${failed[*]}"; exit 1; fi
 echo "ALL TESTS PASSED"

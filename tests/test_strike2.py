@@ -3,7 +3,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Timing-independent: the ball is parked (speed 0) between checks, every wait is a condition or a frame count.
 S = "__grasp.strike"
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
-PIX = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2]]; })"
+PIX = "((x, y) => __grasp.strike.pixel(x, y))"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
 """
@@ -67,7 +67,11 @@ async def main():
         await wait_offer(page)
         pc = await page.evaluate(f"{S}.ui.perkCards")
         check('desktop: three cards side by side, inside the screen, below the HUD', len(pc) == 3 and all(c['x'] >= 0 and c['x'] + c['w'] <= 1280 and c['y'] + c['h'] <= 800 for c in pc) and pc[0]['x'] < pc[1]['x'] < pc[2]['x'] and abs(pc[0]['y'] - pc[2]['y']) < 1 and pc[0]['y'] > await page.evaluate(f"{S}.ui.hud.y + {S}.ui.hud.h"), pc)
-        px = await page.evaluate(PIX + f"({pc[1]['x'] + pc[1]['w'] / 2}, {pc[1]['y'] + pc[1]['h'] * 0.27})")
+        px = [0, 0, 0]  # the brightest of a small grid around the icon (icons differ per perk; one point can land on a dark glyph stroke)
+        for dx in (-12, 0, 12):
+            for dy in (-10, 0, 10):
+                q = await page.evaluate(PIX + f"({pc[1]['x'] + pc[1]['w'] / 2 + dx}, {pc[1]['y'] + pc[1]['h'] * 0.27 + dy})")
+                if max(q) > max(px): px = q
         check('the card icon is drawn in colour (bright pixel at the icon)', max(px) > 150, px)
         hr = await page.evaluate(f"({{ row: {S}.ui.heartsRow, hud: {S}.ui.hud }})")
         check('desktop: 40 lives = one heart + ×40, the row inside the HUD card', hr['row']['compact'] and hr['row']['x'] >= hr['hud']['x'] and hr['row']['x'] + hr['row']['w'] <= hr['hud']['x'] + hr['hud']['w'], hr)
@@ -91,7 +95,7 @@ async def main():
         await page.evaluate("forceOffer(['lucky'])"); await page.evaluate(f"{S}.pickPerk(0)")
         st = await page.evaluate(f"({{ s: {S}.perkStats(), base: __grasp.CONFIG.STRIKE_PU_RATE }})")
         check('Sticky Magnet: magnet 0.5 -> 0.65', abs(st0['magnet'] - 0.5) < 1e-9 and abs(st['s']['magnet'] - 0.65) < 1e-9, [st0['magnet'], st['s']['magnet']])
-        check('Thick Skin: +1 max life (5 -> 6) and one heart back (3 -> 4)', lv0[1] == 5 and st['s']['maxLives'] == 6 and st['s']['lives'] == 4, [lv0, st['s']])
+        check('Thick Skin: +1 max life (4 -> 5) and one heart back (3 -> 4)', lv0[1] == 4 and st['s']['maxLives'] == 5 and st['s']['lives'] == 4, [lv0, st['s']])
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 1 / 12"); r = await page.evaluate(f"{S}.perkStats().puRate"); await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
         check('Lucky: power-up brick rate x1.5 (Easy 1/8 -> 3/16)', abs(r - (1 / 12) * 1.5 * 1.5) < 1e-9, r)
         await page.evaluate("forceOffer(['heavy'])"); await page.evaluate(f"{S}.pickPerk(0)")
@@ -137,7 +141,7 @@ async def main():
         # a new round starts clean
         await page.click('#resetBtn'); await page.wait_for_timeout(100)
         rs = await page.evaluate(f"({{ perks: {S}.perks, offer: {S}.perkOffer, streak: {S}.streak, close: {S}.closeOnes, max: {S}.maxLives, stats: {S}.perkStats() }})")
-        check('reset: perks cleared each round (reach x1, magnet 0.5, 5 lives), no offer, streak 0', rs['perks'] == {} and rs['offer'] is None and rs['streak'] == 0 and rs['close'] == 0 and rs['max'] == 5 and rs['stats']['reach'] == 1 and abs(rs['stats']['magnet'] - 0.5) < 1e-9, rs)
+        check('reset: perks cleared each round (reach x1, magnet 0.5, 4 lives), no offer, streak 0', rs['perks'] == {} and rs['offer'] is None and rs['streak'] == 0 and rs['close'] == 0 and rs['max'] == 4 and rs['stats']['reach'] == 1 and abs(rs['stats']['magnet'] - 0.5) < 1e-9, rs)
         check('perks: no page errors', not errs, errs)
 
         # ===== the NEXT card =====
@@ -230,7 +234,7 @@ async def main():
             x, y = center(pc[1])
             await page.evaluate(f"touchAt('pointerdown', {x}, {y})"); await page.evaluate(f"touchAt('pointerup', {x}, {y})"); await page.wait_for_timeout(60)
             tp = await page.evaluate(f"({{ offer: {S}.perkOffer, perks: {S}.perks, max: {S}.maxLives }})")
-            check(tag + ' phone: a tap on a card picks it (Thick Skin: 6 hearts)', tp['offer'] is None and tp['perks'] == {'skin': 1} and tp['max'] == 6, tp)
+            check(tag + ' phone: a tap on a card picks it (Thick Skin: 5 hearts)', tp['offer'] is None and tp['perks'] == {'skin': 1} and tp['max'] == 5, tp)
             await page.evaluate("forceOffer(['spark']); __grasp.strike.pickPerk(0); forceOffer(['coins']); __grasp.strike.pickPerk(0); park()")
             # streak chip + NEXT card on the phone
             await page.evaluate("touchAt('pointerdown', 180, 380)"); await page.wait_for_timeout(250)

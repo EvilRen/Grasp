@@ -1,0 +1,168 @@
+exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
+# Strike in 3D: the WebGL renderer (three.js r128, loaded when Strike starts). The game logic is untouched; the camera reproduces proj(),
+# so hit tests, ballScreen(), brickScreen() and the ui rects hold in both renderers. Headless Chromium's WebGL is SwiftShader (a CPU
+# rasterizer): the checks run at a low fixed pixel ratio and the screenshots at full resolution. Without WebGL the suite checks the 2D fallback.
+S = "__grasp.strike"
+FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
+PIX2D = "((x, y) => { const d = ctx.getImageData(Math.round(x * DPR), Math.round(y * DPR), 1, 1).data; return [d[0], d[1], d[2], d[3]]; })"
+FREEZE = f"(() => {{ const s = {S}; s.serveAt = performance.now() + 1e9; for (const b of s.balls) {{ b.speed = 0; b.trail.length = 0; }} }})()"  # the ball parked, no serve coming
+def brickish(c): return c[0] > 120 and c[0] > c[1] + 35 and c[0] > c[2] + 50  # terracotta (lit, tone-mapped)
+def coral(c): return c[0] > 170 and c[0] > c[2] + 40
+
+async def frames(page, n=1):
+    for _ in range(n): await page.evaluate(FRAMES)
+
+async def open_page(b, mobile=False, query='', gfx="{ pr: 0.5, auto: false }", block_three=False, reqs=None):
+    opts = dict(viewport={'width': 360, 'height': 740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': 1280, 'height': 800})
+    ctx = await b.new_context(**opts); page = await ctx.new_page(); errs = []
+    await routes(page)
+    if block_three:  # the CDNs unreachable: every three.js request fails (registered after the harness routes, so it wins)
+        async def abort(route): await route.abort()
+        await page.route('**/three*.js', abort)
+    if reqs is not None: page.on('request', lambda r: reqs.append(r.url) if 'three' in r.url else None)
+    page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(INIT + (f"window.__graspGfx = {gfx};" if gfx else "window.__graspGfx = {};"))
+    await page.goto('http://localhost:8765/index.html' + query); await page.wait_for_timeout(600)
+    await page.evaluate(f"{S}.extrasOff = true; __grasp.CONFIG.STRIKE_PU_RATE = 0")
+    return ctx, page, errs
+
+async def start(page, mobile=False):
+    if mobile: await page.tap('.modes button[data-mode=strike]'); await page.tap('#mouseBtn')
+    else: await page.click('.modes button[data-mode=strike]'); await page.click('#mouseBtn')
+    await page.wait_for_function(f"gameMode === 'strike' && {S}.ball", timeout=10000)
+
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'])
+
+        # ===== desktop: lazy load, 3D on, parity =====
+        reqs = []
+        ctx, page, errs = await open_page(b, reqs=reqs)
+        pre = await page.evaluate("({ three: typeof THREE, hidden: $('stage3d').hidden, gfx: __grasp.strike.gfx })")
+        check('before Strike starts: three.js not requested, the WebGL layer hidden, gfx 2d', pre['three'] == 'undefined' and not reqs and pre['hidden'] and pre['gfx'] == '2d', [pre, reqs])
+        await start(page)
+        await page.wait_for_function(f"{S}.gfx === '3d' || {S}.gfxInfo.state === 'failed'", timeout=20000)
+        info = await page.evaluate(f"{S}.gfxInfo")
+        webgl = info['state'] == 'ready'
+        print('INFO renderer:', info)
+        if not webgl:  # no WebGL here: the 2D renderer carries on
+            await frames(page, 2); fl = await page.evaluate(PIX2D + "(640, 796)")
+            check('no WebGL: strike.gfx stays 2d, the 2D corridor is drawn (opaque floor pixel)', await page.evaluate(f"{S}.gfx") == '2d' and fl[3] == 255 and fl[2] > fl[0], [info, fl])
+        else:
+            check('Strike starts: three.js r128 loads once (cdnjs URL), strike.gfx = 3d, the WebGL layer shown', await page.evaluate(f"{S}.gfx") == '3d' and await page.evaluate("THREE.REVISION") == '128' and len(reqs) == 1 and 'cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js' in reqs[0] and not await page.evaluate("$('stage3d').hidden"), [reqs, info])
+            lay = await page.evaluate("(() => { const a = $('stage3d'), c = $('stage'), sa = getComputedStyle(a); return { under: !!(a.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING), pe: sa.pointerEvents, pos: sa.position, w: a.getBoundingClientRect().width, h: a.getBoundingClientRect().height }; })()")
+            check('#stage3d sits under the 2D canvas (earlier in the DOM, both fixed full-screen), never takes pointer events', lay['under'] and lay['pe'] == 'none' and lay['pos'] == 'fixed' and lay['w'] == 1280 and lay['h'] == 800, lay)
+            await page.mouse.move(1180, 700); await page.evaluate(FREEZE)
+            await frames(page, 2)
+            ov = await page.evaluate(PIX2D + "(640, 600)")
+            check('3D mode: the 2D canvas is transparent over the corridor (it carries the overlays only)', ov[3] < 60, ov)
+            # projection parity: the WebGL camera puts every world point where proj() does
+            par = await page.evaluate(f"""(() => {{ const {{ L, R, T, B }} = corridor(), Z = __grasp.CONFIG.STRIKE_Z_FAR, pts = [];
+              for (const z of [-200, 0, 150, 700, 1500, Z]) for (const [x, y] of [[L, T], [R, B], [0, 0], [L * 0.5, B * 0.7], [R * 0.9, T * 0.3]]) pts.push([x, y, z]);
+              let worst = 0; for (const [x, y, z] of pts) {{ const a = proj(x, y, z), q = {S}.project3d(x, y, z); worst = Math.max(worst, Math.hypot(a.x - q.x, a.y - q.y)); }} return {{ n: pts.length, worst }}; }})()""")
+            check(f"projection parity: {par['n']} world points, WebGL camera vs proj() within 1.5 px (worst {par['worst']:.4f} px)", par['worst'] < 1.5, par)
+            sh = await page.evaluate(f"(() => {{ view.x = 9; view.y = -6; gfx3dCamera(); const a = proj(100, 50, 400), q = {S}.project3d(100, 50, 400); view.x = view.y = 0; gfx3dCamera(); return Math.hypot(a.x + 9 - q.x, a.y - 6 - q.y); }})()")
+            check('the screen shake moves the 3D camera with the 2D drawing (parity under a shake offset)', sh < 1.5, sh)
+            # a brick: its brickScreen() rect is where the 3D brick colour is
+            await page.evaluate(f"{S}.setBallZ(2300, 30, 30)"); await page.evaluate(FREEZE); await frames(page, 2)
+            bk = await page.evaluate(f"""(() => {{ const s = {S}, w = s.walls[0], r = s.brickScreen(w, 0, 1), px = (x, y) => s.pixel(x, y);
+              return {{ kind: w.kind, z: w.z, r, c: px(r.x, r.y), inner: [[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]].map(([a, b]) => px(r.x + a * r.w, r.y + b * r.h)), out: px(r.x - r.w * 0.5 - 6, r.y) }}; }})()""")
+            check('brick probe: the brickScreen() rect of brick (0,1) shows the terracotta 3D brick at its centre and inner corners', bk['kind'] == 'brick' and brickish(bk['c']) and all(brickish(c) for c in bk['inner']), bk)
+            check('just outside that rect (left of the wall): the corridor, not a brick', not brickish(bk['out']), bk['out'])
+            # the ball at ballScreen()
+            await page.evaluate(f"{S}.setBallZ(420, 760, 520)"); await page.evaluate(FREEZE); await frames(page, 2)
+            bl = await page.evaluate(f"(() => {{ const s = {S}, q = s.ballScreen(); return {{ q, c: s.pixel(q.x, q.y), c3: s.pixel3d(q.x, q.y), e: s.pixel(q.x + q.r * 0.6, q.y + q.r * 0.2) }}; }})()")
+            check('ball: the pixel at ballScreen() is the coral 3D ball (composited and in the WebGL layer)', coral(bl['c']) and coral(bl['c3']) and coral(bl['e']), bl)
+            # holes: knocked-out bricks leave holes; behind them (walls behind removed) the dark corridor shows
+            await page.evaluate(f"{S}.setBallZ(2300, 30, 30)"); await page.evaluate(FREEZE)
+            ho = await page.evaluate(f"""(async () => {{ const s = {S}, w = s.walls[0]; s.walls.length = 1; const k = w.bricks.find(q => q.col === 1 && q.row === 1), r = s.brickScreen(w, 1, 1), before = s.pixel(r.x, r.y);
+              k.alive = false; w.left--; await {FRAMES}; return {{ before, after: s.pixel(r.x, r.y), next: s.pixel(s.brickScreen(w, 2, 1).x, r.y), inst: G3.walls.get(w.id).ims.brick.count, alive: w.bricks.filter(q => q.alive).length }}; }})()""")
+            check('a removed brick leaves a hole (no instance; the pixel goes dark), its neighbour stays a brick', brickish(ho['before']) and not brickish(ho['after']) and sum(ho['after']) < sum(ho['before']) - 120 and brickish(ho['next']) and ho['inst'] == ho['alive'], ho)
+            # wall kinds and debris
+            await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; s.spawnWall('glass', 700); s.spawnWall('steel', 1100); s.spawnWall('tnt', 1500); }})()"); await frames(page, 2)
+            kd = await page.evaluate(f"(() => {{ const s = {S}, e = s.walls.map(w => ({{ kind: w.kind, ims: Object.fromEntries(Object.entries(G3.walls.get(w.id).ims).filter(([k, m]) => m.count).map(([k, m]) => [k, m.count])) }})); return e; }})()")
+            check('glass / steel / TNT walls: instanced glass panes, steel plates, and TNT crates among the bricks', kd[0]['ims'].get('glass', 0) > 0 and kd[1]['ims'].get('steel', 0) > 0 and kd[2]['ims'].get('tnt', 0) >= 2, kd)
+            gl = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls[0], r = s.brickScreen(w, 1, 1); return {{ glass: s.pixel(r.x, r.y), mat: G3.mats.glass.transparent && G3.mats.glass.opacity < 1 }}; }})()")
+            check('glass is translucent (a transparent material; the pane pixel is pale blue, not opaque brick)', gl['mat'] and gl['glass'][2] >= gl['glass'][0], gl)
+            await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; s.spawnWall('brick', 900); s.smashTest('hard'); }})()")
+            await page.wait_for_function(f"{S}.debris.length > 4", timeout=5000); await frames(page, 1)
+            db = await page.evaluate(f"({{ n: {S}.debris.length, d: G3.deb.count, g: G3.shards.count }})")
+            check('debris: every fragment in strike.debris is a 3D box (instanced)', db['n'] > 4 and db['d'] + db['g'] == db['n'], db)
+            await page.evaluate(f"{S}.ball = null; {S}.serve(); {S}.setBallZ(2300, 30, 30)"); await page.evaluate(FREEZE)
+            # one renderer, reused across rounds; pixel ratio
+            r0 = await page.evaluate("G3.r"); await page.click('#resetBtn'); await page.wait_for_timeout(300)
+            check('one WebGL renderer, reused across rounds (reset keeps it)', await page.evaluate("(() => { const r = G3.r; return !!r && G3.inits === 1 && document.querySelectorAll('canvas#stage3d').length === 1; })()"))
+            # fps
+            await page.evaluate(f"{S}.setBallZ(1800, 640, 400)"); await page.wait_for_timeout(2600)
+            fps = await page.evaluate(f"{S}.gfxFps"); print(f'INFO gfxFps at pixel ratio 0.5, 1280x800, SwiftShader: {fps}')
+            check('strike.gfxFps is measured while 3D draws', fps > 0, fps)
+            # setGfx('2d') / ('3d') at runtime
+            sw = await page.evaluate(f"(async () => {{ const s = {S}, a = await __grasp.setGfx('2d'); await {FRAMES}; const two = {{ gfx: s.gfx, hidden: $('stage3d').hidden, px: {PIX2D}(640, 796) }}; const c = await __grasp.setGfx('3d'); await {FRAMES}; return {{ a, two, c, hidden: $('stage3d').hidden }}; }})()")
+            check("__grasp.setGfx('2d'): the 2D corridor at once (opaque floor), the WebGL layer hidden; setGfx('3d') brings it back", sw['a'] == '2d' and sw['two']['gfx'] == '2d' and sw['two']['hidden'] and sw['two']['px'][3] == 255 and sw['c'] == '3d' and not sw['hidden'], sw)
+            # screenshots: level 1 (a broken wall, the ball incoming) and level 6 (glass, steel, TNT; a SUPER ball, debris)
+            for lv in (1, 6):
+                await stage(page, lv); await page.evaluate(f"{S}.gfxPr = 1"); await frames(page, 2)
+                await page.screenshot(path=f'tests/out/strike3d_desktop_l{lv}.png'); await page.evaluate(f"{S}.gfxPr = 0.5")
+        check('desktop: no page errors', not errs, errs); await ctx.close()
+
+        if webgl:
+            # ===== phone: parity, default pixel ratio min(dpr, 2), screenshots =====
+            ctx, page, errs = await open_page(b, mobile=True, gfx="{ auto: false }")
+            await start(page, mobile=True); await page.wait_for_function(f"{S}.gfx === '3d'", timeout=20000)
+            check('phone (dpr 3): the renderer pixel ratio is min(devicePixelRatio, 2) = 2', await page.evaluate(f"{S}.gfxPr") == 2 and await page.evaluate("G3.r.getPixelRatio()") == 2)
+            await page.evaluate(f"{S}.gfxPr = 0.4")
+            par = await page.evaluate(f"""(() => {{ const {{ L, R, T, B }} = corridor(), pts = []; for (const z of [0, 300, 1200, 2400]) for (const [x, y] of [[L, T], [R, B], [L * 0.3, B * 0.8]]) pts.push([x, y, z]);
+              let worst = 0; for (const [x, y, z] of pts) {{ const a = proj(x, y, z), q = {S}.project3d(x, y, z); worst = Math.max(worst, Math.hypot(a.x - q.x, a.y - q.y)); }} return worst; }})()""")
+            check(f'phone projection parity within 1.5 px (worst {par:.4f})', par < 1.5, par)
+            await page.evaluate(f"{S}.setBallZ(420, 200, 470)"); await page.evaluate(FREEZE); await frames(page, 2)
+            bl = await page.evaluate(f"(() => {{ const s = {S}, q = s.ballScreen(); return s.pixel(q.x, q.y); }})()")
+            check('phone: the ball pixel at ballScreen() is the coral ball', coral(bl), bl)
+            for lv in (1, 6):
+                await stage(page, lv); await page.evaluate(f"{S}.gfxPr = 2"); await frames(page, 2)
+                await page.screenshot(path=f'tests/out/strike3d_phone_l{lv}.png'); await page.evaluate(f"{S}.gfxPr = 0.4")
+            check('phone: no page errors', not errs, errs); await ctx.close()
+
+            # ===== the low-fps fallback: full resolution on a software GPU stays < 24 fps, so after 4 s Strike goes back to 2D =====
+            ctx, page, errs = await open_page(b, gfx="{ pr: 1 }")
+            await start(page); await page.wait_for_function(f"{S}.gfxInfo.state === 'ready'", timeout=20000)
+            await page.wait_for_function(f"{S}.gfx === '2d'", timeout=30000)
+            fb = await page.evaluate(f"({{ info: {S}.gfxInfo, fps: {S}.gfxFps, hidden: $('stage3d').hidden }})"); dt = fb['info']['fallbackAt'] - fb['info']['onAt']
+            check(f'auto fallback: 3D fps stayed < 24 ({fb["fps"]} fps) for 4 s -> back to 2D {dt / 1000:.1f} s after 3D started (the pixel ratio stepped down first), the WebGL layer hidden', fb['info']['fallback'] == 'fps' and fb['fps'] < 24 and fb['hidden'] and 4000 <= dt < 15000 and fb['info']['pr'] < 1, fb)
+            await frames(page, 2); fl = await page.evaluate(PIX2D + "(640, 796)")
+            check('after the fallback the 2D corridor draws (opaque floor pixel)', fl[3] == 255 and fl[2] > fl[0], fl)
+            check('fallback: no page errors', not errs, errs); await ctx.close()
+
+        # ===== ?gfx=2d forces the 2D renderer: three.js never requested =====
+        reqs = []
+        ctx, page, errs = await open_page(b, query='?gfx=2d', gfx=None, reqs=reqs)
+        await start(page); await page.wait_for_timeout(1200); await frames(page, 2)
+        st = await page.evaluate(f"({{ gfx: {S}.gfx, three: typeof THREE, hidden: $('stage3d').hidden, info: {S}.gfxInfo, floor: {PIX2D}(640, 796) }})")
+        check('?gfx=2d: strike.gfx 2d, three.js never requested, the WebGL layer hidden, the 2D corridor drawn', st['gfx'] == '2d' and st['three'] == 'undefined' and not reqs and st['hidden'] and st['floor'][3] == 255 and st['floor'][2] > st['floor'][0], [st, reqs])
+        check('?gfx=2d: no page errors', not errs, errs); await ctx.close()
+
+        # ===== three.js unreachable (both CDNs abort): Strike plays on in 2D =====
+        ctx, page, errs = await open_page(b, block_three=True)
+        await start(page); await page.wait_for_function(f"{S}.gfxInfo.state === 'failed'", timeout=20000); await frames(page, 2)
+        st = await page.evaluate(f"({{ gfx: {S}.gfx, info: {S}.gfxInfo, hidden: $('stage3d').hidden, floor: {PIX2D}(640, 796), ball: !!{S}.ball }})")
+        check('three.js failed to load (cdnjs and jsDelivr aborted): gfx 2d, the error kept, the 2D corridor drawn, the ball in play', st['gfx'] == '2d' and 'three.js failed to load' in st['info']['err'] and st['hidden'] and st['floor'][3] == 255 and st['ball'], st)
+        await page.evaluate(f"{S}.setBallZ(900, 640, 380)"); await frames(page, 2)
+        bp = await page.evaluate(PIX2D + "(640, 380)")
+        check('fallback: the 2D ball is drawn', coral(bp), bp)
+        check('load failure: no page errors', not errs, errs); await ctx.close()
+        await b.close()
+    print('FAILURES:', check.fails)
+
+async def stage(page, lv):  # a staged scene for the screenshots: level 1 = a wall with a hole and the ball coming in; level 6 = glass, steel, TNT walls and a SUPER ball
+    await page.evaluate(f"""(() => {{ const s = {S}; s.setLevel({lv}); s.walls.length = 0; s.debris.length = 0; s.ui.levelBanner = s.ui.levelUp = s.ui.tag = null; s.lives = s.maxLives;
+      if ({lv} === 1) {{ const w = s.spawnWall('brick', 960); s.spawnWall('brick', 1360); s.spawnWall('brick', 1760); for (const k of w.bricks) if (k.col >= 1 && k.col <= 2 && k.row >= 1 && k.row <= 2) {{ k.alive = false; w.left--; }}
+        w.hp = 2; for (const k of w.bricks) k.hp = 2; w.bricks[0].hp = 1; w.bricks[0].dent = 1; s.setBallZ(380, innerWidth * 0.56, innerHeight * 0.62); }}
+      else {{ const g = s.spawnWall('glass', 700), st = s.spawnWall('steel', 1100); s.spawnWall('tnt', 1500); s.spawnWall('moving', 1900);
+        for (const k of g.bricks) if ((k.col + k.row) % 3 === 0) {{ k.alive = false; g.left--; }}
+        for (const k of st.bricks) if (k.row === 1 && k.col < 3) {{ k.alive = false; st.left--; }} st.bricks[st.cols * 2 + 1].dent = 1; st.bricks[st.cols * 2 + 1].hp = 2;
+        s.setBallZ(300, innerWidth * 0.42, innerHeight * 0.6); const b = s.ball; b.super = true; b.tier = 'super'; b.dir = -1;
+        for (let i = 6; i >= 1; i--) {{ const q = ballScreen({{ x: b.x - 30 * i, y: b.y + 18 * i, z: b.z - 28 * i }}); b.trail.push({{ x: q.x, y: q.y, r: q.r, t: performance.now() - 20 * i }}); }}
+        for (let i = 0; i < 14; i++) s.debris.push({{ x: (Math.random() - 0.5) * 300, y: (Math.random() - 0.5) * 200, z: 600 + Math.random() * 300, vx: 0, vy: 0, vz: 0, rot: Math.random() * 6, vr: 0, k: 0.3 + Math.random() * 0.2, level: 6, kind: i % 3 ? 'glass' : 'brick', shard: i % 3 > 0, w: 220, h: 110, life: 1, decay: 0 }}); }}
+      s.serveAt = performance.now() + 1e9; for (const b of s.balls) b.speed = 0; }})()""")
+
+asyncio.run(main()); srv.terminate()
+if check.fails: sys.exit(1)
