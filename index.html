@@ -4012,7 +4012,15 @@ function drawStrikeHud(now, dt) { // slim glass card: score (eased count-up), he
   const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 34, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
   edgeText(sc, rtl ? x + w - 18 : x + 18, y + h / 2, rtl, 1 + 0.16 * Math.sin(Math.PI * pop));
   const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives); // an extra life (power-up) adds a heart
-  drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 + 1, now, nL > 5 ? 0.56 : nL > 3 ? 0.66 : 0.75, nL > 5 ? 21 : nL > 3 ? 26 : 30);
+  if (nL > 7) { // more hearts than fit (Thick Skin + extra lives): one heart and ×N, so the row always stays inside the card
+    const sp = textSprite(LRM + '×' + strike.lives, 18, '#fff8ec', null, 800), rw = 26 + 6 + sp.tw, hx = rtl ? x + w / 2 + rw / 2 - 13 : x + w / 2 - rw / 2 + 13, P = ui.heartPop, L = ui.heartLost, pq = P ? (now - P.t) / 600 : 1, lq = L ? (now - L.t) / 550 : 1;
+    const hk = 0.75 * (pq < 1 ? 1 + 0.35 * Math.sin(Math.PI * pq) : 1), sx = lq < 1 ? Math.sin(lq * 42) * 4 * (1 - lq) : 0;
+    ui.hearts.length = 0; ui.hearts.push({ x: hx, y: y + h / 2 + 1 }); blit(heartSprite(strike.lives > 0), hx + sx, y + h / 2 + 1, 0, hk);
+    edgeText(sp, rtl ? hx - 19 : hx + 19, y + h / 2 + 1, rtl); ui.heartsRow = { x: x + w / 2 - rw / 2, w: rw, compact: true };
+  } else {
+    const gap = nL > 5 ? 21 : nL > 3 ? 26 : 30; drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 + 1, now, nL > 5 ? 0.56 : nL > 3 ? 0.66 : 0.75, gap);
+    ui.heartsRow = { x: x + w / 2 - ((nL - 1) * gap + 26) / 2, w: (nL - 1) * gap + 26, compact: false };
+  }
   const ex = rtl ? x + 18 : x + w - 18, tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? ex + 20 : ex - 20;
   blit(pillSprite(tint, 40, 22), px, y + 22); blit(textSprite('L' + strike.level, 13, '#141b34', null), px, y + 22);
   edgeText(textSprite(t('best', { n: strike.best }), 12, 'rgba(241,233,218,0.72)', null, 500), ex, y + 48, !rtl);
@@ -4791,6 +4799,7 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 100) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint() { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades
+  if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   hintEl.querySelector('.tx').textContent = hintText();
   const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg');
   hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
