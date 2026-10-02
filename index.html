@@ -378,7 +378,7 @@ html[dir="rtl"] #daily .dmod small{ text-transform:none; letter-spacing:0; }
 .nuSheet .primary{ width:100%; }
 @media (prefers-reduced-motion: reduce){ .wnode.cur .dot::after, .nuSheet{ animation:none; } }
 /* start screen v2: everything on one screen (no scrolling): a small wordmark, the coins / level pill, one labelled icon row (Daily, Missions, Road, Shop),
-   the five games as tiles (3 + 2; a tap starts the game with the remembered input), a Camera | Touch toggle, the Tremorti link */
+   the six games as tiles (3 + 3; a tap starts the game with the remembered input), a Camera | Touch toggle, the Tremorti link */
 #start{ align-content:safe center; padding:12px 16px 10px; }
 #start .panel{ padding-top:44px; max-width:560px; }
 #start .panel h1{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); left:16px; font-size:26px; letter-spacing:-.02em; }
@@ -401,13 +401,13 @@ html[dir="rtl"] #metaPill{ left:auto; right:auto; }
 #start .metaRow .nb{ position:absolute; top:-6px; inset-inline-end:-4px; }
 #start .modes{ display:grid !important; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; margin:0 0 10px; padding:0 !important; overflow:visible !important; scroll-snap-type:none !important; }
 #start .modes > button{ grid-column:span 2; flex:none !important; min-width:0; font-size:13px; padding:5px 5px 7px; gap:5px; }
-#start .modes > button[data-mode="busy"]{ grid-column:2 / span 2; }
-#start .modes > button[data-mode="strike"]{ grid-column:4 / span 2; grid-row:2; padding-bottom:30px; } /* (room under its name for the Easy / Normal toggle) */
-#start .modes > button[data-mode="busy"]{ grid-row:2; }
+#start .modes > button[data-mode="strike"]{ grid-column:3 / span 2; grid-row:2; padding-bottom:30px; } /* (room under its name for the Easy / Normal toggle) */
+#start .modes > button[data-mode="busy"]{ grid-column:1 / span 2; grid-row:2; }
+#start .modes > button[data-mode="shapes"]{ grid-column:5 / span 2; grid-row:2; }
 #start .modes > button[aria-pressed="true"]{ transform:none; }
 #start .modes .newDot{ position:absolute; bottom:4px; inset-inline-end:4px; width:10px; height:10px; border-radius:50%; background:#ff4d3d; box-shadow:0 0 0 2px rgba(14,19,40,.9); }
 #start .modes .newDot[hidden]{ display:none; }
-#start #strikeDiff{ grid-column:4 / span 2; grid-row:2; align-self:end; justify-self:center; z-index:2; margin:0 0 5px; padding:2px; display:inline-flex; }
+#start #strikeDiff{ grid-column:3 / span 2; grid-row:2; align-self:end; justify-self:center; z-index:2; margin:0 0 5px; padding:2px; display:inline-flex; }
 #start #strikeDiff button{ flex:none !important; display:inline-block; padding:2px 7px; font-size:10px; line-height:1.3; white-space:nowrap; scroll-snap-align:none; gap:0; border-radius:999px; background:transparent; color:var(--muted); box-shadow:none !important; transform:none !important; }
 #start #strikeDiff button[aria-pressed="true"]{ background:var(--saffron); color:#241a00; font-weight:700; }
 #start #strikeDiff{ background:rgba(14,19,40,.85); border-radius:999px; box-shadow:inset 0 0 0 1px var(--line); }
@@ -418,6 +418,13 @@ html[dir="rtl"] #metaPill{ left:auto; right:auto; }
 .segBtn[aria-pressed="true"]{ background:var(--saffron); color:#241a00; }
 #start .link{ margin:10px 0 0; font-size:12px; }
 @media (max-width:520px){ #start .modes > button{ font-size:12px; } #start .panel{ padding-top:44px; } }
+/* phones: the content starts right under the wordmark row (not centred with a big gap above it), the blocks evenly spaced */
+@media (max-width:520px){
+  #start{ align-content:start; }
+  #start .panel{ display:flex; flex-direction:column; gap:clamp(10px, 2.4vh, 22px); }
+  #start .panel > #metaPill{ align-self:center; margin:0; }
+  #start .panel > .metaRow, #start .panel > .modes, #start .panel > .link{ margin:0; }
+}
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
 </style>
 </head>
@@ -471,9 +478,10 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <button type="button" data-mode="smash" aria-pressed="false" style="--i:2"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11M10 11V7.5a1.5 1.5 0 0 1 3 0V11M13 11V8.5a1.5 1.5 0 0 1 3 0V11M16 11a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 12.5 21h-1A6.5 6.5 0 0 1 5 14.5V13a1.5 1.5 0 0 1 3 0"/><path d="M7 13v-2M4.5 10.5 7 11"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeSmash">Smash</span></button>
       <button type="button" data-mode="busy" aria-pressed="false" style="--i:3"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><rect x="6" y="7.5" width="12" height="5" rx="2.5"/><circle cx="15" cy="10" r="1.6"/><circle cx="8" cy="16.5" r="1.4"/><circle cx="12" cy="16.5" r="1.4"/><circle cx="16" cy="16.5" r="1.4"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeBusy">Busy Board</span></button>
       <button type="button" data-mode="strike" aria-pressed="false" style="--i:4"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.5" cy="12" r="5"/><path d="M13.2 9.2a3 3 0 0 1 3.6 1.2"/><path d="M2.5 8.5h5.5M1.5 12h6M2.5 15.5h5.5"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeStrike">Strike</span></button>
+      <button type="button" data-mode="shapes" aria-pressed="false" style="--i:5"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5l1.2 2.5 2.7.4-2 1.9.5 2.7L7 9.7 4.6 11l.5-2.7-2-1.9 2.7-.4z"/><circle cx="17" cy="7" r="3.2"/><rect x="3" y="14" width="18" height="7" rx="1.8"/><path d="M8 16.2l1.8 2.8H6.2z"/><rect x="14.2" y="16.2" width="3" height="3" rx=".5"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeShapes">Shapes</span></button>
       <div class="diff" id="strikeDiff" role="group" data-i18n-aria="diffAria" aria-label="Strike difficulty"><button type="button" data-diff="easy" aria-pressed="true" data-i18n="diffEasy">Easy</button><button type="button" data-diff="normal" aria-pressed="false" data-i18n="diffNormal">Normal</button></div>
     </div>
-    <div class="dots" id="modeDots" aria-hidden="true" style="--i:3"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <div class="dots" id="modeDots" aria-hidden="true" style="--i:3"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="desc" id="modeCard" style="--i:4">
       <p id="modeDesc">Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.</p>
       <ul class="hints" id="modeHints" data-i18n-aria="hintsAria" aria-label="Controls"></ul>
@@ -629,6 +637,7 @@ const CONFIG = {
 const ECONOMY = {
   strike: { wall: 2, level: 5, boss: 20, guest: 2, powerup: 1, close: 1 }, // per wall cleared / level completed / boss / guest slapped / power-up caught / 'Close one!' (bricks pay none); Coin Magnet x1.5 on top
   slice: { fruitPerCoin: 5 }, smash: { bricksPerCoin: 10, car: 3 },        // Slice: a coin per 5 fruit; Smash: a coin per 10 bricks, 3 a car
+  shapes: { level: 2, star3: 1 },                                          // Shapes: per level sorted, +1 for a 3-star level
   missions: [15, 22, 30], dailyFirst: 20, streak: { 3: 40, 7: 100, 14: 200 }, levelUp: 10, chest: [25, 60], // mission tiers (easy / mid / hard goal); the first daily of a day; daily-streak milestones; level-up = 10 x the new level; boss-chest coins
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
@@ -847,6 +856,31 @@ const I18N = {
     it_ball_lava: 'כדור לבה', it_trail_lava: 'שובל לבה', it_hand_legend: 'יד האגדה',
   },
 };
+// Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
+Object.assign(I18N.en, {
+  modeShapes: 'Shapes', gm_shapes: 'shapes',
+  descShapes: 'A shape sorter: bright shapes on a mat, a toy box with holes. Pinch a shape and drop it into the hole with the same outline: it clunks in and says its name. Later holes turn, the box rocks and the holes slide. No lives, no clock.',
+  hintShapesCam: 'Pinch a shape, move it over the hole with the same outline and open your hand. Twist your pinched hand to turn it. Keep your hand inside the yellow box.',
+  hintShapesTouch: 'Drag a shape onto the hole with the same outline and let go. Turn it with two fingers.',
+  hintShapesMouse: 'Drag a shape onto the hole with the same outline and let go. Scroll the wheel to turn it. D for HUD.',
+  hSort: 'Drag to its hole', hTwist: 'Twist to turn',
+  shLevelDone: 'Level {n} done!', shLevels: 'levels', shStars: 'stars', shShapes: 'shapes', playAgainShapes: 'Pinch or tap to play again',
+  ms_shapes: 'Sort {n} shapes', tm_shapes: '{n} more shapes for the mission', tm_shapes1: '1 more shape for the mission',
+  shp_circle: 'Circle', shp_square: 'Square', shp_triangle: 'Triangle', shp_star: 'Star', shp_heart: 'Heart', shp_hexagon: 'Hexagon',
+  shp_rectangle: 'Rectangle', shp_oval: 'Oval', shp_crescent: 'Crescent', shp_diamond: 'Diamond', shp_cross: 'Cross', shp_pentagon: 'Pentagon',
+});
+Object.assign(I18N.he, {
+  modeShapes: 'צורות', gm_shapes: 'צורות',
+  descShapes: 'משחק התאמת צורות: צורות צבעוניות על שטיח וקופסת צעצוע עם חורים. צבטו צורה והפילו אותה לחור עם אותו קו מתאר: היא נופלת פנימה ואומרת את השם שלה. בהמשך החורים מסתובבים, הקופסה מתנדנדת והחורים זזים. בלי חיים, בלי שעון.',
+  hintShapesCam: 'צבטו צורה, הזיזו אותה מעל החור עם אותו קו מתאר ופתחו את היד. סובבו את היד הצובטת כדי לסובב את הצורה. שמרו על היד בתוך המסגרת הצהובה.',
+  hintShapesTouch: 'גררו צורה אל החור עם אותו קו מתאר ושחררו. סובבו אותה בשתי אצבעות.',
+  hintShapesMouse: 'גררו צורה אל החור עם אותו קו מתאר ושחררו. גללו את הגלגלת כדי לסובב אותה. D למדדים.',
+  hSort: 'גררו לחור שלה', hTwist: 'סובבו',
+  shLevelDone: 'שלב {n} הושלם!', shLevels: 'שלבים', shStars: 'כוכבים', shShapes: 'צורות', playAgainShapes: 'צבטו או הקישו כדי לשחק שוב',
+  ms_shapes: 'מיינו {n} צורות', tm_shapes: 'עוד {n} צורות למשימה', tm_shapes1: 'עוד צורה אחת למשימה',
+  shp_circle: 'עיגול', shp_square: 'ריבוע', shp_triangle: 'משולש', shp_star: 'כוכב', shp_heart: 'לב', shp_hexagon: 'משושה',
+  shp_rectangle: 'מלבן', shp_oval: 'אליפסה', shp_crescent: 'סהר', shp_diamond: 'מעוין', shp_cross: 'צלב', shp_pentagon: 'מחומש',
+});
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 function t(key, vars) {
   let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
@@ -905,6 +939,7 @@ function resize() {
   SS = DPR; SPRITES.clear(); TEXTS.clear(); // sprite caches are resolution-dependent
   buildGrid(); sizePreviews();
   if (gameMode === 'busy' && busy.widgets.length) layoutBusy();
+  if (gameMode === 'shapes' && shapes.spec) layoutShapes(false);
   if (engine) { buildWalls(); clampBodies(); }
 }
 
@@ -1045,6 +1080,7 @@ const hand = {
   samples: [],   // the last few tracker samples as mapped screen positions { t, x, y } (the tracker may run at only ~9 scans/s)
   rawSpeed: 0,   // px/ms between the last two tracker samples: the hand's real speed, for gesture speed decisions
   sm: null,      // the displayed 60 fps cursor: { x, y, vx, vy, t }, predicted from the samples and eased (see camCursor)
+  roll: 0,       // the hand's roll (radians): the index-knuckle to pinky-knuckle line; Shapes turns a pinched shape with it
 };
 function resetHandCursor() { hand.samples.length = 0; hand.rawSpeed = 0; hand.sm = null; }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -1057,6 +1093,7 @@ function processHand(lm, vw, vh, t) {
   const wrist = P(0);
   const size = dist(wrist, P(9)) || 1;
   const pd = dist(P(4), P(8)) / size;
+  { const k5 = P(5), k17 = P(17); if (dist(k5, k17) > size * 0.25) hand.roll = Math.atan2(k17.y - k5.y, k17.x - k5.x); } // (a degenerate hand keeps the last roll)
   hand.pinchD = pd;
   if (!hand.pinch && pd < CONFIG.PINCH_ENTER) hand.pinch = true;
   else if (hand.pinch && pd > CONFIG.PINCH_EXIT) hand.pinch = false;
@@ -1161,7 +1198,7 @@ const endPointer = (e) => {
 window.addEventListener('pointerup', endPointer);
 window.addEventListener('pointercancel', endPointer);
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-canvas.addEventListener('wheel', (e) => { if (mode === 'none' || gameMode !== 'busy') return; e.preventDefault(); busyWheel(e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? H : 1)); }, { passive: false });
+canvas.addEventListener('wheel', (e) => { if (mode === 'none' || (gameMode !== 'busy' && gameMode !== 'shapes')) return; e.preventDefault(); const dy = e.deltaY * (e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? H : 1); if (gameMode === 'shapes') shapesWheel(dy); else busyWheel(dy); }, { passive: false });
 document.addEventListener('mouseleave', () => { if (mode === 'mouse' && !ptr.pinch) ptr.present = false; });
 
 /* ---------------- Unified input → grab / throw / poke ---------------- */
@@ -1266,7 +1303,7 @@ function frame(now) {
   if (gameMode === 'smash' && mode !== 'none') smashTick(now, dt); // the clock stops on the start screen
 
   acc += dt;
-  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || pause.on; // the world freezes while the hand is missing
+  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -1281,7 +1318,7 @@ function frame(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else render(now);
   gfx3dSync();
   if (pause.resumeT) drawResume(now);
   syncToastLayout(); grippyTick(now);
@@ -1446,6 +1483,7 @@ function bgSprite(kind) {
       g.strokeStyle = 'rgba(241,233,218,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, H - 1); g.lineTo(W, H - 1); g.stroke();
     }
     if (kind === 'strike') drawCorridor(g);
+    if (kind === 'shapes') { const fl = g.createLinearGradient(0, H * 0.55, 0, H); fl.addColorStop(0, 'rgba(255,190,120,0)'); fl.addColorStop(1, 'rgba(255,190,120,0.12)'); g.fillStyle = fl; g.fillRect(0, H * 0.55, W, H * 0.45); } // a warm play-room floor under the box
     const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.hypot(W, H) * 0.62);
     v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.6)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
   });
@@ -3133,6 +3171,347 @@ function renderBusy(now) {
     ctx.fillStyle = 'rgba(241,233,218,0.6)'; ctx.beginPath(); ctx.roundRect(W - 8, y0, 4, Math.max(24, th * k), 2); ctx.fill();
   }
   drawCursor(now);
+}
+
+/* ---------------- Shapes mode ---------------- */
+// A shape sorter for little hands: a glossy toy box in the lower middle (its lid has holes cut in it) and bright shapes on a play mat above.
+// Pinch (camera) or press-drag (mouse / touch) a shape: it lifts (x1.1, a soft shadow). Drop it on the hole with the same outline (its centre
+// within 45% of the hole's size) at an angle within 25° of the hole's (it snaps): a clunk, a rising chime, a burst, and its name is spoken.
+// The wrong hole: a soft boing and it hops back home, no penalty. Holes are dark recesses with a bevelled rim (not coloured: match by shape).
+// Levels: 1: 3 big shapes; 2: 4; 3: 5 in similar colours; 4: rotated holes (turn the shape: wheel / two-finger twist / pinch-twist);
+// 5: 6 shapes, two of them in another's colour; 6: the box rocks slowly; 7: the holes slide; 8+: more shapes, faster motion.
+// Each level ends with confetti, 1-3 stars (time and mistakes), coins, a Grippy line and a 'Level N' banner before the next.
+// No lives, no clock: the round ends when the player goes Home (a round-over card: levels done, stars, best level in 'shapesBest').
+const SHAPE_KINDS = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon', 'rectangle', 'oval', 'crescent', 'diamond', 'cross', 'pentagon'];
+const SHAPE_SYM = { circle: 0, square: 4, triangle: 3, star: 5, heart: 1, hexagon: 6, rectangle: 2, oval: 2, crescent: 1, diamond: 2, cross: 4, pentagon: 5 }; // rotational symmetry (0: any angle fits)
+const SHAPE_COLS = { circle: '#ff4f45', square: '#3b8cff', triangle: '#ffc93b', star: '#ff9f1c', heart: '#ff5fa2', hexagon: '#2fd39a', rectangle: '#a98bff', oval: '#3cc8ef', crescent: '#f2dc3a', diamond: '#ff7a3d', cross: '#43c26b', pentagon: '#c46bff' };
+const SHAPE_WARM = ['#ff4f45', '#ff6a3d', '#ff8a3a', '#ff5578', '#f2554b', '#ff7058']; // level 3: similar colours (match by the outline, not the colour)
+const SHAPE_BOXES = ['#e8413a', '#2f7cf6', '#f2a516', '#22a866', '#8a5cf0'];
+const SHAPE_SNAP = 25 * Math.PI / 180, SHAPE_CATCH = 0.45, SHAPES_DONE_MS = 2600, SHAPES_BANNER_MS = 1300;
+const shapes = { level: 1, spec: null, shapes: [], holes: [], held: null, box: null, mat: null, S: 40, phase: 'play', phaseAt: 0, levelStart: 0, mistakes: 0,
+  levelsDone: 0, stars: 0, placedTotal: 0, result: null, over: false, overAt: 0, best: 0, prevBest: 0, clock: 0, boxAng: 0, slide: 0, lastGesture: 'none',
+  hoverHole: -1, hoverShape: -1, spoken: '', spokenLang: '', sounds: [], boxCol: SHAPE_BOXES[0], ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+function shapesSound(kind, arg) { shapes.sounds.push(kind); if (shapes.sounds.length > 40) shapes.sounds.shift(); sfx(kind, arg); }
+function shapeLevelSpec(n) { // what level n asks for
+  const k = Math.max(0, n - 7);
+  return { n, count: n === 1 ? 3 : n === 2 ? 4 : n <= 4 ? 5 : n <= 7 ? 6 : Math.min(10, n - 1), size: n === 1 ? 1 : n === 2 ? 0.9 : n === 3 ? 0.84 : 0.8,
+    warm: n === 3, rotated: n >= 4, decoys: n >= 5 ? 2 : 0,
+    rock: n === 6 || (n >= 8 && n % 2 === 0) || n >= 10 ? 0.2 + 0.03 * k : 0, rockW: 0.00055 * (1 + 0.15 * k), // radians, rad per ms: one rock about every 11 s
+    slide: n === 7 || (n >= 8 && n % 2 === 1) || n >= 10 ? 1 : 0, slideW: 0.0007 * (1 + 0.15 * k) };
+}
+function shapeAngDiff(a, b, sym) { // signed angle from b to a, modulo the shape's symmetry
+  if (!sym) return 0; const P = TAU / sym; let d = ((a - b) % P + P) % P; if (d > P / 2) d -= P; return d;
+}
+function shapePath(g, kind, s) { // the outline at 'radius' s, centred on 0, upright
+  g.beginPath();
+  if (kind === 'circle') g.arc(0, 0, s, 0, TAU);
+  else if (kind === 'square') g.roundRect(-s * 0.82, -s * 0.82, s * 1.64, s * 1.64, s * 0.12);
+  else if (kind === 'rectangle') g.roundRect(-s, -s * 0.56, s * 2, s * 1.12, s * 0.1);
+  else if (kind === 'oval') g.ellipse(0, 0, s, s * 0.66, 0, 0, TAU);
+  else if (kind === 'star') { for (let i = 0; i < 10; i++) { const r = i % 2 ? s * 0.46 : s * 1.05, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r + s * 0.06); } g.closePath(); }
+  else if (kind === 'triangle' || kind === 'hexagon' || kind === 'pentagon') {
+    const n = kind === 'triangle' ? 3 : kind === 'hexagon' ? 6 : 5, r = kind === 'triangle' ? s * 1.12 : s * 0.98, dy = kind === 'triangle' ? s * 0.16 : kind === 'pentagon' ? s * 0.06 : 0;
+    for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * TAU / n + (kind === 'hexagon' ? Math.PI / 6 : 0); g.lineTo(Math.cos(a) * r, Math.sin(a) * r + dy); }
+    g.closePath();
+  }
+  else if (kind === 'diamond') { g.moveTo(0, -s * 1.05); g.lineTo(s * 0.7, 0); g.lineTo(0, s * 1.05); g.lineTo(-s * 0.7, 0); g.closePath(); }
+  else if (kind === 'cross') { const a = s * 0.34, b = s * 0.98; g.moveTo(-a, -b); g.lineTo(a, -b); g.lineTo(a, -a); g.lineTo(b, -a); g.lineTo(b, a); g.lineTo(a, a); g.lineTo(a, b); g.lineTo(-a, b); g.lineTo(-a, a); g.lineTo(-b, a); g.lineTo(-b, -a); g.lineTo(-a, -a); g.closePath(); }
+  else if (kind === 'heart') {
+    g.moveTo(0, s * 0.95); g.bezierCurveTo(-s * 0.2, s * 0.78, -s * 1.02, s * 0.3, -s * 1.0, -s * 0.25); g.bezierCurveTo(-s * 0.98, -s * 0.78, -s * 0.42, -s * 1.0, 0, -s * 0.52);
+    g.bezierCurveTo(s * 0.42, -s * 1.0, s * 0.98, -s * 0.78, s * 1.0, -s * 0.25); g.bezierCurveTo(s * 1.02, s * 0.3, s * 0.2, s * 0.78, 0, s * 0.95); g.closePath();
+  }
+  else if (kind === 'crescent') { // the outer circle minus an offset inner one, nudged so the crescent's body sits on the centre
+    const R = s * 1.02, d = s * 0.52, r2 = s * 0.84, ox = s * 0.24, x = (R * R - r2 * r2 + d * d) / (2 * d), y = Math.sqrt(Math.max(0, R * R - x * x));
+    g.arc(-ox, 0, R, Math.atan2(-y, x), Math.atan2(y, x), true); g.arc(d - ox, 0, r2, Math.atan2(y, x - d), Math.atan2(-y, x - d), false); g.closePath();
+  }
+}
+function shapeSprite(kind, col, s) { // a glossy cartoon shape: gradient fill, rim light, gloss stripe, dark outline
+  return makeSprite('shp|' + kind + '|' + col + '|' + Math.round(s), s * 2.5 + 8, s * 2.5 + 8, s * 1.25 + 4, s * 1.25 + 4, (g) => {
+    const path = () => shapePath(g, kind, s);
+    shadedFill(g, path, col, s); rimLight(g, path, s, 0.42); gloss(g, path, s, 0.42);
+    g.save(); path(); g.clip(); g.lineWidth = Math.max(2, s * 0.09); g.translate(s * 0.03, s * 0.05); path(); g.strokeStyle = 'rgba(255,255,255,0.2)'; g.stroke(); g.restore(); // a soft inner bevel
+    outline(g, path, col, Math.max(1.5, s * 0.05));
+  });
+}
+function holeSprite(kind, s, boxCol) { // a dark recess cut in the lid: deep gradient, inner shadow at the top, light at the bottom lip, a bevelled rim in the lid's colour
+  return makeSprite('shh|' + kind + '|' + Math.round(s) + '|' + boxCol, s * 2.9 + 10, s * 2.9 + 10, s * 1.45 + 5, s * 1.45 + 5, (g) => {
+    const hs = s * 1.08, path = () => shapePath(g, kind, hs), rw = Math.max(4, s * 0.17);
+    g.save(); g.lineWidth = rw * 2; path(); const rim = g.createLinearGradient(-hs, -hs, hs, hs); rim.addColorStop(0, lighten(boxCol, 0.55)); rim.addColorStop(0.5, lighten(boxCol, 0.12)); rim.addColorStop(1, darken(boxCol, 0.35)); g.strokeStyle = rim; g.stroke(); g.restore(); // the raised rim
+    g.save(); g.lineWidth = rw * 2 + 2; path(); g.strokeStyle = 'rgba(0,0,0,0.18)'; g.globalCompositeOperation = 'destination-over'; g.stroke(); g.restore();
+    const gr = g.createRadialGradient(0, hs * 0.35, hs * 0.1, 0, 0, hs * 1.3); gr.addColorStop(0, '#2a2240'); gr.addColorStop(0.6, '#140f24'); gr.addColorStop(1, '#07050f');
+    path(); g.fillStyle = gr; g.fill();
+    g.save(); path(); g.clip(); // inner shadow from the top edge, a faint light on the bottom wall
+    g.lineWidth = rw * 2.2; g.translate(0, rw * 0.9); path(); g.strokeStyle = 'rgba(0,0,0,0.55)'; g.stroke(); g.translate(0, -rw * 1.8); path(); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.stroke(); g.restore();
+    g.lineWidth = 1.2; path(); g.strokeStyle = darken(boxCol, 0.6); g.stroke();
+  });
+}
+function shapeBoxSprite(w, h, depth, col) { // the toy box: a front face below the lid, the lid with its lip, gloss and four screws; origin = the lid's centre
+  return makeSprite('shb|' + Math.round(w) + 'x' + Math.round(h) + '|' + Math.round(depth) + '|' + col, w + 16, h + depth + 16, w / 2 + 8, h / 2 + 8, (g) => {
+    const r = Math.min(26, h * 0.14);
+    g.beginPath(); g.roundRect(-w / 2, -h / 2 + depth, w, h, r); const fr = g.createLinearGradient(0, h / 2 - depth, 0, h / 2 + depth); fr.addColorStop(0, darken(col, 0.35)); fr.addColorStop(1, darken(col, 0.55)); g.fillStyle = fr; g.fill(); // the side, seen under the lid
+    g.lineWidth = 2; g.strokeStyle = darken(col, 0.7); g.stroke();
+    const lid = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, r); };
+    lid(); const lg = g.createLinearGradient(0, -h / 2, 0, h / 2); lg.addColorStop(0, lighten(col, 0.22)); lg.addColorStop(0.55, col); lg.addColorStop(1, darken(col, 0.12)); g.fillStyle = lg; g.fill();
+    g.save(); lid(); g.clip(); const sh = g.createRadialGradient(-w * 0.3, -h * 0.6, 4, -w * 0.2, -h * 0.3, Math.max(w, h)); sh.addColorStop(0, 'rgba(255,255,255,0.28)'); sh.addColorStop(0.5, 'rgba(255,255,255,0.04)'); sh.addColorStop(1, 'rgba(0,0,0,0.12)'); g.fillStyle = sh; g.fillRect(-w / 2, -h / 2, w, h);
+    g.fillStyle = 'rgba(255,255,255,0.22)'; g.beginPath(); g.ellipse(-w * 0.2, -h / 2 + h * 0.08, w * 0.34, h * 0.05, 0, 0, TAU); g.fill(); g.restore(); // the gloss stripe
+    const ins = Math.max(7, h * 0.05); g.beginPath(); g.roundRect(-w / 2 + ins, -h / 2 + ins, w - 2 * ins, h - 2 * ins, Math.max(6, r - ins)); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,0.28)'; g.stroke(); // the lid's lip
+    g.beginPath(); g.roundRect(-w / 2 + ins + 2, -h / 2 + ins + 2, w - 2 * ins - 4, h - 2 * ins - 4, Math.max(5, r - ins - 2)); g.lineWidth = 1.5; g.strokeStyle = darken(col, 0.3); g.stroke();
+    lid(); g.lineWidth = 2.5; g.strokeStyle = darken(col, 0.55); g.stroke();
+    const sr = Math.max(3.5, Math.min(7, h * 0.03)), q = ins * 0.5 + sr + 2;
+    for (const [x, y] of [[-w / 2 + q, -h / 2 + q], [w / 2 - q, -h / 2 + q], [-w / 2 + q, h / 2 - q], [w / 2 - q, h / 2 - q]]) screw(g, x, y, sr, x * 0.7 + y);
+  });
+}
+function shapeMatSprite(w, h) { // the play mat: soft felt with a dotted pattern and a stitched border
+  return makeSprite('shm|' + Math.round(w) + 'x' + Math.round(h), w + 8, h + 8, 4, 4, (g) => {
+    const r = Math.min(26, w * 0.06), path = () => { g.beginPath(); g.roundRect(0, 0, w, h, r); };
+    path(); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#2c3a7a'); gr.addColorStop(1, '#243066'); g.fillStyle = gr; g.fill();
+    g.save(); path(); g.clip(); g.fillStyle = 'rgba(255,255,255,0.05)'; for (let y = 10; y < h; y += 18) for (let x = 10 + (y / 18 % 2) * 9; x < w; x += 18) { g.beginPath(); g.arc(x, y, 1.6, 0, TAU); g.fill(); }
+    const v = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) * 0.6); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.25)'); g.fillStyle = v; g.fillRect(0, 0, w, h); g.restore();
+    g.setLineDash([7, 6]); g.lineWidth = 2; g.strokeStyle = 'rgba(241,233,218,0.28)'; g.beginPath(); g.roundRect(8, 8, w - 16, h - 16, Math.max(4, r - 8)); g.stroke(); g.setLineDash([]);
+    path(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(8,10,28,0.6)'; g.stroke();
+  });
+}
+function shapeStarSprite(r, on) { // a result star: gold when earned, a dim outline when not
+  return makeSprite('shst|' + Math.round(r) + '|' + (on ? 1 : 0), r * 2.4, r * 2.4, r * 1.2, r * 1.2, (g) => {
+    const path = () => { g.beginPath(); for (let i = 0; i < 10; i++) { const q = i % 2 ? r * 0.45 : r, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * q, Math.sin(a) * q + r * 0.05); } g.closePath(); };
+    if (on) { shadedFill(g, path, '#ffc93b', r); gloss(g, path, r, 0.5); outline(g, path, '#ffc93b', Math.max(1.5, r * 0.07)); }
+    else { path(); g.fillStyle = 'rgba(8,11,28,0.55)'; g.fill(); g.lineWidth = Math.max(1.5, r * 0.07); g.strokeStyle = 'rgba(241,233,218,0.35)'; g.stroke(); }
+  });
+}
+function resetShapes() { // a new round from level 1
+  shapes.level = 1; shapes.levelsDone = 0; shapes.stars = 0; shapes.placedTotal = 0; shapes.over = false; shapes.result = null; shapes.held = null;
+  try { shapes.best = shapes.prevBest = +localStorage.getItem('shapesBest') || 0; } catch { shapes.best = shapes.prevBest = 0; }
+  const ui = shapes.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  roundStart(); buildShapesLevel(1, performance.now()); shapes.phase = 'play';
+}
+function buildShapesLevel(n, now) { // the shapes and holes of level n, laid out for this screen
+  const sp = shapes.spec = shapeLevelSpec(n), r = Math.random;
+  shapes.level = n; shapes.held = null; shapes.mistakes = 0; shapes.levelStart = now; shapes.clock = 0; shapes.boxAng = shapes.slide = 0; shapes.hoverHole = shapes.hoverShape = -1;
+  shapes.boxCol = SHAPE_BOXES[(n - 1) % SHAPE_BOXES.length];
+  let kinds;
+  if (n === 1) kinds = ['circle', 'square', 'triangle'];
+  else if (n === 2) kinds = ['circle', 'square', 'triangle', r() < 0.5 ? 'star' : 'heart'];
+  else kinds = shuffled(SHAPE_KINDS, r).slice(0, sp.count);
+  const cols = kinds.map((k, i) => sp.warm ? SHAPE_WARM[i % SHAPE_WARM.length] : SHAPE_COLS[k]);
+  for (let d = 0; d < sp.decoys && kinds.length > 2 * d + 1; d++) cols[2 * d + 1] = cols[2 * d]; // decoys: a shape in another one's colour
+  shapes.holes = shuffled(kinds, r).map((kind) => { // a hole per shape, in a shuffled order; rotated (well outside the snap) from level 4
+    const sym = SHAPE_SYM[kind], P = sym ? TAU / sym : TAU, lo = SHAPE_SNAP + 0.09, hi = P - lo;
+    const ang = !sp.rotated || !sym ? 0 : hi > lo ? (r() < 0.5 ? 1 : -1) * (lo + r() * (Math.min(hi, Math.PI) - lo)) : P / 2;
+    return { kind, ang, filled: false, lx: 0, ly: 0, x: 0, y: 0, wa: ang };
+  });
+  shapes.shapes = kinds.map((kind, i) => ({ kind, color: cols[i], x: 0, y: 0, hx: 0, hy: 0, angle: 0, placed: false, hole: -1, anim: null, born: now + i * 70, lift: 0 }));
+  const order = shuffled(shapes.shapes.map((_, i) => i), r); shapes.shapes.forEach((s, i) => (s.slot = order[i]));
+  layoutShapes(true);
+}
+function layoutShapes(fresh) { // the mat (top), the box (lower middle), the hole grid on the lid and the shapes' home spots on the mat
+  const sp = shapes.spec; if (!sp) return;
+  const n = shapes.shapes.length, top = Math.max(64, Math.round(chromeRow.bottom) + 8) + 36, side = 12, bottom = Math.max(18, Math.round(H * 0.03));
+  const hc = n <= 3 ? n : Math.ceil(n / 2), hr = Math.ceil(n / hc), rock = sp.rock * (W < 600 ? 0.6 : 1);
+  const cap = sp.size * Math.max(34, Math.min(70, Math.min(W, H) * 0.13));
+  let S = cap, L = null;
+  for (let it = 0; it < 60; it++, S *= 0.96) {
+    const pad = Math.max(12, S * 0.45), slideAmp = sp.slide ? S * 1.1 : 0, cell = S * 2.75;
+    const bw = Math.min(W - 2 * side, hc * cell + 2 * pad + 2 * slideAmp), bh = hr * cell + 2 * pad, depth = Math.max(12, bh * 0.1);
+    if (hc * cell + 2 * pad + 2 * slideAmp > W - 2 * side + 0.5) continue;
+    const by = H - bottom - depth - bh / 2, rockY = rock ? Math.sin(rock) * bw / 2 : 0, matTop = top, matBot = by - bh / 2 - rockY - 14, matH = matBot - matTop, matW = W - 2 * side;
+    const mc = Math.max(1, Math.min(n, Math.floor(matW / (S * 2.7)))), mr = Math.ceil(n / mc);
+    if (matH < mr * S * 2.6 && S > 18) continue;
+    L = { S, pad, slideAmp, cell, bw, bh, depth, by, matTop, matH: Math.max(matH, S * 2.6), matW, mc, mr }; break;
+  }
+  if (!L) return;
+  shapes.S = L.S; S = L.S;
+  shapes.box = { x: W / 2, y: L.by, w: L.bw, h: L.bh, depth: L.depth, rock };
+  shapes.mat = { x: side, y: L.matTop, w: L.matW, h: L.matH };
+  const gw = hc * L.cell, gx0 = -gw / 2 + L.cell / 2, gy0 = -(hr * L.cell) / 2 + L.cell / 2;
+  shapes.holes.forEach((h, i) => { const c = i % hc, rw = Math.floor(i / hc), inRow = Math.min(hc, n - rw * hc); h.lx = gx0 + c * L.cell + (hc - inRow) * L.cell / 2; h.ly = gy0 + rw * L.cell; });
+  const cw = L.matW / L.mc, ch = L.matH / L.mr, jr = rng(shapes.level * 97 + n);
+  for (const s of shapes.shapes) {
+    const c = s.slot % L.mc, rw = Math.floor(s.slot / L.mc), inRow = Math.min(L.mc, n - rw * L.mc);
+    const hx = L.matW / 2 - (inRow * cw) / 2 + (c + 0.5) * cw + side + (jr() - 0.5) * Math.max(0, cw - S * 2.5) * 0.6, hy = L.matTop + (rw + 0.5) * ch + (jr() - 0.5) * Math.max(0, ch - S * 2.5) * 0.6;
+    if (fresh || !s.moved) { s.hx = hx; s.hy = hy; } else { s.hx = Math.min(W - side - S, Math.max(side + S, s.hx)); s.hy = Math.min(L.matTop + L.matH - S, Math.max(L.matTop + S, s.hy)); }
+    if (!s.anim && shapes.held?.s !== s) { s.x = s.hx; s.y = s.hy; }
+  }
+  updateShapeHoles();
+}
+function updateShapeHoles() { // the holes' screen positions and angles, with the box's rock and slide
+  const b = shapes.box; if (!b) return; const c = Math.cos(shapes.boxAng), s = Math.sin(shapes.boxAng);
+  for (const h of shapes.holes) { const x = h.lx + shapes.slide; h.x = b.x + x * c - h.ly * s; h.y = b.y + x * s + h.ly * c; h.wa = h.ang + shapes.boxAng; }
+}
+function shapeAt(p) { // the topmost loose shape under a point (generous: a little outside its outline still counts)
+  let best = -1, bd = Infinity;
+  shapes.shapes.forEach((s, i) => { if (s.placed) return; const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < shapes.S * 1.25 + 10 && d < bd + 1) { bd = d; best = i; } });
+  return best;
+}
+function shapeHoleUnder(s) { // the hole a shape is over: the nearest free one of its kind within reach, else the nearest free one
+  const reach = SHAPE_CATCH * 2 * shapes.S * 1.08; let mine = -1, md = Infinity, any = -1, ad = Infinity;
+  shapes.holes.forEach((h, j) => { if (h.filled) return; const d = Math.hypot(s.x - h.x, s.y - h.y); if (d > reach) return; if (h.kind === s.kind && d < md) { md = d; mine = j; } if (d < ad) { ad = d; any = j; } });
+  return mine >= 0 ? mine : any;
+}
+function twoFingers() { return mode === 'mouse' && ptr.type === 'touch' && ptr.touches.size >= 2; }
+function touchTwist() { const p = [...ptr.touches.values()]; return p.length >= 2 ? Math.atan2(p[1].y - p[0].y, p[1].x - p[0].x) : 0; }
+const wrapAng = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+function shapesGrab(i, now) {
+  const s = shapes.shapes[i]; s.anim = null; s.moved = true;
+  shapes.held = { i, s, ox: s.x - cursor.x, oy: s.y - cursor.y, roll: hand.roll, tw: touchTwist(), two: twoFingers(), t0: now, overSince: 0, overHole: -1 };
+  shapesSound('tick');
+}
+function shapesRotate(s, d) { s.angle = wrapAng(s.angle + d); }
+function shapesWheel(dy) { // the mouse wheel turns the held shape (or the one under the cursor): 15° a notch
+  if (shapes.over || pause.on) return;
+  const s = shapes.held ? shapes.held.s : (() => { const i = shapeAt(cursor); return i >= 0 ? shapes.shapes[i] : null; })(); if (!s || s.placed) return;
+  const d = Math.max(-2, Math.min(2, dy / 100)) * (15 * Math.PI / 180); shapesRotate(s, d); s.turnedAt = performance.now();
+}
+function shapesRelease(now, home) { // let go: into the hole (it fits), back home (the wrong hole / the lid), or it stays where it is on the mat
+  const h = shapes.held; if (!h) return; shapes.held = null; const s = h.s;
+  if (home) return shapeGoHome(s, now, false);
+  const j = shapeHoleUnder(s);
+  if (j >= 0) {
+    const hl = shapes.holes[j], d = shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]);
+    if (hl.kind === s.kind && Math.abs(d) <= SHAPE_SNAP + 1e-6) return placeShape(s, j, d, now);
+    if (hl.kind !== s.kind) shapes.mistakes++; // (the right hole at the wrong angle is no mistake: it just does not fit yet)
+    shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3);
+    return shapeGoHome(s, now, true);
+  }
+  const b = shapes.box, m = shapes.mat;
+  if (b && Math.abs(s.x - b.x) < b.w / 2 + shapes.S * 0.3 && Math.abs(s.y - b.y) < b.h / 2 + b.depth) return shapeGoHome(s, now, false); // dropped on the lid: it slides back
+  const S = shapes.S; s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.y + S, s.y)); // on the mat: it stays there (inside the mat)
+  if (s.hx !== s.x || s.hy !== s.y) shapeGoHome(s, now, false); else shapesSound('tick');
+}
+function shapeGoHome(s, now, bounce) { s.anim = { k: 'back', t0: now, x0: s.x, y0: s.y, bounce }; }
+function placeShape(s, j, d, now) {
+  const hl = shapes.holes[j]; s.placed = true; s.hole = j; hl.filled = true; s.anim = { k: 'drop', t0: now, x0: s.x, y0: s.y, a0: s.angle, a1: s.angle - d };
+  shapesSound('clunk'); shapesSound('rise');
+  burst(hl.x, hl.y, s.color, 22); burst(hl.x, hl.y, '#fff3c4', 14); burst(hl.x, hl.y, COLORS[(j + 2) % COLORS.length], 12);
+  ring(hl.x, hl.y, hexA(s.color, 0.95), shapes.S * 1.9, 460, 6); ring(hl.x, hl.y, 'rgba(255,255,255,0.85)', shapes.S * 1.1, 300, 3);
+  speakShape(s.kind); shapes.placedTotal++; track('shape', 1); grippySay('shapesMatch');
+}
+function speakShape(kind) { // the shape's name, spoken in the current language (silently skipped when speech is unavailable or muted)
+  const text = t('shp_' + kind); shapes.spoken = text; shapes.spokenLang = lang;
+  if (muted) return;
+  try {
+    const ss = window.speechSynthesis, U = window.SpeechSynthesisUtterance; if (!ss || !U) return;
+    const u = new U(text), want = lang === 'he' ? /^(he|iw)/i : /^en/i; u.lang = lang === 'he' ? 'he-IL' : 'en-US'; u.rate = 0.9; u.pitch = 1.15;
+    const v = (ss.getVoices ? ss.getVoices() : []).find((q) => want.test(q.lang || '')); if (v) u.voice = v;
+    ss.cancel(); ss.speak(u);
+  } catch {}
+}
+function shapesLevelDone(now) {
+  const n = shapes.level, dt = now - shapes.levelStart, par = 4000 + 3500 * shapes.shapes.length, m = shapes.mistakes;
+  const stars = m === 0 && dt <= par ? 3 : m <= 2 && dt <= par * 2 ? 2 : 1, coins = ECONOMY.shapes.level + (stars === 3 ? ECONOMY.shapes.star3 : 0);
+  shapes.levelsDone++; shapes.stars += stars; addCoins(coins);
+  if (n > shapes.best) { shapes.best = n; try { localStorage.setItem('shapesBest', String(n)); } catch {} }
+  shapes.result = { level: n, stars, coins, t: now, ms: Math.round(dt), mistakes: m }; shapes.phase = 'done'; shapes.phaseAt = now;
+  confetti(W / 2, H * 0.32, 90, 1.1); confetti(W * 0.2, H * 0.4, 30, 0.8); confetti(W * 0.8, H * 0.4, 30, 0.8);
+  shapesSound('levelup'); grippySay('shapesLevel');
+}
+function shapesFinish(now) { // Home during a round: the round-over card (levels done, stars, best level)
+  shapes.held = null; shapes.over = true; shapes.overAt = now; const ui = shapes.ui; ui.buttons = ui.hover = ui.dwell = null;
+  ui.newBest = shapes.best > shapes.prevBest; if (ui.newBest) { sfx('fanfare'); grippySay('newBest'); }
+  roundDone(0, shapes.levelsDone * 5);
+}
+function shapesHome() { // the toolbar's Home in a Shapes round: the card first, if anything was sorted
+  if (gameMode !== 'shapes' || mode === 'none' || shapes.over || !shapes.placedTotal) return false;
+  shapesFinish(performance.now()); return true;
+}
+function shapesTick(now, dt) {
+  if (shapes.over) { shapes.held = null; endCardTick(now); return; }
+  if (pause.on) { if (shapes.held) shapesRelease(now, true); return; } // the hand is gone: the shape goes home, nothing moves
+  const sp = shapes.spec, play = shapes.phase === 'play';
+  if (play) shapes.clock += dt;
+  shapes.boxAng = shapes.box && shapes.box.rock ? shapes.box.rock * Math.sin(shapes.clock * sp.rockW) : 0;
+  shapes.slide = sp.slide && shapes.box ? shapes.S * 1.1 * Math.sin(shapes.clock * sp.slideW) : 0;
+  updateShapeHoles();
+  if (shapes.phase === 'done' && now - shapes.phaseAt >= SHAPES_DONE_MS) { buildShapesLevel(shapes.level + 1, now); shapes.phase = 'banner'; shapes.phaseAt = now; sfx('whoosh'); }
+  else if (shapes.phase === 'banner' && now - shapes.phaseAt >= SHAPES_BANNER_MS) { shapes.phase = 'play'; shapes.levelStart = now; }
+  const holding = gesture === 'pinch' || (shapes.held && twoFingers());
+  const h = shapes.held;
+  if (h) {
+    const s = h.s;
+    if (!holding || !cursor.present || !play) shapesRelease(now, !play);
+    else {
+      const two = twoFingers();
+      if (two) { const tw = touchTwist(); if (h.two) shapesRotate(s, wrapAng(tw - h.tw)); h.tw = tw; } // two fingers: twist to turn (the shape stays put)
+      else {
+        if (h.two) { h.ox = s.x - cursor.x; h.oy = s.y - cursor.y; } // back to one finger: carry on from here
+        if (mode === 'camera') { h.ox *= Math.pow(0.992, dt); h.oy *= Math.pow(0.992, dt); if (Number.isFinite(hand.roll) && Number.isFinite(h.roll)) shapesRotate(s, wrapAng(hand.roll - h.roll)); h.roll = hand.roll; } // pinch-twist; the grab point drifts to the pinch
+        s.x = Math.min(W - 8, Math.max(8, cursor.x + h.ox)); s.y = Math.min(H - 8, Math.max(8, cursor.y + h.oy));
+      }
+      h.two = two;
+      const j = shapeHoleUnder(s); shapes.hoverHole = j;
+      if (j >= 0 && shapes.holes[j].kind === s.kind) { // over its own hole: within 25° it snaps to the hole's angle; camera / touch: after 0.7 s it turns itself to fit
+        const hl = shapes.holes[j], d = shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]);
+        if (h.overHole !== j) { h.overHole = j; h.overSince = now; }
+        if (Math.abs(d) <= SHAPE_SNAP) s.angle -= d * Math.min(1, dt / 70);
+        else if ((mode === 'camera' || ptr.type === 'touch') && now - h.overSince > 700) s.angle -= Math.sign(d) * Math.min(Math.abs(d), 0.0025 * dt);
+      } else h.overHole = -1;
+    }
+  } else {
+    shapes.hoverHole = -1;
+    if (gesture === 'pinch' && shapes.lastGesture !== 'pinch' && cursor.present && play) { const i = shapeAt(cursor); if (i >= 0) shapesGrab(i, now); }
+  }
+  shapes.lastGesture = gesture;
+  shapes.hoverShape = !shapes.held && cursor.present && gesture !== 'pinch' ? shapeAt(cursor) : -1;
+  for (const s of shapes.shapes) { // the drop and go-home animations
+    const a = s.anim; if (!a) { s.lift += ((shapes.held && shapes.held.s === s ? 1 : 0) - s.lift) * Math.min(1, dt / 70); continue; }
+    s.lift += (0 - s.lift) * Math.min(1, dt / 90);
+    if (a.k === 'back') { const k = Math.min(1, (now - a.t0) / 480), e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); s.x = a.x0 + (s.hx - a.x0) * e; s.y = a.y0 + (s.hy - a.y0) * e - (a.bounce ? Math.sin(Math.PI * k) * shapes.S * 1.4 : 0); if (k >= 1) { s.anim = null; s.x = s.hx; s.y = s.hy; } }
+  }
+  if (play && shapes.shapes.length && shapes.shapes.every((s) => s.placed) && shapes.shapes.every((s) => !s.anim || now - s.anim.t0 > 420)) shapesLevelDone(now);
+}
+function drawShapeHud(now) { // 'Level N' and a pip per shape (filled once sorted), under the toolbar
+  const y = Math.max(64, Math.round(chromeRow.bottom) + 8) + 12, n = shapes.shapes.length, done = shapes.shapes.filter((s) => s.placed).length;
+  blit(textSprite(t('levelN', { n: shapes.level }), 18, '#fff8ec', 'rgba(255,194,75,0.6)'), W / 2, y);
+  const gap = 13, x0 = W / 2 - (n - 1) * gap / 2; resetView();
+  for (let i = 0; i < n; i++) { const x = lang === 'he' ? W - x0 - i * gap : x0 + i * gap; ctx.beginPath(); ctx.arc(x, y + 19, 4, 0, TAU); ctx.fillStyle = i < done ? '#ffc24b' : 'rgba(241,233,218,0.22)'; ctx.fill(); }
+}
+function renderShapes(now) {
+  beginFrame('shapes', now);
+  const b = shapes.box, m = shapes.mat, S = shapes.S; if (!b || !m) { drawCursor(now); return; }
+  const ms = shapeMatSprite(m.w, m.h); blit(ms, m.x, m.y);
+  drawShadow(b.x + 6, b.y + b.h / 2 + b.depth + 2, b.w * 1.05, Math.max(26, b.h * 0.22), 0.5);
+  blit(shapeBoxSprite(b.w, b.h, b.depth, shapes.boxCol), b.x, b.y, shapes.boxAng);
+  const held = shapes.held && shapes.held.s;
+  shapes.holes.forEach((h, j) => {
+    blit(holeSprite(h.kind, S, shapes.boxCol), h.x, h.y, h.wa);
+    if (h.filled) { const s = shapes.shapes.find((q) => q.hole === j); if (s && !s.anim) { blit(shapeSprite(s.kind, s.color, S), h.x, h.y, h.wa, 0.9, 0.42); } } // sorted: its colour peeks out of the hole
+    if (held && j === shapes.hoverHole) { // a soft glow on the hole under the held shape: gold for its own hole, faint for another
+      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * 1.2); ctx.lineWidth = 4; ctx.strokeStyle = h.kind === held.kind ? 'rgba(255,214,120,' + (0.6 + 0.3 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(241,233,218,0.25)'; ctx.stroke(); ctx.restore();
+    }
+  });
+  for (const s of shapes.shapes) if (s.anim && s.anim.k === 'drop') { // into the hole: slide onto it and turn to fit, then sink and fade
+    const a = s.anim, hl = shapes.holes[s.hole], k = (now - a.t0) / 420; if (k >= 1) { s.anim = null; s.x = hl.x; s.y = hl.y; s.angle = a.a0 - shapeAngDiff(a.a0, hl.wa, SHAPE_SYM[s.kind]); continue; }
+    const k1 = ease(Math.min(1, k / 0.4)), k2 = Math.max(0, (k - 0.4) / 0.6);
+    s.x = a.x0 + (hl.x - a.x0) * k1; s.y = a.y0 + (hl.y - a.y0) * k1; s.angle = a.a0 - shapeAngDiff(a.a0, hl.wa, SHAPE_SYM[s.kind]) * k1; // (turns the short way to the hole's angle, which may be rocking)
+    blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, 1.1 - 0.12 * k1 - 0.35 * k2, 1 - 0.58 * k2);
+  }
+  const order = shapes.shapes.filter((s) => !s.placed && s !== held);
+  for (const s of order) {
+    const pop = Math.min(1, Math.max(0, (now - s.born) / 320)), k = pop < 1 ? (pop <= 0 ? 0 : 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2)) : 1; if (k <= 0) continue;
+    const hov = shapes.hoverShape >= 0 && shapes.shapes[shapes.hoverShape] === s, air = s.anim ? 0.6 : 0;
+    drawShadow(s.x + 3 + air * 6, s.y + S * 0.9 + air * 8, S * 2.2, S * 0.7, 0.35 + air * 0.15);
+    blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, k * (hov ? 1.04 : 1) * (1 + 0.1 * s.lift));
+  }
+  if (held) { // lifted: bigger, a shadow further below
+    const s = held, l = Math.max(0.2, s.lift);
+    drawShadow(s.x + 10 * l, s.y + S * 0.9 + 18 * l, S * 2.4, S * 0.8, 0.45);
+    blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, 1 + 0.1 * l);
+  }
+  drawParticles(); drawRings(now);
+  drawShapeHud(now);
+  if (shapes.phase === 'done' && shapes.result) drawShapesResult(now);
+  if (shapes.phase === 'banner') { const k = (now - shapes.phaseAt) / SHAPES_BANNER_MS, pop = Math.min(1, k / 0.25), a = k < 0.8 ? 1 : Math.max(0, 1 - (k - 0.8) / 0.2); blit(textSprite(t('levelN', { n: shapes.level }), 48, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, m.y + m.h * 0.5, 0, 0.6 + 0.4 * ease(pop), a); }
+  drawCoinPill(now);
+  if (shapes.over) drawEndCard(now, shapes, { score: shapes.levelsDone, best: shapes.best, bestText: t('levelBest', { n: shapes.best }), stats: [[shapes.levelsDone, 'shLevels'], [shapes.stars, 'shStars'], [shapes.placedTotal, 'shShapes']], again: 'playAgainShapes' });
+  else drawCursor(now);
+}
+function drawShapesResult(now) { // a glass card over the mat: 'Level N done!', 1-3 stars popping in one by one, the coins
+  const r = shapes.result, m = shapes.mat, k = Math.min(1, (now - r.t) / 300), out = Math.max(0, Math.min(1, (SHAPES_DONE_MS - (now - r.t)) / 250));
+  const cw = Math.min(300, W - 40), ch = 170, x = W / 2 - cw / 2, y = Math.max(m.y + 4, m.y + m.h / 2 - ch / 2) + (1 - ease(k)) * 20;
+  ctx.save(); ctx.globalAlpha = ease(k) * out; resetView(); blit(glassSprite(cw, ch, 20, true), x - 1, y - 1);
+  const ts = textSprite(t('shLevelDone', { n: r.level }), 24, '#fff8ec', 'rgba(255,194,75,0.7)'); blit(ts, W / 2, y + 34, 0, Math.min(1, (cw - 30) / ts.tw));
+  for (let i = 0; i < 3; i++) { const at = r.t + 250 + i * 220, q = Math.min(1, Math.max(0, (now - at) / 260)), sc = q <= 0 ? 0.001 : 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2), on = i < r.stars; blit(shapeStarSprite(22, on && q > 0), W / 2 + (i - 1) * 56 * (lang === 'he' ? -1 : 1), y + 88, 0, on ? sc : 1); }
+  blit(coinSprite(9), W / 2 - 22, y + 140); blit(textSprite(LRM + '+' + r.coins, 18, '#ffd77a', null), W / 2 + 8, y + 140);
+  ctx.restore();
 }
 
 /* ---------------- Strike mode ---------------- */
@@ -5183,7 +5562,7 @@ function overButtonSprite(kind, w, h) {
    (with a NEW BEST ribbon), up to three stats, a saffron Play again button and an outline Home button, and, for Strike, the Easy / Normal pill.
    A tap on a button presses it (canvas pointerdown); in camera mode a point / pinch / fist held on a button for 400 ms presses it (a filling
    ring shows the dwell); a wave, a punch or a tap elsewhere after a second restarts. */
-function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : null; } // the mode that owns a round-over card
+function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : null; } // the mode that owns a round-over card
 function endCardAt(px, py) { // which card button (if any) is under a screen point
   const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
   for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
@@ -5194,7 +5573,7 @@ function endCardAction(key, now) {
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
   if (key === 'share') { strike.ui.dwell = null; return shareDaily(); }
-  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice();
+  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
   if (!$('newCard').hidden) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
@@ -5216,7 +5595,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null); blit(ts, cx, y0 + 40, 0, Math.min(1, (cw - 150) / ts.tw)); blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64); }
   else blit(textSprite(t('roundOver'), 26, '#f1e9da', null), cx, y0 + 44);
   blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108);
-  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
+  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156);
   if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
     const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
     resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
@@ -6278,10 +6657,12 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       if (moo) { o.frequency.setValueAtTime(150, t0); o.frequency.linearRampToValueAtTime(205, t0 + 0.25); o.frequency.exponentialRampToValueAtTime(105, t0 + 1); lfo.frequency.value = 6; lg.gain.setValueAtTime(3, t0); lg.gain.linearRampToValueAtTime(12, t0 + 0.9); }
       else if (boing) { o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(430, t0 + 0.12); o.frequency.exponentialRampToValueAtTime(260, t0 + 0.45); lfo.frequency.setValueAtTime(18, t0); lfo.frequency.linearRampToValueAtTime(8, t0 + 0.45); lg.gain.setValueAtTime(70, t0); lg.gain.exponentialRampToValueAtTime(4, t0 + 0.45); }
       else { o.frequency.setValueAtTime(700, t0); o.frequency.exponentialRampToValueAtTime(1750, t0 + 0.3); o.frequency.exponentialRampToValueAtTime(950, t0 + 0.58); lfo.frequency.value = 9; lg.gain.value = 20; }
-      const pk = moo ? 0.2 : boing ? 0.18 : 0.09; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(pk, t0 + (moo ? 0.08 : 0.02)); g.gain.setValueAtTime(pk, t0 + end * 0.65); g.gain.exponentialRampToValueAtTime(0.001, t0 + end);
+      const pk = moo ? 0.2 : boing ? (arg === 'soft' ? 0.09 : 0.18) : 0.09; g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(pk, t0 + (moo ? 0.08 : 0.02)); g.gain.setValueAtTime(pk, t0 + end * 0.65); g.gain.exponentialRampToValueAtTime(0.001, t0 + end);
       if (moo) { f.type = 'lowpass'; f.frequency.setValueAtTime(500, t0); f.frequency.linearRampToValueAtTime(1300, t0 + 0.3); f.frequency.linearRampToValueAtTime(600, t0 + 1); f.Q.value = 3; o.connect(f); f.connect(g); } else o.connect(g);
       g.connect(audio.destination); o.start(t0); lfo.start(t0); o.stop(t0 + end + 0.03); lfo.stop(t0 + end + 0.03);
     }
+    else if (kind === 'clunk') { f.type = 'lowpass'; f.frequency.value = 420; env(f, 0.22, 110, t0); noise(t0, 110, f); tone('sine', 170, 55, 0.22, 180, t0); const q = audio.createBiquadFilter(); q.type = 'bandpass'; q.frequency.value = 900; q.Q.value = 3; env(q, 0.08, 50, t0); noise(t0, 50, q); } // Shapes: the shape drops into the box, a hollow plastic clunk
+    else if (kind === 'rise') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => { tone('sine', q, 0, 0.09, 240 + i * 50, t0 + 0.08 + i * 0.07); tone('triangle', q * 2, 0, 0.025, 160, t0 + 0.08 + i * 0.07); }); } // ...and a rising chime
     else if (kind === 'monkey') [[420, 720], [440, 760], [640, 1080], [680, 1180]].forEach(([a, b], i) => tone('square', a, b, 0.06, 95, t0 + i * 0.13)); // 'ooh-ooh-ah-ah!': quick rising square chirps
     else if (kind === 'roar') { tone('sawtooth', 75, 42, 0.16, 650, t0); tone('square', 118, 62, 0.05, 600, t0 + 0.02); f.type = 'lowpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(140, t0 + 0.6); env(f, 0.2, 620, t0); noise(t0, 620, f); } // the boss roars: a low growl sliding down under a rumble
     else if (kind === 'bossdown') { f.type = 'lowpass'; f.frequency.setValueAtTime(2400, t0); f.frequency.exponentialRampToValueAtTime(80, t0 + 0.7); env(f, 0.25, 760, t0); noise(t0, 760, f); tone('sine', 110, 26, 0.25, 800, t0); tone('triangle', 2600, 400, 0.05, 200, t0); [659.25, 783.99, 1046.5, 1318.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 70, t0 + 0.35 + i * 0.1); tone('triangle', q / 2, 0, 0.025, 220, t0 + 0.35 + i * 0.1); }); } // the boss goes down: a deep blast, then a fanfare
@@ -6349,6 +6730,7 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
   { id: 'powerups', ev: 'powerup', goals: [2, 4, 6], rewards: ECONOMY.missions }, { id: 'boss', ev: 'boss', goals: [1], rewards: [30] },
   { id: 'strikeLevel', ev: 'strikeLevel', goals: [3, 4, 5], rewards: ECONOMY.missions, max: true }, { id: 'rounds', ev: 'round', goals: [3], rewards: [15] }, { id: 'combo', ev: 'combo', goals: [1], rewards: [30] },
   { id: 'close', ev: 'close', goals: [3], rewards: [20] }, { id: 'daily', ev: 'daily', goals: [1], rewards: [15] }, { id: 'guest', ev: 'guest', goals: [3], rewards: [20] },
+  { id: 'shapes', ev: 'shape', goals: [15], rewards: [20] },
 ];
 const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
 function defaultProfile() {
@@ -6623,7 +7005,7 @@ function teaserIconSprite(q) { // the item's own art (as on its Collection tile)
 /* --- Grippy, the commentator: a little hand with big eyes pops up at the bottom start corner with a short line for 2.2 s.
    At most one line per 4 s; boss / new best / last life (and a round's start) cut in. Lines show even when muted (only its pop sound is muted).
    The Collection panel's Grippy button turns him off (saved in the profile). --- */
-const GRIPPY_MS = 2200, GRIPPY_GAP = 8000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily', 'final', 'chest', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest']);
+const GRIPPY_MS = 2200, GRIPPY_GAP = 8000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily', 'final', 'chest', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest', 'shapesLevel']);
 const GRIPPY = {
   en: {
     start: ["Let's go! Hands ready?", 'Wiggle those fingers!', 'I believe in your hands!', 'Ready, set, high five!', "Show 'em what hands can do!", 'Here we go! No pressure. Some pressure.', 'Warm up those palms!'],
@@ -6655,6 +7037,8 @@ const GRIPPY = {
     monkey: ['Monkey business!', 'Banana-rama!', 'A flying monkey! Eek!', 'Ooh ooh ah ah!', 'Go bananas! Slap it!', 'Cheeky monkey incoming!', 'Monkey see, monkey fly!'],
     unlock: ['Something new! Go try it!', 'Ooh, shiny! A new thing!', 'Unlocked! I love surprises!', 'Your hands earned this!', 'New toy! Wheee!', 'Level up, loot up!'],
     chest: ['A treasure chest! Open it!', 'Ooh, what is inside?!', 'Loot time!', 'Treasure! Go on, open it!', 'A chest for a hero!', 'Shiny box! Open it!'],
+    shapesMatch: ['It fits!', 'Clunk! Perfect fit!', 'Right in the hole!', 'You found its home!', 'Great matching!', 'In it goes!', 'Shape master!'],
+    shapesLevel: ['All sorted! Hooray!', 'Every shape is home!', 'Box full! Well done!', 'Super sorting!', 'Level done! Next one!', 'You matched them all!'],
     world: ['A whole new world!', 'New world, new colours!', 'Next world unlocked!', 'Onward, explorer!', 'Ooh, where are we now?', 'Pack your hands, we travel!'],
   },
   he: {
@@ -6687,11 +7071,13 @@ const GRIPPY = {
     monkey: ['עסק של קופים!', 'קוף מעופף! איי!', 'או או אה אה!', 'משתגעים על בננות!', 'קוף שובב בדרך!', 'קופיקו בא לבקר!', 'תפסו את הקוף!'],
     unlock: ['משהו חדש! לכו לנסות!', 'אוהו, נוצץ! דבר חדש!', 'נפתח! אני אוהב הפתעות!', 'הידיים שלכם הרוויחו את זה!', 'צעצוע חדש! יש!', 'עליתם רמה, קיבלתם שלל!'],
     chest: ['תיבת אוצר! פתחו אותה!', 'מה יש בפנים?!', 'זמן שלל!', 'אוצר! קדימה, לפתוח!', 'תיבה לגיבורים!', 'קופסה נוצצת! פתחו!'],
+    shapesMatch: ['זה מתאים!', 'קלאנק! בול בפנים!', 'ישר לתוך החור!', 'מצאתם לה בית!', 'התאמה מעולה!', 'פנימה!', 'אלופי הצורות!'],
+    shapesLevel: ['הכול ממוין! הידד!', 'כל הצורות בבית!', 'הקופסה מלאה! כל הכבוד!', 'מיון מדהים!', 'השלב הושלם! לשלב הבא!', 'התאמתם את כולן!'],
     world: ['עולם חדש לגמרי!', 'עולם חדש, צבעים חדשים!', 'העולם הבא נפתח!', 'קדימה, חוקרים!', 'אוהו, איפה אנחנו עכשיו?', 'תארזו ידיים, יוצאים לדרך!'],
   },
 };
 const grippy = { last: null, lastAt: -1e9, shownAt: -1e9, until: -1e9, prev: {}, bottom: 16, visible: false, blinkAt: 0, said: [] };
-function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike'); }
+function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike' || gameMode === 'shapes'); }
 function grippySay(ev, vars, now = performance.now()) { // a line for the event, if Grippy is on, a game is running and the rate limit allows it; returns whether he spoke
   if (!profile.grippy || !grippyActive()) return false;
   const L = GRIPPY[lang] || GRIPPY.en, lines = L[ev]; if (!lines) return false;
@@ -6722,6 +7108,7 @@ function grippyPlace(now) { // bottom start corner: above Strike's power meter a
   if (E && E.over) { if (card) blocked = blocked || H - bottom - el.offsetHeight < card.y + card.h + 36; grippy.bottom = bottom; }
   else {
     if (gameMode === 'strike') bottom = Math.max(bottom, Math.round(H - (strike.ui.meterTop || H - 52)) + 8);
+    if (gameMode === 'shapes') bottom = Math.max(bottom, hintBottom()); // (never over the toy box)
     if (hintEl.classList.contains('show')) bottom = Math.max(bottom, hintBottom() + hintEl.offsetHeight + 8);
     bottom = grippy.bottom = Math.max(grippy.bottom, bottom); // while a line shows he only moves up (the hint fading must not drop him)
   }
@@ -6959,7 +7346,7 @@ window.addEventListener('resize', () => { if (!$('collection').hidden) renderCol
 
 /* ---------------- Game mode ---------------- */
 let gameMode = 'sandbox';
-const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'sandbox' };
+const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'shapes', shapes: 'sandbox' };
 function setGameMode(m) {
   const was = gameMode; gameMode = m; daily.on = daily.armed = false; // picking a mode (or the same one again) leaves the daily
   if (held) dropHeld();
@@ -6967,6 +7354,7 @@ function setGameMode(m) {
   if (m === 'slice') resetSlice();
   if (m === 'busy') resetBusy(); else if (was === 'busy') busyQuiet();
   if (m === 'strike') resetStrike(performance.now());
+  if (m === 'shapes') resetShapes(); else if (was === 'shapes') { shapes.held = null; shapes.over = false; }
   if (engine) {
     if (was === 'smash' && m !== 'smash') clearSmash();
     if (m === 'sandbox' && !bodies.length) spawnObjects();
@@ -6985,9 +7373,10 @@ function renderModeText() {
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
-  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike' }[gameMode] + how);
+  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike', shapes: 'hintShapes' }[gameMode] + how);
 }
-function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, else a small margin
+function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, above Shapes' toy box, else a small margin
+  if (gameMode === 'shapes' && shapes.box) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint() { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades
@@ -7017,6 +7406,7 @@ function updateHud() {
   const rowsH = [
     ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed + '  ' + t('h_lives') + ' ' + slice.lives
       : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock()
+      : gameMode === 'shapes' ? '  L' + shapes.level + ' ' + shapes.shapes.filter((s) => s.placed).length + '/' + shapes.shapes.length
       : gameMode === 'strike' ? '  ' + t('h_score') + ' ' + strike.score + '  ' + t('h_lives') + ' ' + strike.lives + '  L' + strike.level + ' ' + strike.progress + '/' + strike.goal + (strike.boss ? '  boss ' + strike.boss.hp + '/' + strike.boss.maxHp : '') + (strike.ball ? '  z ' + Math.round(strike.ball.z) : '') : '')],
     ['h_fps', fps.toFixed(0)],
     ['h_tfps', mode === 'camera' ? trackFps.toFixed(0) : '-'],
@@ -7034,7 +7424,7 @@ function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHu
 function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
 
 /* ---------------- Camera + tracker boot ---------------- */
 let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
@@ -7306,11 +7696,13 @@ function updateHudOffset() {
   root.setProperty('--hud-offset', Math.max(0, Math.max(...bottoms) - c.top) + 8 + 'px');
   const b = chromeRowBottom(), changed = Math.abs(b - chromeRow.bottom) > 0.5; chromeRow.bottom = b;
   if (changed && gameMode === 'busy' && busy.widgets.length) layoutBusy();
+  if (changed && gameMode === 'shapes' && shapes.spec) layoutShapes(false);
 }
 window.addEventListener('resize', () => updateHudOffset());
 
 function goHome() {
   if (held) dropHeld();
+  shapes.held = null; if (gameMode === 'shapes') shapes.over = false; // (the next start deals a fresh Shapes round)
   if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
   if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; } // the clock stops; the next start deals a fresh round
   unpauseGame();
@@ -7326,7 +7718,7 @@ function goHome() {
   $('start').hidden = false; document.body.classList.add('home');
   syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); maybeNewCard();
 }
-$('homeBtn').addEventListener('click', goHome);
+$('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); }); // (Shapes: the round-over card first)
 
 let running = false;
 function startGame(m) {
@@ -7351,7 +7743,7 @@ window.addEventListener('pagehide', stopCamera);
 
 /* ---------------- Start screen: live mode previews, gesture hint row, best badges, phone snap row, camera memory ----------------
    Each mode card carries a small canvas with a looping scene of that mode, drawn with the game's own sprite helpers. One shared rAF
-   drives all five at PV_FPS while the start screen is visible; it stops when a game starts or the tab is hidden. */
+   drives all six at PV_FPS while the start screen is visible; it stops when a game starts or the tab is hidden. */
 const PV_W = 120, PV_H = 80, PV_FPS = 12;
 const previews = { running: false, frames: 0, last: 0, cards: [], raf: 0, t0: performance.now(), drawing: false, keys: new Set() }; // keys: sprites built for the previews, dropped from the cache when they stop
 const modesEl = document.querySelector('.modes');
@@ -7489,6 +7881,24 @@ const PV_SCENES = {
     pvBlit(g, strikeBallSprite(sup), bx, by, p * 0.002, br / 64);
     if (p >= hit && p < hit + 320) { const q = (p - hit) / 320; pvRing(g, tx, ty, 8 + 28 * q, 'rgba(255,194,75,0.95)', 3 * (1 - q) + 0.5, 1 - q); }
   },
+  shapes(g, t) { // a star carried over the toy box drops into its star hole (clunk: a ring), then the box is fresh again
+    pvBlit(g, pvBgSprite('shapes'), 0, 0);
+    const L = 2600, p = t % L, col = SHAPE_BOXES[0], S = 9, bx = PV_W / 2, by = 58, bw = 92, bh = 30;
+    g.fillStyle = 'rgba(44,58,122,0.9)'; g.beginPath(); g.roundRect(6, 6, PV_W - 12, 30, 6); g.fill(); // a strip of the play mat
+    pvShadow(g, bx + 2, by + bh / 2 + 6, bw * 1.1, 12, 0.5);
+    pvBlit(g, shapeBoxSprite(bw, bh, 6, col), bx, by);
+    const holes = [['circle', bx - 28], ['star', bx], ['square', bx + 28]];
+    for (const [k, x] of holes) pvBlit(g, holeSprite(k, S, col), x, by);
+    pvBlit(g, shapeSprite('circle', SHAPE_COLS.circle, S), 22, 21, 0, 0.9); pvBlit(g, shapeSprite('square', SHAPE_COLS.square, S), 98, 21, 0, 0.9);
+    const lift = 900, drop = 1500, sx = 60, sy0 = 18;
+    if (p < drop) { // carried in on a pinch: lifted, with a shadow, wobbling a little
+      const q = ease(p / lift), x = 32 + (sx - 32) * q, y = sy0 + (by - 8 - sy0) * Math.max(0, (p - lift) / (drop - lift)) * 0.6, a = 0.5 * (1 - q);
+      pvShadow(g, x + 5, y + 14, 22, 6, 0.4); pvBlit(g, shapeSprite('star', SHAPE_COLS.star, S), x, y, a, 1.1);
+      pvRing(g, x + 6, y - 6, 4, 'rgba(255,194,75,0.3)', 3, 1); g.fillStyle = '#ffc24b'; g.beginPath(); g.arc(x + 6, y - 6, 2.2, 0, TAU); g.fill();
+    } else if (p < drop + 350) { const q = (p - drop) / 350; pvBlit(g, shapeSprite('star', SHAPE_COLS.star, S), sx, by - 4 * (1 - q), 0, 1.1 - 0.4 * q, 1 - q); }
+    else if (p < L - 200) pvBlit(g, shapeSprite('star', SHAPE_COLS.star, S), sx, by, 0, 0.9, 0.42);
+    if (p >= drop + 150 && p < drop + 600) { const q = (p - drop - 150) / 450; pvRing(g, sx, by, 6 + 18 * q, 'rgba(255,194,75,0.95)', 3 * (1 - q) + 0.5, 1 - q); }
+  },
 };
 function initPreviews() {
   previews.cards = [...document.querySelectorAll('.modes > button[data-mode]')].map((b) => ({ mode: b.dataset.mode, el: b, canvas: b.querySelector('canvas'), g: b.querySelector('canvas').getContext('2d') }));
@@ -7510,7 +7920,7 @@ function pvTick(now) {
 }
 function startPreviews() { if (previews.running || $('start').hidden || document.hidden || !previews.cards.length) return; previews.running = true; previews.last = 0; if (!previews.raf) previews.raf = requestAnimationFrame(pvTick); }
 function stopPreviews() { previews.running = false; if (previews.raf) cancelAnimationFrame(previews.raf); previews.raf = 0; for (const k of previews.keys) SPRITES.delete(k); previews.keys.clear(); } // the game's own sprites are rebuilt at game size anyway
-const MODE_HINTS = { sandbox: [['pinch', 'hGrab'], ['open', 'hThrow'], ['point', 'hPoke']], slice: [['point', 'hSwipe']], smash: [['fist', 'hPunch'], ['open', 'hWave']], busy: [['point', 'hPoke'], ['pinch', 'hTurn'], ['open', 'hSweep']], strike: [['open', 'hSlap']] };
+const MODE_HINTS = { sandbox: [['pinch', 'hGrab'], ['open', 'hThrow'], ['point', 'hPoke']], slice: [['point', 'hSwipe']], smash: [['fist', 'hPunch'], ['open', 'hWave']], busy: [['point', 'hPoke'], ['pinch', 'hTurn'], ['open', 'hSweep']], strike: [['open', 'hSlap']], shapes: [['pinch', 'hSort'], ['pinch', 'hTwist']] };
 function renderHints() { // the selected mode's gestures as an icon row under its description
   $('modeHints').replaceChildren(...MODE_HINTS[gameMode].map(([gk, key]) => {
     const li = document.createElement('li'), svg = document.querySelector('#gestureIcons [data-g="' + gk + '"]').cloneNode(true), s = document.createElement('span');
@@ -7524,6 +7934,7 @@ function syncBests() { // best scores on the Slice / Smash / Strike cards; Strik
     const el = document.querySelector('.modes button[data-mode="' + m + '"] .best'); el.hidden = !v && !lv; // Strike: best score and best level ('★ 120 · L5')
     el.textContent = [v ? '★ ' + v : '', lv ? 'L' + lv : ''].filter(Boolean).join(' · '); el.title = (v ? t('best', { n: v }) : '') + (v && lv ? ' · ' : '') + (lv ? t('levelBest', { n: lv }) : '');
   }
+  { let lv = 0; try { lv = +localStorage.getItem('shapesBest') || 0; } catch {} const el = document.querySelector('.modes button[data-mode="shapes"] .best'); if (el) { el.hidden = !lv; el.textContent = lv ? '★ L' + lv : ''; el.title = lv ? t('levelBest', { n: lv }) : ''; } } // Shapes: the best level
 }
 function syncCamBtn() { // the camera worked here before: offer it as 'Play with camera' with a 'last used' tag
   let ok = false; try { ok = localStorage.getItem('camOk') === '1'; } catch {}
@@ -7598,6 +8009,17 @@ window.__grasp = {
     state: (id) => roadState(ROAD_BY[id]), show: () => openPanel('road'), get card() { return $('newCard').hidden ? null : newCard.id; }, closeCard: closeNewCard },
   worlds: { get unlocked() { return profile.worlds.unlocked; }, set unlocked(v) { profile.worlds.unlocked = Math.max(1, Math.min(WORLD_N, v | 0)); saveProfile(); }, get last() { return profile.worlds.last; }, start: startWorld, open: openWorldMap, list: WORLDS, levels: WORLD_LEVELS },
   setPlayerLevel, xpForLevel, runXp,
+  // Shapes: the level, the shapes (kind, colour, x / y, angle, size, placed) and holes (kind, x / y, angle on screen, size, filled), the held shape's index (-1: none),
+  // placeTest(i): shape i straight onto its hole at the hole's angle, then let go; spoken: the last shape name said; setLevel(n): level n now (test-only)
+  shapes: { get level() { return shapes.level; }, get phase() { return shapes.phase; }, get held() { return shapes.held ? shapes.shapes.indexOf(shapes.held.s) : -1; },
+    get shapes() { return shapes.shapes.map((s) => { const h = s.placed ? shapes.holes[s.hole] : null; return { kind: s.kind, color: s.color, x: h ? h.x : s.x, y: h ? h.y : s.y, angle: s.angle, size: 2 * shapes.S, placed: s.placed, anim: s.anim ? s.anim.k : null, hole: shapes.holes.findIndex((q) => !q.filled && q.kind === s.kind) }; }); },
+    get holes() { return shapes.holes.map((h) => ({ kind: h.kind, x: h.x, y: h.y, angle: h.wa, size: 2 * shapes.S, filled: h.filled })); },
+    get spoken() { return shapes.spoken; }, get spokenLang() { return shapes.spokenLang; }, get sounds() { return shapes.sounds; }, get result() { return shapes.result; }, get over() { return shapes.over; },
+    get stars() { return shapes.stars; }, get levelsDone() { return shapes.levelsDone; }, get mistakes() { return shapes.mistakes; }, get best() { return shapes.best; }, get spec() { return shapes.spec; },
+    get box() { return shapes.box && { ...shapes.box, angle: shapes.boxAng, slide: shapes.slide }; }, get mat() { return shapes.mat; }, get ui() { return shapes.ui; }, snap: SHAPE_SNAP, kinds: SHAPE_KINDS, sym: SHAPE_SYM,
+    setLevel(n) { buildShapesLevel(Math.max(1, n | 0), performance.now()); shapes.phase = 'play'; return shapes.level; }, finish() { return shapesHome(); },
+    placeTest(i) { const s = shapes.shapes[i]; if (!s || s.placed || shapes.phase !== 'play') return false; const j = shapes.holes.findIndex((h) => !h.filled && h.kind === s.kind); if (j < 0) return false;
+      const h = shapes.holes[j]; s.anim = null; s.x = h.x; s.y = h.y; s.angle = h.wa; shapes.held = { i, s, ox: 0, oy: 0, roll: hand.roll, tw: 0, two: false, t0: performance.now(), overSince: 0, overHole: -1 }; shapesRelease(performance.now()); return s.placed; } },
 };
 syncGrippyBtn(); maybeNewCard(); // a NEW UNLOCKED card not seen yet (the tab closed before it showed)
 </script>

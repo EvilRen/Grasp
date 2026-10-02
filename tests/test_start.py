@@ -7,7 +7,7 @@ ROW = """(() => { const m = document.querySelector('.modes'), r = m.getBoundingC
   const dots = [...document.querySelectorAll('#modeDots i')]; return { snap: cs.scrollSnapType, scrollable: m.scrollWidth > m.clientWidth + 1, rowIn: r.left >= 0 && r.right <= innerWidth, rows: new Set(bs.map(b => Math.round(b.getBoundingClientRect().top / 20))).size,
   widths: bs.map(b => Math.round(b.getBoundingClientRect().width)), fit: bs.every(b => b.scrollWidth <= b.clientWidth + 1), selIn: sel.left >= 0 && sel.right <= innerWidth, selMid: sel.left + sel.width / 2, dots: dots.length, dotsShown: dots.length && getComputedStyle($('modeDots')).display !== 'none', on: dots.findIndex(d => d.classList.contains('on')), sl: m.scrollLeft, W: innerWidth }; })()"""
 HINTS = "(() => { const li = [...document.querySelectorAll('#modeHints li')]; return { g: li.map(l => l.dataset.g), t: li.map(l => l.textContent.trim()), icons: li.every(l => l.querySelector('svg') && l.querySelector('svg').getBoundingClientRect().width > 12), rtl: li.map(l => l.querySelector('svg').getBoundingClientRect().left > l.querySelector('span').getBoundingClientRect().left) }; })()"
-BESTS = "(() => { const o = {}; for (const m of ['sandbox', 'slice', 'smash', 'busy', 'strike']) { const b = document.querySelector('.modes button[data-mode=' + m + '] .best'); o[m] = b ? (b.hidden ? null : b.textContent) : 'none'; } return o; })()"
+BESTS = "(() => { const o = {}; for (const m of ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes']) { const b = document.querySelector('.modes button[data-mode=' + m + '] .best'); o[m] = b ? (b.hidden ? null : b.textContent) : 'none'; } return o; })()"
 CAM = "({ label: $('camBtn').textContent.trim(), hint: $('camHint').hidden ? null : $('camHint').textContent, hintIn: (() => { const r = $('camHint').getBoundingClientRect(), b = $('camBtn').getBoundingClientRect(); return r.right <= innerWidth && r.left >= 0 && r.top < b.top + 4; })() })"
 
 async def fresh(b, mobile, he=False, init=''):
@@ -22,11 +22,11 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
 
-        # ---- previews: five canvases, animating while the start screen shows, frozen once a game starts or the tab hides ----
+        # ---- previews: six canvases, animating while the start screen shows, frozen once a game starts or the tab hides ----
         ctx, page, errs = await fresh(b, False)
         check('intro class on first show', await page.evaluate("$('start').classList.contains('intro')"))
         a = await page.evaluate(PV); await page.wait_for_timeout(400); c = await page.evaluate(PV)
-        check('5 preview canvases, sized, one shared loop running', a['n'] == 5 and a['sized'] and a['running'], a['n'])
+        check('6 preview canvases, sized, one shared loop running', a['n'] == 6 and a['sized'] and a['running'], a['n'])
         check('previews animate: every canvas changes between frames', c['frames'] > a['frames'] and all(x != y for x, y in zip(a['shots'], c['shots'])), [a['frames'], c['frames']])
         fps = (c['frames'] - a['frames']) / 0.4
         check('previews throttled to about 12 fps', 6 <= fps <= 14, fps)
@@ -49,7 +49,7 @@ async def main():
         # ---- best badges ----
         ctx, page, errs = await fresh(b, False)
         bs = await page.evaluate(BESTS)
-        check('no scores yet: every badge hidden', all(v is None for v in bs.values()) and len(bs) == 5, bs)
+        check('no scores yet: every badge hidden', all(v is None for v in bs.values()) and len(bs) == 6, bs)
         await page.evaluate("localStorage.setItem('sliceBest', '480'); localStorage.setItem('strikeBest', '12')")
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(100); await page.click('#homeBtn'); await page.wait_for_timeout(100)
         bs = await page.evaluate(BESTS)
@@ -60,7 +60,7 @@ async def main():
         check('badges read on load', (await page.evaluate(BESTS))['slice'] == '★ 480')
         check('badges: no page errors', not errs, errs); await ctx.close()
 
-        # ---- the start screen v2, phone + desktop, EN + HE: everything on one screen (no scroll), 5 game tiles, a labelled icon row, the Camera | Touch toggle; a tap on a tile starts that game ----
+        # ---- the start screen v2, phone + desktop, EN + HE: everything on one screen (no scroll), 6 game tiles, a labelled icon row, the Camera | Touch toggle; a tap on a tile starts that game ----
         LAY = """(() => { const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode, in: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, w: r.width, h: r.height, name: b.querySelector('[data-i18n]').textContent }; });
           const icons = [...document.querySelectorAll('.metaRow > button')].map(b => { const r = b.getBoundingClientRect(), l = b.querySelector('.dTx b, :scope > span[data-i18n]').getBoundingClientRect(); return { id: b.id, in: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, label: l.width > 10 && l.left >= r.left - 1 && l.right <= r.right + 1, text: b.querySelector('.dTx b, :scope > span[data-i18n]').textContent }; });
           const st = $('start'), a = document.querySelector('#start a.link').getBoundingClientRect(), sd = $('strikeDiff').getBoundingClientRect(), stk = document.querySelector('.modes button[data-mode=strike]').getBoundingClientRect(), cam = $('camBtn').getBoundingClientRect(), mo = $('mouseBtn').getBoundingClientRect();
@@ -73,7 +73,7 @@ async def main():
                 await page.wait_for_timeout(1300)  # entrance done
                 L = await page.evaluate(LAY)
                 check(tag + ': no scrolling at all; the Tremorti link visible; a small wordmark', L['noScroll'] and L['link'] and L['h1'] <= 40, L)
-                check(tag + ': all 5 game tiles fully on screen, named', len(L['tiles']) == 5 and all(t['in'] and t['w'] > 80 and t['name'] for t in L['tiles']), L['tiles'])
+                check(tag + ': all 6 game tiles fully on screen, named', len(L['tiles']) == 6 and all(t['in'] and t['w'] > 80 and t['name'] for t in L['tiles']), L['tiles'])
                 check(tag + ': one icon row, every button labelled on screen (Daily, Missions, Road, Shop)', [i['id'] for i in L['icons']] == ['dailyBtn', 'missionsBtn', 'roadBtn', 'collectionBtn'] and all(i['in'] and i['label'] for i in L['icons']) and [i['text'] for i in L['icons']] == (['יומי', 'משימות', 'הדרך', 'חנות'] if he else ['Daily', 'Missions', 'Road', 'Shop']), L['icons'])
                 check(tag + ': the Easy / Normal toggle sits on the Strike tile', L['diffOnTile'], L)
                 check(tag + ': the Camera | Touch toggle on screen, translated; on a first visit the camera is the default', all(L['seg']) and L['segText'] == (['מצלמה', 'מגע'] if he else ['Camera', 'Touch']) and L['pressed'] == ['true', 'false'], L)
@@ -84,7 +84,7 @@ async def main():
                 await page.reload(); await page.wait_for_timeout(700)
                 check(tag + ': the toggle persists (Touch after a reload)', (await page.evaluate(LAY))['pressed'] == ['false', 'true'])
                 started = {}
-                for m in ('sandbox', 'slice', 'smash', 'busy', 'strike'):
+                for m in ('sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes'):
                     if mobile: await page.tap('.modes button[data-mode=' + m + ']')
                     else: await page.click('.modes button[data-mode=' + m + ']')
                     await page.wait_for_function("mode !== 'none'", timeout=8000); started[m] = await page.evaluate("[gameMode, mode, $('start').hidden]")

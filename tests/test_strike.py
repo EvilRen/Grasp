@@ -8,8 +8,8 @@ PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 GFX_READY = "['ready', 'failed'].includes(__grasp.strike.gfxInfo.state) || __grasp.strike.gfxInfo.want === '2d'"
 TO2D = "(async () => { await __grasp.setGfx('2d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"
 TO3D = "(async () => { if (!(window.__graspGfx && window.__graspGfx.mode === '2d')) await __grasp.setGfx('3d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
-ROWS = "new Set([...document.querySelectorAll('.modes > button[data-mode]')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the start screen's tiles: 3 + 2
-FITS = "(() => { const bs = [...document.querySelectorAll('.modes > button[data-mode]')], a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 5 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && b.scrollWidth <= b.clientWidth + 1; }) && a.bottom <= innerHeight && document.documentElement.scrollHeight <= innerHeight; })()"
+ROWS = "new Set([...document.querySelectorAll('.modes > button[data-mode]')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the start screen's tiles: 3 + 3
+FITS = "(() => { const bs = [...document.querySelectorAll('.modes > button[data-mode]')], a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 6 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && b.scrollWidth <= b.clientWidth + 1; }) && a.bottom <= innerHeight && document.documentElement.scrollHeight <= innerHeight; })()"
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
@@ -29,10 +29,10 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        check('desktop: the 5 game tiles (3 + 2) fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 2)
+        check('desktop: the 6 game tiles (3 + 3) fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 2)
         await page.click('.modes button[data-mode=strike]')
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
-        check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'sandbox'"))
+        check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'shapes' && MODE_NEXT.shapes === 'sandbox'"))
         cfg = await page.evaluate("({ zf: __grasp.CONFIG.STRIKE_Z_FAR, hz: __grasp.CONFIG.STRIKE_HIT_Z, base: __grasp.CONFIG.STRIKE_BASE_SPEED, max: __grasp.CONFIG.STRIKE_MAX_SPEED, lives: __grasp.CONFIG.STRIKE_LIVES, sup: __grasp.CONFIG.STRIKE_SUPER_SPEED })")
         check('CONFIG has the strike constants', all(v > 0 for v in cfg.values()) and cfg['hz'] < cfg['zf'] and cfg['base'] < cfg['max'], cfg)
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
@@ -704,7 +704,7 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
             if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: the 5 game tiles (3 + 2) and the link fit on one screen', await page.evaluate(FITS) and rows == 2, rows)
+            check(tag + ' phone: the 6 game tiles (3 + 3) and the link fit on one screen', await page.evaluate(FITS) and rows == 2, rows)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
             await page.tap('.modes button[data-mode=strike]')
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))
