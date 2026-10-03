@@ -127,7 +127,7 @@ async def main():
         await page.wait_for_timeout(200); await page.screenshot(path='tests/out/grippy_phone_slice_he.png')
         bx = await page.evaluate(G + ".box()")
         check('HE: Grippy at the bottom right (start side in RTL), inside the screen', bx and bx['x'] + bx['w'] >= 340 and bx['x'] >= 0 and bx['mascot']['x'] > bx['bubble']['x'], bx)
-        await page.tap('#homeBtn'); await page.wait_for_timeout(300)
+        await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300)
         check('home: Grippy hidden', not await page.evaluate(G + ".visible"))
         await page.tap('#collectionBtn'); await page.wait_for_timeout(400)
         tb = await page.evaluate("(() => { const b = $('grippyBtn'), r = b.getBoundingClientRect(), h = b.closest('header').getBoundingClientRect(), x = b.closest('header').querySelector('.xBtn').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), inHeader: r.top >= h.top - 1 && r.bottom <= h.bottom + 1 && r.left >= 0 && r.right <= innerWidth, noOverlap: r.right <= x.left || r.left >= x.right, w: r.width }; })()")

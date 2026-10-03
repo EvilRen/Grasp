@@ -41,6 +41,10 @@ def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + (('  | ' + str(extra)) if extra != '' else ''))
     if not cond: check.fails += 1
 check.fails = 0
+async def menu_click(page, sel, tap=False):  # Strike: the toolbar is one pause button whose sheet holds the toolbar's own buttons; elsewhere a plain click
+    if await page.evaluate("document.body.classList.contains('minChrome') && mode !== 'none' && !menu.open"):
+        await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn')); await page.wait_for_function("menu.open", timeout=4000)
+    await (page.tap(sel) if tap else page.click(sel))
 
 async def boot(b, mobile):
     opts = dict(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width':1280,'height':800})

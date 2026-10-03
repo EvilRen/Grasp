@@ -188,7 +188,7 @@ async def main():
             await step2(page)
             await page.evaluate(f"{S}.ball = null; {S}.serve(); {S}.setBallZ(2300, 30, 30)"); await page.evaluate(FREEZE)
             # one renderer, reused across rounds; pixel ratio
-            r0 = await page.evaluate("G3.r"); await page.click('#resetBtn'); await page.wait_for_timeout(300)
+            r0 = await page.evaluate("G3.r"); await menu_click(page, '#resetBtn'); await page.wait_for_timeout(300)
             check('one WebGL renderer, reused across rounds (reset keeps it)', await page.evaluate("(() => { const r = G3.r; return !!r && G3.inits === 1 && document.querySelectorAll('canvas#stage3d').length === 1; })()"))
             # fps
             await page.evaluate(f"{S}.setBallZ(1800, 640, 400)"); await page.wait_for_timeout(2600)

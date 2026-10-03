@@ -117,6 +117,23 @@ body.home .chrome{ display:none; }
 .chrome .langBtn span{ font-size:9px; font-weight:700; line-height:1; letter-spacing:.04em; }
 #hudBtn[aria-pressed="true"]{ background:var(--saffron); color:#241a00; }
 #hudBtn[aria-pressed="true"]:hover{ background:#ffd170; }
+/* Strike (body.minChrome): the toolbar folds into one round pause button; a tap opens it as a small sheet (Resume + the same buttons, labelled) over a veil */
+#pauseBtn, #resumeBtn, .chrome .lb, .chrome .mTitle{ display:none; }
+body.minChrome .chrome:not(.open){ padding:3px; background:rgba(14,19,40,.5); box-shadow:inset 0 0 0 1px rgba(241,233,218,.14); }
+body.minChrome .chrome:not(.open) > :not(#pauseBtn){ display:none; }
+body.minChrome .chrome:not(.open) #pauseBtn{ display:inline-flex; color:rgba(241,233,218,.85); }
+body.minChrome .chrome.open{ flex-direction:column; align-items:stretch; width:min(232px, calc(100vw - 24px)); padding:10px 8px 8px; gap:2px; border-radius:20px; z-index:9; background:rgba(18,24,50,.97); }
+body.minChrome .chrome.open .chip{ width:auto; height:46px; padding:0 14px; gap:12px; border-radius:12px; justify-content:flex-start; flex-direction:row; }
+body.minChrome .chrome.open .chip svg{ width:20px; height:20px; }
+body.minChrome .chrome.open .lb{ display:inline; font-size:15px; font-weight:600; line-height:1.2; letter-spacing:0; }
+body.minChrome .chrome.open .langBtn > span:not(.lb){ display:none; }
+body.minChrome .chrome.open .mTitle{ display:block; order:-2; padding:2px 14px 6px; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+body.minChrome .chrome.open #resumeBtn{ display:inline-flex; order:-1; background:var(--saffron); color:#241a00; margin-bottom:4px; }
+body.minChrome .chrome.open #resetBtn{ order:1; } body.minChrome .chrome.open #muteBtn{ order:2; } body.minChrome .chrome.open .langBtn{ order:3; } body.minChrome .chrome.open #hudBtn{ order:4; } body.minChrome .chrome.open #homeBtn{ order:5; }
+body.minChrome .chrome.open #hudBtn[aria-pressed="true"]{ background:transparent; color:var(--saffron); }
+.chrome .chip.dwell{ background:rgba(255,194,75,.28); }
+#menuVeil{ position:fixed; inset:0; z-index:8; background:rgba(8,11,28,.55); touch-action:none; }
+#menuVeil[hidden]{ display:none; }
 #muteBtn .off{ display:none; }
 #muteBtn[aria-pressed="true"]{ color:var(--muted); }
 #muteBtn[aria-pressed="true"] .on{ display:none; }
@@ -426,6 +443,9 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 #advDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:4;
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
 #advDwell[hidden]{ display:none; }
+#advDwell, #menuDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none;
+  background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
+#menuDwell{ z-index:10; } #menuDwell[hidden]{ display:none; }
 #newCard{ z-index:14; }
 .nuSheet{ text-align:center; width:min(340px,100%); overflow:hidden; background:radial-gradient(120% 80% at 50% 0%, rgba(255,194,75,.28), rgba(22,29,61,1) 60%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.7), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes nupop{ from{ transform:scale(.6); opacity:0; } }
@@ -630,12 +650,16 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <video id="cam" playsinline muted autoplay></video>
 <canvas id="preview" hidden data-i18n-aria="previewAria" aria-label="Camera preview with hand landmarks"></canvas><span id="liveDot" hidden aria-hidden="true"></span>
 <div id="hud" hidden></div>
+<div id="menuVeil" hidden></div><div id="menuDwell" hidden aria-hidden="true"></div>
 <div class="chrome" role="toolbar" data-i18n-aria="toolbarAria" aria-label="Game controls">
-  <button class="chip" id="homeBtn" type="button" data-i18n-aria="home" data-i18n-title="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
-  <button class="chip langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
-  <button class="chip" id="hudBtn" type="button" aria-pressed="false" data-i18n-aria="hud" data-i18n-title="hud" aria-label="HUD"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5a8 8 0 1 1 15 0"/><path d="M12 15.5l3.6-4.6"/><circle cx="12" cy="15.5" r="1.4"/><path d="M6 12.5h1.2M16.8 12.5H18M12 6.5v1.2"/></svg></button>
-  <button class="chip" id="muteBtn" type="button" aria-pressed="false" aria-label="Mute sound"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.5a7.6 7.6 0 0 1 0 11"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
-  <button class="chip" id="resetBtn" type="button" data-i18n-aria="reset" data-i18n-title="reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20.5 4v4.8h-4.8"/></svg></button>
+  <button class="chip" id="pauseBtn" type="button" aria-expanded="false" data-i18n-aria="pauseMenu" data-i18n-title="pauseMenu" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.3"/><rect x="13.5" y="5" width="4" height="14" rx="1.3"/></svg></button>
+  <span class="mTitle" data-i18n="pausedTitle">Paused</span>
+  <button class="chip" id="resumeBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span class="lb" data-i18n="resume">Resume</span></button>
+  <button class="chip" id="homeBtn" type="button" data-i18n-aria="home" data-i18n-title="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg><span class="lb" data-i18n="home">Home</span></button>
+  <button class="chip langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span><span class="lb" data-i18n="langFull">עברית</span></button>
+  <button class="chip" id="hudBtn" type="button" aria-pressed="false" data-i18n-aria="hud" data-i18n-title="hud" aria-label="HUD"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5a8 8 0 1 1 15 0"/><path d="M12 15.5l3.6-4.6"/><circle cx="12" cy="15.5" r="1.4"/><path d="M6 12.5h1.2M16.8 12.5H18M12 6.5v1.2"/></svg><span class="lb" data-i18n="statsLbl">Stats</span></button>
+  <button class="chip" id="muteBtn" type="button" aria-pressed="false" aria-label="Mute sound"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.5a7.6 7.6 0 0 1 0 11"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg><span class="lb" id="muteLb">Sound on</span></button>
+  <button class="chip" id="resetBtn" type="button" data-i18n-aria="reset" data-i18n-title="reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20.5 4v4.8h-4.8"/></svg><span class="lb" data-i18n="restart">Restart</span></button>
 </div>
 <div id="hint" role="status"><span class="ic" aria-hidden="true"></span><span class="tx"></span></div>
 <div id="status" hidden>
@@ -878,7 +902,7 @@ function sd(key) { return (strike.diff === 'normal' || daily.on) && key in STRIK
 const I18N = {
   en: {
     title: 'Grasp: hand physics sandbox', tagline: 'Your hand is the controller', langName: 'עב', langAria: 'Switch language to Hebrew',
-    home: 'Home', hud: 'HUD', reset: 'Reset', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modeStrike: 'Strike', modesAria: 'Game mode',
+    home: 'Home', hud: 'HUD', reset: 'Reset', pauseMenu: 'Pause', pausedTitle: 'Paused', resume: 'Resume', restart: 'Restart', statsLbl: 'Stats', langFull: 'עברית', soundOn: 'Sound on', soundOff: 'Sound off', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modeStrike: 'Strike', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
     statusTitle: 'Show your whole hand inside the yellow box',
     tip_open: 'Open palm, fingers spread', tip_box: 'Whole hand inside the box, wrist in view', tip_back: "Stand the phone up and step back if it doesn't fit",
@@ -1002,7 +1026,7 @@ const I18N = {
   },
   he: {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
-    home: 'בית', hud: 'מדדים', reset: 'איפוס', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modeStrike: 'מכה', modesAria: 'מצב משחק',
+    home: 'בית', hud: 'מדדים', reset: 'איפוס', pauseMenu: 'השהיה', pausedTitle: 'מושהה', resume: 'המשך', restart: 'מההתחלה', statsLbl: 'מדדים', langFull: 'English', soundOn: 'צליל פועל', soundOff: 'צליל כבוי', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modeStrike: 'מכה', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
     statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
     tip_open: 'כף יד פתוחה, אצבעות פרושות', tip_box: 'כל כף היד בתוך המסגרת, כולל שורש כף היד', tip_back: 'העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת',
@@ -4980,19 +5004,6 @@ function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motio
   } else strike.ui.travelBox = null;
   void rtl;
 }
-function advPipsDraw(now, cx, cy) { // the stage's walls as a row of small bricks under the HUD bar: broken ones lit saffron (the newest pops), the rest dim; a boss stage ends on a purple crown
-  const P = adv.plan, n = P.walls, done = Math.min(n, strike.progress), rtl = lang === 'he', bw = n > 8 ? 11 : 13, bh = 8, gap = 3, extra = P.boss ? 18 : 0, tw = n * bw + (n - 1) * gap + extra, x0 = cx - tw / 2, pk = Math.max(0, 1 - (now - strike.ui.progressAt) / 450);
-  const pips = []; resetView();
-  for (let i = 0; i < n; i++) {
-    const x = rtl ? x0 + tw - (i + 1) * bw - i * gap : x0 + i * (bw + gap), on = i < done, s = on && i === done - 1 ? 1 + 0.35 * pk : 1;
-    ctx.save(); ctx.translate(x + bw / 2, cy); ctx.scale(s, s); ctx.beginPath(); ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 2.5);
-    ctx.fillStyle = on ? '#ffc24b' : 'rgba(8,11,28,0.62)'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = on ? 'rgba(255,255,255,0.55)' : 'rgba(241,233,218,0.35)'; ctx.stroke();
-    if (!on) { ctx.fillStyle = 'rgba(241,233,218,0.18)'; ctx.fillRect(-0.5, -bh / 2 + 1, 1, bh - 2); } ctx.restore(); // (a mortar line: a little brick)
-    pips.push({ x, y: cy - bh / 2, w: bw, h: bh, on });
-  }
-  if (P.boss) { const bx = rtl ? x0 + 7 : x0 + tw - 7, on = adv.bossDone; ctx.save(); ctx.translate(bx, cy); ctx.fillStyle = on ? '#ffc24b' : '#c05ce6'; ctx.beginPath(); ctx.moveTo(-7, 4); ctx.lineTo(-7, -4); ctx.lineTo(-3.5, -0.5); ctx.lineTo(0, -6); ctx.lineTo(3.5, -0.5); ctx.lineTo(7, -4); ctx.lineTo(7, 4); ctx.closePath(); ctx.fill(); ctx.restore(); }
-  strike.ui.advPips = { x: x0, y: cy - bh / 2, w: tw, h: bh, n, done, boss: P.boss, pips };
-}
 function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, coins, XP; Next / Try again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
   const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
@@ -5054,6 +5065,8 @@ function finalWallTick(now) { // the last wall of a level: flagged 'final' (a gl
 function strikeTick(now, dt) {
   const rel = now < strike.releaseUntil; tickFloaters(strike.floaters, dt); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
   if (advMapOpen()) { advMapTick(now); return; } // the Adventure map over the game (from a stage card): everything waits
+  if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
+  if (menu.open) { if (!strike.over) { strike.serveAt += dt; for (const p of strike.powerups) p.until += dt; if (strike.perkOffer) strike.perkOfferAt += dt; } return; } // the pause sheet: everything waits (the ball, the serve, the power-ups, the perk clock)
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
   if (adv.on && adv.phase === 'clear') { advClearTick(now, dt); return; } // an Adventure stage just cleared: the burst, the whoosh or the trip to the next world, then its card
   if (strike.perkOffer) { perkTick(now, dt); return; } // perk cards up: everything waits for the pick (the auto-pick clock runs even while the hand is missing)
@@ -5655,52 +5668,6 @@ function nextIconSprite(kind) { // a tiny picture of the wall kind for the NEXT 
     g.lineWidth = 1.2; g.strokeStyle = hexA(col, 0.9); g.strokeRect(-w / 2, -h / 2, w, h);
   });
 }
-function drawNextCard(now) { // a small card in the top end corner under the bar: 'NEXT' + the kind of wall that enters next (the boss's face when it comes next; a guest on the next serve); a pulse when it changes.
-  // Hidden on levels 1-2 (nothing to telegraph yet), while an incoming ball is close, and while the boss / the chest hold the stage
-  const ui = strike.ui;
-  const gq = strike.guestNext, gk = gq && gq.in === 1 ? gq.kind : null; // a surprise guest on the next serve: the card shows it instead of the wall
-  const close = strike.balls.some((b) => b.dir > 0 && b.z < CONFIG.STRIKE_Z_FAR * 0.45);
-  if (strike.over || strike.chest || (adv.on && adv.phase !== 'play') || (strike.extrasOff && !gk) || (strike.boss && strike.boss.z < CONFIG.STRIKE_Z_FAR) || strike.level <= 2 || close || !ui.hud) { ui.nextCard = null; return; }
-  const kind = gk ? 'guest_' + gk : upcomingKind(); if (!kind) { ui.nextCard = null; return; } if (kind !== ui.nextShown) { ui.nextAt = now; if (ui.nextShown) sfx('tick'); ui.nextShown = kind; } // (a pulse when it changes, or first shows)
-  const rtl = lang === 'he', boss = kind === 'boss', col = gk ? '#ffc24b' : STRIKE_KIND_COL[kind] || '#c8654a', hd = ui.hud;
-  const name = textSprite(gk ? t(kind) : t('nk_' + kind), 12, boss ? '#ffd8f6' : '#fff8ec', boss ? 'rgba(192,92,230,0.95)' : null, 800), lab = textSprite(t('next'), 8, 'rgba(241,233,218,0.72)', null, 700);
-  const w = 90, h = 34, x = rtl ? hd.x : hd.x + hd.w - w, y = hd.y + hd.h + 8, cx = x + w / 2, cy = y + h / 2;
-  const pk = Math.max(0, 1 - (now - ui.nextAt) / 600), k = 1 + 0.12 * Math.sin(Math.PI * Math.min(1, pk * 1.6)) * pk, glow = boss ? 0.55 + 0.45 * Math.sin(now * 0.008) : pk;
-  ui.nextCard = { x, y, w, h, kind: gk ? 'guest' : kind, guest: gk, pulse: pk };
-  resetView(); ctx.save(); ctx.translate(cx, cy); ctx.scale(k, k); ctx.translate(-cx, -cy);
-  if (glow > 0.02) { ctx.shadowColor = hexA(boss ? '#c05ce6' : col, 0.9 * glow); ctx.shadowBlur = 12; }
-  ctx.fillStyle = boss ? 'rgba(46,16,70,0.9)' : 'rgba(12,17,38,0.82)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 11); ctx.fill(); ctx.shadowColor = 'transparent';
-  ctx.lineWidth = boss ? 2 : 1.2; ctx.strokeStyle = hexA(boss ? '#c05ce6' : col, 0.55 + 0.45 * glow); ctx.stroke();
-  ctx.restore();
-  const ix = rtl ? x + w - 18 : x + 18, tx = rtl ? ix - 16 : ix + 16, ns = Math.min(1, (w - 40) / name.tw);
-  if (gk) { blit(guestSprite(gk, 'in'), ix, cy, 0.25 * Math.sin(now * 0.01), k * 0.13); ui.nextCard.icon = { x: ix, y: cy, r: 64 * 0.13 * k }; } // the guest's head, wobbling
-  else blit(nextIconSprite(kind), ix, cy, 0, k * 0.7 * (boss ? 1 + 0.06 * Math.sin(now * 0.012) : 1));
-  edgeText(lab, tx, cy - 7, rtl, k); edgeText(name, tx, cy + 6, rtl, k * ns);
-  if (pk > 0.6 && !ui.nextRing) { ui.nextRing = true; ring(cx, cy, hexA(boss ? '#c05ce6' : col, 0.85), w * 0.6, 420, 2); } else if (pk <= 0.6) ui.nextRing = false;
-}
-function drawStreakChip(now, cx, cy) { // inside the top bar, beside the level pill: a small flame and n while 3+ returns in a row stand; a grey fizzle when a miss ends it. True when something is drawn
-  const ui = strike.ui, n = strike.streak, Ls = ui.streakLost, rtl = lang === 'he'; ui.streakBox = null;
-  if (strike.extrasOff) return false;
-  if (n >= 3) {
-    const hot = Math.min(1, n / 10), pop = Math.max(0, 1 - (now - (ui.streakAt || -1e9)) / 260), k = 1 + 0.18 * Math.sin(Math.PI * pop), col = hot >= 1 ? '#ff4d3d' : hot >= 0.5 ? '#ff6a3d' : '#ff8a3d';
-    const sp = textSprite(String(n), 13, '#ffd77a', null, 800), w = sp.tw + 22, h = 22;
-    ui.streakBox = { x: cx - w / 2, y: cy - h / 2, w, h, n, mul: streakMul() };
-    const fx = cx + (rtl ? 1 : -1) * (w / 2 - 7); resetView(); ctx.save(); ctx.translate(fx, cy); ctx.scale(k * (1 + 0.06 * Math.sin(now * 0.03)), k * (1 + 0.1 * Math.sin(now * 0.025))); puIcon(ctx, 'fire', 7, col); ctx.restore();
-    edgeText(sp, fx + (rtl ? -9 : 9) * k, cy, rtl, k);
-    return true;
-  }
-  if (Ls) { const q = (now - Ls.t) / 700; if (q >= 1) { ui.streakLost = null; return false; } blit(textSprite(String(Ls.n), 13, 'rgba(241,233,218,0.7)', null, 800), cx, cy + 6 * q, 0, 1 - 0.3 * q, 1 - q); return true; }
-  return false;
-}
-function drawPerkIcons(cx, cy) { // the perks this run as tiny badges along the bottom of the HUD card (a small stack count beside them)
-  const ui = strike.ui, ids = PERKS.filter((id) => perkN(id)), rtl = lang === 'he'; ui.perkIcons.length = 0; if (!ids.length) return;
-  const r = 7, gap = 19, x0 = cx - (ids.length - 1) * gap / 2;
-  ids.forEach((id, i) => {
-    const x = x0 + (rtl ? ids.length - 1 - i : i) * gap, n = perkN(id);
-    blit(perkIconSprite(id, 16), x, cy, 0, r / 16); ui.perkIcons.push({ id, x, y: cy, r, n });
-    if (n > 1) blit(textSprite(String(n), 9, '#fff8ec', 'rgba(10,14,32,0.95)', 800), x + r, cy - r + 1);
-  });
-}
 function drawStreakToast(now) { // 'On fire!' (5), 'Unstoppable!' (10), 'Legendary!' (20): a flame-coloured title rising over a light burst
   const S = strike.ui.streakToast; if (!S) return;
   const k = (now - S.t) / 1200; if (k >= 1) { strike.ui.streakToast = null; return; }
@@ -5718,43 +5685,46 @@ function drawSparks(now) { // Spark Trail bolts: a jagged yellow line from the b
     ctx.lineTo(s.x1, s.y1); ctx.globalAlpha = 1 - k; ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,210,63,0.45)'; ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = '#fff8d0'; ctx.stroke(); ctx.globalAlpha = 1;
   }
 }
-function drawStrikeHud(now, dt) { // one slim glass bar under the toolbar: score (eased count-up) at the start, the hearts in the middle, the streak flame (from 3) and the level pill at the end, the level's progress as a thin line along its bottom edge
-  const ui = strike.ui, rtl = lang === 'he', w = Math.min(W - 24, 420), h = 44, x = (W - w) / 2, y = ui.top + 6;
-  ui.hud = { x, y, w, h };
-  resetView(); blit(glassSprite(w, h, 14), x - 1, y - 1);
-  if (ui.shown !== strike.score) { // count up (or straight down on a reset), one tick per shown change
+function strikeHudRow() { // the top row's free span beside the pause button: from the camera preview (or the start edge) to the button, and the row's centre line
+  const c = chromeEl.getBoundingClientRect(), ui = strike.ui;
+  if (chromeEl.classList.contains('open') && ui.row) return ui.row; // (the sheet is open: the row keeps its place)
+  const cam = mode === 'camera' && !preview.hidden, small = cam && !preview.classList.contains('big') && !preview.classList.contains('peek');
+  const left = (cam ? (small ? preview.getBoundingClientRect().right : (W <= 400 ? 104 : 108)) : 4) + 8; // (the preview's small size is kept free while it is enlarged)
+  const right = c.width > 0 ? c.left - 8 : W - 12, cy = c.height > 0 ? c.top + c.height / 2 : 34;
+  return (ui.row = { left, right, cy });
+}
+function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on the top row beside the pause button with the hearts and the walls pill (Adventure: walls broken / walls in the stage; Endless: walls toward the next level). The score is kept for the cards, not shown
+  const ui = strike.ui, rtl = lang === 'he', R = ui.row || strikeHudRow();
+  if (ui.shown !== strike.score) { // the score still counts up (one soft tick per shown change), off screen
     const d = strike.score - ui.shown; ui.shown = Math.abs(d) < 0.6 || d < 0 ? strike.score : ui.shown + d * Math.min(1, dt / 110);
     const n = Math.round(ui.shown); if (n !== ui.lastShown) { ui.lastShown = n; if (now - ui.lastTick > 45) { ui.lastTick = now; sfx('count'); } }
   }
-  const pop = Math.max(0, 1 - (now - ui.scoreAt) / 260), sc = textSprite(String(Math.round(ui.shown)), 24, '#fff8ec', pop > 0 ? 'rgba(255,194,75,1)' : 'rgba(255,194,75,0.75)');
-  edgeText(sc, rtl ? x + w - 14 : x + 14, y + h / 2 - 1, rtl, Math.min(1, (w * 0.3) / sc.tw) * (1 + 0.14 * Math.sin(Math.PI * pop)));
-  const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives); // an extra life (power-up) adds a heart
-  if (nL > 6) { // more hearts than fit: one heart and ×N
-    const sp = textSprite(LRM + '×' + strike.lives, 15, '#fff8ec', null, 800), rw = 22 + 5 + sp.tw, hx = rtl ? x + w / 2 + rw / 2 - 11 : x + w / 2 - rw / 2 + 11, P = ui.heartPop, L = ui.heartLost, pq = P ? (now - P.t) / 600 : 1, lq = L ? (now - L.t) / 550 : 1;
-    const hk = 0.6 * (pq < 1 ? 1 + 0.35 * Math.sin(Math.PI * pq) : 1), sx = lq < 1 ? Math.sin(lq * 42) * 4 * (1 - lq) : 0;
-    ui.hearts.length = 0; ui.hearts.push({ x: hx, y: y + h / 2 - 1 }); blit(heartSprite(strike.lives > 0), hx + sx, y + h / 2 - 1, 0, hk);
-    edgeText(sp, rtl ? hx - 16 : hx + 16, y + h / 2 - 1, rtl); ui.heartsRow = { x: x + w / 2 - rw / 2, w: rw, compact: true };
-  } else {
-    const gap = nL > 4 ? 19 : 23, k = nL > 4 ? 0.5 : 0.58; drawHearts(ui, strike.lives, nL, x + w / 2, y + h / 2 - 1, now, k, gap);
-    ui.heartsRow = { x: x + w / 2 - ((nL - 1) * gap + 22) / 2, w: (nL - 1) * gap + 22, compact: false };
-  }
-  const tint = STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], px = rtl ? x + 30 : x + w - 30, ly = y + h / 2 - 1;
-  if (adv.on && adv.plan) { // an Adventure stage: walls broken / walls in the stage on a pill in its world's colour (the bricks under the bar show the same)
-    const tx = LRM + Math.min(strike.progress, strike.goal) + '/' + strike.goal, pw = tx.length > 5 ? 48 : 42, pk = Math.max(0, 1 - (now - ui.progressAt) / 450);
-    blit(pillSprite(WORLDS[adv.world - 1].accent, pw, 20), px, ly, 0, 1 + 0.15 * pk); blit(textSprite(tx, 12, '#141b34', null, 800), px, ly, 0, 1 + 0.15 * pk); ui.advPill = { x: px - pw / 2, y: ly - 10, w: pw, h: 20, text: tx };
-  } else { ui.advPill = null;
-  blit(pillSprite(tint, 40, 20), px, ly); blit(textSprite('L' + strike.level, 12, '#141b34', null), px, ly); }
-  drawStreakChip(now, rtl ? x + 76 : x + w - 76, ly); // the hit streak: a small flame + n inside the bar, from 3 in a row
-  drawProgressBar(now, dt, x + 12, y + h - 5, w - 24, rtl, 2.5); // level progress: a thin line along the bar's bottom edge
-  drawPowerIcons(now, rtl ? x + w - 10 : x + 10, y + h + 16, rtl); // active power-ups with their timers, under the bar at the start edge
-  if (adv.on && adv.plan) advPipsDraw(now, x + w / 2, y + h + 11); else drawPerkIcons(x + w / 2, y + h + 11); // this run's perks, tiny, under the bar's middle (an Adventure stage: its walls as little bricks)
-  drawFaster(now, rtl ? x + w - 64 : x + 64, y + h + 40);
+  const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives), compact = nL > 6; // an extra life (power-up) adds a heart; more than fit: one heart and ×N
+  const gap = nL > 4 ? 18 : 21, k = nL > 4 ? 0.46 : 0.52, xsp = compact ? textSprite(LRM + '×' + strike.lives, 13, '#fff8ec', null, 800) : null, hw = compact ? 20 + 4 + xsp.tw : (nL - 1) * gap + 18;
+  const goal = strike.goal, tx = LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
+  const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
+  ui.hud = { x, y, w, h };
+  resetView(); blit(glassSprite(w, h, h / 2), x - 1, y - 1, 0, 1, 0.7);
+  const hc = rtl ? x + w - pad - hw / 2 : x + pad + hw / 2, pc = rtl ? x + 5 + pw / 2 : x + w - 5 - pw / 2;
+  if (compact) {
+    const hx = rtl ? hc + hw / 2 - 10 : hc - hw / 2 + 10, P = ui.heartPop, L = ui.heartLost, pq = P ? (now - P.t) / 600 : 1, lq = L ? (now - L.t) / 550 : 1;
+    const hk = 0.52 * (pq < 1 ? 1 + 0.35 * Math.sin(Math.PI * pq) : 1), sx = lq < 1 ? Math.sin(lq * 42) * 4 * (1 - lq) : 0;
+    ui.hearts.length = 0; ui.hearts.push({ x: hx, y: cy }); blit(heartSprite(strike.lives > 0), hx + sx, cy, 0, hk);
+    edgeText(xsp, rtl ? hx - 13 : hx + 13, cy, rtl); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: true };
+  } else { drawHearts(ui, strike.lives, nL, hc, cy, now, k, gap); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: false }; }
+  const col = adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
+  blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
+  ui.wallsPill = { x: pc - pw / 2, y: cy - ph / 2, w: pw, h: ph, text: tx }; ui.advPill = adv.on && adv.plan ? ui.wallsPill : null;
+  ui.hudParts = ['hearts', 'walls']; ui.streakBox = null; ui.progBar = null; ui.advPips = null; ui.perkIcons.length = 0; ui.nextCard = null; // (no streak chip, progress line, wall pips, perk badges or NEXT card on screen)
+  const yb = ui.top + 4; // transient things hang under the top row
+  drawPowerIcons(now, rtl ? W - 10 : 10, yb + 12, rtl); // active power-ups with their timers, at the start edge (only while one runs)
+  drawFaster(now, rtl ? W - 64 : 64, yb + 40);
   const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
-  { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the bar, dropping in and fading out
-    const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = ui.puIcons.length ? y + h + 62 : y + h + 34 - 10 * (1 - e); // (below the power-up badges when there are any)
-    ui.tagBox = { x: x + w / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk };
-    blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), x + w / 2, ty, 0, 1, a * e); blit(sp, x + w / 2, ty, 0, 1, a * e);
+  { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the top row, dropping in and fading out
+    const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = ui.puIcons.length ? yb + 58 : yb + 26 - 10 * (1 - e); // (below the power-up badges when there are any)
+    ui.tagBox = { x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk };
+    blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e);
   }
 }
 function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops in, pulses twice, fades (1.1 s)
@@ -5762,46 +5732,22 @@ function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops
   const sp = textSprite(t('hd_faster'), 17, '#ffd77a', 'rgba(255,138,61,0.95)', 800), sc = (k < 0.12 ? 0.6 + 0.4 * k / 0.12 : 1) * (1 + 0.12 * Math.abs(Math.sin(k * Math.PI * 2))), a = k > 0.75 ? (1 - k) / 0.25 : 1;
   strike.ui.fasterBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, text: t('hd_faster') }; blit(sp, cx, cy, 0, sc, a);
 }
-function meterTrackSprite(w, h) { // dark rounded track with the four tier zones tinted and separated
-  return makeSprite('meter|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
-    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h / 2); };
-    path(); g.fillStyle = 'rgba(8,11,28,0.72)'; g.fill();
-    g.save(); path(); g.clip();
-    for (const [a, b, k] of METER_ZONES) { g.fillStyle = hexA(TIER_COL[k], 0.2); g.fillRect(-w / 2 + a * w, -h / 2, (b - a) * w, h); }
-    g.fillStyle = 'rgba(8,11,28,0.85)'; for (const [a] of METER_ZONES.slice(1)) g.fillRect(-w / 2 + a * w - 1, -h / 2, 2, h);
-    g.restore();
-    g.beginPath(); g.roundRect(-w / 2 + 0.5, -h / 2 + 0.5, w - 1, h - 1, h / 2); g.lineWidth = 1; g.strokeStyle = 'rgba(241,233,218,0.3)'; g.stroke();
-  });
-}
 function sparkle(x, y, r, col, alpha) { // four-point star
   ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.beginPath();
   ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.28, y - r * 0.28); ctx.lineTo(x + r, y); ctx.lineTo(x + r * 0.28, y + r * 0.28); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.28, y + r * 0.28); ctx.lineTo(x - r, y); ctx.lineTo(x - r * 0.28, y - r * 0.28); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
 }
-function drawPowerMeter(now, dt) { // bottom bar filling with the hand's speed in real time; flashes and names the tier big after a hit
-  const ui = strike.ui, rtl = lang === 'he', v = cursor.present ? handSpeed(now, 100) / strikeScale() : 0;
+function drawPowerMeter(now, dt) { // no bar on screen any more: the hand's speed is still read (quick to rise, slow to fall) and a hit names its tier big near the bottom edge, then fades
+  const ui = strike.ui, v = cursor.present ? handSpeed(now, 100) / strikeScale() : 0;
   ui.meterSpeed += (Math.min(v, METER_MAX * 1.3) - ui.meterSpeed) * Math.min(1, dt / (v > ui.meterSpeed ? 25 : 140)); // quick to rise, slow to fall
   const val = Math.min(1, ui.meterSpeed / METER_MAX), tier = speedTier(ui.meterSpeed); ui.meter = val; ui.meterTier = tier;
-  const w = Math.min(W - 32, 380), h = 6, cx = W / 2, cy = H - 14, x0 = cx - w / 2, col = TIER_COL[tier];
-  ui.meterTop = cy - 38; // top of the thin meter and room for the tier flash after a hit: the hint toast stays above this
-  blit(meterTrackSprite(w, h), cx, cy); resetView();
-  if (val > 0.004) {
-    const fw = val * w, fx = rtl ? cx + w / 2 - fw : x0;
-    ctx.save(); ctx.beginPath(); ctx.roundRect(x0, cy - h / 2, w, h, h / 2); ctx.clip();
-    const gr = ctx.createLinearGradient(rtl ? x0 + w : x0, 0, rtl ? x0 : x0 + w, 0); // mint -> sky -> saffron -> coral, revealed as the bar fills
-    gr.addColorStop(0, TIER_COL.soft); gr.addColorStop(METER_ZONES[1][0], TIER_COL.medium); gr.addColorStop(METER_ZONES[2][0], TIER_COL.hard); gr.addColorStop(METER_ZONES[3][0], TIER_COL.super); gr.addColorStop(1, '#ffd8c8');
-    ctx.fillStyle = gr; ctx.fillRect(fx, cy - h / 2, fw, h);
-    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(fx, cy - h / 2 + 1.5, fw, 3);
-    ctx.restore();
-    const capx = rtl ? fx : fx + fw; ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.9; ctx.fillRect(capx - 1, cy - h / 2 - 2, 2, h + 4); ctx.globalAlpha = 1;
-    if (tier === 'super') { sparkle(capx, cy - h, 8 + 4 * Math.sin(now * 0.03), '#fff3c4', 0.85); sparkle(capx + (rtl ? -9 : 9), cy + h * 0.9, 4 + 2 * Math.sin(now * 0.05 + 1), '#ffd8c8', 0.8); }
-  }
+  const cx = W / 2, cy = H - 14;
+  ui.meterTop = cy - 38; // room for the tier flash after a hit: the hint toast stays above this
   const F = ui.tierFlash, k = F ? (now - F.t) / 600 : 1;
-  if (k < 1) { // hit: the bar flashes white and the tier stands big above it
+  if (k < 1) { // hit: the tier stands big for a moment
     const fc = TIER_COL[F.tier], a = 1 - k;
-    resetView(); ctx.globalAlpha = a * 0.7; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x0, cy - h / 2, w, h, h / 2); ctx.fill(); ctx.globalAlpha = 1;
     const sp = textSprite(t('pw_' + F.tier), F.tier === 'super' ? 40 : 32, '#fff8ec', hexA(fc, 0.95)), pop = Math.max(0, 1 - k * 3);
     blit(sp, cx, cy - 26 - 10 * k, 0, 0.75 * (1 + 0.35 * Math.sin(Math.PI * pop)), Math.min(1, a * 3));
-  } // (no permanent tier label: the tier shows only on a hit)
+  }
 }
 function comboTextSprite(n) { return bigTextSprite(t('comboBig', { n }), 44); }
 function bigTextSprite(text, size = 44) { // big bold text with a saffron gradient, dark edge and a warm glow (combo / level / boss banners)
@@ -5831,20 +5777,6 @@ function drawComboBanner(now) { // slides in from the side, holds, slides out th
   const x = W / 2 + off, y = H * 0.32;
   blit(burstSprite(), x, y, now * 0.0016, 0.7 + 0.35 * Math.min(1, k * 4), a * 0.9);
   blit(comboTextSprite(Bn.n), x, y, 0, 1 + 0.06 * Math.sin(k * Math.PI * 4) * (1 - k), a);
-}
-function drawProgressBar(now, dt, x, y, w, rtl, h = 5) { // a thin line along the top bar's bottom edge: walls cleared this level over the goal; the fill eases and the line pulses brighter and taller on each wall
-  const ui = strike.ui, goal = strike.goal, target = Math.min(1, strike.progress / goal);
-  ui.progShown += (target - ui.progShown) * Math.min(1, dt / 160); if (Math.abs(target - ui.progShown) < 0.002) ui.progShown = target;
-  const k = Math.max(0, 1 - (now - ui.progressAt) / 450), hh = h + 3 * k, fw = ui.progShown * w, fx = rtl ? x + w - fw : x;
-  ui.progBar = { x, y, w, h, frac: ui.progShown, goal, progress: strike.progress };
-  resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(x, y - (hh - h) / 2, w, hh, hh / 2); ctx.fill();
-  if (fw > 0.5) {
-    const gr = ctx.createLinearGradient(rtl ? x + w : x, 0, rtl ? x : x + w, 0); gr.addColorStop(0, '#ffc24b'); gr.addColorStop(1, '#ff8a3d');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.roundRect(fx, y - (hh - h) / 2, fw, hh, hh / 2); ctx.fill();
-    if (k > 0) { ctx.globalAlpha = k * 0.7; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(fx, y - (hh - h) / 2, fw, hh, hh / 2); ctx.fill(); ctx.globalAlpha = 1; }
-  }
-  for (let i = 1; i < goal; i++) { const tx = rtl ? x + w - i / goal * w : x + i / goal * w; ctx.fillStyle = 'rgba(8,11,28,0.55)'; ctx.fillRect(tx - 0.5, y - (hh - h) / 2, 1, hh); } // one notch per wall
-  ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(241,233,218,' + (0.28 + 0.5 * k).toFixed(3) + ')'; ctx.beginPath(); ctx.roundRect(x + 0.5, y - (hh - h) / 2 + 0.5, w - 1, hh - 1, hh / 2); ctx.stroke();
 }
 function bannerSlide(k) { // slide in from the side over the first 15%, hold, slide out the other way over the last 15%: [x offset, alpha]
   const dir = lang === 'he' ? -1 : 1;
@@ -6184,7 +6116,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
 function renderStrike(now) {
   beginFrame('strike', now);
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, balls = strike.balls, sup = balls.some((b) => b.super || b.fire);
-  if (frameCount % 30 === 0 || !strike.ui.hud) strike.ui.top = strikeTop();
+  if (frameCount % 30 === 0 || !strike.ui.hud) { strike.ui.top = strikeTop(); strikeHudRow(); }
   const g3 = gfx3dActive() && gfx3dFrame(now); // the WebGL corridor, walls, balls, debris, capsules and boss (false: 2D draws them)
   if (g3) { strike.ui.edgeCol = sup ? [255, 194, 75] : strikeTuning().edge; blit(g3Vignette(), 0, 0); }
   else {
@@ -6230,7 +6162,7 @@ function renderStrike(now) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.6);
     gr.addColorStop(0, 'rgba(120,220,255,0)'); gr.addColorStop(1, 'rgba(120,220,255,' + (0.32 * ck).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  drawNextCard(now); drawAdvFx(now); // (an Adventure stage cleared: the burst, the whoosh, the trip to the next world)
+  drawAdvFx(now); // (an Adventure stage cleared: the burst, the whoosh, the trip to the next world)
   if (powerOn('slow')) { // Slow-mo: a cool blue wash and a time-warp vignette breathing at the edges
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(70,120,255,0.1)'; ctx.fillRect(0, 0, W, H);
     const k = 0.5 + 0.5 * Math.sin(now * 0.004), gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * (0.3 + 0.05 * k), W / 2, H / 2, Math.hypot(W, H) * 0.6);
@@ -7056,7 +6988,7 @@ function setMuted(m) {
   if (muted) toneOff();
   syncMuteBtn(); musicSync();
 }
-function syncMuteBtn() { const b = $('muteBtn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
+function syncMuteBtn() { const b = $('muteBtn'); $('muteLb').textContent = t(muted ? 'soundOff' : 'soundOn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
 $('muteBtn').addEventListener('click', () => setMuted(!muted));
 function audioInit() {
   try {
@@ -8437,6 +8369,7 @@ let gameMode = 'sandbox';
 const MODE_NEXT = { sandbox: 'slice', slice: 'smash', smash: 'busy', busy: 'strike', strike: 'shapes', shapes: 'sandbox' };
 function setGameMode(m) {
   const was = gameMode; gameMode = m; daily.on = daily.armed = false; adv.on = adv.armed = false; // picking a mode (or the same one again) leaves the daily (and the Adventure)
+  syncChromeMode(); // Strike: the toolbar folds into one pause button
   if (held) dropHeld();
   particles.length = 0; rings.length = 0;
   if (m === 'slice') resetSlice();
@@ -8513,6 +8446,43 @@ function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.h
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
 $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
+
+/* ---------------- Strike: the toolbar folds into one pause button (body.minChrome). A tap (or a camera dwell) pauses the game and opens
+   the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
+const menu = { open: false, dwell: null, block: false };
+const chromeEl = document.querySelector('.chrome');
+function syncChromeMode() { const on = gameMode === 'strike'; document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
+function openMenu() {
+  if (menu.open || mode === 'none' || gameMode !== 'strike') return false;
+  menu.open = true; menu.dwell = null; pauseGame(); hideHint();
+  chromeEl.classList.add('open'); $('menuVeil').hidden = false; $('pauseBtn').setAttribute('aria-expanded', 'true');
+  musicSync(); return true;
+}
+function closeMenu(resume = true) { // resume: play goes on (camera: after the 3-2-1, unless the hand is missing); Home leaves it paused for goHome
+  if (!menu.open) return false;
+  menu.open = false; menu.dwell = null; chromeEl.classList.remove('open'); $('menuVeil').hidden = true; $('pauseBtn').setAttribute('aria-expanded', 'false');
+  chromeEl.querySelectorAll('.chip.dwell').forEach((q) => q.classList.remove('dwell')); $('menuDwell').hidden = true;
+  if (resume && pause.on) { if (mode === 'camera') { if (!noHandShown) { pause.resumeT = performance.now(); pause.count = 0; } } else unpauseGame(); }
+  updateHudOffset(); musicSync(); return true;
+}
+$('pauseBtn').addEventListener('click', openMenu);
+$('resumeBtn').addEventListener('click', () => closeMenu(true));
+$('resetBtn').addEventListener('click', () => closeMenu(true)); // (after its own handler restarted the round)
+$('hudBtn').addEventListener('click', () => closeMenu(true)); // the stats panel shows live numbers: back to play
+$('menuVeil').addEventListener('pointerdown', (e) => { e.preventDefault(); closeMenu(true); }); // a tap beside the sheet resumes
+window.addEventListener('keydown', (e) => { if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && mode !== 'none' && gameMode === 'strike' && !advMapOpen()) { if (!closeMenu(true)) openMenu(); } });
+function menuDwellTick(now) { // camera: a point / pinch / fist held 600 ms on the pause button (or on a sheet button) presses it; while the sheet is open a ring follows the hand
+  const ring = $('menuDwell'), g = gesture === 'point' || gesture === 'pinch' || gesture === 'fist';
+  const el = cursor.present ? document.elementFromPoint(cursor.x, cursor.y) : null, btn = el && el.closest ? el.closest(menu.open ? '.chrome.open button' : '#pauseBtn') : null, on = !!btn && g;
+  chromeEl.querySelectorAll('.chip.dwell').forEach((q) => { if (q !== btn || !on) q.classList.remove('dwell'); });
+  if (menu.block) { if (!on) menu.block = false; } // after a press: let go (or move off) before the next one
+  ring.hidden = !cursor.present || !(menu.open || (on && !menu.block));
+  if (!ring.hidden) ring.style.transform = 'translate(' + Math.round(cursor.x) + 'px,' + Math.round(cursor.y) + 'px)';
+  if (!on || menu.block) { menu.dwell = null; ring.style.setProperty('--q', '0'); return; }
+  if (!menu.dwell || menu.dwell.el !== btn) menu.dwell = { el: btn, t: now }; btn.classList.add('dwell');
+  const q = Math.min(1, (now - menu.dwell.t) / 600); ring.style.setProperty('--q', q.toFixed(3));
+  if (q >= 1) { menu.dwell = null; menu.block = true; btn.classList.remove('dwell'); ring.style.setProperty('--q', '0'); btn.click(); }
+}
 
 /* ---------------- Camera + tracker boot ---------------- */
 let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0;
@@ -8723,13 +8693,13 @@ function maybeAutoSwap(now) {
 // No hand: enlarge the camera preview to the centre with instructions. Hand found: shrink it back to the corner.
 let noHandShown = false;
 function updateNoHand(now) {
-  const show = mode === 'camera' && !cursor.present && now - Math.max(hand.lastSeen, cameraStartedAt) > 400;
+  const show = mode === 'camera' && !menu.open && !cursor.present && now - Math.max(hand.lastSeen, cameraStartedAt) > 400; // (not over the pause sheet: the game is paused already)
   if (show === noHandShown) return;
   noHandShown = show;
   setPreviewBig(show);
   statusEl.hidden = !show;
   if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); pauseGame(); }
-  else if (pause.on) { pause.resumeT = now; pause.count = 0; } // the hand is back: 3-2-1 before play goes on
+  else if (pause.on && !menu.open) { pause.resumeT = now; pause.count = 0; } // the hand is back: 3-2-1 before play goes on
   $('pausePill').hidden = !pause.on;
   updateHudOffset();
 }
@@ -8767,6 +8737,7 @@ preview.addEventListener('pointerdown', (e) => { e.preventDefault(); peekPreview
 // Top row: camera preview at the left, the toolbar at the right; the HUD and each mode's own top UI sit under whichever is taller.
 const chromeRow = { bottom: 0 };
 function chromeRowBottom() { // px: bottom of the toolbar or, in camera mode, of the small preview (reserved even while it is enlarged, so nothing jumps)
+  if (document.querySelector('.chrome.open')) return chromeRow.bottom; // (the pause sheet is open: the row keeps its place under it)
   const c = document.querySelector('.chrome').getBoundingClientRect(); if (c.height <= 0) return 0;
   let b = c.bottom;
   if (mode === 'camera' && !preview.hidden) {
@@ -8776,6 +8747,7 @@ function chromeRowBottom() { // px: bottom of the toolbar or, in camera mode, of
   return b;
 }
 function updateHudOffset() {
+  if (document.querySelector('.chrome.open')) return; // (the pause sheet is open: nothing under it moves)
   const small = mode === 'camera' && !preview.hidden && !preview.classList.contains('big');
   const root = document.documentElement.style;
   root.setProperty('--chrome-inset', small ? preview.getBoundingClientRect().width + 8 + 'px' : '0px');
@@ -8793,7 +8765,7 @@ function goHome() {
   shapes.held = null; if (gameMode === 'shapes') shapes.over = false; // (the next start deals a fresh Shapes round)
   if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
   if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; } // the clock stops; the next start deals a fresh round
-  unpauseGame();
+  closeMenu(false); unpauseGame();
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';

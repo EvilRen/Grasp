@@ -48,7 +48,7 @@ async def boot(b, mobile, he=False):
     await page.wait_for_function("mode === 'camera'", timeout=15000); await page.wait_for_timeout(700)
     return ctx, page, errs
 
-TOOLBAR = """(() => { const c = document.querySelector('.chrome').getBoundingClientRect(), r = [...document.querySelectorAll('.chrome .chip')].map(b => b.getBoundingClientRect()), p = preview.getBoundingClientRect();
+TOOLBAR = """(() => { const c = document.querySelector('.chrome').getBoundingClientRect(), r = [...document.querySelectorAll('.chrome .chip')].map(b => b.getBoundingClientRect()).filter(x => x.width > 0), p = preview.getBoundingClientRect();
   return { n: r.length, oneRow: r.every(x => Math.abs(x.top - r[0].top) < 1 && Math.abs(x.bottom - r[0].bottom) < 1), minW: Math.min(...r.map(x => x.width)), minH: Math.min(...r.map(x => x.height)),
     left: c.left, right: c.right, top: c.top, bottom: c.bottom, height: c.height, prevLeft: p.left, prevRight: p.right, prevBottom: p.bottom, W: innerWidth }; })()"""
 HINT = """(() => { const h = $('hint'), r = h.getBoundingClientRect(), ic = h.querySelector('.ic').getBoundingClientRect(), tx = h.querySelector('.tx').getBoundingClientRect();
@@ -67,7 +67,8 @@ async def mode_ui_checks(page, tag):
         check(tag + f' {m}: score starts below the top row', sy - 37 >= row, [sy, row])
     await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(400)
     hud = await page.evaluate("__grasp.strike.ui.hud"); mt = await page.evaluate("__grasp.strike.ui.meterTop"); h = await page.evaluate(HINT)
-    check(tag + ' strike: HUD card under the top row', hud and hud['y'] >= row, [hud, row])
+    tb = await page.evaluate("(() => { const r = $('pauseBtn').getBoundingClientRect(), v = [...document.querySelectorAll('.chrome > *')].filter(e => e.getBoundingClientRect().width > 0); return { l: r.left, t: r.top, b: r.bottom, n: v.length, id: v[0] && v[0].id, pv: preview.hidden ? 0 : preview.getBoundingClientRect().right }; })()")
+    check(tag + ' strike: the toolbar folds into the one pause button; the slim HUD row sits beside it (between the preview and the button)', tb['n'] == 1 and tb['id'] == 'pauseBtn' and hud and hud['y'] < tb['b'] and hud['y'] + hud['h'] > tb['t'] and hud['x'] + hud['w'] <= tb['l'] and hud['x'] >= tb['pv'], [hud, tb])
     check(tag + ' strike: hint toast sits above the power meter', h['show'] and mt > 0 and h['bottom'] <= mt and h['top'] > h['H'] * 0.5, [h, mt])
     await page.evaluate("__grasp.setGameMode('busy')"); await page.wait_for_timeout(200)
     check(tag + ' busy: board starts below the top row', await page.evaluate("__grasp.busy.board.y") >= row)
@@ -83,7 +84,7 @@ async def main():
             tb = await page.evaluate(TOOLBAR)
             check(tag + ' phone: toolbar is one row of 5 icon buttons, each >= 40 px', tb['n'] == 5 and tb['oneRow'] and tb['minW'] >= 40 and tb['minH'] >= 40 and tb['height'] < 60, tb)
             check(tag + ' phone: toolbar fits next to the 96 px preview at 360 px', tb['prevRight'] - tb['prevLeft'] == 96 and tb['left'] >= tb['prevRight'] + 4 and tb['right'] <= tb['W'] and abs(tb['top'] - 12) < 1, tb)
-            titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].map(b => b.title || b.getAttribute('aria-label'))")
+            titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label'))")
             check(tag + ' phone: every button has a tooltip in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('השתקת צלילים' in titles) if he else ('Mute sound' in titles)), titles)
             check(tag + ' phone: live dot on the small preview', await page.evaluate("!$('liveDot').hidden && getComputedStyle($('liveDot')).display !== 'none'"))
             h = await page.evaluate(HINT)

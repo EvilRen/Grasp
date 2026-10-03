@@ -208,11 +208,11 @@ async def main():
         check('equipping mid-game switches the sprite', any(k.startswith('strikeBall|classic|') for k in await page.evaluate(KEYS + "('strikeBall|')")))
         await page.evaluate("__grasp.strike.smashTest('hard')"); await page.wait_for_timeout(200)
         check('fire trail sheds embers behind the returning ball', await page.evaluate("particles.some(p => p.color === '#ff8a3d' || p.color === '#ffe07a')"))
-        await page.click('#homeBtn'); await page.wait_for_timeout(200); await play(page, 'smash'); await page.mouse.move(640, 500); await page.mouse.down(); await page.wait_for_timeout(150); await page.mouse.up()
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(200); await play(page, 'smash'); await page.mouse.move(640, 500); await page.mouse.down(); await page.wait_for_timeout(150); await page.mouse.up()
         check('smash draws the mint glove', await page.evaluate(KEYS + "('glove|')") == ['glove|mint'])
-        await page.click('#homeBtn'); await page.wait_for_timeout(200); await play(page, 'slice'); await page.evaluate("parkFruit(640, 400)"); await drag(page, 400, 880, 400)
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(200); await play(page, 'slice'); await page.evaluate("parkFruit(640, 400)"); await drag(page, 400, 880, 400)
         check('slice draws the neon katana', await page.evaluate(KEYS + "('katana|')") == ['katana|neon'])
-        await page.click('#homeBtn'); await page.wait_for_timeout(300)
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(300)
         # the panel
         await page.click('#collectionBtn'); await page.wait_for_timeout(250)
         tl = await page.evaluate("[...document.querySelectorAll('#collection .tile')].map(b => ({ id: b.dataset.id, locked: b.classList.contains('locked'), eq: b.classList.contains('equipped'), lk: !!b.querySelector('.lk'), st: b.querySelector('.st').textContent.trim(), nm: b.querySelector('.nm').textContent, drawn: (() => { const c = b.querySelector('canvas'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++; return n > 200; })() }))")
@@ -272,7 +272,7 @@ async def main():
                 check(tag + ': ' + m + ' HUD coin pill inside the screen at the start edge (Strike: end edge under the card)', ok, [pl, m])
                 if m == 'strike': await page.screenshot(path='tests/out/meta_' + tag.replace(' ', '_') + '_hud_strike.png')
                 if m == 'slice': await page.screenshot(path='tests/out/meta_' + tag.replace(' ', '_') + '_hud_slice.png')
-                await page.tap('#homeBtn'); await page.wait_for_timeout(300)
+                await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300)
             check(tag + ': home refreshes the pill', await page.evaluate("$('metaPill').querySelector('.coins').textContent") == '144')
             check(tag + ': no page errors', not errs, errs); await ctx.close()
 

@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 mkdir -p tests/out/logs
 JOBS=${JOBS:-3}
 tests/fix_browsers.sh || exit 1
-ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album"
+ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album hudmin"
 if [ $# -gt 0 ]; then LIST="$*"; else LIST="$ALL strike2:3d strike3:3d"; fi
 
 python3 -m http.server 8765 --bind 127.0.0.1 >/dev/null 2>&1 &

@@ -223,7 +223,7 @@ async def main():
         await page.wait_for_timeout(900); await page.screenshot(path='tests/out/road_chest_open.png')
         await page.wait_for_function(f"!{S}.chest", timeout=5000); await page.wait_for_function(f"{S}.balls.length > 0", timeout=6000)
         check('after the prize: the chest goes and play resumes in world 2 (a serve)', await page.evaluate(f"{S}.world") == 2)
-        await page.evaluate(f"{P}.tickets = 0"); await page.click('#homeBtn'); await page.wait_for_timeout(300)
+        await page.evaluate(f"{P}.tickets = 0"); await menu_click(page, '#homeBtn'); await page.wait_for_timeout(300)
         await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(300)
         mp = await page.evaluate("({ shown: !$('worldMap').hidden, n: [...document.querySelectorAll('#wmap .wnode')].map(b => [b.classList.contains('locked'), b.classList.contains('cur')]), mode })")
         check('home, Strike, Play: the world map first (world 2 open, 3-5 locked), no game yet', mp['shown'] and [x[0] for x in mp['n']] == [False, False, True, True, True] and mp['mode'] == 'none', mp)

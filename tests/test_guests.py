@@ -78,11 +78,10 @@ async def main():
         await page.evaluate(f"{S}.setLevel(4); {S}.guestEvery = 2; {S}.serve(); {FREEZE}")  # (the card shows from level 3 on)
         nx = await page.evaluate(f"{S}.guestNext"); await frames(page, 2)
         card = await page.evaluate(f"{S}.ui.nextCard")
-        check('one serve before a guest: guestNext.in = 1 and the NEXT card shows that guest (icon drawn) even with extrasOff', nx and nx['in'] == 1 and card and card['kind'] == 'guest' and card['guest'] == nx['kind'] and card.get('icon'), [nx, card])
-        await page.screenshot(path='tests/out/guests_next_card.png', clip={'x': 640, 'y': 40, 'width': 640, 'height': 200})
+        check('one serve before a guest: guestNext.in = 1 (the telegraph knows it) but no NEXT card is drawn (minimal HUD)', nx and nx['in'] == 1 and card is None, [nx, card])
         await page.evaluate(f"{S}.serve(); {FREEZE}"); await frames(page, 2)
         sv = await page.evaluate(f"({{ g: {S}.ball.guest, card: {S}.ui.nextCard }})")
-        check('...and the next serve is that guest; the card goes away (extrasOff, no guest next)', sv['g'] == nx['kind'] and sv['card'] is None, sv)
+        check('...and the next serve is that guest; still no card', sv['g'] == nx['kind'] and sv['card'] is None, sv)
 
         # ---- slap: back it goes, screaming, a bubble, +5 coins, track('guest'), at least medium ----
         await page.evaluate(f"{S}.guestEvery = 0; {S}.spawnGuest('cow')"); sc = await page.evaluate(PARK + "(30, 640, 420)")

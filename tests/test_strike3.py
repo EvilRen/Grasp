@@ -141,7 +141,7 @@ async def main():
         fu = await page.evaluate(f"({{ ui: {S}.ui.faster, ups: {S}.paceUps, sfx: __sfx.filter(k => k === 'faster').length, run: {S}.runReturns }})")
         check('4 returns: same pace; the 5th: pace x1.05, "Faster!" pulse + a whoosh', ps[:4] == [p0] * 4 and abs(ps[4] - p0 * 1.05) < 1e-9 and fu['ui'] and fu['sfx'] == 1 and fu['run'] == 5, [p0, ps, fu])
         await frames(page, 2); fb = await page.evaluate(f"{S}.ui.fasterBox"); hud = await page.evaluate(f"{S}.ui.hud")
-        check('"Faster!" is drawn just under the HUD card', fb and fb['text'] == 'Faster!' and hud['y'] + hud['h'] <= fb['y'] < hud['y'] + hud['h'] + 40 and hud['x'] <= fb['x'] and fb['x'] + fb['w'] <= hud['x'] + hud['w'] + 20, [fb, hud])
+        check('"Faster!" is drawn just under the top HUD row (at the start edge), inside the screen', fb and fb['text'] == 'Faster!' and hud['y'] + hud['h'] <= fb['y'] < hud['y'] + hud['h'] + 70 and fb['x'] >= 0 and fb['x'] + fb['w'] <= 1280, [fb, hud])
         await page.screenshot(path='tests/out/strike7_faster_desktop.png')
         ps2 = [await page.evaluate(RET) for _ in range(4)]
         await page.evaluate(f"(() => {{ const s = {S}; s.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 2, 30, 30); strikeMiss(s.ball, performance.now()); s.serve(); park(); }})()")

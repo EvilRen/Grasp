@@ -111,10 +111,10 @@ async def main():
             boxes = [(k, v) for k, v in bx.items() if k not in ('toasts', 'icons')] + [('toast', q) for q in bx['toasts']] + [('icon', q) for q in bx['icons']]
             bad = [k for k, v in boxes if inter(v, C)]
             tag = 'phone ' + ('he' if he else 'en')
-            check(tag + ': in play nothing of the HUD bar, NEXT, streak, coins, toasts, hint, Grippy or the meter sits in the central play area (x 15-85%, y 25-80%)', not bad and bx['hud'] and bx['hud']['h'] <= 52 and bx['next'] and bx['next']['w'] <= 90 and bx['next']['h'] <= 34 and bx['coinPill'] is None and bx['grippy'] and bx['streak'], [bad, bx])
-            check(tag + ': the slim bar (<= 52 px) holds the streak flame and the progress line; Grippy <= 44 px with a one-line bubble; the meter <= 6 px', bx['streak']['y'] >= bx['hud']['y'] and bx['streak']['y'] + bx['streak']['h'] <= bx['hud']['y'] + bx['hud']['h'] and bx['prog']['y'] + bx['prog']['h'] <= bx['hud']['y'] + bx['hud']['h'] and bx['grippy']['mascot']['w'] <= 44.5 and bx['grippy']['bubble']['h'] <= 34 and (he or bx['next']['x'] + bx['next']['w'] <= 360), bx)
-            nx = bx['next']; hd = bx['hud']
-            check(tag + ': NEXT sits in the top end corner under the bar', nx['y'] >= hd['y'] + hd['h'] and ((nx['x'] <= hd['x'] + 1) if he else (nx['x'] + nx['w'] >= hd['x'] + hd['w'] - 1)), [nx, hd])
+            check(tag + ': in play nothing of the HUD row, coins, toasts, hint, Grippy or the tier flash sits in the central play area (x 15-85%, y 25-80%)', not bad and bx['hud'] and bx['hud']['h'] <= 32 and bx['coinPill'] is None and bx['grippy'], [bad, bx])
+            check(tag + ': minimal HUD: one slim row (<= 32 px) with only the hearts and walls pill: no NEXT card, streak chip or progress line even with a streak of 7 at level 4; Grippy <= 44 px with a one-line bubble', bx['next'] is None and bx['streak'] is None and bx['prog'] is None and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls' and bx['grippy']['mascot']['w'] <= 44.5 and bx['grippy']['bubble']['h'] <= 34, bx)
+            hd = bx['hud']; pb = await page.evaluate("(() => { const r = $('pauseBtn').getBoundingClientRect(); return { l: r.left, t: r.top, b: r.bottom }; })()")
+            check(tag + ': the HUD row shares the pause button\'s row and stays clear of it', hd['y'] < pb['b'] and hd['y'] + hd['h'] > pb['t'] and hd['x'] + hd['w'] <= pb['l'], [hd, pb])
             await page.screenshot(path='tests/out/serve_declutter_' + ('he' if he else 'en') + '.png')
             hid = await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(2); s.setBallZ(2300, 30, 30); s.ball.speed = 0; return 1; }})()"); await frames(page, 2)
             n2 = await page.evaluate(f"{S}.ui.nextCard")

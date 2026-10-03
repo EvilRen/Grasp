@@ -99,8 +99,8 @@ async def main():
         check('tap restarts a fresh round, best kept', not st['over'] and st['lives'] == cfg['lives'] and st['score'] == 0 and st['best'] == sc, st)
         await page.wait_for_timeout(700)
         await page.mouse.move(640, 400); await page.wait_for_timeout(100); await page.evaluate(hit_js(640, 400)); await page.wait_for_timeout(120)
-        check('reset button restarts', await page.evaluate(f"{S}.score") > 0 and (await page.click('#resetBtn') or True) and await page.evaluate(f"{S}.score === 0 && {S}.lives === {cfg['lives']} && !{S}.over"))
-        await page.click('#hudBtn'); await page.wait_for_timeout(700)
+        check('reset button restarts', await page.evaluate(f"{S}.score") > 0 and (await menu_click(page, '#resetBtn') or True) and await page.evaluate(f"{S}.score === 0 && {S}.lives === {cfg['lives']} && !{S}.over"))
+        await menu_click(page, '#hudBtn'); await page.wait_for_timeout(700)
         check('HUD shows strike + lives', 'strike' in await page.inner_text('#hud') and 'lives' in await page.inner_text('#hud'))
         # kid-friendly Easy default: 4 lives, slower ball, bigger reach, late slaps, magnet assist; Normal = the old values
         pr = await page.evaluate("__grasp.strikeParams()")
@@ -125,7 +125,7 @@ async def main():
         await page.evaluate(f"{S}.setBallZ({cfg['zf'] * 0.2}, 760, 400)"); x0 = (await page.evaluate(f"{S}.ballScreen()"))['x']; await page.wait_for_timeout(160)
         x1 = (await page.evaluate(f"{S}.ballScreen()"))['x']
         check('Easy: magnet assist drifts the ball toward the hand in the last quarter', x0 > 740 and x1 < x0 - 20 and x1 > 640, [x0, x1])
-        await page.evaluate("__grasp.setStrikeDiff('normal')"); await page.click('#resetBtn'); await page.wait_for_timeout(300)
+        await page.evaluate("__grasp.setStrikeDiff('normal')"); await menu_click(page, '#resetBtn'); await page.wait_for_timeout(300)
         pr = await page.evaluate("__grasp.strikeParams()"); st = await page.evaluate(STATE)
         check('Normal: the previous values, saved in localStorage, 3 lives on reset', pr['lives'] == 3 and pr['speed'] == 1.1 and pr['radius'] == 1.3 and pr['near'] == 0 and pr['late'] == 0 and pr['magnet'] == 0 and pr['grow'] == 1.05 and pr['max'] == 2.8 and st['lives'] == 3 and await page.evaluate("localStorage.getItem('strikeDiff')") == 'normal', [pr, st])
         await page.mouse.move(640, 400); await page.wait_for_timeout(150); s0 = await page.evaluate(f"{S}.score")
@@ -381,7 +381,7 @@ async def main():
         await page.wait_for_function(f"{S}.powerups.some(p => p.kind === 'big')", timeout=2500); await page.wait_for_timeout(60)
         ct = await page.evaluate(f"(() => {PU} return {{ caps: s.capsules.length, caught: s.caught, tag: s.ui.tag, tb: s.ui.tagBox, icons: s.ui.puIcons, sfx: __sfx, r: ballR(), until: s.powerups[0].until - performance.now() }}; }})()")
         check('cursor on the capsule at the plane: caught, sfx powerup, "Big ball!" tag, one HUD icon with a full timer ring', ct['caps'] == 0 and ct['caught'] == 1 and ct['tag']['kind'] == 'big' and ct['tag']['pu'] and ct['tb'] and ct['tb']['pu'] and 'powerup' in ct['sfx'] and len(ct['icons']) == 1 and ct['icons'][0]['kind'] == 'big' and ct['icons'][0]['frac'] > 0.9 and 19000 < ct['until'] <= 20000, ct)
-        check('HUD: the power-up icon sits under the HUD card at the start edge, the tag pill below it', await page.evaluate(f"(() => {PU} const h = s.ui.hud, i = s.ui.puIcons[0], t = s.ui.tagBox; return i.y - i.r >= h.y + h.h && i.x - i.r >= h.x && i.x < h.x + 80 && t.y >= i.y + i.r && t.x >= 0; }})()"), await page.evaluate(f"[{S}.ui.hud, {S}.ui.puIcons, {S}.ui.tagBox]"))
+        check('HUD: the power-up icon (while it runs) sits under the top HUD row at the screen\'s start edge, the tag pill below it', await page.evaluate(f"(() => {PU} const h = s.ui.hud, i = s.ui.puIcons[0], t = s.ui.tagBox; return i.y - i.r >= h.y + h.h && i.x - i.r >= 4 && i.x < 80 && t.y >= i.y + i.r && t.x >= 0; }})()"), await page.evaluate(f"[{S}.ui.hud, {S}.ui.puIcons, {S}.ui.tagBox]"))
         check('tag text EN', await page.evaluate("t('pu_big')") == 'Big ball!' and await page.evaluate("I18N.he.pu_big.length") > 3)
         ip = await page.evaluate(f"(() => {{ const i = {S}.ui.puIcons[0]; return {PIX}(i.x, i.y - i.r); }})()")
         check('the timer ring is drawn in the kind\'s colour (lilac for Big)', ip[2] > 150 and ip[2] > ip[1] + 20, ip)
@@ -467,8 +467,8 @@ async def main():
         await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(200)
-        chrome = await page.evaluate("document.querySelector('.chrome').getBoundingClientRect().bottom"); hud = await page.evaluate(f"{S}.ui.hud")
-        check('the slim HUD bar (36-52 px) sits below the chrome buttons and fits the screen', hud and hud['y'] >= chrome and hud['x'] >= 0 and hud['x'] + hud['w'] <= 1280 and 36 <= hud['h'] <= 52, [hud, chrome])
+        chrome = await page.evaluate("(() => { const r = document.querySelector('.chrome').getBoundingClientRect(); return { l: r.left, t: r.top, b: r.bottom }; })()"); hud = await page.evaluate(f"{S}.ui.hud")
+        check('the slim HUD row (24-32 px: hearts + walls pill) sits on the pause button\'s row, clear of it, inside the screen', hud and hud['y'] >= chrome['t'] and hud['y'] + hud['h'] <= chrome['b'] and hud['x'] >= 0 and hud['x'] + hud['w'] <= chrome['l'] - 4 and 24 <= hud['h'] <= 32 and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls', [hud, chrome])
         rim = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y']})"); above = await page.evaluate(PIX + f"({hud['x'] + hud['w'] / 2}, {hud['y'] - 4})")
         check('HUD card rim drawn (a lighter line than the corridor above it)', sum(rim) > sum(above) + 30, [rim, above])
         hearts = await page.evaluate(f"{S}.ui.hearts"); hp = await page.evaluate(PIX + f"({hearts[0]['x']}, {hearts[0]['y']})")
@@ -562,12 +562,8 @@ async def main():
         await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.setCleared(3)"); pa = await page.evaluate(f"performance.now() - {S}.ui.progressAt"); await page.wait_for_timeout(500)
         pb = await page.evaluate(f"(() => {LB} return {{ level: s.level, progress: s.progress, goal: s.goal, cleared: s.cleared, bar: s.ui.progBar, hud: s.ui.hud, icons: s.ui.puIcons.length }}; }})()")
         check('setCleared(3): level 1, progress 3 / 4, the bar pulsed at once', pb['level'] == 1 and pb['progress'] == 3 and pb['goal'] == 4 and pb['cleared'] == 3 and pa < 100 and not await page.evaluate("__sfx.includes('levelup')"), [pb, pa])
-        try: await page.wait_for_function(f"Math.abs({S}.ui.progBar.frac - 0.75) < 0.02", timeout=3000)  # the fill eases; slow machines need longer than 500 ms
-        except Exception: pass
-        bar = await page.evaluate(f"{S}.ui.progBar")
-        check('progress: a thin line along the HUD bar\'s bottom edge (inside it), filled 3/4 (eased)', bar and abs(bar['frac'] - 0.75) < 0.02 and bar['y'] >= pb['hud']['y'] + pb['hud']['h'] - 10 and bar['y'] + bar['h'] <= pb['hud']['y'] + pb['hud']['h'] and bar['h'] <= 6 and bar['x'] >= pb['hud']['x'] and bar['x'] + bar['w'] <= pb['hud']['x'] + pb['hud']['w'], [bar, pb['hud']])
-        fill = await page.evaluate(PIX + f"({bar['x'] + bar['w'] * 0.3}, {bar['y'] + bar['h'] / 2})"); empty = await page.evaluate(PIX + f"({bar['x'] + bar['w'] * 0.9}, {bar['y'] + bar['h'] / 2})")
-        check('progress bar pixels: saffron in the filled part, dark in the rest', fill[0] > 200 and fill[1] > 120 and fill[2] < 120 and sum(empty) < 200, [fill, empty])
+        wp = await page.evaluate(f"({{ pill: {S}.ui.wallsPill, bar: {S}.ui.progBar }})")
+        check('progress: the walls pill in the HUD row reads 3/4; no progress line is drawn', wp['pill'] and wp['pill']['text'].endswith('3/4') and wp['bar'] is None and pb['hud']['x'] <= wp['pill']['x'] and wp['pill']['x'] + wp['pill']['w'] <= pb['hud']['x'] + pb['hud']['w'], [wp, pb['hud']])
         await page.screenshot(path='tests/out/strike5_progress.png')
         # level completion: the fourth wall = level 2 with a Level up! burst, +100 (50 x the new level), the fanfare and the level 2 banner
         s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.setCleared(4)"); await page.wait_for_timeout(120)
@@ -588,7 +584,7 @@ async def main():
         await page.wait_for_timeout(1200)
         check('the banner is gone after 1.6 s', await page.evaluate(f"{S}.ui.levelBanner === null && {S}.ui.levelUp === null"))
         # boss (Normal): the last wall of world 1 (level 6, wall 36) brings it: hp 16 x the level-6 factor, near the far end, every wall in view crumbled, the queue behind it, the 'Boss!' tag and a roar
-        await page.evaluate("__grasp.setStrikeDiff('normal')"); await page.click('#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
+        await page.evaluate("__grasp.setStrikeDiff('normal')"); await menu_click(page, '#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
         await page.evaluate(f"__sfx.length = 0; {PARK}; {S}.setCleared(36)"); await page.wait_for_timeout(200)
         bs = await page.evaluate(f"(() => {LB} const b = s.boss; return {{ boss: b && {{ n: b.n, hp: b.hp, maxHp: b.maxHp, z: b.z, angry: b.angry }}, z0: __grasp.CONFIG.STRIKE_Z_FAR * 0.8, level: s.level, progress: s.progress, walls: s.walls.map(w => w.z), gap: __grasp.CONFIG.STRIKE_WALL_GAP, tag: s.ui.tag, sfx: __sfx, ui: s.ui.boss, debris: s.debris.length, every: __grasp.strikeParams().diff === 'normal' && s.gate }}; }})()")
         check('Normal: wall 36 (the end of world 1) spawns boss #1 with 24 hp (16 x the level-6 factor 1.5) near the far end, angry not yet; level 6 holds with a full bar', bs['boss'] and bs['boss']['n'] == 1 and bs['boss']['hp'] == 24 and bs['boss']['maxHp'] == 24 and bs['z0'] - 60 < bs['boss']['z'] <= bs['z0'] and not bs['boss']['angry'] and bs['every'] == 6 and bs['level'] == 6 and bs['progress'] == 7, bs)
@@ -660,7 +656,7 @@ async def main():
         await page.wait_for_function(f"{S}.walls.some(w => w.z < {cfg['zf']} * 0.9)", timeout=8000)
         check('normal walls resume: the queue slides into view', await page.evaluate(f"{S}.walls.length === 4 && {S}.walls.every(w => w.left === w.bricks.filter(k => !k.hole).length) && {S}.boss === null"))
         # Easy: the same world boss (wall 36) with 85% of the hp
-        await page.evaluate("__grasp.setStrikeDiff('easy')"); await page.click('#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
+        await page.evaluate("__grasp.setStrikeDiff('easy')"); await menu_click(page, '#resetBtn'); await page.wait_for_timeout(300); await page.mouse.move(1200, 760)
         await page.evaluate(f"{PARK}; {S}.setCleared(35)"); e7 = await page.evaluate(f"{S}.boss === null"); await page.evaluate(f"{PARK}; {S}.setCleared(36)"); await page.wait_for_timeout(60)
         eb = await page.evaluate(f"(() => {LB} return {{ boss: s.boss && {{ n: s.boss.n, hp: s.boss.hp, maxHp: s.boss.maxHp }}, every: s.gate }}; }})()")
         check('Easy: no boss at 35 walls, boss #1 at 36 with 20 hp (85% of Normal\'s 16 x the level-6 factor 1.5)', e7 and eb['every'] == 6 and eb['boss'] and eb['boss']['n'] == 1 and eb['boss']['hp'] == 20 and eb['boss']['maxHp'] == 20, [e7, eb])
@@ -724,8 +720,8 @@ async def main():
             st = await page.evaluate(STATE)
             check(tag + ' phone: a finger on the ball hits it', st['dir'] == -1 and st['score'] >= 1 and st['lives'] == cfg['lives'], st)
             await page.screenshot(path='tests/out/strike_ui_' + tag + '.png')
-            hud = await page.evaluate(f"{S}.ui.hud"); chrome = await page.evaluate("document.querySelector('.chrome').getBoundingClientRect().bottom")
-            check(tag + ' phone: HUD card under the chrome, inside 360 px', hud['y'] >= chrome and hud['x'] >= 8 and hud['x'] + hud['w'] <= 352, [hud, chrome])
+            hud = await page.evaluate(f"{S}.ui.hud"); chrome = await page.evaluate("(() => { const r = document.querySelector('.chrome').getBoundingClientRect(); return { l: r.left, t: r.top, b: r.bottom }; })()")
+            check(tag + ' phone: HUD row on the pause button\'s row, clear of it, inside 360 px', hud['y'] >= chrome['t'] and hud['y'] + hud['h'] <= chrome['b'] and hud['x'] >= 8 and hud['x'] + hud['w'] <= chrome['l'] - 4, [hud, chrome])
             check(tag + ' phone: tier flash on the meter after the hit', await page.evaluate(f"{S}.ui.tierFlash && {S}.ui.tierFlash.tier === 'hard'"))
             await page.evaluate("touchAt('pointerup', 180, 360)"); await page.wait_for_timeout(300)
             check(tag + ' phone: hint mentions the walls', ('לבנים' if he else 'walls') in await page.inner_text('#hint'))
@@ -754,7 +750,7 @@ async def main():
             await page.screenshot(path='tests/out/strike5_phone_' + tag + '.png')
             ub = pbz['ui']
             check(tag + ' phone: the boss face and its health bar fit inside 360 px, under the HUD, with the level banner up and the "' + ('בוס!' if he else 'Boss!') + '" tag', ub and ub['x'] >= 0 and ub['x'] + ub['w'] <= 360 and ub['w'] > 40 and ub['bar']['x'] >= 0 and ub['bar']['x'] + ub['bar']['w'] <= 360 and ub['bar']['y'] >= pbz['hud']['y'] + pbz['hud']['h'] and pbz['bn'] and pbz['boss'] and pbz['tag'] == 'boss' and await page.evaluate("t('wk_boss')") == ('בוס!' if he else 'Boss!'), pbz)
-            check(tag + ' phone: the progress line sits along the HUD bar\'s bottom edge inside the screen', pbz['bar'] and pbz['bar']['x'] >= 8 and pbz['bar']['x'] + pbz['bar']['w'] <= 352 and pbz['bar']['y'] >= pbz['hud']['y'] and pbz['bar']['y'] + pbz['bar']['h'] <= pbz['hud']['y'] + pbz['hud']['h'], pbz['bar'])
+            check(tag + ' phone: no progress line under the HUD (the walls pill carries the progress), the HUD row inside the screen', pbz['bar'] is None and pbz['hud']['x'] >= 8 and pbz['hud']['x'] + pbz['hud']['w'] <= 352, pbz['hud'])
             e = ub['eyes'][0]; await page.evaluate(TO2D); white = await page.evaluate(PIX + f"({e['x'] - e['r'] * 0.9}, {e['y']})"); await page.evaluate(TO3D)
             check(tag + ' phone: eye white pixel on the small far face', white[0] > 120 and white[1] > 120 and white[2] > 120, white)
             await page.evaluate(f"(() => {{ const s = {S}; while (s.boss) s.bossHit('super'); s.ui.bossBanner = null; }})()"); await page.wait_for_timeout(300)
