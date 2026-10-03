@@ -4,7 +4,7 @@ Read this first, then NOTES.md (deploy, phone findings) and DESIGN.md (game desi
 
 ## The project
 - **Grasp:** a hand-gesture browser game for a parent and a young child. They speak Hebrew and play on a phone.
-  - The whole game is one file: `index.html`, about 9,000 lines.
+  - The whole game is one file: `index.html`, about 9,100 lines.
   - Live: https://grasp-weld.vercel.app/ (Tremorti, a tremor meter, is at `/tremorti/`).
   - Repo `evilren/grasp`. Vercel deploys `main` automatically on every push.
 - **Stack:**
@@ -22,12 +22,16 @@ Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (toddler widgets)
 **Strike** is the main game: a 3D corridor where you slap a ball into walls of bricks.
 - **The Strike tile:** opens the **Adventure** saga map.
   - 40 stages: 5 worlds × 8, the 8th stage of each world a boss.
-  - Break **all** walls to clear a stage; 1–3 stars; instant retry.
+  - Break **all** walls to clear a stage; 3 hearts; stars: 3 = no heart lost, 2 = one lost, 1 = more.
+  - The stage start banner has a small line "★★★ = don't lose a heart"; the clear card has a line under the stars ("Lost 1 heart — clear without losing a heart for ★★★", or "Perfect — no hearts lost!").
+  - Clear card: Next / **Play again** / Map. Fail card ("So close!"): **Try again** / Map. Success cards say "Play again" (HE "לשחק שוב"), only a fail says "Try again" (HE "שוב").
   - Portal travel to the next world after a boss.
   - Stored in `profile.adv`.
 - **Endless:** the old run, behind a button on the map. It has lives, levels, worlds, perks and a "road" of unlocks by player level (`ROAD`).
 - **Animals:** the cow from road level 1 (and from Adventure stage 2), animals every 4–6 serves from run level 2. The monkey unlocks at player level 7.
 - **Serve:** the ball waits until the player hits it.
+- **In-game screen (minimal):** one round pause button in the top corner (tap, Escape or a camera dwell) opens a sheet: Resume, Restart, Sound, Language, Stats, Home. The HUD is one slim row: hearts + a walls pill (Adventure: walls broken / stage walls; Endless: walls toward the next level). No score, progress line, NEXT card, streak chip, perk badges or bottom power bar. Other modes keep the full 5-icon toolbar.
+- **Hit meter:** never on screen permanently. On a hit (or serve) a small power arc pops up just above the hit point, fills to the hit's power in the tier colour (soft / medium / hard / SUPER, `METER_ZONES`, `speedTier`, `TIER_COL`) with the tier's name, and fades within 1 s (`METER_POP_MS`, `drawMeterPop`, hook `strike.ui.meterPop`). Same in 2D and 3D (it is drawn on the 2D overlay).
 
 Around the games:
 - **Meta:** coins, XP and player level, 3 daily missions, a shop (labelled), the Grippy commentator, and a daily challenge (seeded run with its own streak).
@@ -56,7 +60,8 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 10 minutes for 24 runs.
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 10 minutes for 25 runs (23 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
+  - `hudmin` covers the minimal in-game screen, the pause sheet, the hit-meter pop (2D and 3D) and the clear card's stars line / buttons on a phone (screenshots `tests/out/hud_min_*.png`, `tests/out/fix_*.png`).
   - `tests/run_fast.sh adventure habit` runs only the named suites. Use that before a small ship.
   - Logs are in `tests/out/logs/`, screenshots in `tests/out/`.
   - `tests/run.sh` is the old sequential runner (over 30 minutes).
@@ -73,6 +78,7 @@ Around the games:
 ## Open items
 - **Not yet checked on a real phone:**
   - Adventure feel with a real hand;
+  - the hit-meter pop's size and placement with a real hand;
   - camera hold-to-select on the map;
   - music balance and phone CPU;
   - 3D performance;

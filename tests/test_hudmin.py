@@ -3,7 +3,8 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # pill only (no score, progress line, wall pips, NEXT card, streak chip, perk badges or bottom power bar); the serve prompt stays. The pause
 # button (tap, Escape or a camera dwell) freezes the game and opens a small sheet with Resume + the toolbar's own buttons (Restart, Sound,
 # Language, Stats, Home); each works; Resume / a tap beside the sheet carries on. Other modes keep the full toolbar. Phone EN / HE, desktop,
-# Adventure and Endless. Screenshots: tests/out/hud_min_*.png. State changes are polled (timing-independent).
+# Adventure and Endless. The hit meter: a small power arc pops at the hit point on a hit and fades within ~1 s (2D and 3D). The Adventure clear
+# card's stars line and Next / Play again / Map (phone EN / HE). Screenshots: tests/out/hud_min_*.png, tests/out/fix_*.png. State changes are polled (timing-independent).
 A = "__grasp.adventure"; S = "__grasp.strike"
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"
 VIS = """(() => { const vis = el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'; };
@@ -17,6 +18,10 @@ SHEET = """(() => { const c = document.querySelector('.chrome'), r = c.getBoundi
   return { open: c.classList.contains('open') && menu.open, veil: !$('menuVeil').hidden, paused: pause.on, ids: btns.map(b => b.id || (b.classList.contains('langBtn') ? 'lang' : '?')),
     labels: btns.map(b => (b.querySelector('.lb') || {}).textContent || ''), minH: Math.min(...btns.map(b => b.getBoundingClientRect().height)),
     box: { l: r.left, r: r.right, t: r.top, b: r.bottom }, W: innerWidth, H: innerHeight }; })()"""
+
+SAMPLE = """new Promise(res => { let n = 0, k = 0; const f = () => { if (__grasp.strike.ui.meterPop) n++; if (++k < N) requestAnimationFrame(f); else res(n); }; requestAnimationFrame(f); })"""
+POP = """(() => { const u = __grasp.strike.ui, p = u.meterPop, F = u.tierFlash, z = METER_ZONES.find(q => q[2] === p.tier), an = Math.PI * 0.75 + Math.min(p.fill, p.val) * 0.5 * Math.PI * 1.5;
+  return { pop: p, zone: [z[0], z[1]], d: Math.hypot(p.x - F.x, p.y - F.y), px: __grasp.strike.pixel(p.x + Math.cos(an) * p.r, p.y + Math.sin(an) * p.r) }; })()"""
 
 async def fresh(b, mobile=False, he=False, init=''):
     opts = dict(viewport={'width': 360, 'height': 740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': 1280, 'height': 800})
@@ -162,6 +167,52 @@ async def main():
         await page.wait_for_function("!pause.on", timeout=8000)
         check('camera: after the countdown play goes on', True)
         check('camera: no page errors', not errs, errs); await ctx.close()
+
+        # ---- the hit meter: a small power arc pops up at the hit point on a hit (its tier's colour and name), fills to the hit's power, gone within ~1 s; never there otherwise (2D and 3D) ----
+        for g3 in (False, True):
+            tag = '3D' if g3 else '2D'
+            ctx, page, errs = await fresh(b, mobile=True, init="localStorage.setItem('inputPref','mouse');" + ("window.__graspGfx = { pr: 0.12, shadows: false, auto: false };" if g3 else ''))
+            await page.evaluate("__grasp.setPlayerLevel(20)")
+            await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+            await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.ui.hud && {S}.waiting && !{S}.ui.levelBanner" + (f" && {S}.gfx === '3d'" if g3 else ''), timeout=25000)
+            idle = await page.evaluate(SAMPLE.replace('N', '30'))
+            check(tag + ': before any hit no meter is drawn (30 frames)', idle == 0, idle)
+            await page.evaluate("playerServe('hard')")
+            await page.wait_for_function(f"{S}.ui.meterPop && performance.now() - {S}.ui.tierFlash.t > 300 && performance.now() - {S}.ui.tierFlash.t < 650", timeout=4000, polling=20)
+            mp = await page.evaluate(POP)
+            z = mp['zone']
+            check(tag + ': a hard serve pops the arc: tier "hard", labelled "Hard", filled inside the hard zone, fully shown', mp['pop']['tier'] == 'hard' and mp['pop']['label'] == 'Hard' and z[0] < mp['pop']['val'] <= z[1] and abs(mp['pop']['fill'] - mp['pop']['val']) < 0.03 and mp['pop']['a'] > 0.95, mp)
+            check(tag + ': the arc sits at the hit point (the ball), small, inside the screen', mp['d'] < 50 and mp['pop']['r'] <= 40 and mp['pop']['box']['x'] >= 0 and mp['pop']['box']['x'] + mp['pop']['box']['w'] <= 360 and mp['pop']['box']['y'] > 60, mp)
+            px = mp['px']
+            check(tag + ': its fill is drawn in the hard tier\'s saffron', px[0] > 190 and px[1] > 130 and px[2] < 130, px)
+            await page.evaluate("hideHint(); __grasp.strike.ui.tierFlash.t = performance.now() - 350"); await page.evaluate(FRAMES)  # (the first-play tip toast out of the picture)
+            await page.screenshot(path=f'tests/out/fix_meter_pop{"_3d" if g3 else ""}.png')
+            await page.wait_for_function(f"performance.now() - {S}.ui.tierFlash.t > 1200", timeout=4000)
+            gone = await page.evaluate(SAMPLE.replace('N', '20'))
+            check(tag + ': gone ~1.2 s after the hit (20 frames, none drawn)', gone == 0, gone)
+            for tier, lb in (('soft', 'Soft'), ('super', 'SUPER!')):
+                await page.evaluate(f"playerServe('{tier}')")
+                await page.wait_for_function(f"{S}.ui.meterPop && {S}.ui.meterPop.tier === '{tier}'", timeout=3000, polling=20)
+                q = await page.evaluate(POP)
+                check(tag + f': a {tier} hit: the arc shows "{lb}" in its zone', q['pop']['label'] == lb and q['zone'][0] < q['pop']['val'] <= q['zone'][1], q)
+            check(tag + ' meter: no page errors', not errs, errs); await ctx.close()
+
+        # ---- the Adventure clear card with 2 stars, phone EN / HE: the stars line, Next / Play again / Map ----
+        for he in (False, True):
+            tag = 'HE' if he else 'EN'
+            ctx, page, errs = await fresh(b, mobile=True, he=he, init="localStorage.setItem('inputPref','mouse');")
+            await adventure_stage(page, True)
+            await page.evaluate(A + ".finishTest(1)")
+            await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.advStarHint && {S}.ui.advStarHint.a >= 1 && {S}.ui.advStars.shown === 2", timeout=10000)
+            await page.wait_for_timeout(300)
+            c = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, card: {S}.ui.card, W: innerWidth, want: t('starsLost1') }})")
+            hw = c['h']
+            check(tag + ' phone: 2 stars, the line under them: "' + c['want'] + '"', hw['text'] == c['want'] and (hw['text'].startswith('איבדתם לב אחד') if he else hw['text'].startswith('Lost 1 heart')) and '★★★' in hw['text'], hw)
+            check(tag + ' phone: the line fits inside the card', hw['x'] >= c['card']['x'] + 4 and hw['x'] + hw['w'] <= c['card']['x'] + c['card']['w'] - 4 and c['card']['x'] + c['card']['w'] <= c['W'], [hw, c['card']])
+            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}
+            check(tag + ' phone: buttons Next / Play again / Map', c['lb'] == want, c['lb'])
+            await page.screenshot(path=f'tests/out/fix_clear_2star_{tag.lower()}.png')
+            check(tag + ' card: no page errors', not errs, errs); await ctx.close()
 
         await b.close()
     srv.terminate()

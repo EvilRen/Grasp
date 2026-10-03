@@ -104,6 +104,9 @@ async def main():
         await page.wait_for_function(f"{S}.ui.advPill", timeout=4000)
         h0 = await page.evaluate(f"({{ pill: {S}.ui.advPill.text, pips: {S}.ui.advPips || null, parts: {S}.ui.hudParts, goal: {S}.goal, lives: {S}.lives, banner: !!{S}.ui.levelBanner && {S}.ui.levelBanner.stage, map: {A}.mapOpen }})")
         check('a stop on the map starts its stage: the map goes, 3 hearts, HUD "0/4" pill (minimal HUD: hearts + pill, no wall pips), the "Stage 1" banner', h0['pill'].endswith('0/4') and h0['pips'] is None and h0['parts'] == ['hearts', 'walls'] and h0['goal'] == 4 and h0['lives'] == 3 and h0['banner'] == 1 and not h0['map'], h0)
+        await page.wait_for_function(f"{S}.ui.stageBannerBox && {S}.ui.stageBannerBox.a > 0.5", timeout=6000, polling=30)
+        bb = await page.evaluate(f"{S}.ui.stageBannerBox")
+        check('the stage start banner carries the small line "★★★ = don\'t lose a heart" (inside the screen)', bb['rule'] == "★★★ = don't lose a heart" and bb['h'] >= 120 and bb['x'] >= 0 and bb['x'] + bb['w'] <= 1280, bb)
         await page.evaluate(f"{S}.balls.length = 0; {S}.waiting = false; {S}.serveAt = performance.now() + 60000")
         await page.evaluate("loseLife(performance.now())")
         c0 = await page.evaluate(P + ".coins")
@@ -121,13 +124,20 @@ async def main():
         await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.advStars && {S}.ui.advStars.shown === 2", timeout=8000)
         card = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), stars: {A}.stars, unl: {A}.unlocked, nw: {S}.walls.length }})")
         check('the clear card: the 2 stars flew in; Next / Try again / Map; stage 2 unlocked, stars saved; still no wall spawned', card['b'] == ['next', 'retry', 'map'] and card['stars'] == {'1': 2} and card['unl'] == 2 and card['nw'] == 0, card)
+        await page.wait_for_function(f"{S}.ui.advStarHint && {S}.ui.advStarHint.a >= 1", timeout=6000)
+        hn = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, c: {S}.ui.card, st: {S}.ui.advStars.stars[0], pay: {S}.ui.advPay[0], nx: {S}.ui.buttons.next }})")
+        check('the clear card (2 stars): the line under the stars says why and how ("Lost 1 heart — clear without losing a heart for ★★★"), between the stars and what it paid, inside the card',
+              hn['h']['text'] == 'Lost 1 heart — clear without losing a heart for ★★★' and hn['h']['y'] > hn['st']['y'] + 20 and hn['h']['y'] + hn['h']['h'] <= hn['pay']['y'] and hn['h']['x'] >= hn['c']['x'] and hn['h']['x'] + hn['h']['w'] <= hn['c']['x'] + hn['c']['w'], hn)
+        check('the clear card\'s buttons: Next / Play again / Map (not "Try again" after a success)', hn['lb'] == {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}, hn['lb'])
         await page.screenshot(path='tests/out/adv_clear_card.png')
         # replays: only the stars added pay (1 each); stars never go down
-        res = []
+        res = []; hints = []
         for lost in (0, 0, 2):
             await press(page, 'retry'); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 1 && !{S}.over", timeout=6000)
             c = await page.evaluate(P + ".coins"); rr = await page.evaluate(f"{A}.finishTest({lost})")
             res.append((rr['stars'], rr['coins'], await page.evaluate(P + ".coins") - c, await page.evaluate(A + ".stars")['1'] if False else await page.evaluate(f"{A}.stars[1]")))
+            await page.wait_for_function(f"{S}.over && {S}.ui.advStarHint", timeout=8000); hints.append(await page.evaluate(f"{S}.ui.advStarHint.text"))
+        check('the line under the stars per star count: 3 = "Perfect — no hearts lost!", 1 (2 hearts lost) = "Lost 2 hearts — …"', hints == ['Perfect — no hearts lost!', 'Perfect — no hearts lost!', 'Lost 2 hearts — clear without losing a heart for ★★★'], hints)
         check('Try again replays the stage; replays pay only the stars added (2 -> 3 stars: +1; 3 again: 0; 1 star: 0) and the best stays 3', res == [(3, 1, 1, 3), (3, 0, 0, 3), (1, 0, 0, 3)], res)
         await press(page, 'next'); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 2 && {S}.walls.length", timeout=6000)
         check('Next plays the next stage at once', await page.evaluate(f"{A}.stage") == 2)
@@ -140,6 +150,8 @@ async def main():
         fc = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), walls: {S}.ui.advWalls, txt: [I18N.en.soClose, I18N.en.wallsOf], unl: {A}.unlocked, st: {A}.stars[2] || 0 }})")
         check('losing the 3 lives: the fail card ("So close!", 2 of 4 walls lit), Try again (big) and Map; nothing unlocked, no stars', not fr['clear'] and fr['cleared'] == 2 and fr['walls'] == 4 and fc['b'] == ['retry', 'map'] and fc['walls']['cleared'] == 2 and sum(1 for q in fc['walls']['pips'] if q['on']) == 2 and fc['unl'] == 2 and fc['st'] == 0, [fr, fc])
         await page.screenshot(path='tests/out/adv_fail_card.png')
+        fl = await page.evaluate(f"({{ lb: {S}.ui.advLabels, h: {S}.ui.advStarHint }})")
+        check('fail card: the big button still reads "Try again" (Map beside it), no stars line', fl['lb'] == {'retry': 'Try again', 'map': 'Map'} and fl['h'] is None, fl)
         rb = await page.evaluate(f"{S}.ui.buttons.retry"); nb = await page.evaluate(f"{S}.ui.buttons.map")
         check('fail card: Try again is the big one', rb['w'] > nb['w'] * 0.99 and rb['h'] > nb['h'], [rb, nb])
         await press(page, 'retry')
@@ -277,9 +289,12 @@ async def main():
 
         # ---- strings: every new key in EN and HE; Grippy's new lines ----
         ctx, page, errs = await fresh(b)
-        keys = ['advTitle', 'back', 'endless', 'endlessSub', 'advBoss', 'advStarsN', 'advLockedAria', 'advLocked', 'stageN', 'stageGoal', 'stageGoalBoss', 'stageClear', 'worldClear', 'soClose', 'wallsOf', 'nextBtn', 'retryBtn', 'mapBtn', 'advBest', 'advWaveNext', 'advWaveRetry']
+        keys = ['advTitle', 'back', 'endless', 'endlessSub', 'advBoss', 'advStarsN', 'advLockedAria', 'advLocked', 'stageN', 'stageGoal', 'stageGoalBoss', 'stageClear', 'worldClear', 'soClose', 'wallsOf', 'nextBtn', 'retryBtn', 'replayBtn', 'mapBtn', 'advBest', 'advWaveNext', 'advWaveRetry', 'starsPerfect', 'starsLost1', 'starsLostN', 'starsRule']
         miss = await page.evaluate("(ks => ['en', 'he'].flatMap(l => ks.filter(k => !I18N[l][k] || (l === 'he' && I18N.he[k] === I18N.en[k])).map(k => l + ':' + k)))(" + json.dumps(keys) + ")")
         check('I18N: every Adventure string in EN and HE (HE translated)', not miss, miss)
+        he = await page.evaluate("(() => { const o = {}; for (const k of ['replayBtn', 'retryBtn', 'playAgainBtn', 'starsPerfect', 'starsLost1', 'starsLostN', 'starsRule']) o[k] = I18N.he[k]; o.n3 = I18N.he.starsLostN.replace('{n}', 3); return o; })()")
+        check('HE: "לשחק שוב" on success cards (stage clear, round over), "שוב" kept for a fail; the stars lines in Hebrew', he['replayBtn'] == 'לשחק שוב' and he['playAgainBtn'] == 'לשחק שוב' and he['retryBtn'] == 'שוב'
+              and he['starsPerfect'].startswith('מושלם') and 'לב אחד' in he['starsLost1'] and '★★★' in he['starsLost1'] and he['n3'].startswith('איבדתם 3 לבבות') and he['starsRule'] == '★★★ = בלי לאבד לב', he)
         gl = await page.evaluate("['advClear', 'advPerfect', 'advFail'].map(e => [__grasp.grippy.lines.en[e].length, __grasp.grippy.lines.he[e].length])")
         check('Grippy: 6 lines each for a clear, a perfect clear and a fail, EN and HE', gl == [[6, 6]] * 3, gl)
         check('strings: no page errors', not errs, errs); await ctx.close()
