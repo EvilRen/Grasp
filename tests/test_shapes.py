@@ -185,7 +185,7 @@ async def main():
         check('level 8+: more shapes, faster motion', l9['n'] == 8 and l9['spec']['slideW'] > (await page.evaluate("shapeLevelSpec(7).slideW")), l9)
 
         # Home: the round-over card (levels done, stars, best level), then home; the tile shows the best level
-        await page.click('#homeBtn'); await page.wait_for_timeout(700)
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(700)
         ec = await page.evaluate(f"({{ over: {S}.over, mode, b: {S}.ui.buttons, done: {S}.levelsDone, stars: {S}.stars, best: localStorage.getItem('shapesBest'), nb: {S}.ui.newBest }})")
         check('Home in a Shapes round: the round-over card first (levels done 2, stars 5, best level 2 saved, new best)', ec['over'] and ec['mode'] == 'mouse' and ec['b'] and 'home' in ec['b'] and ec['done'] == 2 and ec['stars'] == 5 and ec['best'] == '2' and ec['nb'], ec)
         await page.screenshot(path='tests/out/shapes_endcard.png')

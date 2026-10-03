@@ -34,6 +34,10 @@ def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + (('  | ' + str(extra)) if extra != '' else ''))
     if not cond: check.fails += 1
 check.fails = 0
+async def menu_click(page, sel, tap=False):  # (as in test_sandbox.py) every game: the toolbar is one pause button whose sheet holds the toolbar's own buttons
+    if await page.evaluate("document.body.classList.contains('minChrome') && mode !== 'none' && !menu.open"):
+        await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn')); await page.wait_for_function("menu.open", timeout=4000)
+    await (page.tap(sel) if tap else page.click(sel))
 
 async def boot(b, mobile, he=False):
     opts = dict(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width':1280,'height':800})
@@ -82,19 +86,23 @@ async def main():
             tag = 'he' if he else 'en'
             ctx, page, errs = await boot(b, True, he)
             tb = await page.evaluate(TOOLBAR)
-            check(tag + ' phone: toolbar is one row of 5 icon buttons, each >= 40 px', tb['n'] == 5 and tb['oneRow'] and tb['minW'] >= 40 and tb['minH'] >= 40 and tb['height'] < 60, tb)
-            check(tag + ' phone: toolbar fits next to the 96 px preview at 360 px', tb['prevRight'] - tb['prevLeft'] == 96 and tb['left'] >= tb['prevRight'] + 4 and tb['right'] <= tb['W'] and abs(tb['top'] - 12) < 1, tb)
-            titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label'))")
-            check(tag + ' phone: every button has a tooltip in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('השתקת צלילים' in titles) if he else ('Mute sound' in titles)), titles)
+            check(tag + ' phone: in play the toolbar is the one round pause button (>= 40 px)', tb['n'] == 1 and tb['minW'] >= 40 and tb['minH'] >= 40 and tb['height'] < 60 and await page.evaluate("document.body.classList.contains('minChrome')"), tb)
+            check(tag + ' phone: the pause button sits in the top corner, clear of the 96 px preview at 360 px', tb['prevRight'] - tb['prevLeft'] == 96 and tb['left'] >= tb['prevRight'] + 4 and tb['right'] <= tb['W'] - 4 and tb['right'] >= tb['W'] - 24 and abs(tb['top'] - 12) < 1, tb)
             check(tag + ' phone: live dot on the small preview', await page.evaluate("!$('liveDot').hidden && getComputedStyle($('liveDot')).display !== 'none'"))
             h = await page.evaluate(HINT)
             check(tag + ' phone: hint toast at the bottom, inside the screen, with the mode icon at the start edge',
                   h['show'] and h['op'] == '1' and h['icon'] and h['top'] > h['H'] * 0.55 and h['bottom'] <= h['H'] - 8 and h['left'] >= 0 and h['right'] <= h['W'] and ((h['icLeft'] > h['txLeft']) if he else (h['icLeft'] < h['txLeft'])) and len(h['text']) > 10, h)
             await page.screenshot(path='tests/out/chrome_phone_' + tag + '.png')
-            await page.click('#hudBtn'); await page.wait_for_timeout(300)
-            st = await page.evaluate("({p: $('hudBtn').getAttribute('aria-pressed'), bg: getComputedStyle($('hudBtn')).backgroundColor, hud: !hudEl.hidden})")
-            check(tag + ' phone: HUD button highlighted while the HUD shows', st['p'] == 'true' and st['hud'] and st['bg'] not in ('rgba(0, 0, 0, 0)', 'transparent'), st)
-            await page.click('#hudBtn'); await page.wait_for_timeout(100)
+            await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
+            titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label') || b.textContent.trim())")
+            check(tag + ' phone: every sheet button is labelled in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('השתקת צלילים' in titles) if he else ('Mute sound' in titles)), titles)
+            await menu_click(page, '#hudBtn'); await page.wait_for_timeout(300)
+            st = await page.evaluate("({p: $('hudBtn').getAttribute('aria-pressed'), hud: !hudEl.hidden, open: menu.open})")
+            check(tag + ' phone: Stats shows the HUD (pressed) and closes the sheet', st['p'] == 'true' and st['hud'] and not st['open'], st)
+            await page.click('#pauseBtn'); await page.wait_for_function("menu.open", timeout=4000)
+            col = await page.evaluate("getComputedStyle($('hudBtn')).color")
+            check(tag + ' phone: Stats is highlighted in the sheet while the HUD shows', col == 'rgb(255, 194, 75)', col)
+            await menu_click(page, '#hudBtn'); await page.wait_for_timeout(100)
             check(tag + ' phone: HUD button back to normal', await page.evaluate("$('hudBtn').getAttribute('aria-pressed') === 'false' && hudEl.hidden"))
             await page.wait_for_function("$('hint').style.opacity === '0'", timeout=6000); await page.wait_for_timeout(700)
             check(tag + ' phone: hint toast faded after ~4 s', float(await page.evaluate("getComputedStyle($('hint')).opacity")) < 0.05 and not await page.evaluate("$('hint').classList.contains('show')"))
@@ -127,7 +135,7 @@ async def main():
             await page.evaluate(HAND_ON); await page.wait_for_timeout(800)
             check(tag + ' phone: hand back -> card hides, preview back in the corner', await page.evaluate("statusEl.hidden && preview.parentNode === document.body && Math.abs(preview.getBoundingClientRect().width - 96) < 1 && !$('liveDot').hidden"))
             if not he:
-                await page.click('#muteBtn'); await page.wait_for_timeout(100)
+                await menu_click(page, '#muteBtn'); await page.wait_for_timeout(100)
                 st = await page.evaluate("({m: __grasp.muted, p: $('muteBtn').getAttribute('aria-pressed'), ls: localStorage.getItem('muted'), t: $('muteBtn').title})")
                 check('mute button mutes and persists', st['m'] and st['p'] == 'true' and st['ls'] == '1' and st['t'] == 'Unmute sound', st)
                 await page.reload(); await page.wait_for_timeout(700)
@@ -192,7 +200,7 @@ async def main():
         # ---- desktop 1280x800, camera ----
         ctx, page, errs = await boot(b, False)
         tb = await page.evaluate(TOOLBAR)
-        check('desktop: toolbar one row, top-right, clear of the preview', tb['n'] == 5 and tb['oneRow'] and tb['left'] > tb['prevRight'] and tb['right'] <= tb['W'], tb)
+        check('desktop: the one pause button, top-right, clear of the preview', tb['n'] == 1 and tb['left'] > tb['prevRight'] and tb['right'] <= tb['W'] - 4 and tb['right'] >= tb['W'] - 24, tb)
         await page.screenshot(path='tests/out/chrome_desktop.png')
         await mode_ui_checks(page, 'desktop')
         await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(300)

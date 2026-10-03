@@ -1606,10 +1606,10 @@ function inputTick(now) {
   const g = !inp.present ? 'none' : inp.pinch ? 'pinch' : inp.fist ? 'fist' : inp.point ? 'point' : 'open';
   if (g !== gesture) {
     if (gesture === 'pinch' && held) { if (g === 'none') dropHeld(); else releaseThrow(now); }
-    if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
+    if (g === 'pinch' && gameMode === 'sandbox' && !menu.open) tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); resetHandCursor(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
-    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !anyMapOpen()) endCardAction('again', now);
+    if (E && E.over && !menu.open && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !anyMapOpen()) endCardAction('again', now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -1674,6 +1674,7 @@ function frame(now) {
   const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over && smash.phase === 'play' && punchGesture()]];
   for (const [b, on] of probes) { b.collisionFilter.mask = on ? 0xFFFFFFFF : 0; b.plugin.from = { ...b.position }; b.plugin.to = on ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 }; }
   if (gameMode === 'smash' && mode !== 'none') smashTick(now, dt); // the clock stops on the start screen
+  else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
   const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || pause.on; // the world freezes while the hand is missing
@@ -2067,7 +2068,7 @@ function sliceTick(now, dt) {
   while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
   while (slice.cuts.length && now - slice.cuts[0].t > CONFIG.CUT_LINE_MS) slice.cuts.shift();
   if (slice.over) return; // a bomb on this very swipe ended the round
-  if (pause.on) { slice.nextSpawn += dt; return; } // the world waits while the hand is missing
+  if (pause.on) { slice.nextSpawn += dt; for (const f of slice.fruits) if (f.born > now) f.born += dt; return; } // the world waits (the hand is missing, or the pause sheet): a wave's later fruit too
   const { g } = sliceScale();
   if (now >= slice.nextSpawn && slice.fruits.length < 6) spawnWave(now);
   for (let i = slice.fruits.length - 1; i >= 0; i--) {
@@ -3527,7 +3528,7 @@ function smMoveTick(now, dt) { // cars drive (round the screen), balloons bob
 function smashTick(now, dt) {
   tickFloaters(smash.floaters, dt);
   if (smashMapOpen()) { smashMapTick(now); return; } // the stage map over the game (from a stage card): everything waits
-  if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
+  menuTick(now); // the pause button (and its sheet) by a held gesture
   if (smash.over) { smash.prev = null; smash.punching = false; endCardTick(now); return; } // a stage's card: buttons by tap / dwell, a wave elsewhere: next / try again
   if (pause.on || menu.open) { if (smash.endAt !== Infinity) smash.endAt += dt; smash.phaseAt += dt; if (smash.banner) smash.banner.t += dt; smash.prev = null; smash.punching = false; smash.taps.length = 0; return; } // the clock waits (the pause sheet, or the hand missing)
   smPiecesTick(now); smFxTick(now); if (smash.phase === 'play') smMoveTick(now, dt); smFlushTrack(now, false);
@@ -5235,7 +5236,7 @@ function shapesHome() { // the toolbar's Home in a Shapes round: the card first,
 }
 function shapesTick(now, dt) {
   if (shapes.over) { shapes.held = null; endCardTick(now); return; }
-  if (pause.on) { if (shapes.held) shapesRelease(now, true); return; } // the hand is gone: the shape goes home, nothing moves
+  if (pause.on) { if (shapes.held) shapesRelease(now, true); shapes.phaseAt += dt; shapes.levelStart += dt; for (const s of shapes.shapes) if (s.anim) s.anim.t0 += dt; return; } // the hand is gone (or the pause sheet): the shape goes home, nothing moves, the clocks wait
   const sp = shapes.spec, play = shapes.phase === 'play';
   if (play) shapes.clock += dt;
   shapes.boxAng = shapes.box && shapes.box.rock ? shapes.box.rock * Math.sin(shapes.clock * sp.rockW) : 0;
@@ -7153,7 +7154,7 @@ function finalWallTick(now) { // the last wall of a level: flagged 'final' (a gl
 function strikeTick(now, dt) {
   const rel = now < strike.releaseUntil; tickStrikeFloaters(now, dt); camPushTick(now); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
   if (advMapOpen()) { advMapTick(now); return; } // the Adventure map over the game (from a stage card): everything waits
-  if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
+  menuTick(now); // the pause button (and its sheet) by a held gesture
   if (menu.open) { if (!strike.over) { strike.serveAt += dt; for (const p of strike.powerups) p.until += dt; } if (strike.perkOffer) strike.perkOfferAt += dt; return; } // the pause sheet: everything waits (the ball, the serve, the power-ups, the perk clock)
   if (strike.perkOffer && strike.perkMode === 'run') { perkTick(now, dt); return; } // v5: the run-power cards over the clear card
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
@@ -8303,7 +8304,7 @@ function endCardAction(key, now) {
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
-  if (!$('newCard').hidden || anyMapOpen()) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
+  if (!$('newCard').hidden || anyMapOpen() || menu.open) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
   const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
   ui.hover = btn;
   if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
@@ -10738,10 +10739,15 @@ $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetS
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-function syncChromeMode() { const on = gameMode === 'strike' || gameMode === 'smash'; document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes']; // every game: the toolbar is the one pause button in play
+function menuMode() { return MENU_MODES.includes(gameMode); }
+function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
+function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
 function openMenu() {
-  if (menu.open || mode === 'none' || (gameMode !== 'strike' && gameMode !== 'smash')) return false;
+  if (menu.open || mode === 'none' || !menuMode()) return false;
   menu.open = true; menu.dwell = null; pauseGame(); hideHint();
+  if (held) dropHeld(); // Sandbox: let go of what the hand held (the world is frozen under the sheet)
+  if (gameMode === 'busy') busyQuiet(); // Busy Board: the ringing tones and strings stop
   chromeEl.classList.add('open'); $('menuVeil').hidden = false; $('pauseBtn').setAttribute('aria-expanded', 'true');
   musicSync(); return true;
 }
@@ -10757,7 +10763,7 @@ $('resumeBtn').addEventListener('click', () => closeMenu(true));
 $('resetBtn').addEventListener('click', () => closeMenu(true)); // (after its own handler restarted the round)
 $('hudBtn').addEventListener('click', () => closeMenu(true)); // the stats panel shows live numbers: back to play
 $('menuVeil').addEventListener('pointerdown', (e) => { e.preventDefault(); closeMenu(true); }); // a tap beside the sheet resumes
-window.addEventListener('keydown', (e) => { if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && mode !== 'none' && (gameMode === 'strike' || gameMode === 'smash') && !anyMapOpen()) { if (!closeMenu(true)) openMenu(); } });
+window.addEventListener('keydown', (e) => { if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && mode !== 'none' && menuMode() && !anyMapOpen() && $('start').hidden) { if (!closeMenu(true)) openMenu(); } });
 function menuDwellTick(now) { // camera: a point / pinch / fist held 600 ms on the pause button (or on a sheet button) presses it; while the sheet is open a ring follows the hand
   const ring = $('menuDwell'), g = gesture === 'point' || gesture === 'pinch' || gesture === 'fist';
   const el = cursor.present ? document.elementFromPoint(cursor.x, cursor.y) : null, btn = el && el.closest ? el.closest(menu.open ? '.chrome.open button' : '#pauseBtn') : null, on = !!btn && g;
@@ -11066,7 +11072,7 @@ function goHome() {
   syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); if (!maybeNewCard()) maybeGift();
   routeHome(); // the address bar back to '/'
 }
-$('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); }); // (Shapes: the round-over card first)
+$('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); else closeMenu(true); }); // (Shapes: the round-over card first, over the sheet's place)
 
 let running = false;
 function startGame(m) {

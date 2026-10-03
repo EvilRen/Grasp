@@ -41,7 +41,7 @@ def check(name, cond, extra=''):
     print(('PASS ' if cond else 'FAIL ') + name + (('  | ' + str(extra)) if extra != '' else ''))
     if not cond: check.fails += 1
 check.fails = 0
-async def menu_click(page, sel, tap=False):  # Strike: the toolbar is one pause button whose sheet holds the toolbar's own buttons; elsewhere a plain click
+async def menu_click(page, sel, tap=False):  # every game: the toolbar is one pause button whose sheet holds the toolbar's own buttons (Restart, Sound, Language, Stats, Home); on the start screen a plain click
     if await page.evaluate("document.body.classList.contains('minChrome') && mode !== 'none' && !menu.open"):
         await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn')); await page.wait_for_function("menu.open", timeout=4000)
     await (page.tap(sel) if tap else page.click(sel))
@@ -104,10 +104,10 @@ async def main():
         check('stubbed tracker throttled to ~9 scans/s', 6 <= scans <= 12, scans)
         check('cursor moves on most frames between two 110 ms samples (smooth, not jumping)', len(gaps) >= 3 and max(gaps) >= 3 and share >= 0.6, [gaps, tots])
         check('raw tracker speed recorded (px/ms between samples)', await page.evaluate("hand.rawSpeed") >= 0 and await page.evaluate("hand.samples.length") >= 2, await page.evaluate("[hand.rawSpeed, hand.samples.length]"))
-        await page.click('#hudBtn'); await page.wait_for_timeout(700)
+        await menu_click(page, '#hudBtn'); await page.wait_for_timeout(700)
         hud = await page.inner_text('#hud')
         check('HUD shows scans/s and the cursor latency in ms', 'Scans/s' in hud and re.search(r'Cursor latency\s+\d+ ms', hud) is not None, hud)
-        await page.click('#hudBtn'); await page.wait_for_timeout(100)
+        await menu_click(page, '#hudBtn'); await page.wait_for_timeout(100)
 
         # grab + throw with the camera pipeline
         await page.evaluate("for (const b of bodies) { M.Body.setStatic(b, false); } engine.gravity.y = 0; for (const b of bodies) { M.Body.setVelocity(b,{x:0,y:0}); M.Body.setAngularVelocity(b,0); }")
@@ -158,7 +158,7 @@ async def main():
         await page.mouse.up(); await page.wait_for_timeout(50)
         st = await page.evaluate("__grasp.state"); check('mouse throws', st['held'] == -1 and st['lastThrow'] > 3, st)
         check('mouse: status stays hidden', await page.evaluate("statusEl.hidden"))
-        await page.click('#homeBtn'); await page.wait_for_timeout(100)
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(100)
         check('home returns to start screen', await page.evaluate("mode === 'none' && !$('start').hidden && preview.hidden"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(100)
         check('can start again after home', await page.evaluate("mode === 'mouse' && $('start').hidden"))
@@ -188,12 +188,12 @@ async def main():
         await page.screenshot(path='tests/out/he_start.png')
         await page.reload(); await page.wait_for_timeout(600)
         check('Hebrew persists after reload', await page.evaluate("document.documentElement.lang") == 'he')
-        await page.evaluate(START_MOUSE); await page.wait_for_timeout(200); await page.tap('#hudBtn'); await page.wait_for_timeout(700)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(200); await menu_click(page, '#hudBtn', tap=True); await page.wait_for_timeout(700)
         check('HUD in Hebrew', 'מחווה' in await page.inner_text('#hud'))
         ov = await page.evaluate("(() => { const r = [...document.querySelectorAll('.chrome .chip')].map(b => b.getBoundingClientRect()); return {minLeft: Math.min(...r.map(x => x.left)), maxRight: Math.max(...r.map(x => x.right)), W: innerWidth}; })()")
         check('phone: top buttons fit on screen', ov['minLeft'] >= 0 and ov['maxRight'] <= ov['W'], ov)
         await page.screenshot(path='tests/out/he_game.png')
-        await page.tap('.chrome .langBtn'); await page.wait_for_timeout(100)
+        await menu_click(page, '.chrome .langBtn', tap=True); await page.wait_for_timeout(100)
         check('in-game button switches back to English', await page.evaluate("document.documentElement.dir === 'ltr' && $('resetBtn').title === 'Reset' && $('resetBtn').getAttribute('aria-label') === 'Reset'"))
         check('Hebrew: no page errors', not errs, errs)
         await b.close()

@@ -2,7 +2,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Strike's minimal in-game screen: the toolbar folds into one pause button (top corner); the HUD is one slim row with the hearts and the walls
 # pill only (no score, progress line, wall pips, NEXT card, streak chip, perk badges or bottom power bar); the serve prompt stays. The pause
 # button (tap, Escape or a camera dwell) freezes the game and opens a small sheet with Resume + the toolbar's own buttons (Restart, Sound,
-# Language, Stats, Home); each works; Resume / a tap beside the sheet carries on. Other modes keep the full toolbar. Phone EN / HE, desktop,
+# Language, Stats, Home); each works; Resume / a tap beside the sheet carries on. Every other mode uses the same menu (tests/test_menu.py). Phone EN / HE, desktop,
 # Adventure and Endless. The hit meter: a small power arc pops at the hit point on a hit and fades within ~1 s (2D and 3D). The Adventure clear
 # card's stars line and Next / Play again / Map (phone EN / HE). Screenshots: tests/out/hud_min_*.png, tests/out/fix_*.png. State changes are polled (timing-independent).
 A = "__grasp.adventure"; S = "__grasp.strike"
@@ -136,10 +136,10 @@ async def main():
         await page.click('#pauseBtn'); await page.wait_for_function("menu.open"); await page.click('#homeBtn')
         await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
         check('Home in the sheet: back to the start screen, the sheet gone, nothing paused', await page.evaluate("!menu.open && !pause.on && $('menuVeil').hidden && document.body.classList.contains('home')"))
-        # other modes: the full toolbar
+        # other modes: the same corner menu
         await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(200)
         vis = await page.evaluate(VIS)
-        check('other modes (Slice) keep the full 5-icon toolbar, no pause button', vis == ['homeBtn', 'chip langBtn', 'hudBtn', 'muteBtn', 'resetBtn'] and not await page.evaluate("document.body.classList.contains('minChrome')"), vis)
+        check('other modes (Slice) use the same corner menu: only the pause button (tests/test_menu.py covers every mode)', vis == ['pauseBtn'] and await page.evaluate("document.body.classList.contains('minChrome')"), vis)
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
         # ---- camera: a pinch held on the pause button opens the sheet; one held on Resume closes it (then the 3-2-1) ----

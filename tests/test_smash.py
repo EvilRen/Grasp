@@ -255,7 +255,7 @@ async def main():
         await menu_click(page, '#homeBtn'); await page.wait_for_function("mode === 'none' && !location.pathname.startsWith('/smash')", timeout=4000)
         check('Home: the start screen at /', await page.evaluate("mode === 'none' && !$('start').hidden && !location.pathname.startsWith('/smash')"))
         await page.evaluate("__grasp.setGameMode('sandbox')"); await page.wait_for_timeout(200)
-        check('leaving Smash for another game clears its things and stops the sleeping', await page.evaluate("__grasp.sm.objs.length === 0 && !engine.enableSleeping && !document.body.classList.contains('minChrome')"))
+        check('leaving Smash for another game clears its things and stops the sleeping', await page.evaluate("__grasp.sm.objs.length === 0 && !engine.enableSleeping && document.body.classList.contains('minChrome')"))  # (every game keeps the corner pause button)
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
         # ---------------- camera ----------------

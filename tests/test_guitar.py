@@ -117,7 +117,7 @@ async def main():
         A = await page.evaluate("(() => { const w = " + G + ", g = w.geom(); return w.toScreen(g.amp.u, g.amp.v); })()")
         n2 = await page.evaluate("__grasp.busy.sounds.guitar"); await page.mouse.click(A['x'], A['y']); await page.wait_for_timeout(300)
         check('poking the amp strums the chord', await page.evaluate("__grasp.busy.sounds.guitar") == n2 + 6)
-        await page.click('#resetBtn'); await page.wait_for_timeout(300)
+        await menu_click(page, '#resetBtn'); await page.wait_for_timeout(300)
         check('reset: default chord, clean, no bend, guitar still there and fits', await page.evaluate(G + ".kind === 'guitar' && " + G + ".state.chord === null && !" + G + ".state.dist && !__grasp.gtr.dist") and await page.evaluate(OVERLAP) and await page.evaluate("__grasp.busy.maxScroll") == 0)
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
