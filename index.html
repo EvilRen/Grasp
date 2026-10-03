@@ -450,6 +450,11 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .amEndless span{ display:flex; flex-direction:column; line-height:1.15; }
 .amEndless b{ font-size:16px; font-weight:800; }
 .amEndless small{ font-size:11px; color:var(--muted); font-weight:600; }
+.amFrenzy{ box-shadow:inset 0 0 0 1.5px rgba(255,138,61,.75), 0 0 14px rgba(255,138,61,.25); background:linear-gradient(135deg,rgba(255,194,75,.14),rgba(255,90,40,.14)); }
+.amRank[hidden]{ display:none; }
+.amFrenzy small{ white-space:nowrap; }
+.amFrenzy svg{ stroke:#ff8a3d; fill:rgba(255,194,75,.35); stroke-linejoin:round; }
+@media (max-width:440px){ .amEndless:not(.amFrenzy) small{ display:none; } .amFoot{ gap:6px; padding-inline:8px; } .amEndless{ padding:6px 12px; gap:7px; } .amEndless svg{ width:22px; height:22px; } .amEndless b{ font-size:15px; } .amEndless small{ font-size:10px; } .amRank{ padding:4px 9px 4px 8px; } }
 #advDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:4;
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
 #smashMap{ position:fixed; inset:0; z-index:12; display:flex; flex-direction:column; background:radial-gradient(120% 60% at 50% 0%, #2a1f4a, #0b1028 70%); color:var(--bone); overflow:hidden; }
@@ -811,7 +816,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
   <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amAlbum" id="advAlbumBtn" type="button" aria-label="Sticker album"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M5 4.5C5 3.1 6.1 2 7.5 2H27v22H7.5C6.1 24 5 25.1 5 26.5z" fill="#5a7cff" stroke="#1d2547" stroke-width="1.6" stroke-linejoin="round"/><path d="M5 26.5C5 25.1 6.1 24 7.5 24H27v3H7.5" fill="#f1e9da" stroke="#1d2547" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16.5" cy="12" r="6.2" fill="#fbf8f2" stroke="#1d2547" stroke-width="1.3"/><path d="M16.5 8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" fill="#ffc24b"/></svg><b class="pr">0/40</b><i class="dot" hidden></i></button><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
   <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
-  <footer class="amFoot"><span class="amRank" id="advRank" hidden><i></i><span><small data-i18n="rankTitle">Rank</small><b></b></span></span><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
+  <footer class="amFoot"><span class="amRank" id="advRank" hidden><i></i><span><small data-i18n="rankTitle">Rank</small><b></b></span></span><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button><button class="amEndless amFrenzy" id="advFrenzy" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg><span><b data-i18n="frenzy">Frenzy</b><small id="advFrenzySub">Faster and faster!</small></span></button></footer>
   <div id="album" class="albOv" hidden role="dialog" aria-modal="true" aria-labelledby="albumTitle">
     <div class="sheet albSheet">
       <header><h2 id="albumTitle" data-i18n="albumTitle">Sticker album</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1069,7 +1074,7 @@ const I18N = {
     chestToastSkin: 'Treasure! The {i} is yours', chestToastTicket: 'Golden ticket: +1 life on your next run!', ticketUsed: 'Golden ticket: +1 life this run!', xpN: '+{n} XP',
     it_ball_lava: 'Lava ball', it_trail_lava: 'Lava trail', it_hand_legend: 'Legend hand',
     // Strike Adventure: the saga map, the stages, their cards
-    advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
+    advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', frenzy: 'Frenzy', frenzySub: 'Faster and faster!', frenzySubBest: 'Best: {n} in a row', frenzyTitle: 'Frenzy!', frenzyGoal: 'Faster every hit. Don\'t miss!', frenzyOver: 'Frenzy over', frenzyBest: 'Best: {n} in a row', frenzyHits: 'in a row', topSpeed: 'top speed', speedWord: 'SPEED', speedMax: 'MAX SPEED!', frenzyShare: 'Grasp Frenzy ⚡ {n} hits in a row · top speed ×{k}', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
     stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Break {n} walls, then the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
     nextBtn: 'Next', retryBtn: 'Try again', replayBtn: 'Play again', mapBtn: 'Map', starsPerfect: 'Perfect — no hearts lost!', starsLost1: 'Lost 1 heart — clear without losing a heart for ★★★', starsLostN: 'Lost {n} hearts — clear without losing a heart for ★★★', starsRule: "★★★ = don't lose a heart", advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
     // the daily habit: the gift calendar, the play streak, the stage chest, the star chests
@@ -1204,7 +1209,7 @@ const I18N = {
     chestTap: 'הקישו כדי לפתוח!', chestPoint: 'הצביעו עליה כדי לפתוח!', chestCoins: '‎+{n} מטבעות!', chestSkin: 'מראה חדש: {i}!', chestTicket: 'כרטיס זהב!', chestTicketSub: 'לב נוסף במשחק הבא',
     chestToastSkin: 'אוצר! {i} שלכם', chestToastTicket: 'כרטיס זהב: לב נוסף במשחק הבא!', ticketUsed: 'כרטיס זהב: לב נוסף במשחק הזה!', xpN: '‎+{n} XP',
     it_ball_lava: 'כדור לבה', it_trail_lava: 'שובל לבה', it_hand_legend: 'יד האגדה',
-    advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
+    advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', frenzy: 'טירוף', frenzySub: 'מהר יותר ויותר!', frenzySubBest: 'שיא: {n} ברצף', frenzyTitle: 'טירוף!', frenzyGoal: 'מהר יותר בכל מכה. אל תפספסו!', frenzyOver: 'הטירוף נגמר', frenzyBest: 'שיא: {n} ברצף', frenzyHits: 'ברצף', topSpeed: 'מהירות שיא', speedWord: 'מהירות', speedMax: 'מהירות מקסימלית!', frenzyShare: 'Grasp טירוף ⚡ {n} מכות ברצף · מהירות שיא ×{k}', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
     stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'שברו {n} קירות ואז את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
     nextBtn: 'הבא', retryBtn: 'שוב', replayBtn: 'לשחק שוב', mapBtn: 'מפה', starsPerfect: 'מושלם — לא איבדתם אף לב!', starsLost1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★', starsLostN: 'איבדתם {n} לבבות — סיימו בלי לאבד לב ותקבלו ★★★', starsRule: '★★★ = בלי לאבד לב', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
     giftTitle: 'מתנה יומית', giftDayN: 'יום {n}', giftSub: 'מתנה על כל יום שבאים. ביום 7 תיבת אוצר גדולה!', giftMissed: 'שבוע מתנות חדש! בואו כל יום כדי להגיע לתיבה הגדולה.',
@@ -5063,6 +5068,7 @@ function modifierFor(date) { return DAILY_MODS[Math.floor(mulberry32(strSeed('da
 // replays the same serves, bricks and guests. The road does not gate it (the stage defines its content), there are no perk picks.
 const ADV_WORLD = 8, ADV_N = WORLD_N * ADV_WORLD, ADV_LIVES = 3, ADV_BURST_MS = 900, ADV_BOSS_BURST_MS = 1700, ADV_WHOOSH_MS = 700, ADV_TRAVEL_MS = 2600;
 const ADV_NEW = [['brick'], ['glass'], ['steel'], ['holed', 'moving'], ['tnt']]; // the wall kinds each world brings in (a world keeps the earlier ones)
+const frenzy = { on: false, armed: false, result: null, lastShare: null }; // Frenzy (the uncapped rally): armed = the next startGame() plays it
 const adv = { on: false, armed: false, n: 1, plan: null, world: 1, spawned: 0, lost: 0, phase: 'play', clearAt: 0, cardAt: 0, travel: null, lastTravel: null, result: null, bossDone: false, rngs: {}, how: 'mouse', dwell: null, sfxAt: {} };
 function advWorldOf(n) { return Math.max(1, Math.min(WORLD_N, Math.ceil(Math.max(1, n | 0) / ADV_WORLD))); }
 function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
@@ -5177,7 +5183,7 @@ function levelNews(L) { // what got harder at level L: up to 3 keys for the leve
 }
 function levelNewsText(keys) { return (keys || []).map((k) => t(k)).join('  ·  '); }
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
-const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], shots: [], cracks: [], heat: 0, hotUntil: 0, stopUntil: 0, perfStreak: 0, bestPerf: 0, perfects: 0, timings: {}, lastTiming: null, juice: null, juiceLog: [], floatLog: [], wallFlash: null, camPushAt: 0, perfectAt: -1e9, shield: 0, comboKeep: 0, splits: 0, perkMode: null, runPickNext: 0, noTiming: false, noUpgrades: false, noRunPick: false, reducedMotion: null, /* (v5: the perfect streak and counts, the juice's last impact, the run power's shield / combo keeper; test flags) */ /* (v4: turret shots in flight, weak-spot crack lines, the hand's heat, the overheat's end, the hit-stop's end) */ pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], shots: [], cracks: [], heat: 0, hotUntil: 0, stopUntil: 0, perfStreak: 0, bestPerf: 0, perfects: 0, timings: {}, lastTiming: null, juice: null, juiceLog: [], floatLog: [], wallFlash: null, camPushAt: 0, perfectAt: -1e9, shield: 0, comboKeep: 0, splits: 0, perkMode: null, runPickNext: 0, rally: 0, rallyBest: 0, rallyTop: 1, rallyLost: null, rallyLog: [], noRally: false, noTiming: false, noUpgrades: false, noRunPick: false, reducedMotion: null, /* (v5: the perfect streak and counts, the juice's last impact, the run power's shield / combo keeper; test flags) */ /* (v4: turret shots in flight, weak-spot crack lines, the hand's heat, the overheat's end, the hit-stop's end) */ pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
   get speed() { const b = strike.balls[0]; return b ? b.speed : strike._speed; }, set speed(v) { const b = strike.balls[0]; if (b) b.speed = v; strike._speed = v; },
   get trail() { const b = strike.balls[0]; return b ? b.trail : strike._trail; },
@@ -5347,6 +5353,7 @@ document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListene
 function resetStrike(now) {
   loadGuestArt(); gfx3dBoot(); // Strike starts: the guests' painted art loads (once); three.js loads now (once), then the corridor renders in WebGL
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
+  if (adv.on || daily.on) frenzy.on = false; frenzy.result = null;
   const A = adv.on ? advBegin() : null, ui0 = strike.ui; // an Adventure stage: its plan, its seeded channels afresh
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
@@ -5371,9 +5378,11 @@ function resetStrike(now) {
   ui.levelBanner = A ? { t: now + 200, level: L0, stage: A.n, goal: A.walls, boss: A.boss, world: A.index === 1 && A.world > 1 ? A.world : 0 } : { t: now + (daily.on ? 2700 : 200), level: L0, goal: levelGoal(L0), world: w0 > 1 ? w0 : 0 }; // (an Adventure stage: 'Stage 5' + 'Break all 6 walls')
   ui.advPips = null; // 'Level 1 - clear 5 walls' slides in as the round starts (no fanfare for the first level); a later world's start names the world
   strike.ticket = false;
-  if (!daily.on && !A && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
+  if (!daily.on && !A && !frenzy.on && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
   strike.releaseUntil = -1e9; runPowerStart(now); // v5: the run power picked after the last clear
+  strike.rally = strike.rallyBest = 0; strike.rallyTop = 1; strike.rallyLost = null; strike.rallyLog.length = 0; ui.speedPop = ui.speedBox = ui.rally = null; // the rally starts at the base speed
+  if (frenzy.on) { strike.lives = strike.maxLives = 1; strike.shield = 1; ui.levelBanner = { t: now + 200, level: 1, frenzy: true, ms: 2000 }; } // Frenzy: one miss ends it (the very first is shielded)
   if (!daily.on) tipOnce('serve'); grippySay(daily.on ? 'daily' : 'start'); // (the serve tip: the mode's start hint says it)
 }
 function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBest = strike.level; try { localStorage.setItem('strikeLevelBest', String(strike.levelBest)); } catch {} } }
@@ -5402,6 +5411,7 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
 function wallCleared(now) { // one more wall down: the level progress ticks (a pulse on the bar), a level may complete, and the last wall of a world's last level brings its boss
   strike.cleared++; strike.ui.progressAt = now;
   if (adv.on) { strike.progress = strike.cleared - strike.cleared0; if (strike.progress >= strike.goal && adv.phase === 'play') { if (adv.plan.boss && !adv.bossDone) { if (!strike.boss) spawnBoss(adv.plan.world, now); } else advClear(now); } return; } // an Adventure stage: no levels; its last wall clears it (or brings its boss)
+  if (frenzy.on) { strike.progress = strike.cleared - strike.cleared0; return; } // Frenzy: one long rally, no levels, no boss
   syncLevel(now, true);
   if (bossDue()) spawnBoss(strike.gate / WORLD_LEVELS, now);
 }
@@ -5525,7 +5535,7 @@ const CH_NONE = { hp: 1, armor: 0, weak: 0, gold: 0, key: 0, turret: 0, turretMs
 const GOLD_PTS = 25, TURRET_HP = 2, CRUSH_Z = 260; // a gold brick's bonus (x the combo); a turret's hp; a wall closing in that gets this near crushes a heart
 function challengeCfg() {
   if (adv.on && adv.plan) return adv.plan;
-  if (strike.extrasOff || strike.noSpecials) return CH_NONE; // (test-only noSpecials: plain walls for the suites that check exact brick counts)
+  if (strike.extrasOff || strike.noSpecials || frenzy.on) return CH_NONE; // (Frenzy: clean walls) // (test-only noSpecials: plain walls for the suites that check exact brick counts)
   const L = Math.max(1, strike.level | 0);
   return { hp: Math.min(3, L), armor: strikeTuning(L).armor, weak: 1, gold: L >= 2 ? 0.5 : 0, key: L >= 4 ? 0.5 : 0, turret: L >= 6 ? Math.min(2, 0.5 + 0.25 * (L - 6)) : 0,
     turretMs: Math.max(3400, 5600 - 200 * (L - 6)), shotSpeed: 0.4 + 0.01 * L, creep: L >= 9 ? Math.min(0.05, 0.02 + 0.003 * (L - 9)) : 0, balls: 1 };
@@ -5558,7 +5568,7 @@ function puKind() { // weighted pick among the unlocked ones; an extra life only
 }
 function puMs(kind) { return strike.puDurMs || PU_MS[kind] || 0; }
 function powerOn(kind) { const now = performance.now(); return strike.powerups.some((p) => p.kind === kind && p.until > now); }
-function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every ball at 55% pace
+function speedMul() { return (powerOn('slow') ? PU_SLOW : 1) * rallyK(); } // Slow-mo: every ball at 55% pace; x the rally's speed-up (faster and faster)
 /* --- perks, the hit streak, 'Close one!' --- */
 function perkN(id) { return strike.perks[id] || 0; }
 function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1) * (1 + 0.05 * upgLv('reach')); } // (v5: + the Wider reach upgrade, 5% a level)                       // Wider Hands
@@ -5574,7 +5584,7 @@ function coinMul() { return 1 + 0.5 * perkN('coins'); }                       //
 const COMBO_STEP = 3, COMBO_MAX = 8; // v4: the combo: x2 after 3 returns in a row without a miss, x3 after 6 ... x8 after 21
 function comboMul() { return strike.extrasOff ? 1 : Math.min(COMBO_MAX, 1 + Math.floor(strike.streak / COMBO_STEP)); }
 function streakMul() { return comboMul(); } // every point scored is x the combo
-function scorePts(p) { return Math.round(p * streakMul()); }
+function scorePts(p) { return Math.round(p * streakMul() * rallyPtsMul()); } // (x the combo, x the rally's speed bonus)
 function availablePerks() { return PERKS.filter((id) => perkN(id) < PERK_MAX && roadOpen(PERK_ROAD[id])); } // not maxed, and unlocked on the road
 function openPerkOffer(now) { // the run stops: 3 different perks that are not maxed yet, as cards
   const pool = availablePerks(); if (!pool.length || strike.over) return false;
@@ -5647,8 +5657,8 @@ function streakReset(now) { // a miss: the streak is gone, with a small grey fiz
 const HEAT = { soft: -0.3, medium: -0.12, hard: 0.28, super: 0.45 }, HEAT_COOL = 0.00006, OVERHEAT_MS = 3000, HEAT_AFTER = 0.35; // per hit; per ms; the overheat; the heat left after it
 function overheated(now = performance.now()) { return now < strike.hotUntil; }
 function heatHit(tier, now) {
-  if (strike.extrasOff || overheated(now)) return;
-  const dh = HEAT[tier] || 0; strike.heat = Math.max(0, Math.min(1, strike.heat + (dh > 0 ? dh * heatGainK() : dh * heatCoolK()))); strike.ui.heatAt = now; // (v5: Cool hands)
+  if (strike.extrasOff || frenzy.on || overheated(now)) return; // (Frenzy: no heat, the speed is the challenge)
+  const dh = HEAT[tier] || 0; strike.heat = Math.max(0, Math.min(1, strike.heat + (dh > 0 ? dh * heatGainK() / rallyK() : dh * heatCoolK()))); // (a fast rally heats the hand less: speed is never punished twice) strike.ui.heatAt = now; // (v5: Cool hands)
   if (strike.heat >= 1) { // overheat!
     strike.hotUntil = now + OVERHEAT_MS; strike.overheats++; strike.ui.hotAt = now; sfx('sizzle'); shakeScreen(1.5);
     const x = cursor.present ? cursor.x : W / 2, y = cursor.present ? cursor.y : H * 0.7; addFloater({ x, y: Math.max(strike.ui.top + 90, y - 70), text: t('overheat'), big: true, life: 1.3 });
@@ -5667,7 +5677,7 @@ function heatTick(now, dt) {
 const UPG_IDS = Object.keys(ECONOMY.upgrades), UPG_COL = { heavy: '#a98bff', heart: '#ff6f8a', cool: '#54c6eb', reach: '#43d9a3', lucky: '#ffc24b', perfect: '#ff8a3d' };
 function upgMax(id) { return (ECONOMY.upgrades[id] || []).length; }
 function upgOwned(id) { return Math.max(0, Math.min(upgMax(id), (profile.upg && profile.upg[id]) | 0)); }
-function upgLv(id) { return daily.on || strike.noUpgrades ? 0 : upgOwned(id); } // what a run uses (0 in the daily)
+function upgLv(id) { return daily.on || frenzy.on || strike.noUpgrades ? 0 : upgOwned(id); } // what a run uses (0 in the daily)
 function upgPrice(id) { const L = upgOwned(id), P = ECONOMY.upgrades[id]; return P && L < P.length ? P[L] : 0; } // the next level's price (0: maxed)
 function buyUpgrade(id) {
   const P = ECONOMY.upgrades[id]; if (!P) return false; const L = upgOwned(id); if (L >= P.length || profile.coins < P[L]) return false;
@@ -6338,20 +6348,22 @@ function strikeHit(b, now, force, tm) { // the palm meets the ball: power from t
   const q = slapLaunch(b, now, force, tm), { sc, v, pw, tier, offx, offy, hx, hy, straight } = q, perfect = !!(tm && tm.grade === 'perfect');
   const pts = scorePts(1 + STRIKE_BONUS[tier]) * (perfect ? 2 : 1); strike.score += pts; // (x the streak multiplier: the returns before this one; x2 for a PERFECT)
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
-  strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
+  strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight, boost: q.boost, k: rallyK() };
   strike.ui.tierFlash = { t: now, tier, v, x: sc.x, y: sc.y, r: sc.r, val: meterPopVal(tier, v) }; // the small power arc pops up at the hit point
-  slapFx(b, sc, pw); heatHit(tier, now); timingFx(tm, sc, now, false);
+  slapFx(b, sc, pw); heatHit(q.heatTier, now); timingFx(tm, sc, now, false);
   if (tier === 'super' && runPowerOn('rp_split') && !b.guest && !b.split) splitBall(b, now); // v5: Split shot
   if (b.guest) guestHit(b, sc, now);
   else if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
-  streakUp(now); sparkChip(now); paceUp(now);
+  streakUp(now); sparkChip(now); if (!rallyUp(now)) paceUp(now); // (the rally replaces the old every-5-returns speed-up)
 }
 function slapFx(b, sc, pw) { sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3); burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2); if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = performance.now(); } }
 function slapLaunch(b, now, force, tm) { // the ball goes back down the corridor: tier from the hand speed (an overheated hand: soft; v5: a PERFECT one tier up), its aim and sidespin from the contact point and the hand's motion
   const sc = ballScreen(b), s = strikeScale(), hot = overheated(now), vh = typeof force === 'number' ? force : force && FORCE_SPEED[force] ? FORCE_SPEED[force] : handSpeed(now, 100) / s;
   if (tm) { tm.v = vh; if (tm.grade === 'perfect' && vh < TIMING.swingV) { tm.grade = 'good'; tm.still = true; } } // (a hand held still on the ball's path is never PERFECT: it takes a swing)
   const v0 = tm && tm.grade === 'perfect' && !hot ? Math.max(vh, FORCE_SPEED[TIER_UP[tierOfV(vh)]]) : vh, v = hot ? Math.min(v0, FORCE_SPEED.soft) : v0, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
-  const tier0 = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0; // a guest always goes back at least medium
+  const tier0 = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft', heatTier = b.guest && tier0 === 'soft' ? 'medium' : tier0; // a guest always goes back at least medium
+  let tier = heatTier, boost = false; // the rally: a fast ball carries its own power, a chance (growing with the speed) of one tier more; still capped at SUPER, and it never adds heat (heatTier)
+  if (!hot && !b.guest && b.dir > 0 && tier !== 'super' && rallyOn()) { const ch = Math.min(RALLY.tierMax, RALLY.tier * (rallyK() - 1)); if (ch > 0 && strikeRand('rally') < ch) { tier = TIER_UP[tier]; boost = true; } }
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   const hv = cursorVel(now, 100), hx = Math.max(-1, Math.min(1, hv.x / (1.6 * s))), hy = Math.max(-1, Math.min(1, hv.y / (1.6 * s))); // the hand's own direction, -1..1 per axis
   const latx = -offx * 1.2 + hx * 0.7, laty = -offy * 1.2 + hy * 0.7, straight = Math.max(0, 1 - Math.hypot(latx, laty) / 0.5); // dead centre with a hand moving straight in = a straight, faster ball
@@ -6359,7 +6371,7 @@ function slapLaunch(b, now, force, tm) { // the ball goes back down the corridor
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
   b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight)) * (b.guest ? GUEST_SPD : 1);
   aimBall(b, latx, laty, now);
-  return { sc, v, pw, tier, offx, offy, hx, hy, straight, hot, tm };
+  return { sc, v, pw, tier, heatTier, boost, offx, offy, hx, hy, straight, hot, tm };
 }
 // v4 (challenge): the aim. A hit's direction (where on the ball the hand met it, which way the hand moved; a serve's flick sideways) picks a
 // landing point on the wall ahead: up to ~0.6 of the corridor's half-width per unit of 'lat' from where the ball was hit. The ball's
@@ -6448,11 +6460,67 @@ function playerServe(force, now = performance.now(), aim = null, tm = null) { //
   let b = strike.balls[0]; if (!strike.waiting || !b || !b.wait) b = startWait(now);
   const q = slapLaunch(b, now, force, tm); strike.waiting = false; b.wait = false; strike.serves++; pullReset();
   if (aim !== null) { b.spin = 0; aimBall(b, aim / AIM_MAX * 1.2, 0, now); } // a flick: straight on down the corridor, steered sideways by the flick
-  heatHit(q.tier, now);
+  heatHit(q.heatTier, now);
   strike.power = q.tier; strike.hitAt = strike.handHit = now; strike.ui.tierFlash = { t: now, tier: q.tier, v: q.v, x: q.sc.x, y: q.sc.y, r: q.sc.r, val: meterPopVal(q.tier, q.v) }; strike.lastServe = { tier: q.tier, at: now, wait: now - strike.waitSince, v: q.v, aim, flick: typeof force === 'number' };
   slapFx(b, q.sc, q.pw); timingFx(tm, q.sc, now, true); tipOnce('serve');
   if (powerOn('multi')) addClones(); else if (challengeCfg().balls > 1) addClones(challengeCfg().balls); // (a two-ball stage: the second ball goes with the serve)
   return q.tier;
+}
+/* ===== the rally ('faster and faster', DESIGN.md 'Rally and Frenzy'): every return makes the ball a step faster (+5%, capped at +70% over the
+   stage's base, +45% on world 1's gentle first stages, +60% in Endless on Easy); a miss drops it back to the base. The speed is shown (the ball heats
+   white -> yellow -> orange -> blazing with a glow and a trail, speed lines in the corridor, a whoosh rising in pitch, a 'x1.4 SPEED' pop by the
+   combo's), pays (points x 1 + 0.5 x the speed-up, on top of the combo) and adds power (a chance of one tier more, capped at SUPER, no extra heat;
+   the faster the rally, the less a hard hit heats the hand). The reach grows a little with it (+35% of the speed-up) and the perfect window widens
+   with the ball's speed (timingWin), so a fast ball stays returnable on a phone. Off in the older suites (extrasOff) and with the test flag
+   strike.noRally. Frenzy (טירוף): the same rally, uncapped (+4% a hit), clean walls, no heat, no upgrades; one miss ends the run, except the very
+   first (a shield; the speed drops back halfway). Score: hits in a row; the best and the top speed kept in profile.frenzy; NEW RECORD!; Share. ===== */
+const RALLY = { step: 0.05, cap: 0.7, capGentle: 0.45, capEasy: 0.6, fstep: 0.04, pts: 0.5, tier: 0.6, tierMax: 0.5, reach: 0.35, hot: 0.7, pop: 0.2 };
+function rallyOn() { return frenzy.on || (!strike.extrasOff && !strike.noRally); }
+function rallyCap() { if (frenzy.on) return Infinity; if (adv.on && adv.plan) return adv.plan.paceK < 1 ? RALLY.capGentle : RALLY.cap; return strikeEasy() ? RALLY.capEasy : RALLY.cap; }
+function rallyK(n = strike.rally) { if (!(n > 0) || !rallyOn()) return 1; return 1 + Math.min(rallyCap(), (frenzy.on ? RALLY.fstep : RALLY.step) * n); } // x the ball's speed
+function rallyHeat(k = rallyK()) { return Math.max(0, (k - 1) / RALLY.hot); } // 0 at the base speed, 1 at the normal cap (blazing), more in Frenzy
+function rallyPtsMul(k = rallyK()) { return 1 + RALLY.pts * (k - 1); }
+function rallyReach() { return 1 + RALLY.reach * (rallyK() - 1); }
+function rallyCol(h) { // the ball's heat colour: white -> yellow -> orange -> blazing red-orange
+  const S = [[0, [255, 255, 255]], [0.33, [255, 232, 96]], [0.66, [255, 150, 40]], [1, [255, 72, 28]]];
+  h = Math.max(0, Math.min(1, h)); for (let i = 1; i < S.length; i++) if (h <= S[i][0]) { const [a, ca] = S[i - 1], [b, cb] = S[i], q = (h - a) / (b - a); return ca.map((v, j) => Math.round(v + (cb[j] - v) * q)); }
+  return S[S.length - 1][1].slice();
+}
+function rallyUp(now) { // a return: one step faster (a whoosh pitched by the speed; a pop at every +20% and at the cap)
+  if (!rallyOn()) return false;
+  const k0 = rallyK(); strike.rally++; const k1 = rallyK(), atCap = k1 >= 1 + rallyCap() - 1e-9;
+  strike.rallyBest = Math.max(strike.rallyBest, strike.rally); strike.rallyTop = Math.max(strike.rallyTop, k1);
+  if (k1 > k0 + 1e-9) {
+    sfx('rally', k1); strike.rallyLog.push(+k1.toFixed(3)); if (strike.rallyLog.length > 60) strike.rallyLog.shift();
+    const st = (x) => Math.floor((x - 1) / RALLY.pop + 1e-6);
+    if (st(k1) > st(k0) || atCap) strike.ui.speedPop = { t: now, k: k1, max: atCap };
+  }
+  return true;
+}
+function rallyMiss(now) { // a miss: back to the base speed (Frenzy's shield: half way back)
+  if (!strike.rally) return;
+  const k = rallyK(); strike.rallyLost = { k, n: strike.rally, at: now };
+  strike.rally = frenzy.on && strike.shield > 0 ? Math.floor(strike.rally / 2) : 0;
+  if (rallyHeat(k) > 0.3) { strike.ui.speedPop = { t: now, k: rallyK(), lost: k }; sfx('sizzle', 0.5); }
+}
+function frenzyOver(now) { // Frenzy's one miss (the shield used up): the run is over; the best hits in a row and the top speed are kept
+  strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null;
+  const F = profile.frenzy, hits = strike.hits, top = Math.round(strike.rallyTop * 100) / 100, prev = F.best, record = hits > prev && hits > 0;
+  F.runs++; F.best = Math.max(prev, hits); F.top = Math.max(F.top, top); saveProfile();
+  frenzy.result = { hits, top, prev, best: F.best, bestTop: F.top, record, score: Math.round(strike.score), walls: strike.cleared - strike.cleared0 };
+  ui.newBest = record;
+  if (record) { sfx('record'); confetti(W / 2, H * 0.3, 60, 1); grippySay('record'); } else sfx('chime');
+  roundDone(strike.score, strikeRunXp()); track('frenzy', 1);
+}
+function frenzyShareText() { const r = frenzy.result || { hits: profile.frenzy.best, top: profile.frenzy.top }; return t('frenzyShare', { n: r.hits, k: (+r.top || 1).toFixed(1) }); }
+async function shareFrenzy() { const text = frenzyShareText(); frenzy.lastShare = text; return shareText0(text); }
+function strikeFrenzy(how) { // the map's Frenzy button (or /frenzy): the uncapped rally
+  closeAdvMap(true); adv.on = adv.armed = false; daily.on = daily.armed = false; $('worldMap').hidden = true;
+  if (gameMode !== 'strike') setGameMode('strike');
+  if (mode !== 'none') { frenzy.on = true; frenzy.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); routeEnter('frenzy'); return true; }
+  frenzy.armed = true; audioInit();
+  if ((how || amap.how) === 'camera') enableCamera(); else fallbackToMouse([]);
+  return true;
 }
 const PACE_UP_EVERY = 5, PACE_UP = 1.05; // every 5 returns in a row on a level the pace steps up 5% (within the level's cap)
 function paceUp(now) {
@@ -6464,8 +6532,8 @@ function strikeMiss(b, now) { // a ball flew past: gone; with other balls still 
   const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
   const must = adv.on && adv.plan && adv.plan.balls > 1 && !powerOn('multi') && !b.split; // (v5: a Split shot's extra ball never costs a heart while another is in play)
   if (B.length && !must) { sfx('whiff'); return; }
-  if (B.length) { strike.misses++; sfx('whiff'); shakeScreen(1.2); streakReset(now); loseLife(now); return; } // (the other ball plays on)
-  strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now); strike.runReturns = 0; // a miss breaks the run toward the next speed-up
+  if (B.length) { strike.misses++; sfx('whiff'); shakeScreen(1.2); streakReset(now); rallyMiss(now); loseLife(now); return; } // (the other ball plays on)
+  strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now); rallyMiss(now); strike.runReturns = 0; // a miss breaks the run toward the next speed-up (and the rally drops back to the base speed)
   loseLife(now);
   if (!strike.over) { strike.serveAt = now + 800; strike.cued = false; }
 }
@@ -6541,6 +6609,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   if (strike.lives > 0) { grippySay(strike.lives === 1 ? 'lastLife' : 'miss'); return; }
   if (strike.chest) { if (strike.chest.state !== 'open') openChest(strike.chest, now); strike.chest = null; } // (a chest still shut when the round ends: its prize is paid all the same)
   if (adv.on) return advFail(now);
+  if (frenzy.on) return frenzyOver(now);
   strike.over = true; strike.overAt = now; hideHint(); strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null; saveLevelBest();
   strike.ui.newBest = strike.score > strike.best;
   if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
@@ -6783,7 +6852,7 @@ function ballTick(b, now, dt, fire, mul) {
     b.x = b.x0 + (b.tx - b.x0) * k + (b.curve ? b.curve * Math.sin(Math.PI * k * (b.waves || 1)) : 0); b.y = b.y0 + (b.ty - b.y0) * k; // (+ the level's sideways bow / wobble)
     if (!strike.extrasOff) incomingWalls(b, zi, xi, yi, now); // (the older suites' far-end serve flies through the walls untouched)
     if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
-      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach * advK('reachK'), d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
+      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach * advK('reachK') * rallyReach(), d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
       const touch = d > reach && handOverlap(sc.x, sc.y, sc.r, now, CONFIG.STRIKE_HIT_PATH_MS); // the ball touching the drawn hand (e.g. the fingertips, well above the cursor point) is a hit too
       if (d <= reach || touch) { // any cursor position from the last 160 ms counts, not only this frame's
         const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'), late = b.z <= zl + 0.15 * (zo - zl), edge = touch || d > 0.8 * reach;
@@ -7439,7 +7508,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   }
   const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives), compact = nL > 6; // an extra life (power-up) adds a heart; more than fit: one heart and ×N
   const gap = nL > 4 ? 18 : 21, k = nL > 4 ? 0.46 : 0.52, xsp = compact ? textSprite(LRM + '×' + strike.lives, 13, '#fff8ec', null, 800) : null, hw = compact ? 20 + 4 + xsp.tw : (nL - 1) * gap + 18;
-  const goal = strike.goal, tx = LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
+  const goal = strike.goal, tx = frenzy.on ? '⚡' + LRM + strike.hits : LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 + 6 * Math.max(0, tx.length - 6) : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
   const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
   ui.hud = { x, y, w, h };
   resetView(); blit(glassSprite(w, h, h / 2), x - 1, y - 1, 0, 1, 0.7);
@@ -7450,10 +7519,11 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
     ui.hearts.length = 0; ui.hearts.push({ x: hx, y: cy }); blit(heartSprite(strike.lives > 0), hx + sx, cy, 0, hk);
     edgeText(xsp, rtl ? hx - 13 : hx + 13, cy, rtl); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: true };
   } else { drawHearts(ui, strike.lives, nL, hc, cy, now, k, gap); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: false }; }
-  const col = adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
+  if (frenzy.on && strike.shield > 0 && ui.hearts[0]) { const h0 = ui.hearts[0]; resetView(); ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(95,216,255,' + (0.7 + 0.3 * Math.sin(now * 0.006)).toFixed(3) + ')'; ctx.shadowColor = '#5fd8ff'; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(h0.x, h0.y, 11, 0, TAU); ctx.stroke(); ctx.restore(); ui.shieldRing = { x: h0.x, y: h0.y }; } else ui.shieldRing = null; // Frenzy: the first miss is shielded
+  const col = frenzy.on ? '#ffb13d' : adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
   blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
   ui.wallsPill = { x: pc - pw / 2, y: cy - ph / 2, w: pw, h: ph, text: tx }; ui.advPill = adv.on && adv.plan ? ui.wallsPill : null;
-  drawHeatAndCombo(now, ui, rtl); drawRunBadge(now, ui, rtl);
+  drawHeatAndCombo(now, ui, rtl); drawSpeedPop(now, ui, rtl); drawRunBadge(now, ui, rtl);
   if (ui.heatBar) blockRect('heat', { x: ui.heatBar.x - 70, y: ui.heatBar.y - 2, w: ui.heatBar.w + 140, h: ui.heatBar.h + 4 }); if (ui.comboBox) blockRect('combo', ui.comboBox);
   ui.hudParts = ['hearts', 'walls']; ui.streakBox = null; ui.progBar = null; ui.advPips = null; ui.perkIcons.length = 0; ui.nextCard = null; // (no streak chip, progress line, wall pips, perk badges or NEXT card on screen)
   const yb = ui.top + 4; // transient things hang under the top row
@@ -7524,6 +7594,46 @@ function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while 
       blit(big, cx, cy, 0, sc, a); blit(sub, cx, cy + 24 * sc, 0, 1, a); ui.comboBox = { x: cx - big.w * sc / 2, y: cy - big.h * sc / 2, w: big.w * sc, h: big.h * sc + 30, n: P.n, lost: false };
     }
   }
+}
+function drawSpeedPop(now, ui, rtl) { // the rally's 'x1.4 SPEED' pop: in the combo pop's place (under it while that shows), heat-coloured; a dropped rally: grey, sinking
+  const P = ui.speedPop, k = P ? (now - P.t) / 1100 : 1; ui.speedBox = null; const H0 = ui.hud; if (!P || k < 0 || k >= 1 || !H0 || strike.over) return;
+  const a = k > 0.7 ? (1 - k) / 0.3 : 1, txt = P.lost ? LRM + '×' + P.lost.toFixed(1) : P.max && !frenzy.on ? t('speedMax') : LRM + '×' + P.k.toFixed(1) + ' ' + t('speedWord');
+  const tw = textSprite(txt, 17, '#fff', null, 800).tw * 1.2 + 8, R0 = ui.row || { left: 0, right: W }, sx = rtl ? H0.x - 10 - tw / 2 : H0.x + H0.w + 10 + tw / 2, side = sx - tw / 2 >= R0.left && sx + tw / 2 <= R0.right; // beside the pill when the row has room for the whole pop, else under it
+  const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, tgb = ui.tag && ui.tagBox, cb = ui.comboBox;
+  const cx = side ? sx : Math.max(tw / 2 + 8, Math.min(W - tw / 2 - 8, pc)); let cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42, tgb ? tgb.y + tgb.h + 40 : 0);
+  if (cb && cb.x < cx + tw / 2 && cx - tw / 2 < cb.x + cb.w) cy = Math.max(cy, cb.y + cb.h + 22); // (under the combo pop when they would meet)
+  if (P.lost) { const sp = textSprite(txt, 16, 'rgba(241,233,218,0.7)', 'rgba(60,64,84,0.85)', 800); blit(sp, cx, cy + 10 * k, 0, 1 - 0.15 * k, a); ui.speedBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, k: P.k, lost: true, text: txt }; blockRect('speed', ui.speedBox); return; }
+  const c = rallyCol(rallyHeat(P.k)), col = 'rgb(' + c.join(',') + ')', sc = (k < 0.12 ? 0.5 + 0.7 * k / 0.12 : 1.2 - 0.2 * Math.min(1, (k - 0.12) / 0.2)), sp = textSprite(txt, 17, '#fff8ec', 'rgba(' + c.join(',') + ',0.95)', 800);
+  blit(sp, cx, cy, 0, sc, a); ui.speedBox = { x: cx - sp.tw * sc / 2, y: cy - 13 * sc, w: sp.tw * sc, h: 26 * sc, k: P.k, max: !!P.max, lost: false, text: txt, col }; blockRect('speed', ui.speedBox);
+}
+function drawRallyFx(now) { // the rally on the overlay (both renderers): speed lines streaking out of the vanishing point, the ball's glow and a heat trail, hotter the faster
+  const ui = strike.ui; ui.rally = null; if (!rallyOn() || strike.over) return;
+  const k = rallyK(), h = rallyHeat(k); if (h <= 0) return;
+  const c = rallyCol(h), rgb = c.join(','), v = vanish(), hh = Math.min(1.6, h); resetView(); ctx.save(); ctx.lineCap = 'round';
+  let lines = 0;
+  if (h > 0.12) { // speed lines: thin streaks from near the vanishing point toward the screen's edges, more and brighter the faster
+    const n = Math.round(8 + 26 * Math.min(1, hh)), R = Math.hypot(W, H) * 0.6, t0 = now * 0.0016 * (1 + hh);
+    for (let i = 0; i < n; i++) {
+      const ang = (i * 2.399963) % TAU, ph = (t0 + i * 0.37) % 1, r0 = R * (0.12 + 0.88 * ph), len = R * (0.08 + 0.16 * hh) * ph;
+      const x0 = v.x + Math.cos(ang) * r0, y0 = v.y + Math.sin(ang) * r0, x1 = v.x + Math.cos(ang) * (r0 + len), y1 = v.y + Math.sin(ang) * (r0 + len);
+      ctx.strokeStyle = 'rgba(' + (i % 3 ? '241,233,218' : rgb) + ',' + ((0.08 + 0.3 * Math.min(1, hh)) * ph).toFixed(3) + ')'; ctx.lineWidth = 1 + 1.5 * ph * Math.min(1, hh);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); lines++;
+    }
+  }
+  const halos = [];
+  ctx.globalCompositeOperation = 'lighter';
+  for (const b of strike.balls) { if (b.wait || b.guest) continue;
+    const sc = ballScreen(b); if (sc.s <= 0.05) continue;
+    const tr = b.trail; if (tr.length > 1) { // the heat trail: a tapering streak behind the ball
+      for (let i = 1; i < tr.length; i++) { const p = tr[i - 1], q = tr[i], f = i / tr.length; ctx.strokeStyle = 'rgba(' + rgb + ',' + (0.35 * f * Math.min(1, 0.4 + hh)).toFixed(3) + ')'; ctx.lineWidth = Math.max(1, q.r * (0.5 + 0.9 * Math.min(1, hh)) * f); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
+    }
+    const r = sc.r * (1.5 + 1.1 * Math.min(1, hh)) * (hh > 1 ? 1 + 0.08 * Math.sin(now * 0.04) : 1), gr = ctx.createRadialGradient(sc.x, sc.y, sc.r * 0.6, sc.x, sc.y, r);
+    gr.addColorStop(0, 'rgba(' + rgb + ',' + (0.25 + 0.4 * Math.min(1, hh)).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(sc.x, sc.y, r, 0, TAU); ctx.fill();
+    halos.push({ x: sc.x, y: sc.y, r, col: c });
+    if (h >= 0.9 && particles.length < 300 && Math.random() < 0.5) particles.push({ x: sc.x + (Math.random() - 0.5) * sc.r, y: sc.y + (Math.random() - 0.5) * sc.r, vx: (Math.random() - 0.5) * 0.08, vy: -0.04 - Math.random() * 0.08, life: 0.8, decay: 0.004 + Math.random() * 0.003, r: Math.max(1.5, sc.r * (0.12 + Math.random() * 0.12)), color: Math.random() < 0.5 ? '#ffd23f' : '#ff6a28' }); // blazing: embers
+  }
+  ctx.restore();
+  ui.rally = { k, h, col: c, lines, halos };
 }
 function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops in, pulses twice, fades (1.1 s)
   const f = strike.ui.faster, k = f ? (now - f.t) / 1100 : 1; if (k >= 1 || k < 0) { strike.ui.fasterBox = null; return; }
@@ -7625,7 +7735,7 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
       blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - 53, 0, 1, a); blit(main, x, y - 14, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 30, 0, Math.min(1, (pw - 24) / sub.tw), a);
       blit(rule, x, y + 56, 0, Math.min(1, (pw - 24) / rule.tw), a * 0.95); continue;
     }
-    const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : wld ? t('worldN', { n: wld }) : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : wld ? t('wn_' + wld) + '  ·  ' + t('levelN', { n: Bn.level }) : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
+    const main = bigTextSprite(Bn.frenzy ? t('frenzyTitle') : dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : wld ? t('worldN', { n: wld }) : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(Bn.frenzy ? t('frenzyGoal') : dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : wld ? t('wn_' + wld) + '  ·  ' + t('levelN', { n: Bn.level }) : t('levelGoal', { n: Bn.goal }), 18, boss || dly || Bn.frenzy ? '#ffd77a' : wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
     if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blockRect('dailyBanner', ui.dailyBannerBox); blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
     let news = !boss && Bn.news && Bn.news.length ? [textSprite(levelNewsText(Bn.news), 17, '#ffb36b', null, 700)] : null; // what got harder: 'New: glass walls!  ·  Faster!'
@@ -7841,7 +7951,7 @@ function endCardAction(key, now) {
   if (key === 'home') return goHome();
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
-  if (key === 'share') { strike.ui.dwell = null; return shareDaily(); }
+  if (key === 'share') { strike.ui.dwell = null; return gameMode === 'strike' && frenzy.on ? shareFrenzy() : shareDaily(); }
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
@@ -7857,15 +7967,16 @@ function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichev
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff, dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill ? 372 : 316) + 34) + TZ + OY, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill || o.share ? 372 : 316) + 34) + TZ + OY, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   // the title sits under the coin / XP / streak pills (y0 + 14 .. 38), never across them
   if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 40 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 40 + OY - 22 * k * 0.6, w: ts.tw * k, h: 22 * k * 1.2 }; blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64 + OY); }
-  else { const ts = textSprite(t('roundOver'), 26, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 44 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 44 + OY - 26 * k * 0.6, w: ts.tw * k, h: 26 * k * 1.2 }; }
+  else { const ts = textSprite(o.title || t('roundOver'), 26, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 44 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 44 + OY - 26 * k * 0.6, w: ts.tw * k, h: 26 * k * 1.2 }; }
   blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108 + OY);
-  blit(textSprite(dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }), 15, 'rgba(241,233,218,0.72)', null, 500), cx, y0 + 156 + OY);
+  { const rec = !dly && ui.newBest && o.share, bt = dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }); // (Frenzy's NEW RECORD! in gold, pulsing)
+    blit(textSprite(bt, rec ? 18 : 15, rec ? '#ffd36b' : 'rgba(241,233,218,0.72)', null, rec ? 800 : 500), cx, y0 + 156 + OY, 0, rec ? 1 + 0.06 * Math.sin(now / 160) : 1); ui.bestLine = bt; }
   if (ui.newBest) { // a saffron ribbon across the top end corner (top-right in LTR, top-left in RTL)
     const ang = rtl ? -Math.PI / 4 : Math.PI / 4, ox = rtl ? x0 : x0 + cw;
     resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x0, y0, cw, ch, 22); ctx.clip(); ctx.translate(ox, y0); ctx.rotate(ang);
@@ -7926,7 +8037,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
     ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
   }
-  if (dly) ui.buttons.share = { x: x0 + 20, y: by + bh + 12, w: cw - 40, h: 44 }; // the daily: Share under the buttons (no Easy / Normal: the daily is always Normal)
+  if (dly || o.share) ui.buttons.share = { x: x0 + 20, y: by + bh + 12, w: cw - 40, h: 44 }; // the daily: Share under the buttons (no Easy / Normal: the daily is always Normal)
   const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share'), shop: t('collection') };
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
@@ -7990,6 +8101,7 @@ function renderStrike(now) {
   if (g3) { for (const c of strike.capsules) capsuleRing(c, now); } // (3D: everything but the capsules' 'grab me' ring is in the WebGL scene)
   else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
   if (strike.boss) drawBossBar(strike.boss, now);
+  drawRallyFx(now); // the rally: speed lines, the ball's heat glow and trail
   drawChallengeFx(now); // v4: crack lines, the aim reticle, a wall closing in, turret shots
   drawBouncers(now); // missed guests boinging off the screen (on the overlay in both renderers)
   drawParticles(); drawRings(now);
@@ -8029,6 +8141,10 @@ function renderStrike(now) {
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
   if (strike.over && adv.on && adv.result) { if (!strike.perkOffer) drawAdvCard(now); else strike.ui.buttons = null; drawStrikeHand(now); } // an Adventure stage's card (v5: under the run-power cards, hidden)
+  else if (strike.over && frenzy.on && frenzy.result) { // Frenzy: hits in a row, the top speed, NEW RECORD! and Share
+    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true });
+    drawStrikeHand(now);
+  }
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
     drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + (strike.bestMul || 1), 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
@@ -8937,6 +9053,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'thud') { f.type = 'lowpass'; f.frequency.value = 240; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('sine', 110, 45, 0.2, 140, t0); } // locked door rattles
     else if (kind === 'count') tone('sine', 1700 + Math.random() * 300, 0, 0.025, 28, t0); // one tick of the score counting up
     else if (kind === 'fanfare') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 60, t0 + i * 0.09); tone('triangle', q / 2, 0, 0.025, 200, t0 + i * 0.09); }); } // new best: four rising notes
+    else if (kind === 'rally') { const k = Math.max(1, Math.min(4, +arg || 1)), q = Math.min(1, (k - 1) / 0.7); f.type = 'bandpass'; f.frequency.setValueAtTime(420 * k, t0); f.frequency.exponentialRampToValueAtTime(1500 * k, t0 + 0.16); f.Q.value = 1.6; env(f, 0.035 + 0.045 * q, 190, t0); noise(t0, 190, f); } // the rally: a short whoosh per return, its pitch rising with the speed
     else if (kind === 'whoosh') { f.type = 'bandpass'; f.frequency.setValueAtTime(320, t0); f.frequency.exponentialRampToValueAtTime(1800, t0 + 0.4); f.Q.value = 1.2; env(f, 0.07, 420, t0); noise(t0, 420, f); } // serve cue: something is coming
     else if (kind === 'swish') { f.type = 'bandpass'; f.frequency.setValueAtTime(900, t0); f.frequency.exponentialRampToValueAtTime(3200, t0 + 0.15); f.Q.value = 1.5; env(f, 0.06, 170, t0); noise(t0, 170, f); } // combo banner sliding in
     else if (kind === 'boom') { f.type = 'lowpass'; f.frequency.setValueAtTime(1600, t0); f.frequency.exponentialRampToValueAtTime(120, t0 + 0.35); env(f, 0.25, 380, t0); noise(t0, 380, f); tone('sine', 140, 30, 0.25, 420, t0); tone('triangle', 2400, 600, 0.05, 120, t0); } // a bomb goes off
@@ -9039,7 +9156,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    upg: {}, adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    upg: {}, frenzy: { best: 0, top: 1, runs: 0 }, adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -9063,6 +9180,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))];
       if (a.best && typeof a.best === 'object') for (const k of Object.keys(a.best)) { const n = +k, v = a.best[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isFinite(v) && v > 0) A.best[n] = Math.min(9999999, Math.round(v)); } } // v4: the best score per stage
+    if (p.frenzy && typeof p.frenzy === 'object') { const f = p.frenzy; if (Number.isFinite(f.best) && f.best > 0) d.frenzy.best = Math.min(99999, Math.round(f.best)); if (Number.isFinite(f.top) && f.top >= 1) d.frenzy.top = Math.min(50, Math.round(f.top * 100) / 100); if (Number.isFinite(f.runs) && f.runs > 0) d.frenzy.runs = Math.min(1e6, Math.floor(f.runs)); } // Frenzy: the best hits in a row, the top speed (x), runs
     if (p.upg && typeof p.upg === 'object') for (const k of Object.keys(ECONOMY.upgrades)) { const v = p.upg[k]; if (Number.isInteger(v) && v > 0) d.upg[k] = Math.min(ECONOMY.upgrades[k].length, v); } // v5: permanent upgrade levels (0..the track's max)
     if (p.smash && typeof p.smash === 'object') { const a = p.smash, A = d.smash; // Smash stages: the best stars per stage (1-3), the furthest stage open
       if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= SMASH_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
@@ -9219,7 +9337,9 @@ function dailyDone(score, level) { // a daily run finished: the day's record; th
 }
 function shareText() { const d = daily.on ? daily.date : missionDay(), r = dailyRec(d) || { best: 0, level: 1 }; return t('shareText', { d, s: r.best, l: r.level || 1, n: dailyStreak(d) }); }
 async function shareDaily() { // the system share sheet where there is one, else the clipboard with a 'Copied' toast (as in Tremorti)
-  const text = shareText(); daily.lastShare = text;
+  const text = shareText(); daily.lastShare = text; return shareText0(text);
+}
+async function shareText0(text) {
   if (navigator.share) { try { await navigator.share({ text }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'aborted'; } }
   try { await navigator.clipboard.writeText(text); toast('copied', null, 'check'); return 'copied'; } catch {}
   try { const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); if (ok) { toast('copied', null, 'check'); return 'copied'; } } catch {}
@@ -9992,6 +10112,7 @@ function renderAdvMap() {
   }
   renderStarChests(host, L); renderDayChest(); renderAlbumBtn();
   { const o = overallRank(), el = $('advRank'); el.hidden = o < 0; if (o >= 0) { el.dataset.rank = RANKS[o]; el.style.setProperty('--rc', RANK_COL[o]); el.style.setProperty('--rg', rankCss(o)); el.querySelector('b').textContent = t('rk_' + RANKS[o]); el.querySelector('small').textContent = t('rankTitle'); el.setAttribute('aria-label', t('rankAria', { r: t('rk_' + RANKS[o]) })); } } // v4: the overall rank
+  { const fb = profile.frenzy.best, el = $('advFrenzySub'); el.textContent = fb > 0 ? t('frenzySubBest', { n: fb }) : t('frenzySub'); } // Frenzy: its best run under the button
   $('advStarTotal').querySelector('b').textContent = String(advStarTotal()); $('advStarTotal').querySelector('small').textContent = '/ ' + ADV_N * 3;
 }
 function advNodeY(n) { const p = amap.layout && amap.layout.nodes[n - 1]; return p ? p.y : 0; }
@@ -10020,13 +10141,13 @@ function advStart(n, how) { // play stage n (a playable one): from the start scr
   n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); if (!advPlayable(n)) return false;
   closeAdvMap(true); adv.n = n; $('worldMap').hidden = true;
   if (gameMode !== 'strike') setGameMode('strike');
-  daily.armed = daily.on = false;
+  daily.armed = daily.on = false; frenzy.on = frenzy.armed = false;
   if (mode === 'none') { adv.armed = true; audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
   else { adv.on = true; adv.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); }
   return true;
 }
 function strikeEndless(how) { // the map's Endless: the old run, exactly as before (the world map first once a second world is open)
-  closeAdvMap(true); adv.on = adv.armed = false;
+  closeAdvMap(true); adv.on = adv.armed = false; frenzy.on = frenzy.armed = false;
   if (gameMode !== 'strike') setGameMode('strike');
   if (profile.worlds.unlocked > 1) { openWorldMap(how || amap.how); return; }
   if (mode !== 'none') { daily.on = false; hideHint(); resetStrike(performance.now()); return; }
@@ -10175,6 +10296,7 @@ $('giftOk').addEventListener('click', () => { if (giftState().opened) closeGifts
 $('gifts').querySelector('.xBtn').addEventListener('click', closeGifts);
 $('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) { closeGifts(); return; } if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box; on the backdrop it closes
 $('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
+$('advFrenzy').addEventListener('click', () => { audioInit(); strikeFrenzy(amap.how); });
 $('smBack').addEventListener('click', () => closeSmashMap());
 $('smashFree').addEventListener('click', () => { audioInit(); sfx('click'); smashFreeStart(smap.how); });
 window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
@@ -10586,7 +10708,7 @@ function goHome() {
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -10611,8 +10733,9 @@ function startGame(m) {
   syncLiveDot(); requestAnimationFrame(updateHudOffset);
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
+  frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
-  routeEnter(gameMode); // the game's own path (/strike, /smash, ...)
+  routeEnter(gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
@@ -10908,6 +11031,9 @@ window.__grasp = {
   setPlayerLevel, xpForLevel, runXp,
   // Strike Adventure: 40 fixed stages (plan(n)), start(n) plays one, the profile's stars / unlocked / open, the map (open / close, its layout), and test helpers:
   // finishTest(livesLost) clears the running stage now as if that many lives were lost (a boss stage: its boss too); failTest() loses its last life; travel: the trip after a world's boss
+  // the rally + Frenzy: k() the speed factor now, cap(), on(); frenzy.start(how) as the map's button does; result / profile / shareText / share
+  rally: { cfg: RALLY, k: (n) => rallyK(n), cap: () => rallyCap(), on: () => rallyOn(), heat: (k) => rallyHeat(k), col: (h) => rallyCol(h), pts: (k) => rallyPtsMul(k), reach: () => rallyReach() },
+  frenzy: { get on() { return frenzy.on; }, start: (how) => strikeFrenzy(how || 'mouse'), get result() { return frenzy.result; }, get profile() { return profile.frenzy; }, shareText: () => frenzyShareText(), share: () => shareFrenzy(), get lastShare() { return frenzy.lastShare; } },
   adventure: { count: ADV_N, perWorld: ADV_WORLD, lives: ADV_LIVES, plan: advPlan, start: advStart, endless: strikeEndless, playable: advPlayable, economy: ECONOMY.adv, travelMs: ADV_TRAVEL_MS,
     get on() { return adv.on; }, get stage() { return adv.on ? adv.n : null; }, get phase() { return adv.on ? adv.phase : null; }, get result() { return adv.result; }, get lost() { return adv.lost; }, get spawned() { return adv.spawned; }, get world() { return adv.world; },
     get stars() { return { ...profile.adv.stars }; }, get unlocked() { return profile.adv.unlocked; }, get open() { return profile.adv.open.slice(); }, get seen() { return profile.adv.seen.slice(); }, get current() { return advCurrent(); }, get total() { return advStarTotal(); },
@@ -10944,10 +11070,10 @@ window.__grasp = {
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox'];
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy']; // (frenzy: Strike's Frenzy run)
 const route = { applying: false, log: [] };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
-function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? gameMode : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
+function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
 function routeEnter(m) {
   if (route.applying || !ROUTE_MODES.includes(m)) return;
   try { const cur = routeOf(location.pathname); if (cur === m) return;
@@ -10962,7 +11088,7 @@ function routeHome() {
 }
 function routeOpen(m) { // the start screen's tile for m, as if tapped
   if (mode !== 'none' || physicsError) return false;
-  if (!$('gifts').hidden) closeGifts(); setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
+  if (!$('gifts').hidden) closeGifts(); if (m === 'frenzy') { setGameMode('strike'); return strikeFrenzy(inputPref()); } setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
 }
 window.addEventListener('popstate', () => {
   const want = routeOf(location.pathname), cur = routeNow(); route.log.push('pop:' + (want || '/'));

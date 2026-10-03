@@ -171,3 +171,32 @@ creaking), and a climax (a boss with a health bar, phases, and a big victory mom
 - *Measured, not guessed:* a simulated child on a phone (3 taps a second, a third of them at empty spots, some swipes) takes ~65-130 s a stage
   and ~90 s a free-play scene; a good player (5 accurate taps a second) about half that. Clocks are ~1.3x the child's time; ★★★ needs 40%
   of the clock left (about the good player's pace).
+
+## Rally and Frenzy: faster and faster (parent's idea)
+
+**Ask:** "Maybe a mode where every hit makes the ball faster and faster." Both: a rally speed-up in normal play, and a separate Frenzy mode.
+
+**Why it works** (*Pong*'s rising volley, *Breakout*'s speed-up after N hits, table-tennis rallies, *Super Hexagon* / *Flappy Bird* / *Beat
+Saber* endless modes): a rally that keeps getting faster is tension you build yourself; the number of hits in a row is the simplest score a child
+understands, and "one more, I can beat 23" is the pull.
+
+**Applied: the rally (Adventure, Endless, daily)**
+- Every return: +5% ball speed; a miss: back to the stage's base speed. Capped so it stays returnable on a phone: +70%, world 1's gentle first
+  four stages +45%, Endless on Easy +60%. It replaces the old "every 5 returns +5% pace" step while on.
+- Fairness: the reach grows by a third of the speed-up, and the PERFECT / Good windows already widen with the ball's speed.
+- You can see and hear it: the ball heats white -> yellow -> orange -> blazing (glow, a heat trail, embers at the top), speed lines streak from the
+  vanishing point, each return's whoosh rises in pitch, and a small "x1.4 SPEED" pop (every +20%, "MAX SPEED!" at the cap) shares the combo pop's
+  place; nothing is drawn at the base speed (no permanent clutter).
+- Faster pays: points x (1 + half the speed-up) on top of the combo (at most x1.35); a chance of one tier more power (0.6 x the speed-up, at most
+  50%), still capped at SUPER so the blast stays bounded.
+- Overheat never punishes speed twice: the bonus tier adds no heat (the hand's own tier counts), and a hard hit heats the hand less the faster
+  the rally (/ the speed factor).
+
+**Applied: Frenzy (טירוף)**
+- A button beside Endless on the Adventure map ("Frenzy ⚡", its best under it) and the link /frenzy.
+- The pure skill chase: the rally with no cap (+4% a hit), one heart: the run ends on a miss. The very first miss is shielded (a cyan ring on the
+  heart, "Shield!", the speed drops back halfway) so a child is never out instantly.
+- Walls still come (clean brick walls, no specials, no heat, no upgrades, no levels or boss): blasting them is the satisfying side, the rally is
+  the challenge.
+- Score = hits in a row (the HUD pill counts them), plus the top speed; the best is kept, NEW RECORD! with the record fanfare and the voice, and a
+  share line ("Grasp Frenzy ⚡ 34 hits in a row · top speed ×2.4").

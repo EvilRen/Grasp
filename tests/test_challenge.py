@@ -7,6 +7,7 @@
 # on the card and the map; the profile's validation. EN / HE, desktop / phone, 2D / 3D screenshots in tests/out/challenge_*.png.
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 S = "__grasp.strike"; A = "__grasp.adventure"
+NO_RALLY = True  # the rally (every return a step faster, points / power x the speed) is off here: these checks need exact speeds, points and tiers (test_frenzy covers it; a suite that execs this prefix may set NO_RALLY = False)
 SFX_JS = "(() => { window.__sfx = []; window.__sfxa = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); __sfxa.push([k, a]); o(k, a); }; })()"
 SPEECH = ("window.__spoken = []; try { const ss = { speaking: false, speak(u) { __spoken.push({ text: u.text, lang: u.lang }); setTimeout(() => { try { u.onend && u.onend(); } catch (e) {} }, 300); }, cancel() {}, getVoices() { return [{ lang: 'en-US', name: 'E' }, { lang: 'he-IL', name: 'H' }]; } };"
           " Object.defineProperty(window, 'speechSynthesis', { configurable: true, get: () => ss }); } catch (e) {}")
@@ -31,7 +32,7 @@ async def fresh(b, mobile=False, he=False, init='', gfx=None):
 async def endless(page):  # the Endless run with the mouse, the ball parked far away
     await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
-    await page.evaluate(f"__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.guestEvery = 0; park()")
+    await page.evaluate(f"__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.guestEvery = 0; {S}.noRally = {'true' if NO_RALLY else 'false'}; park()")
 
 async def stage(page, n):  # Adventure stage n with the mouse (all stages open), waiting for its walls
     await page.evaluate(f"profile.adv.unlocked = 40; saveProfile(); setInputPref('mouse')")
@@ -39,6 +40,7 @@ async def stage(page, n):  # Adventure stage n with the mouse (all stages open),
         await page.evaluate(f"openAdvMap({{ how: 'mouse' }})"); await page.click(f'.anode[data-n="{n}"]')
     else: await page.evaluate(f"{A}.start({n})")
     await page.wait_for_function(f"{A}.on && {A}.stage === {n} && {A}.phase === 'play' && {S}.walls.length > 0 && mode === 'mouse'", timeout=10000)
+    await page.evaluate(f"{S}.noRally = {'true' if NO_RALLY else 'false'}")
 
 def shape_n(col, row, cols, rows, shape):  # bricks of a blast shape that fit on the grid
     n = 0
