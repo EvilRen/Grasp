@@ -31,7 +31,7 @@ window.touchDrag = async (x0, y0, x1, y1, steps, ms) => { const c = document.get
   ev('pointerup', x1, y1); };
 """
 W = "__grasp.busy.widgets"
-KINDS = {'switch': 4, 'button': 4, 'knob': 2, 'slider': 2, 'zipper': 1, 'door': 1, 'piano': 1, 'xylophone': 1, 'lights': 1, 'spinner': 1}
+KINDS = {'switch': 4, 'button': 4, 'knob': 2, 'slider': 2, 'zipper': 1, 'door': 1, 'piano': 1, 'xylophone': 1, 'lights': 1, 'spinner': 1, 'guitar': 1}
 PIANO_BLACK = [(0, 'C#4'), (1, 'D#4'), (3, 'F#4'), (4, 'G#4'), (5, 'A#4')]  # white key each black key follows
 SURPRISES = ['sun', 'cat', 'star', 'rainbow']
 def wjs(i): return f"(() => {{ const w = {W}[{i}]; return {{x: w.x, y: w.y, w: w.w, h: w.h, hw: w.hw, hh: w.hh, kind: w.kind, color: w.color, on: !!w.state.on, down: !!w.state.down, angle: w.state.angle || 0, detent: w.state.detent || 0, st: JSON.parse(JSON.stringify(w.state))}}; }})()"
@@ -73,8 +73,8 @@ async def main():
         check('mode cycle includes busy', await page.evaluate("MODE_NEXT.smash === 'busy' && MODE_NEXT.busy === 'strike'"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
         kinds = await page.evaluate("(() => { const k = {}; for (const w of " + W + ") k[w.kind] = (k[w.kind] || 0) + 1; return k; })()")
-        check('busy mode: 4 switches, 4 buttons, 2 knobs, 2 sliders, zipper, door, piano, xylophone, lights, spinner', await page.evaluate("gameMode") == 'busy' and kinds == KINDS, kinds)
-        check('desktop: 7 columns, widgets inside the board, none overlapping, no scrolling needed', await page.evaluate(COLS(7)) and await page.evaluate(INSIDE) and await page.evaluate(OVERLAP) and await page.evaluate("__grasp.busy.maxScroll") == 0)
+        check('busy mode: 4 switches, 4 buttons, 2 knobs, 2 sliders, zipper, door, piano, xylophone, lights, spinner, guitar', await page.evaluate("gameMode") == 'busy' and kinds == KINDS, kinds)
+        check('desktop: 10 columns, widgets inside the board, none overlapping, no scrolling needed', await page.evaluate(COLS(10)) and await page.evaluate(INSIDE) and await page.evaluate(OVERLAP) and await page.evaluate("__grasp.busy.maxScroll") == 0)
         check('widgets are big touch targets (>= 64 px)', await page.evaluate("Math.min(..." + W + ".map(w => Math.min(w.hw, w.hh)))") >= 64)
         check('sliders: one horizontal, one vertical, different colours', await page.evaluate("(() => { const [a, b] = " + W + ".filter(w => w.kind === 'slider'); return !a.vertical && b.vertical && a.color !== b.color && a.w > a.h && b.h > b.w; })()"))
         bd = await page.evaluate("__grasp.busy.board")
@@ -263,7 +263,7 @@ async def main():
         await page.evaluate(W + "[1].press(performance.now()); " + W + "[10].grab({x: " + W + "[10].x, y: " + W + "[10].y})")
         check('a grabbed slider keeps its tone on', await page.evaluate("__grasp.busy.tone.active"))
         await page.click('#resetBtn'); await page.wait_for_timeout(200)
-        check('reset re-randomises the board and clears states (and the tone)', await page.evaluate("__grasp.busy.seed") != seed0 and await page.evaluate(W + ".length === 18 && " + W + ".every(w => !w.state.on && !w.state.down && !w.state.held && !(w.state.v > 0))") and not await page.evaluate("__grasp.busy.tone.active"), [seed0, cols0])
+        check('reset re-randomises the board and clears states (and the tone)', await page.evaluate("__grasp.busy.seed") != seed0 and await page.evaluate(W + ".length === 19 && " + W + ".every(w => !w.state.on && !w.state.down && !w.state.held && !(w.state.v > 0))") and not await page.evaluate("__grasp.busy.tone.active"), [seed0, cols0])
         check('reset keeps everything inside the board', await page.evaluate(INSIDE) and await page.evaluate(OVERLAP))
         await page.evaluate(W + "[10].grab({x: " + W + "[10].x, y: " + W + "[10].y})")
         check('a grabbed slider sings again', await page.evaluate("__grasp.busy.tone.active"))
@@ -364,7 +364,7 @@ async def main():
             check(tag + ' phone: touch hint', ('הקישו' in hint) if he else ('Tap' in hint), hint)
             check(tag + ' phone: touch hint mentions dragging the board', ('גררו את הלוח' in hint) if he else ('Drag the board' in hint), hint)
             kinds = await page.evaluate("(() => { const k = {}; for (const w of " + W + ") k[w.kind] = (k[w.kind] || 0) + 1; return k; })()")
-            check(tag + ' phone: all 18 widgets, 2 columns, inside the board, none overlapping, 8 fully visible at the top', kinds == KINDS and await page.evaluate(COLS(2)) and await page.evaluate(VISIBLE(8)) and await page.evaluate(OVERLAP), kinds)
+            check(tag + ' phone: all 19 widgets, 2 columns, inside the board, none overlapping, 8 fully visible at the top', kinds == KINDS and await page.evaluate(COLS(2)) and await page.evaluate(VISIBLE(8)) and await page.evaluate(OVERLAP), kinds)
             check(tag + ' phone: board is taller than the screen and scrollable; zipper is below the fold', await page.evaluate("__grasp.busy.maxScroll > 300 && __grasp.busy.scroll === 0 && " + W + "[12].y - " + W + "[12].h / 2 > innerHeight"), await page.evaluate("[__grasp.busy.maxScroll, __grasp.busy.board.h]"))
             check(tag + ' phone: widgets are big touch targets (>= 64 px)', await page.evaluate("Math.min(..." + W + ".map(w => Math.min(w.hw, w.hh)))") >= 64)
             check(tag + ' phone: board clears the top buttons', await page.evaluate("(() => { const c = document.querySelector('.chrome').getBoundingClientRect(); return __grasp.busy.board.y >= c.bottom; })()"))

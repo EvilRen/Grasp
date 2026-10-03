@@ -74,6 +74,17 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
 - **Performance:** debris pooled by shape (`smPiece` / `smRetire`), fades after `SMASH_PIECE_MS`, cap `SMASH_MAX_PIECES` 140 / 80 on a phone; resting bodies sleep (`engine.enableSleeping` while in Smash); stacks keep upright (`lock`: no rotation) until disturbed; stats flushed to `track()` once a second ('brick', 'car', 'wall', 'smash' → `stats.smashed`).
 - Hooks: `__grasp.sm` (build, punch, sweep, hit, breakObj, breakTo, nextWave, toBoss, win, sim, wave / waves / seg / boss / progress / waveLog, stage, free, plan, snd, heard, pieces, cap, pool...). Tests: `test_smash` (map, scenes, multi-hit cracks, one hit per swipe, weak chains, waves / scroll / tension, the boss, sounds, debris, free play, pause, mouse / touch / camera) and `test_smash2` (stages, clocks, stars, cards, profile, voice, the stage-length simulation; screenshots `tests/out/smash2_*.png`, `tests/out/smash3_*.png`).
 
+**Busy Board** (toddler widgets: switches, buttons, knobs, sliders, zipper, door, piano, xylophone, lights, spinner, and the **electric guitar**):
+- Layout (`layoutBusy` / `busyPack`): first-fit grid, 1x1 first, then blocks (the guitar), tall, wide. Portrait phone 2 columns (board scrolls), tablet 3; landscape tries 4..10 columns and keeps the count giving the biggest cells (desktop 1280x800: 10 columns, cell 111, no scroll; the wide rows stay full width).
+- **Guitar** (`makeGuitar`, the block after the spinner; `__grasp.busy.widgets[18]`): span [2,3] on a portrait phone (stood up: neck up, strum = sideways swipe), [3,2] on a tablet, [6,2] in landscape (laid flat). Local frame u along the strings, v across (`toScreen` / `toLocal`, `geom()` cached per size).
+  - 6 strings: crossing them strums (`strumTo`: every string crossed between two samples, in crossing order, direction-aware: dir +1 = low E to high E, -1 = up; notes offset by where they were crossed), a tap plucks the nearest (`pluck`, re-pluck guard `GTR_REPLUCK_MS`). Strings wobble (`wobble`, decaying) and glow in the chord colour; the amp's speaker pulses (`state.level`).
+  - 4 chord buttons on the neck (`GTR_CHORDS` G green star / C red heart / D blue moon / Em yellow sun, 6-string voicings): a tap latches the chord and strums it once; a tap on the held chord = back to the default open E5 power chord (`GTR_DEFAULT`). Touch here is single-pointer (two fingers = their midpoint), so chords latch rather than need holding.
+  - ROCK pedal (`state.dist`, labels `gtrRock` / `gtrClean`): crossfades the clean path into the waveshaper crunch, strums once. Whammy arm (grab the ball tip): push toward the strings = dive (to -3 semitones), pull = up (+1.5); springs back; bends every ringing note (`gtrSetRate`). Poking the amp strums.
+  - Input: mouse / one-finger touch (= pinch → grab/drag/drop), camera point (press/move), open-hand / hovering mouse fast swipe (`sweep`, only mid-swipe so a jumping cursor does not strum). The xylophone's sweep now also fills in the bars a fast hand jumps over between frames.
+  - Sound (`gtrChain`, built once per AudioContext): Karplus-Strong buffer per pitch (`gtrBuffer`, cached by period; playbackRate corrects the pitch), one voice per string (a new pluck chokes the old), max `GTR_MAX_VOICES` 8; clean / pre-gain + `WaveShaper` + cab low-pass; tone low-pass; dry + a 0.7 s noise-IR convolver; `DynamicsCompressor` limiter; out 0.6. Muted: nothing is built or played (`gtrHush` on mute, reset, leaving). Counted in `busy.sounds.guitar` (pedal: `stomp`).
+  - Hooks `__grasp.gtr` { voices, made, dist, rate, rates(), peak() (analyser on the output), chain(), chords, def }; widget `state.log` ({ i, f, dir, chord, dist, at, heard }), `stringPos(i)`, `chordPos(k)`, `whammyPos()`.
+  - Tests: `tests/test_guitar.py` (strum down / up order, tap, chords, pedal chain, no clipping, whammy, mute, amp, camera point + open-hand swipe, phone EN / HE, re-flow on 4 more screen sizes; screenshots `tests/out/guitar_desktop.png`, `guitar_phone.png`, `guitar_phone_he.png`). Not yet heard on a real phone: the KS tone and crunch, loudness vs the other widgets, CPU with the convolver.
+
 Around the games:
 - **Meta:** coins, XP and player level, 3 daily missions, a shop (labelled), Grippy the cheering **voice** (see below), and a daily challenge (seeded run with its own streak).
 - **Daily habit** (`profile.habit`):
@@ -113,7 +124,7 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 12 minutes for 30 runs (28 suites incl. `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 12 minutes for 31 runs (29 suites incl. `guitar`, `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
   - `addict` covers v5 (timing judge / PERFECT / serve ring, juice + reduced motion, no-overlap floaters, upgrades, run powers; screenshots `tests/out/addict_*.png`).
   - `challenge` covers v4 (the blast + bounce, aim, armor / weak spot / keystone / gold, overheat, turrets, closing walls, two balls, the ramp, combo, score / record / ranks / map badges, profile validation; screenshots `tests/out/challenge_*.png`, EN / HE, phone, 3D).
   - `frenzy` covers the rally (growth, caps, reset on a miss, speed / reach, visuals + sfx scaling, the pop, points, power, heat, noRally) and Frenzy (map button EN / HE, /frenzy, shield, uncapped growth, end on a miss, record / best / share, profile validation; screenshots `tests/out/frenzy_*.png`, phone EN / HE, 3D).
@@ -153,3 +164,17 @@ Around the games:
   - a stage-select difficulty tune after phone feedback;
   - a share card for stars;
   - extra effects in the 3D renderer for world travel.
+
+## Parked backlog (the user said: "keep everything not built aside, we'll come back to it")
+Not started. Ask the user before picking one up.
+1. **Strike real boss battles:** bosses with health bars, attack patterns and weak points to hit. The user picked this for a 13-year-old.
+2. **Challenge a friend:** share a link to a seeded stage or run; the friend tries to beat your score on the same layout. The user picked this too.
+3. **More worlds after world 5:** new themes, music and stickers.
+4. **A level ladder for Shapes:** a map and stars like Adventure.
+5. **Monkey art:** process `monkey_{in,happy,dizzy,squash}` like the cow's (the pipeline is in Art) once the user sends the images.
+6. **Smaller items:**
+   - a share card for stars;
+   - 3D effects for world travel;
+   - the city scene briefly shows two suns while scrolling;
+   - the wall scene's arriving wave looks like the old wall;
+   - unknown URL paths get a 404 page instead of the start screen (only the game paths are rewritten).
