@@ -143,8 +143,9 @@ async def main():
             await page.wait_for_function(f"{S}.over && {S}.ui.advStarHint", timeout=8000); hints.append(await page.evaluate(f"{S}.ui.advStarHint.text"))
         check('the line under the stars per star count: 3 = "Perfect — no hearts lost!", 1 (2 hearts lost) = "Lost 2 hearts — …"', hints == ['Perfect — no hearts lost!', 'Perfect — no hearts lost!', 'Lost 2 hearts — clear without losing a heart for ★★★'], hints)
         check('Try again replays the stage; replays pay only the stars added (2 -> 3 stars: +1; 3 again: 0; 1 star: 0) and the best stays 3', res == [(3, 1, 1, 3), (3, 0, 0, 3), (1, 0, 0, 3)], res)
-        await press(page, 'next'); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 2 && {S}.walls.length", timeout=6000)
-        check('Next plays the next stage at once', await page.evaluate(f"{A}.stage") == 2)
+        await press(page, 'next'); await page.wait_for_function(f"{S}.perkOffer && {S}.perkMode === 'run'", timeout=6000)  # v5: a power for the next stage first
+        await page.evaluate(f"{S}.pickPerk(0)"); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 2 && {S}.walls.length", timeout=6000)
+        check('Next: a run power for the next stage (v5), the pick plays the next stage at once', await page.evaluate(f"{A}.stage") == 2)
         # fail: So close + Try again
         await page.evaluate(f"{S}.balls.length = 0; {S}.waiting = false; {S}.serveAt = performance.now() + 60000")
         await page.evaluate(DOWN); await page.evaluate(DOWN)

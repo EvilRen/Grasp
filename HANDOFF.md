@@ -45,6 +45,12 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
   - **Adventure ramp** (`advPlan`): walls 4..8 (`[4,4,5,6,6][w] + (i-1)/3`), stages 1-4 gentle (`paceK` 0.9, `reachK` 1.08, 2 weak spots, no armor); then `paceK` 1.1-1.38, `reachK` 0.93-0.82, `gapK` 0.9-0.75, `magK` 0.5 (applied by `advK()`), armor from stage 5 (hp 2, 3 from world 3), turrets from stage 10, closing walls from 12, two balls on some world 3+ stages. Stars unchanged (3 = no heart lost).
   - **Combo** (`comboMul`, `COMBO_STEP` 3, `COMBO_MAX` 8; `streakMul()` returns it): every point x the combo; a pop by the walls pill when it changes (`ui.comboPop`, `ui.comboBox`), a grey x1 on a miss. The old streak toast is no longer drawn (state, sound and voice kept).
   - **Score chase:** the clear card shows the score, its **rank** (`RANKS` Bronze / Silver / Gold / Diamond / Legend at `RANK_K` x the stage's par `stagePar(n)`), and NEW RECORD! (beating a previous best: 'record' fanfare + voice) or the best + the next rank's score. `profile.adv.best[n]` (validated on load). The map: a rank gem on each cleared stop (`.anode .rk`), the overall rank chip in the footer (`#advRank`, `overallRank()`). Endless' card: best combo = `strike.bestMul`.
+- **v5 "addictive":** see DESIGN.md "v5: addictive". Code: the block `v5 (addictive)` before the turrets.
+  - **Perfect timing:** `TIMING`, `hitZone`, `timingWin`, `judgeTiming(err, sp, winMs)` (pure), `hitTiming(b, now)` (ballTick), `serveTiming(armedAt, now)` (waitTick), `timingFx`; `strikeHit(b, now, force, tm)` / `slapLaunch(..., tm)` / `playerServe(..., tm)`; ring `drawTimingRing` (`ui.timingRing`). State: `perfStreak`, `bestPerf`, `perfects`, `timings`, `lastTiming`. Test flag `strike.noTiming` (test_serve sets it; extrasOff also off).
+  - **Juice:** `JUICE`, `juiceImpact` (from smashWall: `strike.juice`, `juiceLog`), `spawnChunk` (+ `g3Shatter(..., boost)`), `wallFlashFx`, `stageSlowmo` + `camPush` (in `proj` and the 3D camera), `drawJuiceFx`, sfx `perfect` / `thump`. `reducedMotion()` (matchMedia or `strike.reducedMotion`) also scales `shakeScreen` everywhere.
+  - **Floaters:** always `addFloater(f)` (never `strike.floaters.push`); `tickStrikeFloaters`, `drawStrikeFloaters` (after the banners), `blockRect(name, r)` for anything text-like on the overlay (`ui.blocks` per frame), `ui.floaterRects`, `strike.floatLog`. The spotlight waits for banners.
+  - **Upgrades:** `ECONOMY.upgrades`, `profile.upg` (validated), `upgLv` (0 in the daily / `strike.noUpgrades`), `buyUpgrade`, `renderUpgrades` (`#cpower`, `#upgs .upg`), `upgStats()`.
+  - **Run powers:** `RUN_POWERS`, `openRunPick` from `advNext` (`runPickDue`), the perk cards with `strike.perkMode === 'run'`, `pickRunPower`, `runPowerStart` (resetStrike), `adv.power` / `adv.pendingPower` (hooks `__grasp.adventure.power / pendingPower`), shield in `loseLife`, combo keeper in `streakReset`, `splitBall`, badge `drawRunBadge`. Test flag `strike.noRunPick`.
 
 **Smash** (rebuilt; player feedback: "it's a bit poor, allow smashing much more"):
 - **Tile:** opens the **Smash map** (`#smashMap`): a big **Free play** button, then 20 stages in 5 scene groups (4 each, stars, locks). `/smash` opens the map too.
@@ -96,6 +102,7 @@ Around the games:
   ```
 - **Tests:**
   - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 12 minutes for 28 runs (26 suites incl. `adventure`, `habit`, `album`, `hudmin`, `challenge`, plus `strike2` and `strike3` again in 3D).
+  - `addict` covers v5 (timing judge / PERFECT / serve ring, juice + reduced motion, no-overlap floaters, upgrades, run powers; screenshots `tests/out/addict_*.png`).
   - `challenge` covers v4 (the blast + bounce, aim, armor / weak spot / keystone / gold, overheat, turrets, closing walls, two balls, the ramp, combo, score / record / ranks / map badges, profile validation; screenshots `tests/out/challenge_*.png`, EN / HE, phone, 3D).
   - `routes` covers the direct links, pushState / Back / Forward, unknown paths and assets at a sub-path (EN / HE; screenshots `tests/out/route_*.png`). `serve` covers the pull-back + flick serve on mouse, touch (synthetic pointer events, `__gest`) and the camera stub (screenshots `tests/out/serve_*.png`).
   - `smash` + `smash2` cover Smash (see above).
@@ -124,6 +131,7 @@ Around the games:
   - the gift pop-up.
 - **Phone check:** fist vs pinch detection in Smash; Smash scenes' density / stage clocks with a real child; phone CPU with many bodies.
 - **Monkey art:** waiting for the user's images.
+- **v5 not yet checked on a real phone:** whether ±90 ms PERFECT feels fair with a real hand / the camera (the 50 ms camera lag is a guess), the ring's readability, chunk size and shake comfort, upgrade prices vs real coin income, which run powers kids pick.
 - **v4 not yet checked on a real phone:** the difficulty curve with a real hand (world 2's pace / reach, turret shots, closing walls), whether the overheat feels fair, the rank thresholds (`RANK_K`) against real scores, the reticle's readability.
 - **Possible next steps:**
   - more worlds after world 5;

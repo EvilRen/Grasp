@@ -301,7 +301,7 @@ async def main():
         dy = await page.evaluate(GATE_SIM.replace('__grasp.setPlayerLevel(plv);', '') + "(1, 12)")
         check('daily, level-1 player at run level 12: every wall kind, every power-up, both animals, wobbling serves and every perk (the road does not apply)',
               set(dy['kinds']) == {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'} and set(dy['pus']) == {'multi', 'big', 'slow', 'fire', 'life'} and set(dy['guests']) == {'cow', 'monkey'} and dy['waves'] > 0 and len(dy['offers']) == 8, dy)
-        await page.evaluate(f"{PARK}; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.spots.length = 0; {S}.previewed.clear(); {S}.seenKinds.clear(); {S}.lastSpot = null; {S}.walls.length = 0; {S}.spawnWall('steel')")
+        await page.evaluate(f"{PARK}; __grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.spots.length = 0; {S}.previewed.clear(); {S}.seenKinds.clear(); {S}.lastSpot = null; {S}.walls.length = 0; {S}.ui.dailyBanner = {S}.ui.levelBanner = null; {S}.spawnWall('steel')")  # (v5: a spotlight waits for the banners: they are dismissed here)
         await page.wait_for_function(f"{S}.ui.spot", timeout=3000)
         pv = await page.evaluate(f"({{ last: {S}.lastSpot, ui: {S}.ui.spot, got: {P}.road.got, fresh: {P}.road.fresh }})")
         check("a locked thing in the daily gets 'Preview! Steel walls' (the profile's road unchanged)", pv['last']['id'] == 'steel' and pv['last']['preview'] and pv['ui']['text'] == 'Preview! Steel walls' and pv['got'] == ['brick', 'cow'] and pv['fresh'] == [], pv)

@@ -14,7 +14,8 @@ async def frames(page, n=1):
 
 # a pointer path driven on the page's own frames: keys = [[ms, x, y], ...] (cumulative ms), linear in between, so the sampled speed is the path's
 # speed whatever the frame rate; type 'mouse' | 'touch'; down: a press at the first key (on the canvas), up: a release at the last
-GEST_JS = """window.__gest = (keys, o) => new Promise(res => { o = o || {}; const type = o.type || 'mouse', id = type === 'touch' ? 11 : 1; let t0 = null, k = 0;
+GEST_JS = """window.addEventListener('load', () => { try { __grasp.strike.noTiming = true; } catch (e) {} }); // v5: the serve tiers here are by flick speed alone (the PERFECT serve: test_addict)
+window.__gest = (keys, o) => new Promise(res => { o = o || {}; const type = o.type || 'mouse', id = type === 'touch' ? 11 : 1; let t0 = null, k = 0;
   const fire = (kind, x, y, tg) => (tg || window).dispatchEvent(new PointerEvent(kind, { clientX: x, clientY: y, pointerType: type, pointerId: id, isPrimary: true, bubbles: true, cancelable: true, button: kind === 'pointermove' ? -1 : 0, buttons: o.down ? 1 : 0 }));
   if (o.down) fire('pointerdown', keys[0][1], keys[0][2], canvas);
   const step = (ts) => { if (t0 === null) t0 = ts; const t = ts - t0; while (k < keys.length - 1 && keys[k + 1][0] <= t) k++;

@@ -118,3 +118,31 @@ a closing wall), and a score chase with ranks and records (S-ranks, "NEW RECORD!
   a fanfare and the voice. The map shows each stage's best rank as a gem and an overall rank, a reason to replay old stages.
 - *Juice:* shake scaled to what broke, an 80 ms hit-stop on a SUPER impact, a crack sound per armor level, crack lines racing from a weak spot.
 - *Economy unchanged:* no coins for bricks, gold or records; the score and ranks are their own reward.
+
+## v5: addictive (perfect timing, juice, upgrades, run powers)
+
+**Ask:** "maybe something is missing in the visuals or mechanics to make it addictive". What rhythm and arcade games that hook do: a timing
+skill with instant, loud feedback (*Beat Saber*, *Rhythm Heaven*, *Wii Sports* tennis' sweet spot), juice that scales with the impact
+(hit-stop, shake, debris at the camera), meta progress that makes coins mean power (*Jetpack Joyride*, *Archero*'s talents), and a small
+random choice between levels (roguelite boons, *Hades*).
+
+- *Perfect timing:* a ring closes on the spot where the incoming ball will be at its ideal moment (a third into the hit window); a swing that
+  meets it within ±90 ms (wider for a fast ball, +15% a 'Perfect window' level, at most 30% of the window so Normal's short window is not all
+  PERFECT; ±200 ms = Good) is **PERFECT!**: a 90 ms hit-stop, flash rings and a gold edge flash, its own sting, x2 points for the hit, one tier
+  more power (to SUPER at most: the blast stays bounded) and a perfect streak ("PERFECT ×3"). A hand held still is never PERFECT; Early / Late
+  show small, only for a real swing. The contact time is the hand's nearest pass in the path memory; the camera's lag (50 ms) is taken off. The
+  serve: once pulled back a ring breathes in to the ball every 700 ms; a flick launched as it closes is PERFECT (+1 tier).
+- *Juice:* hit-stop (0-110 ms) and shake (capped 3.2 px) scale with the bricks broken; 1-4 big chunks fly at the camera (2D debris and 3D
+  chunks); a white flash, a ring and a thump on each wall down; a bass thump under SUPER; the stage's last wall: a 0.6 s slow-motion beat with
+  the camera nudged forward (proj and the 3D camera). prefers-reduced-motion: shake at most 0.6 px, a 250 ms beat, no camera move.
+- *No clutter:* one big message at a time (each up >= 0.45 s, at most 3 waiting, PERFECT cuts in); every floating text is laid out each
+  frame clear of the others and of the banners / spotlight / tag / combo pop / HUD (or not drawn); the "New! ..." spotlight waits for the
+  stage / level banner, sits under the combo pop; the combo pop sits under the tag pill on a phone.
+- *Permanent upgrades* (Shop, "Power (forever)" section first): Heavier ball (a medium / hard hit blasts one shape wider 12% a level; level
+  3: +1 damage to armor), Extra heart (+1 / +2), Cool hands (heat x0.85 a level, cooling x1.35), Wider reach (+5% a level), Lucky (+0.22 gold
+  bricks a wall a level, a coin per gold brick), Perfect window (+15%). Prices 80-160 for the first level (~3-4 runs) up to 600. Adventure and
+  Endless only: **the daily ignores them** (a fair run, the same for everyone). Stars still mean "no heart lost"; maxed reach never undoes the
+  world 3+ ramp (it stays under world 1's on-ramp).
+- *Run powers:* the clear card's Next shows 3 of 7 (Magnet paddle, Split shot, Shield, Fire start, Slow-mo start, Combo keeper, Extra
+  heart) on the perk cards; tap or point-and-hold (20 s: the first). It lasts the next stage only (a fail keeps it for the retry); none after
+  a boss stage (the map). A small badge by the HUD pill shows it. One stage keeps every pick fresh and the loop short: clear, pick, play.

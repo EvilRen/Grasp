@@ -262,7 +262,22 @@ html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px
 .tile.owned .st{ color:var(--muted); font-weight:500; }
 .tile.equipped{ box-shadow:inset 0 0 0 2px var(--saffron); background:var(--ink-2); }
 .tile.equipped .st{ color:var(--saffron); }
-.tile.shake, .wnode.shake{ animation:shake .4s; }
+.tile.shake, .wnode.shake, .upg.shake{ animation:shake .4s; }
+/* v5: the Shop's Power section: permanent upgrades, a row each (icon, name, line, level pips, the next price) */
+#cpower .sub{ margin:-2px 0 8px; }
+.upgs{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.upg{ display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:10px; padding:8px 12px; border:0; border-radius:14px; background:rgba(29,37,71,.55); color:var(--bone); font:inherit; text-align:start; cursor:pointer; min-height:62px; }
+.upg canvas{ width:44px; height:44px; }
+.upg .nm{ font-weight:800; font-size:14px; }
+.upg .ds{ display:block; font-size:11.5px; line-height:1.3; color:var(--muted); }
+.upg .pips{ display:flex; gap:5px; margin-top:5px; }
+.upg .pips i{ width:11px; height:11px; border-radius:50%; box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.5); }
+.upg .pips i.on{ background:var(--saffron); box-shadow:0 0 6px rgba(255,194,75,.6); }
+.upg .pr{ display:inline-flex; align-items:center; gap:3px; font-weight:800; font-size:13px; color:var(--saffron); padding:6px 10px; border-radius:999px; background:rgba(8,11,28,.55); white-space:nowrap; }
+.upg .pr svg{ width:13px; height:13px; }
+.upg.poor .pr{ color:var(--muted); }
+.upg.max{ box-shadow:inset 0 0 0 1.5px var(--mint); cursor:default; }
+.upg.max .pr{ color:var(--mint); }
 @keyframes shake{ 20%,60%{ transform:translateX(-4px); } 40%,80%{ transform:translateX(4px); } }
 .cf{ position:absolute; width:7px; height:7px; border-radius:2px; pointer-events:none; animation:cf .9s ease-out forwards; }
 @keyframes cf{ to{ transform:translate(var(--dx),var(--dy)) rotate(540deg); opacity:0; } }
@@ -764,6 +779,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   <div class="sheet">
     <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><button class="gripBtn" id="grippyBtn" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="nm" data-i18n="grippyName">Grippy</span><span class="st"></span></button><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <p class="sub" data-i18n="collectionSub">Spend coins on new looks. Tap to buy, tap to wear.</p>
+    <section id="cpower"><h3 data-i18n="ct_power">Power (forever)</h3><p class="sub" id="cpowerSub"></p><div class="upgs" id="upgs"></div></section>
     <div id="ctypes"></div>
   </div>
 </div>
@@ -925,7 +941,8 @@ const ECONOMY = {
   gifts: { days: [5, 8, 10, 'skin', 15, 20, 'chest'], skinMax: 150, skinFallback: 12, chest: 40, chestSkinMax: 420, chestFallback: 30 },
   stageChest: { goal: 3, coins: 10 },
   starChests: { stars: [10, 25, 45, 70, 100], coins: [15, 25, 35, 50, 80], lastFallback: 60 },
-  album: { page: 30 },                                                      // the sticker album: a world's page of 8 stickers (3 stars on each of its stages) filled, once
+  album: { page: 30 },
+  upgrades: { heavy: [100, 260, 520], heart: [160, 600], cool: [80, 210, 440], reach: [100, 260, 520], lucky: [90, 230, 480], perfect: [80, 220, 450] }, // v5: the Shop's Power section, a price per level (the first level after ~3-4 runs)                                                      // the sticker album: a world's page of 8 stickers (3 stars on each of its stages) filled, once
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_HP: 1 };
@@ -975,6 +992,14 @@ const I18N = {
     levelN: 'Level {n}', levelGoal: 'Clear {n} walls', hd_faster: 'Faster!', hd_tougher: 'Tougher walls!', hd_curve: 'Curving balls!', hd_wobble: 'Wobbly balls!', hd_boss: 'Faster boss!',
     nw_glass: 'New: glass walls!', nw_steel: 'New: steel walls!', nw_holed: 'New: walls with holes!', nw_moving: 'New: moving walls!', nw_tnt: 'New: TNT walls!', levelUp: 'Level up!', bossDown: 'Boss down!', wk_boss: 'Boss!', bosses: 'Bosses', levelBest: 'Best level {n}',
     perkTitle: 'Pick a power!', perkSub: 'Tap a card, or point at it and hold',
+    perfect: 'PERFECT!', perfectN: 'PERFECT ×{n}', tmGood: 'Good', tmEarly: 'Early', tmLate: 'Late', shieldUp: 'Shield!', comboSaved: 'Combo saved!', splitShot: 'Split!',
+    rpTitle: 'Power for the next stage!', rpSub: 'Pick one: it lasts one stage',
+    pk_rp_magnet: 'Magnet Paddle', pk_rp_split: 'Split Shot', pk_rp_shield: 'Shield', pk_rp_fire: 'Fire Start', pk_rp_slow: 'Slow-mo Start', pk_rp_combo: 'Combo Keeper', pk_rp_heart: 'Extra Heart',
+    pkd_rp_magnet: 'The ball flies to your hand', pkd_rp_split: 'A SUPER hit splits the ball in two', pkd_rp_shield: 'Blocks one lost heart', pkd_rp_fire: 'Start with a fireball', pkd_rp_slow: 'Start in slow motion', pkd_rp_combo: 'Your first miss keeps the combo', pkd_rp_heart: 'One more heart this stage',
+    ct_power: 'Power (forever)', powerSub: 'Upgrades last forever (not in the Daily). Level {n} max.', upMax: 'MAX', upLv: 'Lv {n}', upBought: '{n}: level {l}!',
+    up_heavy: 'Heavier ball', up_heart: 'Extra heart', up_cool: 'Cool hands', up_reach: 'Wider reach', up_lucky: 'Lucky', up_perfect: 'Perfect window',
+    upd_heavy: 'Hits sometimes blast wider; level 3 cracks armor faster', upd_heart: 'Start every stage with one more heart', upd_cool: 'Overheat slower, cool down faster', upd_reach: 'Reach the ball from further away',
+    upd_lucky: 'More gold bricks, and each pays a coin', upd_perfect: 'A wider PERFECT timing window',
     pk_wide: 'Wider Hands', pk_heavy: 'Heavy Ball', pk_magnet: 'Sticky Magnet', pk_skin: 'Thick Skin', pk_lucky: 'Lucky', pk_spark: 'Spark Trail', pk_slow: 'Slow Start', pk_coins: 'Coin Magnet',
     pkd_wide: 'Reach the ball from further away', pkd_heavy: 'Every hit breaks one more brick', pkd_magnet: 'The ball drifts to your hand', pkd_skin: 'One more heart, and one back now',
     pkd_lucky: 'More power-up bricks', pkd_spark: 'Each hit zaps a brick on the next wall', pkd_slow: 'Serves come in slower', pkd_coins: '+50% coins this round',
@@ -1104,6 +1129,14 @@ const I18N = {
     levelN: 'שלב {n}', levelGoal: 'נפצו {n} קירות', hd_faster: 'מהר יותר!', hd_tougher: 'קירות קשים יותר!', hd_curve: 'הכדור מתעקל!', hd_wobble: 'הכדור מתפתל!', hd_boss: 'הבוס מהיר יותר!',
     nw_glass: 'חדש: קירות זכוכית!', nw_steel: 'חדש: קירות פלדה!', nw_holed: 'חדש: קירות עם חור!', nw_moving: 'חדש: קירות זזים!', nw_tnt: 'חדש: קירות TNT!', levelUp: 'עליתם שלב!', bossDown: 'הבוס הובס!', wk_boss: 'בוס!', bosses: 'בוסים', levelBest: 'שלב שיא {n}',
     perkTitle: 'בחרו כוח!', perkSub: 'הקישו על קלף, או הצביעו עליו והחזיקו',
+    perfect: 'מושלם!', perfectN: '‎מושלם ×{n}', tmGood: 'טוב', tmEarly: 'מוקדם', tmLate: 'מאוחר', shieldUp: 'מגן!', comboSaved: 'הקומבו ניצל!', splitShot: 'פיצול!',
+    rpTitle: 'כוח לשלב הבא!', rpSub: 'בחרו אחד: הוא נשאר לשלב אחד',
+    pk_rp_magnet: 'מחבט מגנט', pk_rp_split: 'כדור מתפצל', pk_rp_shield: 'מגן', pk_rp_fire: 'פתיחת אש', pk_rp_slow: 'פתיחה איטית', pk_rp_combo: 'שומר קומבו', pk_rp_heart: 'לב נוסף',
+    pkd_rp_magnet: 'הכדור עף אל היד', pkd_rp_split: 'מכת סופר מפצלת את הכדור לשניים', pkd_rp_shield: 'חוסם לב אחד שאבד', pkd_rp_fire: 'מתחילים עם כדור אש', pkd_rp_slow: 'מתחילים בהילוך איטי', pkd_rp_combo: 'ההחטאה הראשונה שומרת על הקומבו', pkd_rp_heart: 'עוד לב בשלב הזה',
+    ct_power: 'כוח (לתמיד)', powerSub: 'שדרוגים נשארים לתמיד (לא באתגר היומי). עד רמה {n}.', upMax: 'מקס׳', upLv: 'רמה {n}', upBought: '{n}: רמה {l}!',
+    up_heavy: 'כדור כבד יותר', up_heart: 'לב נוסף', up_cool: 'ידיים קרירות', up_reach: 'טווח רחב', up_lucky: 'מזל', up_perfect: 'חלון מושלם',
+    upd_heavy: 'מכות מתפוצצות לפעמים רחב יותר; ברמה 3 שובר שריון מהר יותר', upd_heart: 'מתחילים כל שלב עם עוד לב', upd_cool: 'מתחממים לאט יותר ומתקררים מהר יותר', upd_reach: 'מגיעים לכדור ממרחק גדול יותר',
+    upd_lucky: 'יותר לבני זהב, וכל אחת נותנת מטבע', upd_perfect: 'חלון תזמון מושלם רחב יותר',
     pk_wide: 'ידיים רחבות', pk_heavy: 'כדור כבד', pk_magnet: 'מגנט דביק', pk_skin: 'עור עבה', pk_lucky: 'מזל', pk_spark: 'שובל ניצוצות', pk_slow: 'התחלה איטית', pk_coins: 'מגנט מטבעות',
     pkd_wide: 'מגיעים לכדור ממרחק גדול יותר', pkd_heavy: 'כל מכה שוברת עוד לבנה', pkd_magnet: 'הכדור נמשך אל היד', pkd_skin: 'עוד לב, ולב אחד חוזר עכשיו',
     pkd_lucky: 'יותר לבני חיזוק', pkd_spark: 'כל מכה מזפזפת לבנה בקיר הבא', pkd_slow: 'ההגשות מגיעות לאט יותר', pkd_coins: '‎+50% מטבעות בסיבוב',
@@ -1767,6 +1800,7 @@ function drawRings(now) {
   ctx.globalAlpha = 1;
 }
 function shakeScreen(amp) {
+  if (typeof reducedMotion === 'function' && reducedMotion()) amp = Math.min(0.6, amp * 0.2); // prefers-reduced-motion: a tiny shake only
   const now = performance.now(), left = Math.max(0, 1 - (now - shake.t) / shake.ms) * shake.amp;
   shake.amp = Math.min(4, Math.max(left, amp)); shake.t = now;
 }
@@ -4898,7 +4932,7 @@ function levelNews(L) { // what got harder at level L: up to 3 keys for the leve
 }
 function levelNewsText(keys) { return (keys || []).map((k) => t(k)).join('  ·  '); }
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
-const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], shots: [], cracks: [], heat: 0, hotUntil: 0, stopUntil: 0, /* (v4: turret shots in flight, weak-spot crack lines, the hand's heat, the overheat's end, the hit-stop's end) */ pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], shots: [], cracks: [], heat: 0, hotUntil: 0, stopUntil: 0, perfStreak: 0, bestPerf: 0, perfects: 0, timings: {}, lastTiming: null, juice: null, juiceLog: [], floatLog: [], wallFlash: null, camPushAt: 0, perfectAt: -1e9, shield: 0, comboKeep: 0, splits: 0, perkMode: null, runPickNext: 0, noTiming: false, noUpgrades: false, noRunPick: false, reducedMotion: null, /* (v5: the perfect streak and counts, the juice's last impact, the run power's shield / combo keeper; test flags) */ /* (v4: turret shots in flight, weak-spot crack lines, the hand's heat, the overheat's end, the hit-stop's end) */ pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
   get speed() { const b = strike.balls[0]; return b ? b.speed : strike._speed; }, set speed(v) { const b = strike.balls[0]; if (b) b.speed = v; strike._speed = v; },
   get trail() { const b = strike.balls[0]; return b ? b.trail : strike._trail; },
@@ -4909,7 +4943,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   progress: 0, levelBest: 0, boss: null, bosses: 0, bossDownAt: -1e9, // walls cleared in the current level; best level reached (saved); the live boss (null between bosses); bosses beaten this round
   get goal() { return adv.on && adv.plan ? adv.plan.walls : levelGoal(strike.level); }, // walls to clear in the current level (an Adventure stage: all of its walls)
   // in-game UI state (also read by the tests): HUD card box, eased score, power meter, tier flash, combo banner, serve cue, round-over card buttons
-  ui: { top: 56, hud: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null, meterPop: null,
+  ui: { top: 56, hud: null, blocks: [], floaterRects: [], timingRing: null, runBadge: null, hearts: [], shown: 0, lastShown: 0, scoreAt: -1e9, lastTick: 0, heartLost: null, meter: 0, meterSpeed: 0, meterTier: 'soft', tierFlash: null, meterPop: null,
     banner: null, lastBanner: null, cue: null, buttons: null, hover: null, dwell: null, newBest: false, ribbon: null, meterTop: 0, tag: null, tagBox: null, puIcons: [], heartPop: null,
     levelBanner: null, levelUp: null, bossBanner: null, progressAt: -1e9, progShown: 0, progBar: null, boss: null, // level banner / level-up burst / boss-down banner; progress bar pulse, eased fill and box; the boss's screen boxes
     perkCards: null, perkHover: -1, perkDwell: null, perkTimer: 0, perkIcons: [], streakBox: null, streakToast: null, streakLost: null, nextCard: null, nextShown: null, nextAt: -1e9, closeAt: -1e9 }, // perk cards / hover / dwell / auto-pick time left; HUD perk icons; streak chip, milestone toast, fizzle; the NEXT card
@@ -4984,7 +5018,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
 };
 function vanish() { return { x: W / 2, y: H * 0.46 }; } // vanishing point: centre, a little above the middle
 function corridor() { const v = vanish(); return { L: -W / 2, R: W / 2, T: -v.y, B: H - v.y }; } // world bounds at z = 0 = the screen edges
-function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
+function proj(x, y, z) { const s = STRIKE_F / (STRIKE_F + z - camPush), v = vanish(); return { x: v.x + x * s, y: v.y + y * s, s }; }
 function strikeScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
 function ballR() { return Math.max(30, Math.min(96, Math.min(W, H) * 0.11)) * (powerOn('big') ? PU_BIG : 1) * (dailyMod() === 'tiny' ? 0.7 : 1); } // ball radius (px) at the player's plane (x1.7 on Big ball: bigger reach, bigger hole)
 function ballRad(b) { return ballR() * (b && b.guest ? GUEST_R : 1); } // one ball's radius: a guest is x1.35
@@ -5073,7 +5107,7 @@ function resetStrike(now) {
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
   const w0 = A ? A.world : daily.on ? 1 : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
   strike.waiting = false; strike.runWorld = w0; strike.gate = A ? 0 : worldGate(L0); strike.worldUp = 0; strike.chest = null; strike.chests = 0; strike.lastChest = null; strike.spots.length = 0; strike.lastSpot = null; strike.previewed.clear();
-  strike.score = 0; strike.lives = strike.maxLives = A ? ADV_LIVES : sd('STRIKE_LIVES'); strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
+  strike.score = 0; strike.lives = strike.maxLives = (A ? ADV_LIVES : sd('STRIKE_LIVES')) + upgLv('heart'); /* (v5: + the Extra heart upgrade) */ strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = L0; strike.cleared = strike.cleared0 = clearedAtLevel(L0); strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = L0 > 1 && !A ? kindNewAt(L0) : null;
@@ -5081,6 +5115,7 @@ function resetStrike(now) {
   strike.pitches = strike.guestHits = strike.guestMisses = strike.guestsServed = 0; strike.guestKinds.length = strike.bouncers.length = 0; strike.lastGuest = null; guestRoll(); // (after the daily's generators reset: the same guests on the same serves)
   strike.heat = 0; strike.hotUntil = 0; strike.stopUntil = 0; strike.shots.length = strike.cracks.length = 0; strike.bestMul = 1; ui0.comboPop = ui0.heatBar = null; // v4 (challenge): the heat, the hit-stop, turret shots, crack lines, the combo
   strike.overheats = strike.shotsFired = strike.deflects = strike.shotHits = strike.crushes = strike.golds = strike.weakHits = strike.keyHits = strike.turretsDown = 0;
+  strike.perfStreak = strike.bestPerf = strike.perfects = 0; strike.timings = {}; strike.floatLog.length = 0; strike.lastTiming = strike.juice = strike.wallFlash = null; strike.juiceLog.length = 0; strike.camPushAt = 0; camPush = 0; strike.perfectAt = -1e9; strike.chunks = 0; strike.perkMode = null; // v5
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + (daily.on ? 2400 : 600); strike.cued = false; // (the daily's banner reads before the first serve)
@@ -5093,7 +5128,7 @@ function resetStrike(now) {
   strike.ticket = false;
   if (!daily.on && !A && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
-  strike.releaseUntil = -1e9;
+  strike.releaseUntil = -1e9; runPowerStart(now); // v5: the run power picked after the last clear
   if (!daily.on) tipOnce('serve'); grippySay(daily.on ? 'daily' : 'start'); // (the serve tip: the mode's start hint says it)
 }
 function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBest = strike.level; try { localStorage.setItem('strikeLevelBest', String(strike.levelBest)); } catch {} } }
@@ -5256,7 +5291,7 @@ function specialBricks(w, kind, C, hp) { // armored bricks (hp 2-3), glowing wea
   const R = () => strikeRand('bricks'), free = (f) => shuffled(w.bricks.filter((k) => k.alive && !k.tnt && !k.pu && !k.armor && !k.weak && !k.gold && !k.key && !k.turret && (!f || f(k))), R);
   if (kind !== 'steel' && C.armor > 0 && hp >= 2) { const pool = free(), n = Math.round(C.armor * pool.length); for (const k of pool.slice(0, n)) { k.armor = true; k.hp = hp; } }
   for (const k of free().slice(0, chanceN(C.weak))) k.weak = true;
-  if (kind !== 'steel') for (const k of free().slice(0, chanceN(C.gold))) k.gold = true;
+  if (kind !== 'steel') for (const k of free().slice(0, chanceN(goldRate(C.gold)))) k.gold = true; // (v5: Lucky)
   if (kind !== 'steel') for (const k of free((q) => q.row >= Math.max(1, Math.floor(w.rows / 2)) && w.bricks.some((u) => u.alive && u.row < q.row && Math.abs(u.col - q.col) <= 1)).slice(0, chanceN(C.key))) k.key = true;
   for (const k of free((q) => q.row < Math.ceil(w.rows / 2)).slice(0, chanceN(C.turret))) { k.turret = true; k.hp = Math.max(k.hp, TURRET_HP); }
   w.turretAt = 0; // (the first shot comes a while after the wall is in view)
@@ -5281,8 +5316,8 @@ function powerOn(kind) { const now = performance.now(); return strike.powerups.s
 function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every ball at 55% pace
 /* --- perks, the hit streak, 'Close one!' --- */
 function perkN(id) { return strike.perks[id] || 0; }
-function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1); }                       // Wider Hands
-function magnetVal() { return strikeTuning().magnet * advK('magK') + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
+function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1) * (1 + 0.05 * upgLv('reach')); } // (v5: + the Wider reach upgrade, 5% a level)                       // Wider Hands
+function magnetVal() { return strikeTuning().magnet * advK('magK') + 0.15 * perkN('magnet') + (runPowerOn('rp_magnet') ? 0.45 : 0); } // (v5: the Magnet paddle run power) // Sticky Magnet (works on Normal too, where the base is 0)
 function puRate(L = strike.level) { // power-up bricks per wall at level L: none on levels 1-2 (the pure core), ~1/3 a wall at levels 3-4 rising to 1/2 by level 8; Lucky +50% each, 'Power-up rain' x3 from level 1 (CONFIG.STRIKE_PU_RATE scales it: 1/12 = as designed, 0 = none)
   if (adv.on) return adv.plan.pu * CONFIG.STRIKE_PU_RATE * 12; // an Adventure stage: its plan's (from stage 3, rare)
   const rain = dailyMod() === 'rain'; if ((L < PU_FROM && !rain) || !puPool().length) return 0; // (none until the first power-up is unlocked on the road)
@@ -5305,6 +5340,7 @@ function openPerkOffer(now) { // the run stops: 3 different perks that are not m
 }
 function pickPerk(i, now = performance.now(), auto = false) { // stack the perk, apply what is instant, and play on (an incoming ball that was close is moved back so the hand has time to get there)
   const O = strike.perkOffer; if (!O) return null;
+  if (strike.perkMode === 'run') return pickRunPower(i, now, auto); // v5: a run power for the next stage
   i = Math.max(0, Math.min(O.length - 1, i | 0)); const id = O[i], ui = strike.ui, c = ui.perkCards && ui.perkCards[i];
   strike.perks[id] = Math.min(PERK_MAX, perkN(id) + 1);
   if (id === 'skin') { strike.maxLives++; strike.lives = Math.min(strike.maxLives + 2, strike.lives + 1); ui.heartPop = { i: strike.lives - 1, t: now }; ui.heartLost = null; sfx('life'); }
@@ -5320,7 +5356,7 @@ function pickPerk(i, now = performance.now(), auto = false) { // stack the perk,
 function perkCardAt(px, py) { const C = strike.perkOffer && strike.ui.perkCards; if (!C) return -1; for (let i = 0; i < C.length; i++) { const r = C[i]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i; } return -1; }
 function perkTick(now, dt) { // the game is frozen; a point / pinch / fist held 600 ms on a card picks it; nothing picked in 12 s = the first card
   strike.serveAt += dt; for (const p of strike.powerups) p.until += dt;
-  const ui = strike.ui, age = now - strike.perkOfferAt, limit = strike.perkAutoMs || PERK_AUTO_MS, i = cursor.present && age >= PERK_ARM_MS ? perkCardAt(cursor.x, cursor.y) : -1;
+  const ui = strike.ui, age = now - strike.perkOfferAt, limit = strike.perkAutoMs || (strike.perkMode === 'run' ? RUN_PICK_MS : PERK_AUTO_MS), i = cursor.present && age >= PERK_ARM_MS ? perkCardAt(cursor.x, cursor.y) : -1;
   ui.perkHover = i; ui.perkTimer = Math.max(0, 1 - age / limit);
   if (i >= 0 && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
     if (!ui.perkDwell || ui.perkDwell.i !== i) ui.perkDwell = { i, t: now };
@@ -5354,6 +5390,8 @@ function streakUp(now) { // one more return without a miss; milestones at 5 / 10
   const bx = strike.ui.streakBox, x = bx ? bx.x + bx.w / 2 : W / 2, y = bx ? bx.y + bx.h / 2 : H * 0.2; burst(x, y, '#ff8a3d', 16); burst(x, y, '#ffe07a', 10);
 }
 function streakReset(now) { // a miss: the streak is gone, with a small grey fizzle where the chip was (and the combo drops to x1)
+  strike.perfStreak = 0;
+  if (strike.comboKeep > 0 && comboMul() > 1 && !strike.extrasOff) { strike.comboKeep--; strike.comboSaves = (strike.comboSaves || 0) + 1; sfx('chime'); addFloater({ x: W / 2, y: H * 0.42, text: t('comboSaved'), big: true, life: 1.1 }); return; } // v5: Combo keeper
   if (comboMul() > 1) strike.ui.comboPop = { t: now, n: 1, lost: comboMul() };
   if (strike.streak >= 2 && !strike.extrasOff) { strike.ui.streakLost = { t: now, n: strike.streak }; sfx('fizzle'); const bx = strike.ui.streakBox; if (bx) dust(bx.x + bx.w / 2, bx.y + bx.h / 2, 4, 0.5); }
   strike.streak = 0; strike.ui.streakToast = null;
@@ -5365,10 +5403,10 @@ const HEAT = { soft: -0.3, medium: -0.12, hard: 0.28, super: 0.45 }, HEAT_COOL =
 function overheated(now = performance.now()) { return now < strike.hotUntil; }
 function heatHit(tier, now) {
   if (strike.extrasOff || overheated(now)) return;
-  strike.heat = Math.max(0, Math.min(1, strike.heat + (HEAT[tier] || 0))); strike.ui.heatAt = now;
+  const dh = HEAT[tier] || 0; strike.heat = Math.max(0, Math.min(1, strike.heat + (dh > 0 ? dh * heatGainK() : dh * heatCoolK()))); strike.ui.heatAt = now; // (v5: Cool hands)
   if (strike.heat >= 1) { // overheat!
     strike.hotUntil = now + OVERHEAT_MS; strike.overheats++; strike.ui.hotAt = now; sfx('sizzle'); shakeScreen(1.5);
-    const x = cursor.present ? cursor.x : W / 2, y = cursor.present ? cursor.y : H * 0.7; strike.floaters.push({ x, y: Math.max(strike.ui.top + 90, y - 70), text: t('overheat'), big: true, life: 1.3 });
+    const x = cursor.present ? cursor.x : W / 2, y = cursor.present ? cursor.y : H * 0.7; addFloater({ x, y: Math.max(strike.ui.top + 90, y - 70), text: t('overheat'), big: true, life: 1.3 });
     if (!tipOnce('heat')) grippySay('overheat');
   }
 }
@@ -5377,7 +5415,223 @@ function heatTick(now, dt) {
   if (overheated(now)) { // steam off the hand, a hiss now and then
     if (cursor.present && Math.random() < dt / 40 && particles.length < 300) { const x = cursor.x + (Math.random() - 0.5) * 60, y = cursor.y - 20 - Math.random() * 30; particles.push({ x, y, vx: (Math.random() - 0.5) * 0.05, vy: -0.08 - Math.random() * 0.08, life: 1, decay: 0.0014 + Math.random() * 0.001, r: 7 + Math.random() * 9, color: 'rgba(235,240,250,0.55)', steam: true }); }
     if (now - (strike.ui.hissAt || 0) > 900) { strike.ui.hissAt = now; sfx('sizzle', 0.4); }
-  } else if (!strike.waiting) strike.heat = Math.max(0, strike.heat - HEAT_COOL * dt);
+  } else if (!strike.waiting) strike.heat = Math.max(0, strike.heat - HEAT_COOL * heatCoolK() * dt);
+}
+/* ===== v5 (addictive): perfect timing, juice, floaters that never overlap, permanent upgrades, run powers between stages (DESIGN.md 'v5: addictive') ===== */
+// --- permanent upgrades (the Shop's Power section): levels in profile.upg; they apply in the Adventure and Endless, never in the daily (a fair run, the same for everyone) ---
+const UPG_IDS = Object.keys(ECONOMY.upgrades), UPG_COL = { heavy: '#a98bff', heart: '#ff6f8a', cool: '#54c6eb', reach: '#43d9a3', lucky: '#ffc24b', perfect: '#ff8a3d' };
+function upgMax(id) { return (ECONOMY.upgrades[id] || []).length; }
+function upgOwned(id) { return Math.max(0, Math.min(upgMax(id), (profile.upg && profile.upg[id]) | 0)); }
+function upgLv(id) { return daily.on || strike.noUpgrades ? 0 : upgOwned(id); } // what a run uses (0 in the daily)
+function upgPrice(id) { const L = upgOwned(id), P = ECONOMY.upgrades[id]; return P && L < P.length ? P[L] : 0; } // the next level's price (0: maxed)
+function buyUpgrade(id) {
+  const P = ECONOMY.upgrades[id]; if (!P) return false; const L = upgOwned(id); if (L >= P.length || profile.coins < P[L]) return false;
+  profile.coins -= P[L]; profile.upg = profile.upg || {}; profile.upg[id] = L + 1; saveProfile(); sfx('unlock'); toast('upBought', { n: t('up_' + id), l: L + 1 }, 'star'); syncMeta(); return true;
+}
+function upgStats() { const o = {}; for (const id of UPG_IDS) o[id] = upgLv(id); return { lv: o, reach: reachMul(), heatK: heatGainK(), coolK: heatCoolK(), gold: goldRate(1), blastUp: 0.12 * upgLv('heavy'), win: timingWin(0.65, 0) }; }
+function heatGainK() { return 1 - 0.15 * upgLv('cool'); }   // Cool hands: hard / SUPER heat the hand less ...
+function heatCoolK() { return 1 + 0.35 * upgLv('cool'); }   // ... and it cools faster
+function goldRate(x) { return x > 0 ? x + 0.22 * upgLv('lucky') : x; } // Lucky: more gold bricks (where a stage has any)
+// --- run powers: after an Adventure clear, Next offers 3 of these on the perk cards; the pick lasts the next stage only (a fail keeps it for the retry) ---
+const RUN_POWERS = ['rp_magnet', 'rp_split', 'rp_shield', 'rp_fire', 'rp_slow', 'rp_combo', 'rp_heart'], RUN_PICK_MS = 20000;
+for (const id of UPG_IDS) PERK_COL['up_' + id] = UPG_COL[id]; // (the Shop's upgrade badges use the perk badge art)
+Object.assign(PERK_COL, { rp_magnet: '#ff6f59', rp_split: '#54c6eb', rp_shield: '#5fd8ff', rp_fire: '#ff8a3d', rp_slow: '#5b8def', rp_combo: '#ffb13d', rp_heart: '#ff6f8a' });
+function runPowerOn(id) { return adv.on && adv.power === id; }
+function runPickDue(r) { return !!(r && r.clear && !r.boss && r.n < ADV_N && !strike.noRunPick && advPlayable(r.n + 1)); }
+function openRunPick(now, next) { // the clear card's Next: three powers for the next stage (Next = a pick, then the stage starts at once)
+  strike.perkOffer = shuffled(RUN_POWERS, Math.random).slice(0, 3); strike.perkMode = 'run'; strike.perkOfferAt = now; strike.runPickNext = next;
+  const ui = strike.ui; ui.perkCards = null; ui.perkHover = -1; ui.perkDwell = null; ui.perkTimer = 1; ui.buttons = null; ui.hover = ui.dwell = null;
+  hideHint(); sfx('cards'); return strike.perkOffer.slice();
+}
+function pickRunPower(i, now, auto) {
+  const O = strike.perkOffer; i = Math.max(0, Math.min(O.length - 1, i | 0)); const id = O[i], ui = strike.ui, c = ui.perkCards && ui.perkCards[i], n = strike.runPickNext;
+  strike.perkOffer = null; strike.perkMode = null; ui.perkCards = null; ui.perkDwell = null; ui.perkHover = -1; strike.runPickNext = 0;
+  adv.pendingPower = id; strike.lastPick = { id, auto, at: now, run: true }; sfx('powerup');
+  if (c) { const x = c.x + c.w / 2, y = c.y + c.h / 2; burst(x, y, PERK_COL[id], 20); ring(x, y, hexA(PERK_COL[id], 0.9), Math.max(c.w, c.h) * 0.7, 380, 5); }
+  if (n) advStart(n);
+  return id;
+}
+function runPowerStart(now) { // resetStrike: a stage starts with the power picked after the last clear
+  strike.shield = strike.comboKeep = 0; strike.splits = 0;
+  adv.power = adv.on ? adv.pendingPower || null : null; adv.pendingPower = null;
+  const id = adv.power; if (!id) return;
+  if (id === 'rp_shield') strike.shield = 1;
+  if (id === 'rp_combo') strike.comboKeep = 1;
+  if (id === 'rp_heart') { strike.lives++; strike.maxLives++; }
+  if (id === 'rp_fire') activatePower('fire', now);
+  if (id === 'rp_slow') activatePower('slow', now);
+}
+function splitBall(b, now) { // Split shot: a SUPER hit sends a second ball off beside the first (it never costs a heart)
+  const { L, R } = corridor(), r = ballR(), s = b.x > 0 ? -1 : 1, c = { ...b, trail: [], aim: null, split: true, born: now, guest: null, vx: (b.vx || 0) + s * 0.16 * W / 1000, x: Math.max(L + r, Math.min(R - r, b.x + s * r * 0.6)) };
+  strike.balls.push(c); strike.splits++; const sc = ballScreen(b); ring(sc.x, sc.y, 'rgba(84,198,235,0.9)', sc.r * 2.6, 320, 4);
+  addFloater({ x: sc.x, y: sc.y + sc.r + 26, text: t('splitShot'), big: false, life: 0.8 }); return c;
+}
+// --- perfect timing: as a ball comes in, a ring closes on the spot where it will be at the ideal moment (a third into the hit window).
+// Meeting it within the perfect window (TIMING.perfMs, a little wider for a fast ball, +15% a level of the 'perfect' upgrade, but at most 30%
+// of the hit window's length so a short Normal window is not all 'perfect') with a real swing = PERFECT!: a beat of hit-stop, a flash ring,
+// its own sting, x2 points for the hit, one tier more power (SUPER at most: the blast stays bounded) and the perfect streak. Within the good
+// window: 'Good'; outside: 'Early' / 'Late' (small, only for a real swing). The serve: once pulled back, a ring pulses round the ball every
+// servePeriod ms; a flick launched as it closes is PERFECT (+1 tier). The hand's contact time is the moment it came nearest the ball (an early
+// swing caught by the path memory counts as early); on the camera the tracker's lag (camLag) is taken off. ---
+const TIMING = { perfMs: 90, goodMs: 200, idealK: 0.35, ringMs: 650, servePeriod: 700, camLag: 50, swingV: 0.3, perfStop: 90 };
+const TIER_UP = { soft: 'medium', medium: 'hard', hard: 'super', super: 'super' };
+function tierOfV(v) { return v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft'; }
+function timingOn() { return !strike.extrasOff && !strike.noTiming; }
+function hitZone() { const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'); return { zo, zl, zi: zl + TIMING.idealK * (zo - zl) }; }
+function timingWin(sp, winMs) { // the perfect / good half-windows (ms) for a ball at speed sp (depth / ms) whose hit window lasts winMs (0: no cap)
+  const fast = 1 + 0.35 * Math.max(0, Math.min(1, (sp - 0.65) / 1.6)), up = 1 + 0.15 * upgLv('perfect');
+  let perf = TIMING.perfMs * fast * up, good = TIMING.goodMs * fast * up;
+  if (winMs > 0) { perf = Math.max(40 * up, Math.min(perf, 0.3 * winMs * up)); good = Math.max(perf + 30, Math.min(good, 0.75 * winMs * up)); }
+  return { perf, good };
+}
+function judgeTiming(err, sp = 0, winMs = 0) { // pure: err = ms before (+) or after (-) the ideal moment
+  const w = timingWin(sp, winMs), a = Math.abs(err);
+  return { grade: a <= w.perf ? 'perfect' : a <= w.good ? 'good' : err > 0 ? 'early' : 'late', err: Math.round(err), perf: Math.round(w.perf), good: Math.round(w.good) };
+}
+function ballSpeedNow(b, now) { return Math.max(0.05, b.speed * speedMul() * (now < strike.slowUntil ? CLOSE_SLOW : 1)); }
+function hitTiming(b, now) { // the ball is being hit now: how far from its ideal moment did the hand meet it?
+  const sp = ballSpeedNow(b, now), Z = hitZone(), sc = ballScreen(b), h = cursor.history;
+  let tc = now, bd = cursor.present ? Math.hypot(cursor.x - sc.x, cursor.y - sc.y) : Infinity;
+  for (let i = h.length - 1; i >= 0 && now - h[i].t <= CONFIG.STRIKE_HIT_PATH_MS; i--) { const d = Math.hypot(h[i].x - sc.x, h[i].y - sc.y); if (d < bd - 1) { bd = d; tc = h[i].t; } }
+  if (mode === 'camera') tc -= TIMING.camLag;
+  return judgeTiming(now + (b.z - Z.zi) / sp - tc, sp, (Z.zo - Z.zl) / sp);
+}
+function serveTiming(armedAt, now) { const m = now - armedAt, P = TIMING.servePeriod, n = Math.max(1, Math.round(m / P)); return judgeTiming(n * P - m); } // + : flicked before the ring closed
+function timingFx(tm, sc, now, serve) { // the feedback for a judged hit or serve
+  if (!tm) return; strike.timings[tm.grade] = (strike.timings[tm.grade] || 0) + 1; strike.lastTiming = { ...tm, at: now, serve: !!serve };
+  if (tm.grade === 'perfect') {
+    strike.perfStreak++; strike.bestPerf = Math.max(strike.bestPerf, strike.perfStreak); strike.perfects++; strike.perfectAt = now;
+    strike.stopUntil = Math.max(strike.stopUntil, now + TIMING.perfStop);
+    ring(sc.x, sc.y, 'rgba(255,236,150,0.98)', sc.r * 3.2, 440, 7); ring(sc.x, sc.y, 'rgba(255,255,255,0.95)', sc.r * 1.8, 260, 4); burst(sc.x, sc.y, '#ffe07a', 22); burst(sc.x, sc.y, '#ffffff', 10);
+    sfx('perfect', Math.min(5, strike.perfStreak)); track('perfect', 1);
+    addFloater({ x: sc.x, y: sc.y - sc.r - 34, text: strike.perfStreak >= 2 ? t('perfectN', { n: strike.perfStreak }) : t('perfect'), big: true, perfect: true, life: 1.1 });
+  } else {
+    strike.perfStreak = 0;
+    if (tm.v >= TIMING.swingV) addFloater({ x: sc.x, y: sc.y + sc.r + 24, text: t(tm.grade === 'good' ? 'tmGood' : tm.grade === 'early' ? 'tmEarly' : 'tmLate'), big: false, small: true, dim: tm.grade !== 'good', life: 0.7 });
+  }
+}
+function drawTimingRing(now) { // incoming balls: a ring closing on the ideal-moment spot (gold inside the perfect window); the armed serve: a ring pulsing in
+  const ui = strike.ui; ui.timingRing = null; if (!timingOn() || strike.over || strike.perkOffer || (adv.on && adv.phase !== 'play')) return;
+  const Z = hitZone(), Zf = CONFIG.STRIKE_Z_FAR; resetView(); ctx.save();
+  for (const b of strike.balls) {
+    let p, r0, rr, hot, a, tt;
+    if (b.wait) { const P = strike.pull; if (!P || !P.armed) continue;
+      const sc = ballScreen(b), tm = serveTiming(P.armedAt, now), q = Math.min(1, Math.abs(tm.err) / (TIMING.servePeriod / 2)); p = sc; r0 = sc.r; rr = sc.r * (1 + 1.3 * q); hot = tm.grade === 'perfect'; a = 1 - 0.6 * q; tt = tm.err; // (it breathes: in to the ball at each close, out again)
+    } else {
+      if (b.dir <= 0) continue;
+      const sp = ballSpeedNow(b, now), w = timingWin(sp, (Z.zo - Z.zl) / sp); tt = (b.z - Z.zi) / sp; if (tt > TIMING.ringMs || tt < -w.good) continue;
+      const k = 1 - Math.max(0, Z.zi) / Zf, px = b.x0 + (b.tx - b.x0) * k + (b.curve ? b.curve * Math.sin(Math.PI * k * (b.waves || 1)) : 0), py = b.y0 + (b.ty - b.y0) * k;
+      p = proj(px, py, Z.zi); r0 = ballRad(b) * p.s; const q = Math.max(0, tt) / TIMING.ringMs; rr = r0 * (1 + 1.6 * q); hot = Math.abs(tt) <= w.perf;
+      a = Math.min(1, (1 - q) * 1.8) * (tt < 0 ? Math.max(0, 1 + tt / w.good) : 1);
+      ctx.globalAlpha = a * 0.45; ctx.lineWidth = 2; ctx.setLineDash([6, 7]); ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(p.x, p.y, r0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); // where the ball will be
+    }
+    ctx.globalAlpha = a; ctx.lineWidth = hot ? 5 : 2.5; ctx.strokeStyle = hot ? '#ffe07a' : 'rgba(255,255,255,0.8)'; ctx.shadowColor = hot ? '#ffb13d' : 'transparent'; ctx.shadowBlur = hot ? 16 : 0;
+    ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+    if (!ui.timingRing) ui.timingRing = { x: p.x, y: p.y, r: rr, r0, tt: Math.round(tt), hot, serve: !!b.wait };
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+// --- juice: hit-stop by impact, shake by what broke (capped), big chunks flung at the camera, a flash on each wall down, a bass thump on SUPER,
+// a slow-motion beat with the camera nudged forward on a stage's last wall. prefers-reduced-motion: a tiny shake, no camera move, a short beat ---
+const JUICE = { shakeCap: 3.2, stopMax: 110, chunkMax: 4, slowMs: 600, pushZ: 130, pushMs: 900 };
+let camPush = 0; // depth the camera is nudged forward (proj and the 3D camera use it)
+function reducedMotion() { if (typeof strike.reducedMotion === 'boolean') return strike.reducedMotion; try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch { return false; } }
+function juiceImpact(w, b, n, tier, now, gone) { // a ball met a wall and n bricks broke (gone: some of them, for the big chunks)
+  if (strike.extrasOff) return null;
+  const big = tier === 'super' || tier === 'fire', rm = reducedMotion();
+  const stop = Math.min(JUICE.stopMax, (big ? 60 : tier === 'hard' ? 24 : 0) + (n >= 2 ? 6 * n : 0)), raw = Math.min(JUICE.shakeCap, 0.5 + 0.3 * n + (big ? 1 : 0));
+  if (stop > 0) strike.stopUntil = Math.max(strike.stopUntil, now + stop);
+  shakeScreen(raw);
+  const nc = n >= 3 || (big && n) ? Math.min(JUICE.chunkMax, 1 + Math.floor(n / 3) + (big ? 1 : 0), gone.length) : 0;
+  for (let i = 0; i < nc; i++) spawnChunk(w, gone[Math.floor(i * gone.length / nc)], b, tier);
+  if (big) sfx('thump', 1);
+  const J = { stop, shake: rm ? Math.min(0.6, raw * 0.2) : raw, raw, n, tier, chunks: nc, rm, at: now }; strike.juice = J; strike.juiceLog.push(J); if (strike.juiceLog.length > 30) strike.juiceLog.shift();
+  return J;
+}
+function spawnChunk(w, k, b, tier) { // a big piece of brick flung straight at the camera (perspective makes it loom up)
+  const c = brickCell(w, k.col, k.row), glass = w.kind === 'glass', big = tier === 'super' || tier === 'fire';
+  strike.debris.push({ x: c.x + (Math.random() - 0.5) * c.w * 0.3, y: c.y + (Math.random() - 0.5) * c.h * 0.3, z: w.z - 6, vx: (c.x - b.x) * 0.0005 + (Math.random() - 0.5) * 0.1, vy: -0.04 - Math.random() * 0.1, vz: -(1.4 + Math.random() * 0.7) * (big ? 1.25 : 1),
+    rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.01, k: glass ? 0.3 : 0.38 + Math.random() * 0.14, level: w.level, kind: glass ? 'glass' : w.kind === 'steel' ? 'steel' : k.tnt ? 'tnt' : 'brick', shard: glass, w: c.w, h: c.h, life: 1, decay: 1 / 950, chunk: true });
+  strike.chunks = (strike.chunks || 0) + 1; g3Shatter(w, k, b, tier, 2.4);
+}
+function wallFlashFx(w, now) { // a wall down: a white flash and a wide ring from its centre, a low thump
+  if (strike.extrasOff) return; const { T, B } = corridor(), c = proj(0, (T + B) / 2, w.z); strike.wallFlash = { t: now, x: c.x, y: c.y, rm: reducedMotion() };
+  ring(c.x, c.y, 'rgba(255,248,220,0.9)', Math.min(W, H) * 0.42, 420, 6); sfx('thump', 0.55);
+}
+function stageSlowmo(now) { // a stage's last wall: a slow-motion beat (the debris drifts), the camera nudged forward and back
+  const rm = reducedMotion(), ms = rm ? 250 : JUICE.slowMs; strike.slowUntil = now + ms; strike.camPushAt = rm ? 0 : now;
+  strike.lastSlowmo = { at: now, ms, push: rm ? 0 : JUICE.pushZ, rm };
+}
+function camPushTick(now) { const t0 = strike.camPushAt; camPush = t0 && now >= t0 && now - t0 < JUICE.pushMs ? JUICE.pushZ * Math.sin(Math.PI * (now - t0) / JUICE.pushMs) : 0; if (t0 && now - t0 >= JUICE.pushMs) strike.camPushAt = 0; strike.ui.camPush = camPush; }
+function drawJuiceFx(now) { // the wall-down flash and the PERFECT flash over the whole screen
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const F = strike.wallFlash, fk = F ? Math.max(0, 1 - (now - F.t) / 200) : 0;
+  if (fk > 0) { ctx.fillStyle = 'rgba(255,250,235,' + ((F.rm ? 0.08 : 0.2) * fk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+  const pk = Math.max(0, 1 - (now - (strike.perfectAt || -1e9)) / 220);
+  if (pk > 0) { const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) * 0.6); gr.addColorStop(0, 'rgba(255,230,140,0)'); gr.addColorStop(1, 'rgba(255,230,140,' + (0.45 * pk).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); }
+}
+// --- floating texts never overlap: one big message at a time (a newer one waits its turn, at most FLOAT_Q waiting; PERFECT cuts in), the
+// rest step aside from each other and from everything else on the overlay (banners, the spotlight, the tag, the combo pop, the HUD); a text
+// with no free spot is not drawn ---
+const FLOAT_BIG_MS = 450, FLOAT_Q = 3;
+function addFloater(f) {
+  const now = performance.now(), L = strike.floaters; f.t0 = now; f.life = f.life || 1;
+  if (f.big && !f.bubble) {
+    const live = L.filter((q) => q.big && !q.bubble && q.life > 0), act = live.filter((q) => !(q.wait > now)), wait = live.filter((q) => q.wait > now);
+    if (f.perfect) { for (const q of act) q.life = 0; for (const q of wait) q.wait = Math.max(q.wait, now) + FLOAT_BIG_MS; }
+    else if (act.length || wait.length) {
+      const last = Math.max(...act.map((q) => q.t0), ...wait.map((q) => q.wait)); f.wait = Math.max(now, last + FLOAT_BIG_MS);
+      if (wait.length >= FLOAT_Q) { const old = wait.sort((a, b) => a.wait - b.wait)[0]; L.splice(L.indexOf(old), 1); }
+    }
+  }
+  if (f.big && !f.bubble && !f.wait) { strike.floatLog.push({ text: f.text, at: now }); if (strike.floatLog.length > 20) strike.floatLog.shift(); } // (the big messages as they came up: tests check one at a time)
+  L.push(f); return f;
+}
+function tickStrikeFloaters(now, dt) {
+  const L = strike.floaters;
+  for (let i = L.length - 1; i >= 0; i--) {
+    const f = L[i]; if (f.wait > now) continue;
+    if (f.wait) { f.wait = 0; f.t0 = now; strike.floatLog.push({ text: f.text, at: now }); if (strike.floatLog.length > 20) strike.floatLog.shift(); for (const q of L) if (q !== f && q.big && !q.bubble && !(q.wait > now) && q.life > 0 && q.t0 < now) q.life = 0;
+      let prev = now; for (const q of L.filter((q) => q.wait > now).sort((a, b) => a.wait - b.wait)) { q.wait = Math.max(q.wait, prev + FLOAT_BIG_MS); prev = q.wait; } } // its turn: the one showing gives way (the next ones keep their full gap after it)
+    if (f.life > 0) { f.y -= (f.small ? 0.025 : 0.04) * dt; f.life -= dt / 900; }
+  }
+  for (let i = L.length - 1; i >= 0; i--) if (L[i].life <= 0) L.splice(i, 1);
+}
+function floaterSprite(f) {
+  if (f.bubble) return textSprite(f.text, 22, '#2a1a10', null, 800);
+  if (f.perfect) return bigTextSprite(f.text, 36);
+  if (f.small) return textSprite(f.text, 15, f.dim ? 'rgba(241,233,218,0.7)' : '#bff7d8', 'rgba(10,14,32,0.85)', 700);
+  return textSprite(f.text, f.big ? 26 : 20, f.big ? '#ffd166' : '#f1e9da', f.big ? 'rgba(255,170,40,0.9)' : 'rgba(255,255,255,0.55)');
+}
+function blockRect(name, r) { if (r && r.w > 0 && r.h > 0 && (r.a === undefined || r.a > 0.05)) strike.ui.blocks.push({ name, x: r.x, y: r.y, w: r.w, h: r.h }); }
+function rectsHit(a, b, m = 2) { return a.x < b.x + b.w + m && b.x < a.x + a.w + m && a.y < b.y + b.h + m && b.y < a.y + a.h + m; }
+function drawStrikeFloaters(now) {
+  const ui = strike.ui, blocks = ui.blocks.slice(), out = []; ui.floaterRects = out;
+  if (ui.hud) blocks.push({ name: 'hud', ...ui.hud });
+  const L = strike.floaters.filter((f) => !(f.wait > now) && f.life > 0).sort((a, b) => (!!b.perfect - !!a.perfect) || (!!b.big - !!a.big) || (b.t0 - a.t0));
+  for (const f of L) {
+    const sp = floaterSprite(f), bw = f.bubble ? sp.tw + 26 : f.perfect ? (sp.w - 24) * 1.25 : sp.tw + 6, bh = f.bubble ? 50 : f.perfect ? sp.h * 0.62 * 1.25 : sp.h * 0.78, step = bh + 6; // (PERFECT: room for its pop)
+    const cx = Math.max(bw / 2 + 4, Math.min(W - bw / 2 - 4, f.x)), base = f.y - (f.bubble ? 0 : 8), top = (ui.hud ? ui.hud.y + ui.hud.h : 40) + 4;
+    let pick = null; const ox = f.ox || 0, dxs = f.big ? [ox, 0] : [ox, 0, -(bw + 8), bw + 8], dys = [f.oy || 0, 0]; for (let k = 1; k <= 6; k++) dys.push(-k * step, k * step);
+    for (const dy of dys) for (const dx of dxs) {
+      if (pick) break; const x = Math.max(4, Math.min(W - bw - 4, cx + dx - bw / 2)), r = { x, y: base + dy - bh / 2, w: bw, h: bh };
+      if (r.y < top || r.y + r.h > H - 4) continue;
+      if (blocks.some((q) => rectsHit(r, q)) || out.some((q) => rectsHit(r, q))) continue;
+      pick = { dy, dx: r.x + bw / 2 - cx, r };
+    }
+    if (!pick) { f.hidden = true; continue; } // no free spot this frame: not drawn
+    f.hidden = false; f.oy = pick.dy; f.ox = pick.dx;
+    const a = Math.max(0, Math.min(1, f.life * (f.small ? 2 : 1.4))), age = now - f.t0, pop = f.perfect ? 1 + 0.35 * Math.max(0, 1 - age / 160) : 1;
+    const px = pick.r.x + bw / 2, py = base + pick.dy;
+    if (f.bubble) drawBubble({ ...f, x: px, y: py });
+    else { if (f.perfect) blit(burstSprite(), px, py, now * 0.002, 0.45, a * 0.6); blit(sp, px, py, 0, pop, a); }
+    out.push({ text: f.text, x: pick.r.x, y: pick.r.y, w: pick.r.w, h: pick.r.h, big: !!f.big, a });
+  }
+}
+function drawRunBadge(now, ui, rtl) { // the run power of this stage: a small badge under the HUD pill's start corner (a used shield greys out)
+  ui.runBadge = null; const id = adv.on ? adv.power : null, H0 = ui.hud; if (!id || !H0) return;
+  const used = (id === 'rp_shield' && !strike.shield) || (id === 'rp_combo' && !strike.comboKeep), R = 11, x = rtl ? H0.x + H0.w + R + 6 : H0.x - R - 6, y = H0.y + H0.h / 2; // (beside the pill's start end: the combo pops at the other end)
+  blit(perkIconSprite(id, 38), x, y, 0, R / 38, used ? 0.35 : 0.95); ui.runBadge = { x: x - R, y: y - R, w: 2 * R, h: 2 * R, id, used }; blockRect('runBadge', ui.runBadge);
 }
 /* --- v4 (challenge): turret bricks shoot back. A wall in view with a live turret fires a slow glowing shot at the player every turretMs
    (one or two at a time); it must be slapped away at the player's plane (the same forgiving reach as the ball) or it costs a heart. A slapped
@@ -5424,12 +5678,12 @@ function shotScreen(q) { const p = proj(q.x, q.y, q.z); return { x: p.x, y: p.y,
 function deflectShot(q, now) { // slapped away: a ping, sparks, points, the combo grows; it flies back at its turret
   const sc = shotScreen(q); q.dir = -1; q.bx = q.x; q.by = q.y; q.z = Math.max(q.z, 1); strike.deflects++;
   sfx('deflect'); burst(sc.x, sc.y, '#ff8a9a', 14); burst(sc.x, sc.y, '#ffffff', 8); ring(sc.x, sc.y, 'rgba(255,140,160,0.95)', sc.r * 3, 300, 4); shakeScreen(1.2);
-  const pts = scorePts(5); strike.score += pts; strike.ui.scoreAt = now; strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 10, text: t('deflected') + ' +' + pts, big: false, life: 1 }); track('deflect', 1);
+  const pts = scorePts(5); strike.score += pts; strike.ui.scoreAt = now; addFloater({ x: sc.x, y: sc.y - sc.r - 10, text: t('deflected') + ' +' + pts, big: false, life: 1 }); track('deflect', 1);
   streakUp(now);
 }
 function shotHits(q, now) { // it got through: a heart, a red flash, the combo is gone
   const sc = shotScreen(q); q.dead = true; q.deadAt = now; strike.shotHits++;
-  sfx('hurt'); shakeScreen(2.4); burst(sc.x, sc.y, '#ff5a6e', 16); strike.floaters.push({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('ouch'), big: true, life: 1.1 });
+  sfx('hurt'); shakeScreen(2.4); burst(sc.x, sc.y, '#ff5a6e', 16); addFloater({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('ouch'), big: true, life: 1.1 });
   streakReset(now); loseLife(now);
 }
 /* --- v4 (challenge): walls closing in. From the plan's stage (Endless: level 9) the front wall creeps toward the player while the ball is in
@@ -5437,12 +5691,12 @@ function shotHits(q, now) { // it got through: a heart, a red flash, the combo i
 function creepDanger() { const w = strike.walls.find((q) => q.left > 0 && q.cz > 0); return w ? Math.max(0, Math.min(1, 1 - (w.z - CRUSH_Z) / Math.max(1, wallSlotZ(0) - CRUSH_Z))) : 0; }
 function crushWall(w, now) {
   w.cz = 0; w.z = w.pz = wallSlotZ(0); strike.crushes++; sfx('tnt'); sfx('hurt'); shakeScreen(4); strike.flash = now;
-  strike.floaters.push({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('tooClose'), big: true, life: 1.2 });
+  addFloater({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('tooClose'), big: true, life: 1.2 });
   streakReset(now); loseLife(now);
 }
 function closeOne(b, now, why) { // a hit at the very end of the window or the edge of the reach: 'Close one!', a moment of slow motion, +2 coins
   strike.closeOnes++; strike.slowUntil = now + CLOSE_MS; strike.ui.closeAt = now; strike.lastClose = why;
-  const sc = ballScreen(b); strike.floaters.push({ x: sc.x, y: Math.max(strike.ui.top + 120, sc.y - sc.r - 34), text: t('closeOne'), big: true, life: 1.3 });
+  const sc = ballScreen(b); addFloater({ x: sc.x, y: Math.max(strike.ui.top + 120, sc.y - sc.r - 34), text: t('closeOne'), big: true, life: 1.3 });
   ring(sc.x, sc.y, 'rgba(120,220,255,0.9)', sc.r * 2.4, 420, 4); sfx('close'); addCoins(ECONOMY.strike.close); track('close', 1); grippySay('close');
 }
 // The drawn hand (strikeHandSprite x handScale(), origin at the cursor): a rounded palm and five finger capsules, in sprite px. The slap hit
@@ -5577,14 +5831,15 @@ function smashWall(w, b, now) {
       let n = 0; for (const k of gc.over) { if (!k.alive) continue; n += breakBrick(w, k, b, tier, now); }
       strike.lastClip = { wall: w.id, n, open: gc.open }; g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind, dent: false, destroyed: n, tier, sup: false });
       const sc = ballScreen(b), pts = scorePts(n * (steel ? 3 : 1)); strike.score += pts; strike.ui.scoreAt = now; track('brick', n); sfx('crack', 0.3); sfx('whoosh');
-      strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
+      addFloater({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
       maybeCollapse(w, now); if (w.left <= 0) wallDown(w, now);
       return 'pass';
     }
   }
   let a = under; if (!a || !a.alive) a = nearest(r * 0.35) || nearest(r); // the brick it hits: the one under its centre, else the nearest one it overlaps
   if (!a) { sfx('whoosh'); return 'pass'; }
-  const bl = BLAST[fire ? 'fire' : tier] || BLAST.soft, shape = glass ? Math.max(bl[2], fire || tier === 'super' ? 4 : 3) : bl[2];
+  const bl = BLAST[fire ? 'fire' : tier] || BLAST.soft, hv = !glass && !fire && (tier === 'medium' || tier === 'hard') && upgLv('heavy') && strikeRand('upg') < 0.12 * upgLv('heavy'); // v5: Heavier ball: a medium / hard hit sometimes blasts one shape wider
+  const shape = glass ? Math.max(bl[2], fire || tier === 'super' ? 4 : 3) : bl[2] + (hv ? 1 : 0); if (hv) strike.heavyUps = (strike.heavyUps || 0) + 1;
   let targets = blastTargets(w, a, shape, b);
   if ((powerOn('big') || b.guest) && !glass) for (const k of w.bricks) if (k.alive && edgeDist(k) < r && !targets.some((q) => q[0] === k)) targets.push([k, 'x']); // a Big ball / a guest: every brick under its footprint too
   if (perkN('heavy')) { // Heavy Ball: one more brick per stack, the live ones nearest the ball
@@ -5595,6 +5850,7 @@ function smashWall(w, b, now) {
     if (!k.alive) continue;
     let d = glass ? 1e9 : ring === 'x' ? Math.max(1, bl[1]) : ring ? bl[1] : bl[0]; // ('x': a brick under a Big ball's / a guest's footprint, or Heavy Ball's extra: at least 1)
     if (steel) { const sd2 = STEEL_DMG[fire ? 'fire' : tier] || STEEL_DMG.soft; d = ring ? sd2[1] : sd2[0]; }
+    if (k.armor && d > 0 && d < 1e9 && upgLv('heavy') >= 3) d++; // (v5: Heavier ball level 3: armor cracks faster)
     if (!d) { k.dent = (k.dent || 0) + 1; dents++; continue; }
     const n = hurtBrick(w, k, d, b, tier, now); if (n) destroyed += n; else cracked++;
   }
@@ -5604,12 +5860,14 @@ function smashWall(w, b, now) {
   const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 3 + pw * 0.4), big = tier === 'super' || fire;
   let pts = destroyed * (steel ? 3 : 1);
   if (fire) { sfx('fire'); ring(sc.x, sc.y, 'rgba(255,138,61,0.9)', sc.r * 2.8, 360, 5); burst(sc.x, sc.y, '#ff8a3d', 14); burst(sc.x, sc.y, '#ffe07a', 10); }
-  if (glass) { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
-  else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shakeScreen(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
-  else { if (destroyed) sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3 + Math.min(2, destroyed * 0.12)); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
+  const shk = (a) => { if (strike.extrasOff) shakeScreen(a); }; // (v5: the juice shakes by what broke; the older suites keep the old shake)
+  if (glass) { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shk(0.8 + pw * 2); } // a shower of sparkling shards
+  else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shk(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
+  else { if (destroyed) sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shk(1 + pw * 3 + Math.min(2, destroyed * 0.12)); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
   if (cracked && !glass) { const hp = Math.max(1, ...targets.filter((q) => q[0].alive).map((q) => q[0].hp)); sfx('armor', hp); } // a crack (an armored brick holding): a stony tock, lower the more it has left
-  if (big) { strike.superFlash = now; if (!strike.extrasOff) strike.stopUntil = now + (fire ? 60 : 80); } // hit-stop: the world freezes for a beat on a SUPER impact
-  if (destroyed) { strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + scorePts(pts), big: false, life: 1 }); track('brick', destroyed); }
+  if (big) strike.superFlash = now; // (v5: the hit-stop is the juice's, scaled to the impact)
+  if (!strike.extrasOff) juiceImpact(w, b, destroyed, fire ? 'fire' : tier, now, targets.map((q) => q[0]).filter((k) => !k.alive)); // hit-stop, shake, big chunks at the camera, the SUPER thump
+  if (destroyed) { addFloater({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + scorePts(pts), big: false, life: 1 }); track('brick', destroyed); }
   pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the combo
   maybeCollapse(w, now); strike.lastSmash.pts = strike.score - s0;
   if (w.left <= 0) wallDown(w, now); // wall down: bonus, chime; a fresh wall spawns beyond the far end (or behind the boss) and the queue slides forward
@@ -5636,21 +5894,21 @@ function breakBrick(w, k, b, tier, now) { // brick k is out: debris, its capsule
   if (k.tnt) n += explodeTnt(w, k, b, now);
   const c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z);
   if (k.gold) { // gold: a bonus (x the combo), a glint and a chime
-    const pts = scorePts(GOLD_PTS); strike.score += pts; strike.golds = (strike.golds || 0) + 1; strike.ui.scoreAt = now;
-    strike.floaters.push({ x: p.x, y: p.y - 18 * p.s, text: t('goldPts', { n: pts }), big: true, life: 1.2 }); sfx('gold'); burst(p.x, p.y, '#ffd36b', 18); burst(p.x, p.y, '#fff3c4', 10); ring(p.x, p.y, 'rgba(255,214,107,0.95)', c.w * p.s * 1.4, 380, 4); track('gold', 1);
+    const pts = scorePts(GOLD_PTS); strike.score += pts; strike.golds = (strike.golds || 0) + 1; strike.ui.scoreAt = now; if (upgLv('lucky')) addCoins(1); // (v5: Lucky: a coin a gold brick)
+    addFloater({ x: p.x, y: p.y - 18 * p.s, text: t('goldPts', { n: pts }), big: true, life: 1.2 }); sfx('gold'); burst(p.x, p.y, '#ffd36b', 18); burst(p.x, p.y, '#fff3c4', 10); ring(p.x, p.y, 'rgba(255,214,107,0.95)', c.w * p.s * 1.4, 380, 4); track('gold', 1);
   }
   if (k.turret) { strike.turretsDown = (strike.turretsDown || 0) + 1; burst(p.x, p.y, '#ff5a6e', 12); sfx('clang', 0.6); }
   if (k.weak) { // the weak spot: a crack runs along its row and its column
     strike.weakHits = (strike.weakHits || 0) + 1; strike.ui.weakAt = now; strike.lastWeak = { wall: w.id, col: k.col, row: k.row, at: now };
     sfx('weak'); shakeScreen(2.6); ring(p.x, p.y, 'rgba(120,255,240,0.95)', c.w * p.s * 2.4, 420, 5); burst(p.x, p.y, '#8affef', 18);
     strike.cracks.push({ w: w.id, z: w.z, x: c.x, y: c.y, t: now });
-    strike.floaters.push({ x: p.x, y: p.y - 26 * p.s, text: t('weakHit'), big: true, life: 1.2 });
+    addFloater({ x: p.x, y: p.y - 26 * p.s, text: t('weakHit'), big: true, life: 1.2 });
     for (const q of w.bricks) if (q.alive && (q.col === k.col || q.row === k.row)) n += hurtBrick(w, q, w.kind === 'steel' ? 2 : 9, b, 'hard', now);
   }
   if (k.key) { // the keystone: the bricks resting on it (above it, one column each side) come down
     strike.keyHits = (strike.keyHits || 0) + 1; strike.lastKey = { wall: w.id, col: k.col, row: k.row, at: now };
     sfx('keystone'); shakeScreen(2.2); dust(p.x, p.y, 10, 1 + p.s);
-    strike.floaters.push({ x: p.x, y: p.y - 26 * p.s, text: t('keyHit'), big: true, life: 1.2 });
+    addFloater({ x: p.x, y: p.y - 26 * p.s, text: t('keyHit'), big: true, life: 1.2 });
     for (const q of w.bricks) if (q.alive && q.row < k.row && Math.abs(q.col - k.col) <= 1 && w.kind !== 'steel') { n += breakBrick(w, q, { x: brickCell(w, q.col, q.row).x, y: c.y + c.h * 3 }, 'soft', now); }
   }
   return n;
@@ -5669,7 +5927,7 @@ function incomingWalls(b, z0, x0, y0, now) { // an incoming ball crossing a stan
 }
 function wallDown(w, now) { // a wall knocked out completely (from in front or behind): its bonus, the chime, the coins; a fresh wall queues up
   const { T, B } = corridor(), bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); strike.score += scorePts(bonus); strike.ui.scoreAt = now;
-  strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
+  addFloater({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime'); wallFlashFx(w, now);
   const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
   wallCleared(now); spawnStrikeWall(nextWallZ());
 }
@@ -5725,7 +5983,7 @@ function debrisTick(dt) {
   const D = strike.debris;
   for (let i = D.length - 1; i >= 0; i--) {
     const p = D[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vy += 0.0005 * dt; p.rot += p.vr * dt; p.life -= p.decay * dt;
-    if (p.life <= 0 || p.z < -STRIKE_F * 0.45) D.splice(i, 1); // gone, or flown past the camera
+    if (p.life <= 0 || p.z < -STRIKE_F * (p.chunk ? 0.32 : 0.45)) D.splice(i, 1); // gone, or flown past the camera (v5: a big chunk a little sooner)
   }
 }
 /* --- the boss: a wide brick wall with a face that creeps toward the player; hp by tier; angry at half health; walls it reaches crumble --- */
@@ -5771,7 +6029,7 @@ function bossHit(tier, bl, now) { // damage by tier: soft 1, medium 2, hard 4, S
   const dmg = BOSS_DMG[tier] || 1, { L, R, T, B } = corridor(), p = proj(bl.x, bl.y, b.z), pw = STRIKE_PW[tier] || 0;
   b.hp = Math.max(0, b.hp - dmg); b.hitAt = now; b.lastTier = tier; g3Fx('boss', { x: bl.x, y: bl.y, z: b.z, dmg, tier });
   const pts = scorePts(dmg * 5); strike.score += pts; strike.ui.scoreAt = now;
-  strike.floaters.push({ x: p.x, y: p.y - 20 * p.s, text: '+' + pts, big: tier === 'super', life: 1 });
+  addFloater({ x: p.x, y: p.y - 20 * p.s, text: '+' + pts, big: tier === 'super', life: 1 });
   const cw = (R - L) / 8, ch = (B - T) / 8; // bits of brick fly off the face, more the harder the hit
   for (let i = 0; i < Math.min(12, 2 + dmg * 1.5); i++) {
     while (strike.debris.length >= CONFIG.STRIKE_MAX_DEBRIS) strike.debris.shift();
@@ -5792,7 +6050,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n; g3Fx('bossdown', { z: b.z });
   strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1);
-  strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; strike.floaters.push({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
+  strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; addFloater({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
   sfx('bossdown'); shakeScreen(4); strike.tntAt = now; if (!adv.on) grippySay('bossDown'); // (Adventure: the stage clear / the new world speaks next)
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
   burst(p.x, p.y, '#ffc24b', 30); burst(p.x, p.y, '#ff6f59', 22); burst(p.x, p.y, '#c05ce6', 22); dust(p.x, p.y, 16, 1 + p.s); confetti(W / 2, H * 0.3, 90, 1);
@@ -5833,21 +6091,24 @@ function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at a
   return false;
 }
 const FORCE_SPEED = { soft: 0.3, medium: (STRIKE_TIERS[0] + STRIKE_TIERS[1]) / 2, hard: (STRIKE_TIERS[1] + CONFIG.STRIKE_SUPER_SPEED) / 2, super: CONFIG.STRIKE_SUPER_SPEED * 1.05 }; // a forced tier (the test hook's serve, a tap): the hand speed it stands for
-function strikeHit(b, now, force) { // the palm meets the ball: power from the hand speed over the last 100 ms (or a forced tier); direction and sidespin from where on the ball it landed and which way the hand was moving
-  const q = slapLaunch(b, now, force), { sc, v, pw, tier, offx, offy, hx, hy, straight } = q;
-  const pts = scorePts(1 + STRIKE_BONUS[tier]); strike.score += pts; // (x the streak multiplier: the returns before this one)
+function strikeHit(b, now, force, tm) { // the palm meets the ball: power from the hand speed over the last 100 ms (or a forced tier); direction and sidespin from where on the ball it landed and which way the hand was moving; tm: its timing (v5: PERFECT = +1 tier, x2 points)
+  const q = slapLaunch(b, now, force, tm), { sc, v, pw, tier, offx, offy, hx, hy, straight } = q, perfect = !!(tm && tm.grade === 'perfect');
+  const pts = scorePts(1 + STRIKE_BONUS[tier]) * (perfect ? 2 : 1); strike.score += pts; // (x the streak multiplier: the returns before this one; x2 for a PERFECT)
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
   strike.ui.tierFlash = { t: now, tier, v, x: sc.x, y: sc.y, r: sc.r, val: meterPopVal(tier, v) }; // the small power arc pops up at the hit point
-  strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
-  slapFx(b, sc, pw); heatHit(tier, now);
+  addFloater({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
+  slapFx(b, sc, pw); heatHit(tier, now); timingFx(tm, sc, now, false);
+  if (tier === 'super' && runPowerOn('rp_split') && !b.guest && !b.split) splitBall(b, now); // v5: Split shot
   if (b.guest) guestHit(b, sc, now);
   else if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
   streakUp(now); sparkChip(now); paceUp(now);
 }
 function slapFx(b, sc, pw) { sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3); burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2); if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = performance.now(); } }
-function slapLaunch(b, now, force) { // the ball goes back down the corridor: tier from the hand speed (an overheated hand: soft), its aim and sidespin from the contact point and the hand's motion
-  const sc = ballScreen(b), s = strikeScale(), hot = overheated(now), v0 = typeof force === 'number' ? force : force && FORCE_SPEED[force] ? FORCE_SPEED[force] : handSpeed(now, 100) / s, v = hot ? Math.min(v0, FORCE_SPEED.soft) : v0, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
+function slapLaunch(b, now, force, tm) { // the ball goes back down the corridor: tier from the hand speed (an overheated hand: soft; v5: a PERFECT one tier up), its aim and sidespin from the contact point and the hand's motion
+  const sc = ballScreen(b), s = strikeScale(), hot = overheated(now), vh = typeof force === 'number' ? force : force && FORCE_SPEED[force] ? FORCE_SPEED[force] : handSpeed(now, 100) / s;
+  if (tm) { tm.v = vh; if (tm.grade === 'perfect' && vh < TIMING.swingV) { tm.grade = 'good'; tm.still = true; } } // (a hand held still on the ball's path is never PERFECT: it takes a swing)
+  const v0 = tm && tm.grade === 'perfect' && !hot ? Math.max(vh, FORCE_SPEED[TIER_UP[tierOfV(vh)]]) : vh, v = hot ? Math.min(v0, FORCE_SPEED.soft) : v0, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
   const tier0 = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0; // a guest always goes back at least medium
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   const hv = cursorVel(now, 100), hx = Math.max(-1, Math.min(1, hv.x / (1.6 * s))), hy = Math.max(-1, Math.min(1, hv.y / (1.6 * s))); // the hand's own direction, -1..1 per axis
@@ -5856,7 +6117,7 @@ function slapLaunch(b, now, force) { // the ball goes back down the corridor: ti
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
   b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight)) * (b.guest ? GUEST_SPD : 1);
   aimBall(b, latx, laty, now);
-  return { sc, v, pw, tier, offx, offy, hx, hy, straight, hot };
+  return { sc, v, pw, tier, offx, offy, hx, hy, straight, hot, tm };
 }
 // v4 (challenge): the aim. A hit's direction (where on the ball the hand met it, which way the hand moved; a serve's flick sideways) picks a
 // landing point on the wall ahead: up to ~0.6 of the corridor's half-width per unit of 'lat' from where the ball was hit. The ball's
@@ -5938,16 +6199,16 @@ function waitTick(now, dt) {
   for (const p of strike.powerups) p.until += dt; strike.beatAt = 0; // frozen while it waits: power-up timers, the heartbeat (the boss and the level's walls are held by the caller)
   waitPlace(b, now, Math.min(1, dt / 260)); b.rot = (b.rot || 0) + dt * 0.0012;
   if (now - strike.waitSince < WAIT_ARM_MS) { pullReset(); return; }
-  const go = pullTick(now);
-  if (go) playerServe(go.v, now, go.aim);
+  const P0 = strike.pull, armedAt = P0 && P0.armed ? P0.armedAt : 0, go = pullTick(now);
+  if (go) playerServe(go.v, now, go.aim, armedAt && timingOn() ? serveTiming(armedAt, now) : null); // (v5: flicked as the pulsing ring closes = PERFECT)
 }
-function playerServe(force, now = performance.now(), aim = null) { // the waiting ball launched (force: a tier for the test hook, or the flick's speed; aim: -AIM_MAX..AIM_MAX sideways)
+function playerServe(force, now = performance.now(), aim = null, tm = null) { // the waiting ball launched (force: a tier for the test hook, or the flick's speed; aim: -AIM_MAX..AIM_MAX sideways; tm: v5 serve timing)
   let b = strike.balls[0]; if (!strike.waiting || !b || !b.wait) b = startWait(now);
-  const q = slapLaunch(b, now, force); strike.waiting = false; b.wait = false; strike.serves++; pullReset();
+  const q = slapLaunch(b, now, force, tm); strike.waiting = false; b.wait = false; strike.serves++; pullReset();
   if (aim !== null) { b.spin = 0; aimBall(b, aim / AIM_MAX * 1.2, 0, now); } // a flick: straight on down the corridor, steered sideways by the flick
   heatHit(q.tier, now);
   strike.power = q.tier; strike.hitAt = strike.handHit = now; strike.ui.tierFlash = { t: now, tier: q.tier, v: q.v, x: q.sc.x, y: q.sc.y, r: q.sc.r, val: meterPopVal(q.tier, q.v) }; strike.lastServe = { tier: q.tier, at: now, wait: now - strike.waitSince, v: q.v, aim, flick: typeof force === 'number' };
-  slapFx(b, q.sc, q.pw); tipOnce('serve');
+  slapFx(b, q.sc, q.pw); timingFx(tm, q.sc, now, true); tipOnce('serve');
   if (powerOn('multi')) addClones(); else if (challengeCfg().balls > 1) addClones(challengeCfg().balls); // (a two-ball stage: the second ball goes with the serve)
   return q.tier;
 }
@@ -5959,7 +6220,7 @@ function paceUp(now) {
 }
 function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life (a two-ball stage: every ball missed costs one)
   const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
-  const must = adv.on && adv.plan && adv.plan.balls > 1 && !powerOn('multi');
+  const must = adv.on && adv.plan && adv.plan.balls > 1 && !powerOn('multi') && !b.split; // (v5: a Split shot's extra ball never costs a heart while another is in play)
   if (B.length && !must) { sfx('whiff'); return; }
   if (B.length) { strike.misses++; sfx('whiff'); shakeScreen(1.2); streakReset(now); loseLife(now); return; } // (the other ball plays on)
   strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now); strike.runReturns = 0; // a miss breaks the run toward the next speed-up
@@ -5990,7 +6251,7 @@ function makeGuest(b, kind, now) {
   b.tumble = (Math.random() < 0.5 ? -1 : 1) * (0.0022 + Math.random() * 0.0018); // (visual only: Math.random keeps the daily's channels untouched)
   const r = ballRad(b); b.tx = clamp(b.tx, L + r, R - r); b.ty = clamp(b.ty, T + r, B - r); // the bigger guest still lands inside the corridor
   strike.guestsServed++; strike.lastGuest = { kind, t: now, pitch: strike.pitches, z: b.z };
-  const v = vanish(); strike.floaters.push({ x: v.x, y: v.y - 46, text: t('guestIncoming'), big: true, life: 1.3 });
+  const v = vanish(); addFloater({ x: v.x, y: v.y - 46, text: t('guestIncoming'), big: true, life: 1.3 });
   sfx('whistle'); if (!tipOnce('guest')) grippySay(kind); roadSpot(kind, now); // (Grippy speaks while it is still far)
   if (!strike.extrasOff) { // it pops out just in front of the nearest standing wall (never behind a wall), with a puff
     const Z = CONFIG.STRIKE_Z_FAR, near = strike.walls.filter((w) => w.left > 0 && w.z < b.z).sort((a, c) => a.z - c.z)[0];
@@ -6008,7 +6269,7 @@ function spawnGuest(kind, now) { // hook: a guest served right now
 function guestHit(b, sc, now) { // slapped: it flies back screaming, a speech bubble, +5 coins, the mission
   b.guestHitAt = now; strike.guestHits++;
   sfx(b.guest === 'cow' ? 'moo' : 'monkey');
-  strike.floaters.push({ x: sc.x + sc.r * (sc.x < W / 2 ? 0.9 : -0.9), y: sc.y - sc.r * 1.05, text: t('say_' + b.guest), big: true, life: 1.5, bubble: true });
+  addFloater({ x: sc.x + sc.r * (sc.x < W / 2 ? 0.9 : -0.9), y: sc.y - sc.r * 1.05, text: t('say_' + b.guest), big: true, life: 1.5, bubble: true });
   addCoins(ECONOMY.strike.guest); track('guest', 1);
   burst(sc.x, sc.y, b.guest === 'cow' ? '#ffffff' : '#c08a4a', 10);
 }
@@ -6018,7 +6279,7 @@ function guestMiss(b, now) { // a guest flew past: it splats on the 'screen' wit
   strike.bouncers.push({ kind: b.guest, x: sc.x, y: sc.y, r: Math.min(sc.r, Math.min(W, H) * 0.3), t: now, vx: side * (0.22 + Math.random() * 0.12), vy: -0.75, rot: b.rot || 0, vr: side * 0.012 });
   strike.guestMisses++; strike.power = '';
   sfx('boing'); shakeScreen(0.8);
-  strike.floaters.push({ x: sc.x, y: Math.max(strike.ui.top + 100, sc.y - sc.r * 1.1), text: t('boing'), big: true, life: 1.1, bubble: true });
+  addFloater({ x: sc.x, y: Math.max(strike.ui.top + 100, sc.y - sc.r * 1.1), text: t('boing'), big: true, life: 1.1, bubble: true });
   if (!B.length && !strike.over) { strike.serveAt = now + 800; strike.cued = false; }
 }
 const GUEST_SQUASH_MS = 220;
@@ -6032,6 +6293,7 @@ function bouncersTick(now, dt) { // the missed guests: squashed for a moment, th
 }
 function loseLife(now) { // a life gone (a missed ball, or the boss reaching the player): the heart shakes hollow, a red flash; the last one ends the round
   if (adv.on && adv.phase !== 'play') return; // (an Adventure stage already cleared: nothing more to lose)
+  if (strike.shield > 0) { strike.shield--; strike.shieldUsed = (strike.shieldUsed || 0) + 1; sfx('deflect'); ring(W / 2, H * 0.7, 'rgba(95,216,255,0.95)', Math.min(W, H) * 0.4, 520, 8); burst(W / 2, H * 0.7, '#5fd8ff', 20); addFloater({ x: W / 2, y: H * 0.42, text: t('shieldUp'), big: true, life: 1.1 }); return; } // v5: the Shield power blocks one lost heart
   strike.lives--; strike.flash = now; if (adv.on) adv.lost++;
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   if (strike.lives > 0) { grippySay(strike.lives === 1 ? 'lastLife' : 'miss'); return; }
@@ -6064,7 +6326,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
   adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
-  strike.releaseUntil = adv.cardAt; strike.slowUntil = now + 600; // the debris tumbles on in slow motion
+  strike.releaseUntil = adv.cardAt; stageSlowmo(now); // the debris tumbles on in slow motion (v5: a 0.6 s beat with the camera nudged forward; reduced motion: a short one, no camera move)
   for (const b of strike.balls) { const sc = ballScreen(b); burst(sc.x, sc.y, '#fff3c4', 14); ring(sc.x, sc.y, 'rgba(255,240,200,0.8)', sc.r * 2, 420, 3); }
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
@@ -6073,6 +6335,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   return adv.result;
 }
 function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
+  if (adv.power && !adv.pendingPower) adv.pendingPower = adv.power; // v5: a run power is kept for the retry after a fail
   const P = adv.plan; adv.phase = 'card'; adv.result = { clear: false, n: P.n, stars: 0, best: profile.adv.stars[P.n] || 0, coins: 0, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
   strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null; ui.newBest = false; sfx('chime');
   roundDone(strike.score, advXp(false)); grippySay('advFail'); musicSync();
@@ -6096,6 +6359,7 @@ function advNext() { // the clear card's Next: the next stage at once; after a w
   const r = adv.result, n = r ? r.n : adv.n;
   if (!r || !r.clear) return advStart(n);
   if (r.boss || n >= ADV_N) return openAdvMap({ from: n, pop: n < ADV_N ? n + 1 : 0 });
+  if (runPickDue(r) && !strike.perkOffer) { openRunPick(performance.now(), n + 1); return true; } // v5: a power for the next stage first (the pick starts it)
   return advStart(n + 1);
 }
 function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motion burst, speed streaks on the whoosh forward, and the trip to the next world (a portal at the far end, the corridor cross-fading, 'World 2 - Glass Garden')
@@ -6128,11 +6392,11 @@ function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motio
   if (!r.boss && bk < 1.6) { // 'Stage clear!' pops in over a light burst and rides the whoosh away
     const a = bk < 0.12 ? bk / 0.12 : bk > 1.2 ? Math.max(0, (1.6 - bk) / 0.4) : 1, pop = Math.max(0, 1 - bk * 3);
     blit(burstSprite(), W / 2, y, now * 0.0016, 0.8 + 0.4 * Math.min(1, bk * 3), a * 0.9);
-    blit(bigTextSprite(t('stageClear'), 44), W / 2, y, 0, (1 + 0.3 * Math.sin(Math.PI * pop)) * (1 + 0.25 * fq), a);
+    const scs = bigTextSprite(t('stageClear'), 44), sck = (1 + 0.3 * Math.sin(Math.PI * pop)) * (1 + 0.25 * fq); blit(scs, W / 2, y, 0, sck, a); blockRect('stageClear', { x: W / 2 - scs.w * sck / 2, y: y - scs.h * sck * 0.35, w: scs.w * sck, h: scs.h * sck * 0.7, a });
   }
   if (T && T.q >= 0.5) { // 'World 2' + 'Glass Garden' in its colour
     const k = (T.q - 0.5) / 0.5, [off, a] = bannerSlide(Math.min(0.84, k)), x = W / 2 + off, main = bigTextSprite(t('worldN', { n: T.to }), 44), sub = textSprite(t('wn_' + T.to), 22, acc, 'rgba(8,11,28,0.9)', 800);
-    const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72); strike.ui.travelBox = { x: x - pw / 2, y: y - 52, w: pw, h: 112, a };
+    const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72); strike.ui.travelBox = { x: x - pw / 2, y: y - 52, w: pw, h: 112, a }; blockRect('travel', strike.ui.travelBox);
     blit(glassSprite(pw, 112, 20), x - pw / 2 - 1, y - 53, 0, 1, a); blit(burstSprite(), x, y - 10, now * 0.0012, 0.9, a * 0.6);
     blit(main, x, y - 12, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 32, 0, Math.min(1, (pw - 24) / sub.tw), a);
   } else strike.ui.travelBox = null;
@@ -6228,10 +6492,11 @@ function finalWallTick(now) { // the last wall of a level: flagged 'final' (a gl
   if (strike.level >= 2 && !strike.extrasOff) for (const k of w.bricks) if (k.alive && !k.pu && !k.tnt && !k.weak && !k.key && !k.gold && (k.col + k.row) % 3 === 0) { k.hp++; k.max = Math.max(k.max || 1, k.hp); }
 }
 function strikeTick(now, dt) {
-  const rel = now < strike.releaseUntil; tickFloaters(strike.floaters, dt); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
+  const rel = now < strike.releaseUntil; tickStrikeFloaters(now, dt); camPushTick(now); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
   if (advMapOpen()) { advMapTick(now); return; } // the Adventure map over the game (from a stage card): everything waits
   if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
-  if (menu.open) { if (!strike.over) { strike.serveAt += dt; for (const p of strike.powerups) p.until += dt; if (strike.perkOffer) strike.perkOfferAt += dt; } return; } // the pause sheet: everything waits (the ball, the serve, the power-ups, the perk clock)
+  if (menu.open) { if (!strike.over) { strike.serveAt += dt; for (const p of strike.powerups) p.until += dt; } if (strike.perkOffer) strike.perkOfferAt += dt; return; } // the pause sheet: everything waits (the ball, the serve, the power-ups, the perk clock)
+  if (strike.perkOffer && strike.perkMode === 'run') { perkTick(now, dt); return; } // v5: the run-power cards over the clear card
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
   if (adv.on && adv.phase === 'clear') { advClearTick(now, dt); return; } // an Adventure stage just cleared: the burst, the whoosh or the trip to the next world, then its card
   if (strike.perkOffer) { perkTick(now, dt); return; } // perk cards up: everything waits for the pick (the auto-pick clock runs even while the hand is missing)
@@ -6280,7 +6545,7 @@ function ballTick(b, now, dt, fire, mul) {
       const touch = d > reach && handOverlap(sc.x, sc.y, sc.r, now, CONFIG.STRIKE_HIT_PATH_MS); // the ball touching the drawn hand (e.g. the fingertips, well above the cursor point) is a hit too
       if (d <= reach || touch) { // any cursor position from the last 160 ms counts, not only this frame's
         const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'), late = b.z <= zl + 0.15 * (zo - zl), edge = touch || d > 0.8 * reach;
-        strikeHit(b, now); if ((late || edge) && !strike.extrasOff) closeOne(b, now, late ? 'late' : 'edge'); // the last 15% of the window, or the outer 20% of the reach
+        strikeHit(b, now, undefined, timingOn() ? hitTiming(b, now) : null); if ((late || edge) && !strike.extrasOff) closeOne(b, now, late ? 'late' : 'edge'); // (v5: judged against the ideal moment) // the last 15% of the window, or the outer 20% of the reach
       }
       else if (b.z <= -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z')) { if (b.guest) guestMiss(b, now); else strikeMiss(b, now); return; } // a missed guest boings off the screen: no life lost
     }
@@ -6749,6 +7014,17 @@ const LRM = '‎'; // keeps '×4' reading left-to-right inside Hebrew text
 /* --- perks, the NEXT card, the hit streak: art and drawing --- */
 function perkGlyph(g, id, r) { // a chunky white glyph inside radius r: hand with arrows / kettlebell / horseshoe magnet / heart + plus / clover / bolt / snail / coin stack
   g.fillStyle = g.strokeStyle = '#fff8ec'; g.lineWidth = Math.max(1.5, r * 0.18); g.lineCap = g.lineJoin = 'round';
+  if (/^rp_|^up_/.test(id)) { // v5: the run powers (and the Shop's upgrades) reuse the perk glyphs where one fits
+    const k = id.slice(3), map = { magnet: 'magnet', slow: 'slow', heart: 'skin', heavy: 'heavy', reach: 'wide', lucky: 'lucky' };
+    if (map[k]) return perkGlyph(g, map[k], r);
+    if (k === 'split') { for (const [x, y, q] of [[-0.42, 0.25, 0.36], [0.4, -0.3, 0.36]]) { g.beginPath(); g.arc(x * r, y * r, q * r, 0, TAU); g.fill(); } g.lineWidth = r * 0.12; g.beginPath(); g.moveTo(-r * 0.1, r * 0.55); g.lineTo(r * 0.75, r * 0.55); g.moveTo(-r * 0.75, -r * 0.55); g.lineTo(r * 0.0, -r * 0.55); g.stroke(); return; }
+    if (k === 'shield') { g.beginPath(); g.moveTo(0, -r * 0.85); g.lineTo(r * 0.7, -r * 0.55); g.quadraticCurveTo(r * 0.7, r * 0.45, 0, r * 0.9); g.quadraticCurveTo(-r * 0.7, r * 0.45, -r * 0.7, -r * 0.55); g.closePath(); g.fill(); return; }
+    if (k === 'fire') { g.beginPath(); g.moveTo(0, -r * 0.9); g.bezierCurveTo(r * 0.75, -r * 0.2, r * 0.7, r * 0.85, 0, r * 0.85); g.bezierCurveTo(-r * 0.7, r * 0.85, -r * 0.75, 0, -r * 0.2, -r * 0.35); g.quadraticCurveTo(-r * 0.05, 0, 0, -r * 0.9); g.fill(); return; }
+    if (k === 'cool') { g.lineWidth = r * 0.14; for (let i = 0; i < 3; i++) { const a = i * Math.PI / 3; g.beginPath(); g.moveTo(Math.cos(a) * r * 0.85, Math.sin(a) * r * 0.85); g.lineTo(-Math.cos(a) * r * 0.85, -Math.sin(a) * r * 0.85); g.stroke(); } return; }
+    // combo / perfect: a bold ×2 / a target
+    if (k === 'perfect') { g.lineWidth = r * 0.14; g.beginPath(); g.arc(0, 0, r * 0.75, 0, TAU); g.stroke(); g.beginPath(); g.arc(0, 0, r * 0.35, 0, TAU); g.fill(); return; }
+    g.font = '900 ' + (r * 1.05).toFixed(1) + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('×2', 0, r * 0.06); return;
+  }
   if (id === 'wide') {
     g.beginPath(); g.roundRect(-r * 0.36, -r * 0.1, r * 0.72, r * 0.62, r * 0.2); g.fill();
     g.lineWidth = r * 0.17; for (const [x, l] of [[-0.27, 0.42], [-0.09, 0.52], [0.09, 0.5], [0.27, 0.4]]) { g.beginPath(); g.moveTo(x * r, -r * 0.05); g.lineTo(x * r, -r * (0.05 + l)); g.stroke(); }
@@ -6828,8 +7104,9 @@ function drawPerkOffer(now) { // the run is paused: a dim veil, 'Pick a power!',
   view.x = view.y = 0;
   const L = perkLayout(); ui.perkCards = L.map((r, i) => ({ x: r.x, y: r.y, w: r.w, h: r.h, id: O[i] }));
   const y0 = L[0].y, bottom = L[L.length - 1].y + L[L.length - 1].h;
-  blit(bigTextSprite(t('perkTitle'), 34), W / 2, y0 - 60 + (1 - e) * 12, 0, 1, e);
-  blit(textSprite(t('perkSub'), 13, 'rgba(241,233,218,0.75)', null, 500), W / 2, y0 - 22, 0, 1, e);
+  const run = strike.perkMode === 'run', ttl = bigTextSprite(t(run ? 'rpTitle' : 'perkTitle'), 34); // (v5: the run powers between Adventure stages use the same cards)
+  blit(ttl, W / 2, y0 - 60 + (1 - e) * 12, 0, Math.min(1, (W - 24) / Math.max(1, ttl.w - 30)), e);
+  blit(textSprite(t(run ? 'rpSub' : 'perkSub'), 13, 'rgba(241,233,218,0.75)', null, 500), W / 2, y0 - 22, 0, 1, e);
   L.forEach((r, i) => {
     const id = O[i], col = PERK_COL[id], q = Math.max(0, Math.min(1, (age - i * 70) / 300)), ei = 1 - Math.pow(1 - q, 3), hot = ui.perkHover === i, k = hot ? 1.04 : 1;
     const cx = r.x + r.w / 2, cy = r.y + r.h / 2 + (1 - ei) * 34, a = ei;
@@ -6841,13 +7118,13 @@ function drawPerkOffer(now) { // the run is paused: a dim veil, 'Pick a power!',
       blit(perkIconSprite(id, 38), cx, iy + bob, 0, R / 38, a);
       blit(name, cx, r.y + r.h * 0.53 + (cy - r.y - r.h / 2), 0, Math.min(1, (r.w - 16) / name.tw), a);
       wrapText(t('pkd_' + id), 13, 500, r.w - 28, 3).forEach((ln, j) => blit(textSprite(ln, 13, 'rgba(241,233,218,0.88)', null, 500), cx, r.y + r.h * 0.53 + 27 + j * 17 + (cy - r.y - r.h / 2), 0, 1, a));
-      if (a > 0.95) perkPips(id, cx - (rtl ? -15 : 15), r.y + r.h - 20, rtl, now, true);
+      if (a > 0.95 && !run) perkPips(id, cx - (rtl ? -15 : 15), r.y + r.h - 20, rtl, now, true);
     } else {
       const R = Math.min(36, r.h * 0.33), ix = rtl ? r.x + r.w - 16 - R : r.x + 16 + R, tx = rtl ? ix - R - 16 : ix + R + 16, dy = cy - r.y - r.h / 2, maxW = r.w - (R * 2 + 48);
       blit(perkIconSprite(id, 38), ix, cy + bob, 0, R / 38, a);
-      edgeText(name, tx, r.y + 28 + dy, rtl, Math.min(1, (maxW - 46) / name.tw), a);
+      edgeText(name, tx, r.y + 28 + dy, rtl, Math.min(1, (maxW - (run ? 0 : 46)) / name.tw), a);
       wrapText(t('pkd_' + id), 13, 500, maxW, 2).forEach((ln, j) => edgeText(textSprite(ln, 13, 'rgba(241,233,218,0.88)', null, 500), tx, r.y + 54 + j * 17 + dy, rtl, 1, a));
-      if (a > 0.95) perkPips(id, rtl ? r.x + 18 : r.x + r.w - 18 - 30, r.y + 22, false, now, true);
+      if (a > 0.95 && !run) perkPips(id, rtl ? r.x + 18 : r.x + r.w - 18 - 30, r.y + 22, false, now, true);
     }
   });
   { // the auto-pick clock: a slim bar under the cards running down over 12 s
@@ -6934,7 +7211,8 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   const col = adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
   blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
   ui.wallsPill = { x: pc - pw / 2, y: cy - ph / 2, w: pw, h: ph, text: tx }; ui.advPill = adv.on && adv.plan ? ui.wallsPill : null;
-  drawHeatAndCombo(now, ui, rtl);
+  drawHeatAndCombo(now, ui, rtl); drawRunBadge(now, ui, rtl);
+  if (ui.heatBar) blockRect('heat', { x: ui.heatBar.x - 70, y: ui.heatBar.y - 2, w: ui.heatBar.w + 140, h: ui.heatBar.h + 4 }); if (ui.comboBox) blockRect('combo', ui.comboBox);
   ui.hudParts = ['hearts', 'walls']; ui.streakBox = null; ui.progBar = null; ui.advPips = null; ui.perkIcons.length = 0; ui.nextCard = null; // (no streak chip, progress line, wall pips, perk badges or NEXT card on screen)
   const yb = ui.top + 4; // transient things hang under the top row
   drawPowerIcons(now, rtl ? W - 10 : 10, yb + 12, rtl); // active power-ups with their timers, at the start edge (only while one runs)
@@ -6943,7 +7221,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
   { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the top row, dropping in and fading out
     const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = ui.puIcons.length ? yb + 58 : yb + 26 - 10 * (1 - e); // (below the power-up badges when there are any)
-    ui.tagBox = { x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk };
+    ui.tagBox = { x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk }; blockRect('tag', ui.tagBox);
     blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e);
   }
 }
@@ -6996,7 +7274,7 @@ function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while 
   const P = ui.comboPop, k = P ? (now - P.t) / 1100 : 1; ui.comboBox = null;
   if (P && k >= 0 && k < 1) { // 'x3 COMBO!' pops in big by the pill, bounces, fades; a lost combo: a grey 'x1' sinking
     const R0 = ui.row || { left: 0, right: W }, sx = rtl ? H0.x - 46 : H0.x + H0.w + 46, side = sx - 40 >= R0.left && sx + 40 <= R0.right; // beside the pill when the top row has room (a laptop), else just under it (a phone)
-    const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, cx = side ? sx : Math.max(60, Math.min(W - 60, pc)), cy = side ? H0.y + H0.h / 2 + 2 : H0.y + H0.h + 42, a = k > 0.7 ? (1 - k) / 0.3 : 1;
+    const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, cx = side ? sx : Math.max(60, Math.min(W - 60, pc)), tgb = ui.tag && ui.tagBox, cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42, tgb ? tgb.y + tgb.h + 40 : 0), a = k > 0.7 ? (1 - k) / 0.3 : 1; // (v5: under the tag pill when one shows)
     if (P.lost) { const sp = textSprite(LRM + '×1', 18, 'rgba(241,233,218,0.75)', 'rgba(60,64,84,0.85)', 800); blit(sp, cx, cy + 12 * k, 0, 1 - 0.2 * k, a); ui.comboBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, n: 1, lost: true }; }
     else {
       const sc = (k < 0.12 ? 0.4 + 0.9 * k / 0.12 : 1.3 - 0.3 * Math.min(1, (k - 0.12) / 0.2)) * (1 + 0.05 * P.n), big = bigTextSprite(LRM + '×' + P.n, 30), sub = textSprite(t('comboWord'), 11, '#2a1a00', '#ffc24b', 800);
@@ -7008,7 +7286,7 @@ function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while 
 function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops in, pulses twice, fades (1.1 s)
   const f = strike.ui.faster, k = f ? (now - f.t) / 1100 : 1; if (k >= 1 || k < 0) { strike.ui.fasterBox = null; return; }
   const sp = textSprite(t('hd_faster'), 17, '#ffd77a', 'rgba(255,138,61,0.95)', 800), sc = (k < 0.12 ? 0.6 + 0.4 * k / 0.12 : 1) * (1 + 0.12 * Math.abs(Math.sin(k * Math.PI * 2))), a = k > 0.75 ? (1 - k) / 0.25 : 1;
-  strike.ui.fasterBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, text: t('hd_faster') }; blit(sp, cx, cy, 0, sc, a);
+  strike.ui.fasterBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, text: t('hd_faster') }; blockRect('faster', strike.ui.fasterBox); blit(sp, cx, cy, 0, sc, a);
 }
 function sparkle(x, y, r, col, alpha) { // four-point star
   ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.beginPath();
@@ -7090,7 +7368,7 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
   else if (uk >= 0) {
     const a = uk < 0.1 ? uk / 0.1 : uk > 0.75 ? (1 - uk) / 0.25 : 1, pop = Math.max(0, 1 - uk * 4);
     blit(burstSprite(), W / 2, y, now * 0.0016, 0.8 + 0.4 * Math.min(1, uk * 4), a * 0.9);
-    blit(bigTextSprite(t('levelUp'), 44), W / 2, y, 0, 1 + 0.3 * Math.sin(Math.PI * pop), a);
+    blit(bigTextSprite(t('levelUp'), 44), W / 2, y, 0, 1 + 0.3 * Math.sin(Math.PI * pop), a); { const sp = bigTextSprite(t('levelUp'), 44); blockRect('levelUp', { x: W / 2 - sp.w * 0.65, y: y - sp.h * 0.6, w: sp.w * 1.3, h: sp.h * 0.6 + 64, a }); }
     blit(textSprite('+' + U.bonus, 22, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, y + 44 - 10 * uk, 0, 1, a);
   }
   for (const key of ['dailyBanner', 'levelBanner', 'bossBanner']) {
@@ -7101,17 +7379,17 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     if (Bn.stage) { // an Adventure stage: 'Stage 5' + 'Break all 6 walls' (a world's first stage: 'World 2' + 'Glass Garden · Stage 9')
       const main = bigTextSprite(wld ? t('worldN', { n: wld }) : t('stageN', { n: Bn.stage }), 40), sub = textSprite(wld ? t('wn_' + wld) + '  ·  ' + t('stageN', { n: Bn.stage }) : t(Bn.boss ? 'stageGoalBoss' : 'stageGoal', { n: Bn.goal }), 18, wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
       const rule = textSprite(t('starsRule'), 13, '#ffd77a', null, 600); // the small line: '★★★ = don't lose a heart'
-      const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw, rule.tw) + 72), ph = 128; ui.stageBannerBox = { x: x - pw / 2, y: y - 52, w: pw, h: ph, a, rule: t('starsRule') };
+      const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw, rule.tw) + 72), ph = 128; ui.stageBannerBox = { x: x - pw / 2, y: y - 52, w: pw, h: ph, a, rule: t('starsRule') }; blockRect('stageBanner', ui.stageBannerBox);
       blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - 53, 0, 1, a); blit(main, x, y - 14, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 30, 0, Math.min(1, (pw - 24) / sub.tw), a);
       blit(rule, x, y + 56, 0, Math.min(1, (pw - 24) / rule.tw), a * 0.95); continue;
     }
     const main = bigTextSprite(dly ? t('mod_' + Bn.mod) : boss ? t('bossDown') : wld ? t('worldN', { n: wld }) : t('levelN', { n: Bn.level }), dly ? 34 : 40), sub = textSprite(dly ? t('dailyBanner', { d: Bn.date }) : boss ? '+' + Bn.bonus : wld ? t('wn_' + wld) + '  ·  ' + t('levelN', { n: Bn.level }) : t('levelGoal', { n: Bn.goal }), 18, boss || dly ? '#ffd77a' : wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 104, sc = Math.min(1, (W - 40) / Math.max(1, main.w - 30));
-    if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
+    if (dly) { const d = textSprite(t('modd_' + Bn.mod), 13, 'rgba(241,233,218,0.8)', null, 500), dw = Math.max(pw, Math.min(W - 24, d.tw + 40)); ui.dailyBannerBox = { x: x - dw / 2, y: y - ph / 2, w: dw, h: ph + 34, a }; blockRect('dailyBanner', ui.dailyBannerBox); blit(glassSprite(dw, ph + 34, 20), x - dw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 14, now * 0.001, 0.7, a * 0.45); blit(d, x, y + 56, 0, Math.min(1, (W - 48) / d.tw), a); blit(main, x, y - 14, 0, sc, a); blit(sub, x, y + 28, 0, 1, a); continue; }
     let news = !boss && Bn.news && Bn.news.length ? [textSprite(levelNewsText(Bn.news), 17, '#ffb36b', null, 700)] : null; // what got harder: 'New: glass walls!  ·  Faster!'
     if (news && news[0].tw + 40 > W - 24 && Bn.news.length > 1) news = [textSprite(t(Bn.news[0]), 17, '#ffb36b', null, 700), textSprite(levelNewsText(Bn.news.slice(1)), 17, '#ffb36b', null, 700)]; // too wide (a phone): two lines
     const ntw = news ? Math.max(...news.map((q) => q.tw)) : 0, nw = news ? Math.min(W - 24, Math.max(pw, ntw + 40)) : pw, nh = news ? ph + 8 + 24 * news.length : ph, ns = news ? Math.min(1, (nw - 28) / ntw) : 1;
-    blit(glassSprite(nw, nh, 20), x - nw / 2 - 1, y - ph / 2 - 1, 0, 1, a);
+    blit(glassSprite(nw, nh, 20), x - nw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blockRect(boss ? 'bossBanner' : 'levelBanner', { x: x - nw / 2, y: y - ph / 2, w: nw, h: nh, a });
     if (boss) blit(burstSprite(), x, y, now * 0.0012, 0.9, a * 0.7);
     blit(main, x, y - 14, 0, 1 + (boss ? 0.04 * Math.sin(k * Math.PI * 6) * (1 - k) : 0), a);
     blit(sub, x, y + 30, 0, 1, a);
@@ -7139,18 +7417,19 @@ function drawRoadArt(cv, id, size, silhouette) { // into a DOM canvas (Road rows
 }
 function drawSpotlight(now) { // 'New! Glass walls' (or 'Preview!' in the daily): a big saffron tag with the item's art under the HUD, over a light burst, 2.6 s
   const ui = strike.ui, S = strike.spots[0]; ui.spot = null; if (!S || strike.over || strike.perkOffer) return;
+  if (!S.t && (ui.levelBanner || ui.levelUp || ui.bossBanner || ui.dailyBanner || (adv.on && adv.phase !== 'play'))) return; // v5: one big message at a time: it waits for the stage / level banner
   if (!S.t) { S.t = now; sfx('unlock'); }
   const k = (now - S.t) / 2600; if (k >= 1) { strike.spots.shift(); return; }
   const rtl = lang === 'he', a = k < 0.1 ? k / 0.1 : k > 0.82 ? (1 - k) / 0.18 : 1, pop = Math.max(0, 1 - k * 5), sc = 1 + 0.22 * Math.sin(Math.PI * pop) * pop;
   const text = t(S.preview ? 'spotPreview' : 'spotNew', { n: t('rd_' + S.id) }), sp = textSprite(text, 19, '#241a00', null, 800), maxW = W - 32;
-  const h = 52, w0 = sp.tw + 76, w = Math.min(maxW, w0), ts = Math.min(1, (w - 76) / sp.tw), cx = W / 2, cy = (ui.hud ? ui.hud.y + ui.hud.h : 80) + 112, col = S.preview ? '#9fdcff' : '#ffc24b';
+  const h = 52, w0 = sp.tw + 76, w = Math.min(maxW, w0), ts = Math.min(1, (w - 76) / sp.tw), cx = W / 2, cy = Math.max((ui.hud ? ui.hud.y + ui.hud.h : 80) + 112, ui.comboBox ? ui.comboBox.y + ui.comboBox.h + h * 0.62 + 8 : 0), col = S.preview ? '#9fdcff' : '#ffc24b'; // (v5: below the combo pop)
   blit(burstSprite(), cx, cy, now * 0.0015, 0.75 * sc, a * 0.55);
   resetView(); ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, cy); ctx.scale(sc, sc); ctx.shadowColor = hexA(col, 0.9); ctx.shadowBlur = 22; ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, h / 2); ctx.fill();
   ctx.shadowColor = 'transparent'; ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.stroke();
   const ax = rtl ? w / 2 - 28 : -w / 2 + 28; ctx.fillStyle = 'rgba(20,27,52,0.9)'; ctx.beginPath(); ctx.arc(ax, 0, 22, 0, TAU); ctx.fill(); ctx.restore();
   blit(roadArtSprite(S.id, 40), cx + ax * sc, cy, 0, sc, a);
   edgeText(sp, cx + (rtl ? w / 2 - 56 : -w / 2 + 56) * sc, cy, rtl, ts * sc, a);
-  ui.spot = { id: S.id, preview: S.preview, text, x: cx - w / 2, y: cy - h / 2, w, h };
+  ui.spot = { id: S.id, preview: S.preview, text, x: cx - w / 2, y: cy - h / 2, w, h }; blockRect('spot', { x: cx - w * sc / 2, y: cy - h * sc / 2, w: w * sc, h: h * sc, a });
 }
 function chestSprite(part) { // the treasure chest at scale 1 (a 120 px box): 'body' (origin at its centre) or the domed 'lid' (origin at the middle of its hinge line)
   const w = 120, bh = 64;
@@ -7429,7 +7708,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   }
 }
 function renderStrike(now) {
-  beginFrame('strike', now);
+  beginFrame('strike', now); strike.ui.blocks.length = 0; // (v5: this frame's text boxes on the overlay, for the floaters to keep clear of)
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, balls = strike.balls, sup = balls.some((b) => b.super || b.fire);
   if (frameCount % 30 === 0 || !strike.ui.hud) { strike.ui.top = strikeTop(); strikeHudRow(); }
   const g3 = gfx3dActive() && gfx3dFrame(now); // the WebGL corridor, walls, balls, debris, capsules and boss (false: 2D draws them)
@@ -7472,7 +7751,7 @@ function renderStrike(now) {
   drawChallengeFx(now); // v4: crack lines, the aim reticle, a wall closing in, turret shots
   drawBouncers(now); // missed guests boinging off the screen (on the overlay in both renderers)
   drawParticles(); drawRings(now);
-  drawSparks(now); drawFloaters(strike.floaters);
+  drawSparks(now); drawTimingRing(now); // (v5: the timing ring; the floating texts are drawn after the banners, clear of them)
   const ck = Math.max(0, 1 - (now - strike.ui.closeAt) / 450);
   if (ck > 0) { // 'Close one!': a cool flash at the edges while time slows
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.6);
@@ -7488,6 +7767,7 @@ function renderStrike(now) {
   drawStrikeHud(now, dt); drawCoinPill(now); // (Strike: no coin pill, only the rising +n when coins come in)
   drawPowerMeter(now, dt);
   drawServePrompt(now); drawComboBanner(now); drawLevelBanners(now); drawStreakToast(now); drawSpotlight(now); drawChest(now);
+  drawStrikeFloaters(now); drawJuiceFx(now); // v5: never overlapping each other or the banners; the wall-down / PERFECT flashes
   drawPerkOffer(now);
   drawStrikeHand(now);
   const sk = Math.max(0, 1 - (now - strike.superFlash) / 200);
@@ -7506,7 +7786,7 @@ function renderStrike(now) {
     gr.addColorStop(0, 'rgba(255,60,50,0)'); gr.addColorStop(1, 'rgba(255,60,50,' + (0.55 * fk).toFixed(3) + ')');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   }
-  if (strike.over && adv.on && adv.result) { drawAdvCard(now); drawStrikeHand(now); } // an Adventure stage's card
+  if (strike.over && adv.on && adv.result) { if (!strike.perkOffer) drawAdvCard(now); else strike.ui.buttons = null; drawStrikeHand(now); } // an Adventure stage's card (v5: under the run-power cards, hidden)
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
     drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + (strike.bestMul || 1), 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
@@ -7977,6 +8257,7 @@ function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any ov
   const fdt = S.fxNow && !pause.on && !S.freeze ? Math.min(50, Math.max(0, now - S.fxNow)) * (now < strike.releaseUntil ? 0.3 : 1) : 0; S.fxNow = now; S.fxT += fdt; // the effects' clock (frozen while paused; S.freeze: tests hold a shatter mid-flight)
   gfx3dShow(true); S.drawn = frameCount;
   if (S.camKey !== (vanish().x + view.x) + ',' + (vanish().y + view.y)) gfx3dCamera();
+  if (S.cam.position.z !== STRIKE_F - camPush) { S.cam.position.z = STRIKE_F - camPush; S.cam.updateMatrix(); S.cam.updateMatrixWorld(true); } // v5: the camera nudged forward on a stage's last wall (proj does the same)
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T: top, B } = corridor(), tu = strikeTuning(), balls = strike.balls, sup = balls.some((b) => b.super || b.fire), lin = S.lin;
   // level mood: the edge strips, the deep tint light and the fog take on the level's colour (saffron while a SUPER ball is out)
   const edge = sup ? [255, 194, 75] : tu.edge, rate = 0.003 * (0.6 + strike.speed / CONFIG.STRIKE_BASE_SPEED), pul = 0.5 + 0.5 * Math.sin(now * rate), ec = new T.Color('rgb(' + edge.join(',') + ')').convertSRGBToLinear();
@@ -8157,14 +8438,14 @@ function g3ShatterBox(o) { // a box (three.js coords: centre x/y/z, size bw x bh
     c.life = 1; c.decay = 1 / ((glass ? 950 : 1350) + R() * 650); c.bounced = false; c.ph = R() * TAU;
   }
 }
-function g3Shatter(w, k, b, tier) { // a brick of wall w broke (any path: hit, footprint, TNT, fire, a crumble): its 3D chunks
+function g3Shatter(w, k, b, tier, boost = 1) { // a brick of wall w broke (any path: hit, footprint, TNT, fire, a crumble): its 3D chunks
   if (!gfx3dActive()) return;
   const S = G3, lin = S.lin, { L, R, T: top, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - top) / w.rows, c = brickCell(w, k.col, k.row), kind = w.kind || 'brick', glass = kind === 'glass', steel = kind === 'steel', gap = g3Gap(cw, ch), bd = g3Depth(kind, cw, ch), rr = Math.random();
   const look = k.tnt ? 'tnt' : k.pu ? 'pu' : glass ? 'glass' : steel ? 'steel' : 'brick', busy = S.shF === frameCount && S.shN > S.qc.chunks * 0.45; // a whole wall at once: 4 chunks a brick
   const color = look === 'tnt' ? lin(rr < 0.5 ? '#3b1a12' : '#5c2418') : look === 'pu' ? lin('#ffc24b') : steel ? lin('#76839e') : glass ? new S.T.Color(1, 1, 1) : lin(STRIKE_LEVELS[(w.level - 1) % STRIKE_LEVELS.length]);
-  const pat = busy ? 0 : glass ? 2 : steel ? 0 : k.tnt || tier === 'super' ? 1 : rr < 0.35 ? 0 : rr < 0.7 ? 1 : 2;
+  const pat = busy || boost > 1 ? 0 : glass ? 2 : steel ? 0 : k.tnt || tier === 'super' ? 1 : rr < 0.35 ? 0 : rr < 0.7 ? 1 : 2; // (v5 big chunks at the camera: 4 big pieces, flung hard)
   const ix = b && isFinite(b.x) ? b.x : c.x, iy = b && isFinite(b.y) ? b.y : c.y;
-  g3ShatterBox({ x: c.x, y: -c.y, z: -w.z - bd / 2, bw: cw - gap * 2, bh: ch - gap * 2, bd, cls: glass ? 'glass' : steel ? 'steel' : 'stone', pat, color, ix, iy: -iy, kick: { soft: 0.34, medium: 0.44, hard: 0.54, super: 0.64 }[tier] || 0.46, kind: look });
+  g3ShatterBox({ x: c.x, y: -c.y, z: -w.z - bd / 2, bw: cw - gap * 2, bh: ch - gap * 2, bd, cls: glass ? 'glass' : steel ? 'steel' : 'stone', pat, color, ix, iy: -iy, kick: ({ soft: 0.34, medium: 0.44, hard: 0.54, super: 0.64 }[tier] || 0.46) * boost, kind: look });
   const m = S.qc.fx, R2 = Math.random;
   if (look === 'pu') for (let i = 0; i < 6 * m; i++) g3P(true, 2, c.x + (R2() - 0.5) * cw, -c.y + (R2() - 0.5) * ch, -w.z + 8, { vx: (R2() - 0.5) * 0.3, vy: 0.05 + R2() * 0.25, vz: 0.1 + R2() * 0.2, g: 0.0006, size: ch * 0.5, ms: 600 + R2() * 300, col: '#ffe9a8', a: 1, vr: 0.01 });
   if (steel && R2() < 0.6) for (let i = 0; i < 3 * m; i++) g3Spark(c.x, -c.y, -w.z + 6, 0.8);
@@ -8359,6 +8640,8 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'splash') { f.type = 'bandpass'; f.Q.value = 0.8; f.frequency.setValueAtTime(1400, t0); f.frequency.exponentialRampToValueAtTime(350, t0 + 0.45); env(f, 0.2, 480, t0); noise(t0, 480, f); tone('sine', 320, 110, 0.12, 260, t0); } // water
     else if (kind === 'wood') { f.type = 'bandpass'; f.frequency.value = 750; f.Q.value = 1.1; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('triangle', 330, 120, 0.13, 110, t0); } // wood cracking
     else if (kind === 'beat') { tone('sine', 72, 48, 0.09, 120, t0); tone('sine', 64, 44, 0.06, 120, t0 + 0.16); } // Strike's heartbeat: a soft low lub-dub
+    else if (kind === 'perfect') { const k = 1 + 0.06 * ((arg || 1) - 1); tone('sine', 1046 * k, 0, 0.16, 260, t0); tone('sine', 1568 * k, 0, 0.12, 320, t0 + 0.05); tone('triangle', 2093 * k, 0, 0.07, 380, t0 + 0.1); tone('sine', 130, 55, 0.22, 180, t0); f.type = 'highpass'; f.frequency.value = 5000; env(f, 0.06, 120, t0); noise(t0, 120, f); } // v5: PERFECT: a bright rising triad over a low punch (higher with the streak)
+    else if (kind === 'thump') { const a = Math.max(0.3, Math.min(1, arg || 1)); tone('sine', 92, 34, 0.25 * a, 260, t0); tone('triangle', 60, 30, 0.16 * a, 300, t0); f.type = 'lowpass'; f.frequency.value = 260; env(f, 0.2 * a, 160, t0); noise(t0, 160, f); } // v5: the bass thump under a SUPER impact / a wall down
     else if (kind === 'chime') { tone('sine', 660, 0, 0.12, 420, t0); tone('sine', 880, 0, 0.12, 520, t0 + 0.14); tone('sine', 1320, 0, 0.08, 620, t0 + 0.28); }
     else if (kind === 'tone') toneOn(arg || 440);
     else if (kind === 'toneOff') toneOff();
@@ -8513,7 +8796,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    upg: {}, adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -8537,6 +8820,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))];
       if (a.best && typeof a.best === 'object') for (const k of Object.keys(a.best)) { const n = +k, v = a.best[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isFinite(v) && v > 0) A.best[n] = Math.min(9999999, Math.round(v)); } } // v4: the best score per stage
+    if (p.upg && typeof p.upg === 'object') for (const k of Object.keys(ECONOMY.upgrades)) { const v = p.upg[k]; if (Number.isInteger(v) && v > 0) d.upg[k] = Math.min(ECONOMY.upgrades[k].length, v); } // v5: permanent upgrade levels (0..the track's max)
     if (p.smash && typeof p.smash === 'object') { const a = p.smash, A = d.smash; // Smash stages: the best stars per stage (1-3), the furthest stage open
       if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= SMASH_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(SMASH_N, a.unlocked | 0));
@@ -9528,7 +9812,28 @@ function renderMissions() {
     return li;
   }));
 }
+function renderUpgrades() { // v5: the Power section: each track's level (pips), what it does, the next level's price (or MAX); a tap buys
+  const host = $('upgs'); if (!host) return; $('cpowerSub').textContent = t('powerSub', { n: Math.max(...UPG_IDS.map(upgMax)) });
+  host.replaceChildren(...UPG_IDS.map((id) => {
+    const L = upgOwned(id), M = upgMax(id), price = upgPrice(id), b = document.createElement('button'); b.type = 'button'; b.dataset.id = id;
+    b.className = 'upg' + (L >= M ? ' max' : profile.coins < price ? ' poor' : '');
+    const c = document.createElement('canvas'); c.width = c.height = Math.round(44 * SS); c.setAttribute('aria-hidden', 'true'); const sp = perkIconSprite('up_' + id, 38), g = c.getContext('2d'); g.drawImage(sp.c, 0, 0, c.width, c.height);
+    const tx = document.createElement('span'), nm = document.createElement('span'), ds = document.createElement('span'), pips = document.createElement('span');
+    nm.className = 'nm'; nm.textContent = t('up_' + id); ds.className = 'ds'; ds.textContent = t('upd_' + id); pips.className = 'pips'; pips.setAttribute('aria-label', t('upLv', { n: L }) + ' / ' + M);
+    for (let i = 0; i < M; i++) { const q = document.createElement('i'); if (i < L) q.className = 'on'; pips.appendChild(q); }
+    tx.append(nm, ds, pips);
+    const pr = document.createElement('span'); pr.className = 'pr'; if (L >= M) pr.textContent = t('upMax'); else { pr.innerHTML = TOAST_ICONS.coin; pr.append(String(price)); }
+    b.append(c, tx, pr); b.title = nm.textContent + ' — ' + t('upLv', { n: L }) + '/' + M;
+    b.addEventListener('click', () => {
+      if (upgOwned(id) >= M) { sfx('click'); return; }
+      if (profile.coins < upgPrice(id)) { toast('notEnough', { n: upgPrice(id) - profile.coins }, 'coin'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
+      const r = b.getBoundingClientRect(), sheet = b.closest('.sheet'); if (buyUpgrade(id)) { domConfetti(sheet, r); renderCollection(); }
+    });
+    return b;
+  }));
+}
 function renderCollection() {
+  renderUpgrades(); // (v5: the Power section first)
   const host = $('ctypes'); host.replaceChildren(...ITEM_TYPES.map((ty) => {
     const sec = document.createElement('section'); const h = document.createElement('h3'); h.textContent = t('ct_' + ty); const grid = document.createElement('div'); grid.className = 'tiles';
     for (const it of ITEMS.filter((q) => q.type === ty)) {
@@ -10359,6 +10664,7 @@ window.__grasp = {
     get on() { return adv.on; }, get stage() { return adv.on ? adv.n : null; }, get phase() { return adv.on ? adv.phase : null; }, get result() { return adv.result; }, get lost() { return adv.lost; }, get spawned() { return adv.spawned; }, get world() { return adv.world; },
     get stars() { return { ...profile.adv.stars }; }, get unlocked() { return profile.adv.unlocked; }, get open() { return profile.adv.open.slice(); }, get seen() { return profile.adv.seen.slice(); }, get current() { return advCurrent(); }, get total() { return advStarTotal(); },
     openMap: (o) => openAdvMap(o || {}), closeMap: () => closeAdvMap(), get mapOpen() { return advMapOpen(); }, get layout() { return amap.layout; },
+    get power() { return adv.power || null; }, get pendingPower() { return adv.pendingPower || null; }, set pendingPower(v) { adv.pendingPower = RUN_POWERS.includes(v) ? v : null; }, runPowers: RUN_POWERS, // v5: this stage's run power; the one the next stage starts with
     get travel() { const T = adv.travel; return T ? { from: T.from, to: T.to, q: T.q, switched: T.switched } : null; }, get lastTravel() { return adv.lastTravel; },
     finishTest(livesLost = 0) { if (!adv.on || adv.phase !== 'play') return null; adv.lost = Math.max(0, livesLost | 0); strike.lives = Math.max(1, ADV_LIVES - adv.lost); if (adv.plan.boss) { adv.bossDone = true; strike.boss = null; } strike.walls.length = 0; strike.progress = adv.plan.walls; strike.cleared = strike.cleared0 + adv.plan.walls; return advClear(performance.now()); },
     failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; while (!strike.over && i++ < 20) loseLife(performance.now()); return adv.result; } },
