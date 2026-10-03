@@ -29,7 +29,11 @@ Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (toddler widgets)
   - Stored in `profile.adv`.
 - **Endless:** the old run, behind a button on the map. It has lives, levels, worlds, perks and a "road" of unlocks by player level (`ROAD`).
 - **Animals:** the cow from road level 1 (and from Adventure stage 2), animals every 4–6 serves from run level 2. The monkey unlocks at player level 7.
-- **Serve:** the ball waits until the player hits it.
+- **Serve (pull back, then flick):** the ball waits (`strike.waiting`; round start, level start, after a miss; Adventure, Endless, Daily) and follows the hand / finger / mouse (x within the middle 60%, a little of y, kept low above the meter), "Pull back, then flick!" / "משכו אחורה וזרקו קדימה!".
+  - A tap does nothing and a swipe through the ball does not serve (player feedback: "no matter where I tap, the ball fires").
+  - Launch: the pointer / hand moves **down** ≥ 6% of the screen height (`PULL_MIN`, within 1.5 s; a ring closes round the ball, a band to the finger, then "Now flick it up!" with rising arrows), then a fast **flick up** (gate `FLICK_GATE` 0.35 px/ms screen-scaled). It launches at the flick's peak; power = peak speed → the usual tiers (`speedTier`) and the hit-meter pop; a gentle sideways aim (≤ `AIM_MAX`). A slow drift back up un-arms it; a flick with no pull-back does nothing.
+  - Touch: while the finger is down (lifting at the end of the flick still serves; a new touch restarts the pull). Mouse: with or without the button. Camera: the hand (raw tracker samples count for the flick speed).
+  - Code: `pullTick` / `waitTick` / `playerServe(force, now, aim)` (force: a tier or a speed); hooks `strike.pull`, `strike.lastServe { tier, v, aim, flick }`, `strike.ui.serve { charge, armed, text }`; `playerServe(power)` stays the test hook. First serve ever: the one-time tip `tipFlick` (`tipOnce('flick')`).
 - **In-game screen (minimal):** one round pause button in the top corner (tap, Escape or a camera dwell) opens a sheet: Resume, Restart, Sound, Language, Stats, Home. The HUD is one slim row: hearts + a walls pill (Adventure: walls broken / stage walls; Endless: walls toward the next level). No score, progress line, NEXT card, streak chip, perk badges or bottom power bar. Other modes keep the full 5-icon toolbar.
 - **Hit meter:** never on screen permanently. On a hit (or serve) a small power arc pops up just above the hit point, fills to the hit's power in the tier colour (soft / medium / hard / SUPER, `METER_ZONES`, `speedTier`, `TIER_COL`) with the tier's name, and fades within 1 s (`METER_POP_MS`, `drawMeterPop`, hook `strike.ui.meterPop`). Same in 2D and 3D (it is drawn on the 2D overlay).
 
@@ -51,6 +55,12 @@ Around the games:
 - **Music:** one loop per Adventure world, only while a stage is being played.
 - **Economy:** coins are deliberately scarce, about 15–35 per run; shop items cost 120–1000. The numbers are in the `ECONOMY` table.
 
+## Direct links (per game URL)
+- `/strike` (opens the Adventure map), `/smash`, `/slice`, `/busy`, `/shapes`, `/sandbox` (and with a trailing slash): `vercel.json` rewrites them to `/index.html`; the page starts that game with the remembered input (touch until the camera is picked). Any other path = the start screen (on Vercel only these six are rewritten; `/tremorti/` and the `/tremor` redirect unchanged).
+- Entering a game pushes its path (`routeEnter`, in `startGame` and `openAdvMap`); Home goes to `/` (`history.back()` when the game was entered from the start screen, else `replaceState`); the browser Back from a game = Home (`goHome`), Forward re-enters. Hook `__grasp.route { modes, of, now, log }`.
+- The page's own URLs are root-absolute (`/assets/guests/...`, `/tremorti/`) so they load at `/strike`.
+- Tests serve through `tests/serve.py` (http.server + vercel.json's rewrites), used by `run_fast.sh` and the suites' own fallback server (`test_sandbox.py`, `test_chrome.py`).
+
 ## Art
 - `art/GEMINI_PROMPTS.md` holds the ready-to-paste prompts for Gemini.
 - Cow sprites are in `assets/guests/cow_{in,happy,dizzy,squash}.png`, 256×256 with a transparent background.
@@ -66,7 +76,8 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 10 minutes for 25 runs (23 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 10 minutes for 26 runs (24 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
+  - `routes` covers the direct links, pushState / Back / Forward, unknown paths and assets at a sub-path (EN / HE; screenshots `tests/out/route_*.png`). `serve` covers the pull-back + flick serve on mouse, touch (synthetic pointer events, `__gest`) and the camera stub (screenshots `tests/out/serve_*.png`).
   - `hudmin` covers the minimal in-game screen, the pause sheet, the hit-meter pop (2D and 3D) and the clear card's stars line / buttons on a phone (screenshots `tests/out/hud_min_*.png`, `tests/out/fix_*.png`).
   - `tests/run_fast.sh adventure habit` runs only the named suites. Use that before a small ship.
   - Logs are in `tests/out/logs/`, screenshots in `tests/out/`.

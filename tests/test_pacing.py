@@ -30,8 +30,11 @@ async def main():
         ctx, page, errs = await new_page(b)
         await play(page)
         # ---- onboarding: a fresh profile's first run: the serve is explained by the mode's start hint (no extra toast), marked seen ----
-        g0 = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, how: hintText() })")
-        check("first Strike run on a fresh profile: the serve tip is the start hint (no extra tip toast), recorded in profile.tips", g0['shown'] == [] and g0['tips'] == ['serve'] and g0['hint'] == g0['how'], g0)
+        g0 = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, how: hintText(), wait: __grasp.strike.balls.length > 0 })")
+        check("first Strike run on a fresh profile: the serve tip is the start hint (no extra tip toast), recorded in profile.tips", g0['wait'] or (g0['shown'] == [] and g0['tips'] == ['serve'] and g0['hint'] == g0['how']), g0)
+        await page.wait_for_function("__grasp.strike.waiting", timeout=8000)
+        g1 = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, want: t('tipFlick') })")
+        check("...then the first waiting ball: the pull-back + flick tip, once, as the hint toast", g1['shown'] == ['flick'] and g1['tips'] == ['serve', 'flick'] and g1['hint'] == g1['want'], g1)
         await page.evaluate(PARK)
         # ---- the rules per level (strike.pacing) ----
         rules = await page.evaluate(f"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(L => {{ {S}.setLevel(L); const q = {S}.pacing; return {{ L, pu: +q.puRate.toFixed(3), perk: q.perkLevel, guests: q.guestsOn, kinds: q.kindsUnlocked.join(','), curve: {S}.tuning(L).curve > 0, waves: {S}.tuning(L).waves }}; }})")
@@ -107,15 +110,15 @@ async def main():
         await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(3); s.walls.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 1; s.spawnWall('brick', 960); __grasp.CONFIG.STRIKE_PU_RATE = 1 / 12; }})()"); await frames(page, 3)
         await page.evaluate(f"{S}.spawnGuest('cow')"); await frames(page, 2)
         await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 1; s.spawnWall('brick', 960); __grasp.CONFIG.STRIKE_PU_RATE = 1 / 12; __grasp.grippy.cool(); s.spawnGuest('monkey'); }})()"); await frames(page, 3)
-        ev = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), texts: __grasp.grippy.tips.map(x => x.text), want: ['tipPu', 'tipPerk', 'tipGuest'].map(k => t(k)), tips: __grasp.profile.tips.slice() })")
-        cnt = {e: ev['shown'].count(e) for e in ('serve', 'pu', 'perk', 'guest')}
+        ev = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), texts: __grasp.grippy.tips.map(x => x.text), want: ['tipFlick', 'tipPu', 'tipPerk', 'tipGuest'].map(k => t(k)), tips: __grasp.profile.tips.slice() })")
+        cnt = {e: ev['shown'].count(e) for e in ('serve', 'flick', 'pu', 'perk', 'guest')}
         check(f"onboarding tips: gold brick, perk pick, flying animal each shown exactly once as the hint toast (the serve: the start hint) ({cnt}); profile.tips = {ev['tips']}",
-              cnt == {'serve': 0, 'pu': 1, 'perk': 1, 'guest': 1} and sorted(ev['texts']) == sorted(ev['want']) and sorted(ev['tips']) == ['guest', 'perk', 'pu', 'serve'], ev)
+              cnt == {'serve': 0, 'flick': 1, 'pu': 1, 'perk': 1, 'guest': 1} and sorted(ev['texts']) == sorted(ev['want']) and sorted(ev['tips']) == ['flick', 'guest', 'perk', 'pu', 'serve'], ev)
         check('no page errors', not errs, errs)
         # a new page on the same profile: the tips are not repeated (the usual start line)
         await page.close(); _, page2, errs2 = await new_page(b, ctx=ctx); await play(page2)
         g2 = await page2.evaluate("({ shown: __grasp.grippy.tips.length, tips: __grasp.profile.tips.slice() })")
-        check('next run on that profile: no tip shown again; the seen tips persist', g2['shown'] == 0 and sorted(g2['tips']) == ['guest', 'perk', 'pu', 'serve'], g2)
+        check('next run on that profile: no tip shown again; the seen tips persist', g2['shown'] == 0 and sorted(g2['tips']) == ['flick', 'guest', 'perk', 'pu', 'serve'], g2)
         check('second run: no page errors', not errs2, errs2); await ctx.close()
 
         # ---- 3D: the final wall's glowing frame and the tension-brightened edge strips ----

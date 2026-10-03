@@ -4,7 +4,7 @@ import socket as _sk
 class _NoSrv:
     def terminate(self): pass
 if _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
-else: srv = subprocess.Popen(['python3','-m','http.server','8765','--bind','127.0.0.1'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
+else: srv = subprocess.Popen(['python3','tests/serve.py','8765'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
 MATTER = open('tests/vendor/matter.min.js').read(); THREE = open('tests/vendor/three.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
 async def routes(page):
     async def h(route):

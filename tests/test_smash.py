@@ -27,7 +27,7 @@ async def main():
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
         link = await page.evaluate("(() => { const a = document.querySelector('#start a.link'); return a && [a.getAttribute('href'), a.textContent, a.getBoundingClientRect().width > 0]; })()")
-        check('start screen links to Tremorti', link and link[0] == 'tremorti/' and 'Tremorti' in link[1] and link[2], link)
+        check('start screen links to Tremorti', link and link[0] == '/tremorti/' and 'Tremorti' in link[1] and link[2], link)
         await page.click('.modes button[data-mode=smash]')
         check('menu shows smash selected + description', await page.evaluate("document.querySelector('[data-mode=smash]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('fist')"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)

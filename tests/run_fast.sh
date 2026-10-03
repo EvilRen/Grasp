@@ -8,10 +8,10 @@ cd "$(dirname "$0")/.."
 mkdir -p tests/out/logs
 JOBS=${JOBS:-3}
 tests/fix_browsers.sh || exit 1
-ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album hudmin"
+ALL="sandbox slice smash busy strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album hudmin routes"
 if [ $# -gt 0 ]; then LIST="$*"; else LIST="$ALL strike2:3d strike3:3d"; fi
 
-python3 -m http.server 8765 --bind 127.0.0.1 >/dev/null 2>&1 &
+python3 tests/serve.py 8765 >/dev/null 2>&1 &  # http.server + vercel.json's rewrites (/strike etc.)
 SRV=$!; trap 'kill $SRV 2>/dev/null' EXIT
 for _ in $(seq 50); do python3 -c "import socket,sys;sys.exit(socket.socket().connect_ex(('127.0.0.1',8765)))" && break; sleep 0.1; done
 
