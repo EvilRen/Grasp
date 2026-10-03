@@ -92,7 +92,7 @@ async def main():
         await page.evaluate(f"{S}.guestEvery = 0; {S}.ball.guest = null")
         check('serve: no page errors', not errs, errs); await ctx.close()
 
-        # ---- a decluttered play screen (360 x 740, EN + HE): nothing of the HUD / toasts / NEXT / Grippy in the central play area ----
+        # ---- a decluttered play screen (360 x 740, EN + HE): nothing of the HUD / toasts / NEXT in the central play area, no Grippy drawn ----
         for he in (False, True):
             ctx = await b.new_context(viewport={'width': 360, 'height': 740}, device_scale_factor=2, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs = []
             page.on('pageerror', lambda e: errs.append(str(e)))
@@ -111,8 +111,8 @@ async def main():
             boxes = [(k, v) for k, v in bx.items() if k not in ('toasts', 'icons')] + [('toast', q) for q in bx['toasts']] + [('icon', q) for q in bx['icons']]
             bad = [k for k, v in boxes if inter(v, C)]
             tag = 'phone ' + ('he' if he else 'en')
-            check(tag + ': in play nothing of the HUD row, coins, toasts, hint, Grippy or the tier flash sits in the central play area (x 15-85%, y 25-80%)', not bad and bx['hud'] and bx['hud']['h'] <= 32 and bx['coinPill'] is None and bx['grippy'], [bad, bx])
-            check(tag + ': minimal HUD: one slim row (<= 32 px) with only the hearts and walls pill: no NEXT card, streak chip or progress line even with a streak of 7 at level 4; Grippy <= 44 px with a one-line bubble', bx['next'] is None and bx['streak'] is None and bx['prog'] is None and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls' and bx['grippy']['mascot']['w'] <= 44.5 and bx['grippy']['bubble']['h'] <= 34, bx)
+            check(tag + ': in play nothing of the HUD row, coins, toasts, hint, Grippy or the tier flash sits in the central play area (x 15-85%, y 25-80%)', not bad and bx['hud'] and bx['hud']['h'] <= 32 and bx['coinPill'] is None and bx['grippy'] is None, [bad, bx])
+            check(tag + ': minimal HUD: one slim row (<= 32 px) with only the hearts and walls pill: no NEXT card, streak chip or progress line even with a streak of 7 at level 4; no Grippy hand / bubble on screen (he is a voice now)', bx['next'] is None and bx['streak'] is None and bx['prog'] is None and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls' and bx['grippy'] is None and not await page.evaluate("!!document.querySelector('#grippy, .nuGrip')"), bx)
             hd = bx['hud']; pb = await page.evaluate("(() => { const r = $('pauseBtn').getBoundingClientRect(); return { l: r.left, t: r.top, b: r.bottom }; })()")
             check(tag + ': the HUD row shares the pause button\'s row and stays clear of it', hd['y'] < pb['b'] and hd['y'] + hd['h'] > pb['t'] and hd['x'] + hd['w'] <= pb['l'], [hd, pb])
             await page.screenshot(path='tests/out/serve_declutter_' + ('he' if he else 'en') + '.png')

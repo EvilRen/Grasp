@@ -283,25 +283,13 @@ html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px
 #metaToast.compact .mt .ic svg{ width:14px; height:14px; }
 #metaToast .mt.wait{ display:none; }
 #metaToast.compact .mt.out{ transform:none; } /* fades in place: never up into the toolbar */
-/* Grippy: the commentator, a little hand with big eyes (drawn on its own canvas) and a speech bubble, at the bottom start corner */
-#grippy{ position:fixed; left:12px; bottom:16px; z-index:4; display:flex; align-items:flex-end; gap:4px; pointer-events:none; max-width:calc(100% - 24px); transition:opacity .25s; }
-html[dir="rtl"] #grippy{ left:auto; right:12px; }
-#grippy[hidden]{ display:none; }
-#grippy.out, #grippy.blocked{ opacity:0; }
-#grippy canvas{ flex:none; width:44px; height:44px; display:block; }
-#grippy .bub{ position:relative; margin-bottom:16px; min-width:0; max-width:min(230px, calc(100vw - 84px)); padding:6px 10px; border-radius:14px; background:#fff8ec; color:#241a00; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  font-size:13px; font-weight:600; line-height:1.3; box-shadow:0 6px 18px rgba(0,0,0,.35); transform-origin:0% 100%; animation:gpop .3s cubic-bezier(.2,1.5,.4,1) both; }
-html[dir="rtl"] #grippy .bub{ transform-origin:100% 100%; }
-#grippy .bub::after{ content:''; position:absolute; bottom:9px; inset-inline-start:-5px; width:11px; height:11px; background:#fff8ec; transform:rotate(45deg); border-radius:2px; }
-@keyframes gpop{ from{ transform:scale(.35); opacity:0; } }
 .sheet .gripBtn{ flex:none; display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 10px 0 4px; padding-inline:4px 10px; border-radius:999px; background:rgba(29,37,71,.85); color:var(--bone);
   box-shadow:inset 0 0 0 1.5px var(--saffron); font-size:12px; font-weight:700; }
-.sheet .gripBtn canvas{ width:28px; height:28px; display:block; }
+.sheet .gripBtn svg{ width:22px; height:22px; margin-inline-start:3px; display:block; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .sheet .gripBtn .st{ min-width:22px; text-align:center; }
 .sheet .gripBtn[aria-pressed="false"]{ box-shadow:inset 0 0 0 1.5px var(--line); color:var(--muted); }
-.sheet .gripBtn[aria-pressed="false"] canvas{ filter:grayscale(1); opacity:.45; }
+.sheet .gripBtn[aria-pressed="false"] svg{ opacity:.45; }
 @media (max-width:520px){ .sheet .gripBtn .nm{ display:none; } }
-@media (prefers-reduced-motion: reduce){ #grippy .bub{ animation:none; } }
 /* the Daily button (first in the meta row, the widest) and its panel */
 .dailyBtn{ --mod:#ffc24b; position:relative; flex:1.7; display:inline-flex; align-items:center; gap:8px; padding:5px 10px; min-width:0; border-radius:12px; color:var(--bone); text-align:start;
   background:linear-gradient(135deg, rgba(255,138,61,.22), rgba(255,194,75,.1) 60%, rgba(29,37,71,.5)); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.55); transition:background .15s, transform .1s; }
@@ -454,9 +442,6 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .nuArt canvas{ width:112px; height:112px; display:block; }
 .nuSheet h2{ margin:0 0 4px; font-size:21px; }
 .nuLine{ margin:0 0 10px; color:var(--muted); font-size:14px; line-height:1.4; }
-.nuGrip{ display:flex; align-items:center; justify-content:center; gap:6px; margin:0 0 12px; }
-.nuGrip canvas{ width:48px; height:48px; flex:none; }
-.nuGrip .bub{ padding:6px 10px; border-radius:14px; background:#fff8ec; color:#241a00; font-size:13px; font-weight:600; }
 .nuSheet .primary{ width:100%; }
 @media (prefers-reduced-motion: reduce){ .wnode.cur .dot::after, .nuSheet{ animation:none; } }
 /* start screen v2: everything on one screen (no scrolling): a small wordmark, the coins / level pill, one labelled icon row (Daily, Missions, Road, Shop),
@@ -568,7 +553,6 @@ html[dir="rtl"] .habitBar{ right:auto; left:84px; }
 .gbox .won canvas{ width:44px; height:44px; }
 .gbox .won svg{ width:30px; height:30px; }
 @keyframes gwon{ from{ transform:translate(-50%,0) scale(.2); opacity:0; } }
-.giftSheet .nuGrip{ margin:0 0 10px; }
 .giftSheet .primary{ width:100%; min-height:54px; font-size:19px; border-radius:16px; }
 .gfly{ position:fixed; left:0; top:0; z-index:20; width:26px; height:26px; margin:-13px 0 0 -13px; pointer-events:none; }
 .gfly svg, .gfly canvas{ width:100%; height:100%; display:block; }
@@ -737,7 +721,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 </div>
 <div class="ov" id="collection" hidden role="dialog" aria-modal="true" aria-labelledby="collectionTitle">
   <div class="sheet">
-    <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><button class="gripBtn" id="grippyBtn" type="button" aria-pressed="true"><canvas aria-hidden="true"></canvas><span class="nm" data-i18n="grippyName">Grippy</span><span class="st"></span></button><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <header><h2 id="collectionTitle" data-i18n="collection">Collection</h2><button class="gripBtn" id="grippyBtn" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span class="nm" data-i18n="grippyName">Grippy</span><span class="st"></span></button><span class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg><b>0</b></span><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <p class="sub" data-i18n="collectionSub">Spend coins on new looks. Tap to buy, tap to wear.</p>
     <div id="ctypes"></div>
   </div>
@@ -789,7 +773,6 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <div class="nuArt"><canvas aria-hidden="true"></canvas></div>
     <h2 id="nuName"></h2>
     <p class="nuLine"></p>
-    <div class="nuGrip"><canvas aria-hidden="true"></canvas><span class="bub"></span></div>
     <button class="primary" id="nuOk" type="button" data-i18n="nuOk">Awesome!</button>
   </div>
 </div>
@@ -798,12 +781,10 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <header><h2 id="giftTitle" data-i18n="giftTitle">Daily gift</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <p class="sub" id="giftSub"></p>
     <div class="gboxes" id="gboxes"></div>
-    <div class="nuGrip"><canvas aria-hidden="true"></canvas><span class="bub"></span></div>
     <button class="primary" id="giftOk" type="button"></button>
   </div>
 </div>
 <div id="metaToast" aria-live="polite"></div>
-<div id="grippy" hidden role="status" aria-live="polite"><canvas aria-hidden="true"></canvas><div class="bub"><span class="tx"></span></div></div>
 
 <script>
 /* ============================================================
@@ -983,7 +964,7 @@ const I18N = {
     mod_glass: 'Glass day', mod_steel: 'Steel day', mod_tnt: 'TNT party', mod_tiny: 'Tiny ball', mod_bighands: 'Big hands', mod_speedy: 'Speedy', mod_rain: 'Power-up rain',
     modd_glass: 'Every wall is glass: it shatters on any hit.', modd_steel: 'Steel walls from the first level: hit them hard.', modd_tnt: 'TNT crates from the first level, and more of them. Boom!',
     modd_tiny: 'The ball is 30% smaller.', modd_bighands: 'Your hands reach 40% further.', modd_speedy: 'The ball flies 25% faster.', modd_rain: 'Three times the power-up bricks, from the first level.',
-    grippyName: 'Grippy', grippyAria: 'Grippy, the cheering helper', grippyOn: 'On', grippyOff: 'Off',
+    grippyName: 'Voice', grippyAria: 'Cheering voice', tipPu: 'Gold bricks drop power-ups: break one, catch the bubble!', tipPerk: 'Your perk stays with you the whole run!', tipGuest: 'Slap the flying animals for coins (a miss costs no heart)', grippyOn: 'On', grippyOff: 'Off',
     teaseCoins: 'Only {n} coins to the {i}!', teaseBuy: 'You can buy the {i} now!', teaseXp: '{n} XP to Level {l}',
     tm_fruit: '{n} more fruit for the mission', tm_bricks: '{n} more bricks for the mission', tm_bricks1: '1 more brick for the mission', tm_cars: '{n} more cars for the mission', tm_cars1: '1 more car for the mission',
     tm_walls: '{n} more walls for the mission', tm_walls1: '1 more wall for the mission', tm_powerups: '{n} more power-ups for the mission', tm_powerups1: '1 more power-up for the mission',
@@ -1010,8 +991,8 @@ const I18N = {
     nextBtn: 'Next', retryBtn: 'Try again', replayBtn: 'Play again', mapBtn: 'Map', starsPerfect: 'Perfect — no hearts lost!', starsLost1: 'Lost 1 heart — clear without losing a heart for ★★★', starsLostN: 'Lost {n} hearts — clear without losing a heart for ★★★', starsRule: "★★★ = don't lose a heart", advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
     // the daily habit: the gift calendar, the play streak, the stage chest, the star chests
     giftTitle: 'Daily gift', giftDayN: 'Day {n}', giftSub: 'A gift for every day you come. Day 7 is a big chest!', giftMissed: 'A new week of gifts! Come every day to reach the big chest.',
-    giftOpen: 'Open it!', giftYay: 'Yay!', giftTomorrow: 'Come back tomorrow for the day {n} gift', giftTap: 'Tap the shiny gift!', giftGot: 'See you tomorrow!', giftToast: 'Daily gift: +{c} coins',
-    giftMystery: 'New look', giftChest: 'Big chest', giftOpened: 'opened', tomorrowGift: 'Tomorrow: day {n} gift',
+    giftOpen: 'Open it!', giftYay: 'Yay!', giftTomorrow: 'Come back tomorrow for the day {n} gift', giftToast: 'Daily gift: +{c} coins',
+    giftMystery: 'New look', giftChest: 'Big chest', giftOpened: 'opened',
     flameN: '{n}-day play streak', flameZero: 'Play a game today to light your flame!', keepFlame: 'Play today to keep your {n}-day streak!', flameToast: '{n} days in a row! Play every day to grow your flame.',
     dayChest: 'Today: {a} of {b} stages', dayChestToast: 'Stage chest: +{c} coins', dayChestNeed: 'Clear {n} more stages today to open the chest', dayChestDone: 'Opened! A new chest tomorrow',
     starChest: 'Star chest: {n} stars', starChestToast: 'Star chest: +{c} coins', starChestNeed: '{n} more stars to open this chest', starChestDone: 'Already opened',
@@ -1107,7 +1088,7 @@ const I18N = {
     mod_glass: 'יום זכוכית', mod_steel: 'יום פלדה', mod_tnt: 'מסיבת TNT', mod_tiny: 'כדור קטנטן', mod_bighands: 'ידיים גדולות', mod_speedy: 'מהירות', mod_rain: 'גשם חיזוקים',
     modd_glass: 'כל הקירות מזכוכית: מתנפצים בכל מכה.', modd_steel: 'קירות פלדה כבר מהשלב הראשון: הכו חזק.', modd_tnt: 'ארגזי TNT כבר מהשלב הראשון, ויותר מהם. בום!',
     modd_tiny: 'הכדור קטן ב-30%.', modd_bighands: 'הידיים מגיעות רחוק יותר ב-40%.', modd_speedy: 'הכדור טס מהר יותר ב-25%.', modd_rain: 'פי שלושה לבני חיזוק, כבר מהשלב הראשון.',
-    grippyName: 'גריפי', grippyAria: 'גריפי, העוזר המעודד', grippyOn: 'פועל', grippyOff: 'כבוי',
+    grippyName: 'קול', grippyAria: 'קול מעודד', tipPu: 'לבנים זהובות מפילות כוחות: שברו אחת ותפסו את הבועה!', tipPerk: 'ההטבה נשארת איתכם כל המשחק!', tipGuest: 'תנו סטירה לחיות המעופפות וקבלו מטבעות (פספוס לא עולה לב)', grippyOn: 'פועל', grippyOff: 'כבוי',
     teaseCoins: 'רק עוד {n} מטבעות ל{i}!', teaseBuy: 'יש לכם מספיק מטבעות ל{i}!', teaseXp: 'עוד {n} XP לרמה {l}',
     tm_fruit: 'עוד {n} פירות למשימה', tm_fruit1: 'עוד פרי אחד למשימה', tm_bricks: 'עוד {n} לבנים למשימה', tm_bricks1: 'עוד לבנה אחת למשימה', tm_cars: 'עוד {n} מכוניות למשימה', tm_cars1: 'עוד מכונית אחת למשימה',
     tm_walls: 'עוד {n} קירות למשימה', tm_walls1: 'עוד קיר אחד למשימה', tm_powerups: 'עוד {n} חיזוקים למשימה', tm_powerups1: 'עוד חיזוק אחד למשימה',
@@ -1131,8 +1112,8 @@ const I18N = {
     stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'שברו {n} קירות ואז את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
     nextBtn: 'הבא', retryBtn: 'שוב', replayBtn: 'לשחק שוב', mapBtn: 'מפה', starsPerfect: 'מושלם — לא איבדתם אף לב!', starsLost1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★', starsLostN: 'איבדתם {n} לבבות — סיימו בלי לאבד לב ותקבלו ★★★', starsRule: '★★★ = בלי לאבד לב', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
     giftTitle: 'מתנה יומית', giftDayN: 'יום {n}', giftSub: 'מתנה על כל יום שבאים. ביום 7 תיבת אוצר גדולה!', giftMissed: 'שבוע מתנות חדש! בואו כל יום כדי להגיע לתיבה הגדולה.',
-    giftOpen: 'לפתוח!', giftYay: 'יש!', giftTomorrow: 'חזרו מחר למתנה של יום {n}', giftTap: 'הקישו על המתנה הנוצצת!', giftGot: 'נתראה מחר!', giftToast: 'מתנה יומית: ‎+{c} מטבעות',
-    giftMystery: 'מראה חדש', giftChest: 'תיבה גדולה', giftOpened: 'נפתחה', tomorrowGift: 'מחר: המתנה של יום {n}',
+    giftOpen: 'לפתוח!', giftYay: 'יש!', giftTomorrow: 'חזרו מחר למתנה של יום {n}', giftToast: 'מתנה יומית: ‎+{c} מטבעות',
+    giftMystery: 'מראה חדש', giftChest: 'תיבה גדולה', giftOpened: 'נפתחה',
     flameN: 'רצף משחק של {n} ימים', flameZero: 'שחקו משחק היום כדי להדליק את הלהבה!', keepFlame: 'שחקו היום כדי לשמור על רצף של {n} ימים!', flameToast: '{n} ימים ברצף! שחקו כל יום כדי שהלהבה תגדל.',
     dayChest: 'היום: {a} מתוך {b} שלבים', dayChestToast: 'תיבת שלבים: ‎+{c} מטבעות', dayChestNeed: 'סיימו עוד {n} שלבים היום כדי לפתוח את התיבה', dayChestDone: 'נפתחה! תיבה חדשה מחר',
     starChest: 'תיבת כוכבים: {n} כוכבים', starChestToast: 'תיבת כוכבים: ‎+{c} מטבעות', starChestNeed: 'עוד {n} כוכבים כדי לפתוח את התיבה', starChestDone: 'כבר נפתחה',
@@ -1611,7 +1592,7 @@ function frame(now) {
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else render(now);
   gfx3dSync();
   if (pause.resumeT) drawResume(now);
-  syncToastLayout(); grippyTick(now);
+  syncToastLayout();
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
@@ -3677,13 +3658,7 @@ function placeShape(s, j, d, now) {
 }
 function speakShape(kind) { // the shape's name, spoken in the current language (silently skipped when speech is unavailable or muted)
   const text = t('shp_' + kind); shapes.spoken = text; shapes.spokenLang = lang;
-  if (muted) return;
-  try {
-    const ss = window.speechSynthesis, U = window.SpeechSynthesisUtterance; if (!ss || !U) return;
-    const u = new U(text), want = lang === 'he' ? /^(he|iw)/i : /^en/i; u.lang = lang === 'he' ? 'he-IL' : 'en-US'; u.rate = 0.9; u.pitch = 1.15;
-    const v = (ss.getVoices ? ss.getVoices() : []).find((q) => want.test(q.lang || '')); if (v) u.voice = v;
-    ss.cancel(); ss.speak(u);
-  } catch {}
+  speakLine(text, { cancel: true });
 }
 function shapesLevelDone(now) {
   const n = shapes.level, dt = now - shapes.levelStart, par = 4000 + 3500 * shapes.shapes.length, m = shapes.mistakes;
@@ -4178,7 +4153,7 @@ function resetStrike(now) {
   if (!daily.on && !A && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
   strike.releaseUntil = -1e9;
-  if (daily.on || !tipOnce('serve')) grippySay(daily.on ? 'daily' : 'start', daily.on ? { mod: t('mod_' + daily.modifier) } : null); // (a profile's first run: 'Slap the ball!' instead)
+  if (!daily.on) tipOnce('serve'); grippySay(daily.on ? 'daily' : 'start'); // (the serve tip: the mode's start hint says it)
 }
 function saveLevelBest() { if (strike.level > strike.levelBest) { strike.levelBest = strike.level; try { localStorage.setItem('strikeLevelBest', String(strike.levelBest)); } catch {} } }
 function syncLevel(now, fx) { // the level and the progress within it follow the total cleared count; a level completed (fx) gets the burst, the bonus, the fanfare and the next level's banner
@@ -4725,7 +4700,7 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n; g3Fx('bossdown', { z: b.z });
   strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; strike.floaters.push({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
-  sfx('bossdown'); shakeScreen(4); strike.tntAt = now; grippySay('bossDown');
+  sfx('bossdown'); shakeScreen(4); strike.tntAt = now; if (!adv.on) grippySay('bossDown'); // (Adventure: the stage clear / the new world speaks next)
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
   burst(p.x, p.y, '#ffc24b', 30); burst(p.x, p.y, '#ff6f59', 22); burst(p.x, p.y, '#c05ce6', 22); dust(p.x, p.y, 16, 1 + p.s); confetti(W / 2, H * 0.3, 90, 1);
   const cw = W / 8, ch = H / 8; // the face's bricks fly at the camera
@@ -4935,7 +4910,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
   if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true)); // (Coin Magnet never applies: no perks in a stage)
-  grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (the loop stops: the clear's fanfare plays alone)
+  if (!adv.travel) grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (a world's boss stage: 'New world!' during the trip instead; the loop stops: the clear's fanfare plays alone)
   return adv.result;
 }
 function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
@@ -5058,7 +5033,6 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
-  drawTomorrow(E, cx, y0 + ch + 56); // 'Tomorrow: day 3 gift'
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
 }
@@ -6134,7 +6108,6 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
-  drawTomorrow(E, cx, y0 + ch + 56); // 'Tomorrow: day 3 gift'
   ctx.restore();
   if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
     const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round';
@@ -7276,7 +7249,7 @@ function addXp(n) { // XP, and the level-ups it brings: reward coins, a toast, a
   while (profile.level < lv) {
     profile.level++; const reward = levelReward(profile.level);
     profile.coins += reward; meta.roundCoins += reward;
-    toast('levelUpToast', { n: profile.level, c: reward }, 'star'); sfx('levelup'); grippySay('levelUp');
+    toast('levelUpToast', { n: profile.level, c: reward }, 'star'); sfx('levelup'); grippySay('rankUp'); // (the player level: quiet, the round's own moment speaks)
     for (const it of ITEMS) if (it.level && it.level <= profile.level && !profile.unlocked.includes(it.id)) { profile.unlocked.push(it.id); toast('unlockedToast', { n: t('it_' + it.id) }, 'star'); }
     roadUnlock(profile.level, true);
   }
@@ -7469,13 +7442,11 @@ function renderGifts() {
     return b;
   }));
   $('giftOk').textContent = t(s.opened ? 'giftYay' : 'giftOpen');
-  P.querySelector('.nuGrip .bub').textContent = t(s.opened ? 'giftGot' : 'giftTap');
 }
 function openGifts(auto) { // the calendar (auto: the once-a-day pop-up)
   const P = $('gifts'); if (!$('newCard').hidden) return false;
   if (auto) { profile.habit.seen = missionDay(); saveProfile(); }
   habit.shown++; renderGifts(); P.hidden = false;
-  const gc = P.querySelector('.nuGrip canvas'); gc.width = gc.height = Math.round(48 * SS); const g = gc.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, 48, 48); drawGrippy(g, 24, 28, 0.66, performance.now(), true);
   sfx('grippy'); try { $('giftOk').focus({ preventScroll: true }); } catch {}
   return true;
 }
@@ -7833,7 +7804,7 @@ function mStep(T, i, t0, sd) { // one 8th-note step of track T at time t0
   if (h === 'x') mNoise(t0, 0.035, 0.06, 'highpass', 7000); else if (h === 't') mNoise(t0, 0.02, 0.035, 'highpass', 9000);
 }
 function musicWant() { return !muted && !!audio && audio.state === 'running' && !document.hidden && mode !== 'none' && gameMode === 'strike' && adv.on && adv.phase === 'play' && !strike.over && !pause.on && !advMapOpen(); }
-function musicDucked(now) { const ui = strike.ui; if (ui.levelUp) return true; for (const k of ['dailyBanner', 'levelBanner', 'bossBanner']) { const B = ui[k]; if (B && !B.held && now < B.t + (B.ms || 1600)) return true; } return false; } // (a banner about to slide in too)
+function musicDucked(now) { const ui = strike.ui; if (ui.levelUp || now < grippy.duckUntil) return true; for (const k of ['dailyBanner', 'levelBanner', 'bossBanner']) { const B = ui[k]; if (B && !B.held && now < B.t + (B.ms || 1600)) return true; } return false; } // (a banner about to slide in too)
 function musicStart(w) {
   try {
     const t0 = audio.currentTime; music.bus = audio.createGain(); music.bus.gain.setValueAtTime(0.0001, t0); music.bus.connect(audio.destination);
@@ -7857,19 +7828,6 @@ function musicSync() { // the 100 ms timer: start / stop / duck, then the notes 
   try { while (music.next < t0 + MUSIC_AHEAD) { mStep(T, music.step, music.next, sd); music.next += sd; music.step = (music.step + 1) % 32; } } catch {}
 }
 music.timer = setInterval(musicSync, 100);
-/* 'Tomorrow: day 3 gift' under a round-over / stage card once today's gift is open */
-function giftSprite(r) {
-  return makeSprite('gift|' + r, r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
-    const k = r / 12; g.scale(k, k); g.fillStyle = '#ff6f59'; g.beginPath(); g.roundRect(-9, -2, 18, 12, 2); g.fill(); g.fillStyle = '#ff8a76'; g.beginPath(); g.roundRect(-10.5, -6.5, 21, 5.5, 1.5); g.fill();
-    g.fillStyle = '#ffd23f'; g.fillRect(-1.6, -6.5, 3.2, 16.5); g.strokeStyle = '#ffd23f'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -6.5); g.bezierCurveTo(-2, -11, -7, -11, -6.5, -8); g.bezierCurveTo(-6, -6.5, -3, -6.5, 0, -6.5); g.bezierCurveTo(2, -11, 7, -11, 6.5, -8); g.bezierCurveTo(6, -6.5, 3, -6.5, 0, -6.5); g.stroke();
-  });
-}
-function drawTomorrow(E, cx, y) {
-  const g = giftState(), rtl = lang === 'he'; E.ui.tomorrow = null; if (!g.opened) return;
-  y = Math.min(y, H - 20); const ts = textSprite(t('tomorrowGift', { n: g.tomorrow }), 13, '#ffd77a', null, 600), pw = Math.min(W - 24, ts.tw + 48), ph = 28, px = cx - pw / 2, sc = Math.min(1, (pw - 48) / ts.tw);
-  blit(glassSprite(pw, ph, 14), px - 1, y - ph / 2 - 1); blit(giftSprite(10), rtl ? px + pw - 18 : px + 18, y); edgeText(ts, rtl ? px + pw - 34 : px + 34, y, rtl, sc);
-  E.ui.tomorrow = { day: g.tomorrow, text: t('tomorrowGift', { n: g.tomorrow }), x: px, y: y - ph / 2, w: pw, h: ph };
-}
 /* --- collection: buy with coins (or earn at a level), equip one per type --- */
 function shopAffordable() { return ITEMS.find((it) => !it.level && it.cost > 0 && !profile.unlocked.includes(it.id) && it.cost <= profile.coins) || null; } // the cheapest... any item not owned yet the coins can buy
 function itemState(it) { return !profile.unlocked.includes(it.id) ? 'locked' : profile.equipped[it.type] === it.skin ? 'equipped' : 'owned'; }
@@ -7942,161 +7900,88 @@ function teaserIconSprite(q) { // the item's own art (as on its Collection tile)
     else { g.beginPath(); g.moveTo(-11, 1); g.lineTo(-3, 9); g.lineTo(12, -8); g.stroke(); }
   });
 }
-/* --- Grippy, the commentator: a little hand with big eyes pops up at the bottom start corner with a short line for 2.2 s.
-   At most one line per 4 s; boss / new best / last life (and a round's start) cut in. Lines show even when muted (only its pop sound is muted).
-   The Collection panel's Grippy button turns him off (saved in the profile). --- */
-const GRIPPY_MS = 2200, GRIPPY_GAP = 8000, GRIPPY_CUT = new Set(['boss', 'newBest', 'lastLife', 'start', 'daily', 'final', 'chest', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest', 'shapesLevel', 'advClear', 'advPerfect', 'advFail']);
-const GRIPPY = {
+/* --- Grippy, the cheering voice: no picture, no bubble. At the big moments of a round he says a 1-3 word line out loud (speechSynthesis,
+   a Hebrew voice when the UI is Hebrew, an English one otherwise): a round / stage start, the last heart, a boss and its fall, a stage cleared /
+   failed, a new best, a new world, a level up, Shapes' box filled, and now and then a close save. Every other event is quiet (grippySay returns false).
+   At most one line per GRIPPY_GAP (8 s) and per moment; a close save at most once per GRIPPY_CLOSE_GAP. Muted, off (the Collection panel's
+   Voice button, saved in the profile), no speechSynthesis or no voice for the language: silently skipped. The world music ducks while he speaks.
+   Onboarding tips (a gold brick, a perk, a flying guest) show once as the hint toast instead (the serve: the mode's start hint already says it). --- */
+const GRIPPY_GAP = 8000, GRIPPY_CLOSE_GAP = 45000, GRIPPY_DUCK_MS = 1800;
+const GRIPPY = { // short lines only (1-3 words), a few per event
   en: {
-    start: ["Let's go! Hands ready?", 'Wiggle those fingers!', 'I believe in your hands!', 'Ready, set, high five!', "Show 'em what hands can do!", 'Here we go! No pressure. Some pressure.', 'Warm up those palms!'],
-    daily: ["Daily time! Today: {mod}!", '{mod} today. Ooh, spicy!', "Today's twist: {mod}!", 'Same run for everyone today: {mod}!', '{mod}? I was born for this!', 'New day, new twist: {mod}!'],
-    firstHit: ['First one! Nice!', 'Boom! There it is!', "And we're rolling!", 'Great start!', "That's how it's done!", 'Ooh, smooth!'],
-    combo: ['Combo! Wow!', 'Two birds, one hand!', 'Combo time!', 'Look at that combo!', 'Whoa, a chain!', 'Bam bam bam!'],
-    streak5: ['Five in a row! On fire!', 'High five! Literally!', '5 streak! Keep it up!', "You're warming up!", 'Five! Can you do ten?', 'Hot hands!'],
-    streak10: ['TEN! Unstoppable!', 'Ten in a row?! Wow!', 'Double high five!', 'Your hands are legends!', "10 streak! I'm dizzy!", 'Is this a world record?'],
-    super: ['SUPER slap!', 'Whoa, what a smack!', 'That ball felt it!', 'Mega power!', 'Kapow!', 'Speedy hands!'],
-    close: ['Phew! Close one!', 'Just in time!', 'By a whisker!', 'Ooh, so close!', 'Saved it!', 'My heart! Ha!'],
-    boss: ['Uh oh, a BOSS!', 'Big face incoming!', 'Boss time! Hit it hard!', 'He looks grumpy!', 'The brick boss is here!', "Don't blink! Boss!"],
-    bossDown: ['Boss down! Yay!', 'Bye bye, Boss!', 'You crushed it!', 'Boss? What boss?', 'Bricks everywhere!', 'Hero hands!'],
-    levelUp: ['Level up!', 'Up we go!', 'New level, new fun!', "You're getting good!", 'Higher and higher!', 'Ding! Level up!'],
-    pu_multi: ['Multi-ball! Chaos!', 'Three balls! Yikes!', 'Balls everywhere!', 'Triple trouble!', 'So many balls!', 'Juggle time!'],
-    pu_big: ['Big ball! Huge!', 'That ball ate breakfast!', 'Giant ball time!', 'Whoa, chonky ball!', 'Big ball, big smash!', 'Easy to hit now!'],
-    pu_slow: ['Slow-mo! Sooo sloooow!', 'Time goes zzz…', 'Slow motion, smooth moves!', 'Take your time!', 'Matrix hands!', 'Everything is slow. Except you!'],
-    pu_fire: ['Fireball! Hot hot hot!', 'Ouch, spicy ball!', 'Burn those bricks!', 'Fire power!', 'Toasty!', 'Flaming fast!'],
-    pu_life: ['Extra heart! Yay!', 'A spare heart!', 'Heart caught! Phew!', 'One more life!', 'Love it! Literally!', 'Heart power!'],
-    miss: ['Oops! Next one!', 'Whoosh! Missed it.', 'Shake it off!', 'No worries, try again!', 'That one was sneaky!', 'Almost! Keep going!'],
-    lastLife: ['Last heart! Focus!', 'One heart left! You got this!', 'Careful now!', 'Deep breath. Last life!', 'All or nothing!', 'Last chance! I believe!'],
-    newBest: ['NEW BEST! Woohoo!', 'Record smashed!', 'Best ever! Wow!', 'Gold star for you!', 'History made!', 'You beat yourself!'],
-    mission: ['Mission done!', 'Check! Mission complete!', 'You did the thing!', 'Mission? Accomplished!', 'Coins for you! Go claim them!', 'Nailed the mission!'],
-    cow: ['Holy cow!', 'A flying cow?! Moo-ve!', 'Udderly amazing!', 'Cow incoming! Slap it!', 'Is that... a COW?!', "Cows can't fly! Can they?", 'Moo-tastic!'],
-    final: ['Final wall! Give it everything!', 'Last wall of the level!', 'One more wall! You got this!', 'The final wall! Smash it!', 'Big finish! Last wall!', 'This is it! Final wall!'],
-    tip_serve: ['Slap the glowing ball to start!', 'See the ball? Slap it away!', 'Swing your hand at the ball!', 'Hit the ball down the hall!', 'Your serve! Slap that ball!', 'Open hand, then slap the ball!'],
-    tip_pu: ['Gold bricks drop power-ups!', 'See the gold brick? Break it!', 'Gold brick = a surprise power!', 'Hit the gold brick, catch the prize!', 'Gold bricks hide power-ups!', 'Break gold, grab the bubble!'],
-    tip_perk: ['Perks help you all run long!', 'Your perk lasts the whole run!', 'Nice pick! That one stays with you!', 'Perks stack up. Choose wisely!', 'A perk! Your hands just got better!', 'Every other level: a new perk!'],
-    tip_guest: ['A flying animal! Slap it back!', 'Slap the animals for coins!', 'Bonus guest! Hit it, get coins!', 'Missing a guest costs no heart!', "Guests don't cost hearts. Slap away!", 'Surprise visitor! Give it a slap!'],
-    monkey: ['Monkey business!', 'Banana-rama!', 'A flying monkey! Eek!', 'Ooh ooh ah ah!', 'Go bananas! Slap it!', 'Cheeky monkey incoming!', 'Monkey see, monkey fly!'],
-    unlock: ['Something new! Go try it!', 'Ooh, shiny! A new thing!', 'Unlocked! I love surprises!', 'Your hands earned this!', 'New toy! Wheee!', 'Level up, loot up!'],
-    chest: ['A treasure chest! Open it!', 'Ooh, what is inside?!', 'Loot time!', 'Treasure! Go on, open it!', 'A chest for a hero!', 'Shiny box! Open it!'],
-    shapesMatch: ['It fits!', 'Clunk! Perfect fit!', 'Right in the hole!', 'You found its home!', 'Great matching!', 'In it goes!', 'Shape master!'],
-    shapesLevel: ['All sorted! Hooray!', 'Every shape is home!', 'Box full! Well done!', 'Super sorting!', 'Level done! Next one!', 'You matched them all!'],
-    world: ['A whole new world!', 'New world, new colours!', 'Next world unlocked!', 'Onward, explorer!', 'Ooh, where are we now?', 'Pack your hands, we travel!'],
-    advClear: ['Stage cleared! Onward!', 'Every wall down! Yay!', 'All broken! Next stop!', 'Bricks? Gone!', 'Stage done! Nice hands!', 'Up the map we go!'],
-    advPerfect: ['Three stars! Perfect!', 'Not one heart lost! Wow!', 'Flawless! Three stars!', 'Perfect stage! Hero hands!', 'Gold, gold, gold!', 'Three for three! Amazing!'],
-    advFail: ['So close! Try again?', 'Almost there! One more go!', 'Those walls got lucky!', "Shake it off, let's retry!", 'Next try is the one!', 'Nearly! You can do it!'],
+    start: ["Let's go!", 'Ready? Go!', 'Here we go!'],
+    lastLife: ['Last heart!', 'Careful now!', 'Last one!'],
+    boss: ['Boss!', 'Uh oh, boss!', 'Big boss!'],
+    bossDown: ['Boss down!', 'Bye bye, boss!', 'Boom!'],
+    newBest: ['New best!', 'Wow! Record!', 'Best ever!'],
+    levelUp: ['Level up!', 'Up we go!', 'Wow!'],
+    world: ['New world!', 'Whoa!', "Let's explore!"],
+    close: ['Close one!', 'Phew!', 'Just in time!'],
+    advClear: ['Yay!', 'Well done!', 'Woohoo!'],
+    advPerfect: ['Three stars!', 'Perfect!', 'Wow!'],
+    advFail: ['So close!', 'Almost!', 'Try again!'],
+    shapesLevel: ['Hooray!', 'All done!', 'Great job!'],
   },
   he: {
-    start: ['יאללה! הידיים מוכנות?', 'תנענעו את האצבעות!', 'אני מאמין בידיים שלכם!', 'היכון, הכן, כיף!', 'תראו להם מה ידיים יודעות!', 'מתחילים! בלי לחץ. טוב, קצת.', 'חממו את כפות הידיים!'],
-    daily: ['זמן אתגר יומי! היום: {mod}!', 'היום {mod}. אוהו, חריף!', 'הטוויסט של היום: {mod}!', 'אותו משחק לכולם היום: {mod}!', '{mod}? נולדתי בשביל זה!', 'יום חדש, טוויסט חדש: {mod}!'],
-    firstHit: ['הראשונה! יפה!', 'בום! הנה זה!', 'התחלנו להתגלגל!', 'פתיחה מעולה!', 'ככה עושים את זה!', 'וואו, חלק!'],
-    combo: ['קומבו! וואו!', 'שתי ציפורים, יד אחת!', 'זמן קומבו!', 'תראו את הקומבו הזה!', 'וואו, שרשרת!', 'בם בם בם!'],
-    streak5: ['חמש ברצף! בוערים!', 'תנו חמש! ממש!', 'רצף של 5! תמשיכו!', 'אתם מתחממים!', 'חמש! מגיעים לעשר?', 'ידיים חמות!'],
-    streak10: ['עשר! אין עצירה!', 'עשר ברצף?! וואו!', 'תנו עשר!', 'הידיים שלכם אגדה!', 'רצף של 10! מסתובב לי הראש!', 'זה שיא עולם?'],
-    super: ['סופר מכה!', 'וואו, איזו סטירה!', 'הכדור הרגיש את זה!', 'כוח מגה!', 'קה-פאו!', 'ידיים מהירות!'],
-    close: ['פיו! היה קרוב!', 'בדיוק בזמן!', 'בשערה!', 'אוי, כמעט!', 'הצלתם!', 'הלב שלי! חה!'],
-    boss: ['אוי אוי, בוס!', 'פרצוף ענק בדרך!', 'זמן בוס! הכו חזק!', 'הוא נראה עצבני!', 'בוס הלבנים הגיע!', 'לא למצמץ! בוס!'],
-    bossDown: ['הבוס הובס! יש!', 'ביי ביי, בוס!', 'ריסקתם אותו!', 'בוס? איזה בוס?', 'לבנים בכל מקום!', 'ידיים של גיבורים!'],
-    levelUp: ['עליתם שלב!', 'למעלה למעלה!', 'שלב חדש, כיף חדש!', 'אתם משתפרים!', 'גבוה יותר ויותר!', 'דינג! עליתם!'],
-    pu_multi: ['כדורים כפולים! בלגן!', 'שלושה כדורים! אוי!', 'כדורים בכל מקום!', 'צרה משולשת!', 'כמה הרבה כדורים!', "זמן ג'אגלינג!"],
-    pu_big: ['כדור ענק! עצום!', 'הכדור הזה אכל ארוחת בוקר!', 'זמן כדור ענק!', 'וואו, כדור שמנמן!', 'כדור גדול, ניפוץ גדול!', 'עכשיו קל לפגוע!'],
-    pu_slow: ['הילוך איטי! לאאאט!', 'הזמן נרדם…', 'הילוך איטי, תנועות חלקות!', 'בלי למהר!', 'ידיים של מטריקס!', 'הכול איטי. חוץ מכם!'],
-    pu_fire: ['כדור אש! חם חם חם!', "אאוץ', כדור חריף!", 'תשרפו את הלבנים!', 'כוח אש!', 'קלוי!', 'לוהט ומהיר!'],
-    pu_life: ['לב נוסף! יש!', 'לב רזרבי!', 'תפסתם לב! פיו!', 'עוד חיים!', 'אוהבים את זה! ממש!', 'כוח הלב!'],
-    miss: ['אופס! הבא בתור!', 'ווש! פספוס.', 'לנער ולהמשיך!', 'לא נורא, עוד פעם!', 'הוא היה ערמומי!', 'כמעט! תמשיכו!'],
-    lastLife: ['לב אחרון! להתרכז!', 'נשאר לב אחד! אתם יכולים!', 'בזהירות עכשיו!', 'נשימה עמוקה. לב אחרון!', 'הכול או כלום!', 'הזדמנות אחרונה! אני מאמין!'],
-    newBest: ['שיא חדש! יוהו!', 'ריסקתם את השיא!', 'הכי טוב אי פעם! וואו!', 'כוכב זהב בשבילכם!', 'נכנסתם להיסטוריה!', 'ניצחתם את עצמכם!'],
-    mission: ['משימה הושלמה!', 'וי! המשימה בוצעה!', 'עשיתם את זה!', 'משימה? בוצעה!', 'מטבעות בשבילכם! לכו לאסוף!', 'פיצחתם את המשימה!'],
-    cow: ['פרה עפה! מה קורה פה?!', 'מוו! פרה באוויר!', 'פרה מעופפת! תנו לה כאפה!', 'זו ציפור? זה מטוס? זו פרה!', 'איזו פרה מוזרה!', 'פרות לא עפות! או שכן?', 'חלב בטיסה מהירה!'],
-    final: ['קיר אחרון! תנו הכול!', 'הקיר האחרון בשלב!', 'עוד קיר אחד! אתם יכולים!', 'הקיר האחרון! לרסק!', 'סיום גדול! קיר אחרון!', 'זהו זה! קיר אחרון!'],
-    tip_serve: ['תנו סטירה לכדור הזוהר כדי להתחיל!', 'רואים את הכדור? תעיפו אותו!', 'הניפו את היד אל הכדור!', 'שלחו את הכדור במורד המסדרון!', 'ההגשה שלכם! סטירה לכדור!', 'יד פתוחה, וסטירה לכדור!'],
-    tip_pu: ['לבנים זהובות מפילות כוחות!', 'רואים לבנה זהובה? שברו אותה!', 'לבנה זהובה = כוח הפתעה!', 'שברו את הזהובה, תפסו את הפרס!', 'בלבנים הזהובות מסתתרים כוחות!', 'שברו זהב, תפסו את הבועה!'],
-    tip_perk: ['הטבות עוזרות לכל אורך המשחק!', 'ההטבה נשארת כל המשחק!', 'בחירה יפה! היא נשארת איתכם!', 'הטבות מצטברות. בחרו בחוכמה!', 'הטבה! הידיים שלכם השתדרגו!', 'כל שלב שני: הטבה חדשה!'],
-    tip_guest: ['חיה מעופפת! תחזירו אותה!', 'חיות עפות! סטירה = מטבעות!', 'אורח בונוס! פגיעה = מטבעות!', 'פספוס של אורח לא עולה לב!', 'אורחים לא עולים לבבות. קדימה!', 'מבקר מפתיע! תנו לו סטירה!'],
-    monkey: ['עסק של קופים!', 'קוף מעופף! איי!', 'או או אה אה!', 'משתגעים על בננות!', 'קוף שובב בדרך!', 'קופיקו בא לבקר!', 'תפסו את הקוף!'],
-    unlock: ['משהו חדש! לכו לנסות!', 'אוהו, נוצץ! דבר חדש!', 'נפתח! אני אוהב הפתעות!', 'הידיים שלכם הרוויחו את זה!', 'צעצוע חדש! יש!', 'עליתם רמה, קיבלתם שלל!'],
-    chest: ['תיבת אוצר! פתחו אותה!', 'מה יש בפנים?!', 'זמן שלל!', 'אוצר! קדימה, לפתוח!', 'תיבה לגיבורים!', 'קופסה נוצצת! פתחו!'],
-    shapesMatch: ['זה מתאים!', 'קלאנק! בול בפנים!', 'ישר לתוך החור!', 'מצאתם לה בית!', 'התאמה מעולה!', 'פנימה!', 'אלופי הצורות!'],
-    shapesLevel: ['הכול ממוין! הידד!', 'כל הצורות בבית!', 'הקופסה מלאה! כל הכבוד!', 'מיון מדהים!', 'השלב הושלם! לשלב הבא!', 'התאמתם את כולן!'],
-    world: ['עולם חדש לגמרי!', 'עולם חדש, צבעים חדשים!', 'העולם הבא נפתח!', 'קדימה, חוקרים!', 'אוהו, איפה אנחנו עכשיו?', 'תארזו ידיים, יוצאים לדרך!'],
-    advClear: ['השלב הושלם! ממשיכים!', 'כל הקירות נפלו! יש!', 'הכול שבור! לתחנה הבאה!', 'לבנים? נעלמו!', 'סיימתם שלב! ידיים טובות!', 'עולים במפה!'],
-    advPerfect: ['שלושה כוכבים! מושלם!', 'אף לב לא אבד! וואו!', 'בלי טעות! שלושה כוכבים!', 'שלב מושלם! ידיים של גיבורים!', 'זהב, זהב, זהב!', 'שלושה משלושה! מדהים!'],
-    advFail: ['כמעט! עוד פעם?', 'כמעט שם! עוד ניסיון!', 'לקירות היה מזל!', 'לנער ולנסות שוב!', 'הניסיון הבא יצליח!', 'ממש קרוב! אתם יכולים!'],
+    start: ['יאללה!', 'מוכנים? צאו!', 'מתחילים!'],
+    lastLife: ['לב אחרון!', 'בזהירות!', 'רק לב אחד!'],
+    boss: ['בוס!', 'אוי, בוס!', 'בוס ענק!'],
+    bossDown: ['בום!', 'ביי ביי, בוס!', 'ניצחתם!'],
+    newBest: ['שיא חדש!', 'וואו! שיא!', 'הכי טוב!'],
+    levelUp: ['עליתם שלב!', 'למעלה!', 'וואו!'],
+    world: ['עולם חדש!', 'וואו!', 'יוצאים לדרך!'],
+    close: ['פיו!', 'כמעט!', 'בדיוק בזמן!'],
+    advClear: ['יש!', 'כל הכבוד!', 'וואו!'],
+    advPerfect: ['שלושה כוכבים!', 'מושלם!', 'וואו!'],
+    advFail: ['כמעט!', 'עוד פעם!', 'ממש קרוב!'],
+    shapesLevel: ['הידד!', 'כל הכבוד!', 'יש!'],
   },
 };
-const grippy = { last: null, lastAt: -1e9, shownAt: -1e9, until: -1e9, prev: {}, bottom: 16, visible: false, blinkAt: 0, said: [] };
+const GRIPPY_ALIAS = { daily: 'start' }; // the daily's start: the same 'Let's go!'
+const grippy = { last: null, lastAt: -1e9, closeAt: -1e9, prev: {}, said: [], skipped: [], tips: [], duckUntil: -1e9 };
 function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike' || gameMode === 'shapes'); }
-function grippySay(ev, vars, now = performance.now()) { // a line for the event, if Grippy is on, a game is running and the rate limit allows it; returns whether he spoke
+function speechVoice(l = lang) { // the first installed voice for the language, or null
+  try { const ss = window.speechSynthesis, want = l === 'he' ? /^(he|iw)/i : /^en/i; return (ss && ss.getVoices ? ss.getVoices() : []).find((q) => want.test(q.lang || '')) || null; } catch { return null; }
+}
+function speakLine(text, o = {}) { // say a line in the current language (shared with Shapes' spoken names); o.needVoice: skip when no voice for it; returns whether it was handed to the speech engine
+  if (muted) return false;
+  try {
+    const ss = window.speechSynthesis, U = window.SpeechSynthesisUtterance; if (!ss || !U) return false;
+    const v = speechVoice(); if (o.needVoice && !v) return false;
+    const u = new U(text); u.lang = lang === 'he' ? 'he-IL' : 'en-US'; u.rate = o.rate || 0.9; u.pitch = o.pitch || 1.15; if (v) { try { u.voice = v; } catch {} }
+    if (o.onend) u.onend = u.onerror = o.onend;
+    if (o.cancel) ss.cancel(); ss.speak(u); return true;
+  } catch { return false; }
+}
+function grippySay(ev, vars, now = performance.now()) { // a spoken line for an important event, if the voice is on, a game is running and the cooldown allows it; returns whether he spoke
+  ev = GRIPPY_ALIAS[ev] || ev;
   if (!profile.grippy || !grippyActive()) return false;
-  const L = GRIPPY[lang] || GRIPPY.en, lines = L[ev]; if (!lines) return false;
-  if (!GRIPPY_CUT.has(ev) && now - grippy.lastAt < GRIPPY_GAP) return false;
-  if (gameMode === 'strike' && strike.balls.some((b) => b.dir > 0 && b.z < CONFIG.STRIKE_Z_FAR * 0.4)) return false; // never while a ball is in the last 40% of its approach
-  if (ev === 'daily' && !vars) vars = { mod: t('mod_' + (daily.modifier || modifierFor(missionDay()))) };
+  const L = GRIPPY[lang] || GRIPPY.en, lines = L[ev]; if (!lines) return false; // (a quiet event)
+  const skip = (why) => { grippy.skipped.push({ event: ev, why, t: now }); if (grippy.skipped.length > 40) grippy.skipped.shift(); return false; };
+  if (now - grippy.lastAt < GRIPPY_GAP) return skip('cooldown');
+  if (ev === 'close' && now - grippy.closeAt < GRIPPY_CLOSE_GAP) return skip('rare');
+  if (gameMode === 'strike' && strike.balls.some((b) => b.dir > 0 && b.z < CONFIG.STRIKE_Z_FAR * 0.4)) return skip('ball'); // never while a ball is in the last 40% of its approach
   let i = Math.floor(Math.random() * lines.length); if (lines.length > 1 && i === grippy.prev[ev]) i = (i + 1 + Math.floor(Math.random() * (lines.length - 1))) % lines.length; // never the same line twice in a row
-  grippy.prev[ev] = i;
-  const text = lines[i].replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k]) ?? '');
-  grippy.last = { event: ev, text, t: now, i }; grippy.lastAt = grippy.shownAt = now; grippy.until = now + GRIPPY_MS;
+  const text = lines[i];
+  if (!speakLine(text, { needVoice: true, rate: 1, pitch: 1.2, onend: () => { grippy.duckUntil = performance.now() + 150; } })) return skip(muted ? 'muted' : 'nospeech');
+  grippy.prev[ev] = i; grippy.duckUntil = now + GRIPPY_DUCK_MS; // the world music dips while he talks (back up when the line ends, or after GRIPPY_DUCK_MS)
+  grippy.last = { event: ev, text, lang, t: now, i }; grippy.lastAt = now; if (ev === 'close') grippy.closeAt = now;
   grippy.said.push(grippy.last); if (grippy.said.length > 40) grippy.said.shift();
-  const el = $('grippy'), bub = el.querySelector('.bub'); el.querySelector('.tx').textContent = text;
-  bub.style.animation = 'none'; void bub.offsetWidth; bub.style.animation = ''; // the bubble pops in again
-  if (gameMode === 'strike' && hintEl.classList.contains('show')) hideHint(); // (a decluttered Strike: Grippy's line takes the hint's place, never stacked over it)
-  el.hidden = false; el.classList.remove('out'); grippy.visible = true; grippy.bottom = 0; grippyPlace(now);
-  sfx('grippy');
   return true;
 }
+const TIP_KEYS = { pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest' };
 function profileTip(id) { return (profile.tips || []).includes(id); }
-function tipOnce(id) { // onboarding: Grippy explains a thing the first time it shows up on this profile (once ever; only marked seen once he actually said it)
-  if (profileTip(id) || !grippySay('tip_' + id)) return false;
-  (profile.tips || (profile.tips = [])).push(id); saveProfile(); return true;
+function tipOnce(id) { // onboarding: a thing explained the first time it shows up on this profile (once ever), as the hint toast; the serve is the mode's own start hint
+  if (profileTip(id)) return false;
+  (profile.tips || (profile.tips = [])).push(id); saveProfile();
+  if (!TIP_KEYS[id]) return false;
+  const text = t(TIP_KEYS[id]); grippy.tips.push({ id, text, t: performance.now() }); showHint(text); return true;
 }
-function grippyHide() { grippy.until = -1e9; grippy.visible = false; const el = $('grippy'); el.hidden = true; el.classList.remove('out', 'blocked'); }
-function grippyPlace(now) { // bottom start corner: above Strike's power meter and the hint toast; under a round-over card it sits below the card, or keeps quiet if there is no room
-  const el = $('grippy'), E = endState(), card = E && E.over && E.ui.card;
-  let bottom = 16, blocked = gameMode === 'strike' && !!strike.perkOffer; // never over the perk cards
-  if (E && E.over) { if (card) blocked = blocked || H - bottom - el.offsetHeight < card.y + card.h + 36; grippy.bottom = bottom; }
-  else {
-    if (gameMode === 'strike') bottom = Math.max(bottom, Math.round(H - (strike.ui.meterTop || H - 52)) + 8);
-    if (gameMode === 'shapes') bottom = Math.max(bottom, hintBottom()); // (never over the toy box)
-    if (hintEl.classList.contains('show')) bottom = Math.max(bottom, hintBottom() + hintEl.offsetHeight + 8);
-    bottom = grippy.bottom = Math.max(grippy.bottom, bottom); // while a line shows he only moves up (the hint fading must not drop him)
-  }
-  el.style.bottom = 'calc(env(safe-area-inset-bottom,0px) + ' + grippy.bottom + 'px)';
-  el.classList.toggle('blocked', blocked); grippy.blocked = blocked;
-}
-function grippyTick(now) { // per frame while visible: place, animate, and fade out after GRIPPY_MS
-  if (!grippy.visible) return;
-  if (!grippyActive() || !profile.grippy) { grippyHide(); return; }
-  const el = $('grippy');
-  if (now > grippy.until) { el.classList.add('out'); if (now > grippy.until + 260) { grippyHide(); return; } }
-  grippyPlace(now);
-  const cv = el.querySelector('canvas'), px = Math.round(60 * DPR); if (cv.width !== px) { cv.width = cv.height = px; }
-  const g = cv.getContext('2d'); g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, 60, 60);
-  const age = now - grippy.shownAt, pop = Math.min(1, age / 320), k = pop < 1 ? 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2) : 1; // ease-out-back pop
-  drawGrippy(g, 30, 34 - 3 * Math.abs(Math.sin(now / 170)), 0.9 * Math.max(0.05, k), now, age < GRIPPY_MS - 600);
-}
-function drawGrippy(g, cx, cy, k, now, talking) { // the mascot at (cx, cy), scale k (1 = a ~64 px figure): four waving fingers and a thumb on a round palm, big blinking eyes, rosy cheeks, a smile that chatters while he talks
-  g.save(); g.translate(cx, cy); g.scale(k, k); g.lineCap = g.lineJoin = 'round';
-  const skin = '#ffc24b', rim = '#b8730f', wave = Math.sin(now / 150);
-  const finger = (x, len, ang) => { g.save(); g.translate(x, -10); g.rotate(ang); g.beginPath(); g.roundRect(-4, -len, 8, len + 6, 4); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke(); g.restore(); };
-  finger(-12, 15, -0.25 + 0.08 * wave); finger(-4, 19, -0.08 + 0.06 * wave); finger(4, 19, 0.06 + 0.06 * wave); finger(12, 15, 0.22 + 0.08 * wave);
-  g.save(); g.translate(-17, 4); g.rotate(-0.9 - 0.15 * wave); g.beginPath(); g.roundRect(-4, -14, 8, 16, 4); g.fillStyle = skin; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke(); g.restore(); // the thumb
-  const gr = g.createRadialGradient(-6, -6, 2, 0, 0, 20); gr.addColorStop(0, '#ffe7a8'); gr.addColorStop(1, skin);
-  g.beginPath(); g.arc(0, 4, 17, 0, TAU); g.fillStyle = gr; g.fill(); g.lineWidth = 2; g.strokeStyle = rim; g.stroke();
-  const blink = (now % 2600) < 130; // a quick blink every 2.6 s
-  for (const s of [-1, 1]) {
-    g.beginPath(); if (blink) { g.moveTo(s * 6 - 4, 1); g.lineTo(s * 6 + 4, 1); g.lineWidth = 2; g.strokeStyle = '#3a2400'; g.stroke(); continue; }
-    g.ellipse(s * 6, 0, 4.6, 5.6, 0, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = rim; g.stroke();
-    g.beginPath(); g.arc(s * 6 + 0.8, 1, 2.6, 0, TAU); g.fillStyle = '#241a00'; g.fill(); g.beginPath(); g.arc(s * 6 + 1.6, -0.2, 0.9, 0, TAU); g.fillStyle = '#fff'; g.fill();
-  }
-  g.fillStyle = 'rgba(255,111,89,0.45)'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 11, 8, 3.2, 2, 0, 0, TAU); g.fill(); }
-  const open = talking ? 1.5 + 2.5 * Math.abs(Math.sin(now / 70)) : 0;
-  g.beginPath(); if (open > 0.5) { g.ellipse(0, 10, 4, open, 0, 0, TAU); g.fillStyle = '#7a2a1a'; g.fill(); } else { g.arc(0, 7, 5, 0.2 * Math.PI, 0.8 * Math.PI); g.lineWidth = 2; g.strokeStyle = '#3a2400'; g.stroke(); }
-  g.restore();
-}
-function setGrippy(on) { profile.grippy = !!on; saveProfile(); syncGrippyBtn(); if (!on) grippyHide(); }
+function grippyHide() {} // (nothing on screen any more; kept for the callers)
+function setGrippy(on) { profile.grippy = !!on; saveProfile(); syncGrippyBtn(); if (!on) { try { if (grippy.last && performance.now() - grippy.lastAt < 3000) window.speechSynthesis.cancel(); } catch {} } }
 function syncGrippyBtn() {
   const b = $('grippyBtn'), on = profile.grippy !== false; b.setAttribute('aria-pressed', String(on));
   b.querySelector('.st').textContent = t(on ? 'grippyOn' : 'grippyOff'); b.setAttribute('aria-label', t('grippyAria') + ': ' + t(on ? 'grippyOn' : 'grippyOff')); b.title = b.getAttribute('aria-label');
-  const cv = b.querySelector('canvas'), px = Math.round(28 * (window.devicePixelRatio || 1)); if (cv.width !== px) { cv.width = cv.height = px; }
-  const g = cv.getContext('2d'); g.setTransform(px / 28, 0, 0, px / 28, 0, 0); g.clearRect(0, 0, 28, 28); drawGrippy(g, 14, 16, 0.42, 1000, false);
 }
 $('grippyBtn').addEventListener('click', () => { setGrippy(profile.grippy === false); sfx('click'); });
 /* --- start screen: the coins + level pill, the Missions / Collection buttons and their panels --- */
@@ -8144,8 +8029,6 @@ function maybeNewCard() {
   if (!newCardOk()) return false;
   const id = profile.road.cards[0], P = $('newCard'), now = performance.now(); newCard.id = id; newCard.at = now;
   drawRoadArt(P.querySelector('.nuArt canvas'), id, 112, false); $('nuName').textContent = t('rd_' + id); P.querySelector('.nuLine').textContent = t('rdd_' + id);
-  const lines = (GRIPPY[lang] || GRIPPY.en).unlock; P.querySelector('.nuGrip .bub').textContent = lines[Math.floor(Math.random() * lines.length)];
-  const gc = P.querySelector('.nuGrip canvas'); gc.width = gc.height = Math.round(48 * SS); const g = gc.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, 48, 48); drawGrippy(g, 24, 28, 0.66, now, true);
   P.hidden = false; sfx('unlock'); sfx('levelup');
   const sh = P.querySelector('.sheet'); requestAnimationFrame(() => domConfetti(sh, P.querySelector('.nuArt').getBoundingClientRect()));
   try { $('nuOk').focus({ preventScroll: true }); } catch {}
@@ -8429,9 +8312,9 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
   if (gameMode === 'shapes' && shapes.box) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
-function showHint() { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades
+function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
-  hintEl.querySelector('.tx').textContent = hintText();
+  hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
   const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg');
   hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
   hintEl.style.setProperty('--hint-bottom', hintBottom() + 'px');
@@ -8442,9 +8325,9 @@ function hideHint() { hintEl.style.opacity = 0; hintEl.classList.remove('show');
 document.querySelectorAll('.modes > button[data-mode]').forEach((b) => b.addEventListener('click', () => { // a tap on a game's tile starts it at once, with the remembered input (camera / touch)
   setGameMode(b.dataset.mode); if (mode !== 'none' || physicsError) return; audioInit(); strikeStart(inputPref());
 }));
-function inputPref() { // the remembered way to play: 'camera' | 'mouse'; on a first visit the camera, if this browser has one
-  let v = null; try { v = localStorage.getItem('inputPref'); if (!v && localStorage.getItem('camOk') === '1') v = 'camera'; } catch {}
-  return v === 'camera' || v === 'mouse' ? v : navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? 'camera' : 'mouse';
+function inputPref() { // the remembered way to play: 'camera' | 'mouse'; touch / mouse until the player picks the camera
+  let v = null; try { v = localStorage.getItem('inputPref'); } catch {}
+  return v === 'camera' ? 'camera' : 'mouse';
 }
 function setInputPref(v) { try { localStorage.setItem('inputPref', v === 'camera' ? 'camera' : 'mouse'); } catch {} syncInputSeg(); }
 function syncInputSeg() { const v = inputPref(); $('camBtn').setAttribute('aria-pressed', String(v === 'camera')); $('mouseBtn').setAttribute('aria-pressed', String(v === 'mouse')); }
@@ -9090,10 +8973,11 @@ window.__grasp = {
     get level() { const r = dailyRec(this.date); return r ? r.level : 0; }, get streak() { return dailyStreak(this.date); }, get forceModifier() { return daily.forceModifier; },
     set forceModifier(v) { daily.forceModifier = DAILY_MODS.includes(v) ? v : null; syncDaily(); }, mods: DAILY_MODS, modifierFor, strip: (d) => dailyStrip(d), shareText, share: shareDaily, get lastShare() { return daily.lastShare; }, open: openDaily },
   startDaily, strikeRand,
-  // step 4: Grippy the commentator (on: the saved toggle; last: { event, text, t }; say(event): a line now, if the rate limit allows; cool(): test-only, clears the limit) and the end card's "One more?" teaser
-  grippy: { get on() { return profile.grippy !== false; }, set on(v) { setGrippy(v); }, get last() { return grippy.last; }, get said() { return grippy.said; }, get visible() { return grippy.visible && !$('grippy').hidden; },
-    get blocked() { return !!grippy.blocked; }, say(ev, vars) { return grippySay(ev, vars); }, cool() { grippy.lastAt = -1e9; }, lines: GRIPPY, events: Object.keys(GRIPPY.en), gapMs: GRIPPY_GAP, showMs: GRIPPY_MS,
-    box() { const el = $('grippy'); if (el.hidden) return null; const r = el.getBoundingClientRect(), c = el.querySelector('canvas').getBoundingClientRect(), b = el.querySelector('.bub').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height, mascot: { x: c.left, y: c.top, w: c.width, h: c.height }, bubble: { x: b.left, y: b.top, w: b.width, h: b.height } }; } },
+  // step 4: Grippy, now a voice only (on: the saved toggle; last: { event, text, lang, t } of the last spoken line; said: the spoken lines; skipped: { event, why } for lines held back
+  // ('cooldown' | 'rare' | 'ball' | 'muted' | 'nospeech'); say(event): speak now if allowed; cool(): test-only, clears the cooldowns; visible / box(): always false / null, nothing is drawn) and the end card's "One more?" teaser
+  grippy: { get on() { return profile.grippy !== false; }, set on(v) { setGrippy(v); }, get last() { return grippy.last; }, get said() { return grippy.said; }, get skipped() { return grippy.skipped; }, get tips() { return grippy.tips; }, get visible() { return false; },
+    say(ev, vars) { return grippySay(ev, vars); }, cool() { grippy.lastAt = grippy.closeAt = -1e9; }, lines: GRIPPY, events: Object.keys(GRIPPY.en), gapMs: GRIPPY_GAP, closeGapMs: GRIPPY_CLOSE_GAP, get ducking() { return performance.now() < grippy.duckUntil; },
+    box() { return null; }, get el() { return !!document.getElementById('grippy'); } },
   teaser, get toastCompact() { return toastQ.compact; },
   // pacing step 2: the road (ladder, unlocked(id), next), the worlds (unlocked, start(n)), the player level (test-only), the XP a run earns
   road: { ladder: ROAD, unlocked: roadHas, open: roadOpen, get next() { return roadNext(); }, get nextText() { return nextUnlockText(); }, get fresh() { return profile.road.fresh; }, get cards() { return profile.road.cards; },

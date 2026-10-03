@@ -34,13 +34,19 @@ Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (toddler widgets)
 - **Hit meter:** never on screen permanently. On a hit (or serve) a small power arc pops up just above the hit point, fills to the hit's power in the tier colour (soft / medium / hard / SUPER, `METER_ZONES`, `speedTier`, `TIER_COL`) with the tier's name, and fades within 1 s (`METER_POP_MS`, `drawMeterPop`, hook `strike.ui.meterPop`). Same in 2D and 3D (it is drawn on the 2D overlay).
 
 Around the games:
-- **Meta:** coins, XP and player level, 3 daily missions, a shop (labelled), the Grippy commentator, and a daily challenge (seeded run with its own streak).
+- **Meta:** coins, XP and player level, 3 daily missions, a shop (labelled), Grippy the cheering **voice** (see below), and a daily challenge (seeded run with its own streak).
 - **Daily habit** (`profile.habit`):
   - a 7-day gift calendar that pops up on the first open of the day;
   - a play-streak flame;
   - a "3 stages today" chest;
-  - star chests on the map at 10, 25, 45, 70 and 100 stars;
-  - a "Tomorrow: day N gift" line on end cards.
+  - star chests on the map at 10, 25, 45, 70 and 100 stars.
+  - The "Tomorrow: day N gift" line on end cards was **removed** (player feedback: noise). The calendar stays on the start screen; the end cards keep "Wave for the next stage".
+- **Grippy = voice only** (player feedback: the hand + speech bubbles did not help). Nothing is drawn: no `#grippy`, no hand in the gift / NEW UNLOCKED sheets, the Collection toggle is a speaker icon "Voice / קול" (still `profile.grippy`).
+  - `grippySay(ev)` keeps its API; it speaks a 1–3 word line (`GRIPPY.en/he`) with `speechSynthesis` via `speakLine()` (shared with Shapes' names), HE voice when the UI is Hebrew.
+  - Voiced events only: start (and daily), lastLife, boss, bossDown (Endless only), newBest, levelUp (Strike level), world, close (≤ once / 45 s), advClear / advPerfect (not on a boss stage with a world trip: "New world!" then), advFail, shapesLevel. Everything else returns false.
+  - ≥ 8 s between lines (`GRIPPY_GAP`), never while a ball is close; skipped when muted, off, no speechSynthesis or no voice for the language. World music ducks while he talks (`grippy.duckUntil` in `musicDucked`).
+  - Onboarding tips (gold brick, perk, guest) show once as the hint toast (`tipOnce` → `showHint(text)`); the serve is the start hint itself.
+  - Hooks: `__grasp.grippy` { said, skipped (why), tips, ducking, say, cool }. Tests stub speechSynthesis (`test_grippy`, `test_shapes`); screenshots `tests/out/voice_*.png`.
 - **Sticker album** (`profile.album`): a sticker for each stage's first 3-star clear, 40 in total, all drawn in code. A full page of 8 pays 30 coins once.
 - **Music:** one loop per Adventure world, only while a stage is being played.
 - **Economy:** coins are deliberately scarce, about 15–35 per run; shop items cost 120–1000. The numbers are in the `ECONOMY` table.

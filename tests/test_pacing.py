@@ -29,9 +29,9 @@ async def main():
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'])
         ctx, page, errs = await new_page(b)
         await play(page)
-        # ---- onboarding: a fresh profile's first run opens with the serve tip (not the usual start line) ----
-        g0 = await page.evaluate("({ last: __grasp.grippy.last && __grasp.grippy.last.event, tips: __grasp.profile.tips.slice() })")
-        check("first Strike run on a fresh profile: Grippy's first line is the serve tip ('Slap the ball!'), recorded in profile.tips", g0['last'] == 'tip_serve' and g0['tips'] == ['serve'], g0)
+        # ---- onboarding: a fresh profile's first run: the serve is explained by the mode's start hint (no extra toast), marked seen ----
+        g0 = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, how: hintText() })")
+        check("first Strike run on a fresh profile: the serve tip is the start hint (no extra tip toast), recorded in profile.tips", g0['shown'] == [] and g0['tips'] == ['serve'] and g0['hint'] == g0['how'], g0)
         await page.evaluate(PARK)
         # ---- the rules per level (strike.pacing) ----
         rules = await page.evaluate(f"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(L => {{ {S}.setLevel(L); const q = {S}.pacing; return {{ L, pu: +q.puRate.toFixed(3), perk: q.perkLevel, guests: q.guestsOn, kinds: q.kindsUnlocked.join(','), curve: {S}.tuning(L).curve > 0, waves: {S}.tuning(L).waves }}; }})")
@@ -79,10 +79,10 @@ async def main():
         await clear_to(cl6 + 5); m5 = await page.evaluate(f"({{ fin: {S}.finalWall, tension: {S}.pacing.tension, beat: {S}.pacing.beatMs, level: {S}.level, progress: {S}.progress }})")
         await page.wait_for_function(f"performance.now() > {S}.releaseUntil", timeout=5000)
         await clear_to(cl6 + 6); await page.wait_for_function(f"{S}.finalWall", timeout=5000); await frames(page, 2)
-        fw = await page.evaluate(f"""(() => {{ const s = {S}, w = s.walls.find(q => q.final), base = s.tuning(6).brickHp; return {{ level: s.level, progress: s.progress, goal: s.goal, tag: s.ui.tag && s.ui.tag.kind, box: !!s.ui.tagBox, text: s.ui.tagBox ? t('wk_final') : '', grippy: __grasp.grippy.last.event,
+        fw = await page.evaluate(f"""(() => {{ const s = {S}, w = s.walls.find(q => q.final), base = s.tuning(6).brickHp; return {{ level: s.level, progress: s.progress, goal: s.goal, tag: s.ui.tag && s.ui.tag.kind, box: !!s.ui.tagBox, text: s.ui.tagBox ? t('wk_final') : '', quiet: __grasp.grippy.say('final') === false,
           tough: w.bricks.filter(k => k.hp === base + 1).length, n: w.bricks.length, front: w === s.walls.filter(q => q.left > 0).sort((a, b) => a.z - b.z)[0], tension: s.pacing.tension, beat: s.pacing.beatMs }}; }})()""")
-        check(f"the level's last wall is the 'final wall': flagged, the 'Final wall!' tag, Grippy's final-wall line, +1 hp on {fw['tough']} of {fw['n']} bricks (a third)",
-              fw['level'] == 6 and fw['progress'] == fw['goal'] - 1 and fw['front'] and fw['tag'] == 'final' and fw['box'] and fw['text'] == 'Final wall!' and fw['grippy'] == 'final' and abs(fw['tough'] - fw['n'] / 3) <= 2, fw)
+        check(f"the level's last wall is the 'final wall': flagged, the 'Final wall!' tag, no voice line (a quiet event), +1 hp on {fw['tough']} of {fw['n']} bricks (a third)",
+              fw['level'] == 6 and fw['progress'] == fw['goal'] - 1 and fw['front'] and fw['tag'] == 'final' and fw['box'] and fw['text'] == 'Final wall!' and fw['quiet'] and abs(fw['tough'] - fw['n'] / 3) <= 2, fw)
         check(f"tension builds through the level: heartbeat {t0['beat']:.0f} -> {m5['beat']:.0f} -> {fw['beat']:.0f} ms, tension 0 -> {m5['tension']:.2f} -> 1", t0['tension'] == 0 and 0 < m5['tension'] < 1 and fw['tension'] == 1 and t0['beat'] > m5['beat'] > fw['beat'], [t0, m5, fw])
         # the glow: gold pixels on the final wall's rim (2D), gone when the flag is off
         rim = f"""(() => {{ const s = {S}, w = s.walls.find(q => q.final) || s.walls[0], {{ L, T, B }} = corridor(), c = brickCell(w, 0, 0), lw = Math.min(c.w, c.h) * 0.07, p = proj(L + (w.ox || 0) + lw / 2, (T + B) / 2 + c.h * 0.3, w.z); return s.pixel(p.x, p.y); }})()"""
@@ -107,14 +107,15 @@ async def main():
         await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(3); s.walls.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 1; s.spawnWall('brick', 960); __grasp.CONFIG.STRIKE_PU_RATE = 1 / 12; }})()"); await frames(page, 3)
         await page.evaluate(f"{S}.spawnGuest('cow')"); await frames(page, 2)
         await page.evaluate(f"(() => {{ const s = {S}; s.walls.length = 0; __grasp.CONFIG.STRIKE_PU_RATE = 1; s.spawnWall('brick', 960); __grasp.CONFIG.STRIKE_PU_RATE = 1 / 12; __grasp.grippy.cool(); s.spawnGuest('monkey'); }})()"); await frames(page, 3)
-        ev = await page.evaluate("({ said: __grasp.grippy.said.map(x => x.event), tips: __grasp.profile.tips.slice() })")
-        cnt = {e: ev['said'].count(e) for e in ('tip_serve', 'tip_pu', 'tip_perk', 'tip_guest')}
-        check(f"onboarding tips: serve, gold brick, perk pick, flying animal each explained exactly once ({cnt}); profile.tips = {ev['tips']}", all(v == 1 for v in cnt.values()) and sorted(ev['tips']) == ['guest', 'perk', 'pu', 'serve'] and ('monkey' in ev['said'] or 'cow' in ev['said']), ev)
+        ev = await page.evaluate("({ shown: __grasp.grippy.tips.map(x => x.id), texts: __grasp.grippy.tips.map(x => x.text), want: ['tipPu', 'tipPerk', 'tipGuest'].map(k => t(k)), tips: __grasp.profile.tips.slice() })")
+        cnt = {e: ev['shown'].count(e) for e in ('serve', 'pu', 'perk', 'guest')}
+        check(f"onboarding tips: gold brick, perk pick, flying animal each shown exactly once as the hint toast (the serve: the start hint) ({cnt}); profile.tips = {ev['tips']}",
+              cnt == {'serve': 0, 'pu': 1, 'perk': 1, 'guest': 1} and sorted(ev['texts']) == sorted(ev['want']) and sorted(ev['tips']) == ['guest', 'perk', 'pu', 'serve'], ev)
         check('no page errors', not errs, errs)
         # a new page on the same profile: the tips are not repeated (the usual start line)
         await page.close(); _, page2, errs2 = await new_page(b, ctx=ctx); await play(page2)
-        g2 = await page2.evaluate("({ last: __grasp.grippy.last && __grasp.grippy.last.event, tips: __grasp.profile.tips.slice() })")
-        check('next run on that profile: no tip, the usual start line; the seen tips persist', g2['last'] == 'start' and sorted(g2['tips']) == ['guest', 'perk', 'pu', 'serve'], g2)
+        g2 = await page2.evaluate("({ shown: __grasp.grippy.tips.length, tips: __grasp.profile.tips.slice() })")
+        check('next run on that profile: no tip shown again; the seen tips persist', g2['shown'] == 0 and sorted(g2['tips']) == ['guest', 'perk', 'pu', 'serve'], g2)
         check('second run: no page errors', not errs2, errs2); await ctx.close()
 
         # ---- 3D: the final wall's glowing frame and the tension-brightened edge strips ----

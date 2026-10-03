@@ -129,13 +129,11 @@ async def main():
         await page.wait_for_function(f"{S}.bouncers.length === 0", timeout=10000)
         check('then a normal ball is served and the guest has bounced off the screen', True)
 
-        # ---- Grippy: cow / monkey lines ----
+        # ---- Grippy (a voice now): a flying guest is not one of his moments; the whistle cue + Incoming! floater announce it ----
         ln = await page.evaluate("__grasp.grippy.lines")
-        bad = [e + ':' + l for e in ('cow', 'monkey') for l in ('en', 'he') if len(ln[l].get(e, [])) < 6 or len(set(ln[l][e])) != len(ln[l][e]) or any(len(x) > 48 or not x.strip() for x in ln[l][e])]
-        heb = [e for e in ('cow', 'monkey') if not all(re.search('[֐-׿]', x) for x in ln['he'][e]) or set(ln['he'][e]) & set(ln['en'][e])]
-        check("Grippy has >= 6 distinct short lines for 'cow' and 'monkey' in EN and HE (Hebrew)", not bad and not heb, [bad, heb])
-        gr = await page.evaluate(f"(() => {{ const s = {S}; __grasp.grippy.cool(); s.serve(); s.spawnGuest('cow'); const a = __grasp.grippy.last; __grasp.grippy.cool(); s.serve(); s.spawnGuest('monkey'); const c = __grasp.grippy.last; {FREEZE}; return [a, c]; }})()")
-        check('a guest flies in: Grippy says a cow / monkey line, and the whistle cue + Incoming! floater', gr[0]['event'] == 'cow' and gr[0]['text'] in ln['en']['cow'] and gr[1]['event'] == 'monkey' and gr[1]['text'] in ln['en']['monkey']
+        check("Grippy has no voice lines for 'cow' / 'monkey' (quiet events)", all(e not in ln[l] for e in ('cow', 'monkey') for l in ('en', 'he')), [list(ln['en'])])
+        gr = await page.evaluate(f"(() => {{ const s = {S}; __grasp.grippy.cool(); const n0 = __grasp.grippy.said.length; s.serve(); s.spawnGuest('cow'); const a = __grasp.grippy.said.length - n0; __grasp.grippy.cool(); s.serve(); s.spawnGuest('monkey'); const c = __grasp.grippy.said.length - n0; {FREEZE}; return [a, c, __grasp.grippy.say('cow'), __grasp.grippy.say('monkey')]; }})()")
+        check('a guest flies in: no spoken line, and the whistle cue + Incoming! floater', gr == [0, 0, False, False]
               and 'whistle' in await page.evaluate("__sfx") and await page.evaluate(f"{S}.floaters.some(f => f.text === 'Incoming!')"), gr)
 
         # ---- pixel probes, 2D: the cow white + black, the monkey brown ----

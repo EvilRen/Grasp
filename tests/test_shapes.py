@@ -5,7 +5,7 @@ import math
 # more shapes), rotated holes from level 4 (the wheel turns the shape; within 25° it snaps), the moving box (levels 6 / 7), a two-finger twist,
 # a camera-stub pinch-drag, the round-over card from Home, and the start screen's 6 tiles on a phone (no scroll, no big gap under the top bar).
 S = '__grasp.shapes'
-SPEECH = """window.__spoken = []; try { Object.defineProperty(window, 'speechSynthesis', { configurable: true, get: () => ({ speak(u) { __spoken.push({ text: u.text, lang: u.lang }); }, cancel() {}, getVoices() { return []; } }) }); } catch (e) { window.__speechStubFailed = String(e); }"""
+SPEECH = """window.__spoken = []; try { Object.defineProperty(window, 'speechSynthesis', { configurable: true, get: () => ({ speak(u) { __spoken.push({ text: u.text, lang: u.lang }); }, cancel() {}, getVoices() { return [{ lang: 'en-US', name: 'E' }, { lang: 'he-IL', name: 'H' }]; } }) }); } catch (e) { window.__speechStubFailed = String(e); }"""
 SFX_JS = "(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()"
 FINGERS = """
 // synthetic touch pointers on the canvas: down / move / up by id
@@ -82,17 +82,18 @@ async def main():
         mv = await page.evaluate(f"{S}.shapes[{i1}]")
         check('dropped on the mat: it stays where it was let go', abs(mv['x'] - (s1['x'] + 60)) < 2 and abs(mv['y'] - (s1['y'] + 10)) < 2 and not mv['placed'] and mv['anim'] is None, mv)
 
-        # level completed: confetti, stars, coins, Grippy, then the 'Level 2' banner and 4 shapes
+        # level completed: confetti, stars, coins, Grippy's spoken cheer, then the 'Level 2' banner and 4 shapes
         c0 = await page.evaluate("__grasp.profile.coins")
         await page.evaluate("__sfx.length = 0; __grasp.grippy.cool()")
         n_ok = await page.evaluate(f"{S}.shapes.map((s, i) => s.placed ? true : {S}.placeTest(i))")
         check('placeTest(i) drops each remaining shape into its hole', all(n_ok), n_ok)
         ok = await wait(page, f"{S}.phase === 'done'")
         await page.wait_for_timeout(900)
-        res = await page.evaluate(f"({{ phase: {S}.phase, res: {S}.result, coins: __grasp.profile.coins, sfx: __sfx.slice(), grip: __grasp.grippy.said.map(x => x.event), particles: particles.length, best: localStorage.getItem('shapesBest'), done: {S}.levelsDone, stars: {S}.stars }})")
+        res = await page.evaluate(f"({{ phase: {S}.phase, res: {S}.result, coins: __grasp.profile.coins, sfx: __sfx.slice(), grip: __grasp.grippy.said.map(x => x.event), spoken: __spoken.slice(), particles: particles.length, best: localStorage.getItem('shapesBest'), done: {S}.levelsDone, stars: {S}.stars }})")
         rr = res['res'] or {}
         check('level 1 done: the result (1 mistake: 2 stars), coins via ECONOMY.shapes (2), levelup sound, confetti', ok and rr.get('level') == 1 and rr.get('stars') == 2 and rr.get('coins') == 2 and res['coins'] - c0 == 2 and 'levelup' in res['sfx'] and res['particles'] > 40, [res, c0])
-        check('Grippy: a level-done line; best level saved', 'shapesLevel' in res['grip'] and res['best'] == '1' and res['done'] == 1 and res['stars'] == 2, res)
+        lv = await page.evaluate("__grasp.grippy.lines.en.shapesLevel")
+        check('Grippy: a level-done line spoken aloud (EN, en-US); best level saved', 'shapesLevel' in res['grip'] and any(x['text'] in lv and x['lang'] == 'en-US' for x in res['spoken']) and res['best'] == '1' and res['done'] == 1 and res['stars'] == 2, res)
         check('ECONOMY.shapes: 2 a level, +1 for 3 stars', await page.evaluate("ECONOMY.shapes.level === 2 && ECONOMY.shapes.star3 === 1"))
         await page.screenshot(path='tests/out/shapes_level_done.png')
         ok = await wait(page, f"{S}.phase === 'banner'", 6000)
@@ -192,7 +193,7 @@ async def main():
         check("the card's Home goes to the start screen; the tile shows the best level", await page.evaluate("mode === 'none' && !$('start').hidden") and await page.evaluate("document.querySelector('.modes button[data-mode=shapes] .best').textContent") == '★ L2')
         check('mission pool: "Sort 15 shapes"', await page.evaluate("(() => { const m = __grasp.missionPool.find(q => q.id === 'shapes'); return !!m && m.ev === 'shape' && m.goals[0] === 15 && t('ms_shapes', { n: 15 }) === 'Sort 15 shapes'; })()"))
         gl = await page.evaluate("({ en: __grasp.grippy.lines.en, he: __grasp.grippy.lines.he })")
-        check('Grippy: >= 6 lines EN / HE for a match and a level done', all(len(gl[l][e]) >= 6 and len(set(gl[l][e])) == len(gl[l][e]) and all(0 < len(x) <= 48 for x in gl[l][e]) for l in ('en', 'he') for e in ('shapesMatch', 'shapesLevel')))
+        check('Grippy (voice): >= 3 short (1-3 words) distinct lines EN / HE for a level done; a match is quiet (the shape name is spoken instead)', all(len(gl[l]['shapesLevel']) >= 3 and len(set(gl[l]['shapesLevel'])) == len(gl[l]['shapesLevel']) and all(1 <= len(x.split()) <= 3 for x in gl[l]['shapesLevel']) for l in ('en', 'he')) and 'shapesMatch' not in gl['en'] and 'shapesMatch' not in gl['he'])
         await page.click('.modes button[data-mode=shapes]'); await page.wait_for_timeout(300)
         check('a new round starts at level 1 with nothing sorted', await page.evaluate(f"{S}.level === 1 && !{S}.over && {S}.levelsDone === 0 && {S}.shapes.every(s => !s.placed)"))
         check('desktop: no page errors', not errs, errs); await ctx.close()

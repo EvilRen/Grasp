@@ -2,7 +2,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # The daily habit: the 7-day gift calendar (day progression across mocked dates, the restart after a missed day, the cycle after day 7, each prize
 # credited once, the look prizes and their coin fallbacks, the once-a-day pop-up for a real visitor, never under automation unless asked), the
 # play-streak flame (counting, the pulse when it grows today, the 'play today' hint), the '3 stages today' chest on the Adventure map, the star chests
-# beside its path (thresholds, one claim each, the 100-star look), the 'Tomorrow: day N gift' line on the stage card and the round-over card,
+# beside its path (thresholds, one claim each, the 100-star look), no 'Tomorrow: day N gift' line on the stage / fail / round-over cards (removed),
 # the profile's validation, EN / HE, phone / desktop. Hooks: __grasp.gifts, __grasp.habit (+ __grasp.setDate). Timing-independent: state is polled.
 G = "__grasp.gifts"; HB = "__grasp.habit"; A = "__grasp.adventure"; S = "__grasp.strike"; P = "__grasp.profile"
 TOASTS = "__grasp.toasts.map(t => t.text)"
@@ -15,7 +15,7 @@ START = """(() => { const st = $('start'), r = (e) => { const q = e.getBoundingC
 BOXES = """(() => { const ov = $('gifts'), sh = ov.querySelector('.sheet').getBoundingClientRect(), bs = [...ov.querySelectorAll('.gbox')].map(b => { const q = b.getBoundingClientRect(); return { day: +b.dataset.day, st: b.dataset.st, opened: b.classList.contains('opened'), x: q.left + q.width / 2, y: q.top, w: q.width, h: q.height, pz: b.querySelector('.pz').textContent.trim(), dn: b.querySelector('.dn').textContent, ck: !!b.querySelector('.ck') }; });
   const ok = $('giftOk').getBoundingClientRect();
   return { shown: !ov.hidden, boxes: bs, inside: sh.left >= 0 && sh.right <= innerWidth + 0.5 && sh.top >= 0 && sh.bottom <= innerHeight + 0.5, noX: document.documentElement.scrollWidth <= innerWidth + 1, sub: $('giftSub').textContent, missed: $('giftSub').classList.contains('missed'),
-    ok: $('giftOk').textContent, okH: ok.height, title: $('giftTitle').textContent, bub: ov.querySelector('.nuGrip .bub').textContent }; })()"""
+    ok: $('giftOk').textContent, okH: ok.height, title: $('giftTitle').textContent, grip: !!ov.querySelector('.nuGrip, .bub') }; })()"""
 
 def rects_overlap(a, b, pad=0):
     return a['l'] < b['r'] - pad and b['l'] < a['r'] - pad and a['t'] < b['b'] - pad and b['t'] < a['b'] - pad
@@ -104,6 +104,7 @@ async def main():
                 check(tag + ': texts (title, Open, Day 1, the coin prizes, the look, the chest)', bx['title'] == exp['title'] and bx['ok'] == exp['ok'] and bx['boxes'][0]['dn'] == exp['d1'] and bx['boxes'][0]['pz'].endswith('+5') and bx['boxes'][5]['pz'].endswith('+20')
                       and bx['boxes'][3]['pz'] == ('מראה חדש' if he else 'New look') and bx['boxes'][6]['pz'] == ('תיבה גדולה' if he else 'Big chest'), bx['boxes'])
                 d1, d2 = bx['boxes'][0], bx['boxes'][1]
+                check(tag + ': no Grippy hand / speech bubble in the gift sheet', not bx['grip'], bx['grip'])
                 check(tag + ': boxes run ' + ('right to left' if he else 'left to right'), (d1['x'] > d2['x']) if he else (d1['x'] < d2['x']), [d1['x'], d2['x']])
                 check(tag + ': the start screen behind: the gift chip has its dot; once-a-day mark stored', (await page.evaluate(START))['giftDot'] and await page.evaluate(P + ".habit.seen") == '2026-10-02')
                 if mobile: await page.screenshot(path='tests/out/habit_gift_phone_' + lt + '.png')
@@ -194,7 +195,7 @@ async def main():
                     check('the daily challenge streak is its own (untouched)', await page.evaluate("__grasp.daily.streak") == 0)
                 check(tag + ': no page errors (flame)', not errs, errs); await ctx.close()
 
-        # ---- the '3 stages today' chest on the map; the 'Tomorrow' line on the stage card and the round-over card ----
+        # ---- the '3 stages today' chest on the map; no 'Tomorrow' line on the stage card or the round-over card (even once the gift is open) ----
         for mobile, he in ((True, False), (True, True), (False, False)):
             tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en'); lt = 'he' if he else 'en'
             ctx, page, errs = await fresh(b, mobile, he, prof(adv={'stars': {}, 'unlocked': 5}, xp=6850))
@@ -206,13 +207,13 @@ async def main():
             check(tag + ': tapped before 3: a toast saying how many more, no coins', await page.evaluate(P + ".coins") == c0 and (lambda _e, _ts: any(x == _e for x in _ts))(await page.evaluate("t('dayChestNeed', { n: 3 })"), await page.evaluate(TOASTS)))
             await stage_clear(page, 1)
             card = await page.evaluate(S + ".ui.tomorrow")
-            check(tag + ': stage card, today\'s gift not opened: no "Tomorrow" line', card is None)
+            check(tag + ': stage card, today\'s gift not opened: no "Tomorrow" line', not card)
             await page.evaluate(G + ".claim()")
-            await page.wait_for_timeout(100)
-            tm = await page.evaluate(f"({{ t: {S}.ui.tomorrow, card: {S}.ui.card, W: innerWidth, H: innerHeight }})")
-            check(tag + ': gift opened: the clear card shows "Tomorrow: day 2 gift" under the card, inside the screen', tm['t'] and tm['t']['day'] == 2 and tm['t']['text'] == await page.evaluate("t('tomorrowGift', { n: 2 })") and tm['t']['y'] > tm['card']['y'] + tm['card']['h'] and tm['t']['x'] >= 0 and tm['t']['x'] + tm['t']['w'] <= tm['W'] and tm['t']['y'] + tm['t']['h'] <= tm['H'], tm)
+            await page.wait_for_function(f"performance.now() - {S}.overAt > 1200", timeout=8000); await page.wait_for_timeout(100)  # (the 'Wave for the next stage' line is in by now)
+            tm = await page.evaluate(f"({{ t: {S}.ui.tomorrow || null, open: {G}.state.opened, has: typeof drawTomorrow !== 'undefined', str: t('tomorrowGift', {{ n: 2 }}) }})")
+            check(tag + ': gift opened: still no "Tomorrow: day N gift" line on the clear card (the drawing and the string are gone)', tm['t'] is None and tm['open'] and not tm['has'] and tm['str'] == 'tomorrowGift', tm)
             if mobile:
-                await page.wait_for_timeout(1200); await page.screenshot(path='tests/out/habit_advcard_tomorrow_' + lt + '.png')
+                await page.screenshot(path='tests/out/voice_clear_' + lt + '.png')
             await stage_clear(page, 2)  # replays and new stages both count
             await stage_clear(page, 1)
             check(tag + ': 3 stages cleared today (a replay counts)', await page.evaluate(HB + ".stages") == {'n': 3, 'claimed': False, 'goal': 3})
@@ -230,27 +231,25 @@ async def main():
                 await page.evaluate("__grasp.setDate('2026-10-02')")
                 # the fail card
                 await page.evaluate(f"{A}.start(3, 'mouse')"); await page.wait_for_function(f"{A}.on && {A}.stage === 3 && {A}.phase === 'play'", timeout=8000)
-                await page.evaluate(f"{A}.failTest()"); await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.retry && {S}.ui.tomorrow", timeout=8000)
-                check('the fail card shows the Tomorrow line too (and a fail does not count for the chest)', (await page.evaluate(S + ".ui.tomorrow"))['day'] == 2 and await page.evaluate(HB + ".stages.n") == 3)
+                await page.evaluate(f"{A}.failTest()"); await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.retry && performance.now() - {S}.overAt > 1200", timeout=8000)
+                check('the fail card has no Tomorrow line either (and a fail does not count for the chest)', not await page.evaluate(S + ".ui.tomorrow") and await page.evaluate(HB + ".stages.n") == 3)
             # the shared round-over card (Endless Strike)
             await page.evaluate("goHome()"); await page.wait_for_timeout(100)
             await page.evaluate(f"{A}.endless('mouse')"); await page.wait_for_function(f"mode === 'mouse' && !{A}.on && !{S}.over", timeout=8000)
             await page.evaluate(f"(() => {{ const s = {S}; s.lives = 1; s.setBallZ(-500); }})()")
-            await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.again && {S}.ui.tomorrow && performance.now() - {S}.overAt > 1100", timeout=10000)
-            tm = await page.evaluate(f"({{ t: {S}.ui.tomorrow, card: {S}.ui.card, W: innerWidth, H: innerHeight }})")
-            check(tag + ': the round-over card: "Tomorrow: day 2 gift" under the card, inside the screen', tm['t']['day'] == 2 and tm['t']['y'] > tm['card']['y'] + tm['card']['h'] and tm['t']['x'] >= 0 and tm['t']['x'] + tm['t']['w'] <= tm['W'] and tm['t']['y'] + tm['t']['h'] <= tm['H'], tm)
-            if mobile: await page.screenshot(path='tests/out/habit_endcard_tomorrow_' + lt + '.png')
+            await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.again && performance.now() - {S}.overAt > 1100", timeout=10000)
+            check(tag + ': the round-over card: no "Tomorrow" line (gift opened)', not await page.evaluate(S + ".ui.tomorrow") and await page.evaluate(G + ".state.opened"))
+            if mobile: await page.screenshot(path='tests/out/habit_endcard_' + lt + '.png')
             check(tag + ': no page errors (stage chest / tomorrow)', not errs, errs); await ctx.close()
 
-        # Slice's round-over card has the line too (and none before the gift is opened)
+        # Slice's round-over card: no Tomorrow line either, before or after the gift is opened
         ctx, page, errs = await fresh(b)
         await page.evaluate("__grasp.setGameMode('slice')"); await page.evaluate(START_MOUSE); await page.wait_for_function("mode === 'mouse'", timeout=5000)
         await page.evaluate("sliceLoseLife(performance.now()); sliceLoseLife(performance.now()); sliceLoseLife(performance.now())")
         await page.wait_for_function("__grasp.slice.over && __grasp.slice.ui.buttons", timeout=5000)
-        check('Slice: no Tomorrow line before the gift is opened', await page.evaluate("__grasp.slice.ui.tomorrow") is None)
-        await page.evaluate(G + ".claim()")
-        await page.wait_for_function("__grasp.slice.ui.tomorrow", timeout=3000)
-        check('Slice: the round-over card shows "Tomorrow: day 2 gift" once it is', (await page.evaluate("__grasp.slice.ui.tomorrow"))['day'] == 2)
+        check('Slice: no Tomorrow line before the gift is opened', not await page.evaluate("__grasp.slice.ui.tomorrow"))
+        await page.evaluate(G + ".claim()"); await page.wait_for_timeout(300)
+        check('Slice: still none once it is', not await page.evaluate("__grasp.slice.ui.tomorrow") and await page.evaluate(G + ".state.opened"))
         check('no page errors (slice card)', not errs, errs); await ctx.close()
 
         # ---- the star chests beside the map's path ----
@@ -303,7 +302,7 @@ async def main():
         await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(habit={'gift': {'day': 7, 'date': '2026-10-01'}, 'stages': {'date': '2026-10-02', 'n': 2, 'claimed': False}}))
         check('good values kept: after a stored day 7 yesterday, today is day 1; 2 stages today', await page.evaluate(G + ".state.day") == 1 and not await page.evaluate(G + ".state.missed") and await page.evaluate(HB + ".stages.n") == 2)
-        keys = ['giftTitle', 'giftDayN', 'giftSub', 'giftMissed', 'giftOpen', 'giftYay', 'giftTomorrow', 'giftTap', 'giftGot', 'giftToast', 'giftMystery', 'giftChest', 'giftOpened', 'tomorrowGift', 'flameN', 'flameZero', 'keepFlame', 'flameToast',
+        keys = ['giftTitle', 'giftDayN', 'giftSub', 'giftMissed', 'giftOpen', 'giftYay', 'giftTomorrow', 'giftToast', 'giftMystery', 'giftChest', 'giftOpened', 'flameN', 'flameZero', 'keepFlame', 'flameToast',
                 'dayChest', 'dayChestToast', 'dayChestNeed', 'dayChestDone', 'starChest', 'starChestToast', 'starChestNeed', 'starChestDone']
         miss = await page.evaluate("(ks => ['en', 'he'].flatMap(l => ks.filter(k => !I18N[l][k] || (l === 'he' && I18N.he[k] === I18N.en[k])).map(k => l + ':' + k)))(" + json.dumps(keys) + ")")
         check('I18N: every habit string in EN and HE (HE translated)', not miss, miss)

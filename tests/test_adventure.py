@@ -295,8 +295,8 @@ async def main():
         he = await page.evaluate("(() => { const o = {}; for (const k of ['replayBtn', 'retryBtn', 'playAgainBtn', 'starsPerfect', 'starsLost1', 'starsLostN', 'starsRule']) o[k] = I18N.he[k]; o.n3 = I18N.he.starsLostN.replace('{n}', 3); return o; })()")
         check('HE: "לשחק שוב" on success cards (stage clear, round over), "שוב" kept for a fail; the stars lines in Hebrew', he['replayBtn'] == 'לשחק שוב' and he['playAgainBtn'] == 'לשחק שוב' and he['retryBtn'] == 'שוב'
               and he['starsPerfect'].startswith('מושלם') and 'לב אחד' in he['starsLost1'] and '★★★' in he['starsLost1'] and he['n3'].startswith('איבדתם 3 לבבות') and he['starsRule'] == '★★★ = בלי לאבד לב', he)
-        gl = await page.evaluate("['advClear', 'advPerfect', 'advFail'].map(e => [__grasp.grippy.lines.en[e].length, __grasp.grippy.lines.he[e].length])")
-        check('Grippy: 6 lines each for a clear, a perfect clear and a fail, EN and HE', gl == [[6, 6]] * 3, gl)
+        gl = await page.evaluate("['advClear', 'advPerfect', 'advFail', 'world'].map(e => [__grasp.grippy.lines.en[e], __grasp.grippy.lines.he[e]])")
+        check('Grippy (voice): >= 3 short (1-3 words) lines each for a clear, a perfect clear, a fail and a new world, EN and HE (Hebrew)', all(len(L) >= 3 and all(1 <= len(x.split()) <= 3 for x in L) for pair in gl for L in pair) and all(re.search('[\u0590-\u05ff]', x) for pair in gl for x in pair[1]), gl)
         check('strings: no page errors', not errs, errs); await ctx.close()
 
         await b.close()

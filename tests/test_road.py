@@ -106,11 +106,11 @@ async def main():
         await end_run(page)
         await page.wait_for_function("__grasp.road.card === 'glass'", timeout=6000)
         nc = await page.evaluate(f"""(() => {{ const P = $('newCard'), r = P.querySelector('.sheet').getBoundingClientRect(), cv = P.querySelector('.nuArt canvas'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let lit = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) lit++;
-          return {{ shown: !P.hidden, kick: P.querySelector('.nuKick').textContent, name: $('nuName').textContent, line: P.querySelector('.nuLine').textContent, bub: P.querySelector('.nuGrip .bub').textContent, art: lit / (d.length / 4), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+          return {{ shown: !P.hidden, kick: P.querySelector('.nuKick').textContent, name: $('nuName').textContent, line: P.querySelector('.nuLine').textContent, grip: !!P.querySelector('.nuGrip, .bub'), art: lit / (d.length / 4), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
             xp: {P}.xp, level: {P}.level, fresh: {P}.road.fresh.slice(), xpBox: {S}.ui.xpBox && {S}.ui.xpBox.n, sfx: __sfx.slice(-12) }}; }})()""")
         check('the run earned runXp(walls, levels, bosses) = 20 + 4 x 5 + 10 x 1 = 50 XP; the end card shows +50 XP', st['xp'] == 50 and nc['xp'] - st['xp0'] == 50 and nc['xpBox'] == 50, [st, nc['xp'], nc['xpBox']])
-        check('level 2 reached: the NEW UNLOCKED card over the end card (Glass walls, its art, a short line, Grippy cheering), inside the viewport, an unlock sound',
-              nc['shown'] and nc['kick'] == 'NEW UNLOCKED!' and nc['name'] == 'Glass walls' and nc['line'] and nc['bub'] in (await page.evaluate("__grasp.grippy.lines.en.unlock")) and nc['art'] > 0.15 and nc['inside'] and nc['level'] == 2 and 'unlock' in nc['sfx'], nc)
+        check('level 2 reached: the NEW UNLOCKED card over the end card (Glass walls, its art, a short line, no Grippy hand / bubble), inside the viewport, an unlock sound',
+              nc['shown'] and nc['kick'] == 'NEW UNLOCKED!' and nc['name'] == 'Glass walls' and nc['line'] and not nc['grip'] and nc['art'] > 0.15 and nc['inside'] and nc['level'] == 2 and 'unlock' in nc['sfx'], nc)
         await page.screenshot(path='tests/out/road_newcard_endcard.png')
         await page.mouse.move(640, 300); await page.mouse.move(900, 600, steps=3); await page.wait_for_timeout(300)
         check('while the card is up, a wave does not restart the round', await page.evaluate(f"{S}.over"))

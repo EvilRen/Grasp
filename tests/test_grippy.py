@@ -1,10 +1,18 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Step 4: Grippy the commentator (lines per event in EN / HE, no immediate repeat, one line per 4 s except the important ones, the on / off toggle),
-# the end card's "One more?" teaser (nearest goal for crafted profiles) and its pulsing Play again, and toasts that never cover a round-over card.
+# Step 4: Grippy, now a cheering VOICE (no hand, no bubble): short lines (1-3 words) spoken with speechSynthesis in the UI language at the big moments
+# only (start, last heart, boss, new best, stage clear / fail, world, level up, a rare close save), an 8 s cooldown, music ducked while he talks,
+# muted / off / no speech / no voice for the language = silence; onboarding tips as a one-time hint toast. speechSynthesis is stubbed (window.__spoken).
+# Also: the end card's "One more?" teaser (nearest goal for crafted profiles) and its pulsing Play again, and toasts that never cover a round-over card.
 # Timing-independent: rounds end by parking the ball behind the player (or dropping fruit / calling the life loss) and polling for the state.
 G = "__grasp.grippy"; S = "__grasp.strike"
 SFX_JS = "(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()"
 DATE = '2026-10-02'
+# the speech stub: records every utterance (text, lang, voice lang); voices: 'both' (EN + HE), 'en' (EN only), 'none' (no speechSynthesis at all)
+def speech(voices='both'):
+    if voices == 'none': return "try { delete window.speechSynthesis; Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: undefined }); } catch (e) {} window.__spoken = [];"
+    vs = "[{ lang: 'en-US', name: 'E' }, { lang: 'he-IL', name: 'H' }]" if voices == 'both' else "[{ lang: 'en-GB', name: 'E' }]"
+    return ("window.__spoken = []; window.__cancels = 0; try { const ss = { speaking: false, speak(u) { __spoken.push({ text: u.text, lang: u.lang, rate: u.rate, t: performance.now() }); setTimeout(() => { try { u.onend && u.onend(); } catch (e) {} }, 600); }, cancel() { __cancels++; }, getVoices() { return " + vs + "; } };"
+            " Object.defineProperty(window, 'speechSynthesis', { configurable: true, get: () => ss }); } catch (e) { window.__speechStubFailed = String(e); }")
 ALL_CHEAP = ['ball_beach', 'ball_soccer', 'hand_mint', 'hand_sky', 'hand_lilac', 'hand_robot', 'blade_neon', 'blade_rainbow', 'trail_sparkle', 'trail_fire']
 
 def prof(coins=0, xp=0, unlocked=(), missions=None):
@@ -12,11 +20,11 @@ def prof(coins=0, xp=0, unlocked=(), missions=None):
     if missions is not None: p['missions'] = {'date': DATE, 'list': [dict(id=i, progress=pr, goal=g, reward=20, done=False, claimed=False) for i, pr, g in missions]}
     return "localStorage.setItem('grasp.profile', " + json.dumps(json.dumps(p)) + ");"
 
-async def fresh(b, mobile=False, he=False, init=''):
+async def fresh(b, mobile=False, he=False, init='', voices='both'):
     opts = dict(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width':1280,'height':800})
     ctx = await b.new_context(**opts); page = await ctx.new_page(); await routes(page); errs = []
     page.on('pageerror', lambda e: errs.append(str(e)))
-    await page.add_init_script(INIT + "localStorage.setItem('lang','" + ('he' if he else 'en') + "'); sessionStorage.setItem('grasp.testDate','" + DATE + "');" + init)
+    await page.add_init_script(INIT + "localStorage.setItem('lang','" + ('he' if he else 'en') + "'); sessionStorage.setItem('grasp.testDate','" + DATE + "');" + speech(voices) + init)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(700)
     return ctx, page, errs
 async def play(page, m, mobile=False):
@@ -47,120 +55,121 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
 
-        # ---- the lines: >= 6 per event, EN and HE, non-empty, translated ----
+        # ---- the lines: only the big moments, 1-3 words, EN and HE ----
         ctx, page, errs = await fresh(b)
         ln = await page.evaluate(G + ".lines")
         evs = await page.evaluate(G + ".events")
-        need = ['start', 'daily', 'firstHit', 'combo', 'streak5', 'streak10', 'super', 'close', 'boss', 'bossDown', 'levelUp', 'pu_multi', 'pu_big', 'pu_slow', 'pu_fire', 'pu_life', 'miss', 'lastLife', 'newBest', 'mission', 'final', 'tip_serve', 'tip_pu', 'tip_perk', 'tip_guest']
-        check('Grippy has lines for every event (power-ups per kind)', set(need) <= set(evs) and set(evs) == set(ln['he']), evs)
-        bad = [e + ':' + l for e in need for l in ('en', 'he') if len(ln[l][e]) < 6 or any(not x.strip() or len(x) > 48 for x in ln[l][e]) or len(set(ln[l][e])) != len(ln[l][e])]
-        check('>= 6 distinct, short, non-empty lines per event in EN and HE', not bad, bad)
-        heb = [e for e in need if any(x in ln['en'][e] for x in ln['he'][e]) or not all(re.search('[֐-׿]', x) for x in ln['he'][e])]
-        check('HE lines are Hebrew and differ from the EN ones', not heb, heb)
-        check('daily lines mention the modifier ({mod})', all('{mod}' in x for l in ('en', 'he') for x in ln[l]['daily']))
-        check('the start screen: no Grippy, say() does nothing', await page.evaluate(G + ".say('start')") is False and not await page.evaluate(G + ".visible"))
+        need = ['start', 'lastLife', 'boss', 'bossDown', 'newBest', 'levelUp', 'world', 'close', 'advClear', 'advPerfect', 'advFail', 'shapesLevel']
+        quiet = ['firstHit', 'combo', 'streak5', 'streak10', 'super', 'pu_fire', 'pu_multi', 'miss', 'mission', 'final', 'cow', 'monkey', 'chest', 'unlock', 'shapesMatch', 'tip_serve', 'tip_pu']
+        check('Grippy speaks at the big moments only: exactly ' + ', '.join(need), sorted(evs) == sorted(need) and sorted(ln['he']) == sorted(need), evs)
+        bad = [e + ':' + l for e in need for l in ('en', 'he') if len(ln[l][e]) < 3 or len(set(ln[l][e])) != len(ln[l][e]) or any(not (1 <= len(x.split()) <= 3) or len(x) > 16 for x in ln[l][e])]
+        check('>= 3 distinct, kid-short lines (1-3 words, <= 16 chars) per event in EN and HE', not bad, bad)
+        heb = [e for e in need if not all(re.search('[\u0590-\u05ff]', x) for x in ln['he'][e])]
+        check('HE lines are Hebrew', not heb, heb)
+        check('the start screen: say() does nothing, nothing spoken', await page.evaluate(G + ".say('start')") is False and await page.evaluate("__spoken.length") == 0)
+        check('no Grippy element anywhere (no hand, no bubble); visible / box() are false / null', not await page.evaluate("!!document.querySelector('#grippy, .nuGrip')") and not await page.evaluate(G + ".visible") and await page.evaluate(G + ".box()") is None)
 
-        # ---- in a Strike round: appears on round start, a line for each event, no repeat, rate limit ----
+        # ---- in a Strike round: spoken on round start (EN voice), quiet events, the cooldown, a rare close one ----
         await play(page, 'strike')
-        await page.wait_for_function(G + ".visible && " + G + ".last && " + G + ".last.event === 'tip_serve'", timeout=5000)
-        st = await page.evaluate(G + ".last")
-        check("round start on a fresh profile's first Strike run: Grippy pops up with the onboarding serve tip (the start line from then on)", st['text'] in ln['en']['tip_serve'] and await page.evaluate(G + ".on"), st)
-        bx = await page.evaluate(G + ".box()")
-        check('desktop: the mascot at the bottom start corner, inside the screen', bx and bx['x'] <= 16 and bx['y'] + bx['h'] <= 800 and 38 <= bx['mascot']['w'] <= 44.5 and bx['bubble']['x'] > bx['mascot']['x'], bx)
-        await page.screenshot(path='tests/out/grippy_desktop_start.png')
-        said = await page.evaluate("(evs => evs.map(e => { __grasp.grippy.cool(); const ok = __grasp.grippy.say(e); return [e, ok, __grasp.grippy.last.event, __grasp.grippy.last.text]; }))(" + json.dumps(need) + ")")
-        badsay = [x for x in said if not x[1] or x[2] != x[0] or (x[0] != 'daily' and x[3] not in ln['en'][x[0]])]
-        check('say(event): a line from that event\'s list for all ' + str(len(need)) + ' events', not badsay, badsay)
-        dl = [x[3] for x in said if x[0] == 'daily'][0]
-        check('daily line: the modifier filled in', '{' not in dl and any(dl.startswith(x.split('{mod}')[0]) for x in ln['en']['daily']), dl)
-        seq = await page.evaluate("(() => { const out = []; for (let i = 0; i < 40; i++) { __grasp.grippy.cool(); __grasp.grippy.say('miss'); out.push(__grasp.grippy.last.i); } return out; })()")
-        check('no immediate repeat (40 miss lines in a row), and the lines vary', all(a != b2 for a, b2 in zip(seq, seq[1:])) and len(set(seq)) >= 4, seq)
-        rl = await page.evaluate("""(() => { const g = __grasp.grippy, r = {}; g.cool();
-          r.a = g.say('combo'); r.b = g.say('firstHit'); r.c = g.say('super'); r.after = g.last.event;
-          r.boss = g.say('boss'); r.bossEv = g.last.event; r.best = g.say('newBest'); r.last = g.say('lastLife'); r.ev = g.last.event;
-          r.minor = g.say('pu_big'); r.gap = g.gapMs; r.show = g.showMs; return r; })()""")
-        check('rate limit: two events within 1 s give one line (the second and third are dropped)', rl['a'] and not rl['b'] and not rl['c'] and rl['after'] == 'combo', rl)
-        check('important events cut in: boss, new best, last life', rl['boss'] and rl['best'] and rl['last'] and rl['ev'] == 'lastLife' and not rl['minor'], rl)
-        check('one line per 8 s in play (a calmer screen), each shown 2.2 s', rl['gap'] == 8000 and rl['show'] == 2200, rl)
-        await page.evaluate(G + ".say('boss')")
-        await page.wait_for_function("!" + G + ".visible", timeout=6000)
-        hid = await page.evaluate("performance.now() - " + G + ".last.t")
-        check('the line goes away after ~2.2 s', 2150 <= hid <= 5000, hid)
-        # real triggers: a hit, a power-up, a close one, a boss, a miss, the last life, a mission, a new best
-        await page.evaluate(S + ".extrasOff = true")
-        real = await page.evaluate(f"""(() => {{ const s = {S}, g = __grasp.grippy, r = {{}}, now = performance.now();
-          g.cool(); s.setBallZ(60, innerWidth / 2, innerHeight / 2); s.hits = 0; strikeHit(s.ball, now); r.hit = g.last.event;
-          g.cool(); s.catchTest('fire'); r.pu = g.last.event;
-          g.cool(); closeOne(s.ball, performance.now(), 'test'); r.close = g.last.event;
-          s.spawnBoss(); r.boss = g.last.event; return r; }})()""")
-        check('real triggers: a Strike hit -> firstHit, a caught Fireball -> pu_fire, a close one, a boss', real == {'hit': 'firstHit', 'pu': 'pu_fire', 'close': 'close', 'boss': 'boss'}, real)
+        await page.wait_for_function(G + ".last && " + G + ".last.event === 'start' && __spoken.length === 1", timeout=5000)
+        st = await page.evaluate("({ last: __grasp.grippy.last, sp: __spoken[0], tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, how: hintText() })")
+        check("round start (a fresh profile's first run): the start line spoken once in English (en-US); the serve tip is the start hint, marked seen", st['sp']['text'] in ln['en']['start'] and st['sp']['lang'] == 'en-US' and st['last']['text'] == st['sp']['text'] and st['tips'] == ['serve'] and st['hint'] == st['how'], st)
+        await page.wait_for_timeout(200); await page.screenshot(path='tests/out/voice_play_en.png')
+        q = await page.evaluate("(evs => { const n0 = __spoken.length; const r = evs.map(e => { __grasp.grippy.cool(); return __grasp.grippy.say(e); }); return { r, n: __spoken.length - n0 }; })(" + json.dumps(quiet) + ")")
+        check('every other event is quiet: say() false, nothing spoken (' + ', '.join(quiet) + ')', not any(q['r']) and q['n'] == 0, q)
+        await page.evaluate(S + ".extrasOff = true; " + S + ".ball = null; " + S + ".balls.length = 0")
+        cd = await page.evaluate("""(() => { const g = __grasp.grippy, r = {}, now = performance.now(), n0 = __spoken.length; g.cool();
+          r.boss = grippySay('boss', null, now); r.duck = g.ducking && musicDucked(performance.now()); r.best = grippySay('newBest', null, now + 100); r.last = grippySay('lastLife', null, now + 7900);
+          r.later = grippySay('lastLife', null, now + 8100); r.n = __spoken.length - n0; r.texts = __spoken.slice(n0).map(x => x.text); r.why = g.skipped.slice(-2).map(x => x.why); r.gap = g.gapMs; return r; })()""")
+        check('cooldown: one line per moment, >= 8 s between lines (boss spoken; a new best 0.1 s later and the last heart at 7.9 s held back; at 8.1 s it speaks)',
+              cd['boss'] and not cd['best'] and not cd['last'] and cd['later'] and cd['n'] == 2 and cd['texts'][0] in ln['en']['boss'] and cd['texts'][1] in ln['en']['lastLife'] and cd['why'] == ['cooldown', 'cooldown'] and cd['gap'] == 8000, cd)
+        check('while he talks the world music ducks', cd['duck'], cd)
+        await page.wait_for_function("!" + G + ".ducking", timeout=4000)
+        check('the duck lifts when the line ends (the stub ends it after 0.6 s)', True)
+        cl = await page.evaluate("""(() => { const g = __grasp.grippy, now = performance.now(); g.cool(); const a = grippySay('close', null, now), b = grippySay('close', null, now + 9000), c = grippySay('close', null, now + 46000); return { a, b, c, why: g.skipped[g.skipped.length - 1].why, gap: g.closeGapMs }; })()""")
+        check('a close save is rare: at most once per 45 s', cl['a'] and not cl['b'] and cl['c'] and cl['why'] == 'rare' and cl['gap'] == 45000, cl)
+        seq = await page.evaluate("(() => { const out = []; for (let i = 0; i < 30; i++) { __grasp.grippy.cool(); __grasp.grippy.say('start'); out.push(__grasp.grippy.last.i); } return out; })()")
+        check('no immediate repeat (30 start lines in a row), and the lines vary', all(a != b2 for a, b2 in zip(seq, seq[1:])) and len(set(seq)) >= 3, seq)
+        # real triggers: a boss, a hit (quiet), a missed ball (quiet), the last heart, a new best
+        real = await page.evaluate(f"""(() => {{ const s = {S}, g = __grasp.grippy, r = {{}}, n0 = __spoken.length;
+          g.cool(); s.serve(); s.setBallZ(60, innerWidth / 2, innerHeight / 2); s.hits = 0; strikeHit(s.ball, performance.now()); r.hit = __spoken.length - n0;
+          g.cool(); s.ball = null; s.balls.length = 0; s.spawnBoss(); r.boss = g.last.event; r.bossText = __spoken[__spoken.length - 1].text; return r; }})()""")
+        check('real triggers: a first hit is quiet; a boss is spoken', real['hit'] == 0 and real['boss'] == 'boss' and real['bossText'] in ln['en']['boss'], real)
         await page.evaluate(G + ".cool(); " + S + ".boss = null; " + S + ".lives = 3; " + S + ".ball = null; " + S + ".serve(); " + S + ".setBallZ(-500)")
-        await page.wait_for_function(S + ".lives === 2 && " + G + ".last.event === 'miss'", timeout=6000)
-        check('a missed ball (lives left) -> miss', True)
+        await page.wait_for_function(S + ".lives === 2", timeout=6000); await page.wait_for_timeout(100)
+        check('a missed ball with hearts left is quiet', await page.evaluate(G + ".last.event") == 'boss')
         await page.wait_for_function(S + ".balls.length > 0", timeout=6000)
         await page.evaluate(S + ".setBallZ(-500)")
         await page.wait_for_function(S + ".lives === 1 && " + G + ".last.event === 'lastLife'", timeout=6000)
-        check('the next miss leaves one heart -> lastLife (cuts in without waiting)', True)
-        mi = await page.evaluate("(() => { __grasp.grippy.cool(); const m = __grasp.missions.find(q => !q.done); const def = __grasp.missionPool.find(q => q.id === m.id); __grasp.track(def.ev, m.goal); return __grasp.grippy.last.event; })()")
-        check('a mission done -> mission line', mi == 'mission', mi)
-        await page.evaluate(S + ".best = 0")
+        check('the next miss leaves one heart -> "Last heart!" spoken', await page.evaluate("__spoken[__spoken.length - 1].text") in ln['en']['lastLife'])
+        await page.evaluate(S + ".best = 0; " + G + ".cool()")
         await page.wait_for_function(S + ".balls.length > 0", timeout=6000)
         await end_strike(page, 50)
-        check('a new best at the end -> newBest line', await page.evaluate(G + ".last.event") == 'newBest' and await page.evaluate(S + ".ui.newBest"))
-        # muted: lines still show, only the sound is muted
-        await page.evaluate("__grasp.muted = true; " + G + ".cool(); __sfx.length = 0")
-        mu = await page.evaluate("({ ok: __grasp.grippy.say('miss'), vis: __grasp.grippy.visible, text: __grasp.grippy.last.text, sfx: __sfx.slice() })")
-        check('muted: the line still shows (the pop sound asked for, silenced by sfx)', mu['ok'] and mu['vis'] and mu['text'] and 'grippy' in mu['sfx'], mu)
+        check('a new best at the end -> spoken', await page.evaluate(G + ".last.event") == 'newBest' and await page.evaluate(S + ".ui.newBest") and await page.evaluate("__spoken[__spoken.length - 1].text") in ln['en']['newBest'])
+        # muted: silence (no speak call), and the cooldown is not used up
+        await page.evaluate("__grasp.muted = true; " + G + ".cool()")
+        mu = await page.evaluate("(() => { const n0 = __spoken.length; const ok = __grasp.grippy.say('boss'); return { ok, n: __spoken.length - n0, why: __grasp.grippy.skipped[__grasp.grippy.skipped.length - 1].why }; })()")
+        check('muted: nothing spoken', not mu['ok'] and mu['n'] == 0 and mu['why'] == 'muted', mu)
         await page.evaluate("__grasp.muted = false")
+        check('unmuted: he speaks again at once (mute did not start a cooldown)', await page.evaluate(G + ".say('boss')"))
         check('no page errors (desktop)', not errs, errs); await ctx.close()
 
-        # ---- HE lines in game; the toggle in the Collection header (persists), off hides him ----
+        # ---- tips: a one-time hint toast instead of a bubble ----
+        ctx, page, errs = await fresh(b)
+        await play(page, 'strike')
+        tp = await page.evaluate("(() => { const a = tipOnce('pu'), txt = $('hint').querySelector('.tx').textContent, show = $('hint').classList.contains('show'), b = tipOnce('pu'); return { a, b, txt, show, want: t('tipPu'), shown: __grasp.grippy.tips.map(x => x.id), seen: __grasp.profile.tips.slice() }; })()")
+        check('onboarding tip (gold brick): shown once as the hint toast, never again; marked in profile.tips', tp['a'] and not tp['b'] and tp['show'] and tp['txt'] == tp['want'] and tp['shown'] == ['pu'] and 'pu' in tp['seen'], tp)
+        check('no page errors (tips)', not errs, errs); await ctx.close()
+
+        # ---- no voice for the language / no speechSynthesis: silently skipped ----
+        ctx, page, errs = await fresh(b, he=True, voices='en')
+        await play(page, 'strike'); await page.wait_for_timeout(400)
+        nv = await page.evaluate("(() => { __grasp.grippy.cool(); const ok = __grasp.grippy.say('boss'); return { ok, n: __spoken.length, why: __grasp.grippy.skipped.map(x => x.why) }; })()")
+        check('HE UI with only an English voice installed: nothing spoken (no wrong-language voice), skipped quietly', not nv['ok'] and nv['n'] == 0 and 'nospeech' in nv['why'], nv)
+        check('no page errors (no HE voice)', not errs, errs); await ctx.close()
+        ctx, page, errs = await fresh(b, voices='none')
+        await play(page, 'strike'); await page.wait_for_timeout(400)
+        ns = await page.evaluate("(() => { __grasp.grippy.cool(); return { has: !!window.speechSynthesis, ok: __grasp.grippy.say('boss'), said: __grasp.grippy.said.length }; })()")
+        check('no speechSynthesis at all: say() false, nothing recorded, no errors', not ns['has'] and not ns['ok'] and ns['said'] == 0 and not errs, [ns, errs]); await ctx.close()
+
+        # ---- HE phone: Hebrew voice in Slice; the Voice toggle in the Collection header (persists), off = silence ----
         ctx, page, errs = await fresh(b, True, True)
         await play(page, 'slice', True)
-        await page.wait_for_function(G + ".visible && " + G + ".last.event === 'start'", timeout=5000)
-        hl = await page.evaluate(G + ".last.text")
-        check('HE: the start line is one of the Hebrew lines', hl in ln['he']['start'], hl)
-        await page.evaluate(G + ".cool()")
-        hs = await page.evaluate("(() => { const s = __grasp.slice; s.score = 0; s.lives = 3; s.nextSpawn = 1e12; s.fruits.length = 0; s.fruits.push({ x: 180, y: innerHeight + 100, vx: 0, vy: 0.5, r: 40, rot: 0, vr: 0, kind: {rind:'#ffc24b', flesh:'#ffe3a1', seed:null}, born: 0 }); return 1; })()")
-        await page.wait_for_function("__grasp.slice.lives === 2 && " + G + ".last.event === 'miss'", timeout=6000)
-        check('HE slice: a missed fruit -> a Hebrew miss line', await page.evaluate(G + ".last.text") in ln['he']['miss'])
-        await page.wait_for_timeout(200); await page.screenshot(path='tests/out/grippy_phone_slice_he.png')
-        bx = await page.evaluate(G + ".box()")
-        check('HE: Grippy at the bottom right (start side in RTL), inside the screen', bx and bx['x'] + bx['w'] >= 340 and bx['x'] >= 0 and bx['mascot']['x'] > bx['bubble']['x'], bx)
+        await page.wait_for_function(G + ".last && " + G + ".last.event === 'start' && __spoken.length === 1", timeout=5000)
+        sp = await page.evaluate("__spoken[0]")
+        check('HE: the start line is spoken in Hebrew (he-IL)', sp['text'] in ln['he']['start'] and sp['lang'] == 'he-IL', sp)
+        await page.wait_for_timeout(300); await page.screenshot(path='tests/out/voice_play_he.png')
+        check('HE phone in play: no Grippy hand / bubble on screen', not await page.evaluate("!!document.querySelector('#grippy, .nuGrip, .bub')"))
         await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300)
-        check('home: Grippy hidden', not await page.evaluate(G + ".visible"))
         await page.tap('#collectionBtn'); await page.wait_for_timeout(400)
-        tb = await page.evaluate("(() => { const b = $('grippyBtn'), r = b.getBoundingClientRect(), h = b.closest('header').getBoundingClientRect(), x = b.closest('header').querySelector('.xBtn').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), inHeader: r.top >= h.top - 1 && r.bottom <= h.bottom + 1 && r.left >= 0 && r.right <= innerWidth, noOverlap: r.right <= x.left || r.left >= x.right, w: r.width }; })()")
-        check('Collection header: the Grippy toggle, on by default, labelled, fits beside the close button', tb['pressed'] == 'true' and 'גריפי' in tb['label'] and tb['inHeader'] and tb['noOverlap'], tb)
-        await page.screenshot(path='tests/out/grippy_toggle_he.png')
+        tb = await page.evaluate("(() => { const b = $('grippyBtn'), r = b.getBoundingClientRect(), h = b.closest('header').getBoundingClientRect(), x = b.closest('header').querySelector('.xBtn').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), canvas: !!b.querySelector('canvas'), svg: !!b.querySelector('svg'), inHeader: r.top >= h.top - 1 && r.bottom <= h.bottom + 1 && r.left >= 0 && r.right <= innerWidth, noOverlap: r.right <= x.left || r.left >= x.right, w: r.width }; })()")
+        check('Collection header: the Voice toggle (a speaker icon, no hand), on by default, labelled, fits beside the close button', tb['pressed'] == 'true' and 'קול' in tb['label'] and tb['svg'] and not tb['canvas'] and tb['inHeader'] and tb['noOverlap'], tb)
+        await page.screenshot(path='tests/out/voice_toggle_he.png')
         await page.tap('#grippyBtn'); await page.wait_for_timeout(150)
         check('tap: off (aria-pressed false), saved in the profile', await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false' and await page.evaluate("JSON.parse(localStorage.getItem('grasp.profile')).grippy") is False)
         await page.reload(); await page.wait_for_timeout(700)
         check('off survives a reload', await page.evaluate(G + ".on") is False and await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false')
         await play(page, 'strike', True)
         await page.wait_for_timeout(600)
-        off = await page.evaluate("(() => { __grasp.grippy.cool(); return { say: __grasp.grippy.say('boss'), vis: __grasp.grippy.visible, hidden: $('grippy').hidden }; })()")
-        check('off: no line on round start or say(), Grippy hidden', not off['say'] and not off['vis'] and off['hidden'], off)
-        await page.evaluate(G + ".on = true; " + G + ".cool()")
-        check('back on: he speaks again', await page.evaluate(G + ".say('super')") and await page.evaluate(G + ".visible"))
+        off = await page.evaluate("(() => { __grasp.grippy.cool(); return { say: __grasp.grippy.say('boss'), n: __spoken.length }; })()")
+        check('off: nothing spoken on round start or say()', not off['say'] and off['n'] == 0, off)
+        await page.evaluate(G + ".on = true; " + G + ".cool(); " + S + ".ball = null; " + S + ".balls.length = 0")
+        check('back on: he speaks again (Hebrew)', await page.evaluate(G + ".say('boss')") and await page.evaluate("__spoken[__spoken.length - 1].lang") == 'he-IL')
         check('no page errors (HE / toggle)', not errs, errs); await ctx.close()
 
-        # ---- the mascot never covers the HUD card, the power meter or the hint toast (phone, EN / HE) ----
-        for he in (False, True):
-            tag = 'phone ' + ('he' if he else 'en')
-            ctx, page, errs = await fresh(b, True, he)
-            await play(page, 'strike', True)
-            await page.wait_for_function(G + ".visible && " + S + ".ui.hud && " + S + ".ui.meterTop > 0 && $('hint').classList.contains('show')", timeout=6000)
-            await page.wait_for_timeout(700)  # the hint has slid up
-            r = await page.evaluate("(() => { const h = $('hint').getBoundingClientRect(); return { g: __grasp.grippy.box(), hud: __grasp.strike.ui.hud, meter: __grasp.strike.ui.meterTop, hint: { x: h.left, y: h.top, w: h.width, h: h.height } }; })()")
-            g = r['g']
-            ok = g and inter(g, r['hud']) == 0 and inter(g, r['hint']) == 0 and g['y'] + g['h'] <= r['meter'] and g['x'] >= 0 and g['x'] + g['w'] <= 360 and g['y'] >= 0
-            check(tag + ' strike: Grippy box clear of the HUD card, the hint toast and the power meter', ok, r)
-            await page.screenshot(path='tests/out/grippy_strike_phone_' + ('he' if he else 'en') + '.png')
-            await page.evaluate("hideHint()"); await page.wait_for_timeout(600); await page.evaluate(G + ".cool(); " + G + ".say('super')"); await page.wait_for_timeout(100)
-            r2 = await page.evaluate("({ g: __grasp.grippy.box(), meter: __grasp.strike.ui.meterTop, hud: __grasp.strike.ui.hud })")
-            check(tag + ' strike, no hint: still above the meter', r2['g'] and r2['g']['y'] + r2['g']['h'] <= r2['meter'] and inter(r2['g'], r2['hud']) == 0, r2)
-            check(tag + ': no page errors', not errs, errs); await ctx.close()
+        # ---- Adventure: a stage cleared / failed is spoken (phone EN) ----
+        ctx, page, errs = await fresh(b, True)
+        await page.evaluate("__grasp.adventure.start(1, 'mouse')")
+        await page.wait_for_function("__grasp.adventure.on && __grasp.adventure.phase === 'play' && __grasp.grippy.last && __grasp.grippy.last.event === 'start'", timeout=8000)
+        await page.evaluate(G + ".cool(); __grasp.adventure.finishTest(0)")
+        await page.wait_for_function("__grasp.strike.over && __grasp.adventure.phase === 'card' && __grasp.grippy.last.event === 'advPerfect'", timeout=10000)
+        check('a perfect stage clear: "Three stars!"-style line spoken', await page.evaluate("__spoken[__spoken.length - 1].text") in ln['en']['advPerfect'])
+        await page.evaluate("__grasp.adventure.start(2, 'mouse')")
+        await page.wait_for_function("__grasp.adventure.on && __grasp.adventure.stage === 2 && __grasp.adventure.phase === 'play'", timeout=8000)
+        await page.evaluate(G + ".cool(); __grasp.strike.lives = 1; __grasp.adventure.failTest()")  # (from 2 hearts the 'Last heart!' line would take this moment)
+        await page.wait_for_function("__grasp.strike.over && __grasp.grippy.last.event === 'advFail'", timeout=10000)
+        check('a failed stage: "So close!"-style line spoken', await page.evaluate("__spoken[__spoken.length - 1].text") in ln['en']['advFail'])
+        check('no page errors (Adventure voice)', not errs, errs); await ctx.close()
 
         # ---- "One more?" teaser: the nearest goal for crafted profiles; Play again dominant and pulsing ----
         cases = [

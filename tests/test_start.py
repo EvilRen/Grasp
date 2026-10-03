@@ -76,7 +76,7 @@ async def main():
                 check(tag + ': all 6 game tiles fully on screen, named', len(L['tiles']) == 6 and all(t['in'] and t['w'] > 80 and t['name'] for t in L['tiles']), L['tiles'])
                 check(tag + ': one icon row, every button labelled on screen (Daily, Missions, Road, Shop)', [i['id'] for i in L['icons']] == ['dailyBtn', 'missionsBtn', 'roadBtn', 'collectionBtn'] and all(i['in'] and i['label'] for i in L['icons']) and [i['text'] for i in L['icons']] == (['יומי', 'משימות', 'הדרך', 'חנות'] if he else ['Daily', 'Missions', 'Road', 'Shop']), L['icons'])
                 check(tag + ': the Easy / Normal toggle sits on the Strike tile', L['diffOnTile'], L)
-                check(tag + ': the Camera | Touch toggle on screen, translated; on a first visit the camera is the default', all(L['seg']) and L['segText'] == (['מצלמה', 'מגע'] if he else ['Camera', 'Touch']) and L['pressed'] == ['true', 'false'], L)
+                check(tag + ': the Camera | Touch toggle on screen, translated; on a first visit Touch is the default', all(L['seg']) and L['segText'] == (['מצלמה', 'מגע'] if he else ['Camera', 'Touch']) and L['pressed'] == ['false', 'true'], L)
                 check(tag + ': smash best badge', (await page.evaluate(BESTS))['smash'] == '★ 7')
                 await page.screenshot(path='tests/out/start2_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '.png')
                 if mobile: await page.tap('#mouseBtn')
