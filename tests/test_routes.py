@@ -29,11 +29,16 @@ async def main():
                 ctx, page, errs, bad = await fresh(b, he)
                 await page.goto(f'{URL}/{g}')
                 if g == 'strike': await page.wait_for_function("advMapOpen() && gameMode === 'strike'", timeout=10000)
+                elif g == 'smash': await page.wait_for_function("smashMapOpen() && gameMode === 'smash'", timeout=10000)
                 else: await page.wait_for_function(f"mode === 'mouse' && gameMode === '{g}' && $('start').hidden", timeout=10000)
                 s = await st(page)
                 title = await page.evaluate("$('advTitle').textContent") if g == 'strike' else ''
-                ok = s['path'] == f'/{g}' and s['now'] == g and (s['map'] and s['mode'] == 'none' if g == 'strike' else s['mode'] == 'mouse' and not s['start'])
-                check(tag + (': the Adventure map opens (no start screen in between)' if g == 'strike' else ': the game starts at once with touch'), ok, s)
+                ok = s['path'] == f'/{g}' and s['now'] == g and (s['map'] and s['mode'] == 'none' if g == 'strike' else s['mode'] == 'none' and await page.evaluate("smashMapOpen()") if g == 'smash' else s['mode'] == 'mouse' and not s['start'])
+                check(tag + (': the Adventure map opens (no start screen in between)' if g == 'strike' else ': the Smash map opens (Free play or a stage)' if g == 'smash' else ': the game starts at once with touch'), ok, s)
+                if g == 'smash':
+                    await page.screenshot(path='tests/out/route_smash_map.png')
+                    await page.tap('#smashFree'); await page.wait_for_function("mode === 'mouse' && gameMode === 'smash' && $('start').hidden && location.pathname === '/smash'", timeout=10000)
+                    check(tag + ': Free play from the map: in play with touch, still /smash', True)
                 if g == 'strike':
                     check(tag + ': the map in the UI language', bool(re.search('[֐-׿]', title)) if he else title == 'Adventure', title)
                     await page.screenshot(path=f"tests/out/route_strike_{'he' if he else 'en'}.png")
@@ -60,7 +65,8 @@ async def main():
             await page.goto(f'{URL}/'); await page.wait_for_timeout(600)
             s0 = await st(page)
             check(tag + ': / is the start screen', s0['start'] and s0['mode'] == 'none' and s0['path'] == '/' and s0['now'] is None, s0)
-            await page.tap('.modes button[data-mode=smash]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'smash'", timeout=8000)
+            await page.tap('.modes button[data-mode=smash]'); await page.wait_for_function("smashMapOpen()", timeout=8000)
+            await page.tap('#smashFree'); await page.wait_for_function("mode === 'mouse' && gameMode === 'smash'", timeout=8000)
             s1 = await st(page)
             check(tag + ': a tap on Smash pushes /smash (a new history entry)', s1['path'] == '/smash' and s1['hl'] == s0['hl'] + 1 and 'push:smash' in await page.evaluate("__grasp.route.log"), [s0, s1])
             await menu_click(page, '#homeBtn', tap=True); await page.wait_for_function("mode === 'none' && location.pathname === '/'", timeout=5000)

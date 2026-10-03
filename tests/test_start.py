@@ -69,7 +69,7 @@ async def main():
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en'); W = 360 if mobile else 1280
-                ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('smashBest', '7'); if (!sessionStorage.getItem('pv')) { sessionStorage.setItem('pv', '1'); localStorage.removeItem('inputPref'); }")
+                ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, xpv: 2, smash: { stars: { 1: 3, 2: 3, 3: 1 }, unlocked: 4 } })); if (!sessionStorage.getItem('pv')) { sessionStorage.setItem('pv', '1'); localStorage.removeItem('inputPref'); }")
                 await page.wait_for_timeout(1300)  # entrance done
                 L = await page.evaluate(LAY)
                 check(tag + ': no scrolling at all; the Tremorti link visible; a small wordmark', L['noScroll'] and L['link'] and L['h1'] <= 40, L)
@@ -77,7 +77,7 @@ async def main():
                 check(tag + ': one icon row, every button labelled on screen (Daily, Missions, Road, Shop)', [i['id'] for i in L['icons']] == ['dailyBtn', 'missionsBtn', 'roadBtn', 'collectionBtn'] and all(i['in'] and i['label'] for i in L['icons']) and [i['text'] for i in L['icons']] == (['יומי', 'משימות', 'הדרך', 'חנות'] if he else ['Daily', 'Missions', 'Road', 'Shop']), L['icons'])
                 check(tag + ': the Easy / Normal toggle sits on the Strike tile', L['diffOnTile'], L)
                 check(tag + ': the Camera | Touch toggle on screen, translated; on a first visit Touch is the default', all(L['seg']) and L['segText'] == (['מצלמה', 'מגע'] if he else ['Camera', 'Touch']) and L['pressed'] == ['false', 'true'], L)
-                check(tag + ': smash best badge', (await page.evaluate(BESTS))['smash'] == '★ 7')
+                check(tag + ': smash badge: the stars of its stages', (await page.evaluate(BESTS))['smash'] == '★ 7')
                 await page.screenshot(path='tests/out/start2_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '.png')
                 if mobile: await page.tap('#mouseBtn')
                 else: await page.click('#mouseBtn')
@@ -87,13 +87,17 @@ async def main():
                 for m in ('sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes'):
                     if mobile: await page.tap('.modes button[data-mode=' + m + ']')
                     else: await page.click('.modes button[data-mode=' + m + ']')
+                    if m == 'smash':  # (Smash: the tile opens its map; Free play starts)
+                        await page.wait_for_function("!$('smashMap').hidden", timeout=4000)
+                        if mobile: await page.tap('#smashFree')
+                        else: await page.click('#smashFree')
                     if m == 'strike':  # (Strike: the tile opens the Adventure map; its current stop starts the stage)
                         await page.wait_for_function("!$('advMap').hidden", timeout=4000)
                         if mobile: await page.tap('#advPath .anode.cur')
                         else: await page.click('#advPath .anode.cur')
                     await page.wait_for_function("mode !== 'none'", timeout=8000); started[m] = await page.evaluate("[gameMode, mode, $('start').hidden]")
                     await page.evaluate("goHome()"); await page.wait_for_timeout(250)
-                check(tag + ': a tap on each tile starts that game at once (Strike: via its map), with touch', all(v == [m, 'mouse', True] for m, v in started.items()), started)
+                check(tag + ': a tap on each tile starts that game at once (Strike and Smash: via their maps), with touch', all(v == [m, 'mouse', True] for m, v in started.items()), started)
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
 
         # ---- a real camera run sets camOk; reduced motion skips the entrance ----

@@ -163,14 +163,14 @@ async def main():
             z3 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z"); await page.wait_for_timeout(300); z4 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z")
             check(tag + ' pause: the ball flies on after the countdown', z3 is not None and z4 is not None and z3 - z4 > 100, [z3, z4])
             # Smash: the clock waits too
-            await page.evaluate("__grasp.setGameMode('smash')"); await page.wait_for_timeout(300)
+            await page.evaluate("__grasp.setGameMode('smash'); __grasp.sm.stage(1)"); await page.wait_for_timeout(300)  # (a Smash stage: free play has no clock)
             await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
             l0 = await page.evaluate("__grasp.smash.endAt - performance.now()"); await page.wait_for_timeout(600); l1 = await page.evaluate("__grasp.smash.endAt - performance.now()")
             check(tag + ' pause: the Smash clock stands still while the hand is missing', await page.evaluate("__grasp.pause.on") and abs(l0 - l1) < 80, [l0, l1])
             await page.evaluate(HAND_ON); await page.wait_for_function("!__grasp.pause.on", timeout=4500)
             l2 = await page.evaluate("__grasp.smash.endAt - performance.now()"); await page.wait_for_timeout(600); l3 = await page.evaluate("__grasp.smash.endAt - performance.now()")
             check(tag + ' pause: the Smash clock runs again after the countdown', l2 - l3 > 450, [l2, l3])
-            await page.click('#homeBtn'); await page.wait_for_timeout(100)
+            await page.evaluate("$('pauseBtn').click(); $('homeBtn').click()"); await page.wait_for_timeout(100)  # (Smash: the toolbar is the pause sheet)
             check(tag + ' pause: Home clears the pause', await page.evaluate("!__grasp.pause.on && __grasp.pause.count === 0"))
             check(tag + ' pause: no page errors', not errs, errs); await ctx.close()
 

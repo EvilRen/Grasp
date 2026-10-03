@@ -430,6 +430,40 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .amEndless small{ font-size:11px; color:var(--muted); font-weight:600; }
 #advDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:4;
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
+#smashMap{ position:fixed; inset:0; z-index:12; display:flex; flex-direction:column; background:radial-gradient(120% 60% at 50% 0%, #2a1f4a, #0b1028 70%); color:var(--bone); overflow:hidden; }
+#smashMap[hidden]{ display:none; }
+.smBody{ flex:1; min-height:0; overflow:hidden auto; overscroll-behavior:contain; width:100%; max-width:620px; margin:0 auto; box-sizing:border-box; padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 18px); display:flex; flex-direction:column; gap:12px; }
+.smFree{ flex:none; display:flex; align-items:center; gap:14px; min-height:78px; padding:8px 20px 8px 12px; border-radius:24px; background:linear-gradient(135deg,#ffe08a,#ffb347 55%,#ff7a59); color:#2a1a00; text-align:start; box-shadow:0 6px 0 rgba(0,0,0,.32), 0 0 26px rgba(255,170,60,.45); animation:smFreePulse 1.6s ease-in-out infinite; -webkit-tap-highlight-color:transparent; }
+.smFree canvas{ width:56px; height:56px; flex:none; filter:drop-shadow(0 3px 2px rgba(0,0,0,.3)); }
+.smFree span{ display:flex; flex-direction:column; line-height:1.15; }
+.smFree b{ font-size:24px; font-weight:800; }
+.smFree small{ font-size:13px; font-weight:600; opacity:.78; }
+.smFree:active{ transform:translateY(3px); box-shadow:0 3px 0 rgba(0,0,0,.32); }
+@keyframes smFreePulse{ 0%,100%{ box-shadow:0 6px 0 rgba(0,0,0,.32), 0 0 14px rgba(255,170,60,.35); } 50%{ box-shadow:0 6px 0 rgba(0,0,0,.32), 0 0 34px rgba(255,190,80,.75); } } /* (a glow, not a scale: the button stays still under a finger) */
+.smHead{ margin:6px 4px 0; font-size:13px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+#smList{ display:flex; flex-direction:column; gap:12px; }
+.smScene{ border-radius:20px; padding:10px 12px 12px; background:rgba(18,24,50,.85); box-shadow:inset 0 0 0 1.5px var(--wc), 0 6px 16px rgba(0,0,0,.3); }
+.smScene header{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.smScene header canvas{ width:44px; height:44px; flex:none; border-radius:12px; background:rgba(255,255,255,.07); }
+.smScene header b{ flex:1; font-size:17px; font-weight:800; color:var(--wc); }
+.smScene header small{ font-size:13px; font-weight:700; color:#ffd77a; direction:ltr; unicode-bidi:isolate; }
+.smRow{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.smNode{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:9px 0 6px; border-radius:16px; background:rgba(8,11,28,.5); color:#141b34; -webkit-tap-highlight-color:transparent; }
+.smNode .disc{ position:relative; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 46%), var(--wc); box-shadow:0 0 0 3px rgba(8,11,28,.85), 0 4px 0 rgba(0,0,0,.35), 0 0 12px var(--wc); transition:transform .15s; }
+.smNode .st{ display:flex; gap:1px; height:15px; }
+.smNode .st svg{ width:15px; height:15px; fill:rgba(8,11,28,.65); stroke:rgba(241,233,218,.4); stroke-width:1.4; }
+.smNode .st svg.on{ fill:#ffc24b; stroke:#b8730f; stroke-width:1; filter:drop-shadow(0 0 3px rgba(255,194,75,.7)); }
+.smNode.locked .disc{ background:#30364f; color:#8a90a8; box-shadow:0 0 0 3px rgba(8,11,28,.85), 0 4px 0 rgba(0,0,0,.35); }
+.smNode.locked .disc svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.smNode.locked .st{ visibility:hidden; }
+.smNode.cur .disc{ animation:smpulse 1.1s ease-in-out infinite; }
+@keyframes smpulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
+.smNode.cur .disc::after{ content:''; position:absolute; inset:-8px; border-radius:50%; border:3px solid var(--saffron); animation:wpulse 1.1s ease-in-out infinite; }
+.smNode:not(.locked):hover .disc{ transform:scale(1.07); }
+.smNode.shake{ animation:shake .4s; }
+#smDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:4;
+  background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
+#smDwell[hidden]{ display:none; }
 #advDwell[hidden]{ display:none; }
 #advDwell, #menuDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none;
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
@@ -767,6 +801,15 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   </div>
   <div id="advDwell" hidden></div>
 </div>
+<div id="smashMap" hidden role="dialog" aria-modal="true" aria-labelledby="smTitle">
+  <header class="amHead"><button class="amBack" id="smBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="smTitle" data-i18n="smTitle">Smash</h2><span class="amStars" id="smStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 60</small></span></header>
+  <div class="smBody" id="smBody">
+    <button class="smFree" id="smashFree" type="button"><canvas aria-hidden="true"></canvas><span><b data-i18n="smFree">Free play</b><small data-i18n="smFreeSub">Smash everything, no clock</small></span></button>
+    <h3 class="smHead" data-i18n="smStages">Stages</h3>
+    <div id="smList"></div>
+  </div>
+  <div id="smDwell" hidden></div>
+</div>
 <div class="ov" id="newCard" hidden role="dialog" aria-modal="true" aria-labelledby="nuName">
   <div class="sheet nuSheet">
     <p class="nuKick" data-i18n="newUnlocked">NEW UNLOCKED!</p>
@@ -828,15 +871,16 @@ const CONFIG = {
   BLADE_TRAIL_MS: 220,        // how long the blade trail lingers
   CUT_LINE_MS: 250,           // bright cut line shown on a sliced fruit
   // Smash mode
-  SMASH_ROUND_S: 60,          // round length
   PUNCH_SPEED: 0.55,          // px/ms on a ~950px screen: a pressed mouse moving at least this fast is a punch (camera: any contact of the fist punches; speed only makes the hit bigger)
   PUNCH_SPEED_TOUCH: 0.35,    // ...the same gate for a finger on a touch screen
   FIST_RADIUS: 40,
-  SMASH_RADIUS: 95,           // px (scaled): bricks within this distance of the hit come loose too
-  SMASH_MAX_PIECES: 140,      // dynamic debris cap; oldest small shards go first
-  CAR_INTERVAL_MS: [3500, 6500],
-  CAR_SPEED: 0.16,            // px/ms
-  WALL_REBUILD_MS: 2500,      // a wall that is fully knocked down comes back after this
+  SMASH_TAP_V: 0.9,           // px/ms: a tap punches as hard as a swipe this fast (a medium hit)
+  SMASH_CLEAR: 0.9,           // the meter's share at which a scene counts as smashed (the rest then goes up by itself)
+  SMASH_MAX_PIECES: 140,      // debris bodies on screen at most (the oldest fade out first)
+  SMASH_MAX_PIECES_PHONE: 80, // ...on a phone-sized screen
+  SMASH_PIECE_MS: 3500,       // a piece of debris lies about this long, then fades
+  SMASH_FADE_MS: 500,
+  CAR_SPEED: 0.07,            // px/ms: the city's cars
   // Strike mode (pseudo-3D corridor; z = depth, 0 is the player's plane)
   STRIKE_Z_FAR: 2400,         // depth of the far end of the corridor
   // Strike difficulty: these are the kid-friendly Easy defaults; STRIKE_NORMAL below overrides them on Normal
@@ -864,7 +908,8 @@ const CONFIG = {
 // Smash round about the same; the cheapest look costs ~5 runs, mid ones ~15, premium ~30, the disco ball / robot hand ~40; the road's items come by level only.
 const ECONOMY = {
   strike: { wall: 2, level: 5, boss: 20, guest: 2, powerup: 1, close: 1 }, // per wall cleared / level completed / boss / guest slapped / power-up caught / 'Close one!' (bricks pay none); Coin Magnet x1.5 on top
-  slice: { fruitPerCoin: 5 }, smash: { bricksPerCoin: 10, car: 3 },        // Slice: a coin per 5 fruit; Smash: a coin per 10 bricks, 3 a car
+  slice: { fruitPerCoin: 5 }, smash: { scene: 6 },                         // Slice: a coin per 5 fruit; Smash free play: 6 a scene smashed
+  smashStage: { first: 3, star: 1 },                                       // Smash stages (no coins per thing): a first clear pays 3 + its stars; a replay only the stars it adds, 1 each
   shapes: { level: 2, star3: 1 },                                          // Shapes: per level sorted, +1 for a 3-star level
   adv: { first: 3, star: 1, boss: 5 },                                     // Strike Adventure (no coins per wall): a first clear pays 3 + its stars (+5 a boss stage); a replay only the stars it adds, 1 each
   missions: [15, 22, 30], dailyFirst: 20, streak: { 3: 40, 7: 100, 14: 200 }, levelUp: 10, chest: [25, 60], // mission tiers (easy / mid / hard goal); the first daily of a day; daily-streak milestones; level-up = 10 x the new level; boss-chest coins
@@ -891,7 +936,7 @@ const I18N = {
     bannerTitle: "Camera mode is off. You're playing with mouse or touch.", gotIt: 'Got it',
     descSandbox: 'Pinch in the air to pick things up, let go to throw, point to poke. Your webcam is the controller.',
     descSlice: 'Fruit flies up from below. Raise your index finger and swipe through it to cut it in two. Your webcam is the controller.',
-    descSmash: 'Brick walls stand and cars drive by. Wave your hand fast (a fist works too) to smash them to pieces. 60 seconds on the clock. Your webcam is the controller.',
+    descSmash: 'A brick wall that hides a room and a treasure, a whole room, a little city, toy towers with balloons and a fruit market. Tap, swipe or punch to smash it all! Free play, or stages with stars.',
     descBusy: 'A busy board for little hands: switches that click, buttons that sing, knobs, sliders, a zipper, a little door with a surprise behind it, a piano, a xylophone, lights that glow and a wheel to spin. No score, no clock. Point to poke, pinch to turn and drag.',
     descStrike: 'A ball flies at you down a corridor blocked by brick walls. Slap it back with your palm the moment it arrives: the faster your hand, the harder the hit and the more bricks it smashes. Three misses and the round is over. Your webcam is the controller.',
     camBtn: 'Enable camera', camBtnAgain: 'Play with camera', camLast: 'last used', mouseBtn: 'Play with mouse or touch', tremortiLink: 'Tremorti · tremor meter',
@@ -903,8 +948,10 @@ const I18N = {
     hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
     hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
-    hintSmashCam: 'Touch the walls and cars with your hand to smash them; move fast for bigger hits. Keep your hand inside the yellow box.',
-    hintSmashTouch: 'Swipe fast through the walls and cars to smash them.', hintSmashMouse: 'Hold the left button and swipe fast to punch. D for HUD.',
+    hintSmashCam: 'Punch or touch things with your hand to smash them; move fast for bigger hits. Fill the meter! Keep your hand inside the yellow box.',
+    hintSmashTouch: 'Tap or swipe to smash everything! Fill the meter to clear the scene.', hintSmashMouse: 'Click or swipe fast to smash everything! Fill the meter to clear the scene.',
+    smTitle: 'Smash', smFree: 'Free play', smFreeSub: 'Smash everything, no clock', smClear: 'Smashed!', smPct: '{n}% smashed', smStarGoal: '★★★ = finish with {n} s left', smStarsPerfect: 'Super fast, {n} s to spare!', smStars2: '{n} s left. Finish with {m} s left for ★★★', smStars1: 'Phew! Finish with {m} s left for ★★★', smStages: 'Stages',
+    sc_wall: 'The Brick Wall', sc_room: 'The Living Room', sc_city: 'Little City', sc_blocks: 'Toy Towers', sc_food: 'Fruit Market',
     hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone and the wheel. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
     hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Drag the board to see more.',
     hintBusyMouse: 'Click the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Scroll or drag the board to see more. D for HUD.',
@@ -1015,7 +1062,7 @@ const I18N = {
     bannerTitle: 'מצב מצלמה כבוי. אתם משחקים עם עכבר או מגע.', gotIt: 'הבנתי',
     descSandbox: 'צבטו באוויר כדי להרים חפצים, שחררו כדי לזרוק, הצביעו כדי לדחוף. המצלמה היא השלט.',
     descSlice: 'פירות עפים מלמטה. הרימו את האצבע המורה והעבירו אותה דרכם כדי לחתוך אותם לשניים. המצלמה היא השלט.',
-    descSmash: 'קירות לבנים עומדים ומכוניות חולפות. הניפו את היד מהר (גם אגרוף עובד) כדי לנפץ אותם לרסיסים. 60 שניות על השעון. המצלמה היא השלט.',
+    descSmash: 'קיר לבנים שמסתיר חדר ואוצר, חדר שלם, עיר קטנה, מגדלי צעצועים עם בלונים ושוק פירות. הקישו, החליקו או תנו אגרוף כדי לנפץ הכל! משחק חופשי או שלבים עם כוכבים.',
     descBusy: 'לוח עסוק לידיים קטנות: מתגים שמקליקים, כפתורים שמנגנים, כפתורי סיבוב, מחוונים, רוכסן, דלת קטנה עם הפתעה מאחוריה, פסנתר, קסילופון, נורות שזוהרות וגלגל מזל. בלי ניקוד, בלי שעון. הצביעו כדי ללחוץ, צבטו כדי לסובב ולגרור.',
     descStrike: 'כדור טס אליכם במסדרון חסום בקירות לבנים. הכו אותו בכף היד ברגע שהוא מגיע: ככל שהיד מהירה יותר, המכה חזקה יותר ויותר לבנים מתנפצות. שלושה פספוסים והסיבוב נגמר. המצלמה היא השלט.',
     camBtn: 'הפעלת מצלמה', camBtnAgain: 'משחק עם מצלמה', camLast: 'בפעם הקודמת', mouseBtn: 'משחק עם עכבר או מגע', tremortiLink: 'טרימורטי · מד רעד',
@@ -1027,8 +1074,10 @@ const I18N = {
     hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
     hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
-    hintSmashCam: 'געו בקירות ובמכוניות עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר. שמרו על היד בתוך המסגרת הצהובה.',
-    hintSmashTouch: 'החליקו מהר דרך הקירות והמכוניות כדי לנפץ אותם.', hintSmashMouse: 'החזיקו את הכפתור השמאלי והחליקו מהר כדי להכות. D למדדים.',
+    hintSmashCam: 'תנו אגרוף או געו בדברים עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר. מלאו את המד! שמרו על היד בתוך המסגרת הצהובה.',
+    hintSmashTouch: 'הקישו או החליקו כדי לנפץ הכל! מלאו את המד כדי לסיים את המקום.', hintSmashMouse: 'לחצו או החליקו מהר כדי לנפץ הכל! מלאו את המד כדי לסיים את המקום.',
+    smTitle: 'ניפוץ', smFree: 'משחק חופשי', smFreeSub: 'מנפצים הכל, בלי שעון', smClear: 'ניפצתם הכל!', smPct: '{n}% מנופץ', smStarGoal: '★★★ = לסיים כשנשארו {n} שניות', smStarsPerfect: 'סופר מהר! נשארו {n} שניות', smStars2: 'נשארו {n} שניות. סיימו עם {m} שניות לשלושה ★★★', smStars1: 'פיו! סיימו עם {m} שניות לשלושה ★★★', smStages: 'שלבים',
+    sc_wall: 'קיר הלבנים', sc_room: 'הסלון', sc_city: 'עיר קטנה', sc_blocks: 'מגדלי צעצועים', sc_food: 'שוק הפירות',
     hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון והגלגל. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
     hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גררו את הלוח כדי לראות עוד.',
     hintBusyMouse: 'לחצו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גללו או גררו את הלוח כדי לראות עוד. D למדדים.',
@@ -1211,7 +1260,7 @@ function resize() {
   buildGrid(); sizePreviews();
   if (gameMode === 'busy' && busy.widgets.length) layoutBusy();
   if (gameMode === 'shapes' && shapes.spec) layoutShapes(false);
-  if (engine) { buildWalls(); clampBodies(); }
+  if (engine) { buildWalls(); clampBodies(); if (gameMode === 'smash') smashResize(); }
 }
 
 function buildGrid() {
@@ -1297,6 +1346,7 @@ function initPhysics() {
 /* ---------------- Particles (impact juice) ---------------- */
 function onCollisions(e) {
   const now = performance.now();
+  if (gameMode === 'smash') smImpacts(e.pairs); // fragile things that fall or are knocked hard break
   for (const pair of e.pairs) {
     const a = pair.bodyA, b = pair.bodyB;
     const c = pair.collision; if (!c) continue;
@@ -1446,6 +1496,7 @@ canvas.addEventListener('pointerdown', (e) => {
   }
   // (the waiting serve ball is not served by a tap: pull it back, then flick: see waitTick)
   if (mode !== 'none' && gameMode === 'strike' && strike.chest && !strike.over && (e.button === 0 || e.pointerType === 'touch') && chestAt(e.clientX, e.clientY)) { e.preventDefault(); openChest(strike.chest, performance.now()); return; } // a tap on the boss chest opens it
+  if (mode === 'mouse' && gameMode === 'smash' && !smash.over && smash.phase === 'play' && !pause.on && !menu.open && (e.button === 0 || e.pointerType === 'touch') && smash.taps.length < 6) smash.taps.push({ x: e.clientX, y: e.clientY }); // Smash: a tap is a punch right there
   if (mode !== 'mouse') return;
   e.preventDefault();
   ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
@@ -1506,7 +1557,7 @@ function inputTick(now) {
     if (g === 'pinch' && gameMode === 'sandbox') tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); resetHandCursor(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
-    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !advMapOpen()) endCardAction('again', now);
+    if (E && E.over && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !anyMapOpen()) endCardAction('again', now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -1568,7 +1619,7 @@ function frame(now) {
   if (mode !== 'none' && profile.road.cards.length && $('newCard').hidden) maybeNewCard(); // a level-up's NEW UNLOCKED card, once the round-over card is up
 
   // poker (sandbox) and fist (smash) are static circles dragged along the cursor path each step
-  const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over]];
+  const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over && smash.phase === 'play' && punchGesture()]];
   for (const [b, on] of probes) { b.collisionFilter.mask = on ? 0xFFFFFFFF : 0; b.plugin.from = { ...b.position }; b.plugin.to = on ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 }; }
   if (gameMode === 'smash' && mode !== 'none') smashTick(now, dt); // the clock stops on the start screen
 
@@ -2243,59 +2294,1102 @@ function drawHearts(ui, lives, max, cx, cy, now, k = 0.66, gap = 26) { // a row 
   }
 }
 
-/* ---------------- Smash mode ---------------- */
-const smash = { bricks: [], cars: [], pieces: [], walls: [], floaters: [], score: 0, best: 0, endAt: 0, over: false, overAt: 0, nextCar: 0, prev: null, ang: 0, punching: false, lastTick: -1, lastCrunch: 0,
-  bricksOut: 0, carsOut: 0, bigHit: 0, // round stats for the end card: bricks knocked loose, cars crumpled, most points from one punch
-  ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+/* ---------------- Smash mode ----------------
+   Five glossy cartoon scenes drawn in code, each full of things made of Matter bodies that break their own way (a sound, debris, dust, shake):
+   'wall' (a full-screen brick wall; behind it a room with its own tiled back wall; behind that a treasure cave), 'room' (plates, cups, vases, a TV,
+   lamps, a window, shelves with jars, a table, picture frames), 'city' (buildings that collapse floor by floor, cars, street lamps, trees, a water
+   tower, a hydrant), 'blocks' (toy towers, balloons, surprise boxes) and 'food' (watermelons, tomatoes, eggs, pumpkins on crates and shelves).
+   Fragile things that fall or are knocked hard break on their own (chain reactions). The destruction meter is the share of the scene's value
+   broken (wall tiles count by the share knocked out); at SMASH_CLEAR the rest goes up in a cascade, then in free play the next scene slides in,
+   and in a stage (a scene with a layout and a clock) the card shows 1-3 stars by the time left.
+   Input: a tap is a punch at that point, a swipe a sweeping hit (strength by speed); on the camera any contact of the hand punches.
+   Debris is pooled per shape, fades after SMASH_PIECE_MS and is capped (fewer on a phone); resting bodies sleep; no allocations per frame in the
+   tick / render loops beyond what Matter itself does. --- */
+const SMASH_SCENES = ['wall', 'room', 'city', 'blocks', 'food'], SMASH_PER = 4, SMASH_N = SMASH_SCENES.length * SMASH_PER;
+const SMASH_ACCENT = { wall: '#ff7a59', room: '#ffc24b', city: '#54c6eb', blocks: '#c58bff', food: '#5fd77a' };
+const SMASH_TIME = { wall: 100, room: 60, city: 50, blocks: 50, food: 55 }; // a stage's clock (s) on its scene's first stage; the later ones a little shorter
+const SMASH_STAR3 = 0.45, SMASH_STAR2 = 0.2, SMASH_HURRY_S = 10; // stars by the share of the clock left at the clear; the 'Hurry!' line
+const SMASH_CLEAR_MS = 1500, SMASH_OUT_MS = 450, SMASH_IN_MS = 600, SMASH_BANNER_MS = 2600;
+const SMC = { FLOOR: 0x0001, OBJ: 0x0002, BACK: 0x0004, DEB: 0x0008 }; // collision categories: the screen's walls, the scene's things, the wall scene's treasure layer, debris
+const smash = {
+  run: 'free', scene: 'wall', variant: 1, n: 0, sceneNo: 0, oid: 0, // run: 'free' | 'stage'; n: the stage in a stage run; sceneNo: scenes played in this free run
+  phase: 'play', phaseAt: 0, // 'play' | 'clear' (the cascade + 'Smashed!') | 'out' / 'in' (the next scene slides) | 'card' (a stage's card)
+  objs: [], pieces: [], pool: new Map(), heard: {}, tiles: [], fx: [], floaters: [], taps: [], queue: [], cascade: [], snd: [], trk: { smash: 0, brick: 0, car: 0, wall: 0 }, trkAt: 0,
+  total: 0, done: 0, meter: 0, shown: 0, things: 0, broke: {}, endAt: Infinity, startAt: 0, armAt: 0, timeMs: 0, plan: null, clearLeft: 0,
+  over: false, overAt: 0, result: null, armed: null, prev: null, ang: 0, punching: false, punchId: 0, lastTick: -1, hurry: false, lastCrunch: 0, sndAt: {}, sndN: 0, sndWin: 0,
+  decal: null, decalG: null, slide: 0, banner: null, tag: null, layoutW: 0, layoutH: 0,
+  ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false, hud: null, row: null, card: null, meterBox: null, timerBox: null, starsBox: null, bannerBox: null, labels: null, starHint: null, stars: null, pay: null } };
 const BRICK = { w: 48, h: 22, colors: ['#c8654a', '#b95a41', '#d17055', '#bd5d44'], dust: '#e0a48a' };
 const GLASS = 'rgba(84,198,235,0.7)', TYRE = '#2b2f45';
-const PIECE = { restitution: 0.3, friction: 0.5, frictionAir: 0.01, density: 0.002 };
-function smashScale() { return Math.max(0.55, Math.min(1.15, Math.sqrt(W * H) / 950)); }
-function smashLeft(now) { return Math.max(0, smash.endAt - now); }
-function smashClock(now = performance.now()) { const s = Math.ceil(smashLeft(now) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
-function clearSmash() {
-  const all = [...smash.bricks, ...smash.cars, ...smash.pieces];
-  if (all.length) M.Composite.remove(world, all);
-  smash.bricks.length = smash.cars.length = smash.pieces.length = smash.walls.length = smash.floaters.length = 0;
+const _sv = { x: 0, y: 0 }; // a scratch vector for Matter calls in the per-frame loops
+function smashScale() { return Math.max(0.62, Math.min(1.1, Math.min(W / 560, H / 640))); }
+function smU() { return 40 * smashScale(); }
+function smPhone() { return W * H < 420000; }
+function smashPlan(n) { // stage n: its scene (four stages a scene), its layout variant (more to smash) and its clock (a little shorter each stage)
+  n = Math.max(1, Math.min(SMASH_N, n | 0 || 1)); const si = Math.floor((n - 1) / SMASH_PER), v = n - si * SMASH_PER, scene = SMASH_SCENES[si];
+  const time = Math.round(SMASH_TIME[scene] * [1.2, 1.05, 0.95, 0.85][v - 1] / 5) * 5;
+  return { n, scene, v, time, star3: Math.round(time * SMASH_STAR3), star2: Math.round(time * SMASH_STAR2) };
 }
-function resetSmash(now) {
+function smashStarsFor(plan, leftS) { return leftS >= plan.star3 ? 3 : leftS >= plan.star2 ? 2 : 1; }
+function smashPlayable(n) { return n >= 1 && n <= SMASH_N && n <= profile.smash.unlocked; }
+function smashCurrent() { const A = profile.smash; for (let n = 1; n <= Math.min(SMASH_N, A.unlocked); n++) if (!A.stars[n]) return n; return Math.min(SMASH_N, A.unlocked); }
+function smashStarTotal() { let s = 0; for (const k in profile.smash.stars) s += profile.smash.stars[k]; return s; }
+function smashLeft(now) { return Math.max(0, smash.endAt - now); }
+function smashClock(now = performance.now()) { if (smash.run !== 'stage') return ''; const s = Math.ceil(smashLeft(now) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+/* --- bodies, things, tile walls --- */
+function smBodyOpts(o) {
+  const cat = o.back ? SMC.BACK : SMC.OBJ;
+  return { isStatic: !!(o.stat || o.deco), density: o.d || 0.002, friction: o.friction ?? 0.7, frictionStatic: 1, restitution: o.restitution ?? 0.05, frictionAir: 0.012, slop: 0.02,
+    collisionFilter: { category: cat, mask: o.deco ? 0 : SMC.FLOOR | cat, group: 0 }, label: 'smash' };
+}
+const SMK = { // per kind: hp, value (its share of the meter), material (its debris and its sound), fr: the impact speed that breaks it (0: only a punch), d: density; deco: static on the wall, nothing rests on it; stat: static but things rest on it
+  window: { hp: 1, v: 3, mat: 'glass', deco: 1 }, frame: { hp: 1, v: 2, mat: 'glass', deco: 1 }, clock: { hp: 1, v: 2, mat: 'ceramic', deco: 1 }, ceilLamp: { hp: 1, v: 2, mat: 'bulb', deco: 1 },
+  shelf: { hp: 2, v: 2, mat: 'wood', stat: 1 }, jar: { hp: 1, v: 1, mat: 'glass', fr: 2.4 }, table: { hp: 3, v: 3, mat: 'wood', d: 0.004 }, plate: { hp: 1, v: 1, mat: 'ceramic', fr: 2.2 },
+  cup: { hp: 1, v: 1, mat: 'ceramic', fr: 2.2 }, vase: { hp: 1, v: 2, mat: 'ceramic', fr: 2.8 }, tv: { hp: 2, v: 4, mat: 'tv', fr: 4.5, d: 0.003 }, cabinet: { hp: 2, v: 2, mat: 'wood', d: 0.004 },
+  floorLamp: { hp: 1, v: 2, mat: 'bulb', fr: 4, d: 0.0015 },
+  floor: { hp: 1, v: 1, mat: 'concrete', fr: 3, d: 0.004, brick: 1 }, car: { hp: 1, v: 3, mat: 'metal', deco: 1 }, streetLamp: { hp: 1, v: 2, mat: 'bulb', deco: 1 }, tree: { hp: 2, v: 2, mat: 'leaves', deco: 1 },
+  towerLegs: { hp: 2, v: 1, mat: 'steel', stat: 1 }, tank: { hp: 1, v: 3, mat: 'water', fr: 2.6, d: 0.003 }, hydrant: { hp: 1, v: 2, mat: 'hydrant', d: 0.004 },
+  block: { hp: 1, v: 1, mat: 'toy', fr: 9, d: 0.0018, brick: 1 }, balloon: { hp: 1, v: 1, mat: 'rubber', deco: 1 }, gift: { hp: 1, v: 3, mat: 'gift', d: 0.0015 },
+  watermelon: { hp: 2, v: 3, mat: 'melon', fr: 5.5, d: 0.003 }, tomato: { hp: 1, v: 1, mat: 'tomato', fr: 3.5 }, egg: { hp: 1, v: 1, mat: 'egg', fr: 1.8, d: 0.0015 }, pumpkin: { hp: 2, v: 3, mat: 'pumpkin', fr: 6, d: 0.003 },
+  crate: { hp: 2, v: 2, mat: 'wood', d: 0.0025 }, plant: { hp: 1, v: 1, mat: 'ceramic', fr: 2.6 }, book: { hp: 1, v: 1, mat: 'paper' }, bottle: { hp: 1, v: 1, mat: 'glass', fr: 2.4 },
+  orange: { hp: 1, v: 1, mat: 'orange', fr: 3.5 }, apple: { hp: 1, v: 1, mat: 'apple', fr: 3.5 }, chest: { hp: 3, v: 6, mat: 'gold', d: 0.006 }, gem: { hp: 1, v: 2, mat: 'gem', fr: 6 }, trophy: { hp: 1, v: 3, mat: 'goldcup', d: 0.003, fr: 6 },
+};
+const SMM = { // per material: its sound, its debris shape ('r' slabs, 'p3' / 'p4' / 'p5' shards, 'c' chunks), how many pieces at most, their colours (null: the thing's own)
+  glass: { snd: 'glass', sh: 'p3', n: 8, cols: ['#bfe9ff', '#e8f8ff'] }, ceramic: { snd: 'clink', sh: 'p4', n: 6, cols: null }, bulb: { snd: 'pop', sh: 'p3', n: 5, cols: ['#fff3b0', '#e8f8ff'] },
+  wood: { snd: 'wood', sh: 'r', n: 4, cols: null }, tv: { snd: 'spark', sh: 'r', n: 4, cols: null }, concrete: { snd: 'crunch', sh: 'p4', n: 4, cols: null }, metal: { snd: 'car', sh: 'r', n: 4, cols: null },
+  leaves: { snd: 'wood', sh: 'r', n: 2, cols: ['#8a5a32'] }, steel: { snd: 'clang', sh: 'r', n: 3, cols: ['#8d96aa'] }, water: { snd: 'splash', sh: 'r', n: 3, cols: ['#9b6a3c', '#7d5530'] },
+  hydrant: { snd: 'splash', sh: 'p4', n: 3, cols: null }, toy: { snd: 'clack', sh: 'r', n: 3, cols: null }, rubber: { snd: 'pop', sh: 'p3', n: 2, cols: null }, gift: { snd: 'confetti', sh: 'r', n: 3, cols: null },
+  melon: { snd: 'splat', sh: 'c', n: 4, cols: ['#3f9b3a', '#ff5a5f'] }, tomato: { snd: 'splat', sh: 'c', n: 2, cols: null }, egg: { snd: 'splat', sh: 'p3', n: 4, cols: ['#fff6e2', '#f3e2c4'] },
+  pumpkin: { snd: 'splat', sh: 'p5', n: 4, cols: null }, paper: { snd: 'swish', sh: 'r', n: 3, cols: null }, orange: { snd: 'splat', sh: 'c', n: 2, cols: null }, apple: { snd: 'splat', sh: 'c', n: 2, cols: ['#ff5a5f', '#fff1c9'] }, gold: { snd: 'confetti', sh: 'r', n: 3, cols: ['#8a5a32', '#ffc93b'] }, gem: { snd: 'clink', sh: 'p3', n: 5, cols: null }, goldcup: { snd: 'clang', sh: 'p4', n: 4, cols: ['#ffc93b', '#ffe38a'] },
+};
+const SM_JUICE = { melon: ['#ff4f5e', '#1d1d1d'], tomato: ['#ff3b30', '#ffd36a'], egg: ['#ffc21a', '#fff6e2'], pumpkin: ['#ff9a1f', '#fff1c9'], orange: ['#ffa41b', '#fff3c4'], apple: ['#ffe9a8', '#5a3a1a'] }; // splat colour, seed colour
+// a thing: one Matter body (a rect or a circle); o: { x, y, w, h (circle: w = diameter), col, layer, seed, extra, art } plus SMK overrides
+function smAdd(kind, shape, o) {
+  const K = SMK[kind], q = { ...K, ...o }, back = (q.layer || 1) >= 2;
+  const opt = smBodyOpts({ stat: q.stat, deco: q.deco, back, d: q.d, friction: q.friction, restitution: q.restitution });
+  const b = shape === 'c' ? M.Bodies.circle(q.x, q.y, q.w / 2, opt) : M.Bodies.rectangle(q.x, q.y, q.w, q.h, opt);
+  const ob = { id: ++smash.oid, kind, body: b, alive: true, hp: q.hp, maxHp: q.hp, value: q.v, mat: q.mat, layer: q.layer || 1, fragile: q.fr || 0, deco: !!q.deco, stat: !!(q.stat || q.deco),
+    col: q.col || '#c48a4f', w: q.w, h: q.h, seed: q.seed || 0, extra: q.extra || null, brick: !!q.brick, group: q.group || null, sp: null, hitAt: -1e9, stamp: 0, queued: false,
+    x0: q.x, y0: q.y, ph: Math.random() * TAU, z: smash.objs.length, inertia: 0 };
+  if (shape === 'c') ob.h = q.w;
+  b.plugin = { so: ob }; smash.objs.push(ob); smash.total += ob.value; M.Composite.add(world, b);
+  if (q.lock && !ob.stat) { ob.inertia = b.inertia; M.Body.setInertia(b, Infinity); } // a stacked floor / block keeps upright until its stack is disturbed
+  return ob;
+}
+function smUnlock(group) { if (!group) return; for (const o of smash.objs) if (o.alive && o.group === group && o.inertia) { M.Body.setInertia(o.body, o.inertia); o.inertia = 0; } }
+function smWake() { for (const o of smash.objs) if (o.alive && !o.stat && o.body.isSleeping) M.Sleeping.set(o.body, false); }
+// a tile wall: a grid of cells (bricks or glazed tiles) kept as data and drawn once into its own canvas; a knocked-out cell is cleared from it and flies off as debris
+function smTileWall(kind, x0, y0, w, h, cw, ch, layer, value, stagger, cols) {
+  const nc = Math.ceil(w / cw) + (stagger ? 1 : 0), nr = Math.ceil(h / ch);
+  const T = { kind, x0, y0, w, h, cw, ch, nc, nr, stagger, layer, value, cols, cells: new Uint8Array(nc * nr), col: new Uint8Array(nc * nr), alive: 0, total: 0, c: null, g: null, down: false };
+  for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) {
+    const x = x0 + c * cw - (stagger && r % 2 ? cw / 2 : 0); if (x + cw <= x0 + 1 || x >= x0 + w - 1) continue;
+    T.cells[r * nc + c] = 1; T.col[r * nc + c] = (r * 7 + c * 3 + ((r * c) % 5)) % cols.length; T.alive++;
+  }
+  T.total = T.alive; smash.tiles.push(T); smash.total += value; smTileDraw(T); return T;
+}
+function smTileCx(T, r, c) { return T.x0 + (c + 0.5) * T.cw - (T.stagger && r % 2 ? T.cw / 2 : 0); }
+function smTileSprite(T, i) {
+  const col = T.cols[T.col[i]], w = T.cw - 2, h = T.ch - 2;
+  if (T.kind === 'brick') return brickSprite(col, w, h, false);
+  return makeSprite('smtile|' + col + '|' + Math.round(w) + 'x' + Math.round(h), w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
+    g.fillStyle = 'rgba(240,232,220,0.9)'; g.fillRect(-w / 2 - 1, -h / 2 - 1, w + 2, h + 2); // grout
+    const path = () => rrect(g, -w / 2 + 1.5, -h / 2 + 1.5, w - 3, h - 3, Math.min(w, h) * 0.12);
+    const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, lighten(col, 0.35)); gr.addColorStop(0.55, col); gr.addColorStop(1, darken(col, 0.18));
+    path(); g.fillStyle = gr; g.fill(); gloss(g, path, Math.min(w, h) * 0.7, 0.45);
+    g.fillStyle = 'rgba(255,255,255,0.5)'; g.beginPath(); g.arc(0, 0, Math.min(w, h) * 0.13, 0, TAU); g.fill(); // a little flower dot in the middle
+    path(); g.lineWidth = 1; g.strokeStyle = darken(col, 0.35); g.stroke();
+  });
+}
+function smTileDraw(T) { // the whole wall into its canvas (once per build / resize)
+  const c = T.c || (T.c = document.createElement('canvas')); c.width = Math.max(1, Math.ceil(T.w * SS)); c.height = Math.max(1, Math.ceil(T.h * SS));
+  const g = T.g = c.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, T.w, T.h);
+  for (let r = 0; r < T.nr; r++) for (let k = 0; k < T.nc; k++) { const i = r * T.nc + k; if (!T.cells[i]) continue;
+    const sp = smTileSprite(T, i), x = smTileCx(T, r, k) - T.x0, y = (r + 0.5) * T.ch; g.drawImage(sp.c, x - sp.ox, y - sp.oy, sp.w, sp.h); }
+}
+function smTileTouch(T, x, y, R) { // is an intact cell within R of the point?
+  if (!T.alive) return false;
+  const r0 = Math.max(0, Math.floor((y - R - T.y0) / T.ch)), r1 = Math.min(T.nr - 1, Math.floor((y + R - T.y0) / T.ch));
+  for (let r = r0; r <= r1; r++) {
+    const off = T.stagger && r % 2 ? T.cw / 2 : 0, c0 = Math.max(0, Math.floor((x - R - T.x0 + off) / T.cw)), c1 = Math.min(T.nc - 1, Math.floor((x + R - T.x0 + off) / T.cw));
+    for (let c = c0; c <= c1; c++) { if (!T.cells[r * T.nc + c]) continue;
+      const cx = smTileCx(T, r, c), cy = T.y0 + (r + 0.5) * T.ch, dx = Math.max(cx - T.cw / 2 - x, 0, x - cx - T.cw / 2), dy = Math.max(cy - T.ch / 2 - y, 0, y - cy - T.ch / 2);
+      if (dx * dx + dy * dy <= R * R) return true; }
+  }
+  return false;
+}
+function smTileKnock(T, i, r, c, dirx, diry, kick, now, body) { // one cell out: cleared from the canvas, a slab of it flies (body: whether a debris body is spawned for it)
+  T.cells[i] = 0; T.alive--;
+  const cx = smTileCx(T, r, c), cy = T.y0 + (r + 0.5) * T.ch, col = T.cols[T.col[i]];
+  T.g.clearRect(cx - T.cw / 2 - T.x0, cy - T.ch / 2 - T.y0, T.cw, T.ch);
+  if (body) smPiece('r', T.cw * 0.48, T.ch - 3, col, T.kind === 'brick' ? 'brick' : 'tile', cx + (Math.random() - 0.5) * T.cw * 0.3, cy, dirx * kick + (Math.random() - 0.5) * 3, diry * kick - 2 - Math.random() * 3, now);
+  else if (particles.length < 300) burst(cx, cy, col, 6);
+}
+function smTileHit(T, x, y, Rb, dirx, diry, k, now) { // knock out every cell within Rb of the point (at least the nearest one); returns how many
+  const r0 = Math.max(0, Math.floor((y - Rb - T.y0) / T.ch)), r1 = Math.min(T.nr - 1, Math.floor((y + Rb - T.y0) / T.ch)), kick = 4 + 9 * k;
+  let n = 0, bodies = 0, best = -1, bd = Infinity, br = 0, bc = 0;
+  for (let r = r0; r <= r1; r++) {
+    const off = T.stagger && r % 2 ? T.cw / 2 : 0, c0 = Math.max(0, Math.floor((x - Rb - T.x0 + off) / T.cw)), c1 = Math.min(T.nc - 1, Math.floor((x + Rb - T.x0 + off) / T.cw));
+    for (let c = c0; c <= c1; c++) { const i = r * T.nc + c; if (!T.cells[i]) continue;
+      const cx = smTileCx(T, r, c), cy = T.y0 + (r + 0.5) * T.ch, d = Math.hypot(cx - x, cy - y);
+      if (d <= Rb) { const ox = (cx - x) / (d || 1), oy = (cy - y) / (d || 1); smTileKnock(T, i, r, c, dirx * 0.7 + ox * 0.6, diry * 0.7 + oy * 0.6, kick * (1 - d / Rb * 0.5), now, bodies < 6); bodies++; n++; }
+      else if (d < bd) { bd = d; best = i; br = r; bc = c; } }
+  }
+  if (!n && best >= 0) { smTileKnock(T, best, br, bc, dirx, diry, kick, now, true); n = 1; }
+  if (n) {
+    smash.things += n; smash.trk.smash += n; smash.trk.brick += n;
+    smSnd(T.kind === 'brick' ? 'crunch' : 'clink', k, T.kind === 'brick' ? 'brick' : 'tile', now);
+    if (now - smash.lastCrunch > 70) { smash.lastCrunch = now; ring(x, y, 'rgba(255,255,255,0.85)', (40 + n * 5) * smashScale(), 280, 3.5); dust(x, y, Math.min(9, 3 + n)); shakeScreen(Math.min(4, 1.2 + k * 2.5)); }
+    if (T.alive / T.total <= 0.12) smTileCrumble(T, now); // nearly gone: the rest comes down
+  }
+  return n;
+}
+function smTileCrumble(T, now) { // the last bricks of a wall tumble down together
+  if (T.down) return; T.down = true; let spawned = 0;
+  for (let r = 0; r < T.nr; r++) for (let c = 0; c < T.nc; c++) { const i = r * T.nc + c; if (!T.cells[i]) continue;
+    smTileKnock(T, i, r, c, (Math.random() - 0.5) * 0.6, 0.2, 3, now, spawned < 14 && Math.random() < 0.5); spawned++; }
+  smash.things += spawned; smash.trk.smash += spawned; smash.trk.brick += spawned; smash.trk.wall++;
+  smSnd('crunch', 1, T.kind === 'brick' ? 'brick' : 'tile', now); dust(W / 2, H * 0.6, 12, 3); shakeScreen(3.5);
+}
+function smMeter() { // the share of the scene smashed: the things' values broken + each tile wall's value by the share of its cells out
+  let d = smash.done; for (const T of smash.tiles) d += T.value * (1 - T.alive / Math.max(1, T.total));
+  return smash.total ? Math.min(1, d / smash.total) : 0;
+}
+
+/* --- debris: pooled Matter bodies by shape, faded out after SMASH_PIECE_MS, capped --- */
+function smPieceCap() { return smPhone() ? CONFIG.SMASH_MAX_PIECES_PHONE : CONFIG.SMASH_MAX_PIECES; }
+function smPiece(sh, a, b, col, mat, x, y, vx, vy, now) { // sh: 'r' (a x b slab), 'p3' / 'p4' / 'p5' (radius a), 'c' (radius a)
+  const qa = Math.max(3, Math.round(a / 2) * 2), qb = Math.max(3, Math.round(b / 2) * 2), key = sh === 'r' ? 'r|' + qa + '|' + qb : sh + '|' + qa;
+  let list = smash.pool.get(key), body = list && list.length ? list.pop() : null;
+  if (!body) {
+    const opt = { density: 0.0015, friction: 0.5, restitution: 0.25, frictionAir: 0.012, slop: 0.05, collisionFilter: { category: SMC.DEB, mask: SMC.FLOOR | SMC.DEB, group: 0 }, label: 'debris' };
+    body = sh === 'r' ? M.Bodies.rectangle(x, y, qa, qb, opt) : sh === 'c' ? M.Bodies.circle(x, y, qa, opt) : M.Bodies.polygon(x, y, +sh[1], qa, opt);
+    body.plugin = { dk: key, col, mat, born: now, sp: null, sh };
+  } else { M.Sleeping.set(body, false); _sv.x = x; _sv.y = y; M.Body.setPosition(body, _sv); }
+  const p = body.plugin; if (p.col !== col || p.mat !== mat) p.sp = null; p.col = col; p.mat = mat; p.born = now; p.life = CONFIG.SMASH_PIECE_MS * (0.75 + Math.random() * 0.5);
+  M.Body.setAngle(body, Math.random() * TAU); _sv.x = vx; _sv.y = vy; M.Body.setVelocity(body, _sv); M.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.35);
+  M.Composite.add(world, body); smash.pieces.push(body);
+  return body;
+}
+function smRetire(i) { // debris i leaves the world and waits in its pool
+  const b = smash.pieces[i]; M.Composite.remove(world, b);
+  const P = smash.pieces; for (let j = i; j < P.length - 1; j++) P[j] = P[j + 1]; P.length--;
+  let list = smash.pool.get(b.plugin.dk); if (!list) smash.pool.set(b.plugin.dk, list = []);
+  if (list.length < 24) list.push(b);
+}
+function smPiecesTick(now) {
+  const P = smash.pieces, cap = smPieceCap();
+  if (P.length > cap * 1.25) while (P.length > cap * 1.25) smRetire(0); // far over: the oldest go at once
+  for (let i = 0, over = P.length - cap; i < over; i++) { const p = P[i].plugin; if (now - p.born < p.life) p.born = now - p.life; } // over the cap: the oldest start fading now
+  for (let i = P.length - 1; i >= 0; i--) { const b = P[i], p = b.plugin; if (now - p.born > p.life + CONFIG.SMASH_FADE_MS || b.position.y > H + 200 || b.position.x < -300 || b.position.x > W + 300) smRetire(i); }
+}
+function smPiecesClear() { while (smash.pieces.length) smRetire(smash.pieces.length - 1); }
+
+/* --- hitting and breaking --- */
+function smSnd(kind, arg, obj, now) { // a breaking sound (a few at most per 100 ms; the same one at most every 45 ms); logged for the tests
+  smash.snd.push({ k: kind, o: obj }); if (smash.snd.length > 80) smash.snd.shift(); smash.heard[kind] = (smash.heard[kind] || 0) + 1;
+  if (now - smash.sndWin > 100) { smash.sndWin = now; smash.sndN = 0; }
+  if (smash.sndN >= 4 || now - (smash.sndAt[kind] || -1e9) < 45) return;
+  smash.sndN++; smash.sndAt[kind] = now; sfx(kind, arg);
+}
+function smTouch(o, x, y, R) { // the circle (x, y, R) against the thing's box
+  const bd = o.body.bounds, dx = Math.max(bd.min.x - x, 0, x - bd.max.x), dy = Math.max(bd.min.y - y, 0, y - bd.max.y);
+  return dx * dx + dy * dy <= R * R;
+}
+function smStrength(v) { return Math.max(0, Math.min(1, (v / smashScale() - 0.35) / 1.6)); } // 0..1 from the hand's speed (px/ms)
+function smPunch(x, y, R, dirx, diry, k, now) { // one hit at a point: the front-most thing(s) or wall under it; true if anything was hit
+  for (let L = 0; L <= 2; L++) {
+    let hit = 0;
+    for (const o of smash.objs) if (o.alive && o.layer === L && o.stamp !== smash.punchId && smTouch(o, x, y, R)) { smHit(o, x, y, dirx, diry, k, now); hit++; }
+    if (hit) return true;
+    for (const T of smash.tiles) if (T.layer === L && T.alive && smTileTouch(T, x, y, R)) { smTileHit(T, x, y, T.cw * (0.75 + 0.75 * k), dirx, diry, k, now); return true; }
+  }
+  return false;
+}
+function smSweep(x0, y0, x1, y1, R, k, now) { // a swipe: hits all along the path (each thing once per swipe)
+  const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), dirx = len ? dx / len : 0, diry = len ? dy / len : 0, n = Math.max(1, Math.min(24, Math.ceil(len / (R * 0.6))));
+  smash.punchId++; let hit = false;
+  for (let i = 1; i <= n; i++) { const q = i / n; if (smPunch(x0 + dx * q, y0 + dy * q, R, dirx, diry, k, now)) hit = true; }
+  return hit;
+}
+function smHit(o, x, y, dirx, diry, k, now) {
+  o.stamp = smash.punchId; o.hitAt = now;
+  const dmg = 1 + (k > 0.55 ? 1 : 0) + (k > 0.9 ? 1 : 0); o.hp -= dmg;
+  smUnlock(o.group);
+  if (o.hp <= 0) { smBreak(o, x, y, dirx, diry, k, now); return; }
+  const s = smashScale(); // not yet: it cracks, wobbles and is shoved
+  smSnd(o.mat === 'toy' ? 'clack' : o.mat === 'steel' || o.mat === 'gold' ? 'clang' : 'thud', k, o.kind, now);
+  if (!o.stat) { M.Sleeping.set(o.body, false); const kick = (2 + 6 * k); _sv.x = o.body.velocity.x + (dirx || (o.body.position.x - x) * 0.02) * kick; _sv.y = o.body.velocity.y + diry * kick - 1.5; M.Body.setVelocity(o.body, _sv); M.Body.setAngularVelocity(o.body, (Math.random() - 0.5) * 0.1); }
+  if (o.kind === 'tree') smLeaves(o.body.position.x, o.body.position.y - o.h * 0.2, 10);
+  ring(x, y, 'rgba(255,255,255,0.8)', 30 * s, 220, 3); burst(x, y, o.col, 6 + 6 * k); shakeScreen(1 + k * 1.5);
+}
+function smLeaves(x, y, n) { for (let i = 0; i < n && particles.length < 320; i++) { const a = Math.random() * TAU, v = 0.05 + Math.random() * 0.2; particles.push({ x: x + (Math.random() - 0.5) * 40, y: y + (Math.random() - 0.5) * 30, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.0012 + Math.random() * 0.001, r: 2.5 + Math.random() * 3, color: Math.random() < 0.5 ? '#4fb84a' : '#7ed957' }); } }
+function smJuice(x, y, col, n, spread = 1) { for (let i = 0; i < n && particles.length < 320; i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.6, v = (0.12 + Math.random() * 0.35) * spread; particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, decay: 0.0016 + Math.random() * 0.0014, r: 2 + Math.random() * 3.5, color: col }); } }
+function smSplat(x, y, r, col) { // a juice / water splat painted onto the scene for good
+  const g = smash.decalG; if (!g) return;
+  g.save(); g.globalAlpha = 0.55; g.fillStyle = col; g.beginPath(); g.ellipse(x, y, r, r * 0.8, Math.random() * TAU, 0, TAU); g.fill();
+  for (let i = 0; i < 9; i++) { const a = Math.random() * TAU, d = r * (0.9 + Math.random() * 1.1); g.beginPath(); g.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, r * (0.08 + Math.random() * 0.16), 0, TAU); g.fill(); }
+  g.restore();
+}
+function smBreak(o, x, y, dirx, diry, k, now) { // the thing breaks its own way: debris, juice, sparks, its sound; the meter moves on
+  if (!o.alive) return;
+  o.alive = false; M.Composite.remove(world, o.body); smash.done += o.value; smash.things++; smash.trk.smash++;
+  smash.broke[o.kind] = (smash.broke[o.kind] || 0) + 1;
+  if (o.brick) smash.trk.brick++; if (o.kind === 'car') smash.trk.car++;
+  const s = smashScale(), u = smU(), b = o.body, cx = b.position.x, cy = b.position.y, Mt = SMM[o.mat], kick = 3 + 8 * k;
+  const sz = Math.max(4, Math.min(22, Math.sqrt(o.w * o.h) * 0.22)), cols = Mt.cols || [o.col, lighten(o.col, 0.3)];
+  const out = (px, py) => { const ddx = px - x, ddy = py - y, d = Math.hypot(ddx, ddy) || 1; return [dirx * kick * 0.6 + ddx / d * kick * 0.6 + (Math.random() - 0.5) * 3, diry * kick * 0.4 + ddy / d * kick * 0.5 - 2 - Math.random() * 3]; };
+  const piece = (sh, a, bb, col, mat) => { const px = cx + (Math.random() - 0.5) * o.w * 0.7, py = cy + (Math.random() - 0.5) * o.h * 0.7, v = out(px, py); smPiece(sh, a, bb, col, mat || o.mat, px, py, v[0], v[1], now); };
+  const n = Math.max(2, Math.min(Mt.n, Math.round(Mt.n * Math.min(1.2, Math.sqrt(o.w * o.h) / (2 * u)))));
+  if (o.kind === 'car') smCrumpleCar(o, x, y, dirx, diry, k, now);
+  else for (let i = 0; i < n; i++) { const col = cols[i % cols.length]; if (Mt.sh === 'r') piece('r', sz * (1.2 + Math.random()), sz * 0.6, col); else piece(Mt.sh, sz * (0.6 + Math.random() * 0.5), 0, col); }
+  smSnd(Mt.snd, k, o.kind, now);
+  const J = SM_JUICE[o.mat];
+  if (J) { smJuice(cx, cy, J[0], 18 + Math.round(o.w / u * 6)); smJuice(cx, cy, J[1], 8, 0.7); smSplat(cx, Math.min(H - 8, cy + o.h * 0.2), o.w * 0.55, J[0]); }
+  switch (o.mat) {
+    case 'glass': case 'bulb': burst(cx, cy, '#e8f8ff', 14); if (o.mat === 'bulb') { ring(cx, cy, 'rgba(255,240,170,0.95)', 70 * s, 300, 5); smFx('spark', cx, cy, 300); } break;
+    case 'tv': smFx('spark', cx, cy, 900); for (let i = 0; i < 4; i++) piece('p3', sz * 0.7, 0, '#9fd8ff', 'glass'); break;
+    case 'leaves': smLeaves(cx, cy - o.h * 0.15, 40); break;
+    case 'water': smJuice(cx, cy, '#5cc8ff', 50, 1.6); smJuice(cx, cy, '#d8f3ff', 20, 1.2); smSplat(cx, H - 10, o.w * 0.9, '#5cc8ff'); break;
+    case 'hydrant': smFx('water', cx, cy - o.h * 0.3, 1800); break;
+    case 'rubber': smJuice(cx, cy, o.col, 16, 0.9); confetti(cx, cy, 10, 0.6); ring(cx, cy, 'rgba(255,255,255,0.95)', o.w * 0.9, 220, 4); break;
+    case 'gift': confetti(cx, cy, 60, 1.2); for (let i = 0; i < 4; i++) { const v = out(cx, cy + 10); smPiece(i % 2 ? 'p5' : 'c', u * 0.28, 0, COLORS[(i + o.seed) % 5], 'toy', cx, cy, v[0] * 0.5, -6 - Math.random() * 5, now); } break;
+    case 'gold': confetti(cx, cy, 50, 1.3); for (let i = 0; i < 8; i++) smPiece('c', u * 0.2, 0, '#ffc93b', 'coin', cx + (Math.random() - 0.5) * o.w * 0.5, cy - o.h * 0.2, (Math.random() - 0.5) * 8, -6 - Math.random() * 6, now); sfx('coin'); break;
+    case 'gem': burst(cx, cy, o.col, 14); burst(cx, cy, '#ffffff', 8); break;
+    case 'paper': for (let i = 0; i < 12 && particles.length < 320; i++) particles.push({ x: cx, y: cy, vx: (Math.random() - 0.5) * 0.4, vy: -0.1 - Math.random() * 0.3, life: 1, decay: 0.0012, r: 3 + Math.random() * 2, color: '#fffaf0' }); break;
+    case 'concrete': for (let i = 0; i < 2; i++) piece('p3', sz * 0.7, 0, '#9fd8ff', 'glass'); break;
+  }
+  if (o.group && o.kind === 'floor' && !smash.objs.some((q) => q.alive && q.group === o.group)) smash.trk.wall++; // the whole building is down
+  ring(cx, cy, 'rgba(255,255,255,0.9)', (36 + o.w * 0.5) * s, 300, 4); dust(cx, cy, Math.min(10, 3 + Math.round(o.w / u * 2)), 1 + o.w / u * 0.3);
+  shakeScreen(Math.min(4, 1.2 + o.w / u * 0.5 + k * 1.5));
+  smUnlock(o.group); smWake();
+}
+function smCrumpleCar(o, x, y, dirx, diry, k, now) { // a car: panels, two wheels and a spray of glass
+  const b = o.body, cx = b.position.x, cy = b.position.y, w = o.w, h = o.h, kick = 6 + 8 * k, s = smashScale();
+  const v = (px, py, m) => { const dx = px - x, dy = py - y, d = Math.hypot(dx, dy) || 1; return [(dirx * kick * 0.7 + dx / d * kick * 0.5) * m, (diry * kick * 0.5 + dy / d * kick * 0.5 - 5) * m]; };
+  const parts = [[cx, cy + h * 0.15, w * 0.45, h * 0.32], [cx - w * 0.2, cy + h * 0.15, w * 0.3, h * 0.3], [cx + w * 0.2, cy - h * 0.15, w * 0.3, h * 0.28], [cx, cy - h * 0.2, w * 0.35, h * 0.25]];
+  for (const [px, py, pw, ph] of parts) { const q = v(px, py, 0.9); smPiece('r', pw, ph, o.col, 'metal', px, py, q[0], q[1], now); }
+  for (const sx of [-0.3, 0.3]) { const px = cx + sx * w, py = cy + h * 0.4, q = v(px, py, 1); smPiece('c', h * 0.24, 0, TYRE, 'wheel', px, py, q[0], q[1], now); }
+  for (let i = 0; i < 6; i++) { const px = cx + (Math.random() - 0.5) * w * 0.4, py = cy - h * 0.2, q = v(px, py, 1.4); smPiece('p3', (4 + Math.random() * 4) * s, 0, '#bfe9ff', 'glass', px, py, q[0], q[1], now); }
+  burst(x, y, GLASS, 20); burst(cx, cy, o.col, 16); ring(cx, cy, 'rgba(255,194,75,0.8)', 70 * s, 260, 3); dust(cx, cy + h * 0.3, 12, 1.6);
+}
+function smFx(kind, x, y, ms) { if (smash.fx.length < 8) smash.fx.push({ kind, x, y, until: performance.now() + ms }); }
+function smFxTick(now) { // sparks crackling out of a broken TV / bulb, a broken hydrant's fountain
+  for (let i = smash.fx.length - 1; i >= 0; i--) {
+    const f = smash.fx[i]; if (now > f.until) { smash.fx.splice(i, 1); continue; }
+    if (particles.length > 300) continue;
+    if (f.kind === 'spark') { if (Math.random() < 0.6) { const a = Math.random() * TAU, v = 0.15 + Math.random() * 0.35; particles.push({ x: f.x + (Math.random() - 0.5) * 20, y: f.y + (Math.random() - 0.5) * 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.1, life: 0.8, decay: 0.004, r: 1.5 + Math.random() * 1.5, color: Math.random() < 0.5 ? '#fff3b0' : '#7fe0ff' }); } }
+    else for (let j = 0; j < 2; j++) particles.push({ x: f.x + (Math.random() - 0.5) * 8, y: f.y, vx: (Math.random() - 0.5) * 0.12, vy: -0.45 - Math.random() * 0.25, life: 1, decay: 0.0016, r: 2.5 + Math.random() * 3, color: Math.random() < 0.7 ? '#6fd0ff' : '#e0f6ff' });
+  }
+}
+function smImpacts(pairs) { // collisions: a fragile thing hit hard enough (it fell, or something fell on it) breaks on the next tick
+  if (smash.phase !== 'play' && smash.phase !== 'clear') return;
+  const now = performance.now(); if (now < smash.armAt) return;
+  for (const pair of pairs) {
+    const a = pair.bodyA.parent, b = pair.bodyB.parent, c = pair.collision; if (!c) continue;
+    const oa = a.plugin && a.plugin.so, ob = b.plugin && b.plugin.so; if (!oa && !ob) continue;
+    const n = c.normal, rv = Math.abs((a.velocity.x - b.velocity.x) * n.x + (a.velocity.y - b.velocity.y) * n.y);
+    let tg = null;
+    if (oa && oa.alive && oa.fragile && rv > oa.fragile) tg = oa;
+    if (ob && ob.alive && ob.fragile && rv > ob.fragile && (!tg || b.speed > a.speed)) tg = ob;
+    if (tg && !tg.queued) { tg.queued = true; smash.queue.push(tg); }
+  }
+}
+function smFlushTrack(now, force) { // the counts for the stats and missions, once a second (each track() saves the profile)
+  if (!force && now - smash.trkAt < 1000) return; smash.trkAt = now; const T = smash.trk;
+  if (T.smash) track('smash', T.smash); if (T.brick) track('brick', T.brick); if (T.car) track('car', T.car); if (T.wall) track('wall', T.wall);
+  T.smash = T.brick = T.car = T.wall = 0;
+}
+
+/* --- the scenes: each builder lays out its things for the screen (portrait or landscape) and the variant (more things on later stages) --- */
+function smTop() { return Math.max(70, smU() * 1.6 + 26); } // nothing important under the top row (the meter and the pause button)
+function smRow(x0, x1, specs) { // lays specs ({ w, place(cx) }) side by side with even gaps; what does not fit is left out (from the end)
+  const u = smU(), list = specs.slice(); let tot = 0; for (const s of list) tot += s.w;
+  while (list.length > 1 && tot + (list.length + 1) * u * 0.25 > x1 - x0) tot -= list.pop().w;
+  const gap = (x1 - x0 - tot) / (list.length + 1); let x = x0 + gap;
+  for (const s of list) { s.place(x + s.w / 2); x += s.w + gap; }
+  return list.length;
+}
+const SM_JAMS = ['#ff5a5f', '#ff9f1c', '#a259ff', '#3ec76b', '#ffcf3f'];
+const SM_SHELF = { jar: ['jar'], mix: ['jar', 'plant', 'book', 'book', 'book', 'jar', 'bottle'], egg: ['egg', 'egg', 'tomato', 'bottle', 'orange', 'egg', 'apple', 'egg'] };
+const SM_ON = { jar: [0.85, 1.15], plant: [0.9, 1.2], book: [0.32, 1.1], bottle: [0.55, 1.4], egg: [0.62, 0.8], tomato: [0.78, 0], orange: [0.8, 0], apple: [0.75, 0] }; // w, h (0: round) in units
+function smShelf(cx, y, w, r, fill, layer = 1) { // a static plank on the wall with a row of things standing on it
+  const u = smU(), ph = u * 0.34, sh = smAdd('shelf', 'r', { x: cx, y, w, h: ph, col: '#b97a45', layer }), kinds = SM_SHELF[fill] || SM_SHELF.jar, gap = u * 0.16, top = y - ph / 2;
+  let x = cx - w / 2 + gap, i = Math.floor(r() * kinds.length);
+  for (let k = 0; k < 24; k++) {
+    const kind = kinds[(i + k) % kinds.length], [kw, kh] = SM_ON[kind], jw = kw * u * (kind === 'book' ? 0.9 + r() * 0.3 : 1), jh = kh * u * (kind === 'book' ? 0.85 + r() * 0.3 : 1);
+    if (x + jw > cx + w / 2 - gap * 0.5) break;
+    const col = kind === 'jar' || kind === 'bottle' ? SM_JAMS[Math.floor(r() * SM_JAMS.length)] : kind === 'book' ? ['#ff6f59', '#54c6eb', '#ffc24b', '#43d9a3', '#a98bff'][Math.floor(r() * 5)] : kind === 'tomato' ? '#ff3b30' : kind === 'orange' ? '#ff9f1c' : kind === 'apple' ? (r() < 0.5 ? '#ff4b4b' : '#8ad14a') : kind === 'plant' ? '#d9774a' : '#fff1d6';
+    if (!kh) smAdd(kind, 'c', { x: x + jw / 2, y: top - jw / 2, w: jw, col, layer });
+    else smAdd(kind, 'r', { x: x + jw / 2, y: top - jh / 2, w: jw, h: jh, col, seed: k % 3, layer });
+    x += jw + (kind === 'book' ? 1 : gap);
+  }
+  return sh;
+}
+function smRoomFloor(r, v, layer, x0, x1) { // the room's floor things: a table with plates and cups, a TV on its cabinet, vases, a floor lamp
+  const u = smU(), G = H, specs = [];
+  specs.push({ w: u * 4.6, place: (cx) => { const tw = u * 4.6, th = u * 2.3, ty = G - th; smAdd('table', 'r', { x: cx, y: G - th / 2, w: tw, h: th, col: '#c27c45', layer, group: 'table' + cx });
+    const pw = u * 1.5, ph = u * 0.26; for (let i = 0; i < 2 + (v >= 2 ? 1 : 0); i++) smAdd('plate', 'r', { x: cx - tw * 0.24, y: ty - ph * (i + 0.5), w: pw, h: ph, col: ['#4f8cff', '#ff6f59', '#43d9a3'][i % 3], layer });
+    for (const dx of [0.12, 0.34]) smAdd('cup', 'r', { x: cx + tw * dx, y: ty - u * 0.45, w: u * 0.8, h: u * 0.9, col: COLORS[Math.floor(r() * 5)], layer }); } });
+  specs.push({ w: u * 3.4, place: (cx) => { const cw = u * 3.4, ch = u * 1.6; smAdd('cabinet', 'r', { x: cx, y: G - ch / 2, w: cw, h: ch, col: '#a8683c', layer });
+    smAdd('tv', 'r', { x: cx, y: G - ch - u * 1.1, w: u * 2.8, h: u * 2.2, col: ['#ff8a5c', '#5fb7ff', '#9b7bff'][Math.floor(r() * 3)], layer }); } });
+  specs.push({ w: u * 1.3, place: (cx) => smAdd('vase', 'r', { x: cx, y: G - u, w: u * 1.2, h: u * 2, col: ['#3fa7d6', '#e85d75', '#f2a541'][Math.floor(r() * 3)], seed: Math.floor(r() * 3), layer }) });
+  specs.push({ w: u * 1.4, place: (cx) => smAdd('floorLamp', 'r', { x: cx, y: G - u * 2.3, w: u * 1.2, h: u * 4.6, col: '#ffcf6b', layer }) });
+  if (v >= 3) specs.push({ w: u * 1.3, place: (cx) => smAdd('vase', 'r', { x: cx, y: G - u * 0.8, w: u * 1.1, h: u * 1.6, col: '#7bc96f', seed: 2, layer }) });
+  const order = shuffled(specs, r); return smRow(x0, x1, order);
+}
+const SM_BUILD = {
+  wall(r, v) { // a brick wall over the whole screen; behind it a room with its own tiled wall; behind that the treasure cave
+    const u = smU(), P = H > W * 1.15, G = H;
+    const tre = [ // the treasure on the cave floor (layer 2)
+      { w: u * 3.2, place: (cx) => smAdd('chest', 'r', { x: cx, y: G - u * 1.2, w: u * 3.2, h: u * 2.4, col: '#a0612f', layer: 2 }) },
+      { w: u * 1.4, place: (cx) => smAdd('trophy', 'r', { x: cx, y: G - u * 0.95, w: u * 1.3, h: u * 1.9, col: '#ffc93b', layer: 2 }) },
+      { w: u * 1.7, place: (cx) => smAdd('gift', 'r', { x: cx, y: G - u * 0.8, w: u * 1.6, h: u * 1.6, col: '#ff5fa2', seed: 1, layer: 2 }) },
+    ];
+    for (let i = 0; i < 2 + Math.min(3, v); i++) tre.push({ w: u * 1.1, place: (cx) => smAdd('gem', 'r', { x: cx, y: G - u * 0.55, w: u * 0.95, h: u * 1.1, col: ['#ff4f8b', '#4fd2ff', '#7dff6b', '#c38bff', '#ffd23f'][i % 5], layer: 2 }) });
+    smRow(0, W, shuffled(tre, r));
+    const tw = W / (P ? 5 : 9); smTileWall('tile', 0, 0, W, H, tw, tw * 0.82, 1, 22, false, ['#9fd8e8', '#b8e6c8', '#f6d4a0', '#f4b8c8']);
+    smRoomFloor(r, v, 1, 0, W);
+    const cw = W / (P ? 7 : 12); smTileWall('brick', 0, 0, W, H, cw, cw * 0.46, 0, 32, true, BRICK.colors);
+  },
+  room(r, v) {
+    const u = smU(), P = H > W * 1.15, top = smTop();
+    for (const x of P ? [0.5] : [0.32, 0.68]) smAdd('ceilLamp', 'r', { x: W * x, y: top + u * 0.4, w: u * 1.9, h: u * 1.2, col: ['#ff8fa3', '#7fd3ff'][x > 0.5 ? 1 : 0] });
+    smAdd('window', 'r', P ? { x: W * 0.3, y: top + u * 3.6, w: u * 4, h: u * 4.2, col: '#d9a066' } : { x: W * 0.16, y: H * 0.36, w: u * 4.4, h: u * 5, col: '#d9a066' });
+    if (P) { smAdd('frame', 'r', { x: W * 0.78, y: top + u * 2.4, w: u * 2, h: u * 1.7, col: '#e2b04a', seed: 0 }); smAdd('clock', 'r', { x: W * 0.78, y: top + u * 4.9, w: u * 1.6, h: u * 1.6, col: '#5fb7ff' }); }
+    else { smAdd('frame', 'r', { x: W * 0.42, y: H * 0.24, w: u * 2.2, h: u * 1.8, col: '#e2b04a', seed: 0 }); smAdd('frame', 'r', { x: W * 0.56, y: H * 0.24, w: u * 1.7, h: u * 2.1, col: '#8f5bd6', seed: 1 }); smAdd('clock', 'r', { x: W * 0.86, y: H * 0.22, w: u * 1.7, h: u * 1.7, col: '#5fb7ff' }); }
+    if (v >= 2 && !P) smAdd('frame', 'r', { x: W * 0.49, y: H * 0.4, w: u * 1.5, h: u * 1.3, col: '#43b58a', seed: 2 });
+    const shelves = P ? [[0.5, 0.45, 0.84], [0.5, 0.58, 0.84], [0.5, 0.71, 0.84]] : [[0.75, 0.42, 0.32], [0.75, 0.58, 0.32], [0.2, 0.6, 0.3]];
+    if (v >= 3) shelves.push(P ? [0.66, 0.33, 0.5] : [0.45, 0.52, 0.18]);
+    shelves.forEach(([x, y, w], i) => smShelf(W * x, H * y, Math.min(W * w, u * 8), r, i % 2 ? 'mix' : 'jar'));
+    smRoomFloor(r, v, 1, 0, W);
+  },
+  city(r, v) {
+    const u = smU(), P = H > W * 1.15, G = H, fh = u * 1.45, maxF = Math.max(3, Math.floor((H - smTop() - u * 1.5) / fh)), specs = [];
+    let bi = 0;
+    const bldg = () => ({ w: u * (P ? 3.3 : 3.5), place: (cx) => { const i = bi++, bw = u * (P ? 3.3 : 3.5), nf = Math.max(3, Math.min(maxF, 4 + 2 * v + Math.floor(r() * 3) + (P ? 3 : 0) - (i % 2))), col = ['#e9a46a', '#7fb3d5', '#c39bd3', '#f5cba7', '#82c99a'][(i + Math.floor(r() * 5)) % 5];
+      for (let f = 0; f < nf; f++) smAdd('floor', 'r', { x: cx, y: G - fh * (f + 0.5), w: bw, h: fh, col, seed: f === nf - 1 ? 1 : 0, lock: true, group: 'bldg' + i, extra: { top: f === nf - 1, f } }); } });
+    const lamp = () => ({ w: u * 0.9, place: (cx) => smAdd('streetLamp', 'r', { x: cx, y: G - u * 2.6, w: u * 0.8, h: u * 5.2, col: '#3d4a6b' }) });
+    const tree = () => ({ w: u * 2.5, place: (cx) => smAdd('tree', 'r', { x: cx, y: G - u * 2.1, w: u * 2.5, h: u * 4.2, col: '#4fb84a', seed: Math.floor(r() * 3) }) });
+    const hyd = () => ({ w: u * 1, place: (cx) => smAdd('hydrant', 'r', { x: cx, y: G - u * 0.55, w: u * 0.8, h: u * 1.1, col: '#ff4b3e' }) });
+    const tower = () => ({ w: u * 2.6, place: (cx) => { const lh = u * 3.4; smAdd('towerLegs', 'r', { x: cx, y: G - lh / 2, w: u * 2.2, h: lh, col: '#8d96aa' }); smAdd('tank', 'r', { x: cx, y: G - lh - u, w: u * 2.4, h: u * 2, col: '#b97a45' }); } });
+    if (P) specs.push(bldg(), tree(), bldg(), tower(), lamp());
+    else specs.push(bldg(), lamp(), bldg(), tree(), bldg(), hyd(), bldg(), tower(), lamp());
+    if (v >= 3) specs.splice(1, 0, hyd());
+    smRow(0, W, specs);
+    for (let i = 0; i < 2 + (v >= 3 ? 1 : 0); i++) { // cars drive along the street in front
+      const s = smashScale(), w = u * 3.4, h = u * 0.78, wr = u * 0.36, cab = u * 0.68, dir = i % 2 ? -1 : 1, x = W * (0.15 + 0.7 * ((i * 0.37 + r() * 0.2) % 1)), yb = G - wr - h / 2 + 4 * s;
+      smAdd('car', 'r', { x, y: yb - cab / 2, w, h: h + cab, col: COLORS[(i * 2 + Math.floor(r() * 5)) % 5], extra: { dir, wr, bh: h, cab, s, dist: 0, yb, speed: CONFIG.CAR_SPEED * (0.8 + r() * 0.5) } });
+    }
+  },
+  blocks(r, v) {
+    const u = smU(), P = H > W * 1.15, G = H, bs = u * (P ? 1.55 : 1.5), maxB = Math.max(3, Math.floor((H - smTop() - u * 2) / bs)), n = Math.max(2, Math.min(5, Math.floor(W / (u * 4.4)))), specs = [];
+    let ti = 0, letter = Math.floor(r() * 26);
+    for (let t = 0; t < n; t++) specs.push({ w: bs * 3.2, place: (cx) => { const i = ti++, kind = ['col', 'pyr', 'col2'][(i + v) % 3], grp = 'tower' + i;
+      const blk = (x, y) => smAdd('block', 'r', { x, y, w: bs, h: bs, col: COLORS[(letter + i) % 5], seed: letter++ % 26, lock: true, group: grp });
+      if (kind === 'pyr') { let row = 0; for (const k of [3, 2, 1]) { for (let j = 0; j < k; j++) blk(cx + (j - (k - 1) / 2) * bs * 1.02, G - bs * (row + 0.5)); row++; } }
+      else { const hgt = Math.max(3, Math.min(maxB, 3 + v + Math.floor(r() * 3) + (P ? 2 : 0))); for (let j = 0; j < hgt; j++) blk(cx + (kind === 'col2' && j % 2 ? bs * 0.18 : 0), G - bs * (j + 0.5));
+        if (i === 0) smAdd('gift', 'r', { x: cx, y: G - bs * hgt - u * 0.7, w: u * 1.4, h: u * 1.4, col: '#ff5fa2', seed: i, lock: true, group: grp }); } } });
+    for (let g = 0; g < 1 + (v >= 2 ? 1 : 0); g++) specs.splice(1 + g * 2, 0, { w: u * 1.6, place: (cx) => smAdd('gift', 'r', { x: cx, y: G - u * 0.75, w: u * 1.5, h: u * 1.5, col: ['#43d9a3', '#54c6eb'][g % 2], seed: g + 2 }) });
+    smRow(0, W, specs);
+    const nb = (P ? 5 : 4) + v, top = smTop() + u * 0.6, bot = H * (P ? 0.42 : 0.4);
+    for (let i = 0; i < nb; i++) smAdd('balloon', 'r', { x: u * 1.2 + (W - u * 2.4) * ((i + 0.5) / nb) + (r() - 0.5) * u, y: top + r() * Math.max(10, bot - top), w: u * 1.3, h: u * 1.6, col: ['#ff5a5f', '#ffcf3f', '#43d9a3', '#54c6eb', '#c58bff', '#ff8fd1'][i % 6] });
+  },
+  food(r, v) {
+    const u = smU(), P = H > W * 1.15, G = H, specs = [], cs = u * 1.9;
+    const stack = (top) => ({ w: cs * 1.1, place: (cx) => { const k = 1 + (r() < 0.5 ? 1 : 0) + (P ? 1 : 0);
+      for (let j = 0; j < k; j++) smAdd('crate', 'r', { x: cx, y: G - cs * (j + 0.5), w: cs, h: cs, col: '#c8925a' });
+      const y = G - cs * k;
+      if (top === 'melon') smAdd('watermelon', 'c', { x: cx, y: y - u * 0.85, w: u * 1.7, col: '#3f9b3a' });
+      else if (top === 'pumpkin') smAdd('pumpkin', 'c', { x: cx, y: y - u * 0.8, w: u * 1.6, col: '#ff9a1f' });
+      else for (const dx of [-0.33, 0, 0.33]) smAdd(dx ? 'tomato' : 'orange', 'c', { x: cx + dx * cs, y: y - u * 0.31, w: u * 0.6, col: dx ? '#ff3b30' : '#ff9f1c' }); } });
+    const ground = (k) => ({ w: u * 1.8, place: (cx) => k === 'pumpkin' ? smAdd('pumpkin', 'c', { x: cx, y: G - u * 0.8, w: u * 1.6, col: '#ff9a1f' }) : smAdd('watermelon', 'c', { x: cx, y: G - u * 0.85, w: u * 1.7, col: '#3f9b3a' }) });
+    specs.push(stack('melon'), ground('pumpkin'), stack('tomato'), ground('melon'), stack('pumpkin'));
+    if (v >= 2) specs.push(stack('tomato')); if (v >= 3) specs.push(ground('pumpkin'));
+    smRow(0, W, shuffled(specs, r));
+    const shelves = P ? [[0.5, 0.27], [0.5, 0.39], [0.5, 0.51], [0.5, 0.63]] : [[0.27, 0.36], [0.73, 0.36], [0.5, 0.56]];
+    if (v >= 3 && !P) shelves.push([0.5, 0.25]);
+    for (const [x, y] of shelves) smShelf(W * x, H * y, Math.min(W * (P ? 0.84 : 0.34), u * 8), r, 'egg');
+  },
+};
+function smClearWorld() { // everything of the last scene leaves the world (debris back to its pools)
+  for (const o of smash.objs) if (o.alive) M.Composite.remove(world, o.body);
+  smash.objs.length = 0; smash.tiles.length = 0; smash.fx.length = 0; smash.queue.length = 0; smash.cascade.length = 0; smash.taps.length = 0; smPiecesClear();
+}
+function smBuild(scene, v, seed, now) {
+  smClearWorld(); particles.length = 0; rings.length = 0;
+  smash.scene = scene; smash.variant = v; smash.total = smash.done = 0; smash.meter = smash.shown = 0; smash.broke = {}; smash.punchId++;
+  const r = mulberry32(strSeed('smash|' + scene + '|' + v + '|' + seed));
+  SM_BUILD[scene](r, v);
+  smash.objs.sort((a, b) => b.layer - a.layer || a.z - b.z);
+  smash.armAt = now + 900; smash.layoutW = W; smash.layoutH = H;
+  const c = smash.decal || (smash.decal = document.createElement('canvas')); c.width = Math.max(1, Math.round(W * SS)); c.height = Math.max(1, Math.round(H * SS));
+  smash.decalG = c.getContext('2d'); smash.decalG.setTransform(SS, 0, 0, SS, 0, 0); smash.decalG.clearRect(0, 0, W, H);
+  if (engine) engine.enableSleeping = true;
+}
+
+/* --- the things' art: glossy cartoon sprites drawn once per kind, size and colour (light from the top left, as everywhere) --- */
+function rrect(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
+function smArt(o) {
+  const w = o.w, h = o.h, pad = Math.ceil(8 + Math.max(w, h) * 0.4), key = 'sma|' + o.kind + '|' + Math.round(w) + 'x' + Math.round(h) + '|' + o.col + '|' + o.seed + (o.extra && o.extra.top ? '|top' : '');
+  return makeSprite(key, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => SM_ART[o.kind](g, w, h, o.col, o.seed, rng(strSeed(key)), o));
+}
+const SM_ART = {
+  window(g, w, h, col) {
+    const fr = Math.max(4, w * 0.08), path = () => rrect(g, -w / 2, -h / 2, w, h, 6);
+    shadedFill(g, path, col, Math.max(w, h) / 2); outline(g, path, col, 2);
+    const iw = w - fr * 2, ih = h - fr * 2, sky = g.createLinearGradient(0, -ih / 2, 0, ih / 2); sky.addColorStop(0, '#6cc6ff'); sky.addColorStop(1, '#dff5ff');
+    g.fillStyle = sky; g.fillRect(-iw / 2, -ih / 2, iw, ih);
+    g.fillStyle = '#ffe066'; g.beginPath(); g.arc(iw * 0.24, -ih * 0.24, Math.min(iw, ih) * 0.12, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.95)'; for (const [cx, cy, rr] of [[-0.22, 0.08, 0.1], [-0.1, 0.04, 0.13], [0.03, 0.09, 0.09]]) { g.beginPath(); g.arc(cx * iw, cy * ih, rr * iw, 0, TAU); g.fill(); }
+    g.fillStyle = '#7ed36b'; g.beginPath(); g.ellipse(0, ih / 2, iw * 0.7, ih * 0.16, 0, Math.PI, TAU); g.fill();
+    g.save(); g.beginPath(); g.rect(-iw / 2, -ih / 2, iw, ih); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.5)'; g.lineWidth = Math.max(3, w * 0.06);
+    for (const k of [-0.32, -0.12, 0.34]) { g.beginPath(); g.moveTo(k * iw - ih * 0.45, ih / 2); g.lineTo(k * iw + ih * 0.45, -ih / 2); g.stroke(); } g.restore();
+    g.fillStyle = col; g.fillRect(-fr / 2, -ih / 2, fr, ih); g.fillRect(-iw / 2, -fr / 2, iw, fr);
+    g.fillStyle = 'rgba(255,255,255,0.3)'; g.fillRect(-fr / 2, -ih / 2, fr * 0.35, ih);
+    rrect(g, -w / 2 - 6, h / 2 - 3, w + 12, Math.max(7, h * 0.07), 3); g.fillStyle = lighten(col, 0.2); g.fill(); g.lineWidth = 1.5; g.strokeStyle = darken(col, 0.5); g.stroke();
+  },
+  frame(g, w, h, col, seed) {
+    const fr = Math.max(4, Math.min(w, h) * 0.12), path = () => rrect(g, -w / 2, -h / 2, w, h, 4);
+    shadedFill(g, path, col, Math.max(w, h) / 2); rimLight(g, path, Math.max(w, h) / 2, 0.4); outline(g, path, col, 2);
+    const iw = w - fr * 2, ih = h - fr * 2;
+    g.save(); g.beginPath(); g.rect(-iw / 2, -ih / 2, iw, ih); g.clip();
+    if (seed === 1) { g.fillStyle = '#ffe9c7'; g.fillRect(-iw / 2, -ih / 2, iw, ih); const r = Math.min(iw, ih) * 0.32; g.fillStyle = '#f2a541'; g.beginPath(); g.arc(0, ih * 0.06, r, 0, TAU); g.fill(); // a cat
+      g.beginPath(); g.moveTo(-r * 0.9, -r * 0.2); g.lineTo(-r * 0.7, -r * 1.2); g.lineTo(-r * 0.2, -r * 0.75); g.moveTo(r * 0.9, -r * 0.2); g.lineTo(r * 0.7, -r * 1.2); g.lineTo(r * 0.2, -r * 0.75); g.fill();
+      g.fillStyle = '#2b2f45'; for (const s of [-1, 1]) { g.beginPath(); g.arc(s * r * 0.38, 0, r * 0.12, 0, TAU); g.fill(); } g.fillStyle = '#ff7a9a'; g.beginPath(); g.arc(0, r * 0.25, r * 0.1, 0, TAU); g.fill(); }
+    else if (seed === 2) { g.fillStyle = '#d8f3ff'; g.fillRect(-iw / 2, -ih / 2, iw, ih); g.strokeStyle = '#3ea34a'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, ih / 2); g.lineTo(0, -ih * 0.05); g.stroke(); // a flower
+      g.fillStyle = '#ff5fa2'; for (let i = 0; i < 6; i++) { const a = i * TAU / 6; g.beginPath(); g.arc(Math.cos(a) * iw * 0.13, -ih * 0.12 + Math.sin(a) * iw * 0.13, iw * 0.1, 0, TAU); g.fill(); } g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(0, -ih * 0.12, iw * 0.09, 0, TAU); g.fill(); }
+    else { const sk = g.createLinearGradient(0, -ih / 2, 0, ih / 2); sk.addColorStop(0, '#7fd0ff'); sk.addColorStop(1, '#fff2c4'); g.fillStyle = sk; g.fillRect(-iw / 2, -ih / 2, iw, ih); // hills and a sun
+      g.fillStyle = '#ffcf3f'; g.beginPath(); g.arc(iw * 0.2, -ih * 0.15, ih * 0.16, 0, TAU); g.fill(); g.fillStyle = '#5cc25a'; g.beginPath(); g.ellipse(-iw * 0.2, ih / 2, iw * 0.55, ih * 0.42, 0, Math.PI, TAU); g.fill(); g.fillStyle = '#3ea34a'; g.beginPath(); g.ellipse(iw * 0.3, ih / 2, iw * 0.45, ih * 0.3, 0, Math.PI, TAU); g.fill(); }
+    g.fillStyle = 'rgba(255,255,255,0.28)'; g.beginPath(); g.moveTo(-iw / 2, ih * 0.1); g.lineTo(-iw * 0.1, -ih / 2); g.lineTo(iw * 0.05, -ih / 2); g.lineTo(-iw / 2, ih * 0.3); g.fill(); g.restore();
+  },
+  clock(g, w, h, col) {
+    const r = Math.min(w, h) / 2, ring = () => { g.beginPath(); g.arc(0, 0, r, 0, TAU); }; shadedFill(g, ring, col, r); outline(g, ring, col, 2);
+    g.fillStyle = '#fffaf0'; g.beginPath(); g.arc(0, 0, r * 0.78, 0, TAU); g.fill();
+    g.fillStyle = '#2b2f45'; for (let i = 0; i < 12; i++) { const a = i * TAU / 12; g.beginPath(); g.arc(Math.cos(a) * r * 0.64, Math.sin(a) * r * 0.64, r * (i % 3 ? 0.03 : 0.06), 0, TAU); g.fill(); }
+    g.strokeStyle = '#2b2f45'; g.lineWidth = Math.max(2, r * 0.08); g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -r * 0.5); g.moveTo(0, 0); g.lineTo(r * 0.36, r * 0.1); g.stroke();
+    g.fillStyle = '#ff5a5f'; g.beginPath(); g.arc(0, 0, r * 0.08, 0, TAU); g.fill(); gloss(g, ring, r, 0.35);
+  },
+  ceilLamp(g, w, h, col) {
+    const bulb = () => { g.beginPath(); g.arc(0, h * 0.25, h * 0.28, 0, TAU); };
+    const gl = g.createRadialGradient(0, h * 0.3, 2, 0, h * 0.3, h * 1.1); gl.addColorStop(0, 'rgba(255,240,170,0.6)'); gl.addColorStop(1, 'rgba(255,240,170,0)'); g.fillStyle = gl; g.fillRect(-w, -h / 2, w * 2, h * 1.7);
+    g.fillStyle = '#fff6c4'; bulb(); g.fill();
+    const shade = () => { g.beginPath(); g.moveTo(-w * 0.18, -h / 2); g.lineTo(w * 0.18, -h / 2); g.lineTo(w / 2, h * 0.2); g.lineTo(-w / 2, h * 0.2); g.closePath(); };
+    shadedFill(g, shade, col, w / 2); gloss(g, shade, w / 2, 0.35); outline(g, shade, col, 1.8);
+  },
+  shelf(g, w, h, col) {
+    for (const s of [-1, 1]) { g.fillStyle = darken(col, 0.25); g.beginPath(); g.moveTo(s * w * 0.32, h / 2); g.lineTo(s * w * 0.32, h / 2 + h * 1.6); g.lineTo(s * w * 0.32 - s * h * 1.3, h / 2); g.closePath(); g.fill(); }
+    const path = () => rrect(g, -w / 2, -h / 2, w, h, 3); const gr = g.createLinearGradient(0, -h / 2, 0, h / 2); gr.addColorStop(0, lighten(col, 0.3)); gr.addColorStop(1, darken(col, 0.2));
+    path(); g.fillStyle = gr; g.fill(); g.strokeStyle = 'rgba(90,45,15,0.25)'; g.lineWidth = 1; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(-w / 2, -h * 0.25 + i * h * 0.25); g.lineTo(w / 2, -h * 0.2 + i * h * 0.25); g.stroke(); } outline(g, path, col, 1.5);
+  },
+  jar(g, w, h, col, seed) {
+    const body = () => rrect(g, -w / 2, -h * 0.32, w, h * 0.82, w * 0.22);
+    g.fillStyle = 'rgba(220,240,255,0.45)'; body(); g.fill();
+    g.save(); body(); g.clip(); const jg = g.createLinearGradient(-w / 2, 0, w / 2, 0); jg.addColorStop(0, lighten(col, 0.25)); jg.addColorStop(0.5, col); jg.addColorStop(1, darken(col, 0.3)); g.fillStyle = jg; g.fillRect(-w / 2, -h * 0.12, w, h); g.restore();
+    g.fillStyle = '#fffaf0'; rrect(g, -w * 0.32, 0, w * 0.64, h * 0.26, 3); g.fill(); g.fillStyle = col; g.beginPath(); g.arc(0, h * 0.13, h * 0.06, 0, TAU); g.fill();
+    gloss(g, body, w * 0.7, 0.55); g.lineWidth = 1.5; g.strokeStyle = 'rgba(40,60,90,0.5)'; body(); g.stroke();
+    const lid = () => rrect(g, -w * 0.42, -h / 2, w * 0.84, h * 0.2, 3); shadedFill(g, lid, seed === 1 ? '#ff5a5f' : '#c9ced8', w / 2); outline(g, lid, seed === 1 ? '#ff5a5f' : '#c9ced8', 1.2);
+  },
+  table(g, w, h, col) {
+    const th = h * 0.16, leg = Math.max(5, w * 0.06);
+    for (const s of [-1, 1]) { const lp = () => rrect(g, s * (w / 2 - leg * 1.6) - leg / 2, -h / 2 + th * 0.8, leg, h - th * 0.8, 2); shadedFill(g, lp, darken(col, 0.1), leg * 2); outline(g, lp, col, 1.2); }
+    g.fillStyle = darken(col, 0.3); g.fillRect(-w / 2 + leg * 2, -h / 2 + th * 1.4, w - leg * 4, th * 0.4);
+    const top = () => rrect(g, -w / 2, -h / 2, w, th, 4); const gr = g.createLinearGradient(0, -h / 2, 0, -h / 2 + th); gr.addColorStop(0, lighten(col, 0.35)); gr.addColorStop(1, darken(col, 0.15)); top(); g.fillStyle = gr; g.fill(); outline(g, top, col, 1.5);
+    g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.moveTo(-w * 0.3, -h / 2 + th); g.lineTo(w * 0.3, -h / 2 + th); g.lineTo(w * 0.24, -h / 2 + th * 2.6); g.lineTo(-w * 0.24, -h / 2 + th * 2.6); g.closePath(); g.fill(); // a little tablecloth
+    g.fillStyle = 'rgba(255,90,95,0.55)'; for (let i = -2; i <= 2; i++) g.fillRect(i * w * 0.11 - 2, -h / 2 + th, 4, th * 1.6);
+  },
+  plate(g, w, h, col) {
+    const e = () => { g.beginPath(); g.ellipse(0, 0, w / 2, h / 2, 0, 0, TAU); }; g.fillStyle = '#fbfbff'; e(); g.fill();
+    g.strokeStyle = col; g.lineWidth = Math.max(2, h * 0.22); g.beginPath(); g.ellipse(0, 0, w * 0.4, h * 0.28, 0, 0, TAU); g.stroke();
+    g.lineWidth = 1.2; g.strokeStyle = 'rgba(40,50,80,0.55)'; e(); g.stroke(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.fillRect(-w * 0.3, -h * 0.35, w * 0.2, 1.5);
+  },
+  cup(g, w, h, col) {
+    g.lineWidth = Math.max(3, w * 0.12); g.strokeStyle = darken(col, 0.15); g.beginPath(); g.arc(w * 0.42, 0, h * 0.24, -Math.PI / 2, Math.PI / 2); g.stroke();
+    const body = () => { g.beginPath(); g.moveTo(-w * 0.42, -h / 2); g.lineTo(w * 0.36, -h / 2); g.lineTo(w * 0.3, h * 0.42); g.quadraticCurveTo(w * 0.3, h / 2, w * 0.2, h / 2); g.lineTo(-w * 0.26, h / 2); g.quadraticCurveTo(-w * 0.36, h / 2, -w * 0.36, h * 0.42); g.closePath(); };
+    shadedFill(g, body, col, w / 2); gloss(g, body, w / 2, 0.4); outline(g, body, col, 1.5);
+    g.fillStyle = 'rgba(255,255,255,0.85)'; const hx = -w * 0.04, hy = h * 0.02, hr = w * 0.11; g.beginPath(); g.arc(hx - hr * 0.5, hy, hr * 0.55, Math.PI, 0); g.arc(hx + hr * 0.5, hy, hr * 0.55, Math.PI, 0); g.lineTo(hx, hy + hr * 1.1); g.closePath(); g.fill();
+    g.fillStyle = darken(col, 0.45); g.beginPath(); g.ellipse(-w * 0.03, -h / 2 + 2, w * 0.37, h * 0.06, 0, 0, TAU); g.fill();
+  },
+  vase(g, w, h, col, seed) {
+    for (let i = 0; i < 3; i++) { const a = -0.5 + i * 0.5, x = Math.sin(a) * w * 0.5, y = -h / 2 - h * 0.28; g.strokeStyle = '#3ea34a'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -h * 0.4); g.quadraticCurveTo(x * 0.5, y + h * 0.1, x, y); g.stroke();
+      g.fillStyle = ['#ff5fa2', '#ffd23f', '#ff8a3d'][(i + seed) % 3]; for (let k = 0; k < 5; k++) { const b = k * TAU / 5; g.beginPath(); g.arc(x + Math.cos(b) * w * 0.1, y + Math.sin(b) * w * 0.1, w * 0.09, 0, TAU); g.fill(); } g.fillStyle = '#fff3b0'; g.beginPath(); g.arc(x, y, w * 0.07, 0, TAU); g.fill(); }
+    const body = () => { g.beginPath(); g.moveTo(-w * 0.2, -h / 2); g.lineTo(w * 0.2, -h / 2); g.quadraticCurveTo(w * 0.16, -h * 0.25, w * 0.42, h * 0.05); g.quadraticCurveTo(w * 0.55, h * 0.4, w * 0.25, h / 2); g.lineTo(-w * 0.25, h / 2); g.quadraticCurveTo(-w * 0.55, h * 0.4, -w * 0.42, h * 0.05); g.quadraticCurveTo(-w * 0.16, -h * 0.25, -w * 0.2, -h / 2); g.closePath(); };
+    shadedFill(g, body, col, h / 2);
+    g.save(); body(); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.6)'; g.lineWidth = Math.max(2, h * 0.04); for (const y of [0.05, 0.22]) { g.beginPath(); g.moveTo(-w / 2, h * y); g.quadraticCurveTo(0, h * (y + 0.06), w / 2, h * y); g.stroke(); }
+    g.fillStyle = 'rgba(255,255,255,0.55)'; for (let i = -2; i <= 2; i++) { g.beginPath(); g.arc(i * w * 0.15, h * 0.135, w * 0.035, 0, TAU); g.fill(); } g.restore();
+    gloss(g, body, h / 2, 0.4); outline(g, body, col, 1.6);
+  },
+  tv(g, w, h, col) {
+    g.strokeStyle = '#3a3f55'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(0, -h / 2); g.lineTo(-w * 0.28, -h / 2 - h * 0.38); g.moveTo(0, -h / 2); g.lineTo(w * 0.24, -h / 2 - h * 0.42); g.stroke();
+    g.fillStyle = '#3a3f55'; for (const [x, y] of [[-w * 0.28, -h / 2 - h * 0.38], [w * 0.24, -h / 2 - h * 0.42]]) { g.beginPath(); g.arc(x, y, 3.5, 0, TAU); g.fill(); }
+    const body = () => rrect(g, -w / 2, -h / 2, w, h, Math.min(w, h) * 0.16); shadedFill(g, body, col, Math.max(w, h) / 2); rimLight(g, body, Math.max(w, h) / 2, 0.35); outline(g, body, col, 2);
+    const sw = w * 0.68, sh = h * 0.72, sx = -w / 2 + w * 0.07, scr = () => rrect(g, sx, -sh / 2, sw, sh, sh * 0.16);
+    const sg = g.createLinearGradient(0, -sh / 2, 0, sh / 2); sg.addColorStop(0, '#5ad1ff'); sg.addColorStop(1, '#2a5bd7'); scr(); g.fillStyle = sg; g.fill();
+    g.save(); scr(); g.clip(); const cx = sx + sw / 2; g.fillStyle = '#ffe066'; g.beginPath(); g.arc(cx, 0, sh * 0.28, 0, TAU); g.fill(); g.fillStyle = '#2b2f45'; for (const s of [-1, 1]) { g.beginPath(); g.arc(cx + s * sh * 0.1, -sh * 0.06, sh * 0.04, 0, TAU); g.fill(); }
+    g.strokeStyle = '#2b2f45'; g.lineWidth = 2; g.beginPath(); g.arc(cx, 0, sh * 0.15, 0.3, Math.PI - 0.3); g.stroke(); g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(sx, -sh / 2, sw, sh * 0.3); g.restore();
+    scr(); g.lineWidth = 2; g.strokeStyle = '#1d2033'; g.stroke();
+    const kx = w / 2 - w * 0.12; for (const y of [-0.18, 0.12]) { const k = () => { g.beginPath(); g.arc(kx, h * y, Math.min(w, h) * 0.07, 0, TAU); }; shadedFill(g, k, '#f1e9da', 8); outline(g, k, '#f1e9da', 1); }
+  },
+  cabinet(g, w, h, col) {
+    for (const s of [-1, 1]) { g.fillStyle = darken(col, 0.4); g.fillRect(s * w * 0.38 - 3, h / 2 - 2, 6, 4); }
+    const body = () => rrect(g, -w / 2, -h / 2, w, h - 3, 5); shadedFill(g, body, col, Math.max(w, h) / 2); outline(g, body, col, 1.8);
+    for (const s of [-1, 1]) { const d = () => rrect(g, s > 0 ? w * 0.04 : -w * 0.46, -h * 0.36, w * 0.42, h * 0.62, 4); g.fillStyle = lighten(col, 0.12); d(); g.fill(); outline(g, d, col, 1.2);
+      g.fillStyle = '#ffd77a'; g.beginPath(); g.arc(s * w * 0.1, -h * 0.05, Math.max(2.5, h * 0.06), 0, TAU); g.fill(); }
+  },
+  floorLamp(g, w, h, col) {
+    const gl = g.createRadialGradient(0, -h * 0.28, 3, 0, -h * 0.28, w * 1.4); gl.addColorStop(0, 'rgba(255,236,160,0.55)'); gl.addColorStop(1, 'rgba(255,236,160,0)'); g.fillStyle = gl; g.fillRect(-w * 1.4, -h / 2 - w, w * 2.8, w * 3);
+    g.fillStyle = '#5a4a3a'; g.fillRect(-w * 0.06, -h * 0.3, w * 0.12, h * 0.75);
+    const base = () => { g.beginPath(); g.ellipse(0, h / 2 - h * 0.04, w * 0.42, h * 0.04, 0, 0, TAU); }; shadedFill(g, base, '#5a4a3a', w / 2); outline(g, base, '#5a4a3a', 1.2);
+    const shade = () => { g.beginPath(); g.moveTo(-w * 0.26, -h / 2); g.lineTo(w * 0.26, -h / 2); g.lineTo(w / 2, -h * 0.26); g.lineTo(-w / 2, -h * 0.26); g.closePath(); };
+    shadedFill(g, shade, col, w / 2); gloss(g, shade, w / 2, 0.4); outline(g, shade, col, 1.6);
+    g.fillStyle = 'rgba(255,255,255,0.4)'; for (let i = -1; i <= 1; i++) g.fillRect(i * w * 0.2 - 1, -h * 0.47, 2, h * 0.2);
+  },
+  floor(g, w, h, col, seed, R, o) {
+    const top = o.extra && o.extra.top, body = () => g.rect(-w / 2, -h / 2, w, h);
+    g.beginPath(); body(); const gr = g.createLinearGradient(-w / 2, 0, w / 2, 0); gr.addColorStop(0, lighten(col, 0.25)); gr.addColorStop(0.6, col); gr.addColorStop(1, darken(col, 0.2)); g.fillStyle = gr; g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(-w / 2, h / 2 - h * 0.1, w, h * 0.1); g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-w / 2, -h / 2, w, 2);
+    const nw = w > h * 2.2 ? 3 : 2, ww = w * 0.2, wh = h * 0.5;
+    for (let i = 0; i < nw; i++) { const x = -w / 2 + (i + 0.5) * w / nw - ww / 2, lit = R() < 0.55, wp = () => rrect(g, x, -wh / 2, ww, wh, 2);
+      const wg = g.createLinearGradient(0, -wh / 2, 0, wh / 2); if (lit) { wg.addColorStop(0, '#fff3b0'); wg.addColorStop(1, '#ffc94a'); } else { wg.addColorStop(0, '#9fd8ff'); wg.addColorStop(1, '#3f6fb5'); }
+      wp(); g.fillStyle = wg; g.fill(); g.lineWidth = 1.5; g.strokeStyle = darken(col, 0.45); wp(); g.stroke(); g.fillStyle = darken(col, 0.4); g.fillRect(x - 2, wh / 2, ww + 4, 2.5);
+      g.fillStyle = 'rgba(255,255,255,0.45)'; g.fillRect(x + 2, -wh / 2 + 2, 2, wh * 0.6); }
+    g.lineWidth = 1.2; g.strokeStyle = darken(col, 0.45); g.strokeRect(-w / 2, -h / 2, w, h);
+    if (top) { g.fillStyle = darken(col, 0.25); g.fillRect(-w / 2 - 3, -h / 2 - 5, w + 6, 6); g.strokeStyle = '#3d4a6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(w * 0.25, -h / 2 - 5); g.lineTo(w * 0.25, -h / 2 - h * 0.7); g.stroke();
+      g.fillStyle = '#ff5a5f'; g.beginPath(); g.arc(w * 0.25, -h / 2 - h * 0.7, 3, 0, TAU); g.fill(); }
+  },
+  streetLamp(g, w, h, col) {
+    const gl = g.createRadialGradient(w * 0.6, -h / 2 + w * 0.5, 2, w * 0.6, -h / 2 + w * 0.5, w * 2.2); gl.addColorStop(0, 'rgba(255,236,160,0.6)'); gl.addColorStop(1, 'rgba(255,236,160,0)'); g.fillStyle = gl; g.fillRect(-w * 2, -h / 2 - w, w * 5, w * 4);
+    const pole = () => rrect(g, -w * 0.13, -h / 2 + w * 0.3, w * 0.26, h - w * 0.3, 2); shadedFill(g, pole, col, w); outline(g, pole, col, 1.2);
+    g.strokeStyle = col; g.lineWidth = w * 0.2; g.beginPath(); g.moveTo(0, -h / 2 + w * 0.4); g.quadraticCurveTo(0, -h / 2, w * 0.6, -h / 2 + w * 0.1); g.stroke();
+    const head = () => { g.beginPath(); g.moveTo(w * 0.25, -h / 2 + w * 0.15); g.lineTo(w * 0.95, -h / 2 + w * 0.15); g.lineTo(w * 0.8, -h / 2 + w * 0.45); g.lineTo(w * 0.4, -h / 2 + w * 0.45); g.closePath(); }; shadedFill(g, head, col, w); outline(g, head, col, 1);
+    g.fillStyle = '#fff6c4'; g.beginPath(); g.ellipse(w * 0.6, -h / 2 + w * 0.48, w * 0.2, w * 0.1, 0, 0, TAU); g.fill();
+    const base = () => rrect(g, -w * 0.3, h / 2 - w * 0.4, w * 0.6, w * 0.4, 3); shadedFill(g, base, col, w); outline(g, base, col, 1);
+  },
+  tree(g, w, h, col, seed) {
+    const tr = () => { g.beginPath(); g.moveTo(-w * 0.09, h / 2); g.lineTo(-w * 0.06, -h * 0.05); g.lineTo(w * 0.06, -h * 0.05); g.lineTo(w * 0.09, h / 2); g.closePath(); }; shadedFill(g, tr, '#8a5a32', w * 0.4); outline(g, tr, '#8a5a32', 1.4);
+    const blobs = [[0, -h * 0.2, w * 0.34], [-w * 0.24, -h * 0.05, w * 0.26], [w * 0.24, -h * 0.06, w * 0.27], [0, -h * 0.36, w * 0.25]];
+    for (const [x, y, r] of blobs) { const c = () => { g.beginPath(); g.arc(x, y, r, 0, TAU); }; shadedFill(g, c, col, r); }
+    for (const [x, y, r] of blobs) { const c = () => { g.beginPath(); g.arc(x, y, r, 0, TAU); }; outline(g, c, col, 1); }
+    g.fillStyle = seed === 1 ? '#ff5a5f' : seed === 2 ? '#ffd23f' : '#ffffff'; for (const [x, y] of [[-0.18, -0.08], [0.12, -0.24], [0.22, 0.0], [-0.05, -0.38], [0.02, -0.1]]) { g.beginPath(); g.arc(x * w, y * h, Math.max(2, w * 0.035), 0, TAU); g.fill(); }
+  },
+  towerLegs(g, w, h, col) {
+    g.strokeStyle = darken(col, 0.2); g.lineWidth = Math.max(3, w * 0.07); g.lineCap = 'round';
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * w * 0.36, -h / 2); g.lineTo(s * w * 0.46, h / 2); g.stroke(); }
+    g.lineWidth = Math.max(2, w * 0.035); for (let i = 0; i < 3; i++) { const y0 = -h / 2 + i * h / 3, y1 = y0 + h / 3; g.beginPath(); g.moveTo(-w * 0.38, y0); g.lineTo(w * 0.4, y1); g.moveTo(w * 0.38, y0); g.lineTo(-w * 0.4, y1); g.stroke(); }
+    g.fillStyle = col; g.fillRect(-w * 0.45, -h / 2, w * 0.9, Math.max(4, h * 0.04));
+  },
+  tank(g, w, h, col) {
+    const roof = () => { g.beginPath(); g.moveTo(-w * 0.56, -h * 0.25); g.lineTo(0, -h / 2 - h * 0.35); g.lineTo(w * 0.56, -h * 0.25); g.closePath(); }; shadedFill(g, roof, '#ff7a59', w / 2); outline(g, roof, '#ff7a59', 1.6);
+    const body = () => rrect(g, -w / 2, -h * 0.28, w, h * 0.78, 6); shadedFill(g, body, col, w / 2);
+    g.save(); body(); g.clip(); g.strokeStyle = 'rgba(70,35,10,0.4)'; g.lineWidth = 1.5; for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * w * 0.14, -h / 2); g.lineTo(i * w * 0.14, h / 2); g.stroke(); } g.restore();
+    g.fillStyle = '#5a6278'; for (const y of [-0.12, 0.32]) g.fillRect(-w / 2, h * y, w, Math.max(3, h * 0.06));
+    gloss(g, body, w / 2, 0.3); outline(g, body, col, 1.6);
+    g.fillStyle = '#5cc8ff'; g.beginPath(); g.moveTo(0, h * 0.05); g.quadraticCurveTo(w * 0.1, h * 0.17, 0, h * 0.22); g.quadraticCurveTo(-w * 0.1, h * 0.17, 0, h * 0.05); g.fill(); // a drop: there is water inside
+  },
+  hydrant(g, w, h, col) {
+    const body = () => { g.beginPath(); g.moveTo(-w * 0.32, h / 2); g.lineTo(-w * 0.32, -h * 0.2); g.quadraticCurveTo(-w * 0.32, -h / 2, 0, -h / 2); g.quadraticCurveTo(w * 0.32, -h / 2, w * 0.32, -h * 0.2); g.lineTo(w * 0.32, h / 2); g.closePath(); };
+    shadedFill(g, body, col, w / 2); gloss(g, body, w / 2, 0.45); outline(g, body, col, 1.5);
+    for (const s of [-1, 1]) { const n = () => rrect(g, s > 0 ? w * 0.28 : -w / 2, -h * 0.08, w * 0.22, h * 0.18, 3); shadedFill(g, n, col, w / 3); outline(g, n, col, 1.2); }
+    g.fillStyle = darken(col, 0.3); g.fillRect(-w * 0.42, h * 0.38, w * 0.84, h * 0.12); g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(0, -h * 0.42, w * 0.08, 0, TAU); g.fill();
+  },
+  block(g, w, h, col, seed) {
+    const path = () => rrect(g, -w / 2, -h / 2, w, h, Math.min(w, h) * 0.14); shadedFill(g, path, col, Math.max(w, h) / 2); rimLight(g, path, Math.max(w, h) / 2, 0.45); gloss(g, path, Math.max(w, h) / 2, 0.35);
+    const inner = () => rrect(g, -w * 0.34, -h * 0.34, w * 0.68, h * 0.68, Math.min(w, h) * 0.1); g.lineWidth = Math.max(1.5, w * 0.04); g.strokeStyle = 'rgba(255,255,255,0.55)'; inner(); g.stroke();
+    const L = String.fromCharCode(65 + (seed % 26)); g.font = '800 ' + Math.round(h * 0.52) + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = Math.max(2, h * 0.08); g.strokeStyle = darken(col, 0.45); g.strokeText(L, 0, h * 0.03); g.fillStyle = '#ffffff'; g.fillText(L, 0, h * 0.03); outline(g, path, col, 1.6);
+  },
+  balloon(g, w, h, col) {
+    const b = () => { g.beginPath(); g.ellipse(0, -h * 0.06, w / 2, h * 0.44, 0, 0, TAU); }; shadedFill(g, b, col, h / 2); gloss(g, b, h / 2, 0.6); outline(g, b, col, 1.4);
+    g.fillStyle = darken(col, 0.2); g.beginPath(); g.moveTo(-w * 0.08, h * 0.42); g.lineTo(w * 0.08, h * 0.42); g.lineTo(0, h * 0.36); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.ellipse(-w * 0.18, -h * 0.24, w * 0.08, h * 0.12, -0.5, 0, TAU); g.fill();
+  },
+  gift(g, w, h, col, seed) {
+    const rib = ['#ffd23f', '#ffffff', '#ff5a5f', '#7d5cff'][seed % 4], box = () => rrect(g, -w / 2, -h * 0.32, w, h * 0.82, 5), lid = () => rrect(g, -w * 0.54, -h / 2 + h * 0.04, w * 1.08, h * 0.2, 4);
+    for (const s of [-1, 1]) { const lp = () => { g.beginPath(); g.ellipse(s * w * 0.18, -h / 2 - h * 0.04, w * 0.2, h * 0.12, s * 0.5, 0, TAU); }; shadedFill(g, lp, rib, w / 3); outline(g, lp, rib, 1.2); }
+    shadedFill(g, box, col, w / 2); g.fillStyle = rib; g.fillRect(-w * 0.09, -h * 0.32, w * 0.18, h * 0.82); outline(g, box, col, 1.5);
+    shadedFill(g, lid, lighten(col, 0.1), w / 2); g.fillStyle = rib; g.fillRect(-w * 0.09, -h / 2 + h * 0.04, w * 0.18, h * 0.2); gloss(g, lid, w / 2, 0.4); outline(g, lid, col, 1.5);
+    g.fillStyle = 'rgba(255,255,255,0.65)'; g.font = '800 ' + Math.round(h * 0.3) + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', -w * 0.28, h * 0.12);
+  },
+  watermelon(g, w, h, col) {
+    const r = w / 2, b = () => { g.beginPath(); g.arc(0, 0, r, 0, TAU); }; shadedFill(g, b, col, r);
+    g.save(); b(); g.clip(); g.strokeStyle = darken(col, 0.35); g.lineWidth = Math.max(3, r * 0.16); for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * r * 0.42, -r); g.quadraticCurveTo(i * r * 0.62, 0, i * r * 0.42, r); g.stroke(); } g.restore();
+    gloss(g, b, r, 0.4); outline(g, b, col, 1.6); g.strokeStyle = '#6b4a1e'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -r); g.quadraticCurveTo(r * 0.1, -r * 1.25, r * 0.25, -r * 1.2); g.stroke();
+  },
+  tomato(g, w, h, col) {
+    const r = w / 2, b = () => { g.beginPath(); g.ellipse(0, r * 0.05, r, r * 0.92, 0, 0, TAU); }; shadedFill(g, b, col, r); gloss(g, b, r, 0.55); outline(g, b, col, 1.3);
+    g.fillStyle = '#3ea34a'; for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * 0.55; g.beginPath(); g.ellipse(Math.cos(a) * r * 0.28, -r * 0.82 + Math.sin(a) * r * 0.1 + r * 0.25, r * 0.26, r * 0.09, a, 0, TAU); g.fill(); }
+  },
+  egg(g, w, h, col) {
+    const b = () => { g.beginPath(); g.moveTo(0, -h / 2); g.bezierCurveTo(w * 0.55, -h / 2, w * 0.55, h / 2, 0, h / 2); g.bezierCurveTo(-w * 0.55, h / 2, -w * 0.55, -h / 2, 0, -h / 2); g.closePath(); };
+    shadedFill(g, b, col, h / 2); gloss(g, b, h / 2, 0.5); outline(g, b, '#d8c4a0', 1.2);
+    g.fillStyle = 'rgba(190,150,100,0.35)'; for (const [x, y] of [[0.1, 0.1], [-0.12, 0.22], [0.05, -0.15]]) { g.beginPath(); g.arc(x * w, y * h, Math.max(1, w * 0.04), 0, TAU); g.fill(); }
+  },
+  pumpkin(g, w, h, col) {
+    const r = w / 2;
+    for (const [x, rx] of [[-0.42, 0.5], [0.42, 0.5], [-0.18, 0.5], [0.18, 0.5], [0, 0.45]]) { const lb = () => { g.beginPath(); g.ellipse(x * r, r * 0.05, rx * r, r * 0.9, 0, 0, TAU); }; shadedFill(g, lb, col, r); outline(g, lb, col, 1.2); }
+    g.fillStyle = '#5a7d2a'; rrect(g, -r * 0.1, -r * 1.12, r * 0.2, r * 0.35, 3); g.fill(); g.strokeStyle = '#3ea34a'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -r * 0.95); g.quadraticCurveTo(r * 0.45, -r * 1.3, r * 0.5, -r * 0.9); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(-r * 0.4, -r * 0.4, r * 0.18, r * 0.1, -0.6, 0, TAU); g.fill();
+  },
+  crate(g, w, h, col) {
+    const path = () => g.rect(-w / 2, -h / 2, w, h); g.beginPath(); path(); const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, lighten(col, 0.25)); gr.addColorStop(1, darken(col, 0.2)); g.fillStyle = gr; g.fill();
+    g.strokeStyle = darken(col, 0.4); g.lineWidth = 1.5; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(-w / 2, -h / 2 + i * h / 4); g.lineTo(w / 2, -h / 2 + i * h / 4); g.stroke(); }
+    g.fillStyle = darken(col, 0.1); const t = Math.max(4, w * 0.11); g.fillRect(-w / 2, -h / 2, t, h); g.fillRect(w / 2 - t, -h / 2, t, h); g.fillRect(-w / 2, -h / 2, w, t); g.fillRect(-w / 2, h / 2 - t, w, t);
+    g.save(); g.beginPath(); path(); g.clip(); g.strokeStyle = darken(col, 0.05); g.lineWidth = t; g.beginPath(); g.moveTo(-w / 2, h / 2); g.lineTo(w / 2, -h / 2); g.stroke(); g.restore();
+    g.lineWidth = 1.5; g.strokeStyle = darken(col, 0.5); g.strokeRect(-w / 2, -h / 2, w, h);
+  },
+  chest(g, w, h, col) {
+    const gl = g.createRadialGradient(0, -h * 0.2, 4, 0, -h * 0.2, w * 0.8); gl.addColorStop(0, 'rgba(255,214,90,0.7)'); gl.addColorStop(1, 'rgba(255,214,90,0)'); g.fillStyle = gl; g.fillRect(-w, -h, w * 2, h * 1.6);
+    g.fillStyle = '#ffd23f'; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(-w * 0.36 + i * w * 0.09, -h * 0.12 - (i % 2) * h * 0.05, w * 0.07, 0, TAU); g.fill(); g.strokeStyle = '#b8730f'; g.lineWidth = 1; g.stroke(); }
+    const lid = () => { g.beginPath(); g.moveTo(-w / 2, -h * 0.08); g.lineTo(-w / 2, -h * 0.3); g.quadraticCurveTo(0, -h * 0.66, w / 2, -h * 0.3); g.lineTo(w / 2, -h * 0.08); g.closePath(); };
+    const box = () => rrect(g, -w / 2, -h * 0.08, w, h * 0.58, 4);
+    shadedFill(g, box, col, w / 2); outline(g, box, col, 1.8); shadedFill(g, lid, lighten(col, 0.08), w / 2); outline(g, lid, col, 1.8);
+    g.fillStyle = '#ffc93b'; for (const x of [-0.36, 0.36]) { g.fillRect(x * w - w * 0.05, -h * 0.5, w * 0.1, h); } g.fillRect(-w / 2, -h * 0.12, w, h * 0.07);
+    const lock = () => rrect(g, -w * 0.08, -h * 0.12, w * 0.16, h * 0.2, 3); shadedFill(g, lock, '#ffc93b', w * 0.1); outline(g, lock, '#ffc93b', 1.2); g.fillStyle = '#5a3a10'; g.beginPath(); g.arc(0, -h * 0.03, w * 0.02, 0, TAU); g.fill();
+    g.fillStyle = '#fff'; for (const [x, y] of [[-0.3, -0.42], [0.22, -0.48]]) sparkleOn(g, x * w, y * h, w * 0.07);
+  },
+  gem(g, w, h, col) {
+    const p = () => { g.beginPath(); g.moveTo(0, -h / 2); g.lineTo(w / 2, -h * 0.12); g.lineTo(w * 0.3, h / 2); g.lineTo(-w * 0.3, h / 2); g.lineTo(-w / 2, -h * 0.12); g.closePath(); };
+    shadedFill(g, p, col, h / 2); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-w / 2, -h * 0.12); g.lineTo(w / 2, -h * 0.12); g.moveTo(0, -h / 2); g.lineTo(-w * 0.15, -h * 0.12); g.lineTo(0, h / 2); g.lineTo(w * 0.15, -h * 0.12); g.closePath(); g.stroke();
+    gloss(g, p, h / 2, 0.55); outline(g, p, col, 1.5); g.fillStyle = '#fff'; sparkleOn(g, w * 0.2, -h * 0.28, w * 0.12);
+  },
+  trophy(g, w, h, col) {
+    const cup = () => { g.beginPath(); g.moveTo(-w * 0.42, -h / 2); g.lineTo(w * 0.42, -h / 2); g.quadraticCurveTo(w * 0.4, h * 0.05, 0, h * 0.12); g.quadraticCurveTo(-w * 0.4, h * 0.05, -w * 0.42, -h / 2); g.closePath(); };
+    g.strokeStyle = darken(col, 0.1); g.lineWidth = Math.max(3, w * 0.08); for (const s of [-1, 1]) { g.beginPath(); g.arc(s * w * 0.42, -h * 0.3, w * 0.16, s > 0 ? -Math.PI / 2 : Math.PI / 2, s > 0 ? Math.PI / 2 : Math.PI * 1.5); g.stroke(); }
+    g.fillStyle = darken(col, 0.15); g.fillRect(-w * 0.07, h * 0.1, w * 0.14, h * 0.24);
+    const base = () => rrect(g, -w * 0.32, h * 0.32, w * 0.64, h * 0.18, 3); shadedFill(g, base, col, w / 2); outline(g, base, col, 1.2);
+    shadedFill(g, cup, col, w / 2); gloss(g, cup, w / 2, 0.55); outline(g, cup, col, 1.6);
+    g.fillStyle = '#fff'; sparkleOn(g, -w * 0.2, -h * 0.34, w * 0.1); g.fillStyle = '#ff5a5f'; g.beginPath(); g.arc(0, -h * 0.24, w * 0.08, 0, TAU); g.fill();
+  },
+  plant(g, w, h, col) {
+    for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * 0.45, L = h * (0.55 + (i % 2) * 0.2); const lf = () => { g.beginPath(); g.ellipse(Math.cos(a) * L * 0.5, -h * 0.15 + Math.sin(a) * L * 0.5, L * 0.18, L * 0.5, a + Math.PI / 2, 0, TAU); }; shadedFill(g, lf, i % 2 ? '#3ea34a' : '#5cc25a', L * 0.4); outline(g, lf, '#3ea34a', 1); }
+    const pot = () => { g.beginPath(); g.moveTo(-w / 2, -h * 0.12); g.lineTo(w / 2, -h * 0.12); g.lineTo(w * 0.36, h / 2); g.lineTo(-w * 0.36, h / 2); g.closePath(); }; shadedFill(g, pot, col, w / 2); gloss(g, pot, w / 2, 0.3); outline(g, pot, col, 1.4);
+    g.fillStyle = darken(col, 0.15); g.fillRect(-w / 2, -h * 0.12, w, h * 0.12);
+  },
+  book(g, w, h, col) {
+    const b = () => rrect(g, -w / 2, -h / 2, w, h, 2); shadedFill(g, b, col, h / 2); outline(g, b, col, 1.2);
+    g.fillStyle = 'rgba(255,255,255,0.7)'; g.fillRect(-w * 0.3, -h * 0.3, w * 0.6, h * 0.06); g.fillRect(-w * 0.3, h * 0.24, w * 0.6, h * 0.06); g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(-w / 2 + 1, -h / 2 + 2, w * 0.2, h - 4);
+  },
+  bottle(g, w, h, col) {
+    const b = () => { g.beginPath(); g.moveTo(-w * 0.18, -h / 2); g.lineTo(w * 0.18, -h / 2); g.lineTo(w * 0.18, -h * 0.22); g.quadraticCurveTo(w / 2, -h * 0.16, w / 2, -h * 0.02); g.lineTo(w / 2, h * 0.44); g.quadraticCurveTo(w / 2, h / 2, w * 0.4, h / 2); g.lineTo(-w * 0.4, h / 2); g.quadraticCurveTo(-w / 2, h / 2, -w / 2, h * 0.44); g.lineTo(-w / 2, -h * 0.02); g.quadraticCurveTo(-w / 2, -h * 0.16, -w * 0.18, -h * 0.22); g.closePath(); };
+    g.fillStyle = 'rgba(220,240,255,0.45)'; b(); g.fill(); g.save(); b(); g.clip(); g.fillStyle = col; g.globalAlpha = 0.85; g.fillRect(-w / 2, -h * 0.05, w, h); g.restore();
+    g.fillStyle = '#fffaf0'; g.fillRect(-w / 2, h * 0.08, w, h * 0.2); g.fillStyle = col; g.beginPath(); g.arc(0, h * 0.18, w * 0.12, 0, TAU); g.fill();
+    gloss(g, b, h / 2, 0.5); g.lineWidth = 1.3; g.strokeStyle = 'rgba(40,60,90,0.5)'; b(); g.stroke(); g.fillStyle = '#c9ced8'; g.fillRect(-w * 0.2, -h / 2 - 2, w * 0.4, h * 0.07);
+  },
+  orange(g, w, h, col) {
+    const r = w / 2, b = () => { g.beginPath(); g.arc(0, 0, r, 0, TAU); }; shadedFill(g, b, col, r); gloss(g, b, r, 0.5);
+    g.fillStyle = 'rgba(160,80,0,0.25)'; for (let i = 0; i < 8; i++) { g.beginPath(); g.arc(Math.cos(i * 2.3) * r * 0.55, Math.sin(i * 2.3) * r * 0.55, Math.max(0.8, r * 0.05), 0, TAU); g.fill(); }
+    outline(g, b, col, 1.2); g.fillStyle = '#3ea34a'; g.beginPath(); g.ellipse(r * 0.25, -r * 0.92, r * 0.3, r * 0.12, -0.4, 0, TAU); g.fill();
+  },
+  apple(g, w, h, col) {
+    const r = w / 2, b = () => { g.beginPath(); g.moveTo(0, -r * 0.7); g.bezierCurveTo(r * 0.9, -r * 1.15, r * 1.25, r * 0.2, r * 0.45, r * 0.95); g.quadraticCurveTo(0, r * 1.05, -r * 0.45, r * 0.95); g.bezierCurveTo(-r * 1.25, r * 0.2, -r * 0.9, -r * 1.15, 0, -r * 0.7); g.closePath(); };
+    shadedFill(g, b, col, r); gloss(g, b, r, 0.55); outline(g, b, col, 1.2);
+    g.strokeStyle = '#6b4a1e'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -r * 0.65); g.lineTo(r * 0.08, -r * 1.05); g.stroke(); g.fillStyle = '#3ea34a'; g.beginPath(); g.ellipse(r * 0.32, -r * 0.95, r * 0.26, r * 0.11, -0.5, 0, TAU); g.fill();
+  },
+  car(g, w, h, col, seed, R, o) { const e = o.extra; const sp = carSprite({ color: col, w, h: e.bh, wr: e.wr, s: e.s }); g.drawImage(sp.c, -sp.ox, -sp.oy + e.cab / 2, sp.w, sp.h); },
+};
+function sparkleOn(g, x, y, r) { g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.25, y - r * 0.25); g.lineTo(x + r, y); g.lineTo(x + r * 0.25, y + r * 0.25); g.lineTo(x, y + r); g.lineTo(x - r * 0.25, y + r * 0.25); g.lineTo(x - r, y); g.lineTo(x - r * 0.25, y - r * 0.25); g.closePath(); g.fill(); }
+function smCrackSprite(o) { // cracks on a thing that took a hit but still stands
+  const w = o.w, h = o.h, key = 'smcrk|' + Math.round(w) + 'x' + Math.round(h);
+  return makeSprite(key, w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
+    const r = rng(strSeed(key)); g.strokeStyle = 'rgba(20,10,5,0.6)'; g.lineWidth = Math.max(1.5, Math.min(w, h) * 0.04); g.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { let x = (r() - 0.5) * w * 0.3, y = (r() - 0.5) * h * 0.3; const a = r() * TAU; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += Math.cos(a + (r() - 0.5) * 1.4) * w * 0.12; y += Math.sin(a + (r() - 0.5) * 1.4) * h * 0.12; g.lineTo(x, y); } g.stroke(); }
+    g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 1; g.stroke();
+  });
+}
+function smPieceSprite(b) { // a debris piece in its colour and material, from its own (pooled) shape
+  const p = b.plugin; if (p.sp) return p.sp;
+  const cs = Math.cos(-b.angle), sn = Math.sin(-b.angle), loc = b.vertices.map((v) => { const dx = v.x - b.position.x, dy = v.y - b.position.y; return { x: dx * cs - dy * sn, y: dx * sn + dy * cs }; });
+  let r = 0; for (const v of loc) r = Math.max(r, Math.hypot(v.x, v.y)); const pad = r + 3;
+  return (p.sp = makeSprite('smp|' + p.dk + '|' + p.col + '|' + p.mat, pad * 2, pad * 2, pad, pad, (g) => {
+    const path = p.sh === 'c' ? () => { g.beginPath(); g.arc(0, 0, b.circleRadius, 0, TAU); } : () => { g.beginPath(); g.moveTo(loc[0].x, loc[0].y); for (let i = 1; i < loc.length; i++) g.lineTo(loc[i].x, loc[i].y); g.closePath(); };
+    if (p.mat === 'brick') { const sp = brickSprite(p.col, Math.round(loc.reduce((a, v) => Math.max(a, v.x), 0) * 2), Math.round(loc.reduce((a, v) => Math.max(a, v.y), 0) * 2), true); g.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); return; }
+    if (p.mat === 'wheel') { const sp = wheelSprite(b.circleRadius); g.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); return; }
+    if (p.mat === 'glass' || p.mat === 'bulb') { path(); g.fillStyle = 'rgba(200,236,255,0.72)'; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,0.9)'; g.stroke(); return; }
+    if (p.mat === 'coin') { const sp = coinSprite(Math.max(3, b.circleRadius - 1)); g.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); return; }
+    shadedFill(g, path, p.col, Math.max(4, r)); if (p.mat === 'toy' || p.mat === 'gem' || p.mat === 'melon' || p.mat === 'tomato' || p.mat === 'pumpkin') gloss(g, path, Math.max(4, r), 0.45);
+    if (p.mat === 'melon' && p.sh === 'c') { g.fillStyle = '#1d1d1d'; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse((i - 1) * r * 0.35, r * 0.1, r * 0.08, r * 0.14, 0, 0, TAU); g.fill(); } }
+    outline(g, path, p.col, 1.1);
+  }));
+}
+
+/* --- the scenes' backgrounds (one sprite per scene and screen size) --- */
+function smBgSprite(scene) { return makeSprite('smbg|' + scene + '|' + W + 'x' + H, W, H, 0, 0, (g) => { SM_BG[scene](g, W, H, smU(), rng(strSeed('smbg' + scene))); const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.hypot(W, H) * 0.62); v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.35)'); g.fillStyle = v; g.fillRect(0, 0, W, H); }); }
+function smFloorBand(g, w, h, u, col, lines) { const fh = u * 0.9, gr = g.createLinearGradient(0, h - fh, 0, h); gr.addColorStop(0, lighten(col, 0.15)); gr.addColorStop(1, darken(col, 0.2)); g.fillStyle = gr; g.fillRect(0, h - fh, w, fh); g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, h - fh, w, 3); if (lines) { g.strokeStyle = 'rgba(60,30,10,0.25)'; g.lineWidth = 1.5; for (let x = 0; x < w; x += u * 2.6) { g.beginPath(); g.moveTo(x, h - fh + 3); g.lineTo(x - u * 0.4, h); g.stroke(); } } }
+const SM_BG = {
+  wall(g, w, h, u, r) { // the treasure cave behind the walls
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#1d1240'); gr.addColorStop(1, '#4a2b63'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(10,6,30,0.45)'; for (let i = 0; i < 14; i++) { g.beginPath(); g.ellipse(r() * w, r() * h, u * (1 + r() * 2.5), u * (0.8 + r() * 1.6), r() * 3, 0, TAU); g.fill(); }
+    g.fillStyle = '#2b1b4f'; for (let x = -u; x < w + u; x += u * (1.2 + r())) { const hh = u * (1 + r() * 2.2); g.beginPath(); g.moveTo(x - u * 0.6, 0); g.lineTo(x + u * 0.6, 0); g.lineTo(x, hh); g.closePath(); g.fill(); }
+    for (let i = 0; i < 9; i++) { const x = r() * w, y = h * (0.15 + r() * 0.55), s = u * (0.3 + r() * 0.4), c = ['#ff4f8b', '#4fd2ff', '#7dff6b', '#c38bff'][i % 4]; const gl = g.createRadialGradient(x, y, 1, x, y, s * 3); gl.addColorStop(0, hexA(c, 0.45)); gl.addColorStop(1, hexA(c, 0)); g.fillStyle = gl; g.fillRect(x - s * 3, y - s * 3, s * 6, s * 6); g.fillStyle = c; g.beginPath(); g.moveTo(x, y - s); g.lineTo(x + s * 0.5, y); g.lineTo(x, y + s * 0.6); g.lineTo(x - s * 0.5, y); g.closePath(); g.fill(); }
+    for (const x of [0.12, 0.88]) { const tx = w * x, ty = h * 0.4, gl = g.createRadialGradient(tx, ty, 2, tx, ty, u * 3); gl.addColorStop(0, 'rgba(255,190,90,0.55)'); gl.addColorStop(1, 'rgba(255,190,90,0)'); g.fillStyle = gl; g.fillRect(tx - u * 3, ty - u * 3, u * 6, u * 6); g.fillStyle = '#6b4a2a'; g.fillRect(tx - 3, ty, 6, u * 1.2); g.fillStyle = '#ffb347'; g.beginPath(); g.ellipse(tx, ty - u * 0.15, u * 0.22, u * 0.4, 0, 0, TAU); g.fill(); g.fillStyle = '#fff1a8'; g.beginPath(); g.ellipse(tx, ty - u * 0.08, u * 0.1, u * 0.2, 0, 0, TAU); g.fill(); }
+    g.fillStyle = '#ffc93b'; for (let i = 0; i < 40; i++) { const x = r() * w, y = h - r() * u * 0.9; g.beginPath(); g.ellipse(x, y, u * 0.22, u * 0.1, 0, 0, TAU); g.fill(); g.strokeStyle = '#b8730f'; g.lineWidth = 1; g.stroke(); }
+  },
+  room(g, w, h, u, r) {
+    g.fillStyle = '#ffe9c4'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#ffdcaa'; for (let x = 0; x < w; x += u * 1.6) g.fillRect(x, 0, u * 0.8, h);
+    g.fillStyle = 'rgba(255,140,90,0.35)'; for (let y = u; y < h; y += u * 1.6) for (let x = u * 0.4 + (Math.round(y / u) % 2) * u * 0.8; x < w; x += u * 1.6) { g.beginPath(); g.arc(x, y, u * 0.1, 0, TAU); g.fill(); }
+    g.fillStyle = '#ffffff'; g.fillRect(0, h - u * 1.5, w, u * 0.6); g.fillStyle = 'rgba(0,0,0,0.1)'; g.fillRect(0, h - u * 0.95, w, 3);
+    smFloorBand(g, w, h, u, '#c78a52', true);
+    g.fillStyle = 'rgba(255,111,89,0.55)'; g.beginPath(); g.ellipse(w / 2, h - u * 0.3, w * 0.3, u * 0.35, 0, 0, TAU); g.fill();
+  },
+  city(g, w, h, u, r) {
+    const sk = g.createLinearGradient(0, 0, 0, h); sk.addColorStop(0, '#4fb2ff'); sk.addColorStop(0.65, '#a9dcff'); sk.addColorStop(1, '#ffe2b8'); g.fillStyle = sk; g.fillRect(0, 0, w, h);
+    const sx = w * 0.82, sy = h * 0.2, sg = g.createRadialGradient(sx, sy, 4, sx, sy, u * 3); sg.addColorStop(0, '#fff6c4'); sg.addColorStop(0.35, '#ffd95a'); sg.addColorStop(1, 'rgba(255,217,90,0)'); g.fillStyle = sg; g.fillRect(sx - u * 3, sy - u * 3, u * 6, u * 6);
+    g.fillStyle = 'rgba(255,255,255,0.9)'; for (let i = 0; i < 5; i++) { const x = r() * w, y = h * (0.1 + r() * 0.3); for (let k = 0; k < 4; k++) { g.beginPath(); g.arc(x + k * u * 0.55, y + (k % 2) * u * 0.15, u * (0.45 + (k % 2) * 0.15), 0, TAU); g.fill(); } }
+    g.fillStyle = 'rgba(110,150,200,0.45)'; for (let x = 0; x < w; x += u * (1.2 + r() * 1.4)) { const bh = u * (3 + r() * 7); g.fillRect(x, h - u * 0.9 - bh, u * (1 + r() * 1.2), bh); }
+    g.fillStyle = '#8a8fa3'; g.fillRect(0, h - u * 1.15, w, u * 0.25);
+    smFloorBand(g, w, h, u, '#40455a', false); g.fillStyle = '#ffe066'; for (let x = u * 0.5; x < w; x += u * 2) g.fillRect(x, h - u * 0.45, u, u * 0.1);
+  },
+  blocks(g, w, h, u, r) {
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#efe0ff'); gr.addColorStop(1, '#ffe1f0'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h * 0.75, R0 = Math.min(w, h) * 0.55; ['#ff5a5f', '#ffb13b', '#ffe066', '#5fd77a', '#54c6eb', '#a98bff'].forEach((c, i) => { g.strokeStyle = hexA(c, 0.28); g.lineWidth = u * 0.5; g.beginPath(); g.arc(cx, cy, R0 - i * u * 0.5, Math.PI, TAU); g.stroke(); });
+    g.fillStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 18; i++) sparkleOn(g, r() * w, r() * h * 0.7, u * (0.12 + r() * 0.18));
+    smFloorBand(g, w, h, u, '#ff9fbe', false); g.fillStyle = 'rgba(255,255,255,0.35)'; for (let x = 0; x < w; x += u * 1.2) g.fillRect(x, h - u * 0.9, u * 0.6, u * 0.9);
+  },
+  food(g, w, h, u, r) {
+    g.fillStyle = '#e6f7ef'; g.fillRect(0, 0, w, h); const ts = u * 1.3; g.strokeStyle = 'rgba(120,170,150,0.35)'; g.lineWidth = 1.5;
+    for (let x = 0; x < w; x += ts) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y < h; y += ts) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    const aw = u * 1.6, top = u * 0.2; for (let x = 0, i = 0; x < w; x += aw, i++) { g.fillStyle = i % 2 ? '#ffffff' : '#ff5a5f'; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + aw, 0); g.lineTo(x + aw, top + u); g.arc(x + aw / 2, top + u, aw / 2, 0, Math.PI); g.closePath(); g.fill(); }
+    g.fillStyle = 'rgba(0,0,0,0.08)'; g.fillRect(0, top + u * 1.5, w, 4);
+    smFloorBand(g, w, h, u, '#b9824f', true);
+  },
+};
+
+/* --- drawing the scene, the HUD, the banners and the stage card --- */
+function smDrawObj(o, now) {
+  const b = o.body, x = b.position.x, y = b.position.y, sp = o.sp || (o.sp = smArt(o)), hk = (now - o.hitAt) / 260, k = hk < 1 ? 1 + 0.08 * Math.sin(hk * Math.PI) : 1;
+  if (o.kind === 'ceilLamp') { resetView(); ctx.strokeStyle = '#3a3f55'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, -10); ctx.lineTo(x, y - o.h / 2); ctx.stroke(); }
+  else if (o.kind === 'balloon') { resetView(); ctx.strokeStyle = 'rgba(60,60,80,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, y + o.h * 0.42); ctx.quadraticCurveTo(x + Math.sin(now * 0.002 + o.ph) * o.w * 0.5, y + o.h, x, y + o.h * 1.7); ctx.stroke(); }
+  if (o.kind === 'car') { const e = o.extra; blit(sp, x, y, 0, k, 1, e.dir); const ws = wheelSprite(e.wr), wy = e.yb + e.bh / 2; blit(ws, x - o.w * 0.3, wy, e.dir * e.dist / e.wr); blit(ws, x + o.w * 0.3, wy, e.dir * e.dist / e.wr); return; }
+  blit(sp, x, y, b.angle, k);
+  if (o.hp < o.maxHp) blit(smCrackSprite(o), x, y, b.angle, k);
+}
+function smDrawScene(now) {
+  for (let L = 2; L >= 0; L--) {
+    for (const T of smash.tiles) if (T.layer === L && T.alive) { resetView(); ctx.drawImage(T.c, T.x0, T.y0, T.w, T.h); }
+    for (const o of smash.objs) if (o.alive && o.layer === L) smDrawObj(o, now);
+  }
+  for (const b of smash.pieces) { const p = b.plugin, age = now - p.born, a = age > p.life ? Math.max(0, 1 - (age - p.life) / CONFIG.SMASH_FADE_MS) : 1; if (a > 0) blit(smPieceSprite(b), b.position.x, b.position.y, b.angle, 1, a); }
+}
+function smHudRow() { // the top row's free span beside the pause button (as Strike's)
+  const c = chromeEl.getBoundingClientRect(), ui = smash.ui;
+  if (chromeEl.classList.contains('open') && ui.row) return ui.row;
+  const cam = mode === 'camera' && !preview.hidden, small = cam && !preview.classList.contains('big') && !preview.classList.contains('peek');
+  const left = (cam ? (small ? preview.getBoundingClientRect().right : (W <= 400 ? 104 : 108)) : 4) + 8, right = c.width > 0 ? c.left - 8 : W - 12, cy = c.height > 0 ? c.top + c.height / 2 : 34;
+  return (ui.row = { left, right, cy });
+}
+function smDisp() { return Math.min(1, smash.meter / CONFIG.SMASH_CLEAR); } // the meter as shown: full at the clear
+function drawSmashHud(now, dt) { // the minimal HUD: one slim pill beside the pause button: the destruction meter (and in a stage the clock and the stars still in reach)
+  const ui = smash.ui, rtl = lang === 'he', R = frameCount % 30 === 0 || !ui.row ? smHudRow() : ui.row, stage = smash.run === 'stage' && smash.plan;
+  const want = smDisp(); smash.shown += (want - smash.shown) * Math.min(1, dt / 140); if (Math.abs(want - smash.shown) < 0.002) smash.shown = want;
+  const pct = Math.round(smash.shown * 100), ptx = textSprite(LRM + pct + '%', 12, '#fff8ec', null, 800), h = 30, pad = 10;
+  let tsp = null, left = 0, nst = 3;
+  if (stage) { left = smash.phase === 'play' ? smashLeft(now) / 1000 : smash.result ? smash.result.left : 0; nst = smashStarsFor(smash.plan, Math.ceil(left)); tsp = textSprite(LRM + smashClockFor(left), 14, left <= SMASH_HURRY_S && smash.phase === 'play' ? '#ff8a7a' : '#fff8ec', null, 800); }
+  const avail = Math.max(120, R.right - R.left), extra = stage ? 10 + tsp.tw + 8 + 50 : 0, bw = Math.max(70, Math.min(170, avail - pad * 2 - ptx.tw - 8 - extra)), w = pad + bw + 8 + ptx.tw + extra + pad;
+  const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
+  ui.hud = { x, y, w, h, parts: stage ? ['meter', 'timer', 'stars'] : ['meter'] };
+  resetView(); blit(glassSprite(w, h, h / 2), x - 1, y - 1, 0, 1, 0.8);
+  const bx = rtl ? x + w - pad - bw : x + pad, bh = 12, by = cy - bh / 2, fw = bw * smash.shown, pop = smash.phase === 'clear' ? 1 + 0.08 * Math.sin(now / 90) : 1;
+  resetView(); ctx.fillStyle = 'rgba(8,11,28,0.75)'; ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, bh / 2); ctx.fill();
+  if (fw > 1) { ctx.fillStyle = smash.shown >= 1 ? '#ffd23f' : '#ff8a4d'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, fw, bh, bh / 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(rtl ? bx + bw - fw + 4 : bx + 4, by + 2, Math.max(0, fw - 8), 2); }
+  ui.meterBox = { x: bx, y: by, w: bw, h: bh, pct, fill: fw };
+  const tx = rtl ? bx - 8 - ptx.tw / 2 : bx + bw + 8 + ptx.tw / 2; blit(ptx, tx, cy, 0, pop);
+  ui.timerBox = ui.starsBox = null;
+  if (stage) {
+    const tcx = rtl ? tx - ptx.tw / 2 - 10 - tsp.tw / 2 : tx + ptx.tw / 2 + 10 + tsp.tw / 2, hurry = left <= SMASH_HURRY_S && smash.phase === 'play' ? 1 + 0.1 * Math.abs(Math.sin(now / 160)) : 1;
+    blit(tsp, tcx, cy, 0, hurry); ui.timerBox = { x: tcx - tsp.tw / 2, y: cy - 9, w: tsp.tw, h: 18, text: smashClockFor(left), left };
+    const s0 = rtl ? tcx - tsp.tw / 2 - 8 - 7 : tcx + tsp.tw / 2 + 8 + 7;
+    for (let i = 0; i < 3; i++) blit(shapeStarSprite(7, i < nst), s0 + (rtl ? -i : i) * 16, cy, 0, 1, i < nst ? 1 : 0.6);
+    ui.starsBox = { x: rtl ? s0 - 39 : s0 - 7, y: cy - 8, w: 46, h: 16, n: nst };
+  }
+}
+function smashClockFor(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function drawSmashBanners(now) {
+  const ui = smash.ui; ui.bannerBox = null;
+  const B = smash.banner, bk = B ? (now - B.t) / SMASH_BANNER_MS : 1;
+  if (B && bk < 1) { // a stage's start: its number, its scene and how to get 3 stars
+    const a = bk < 0.1 ? bk / 0.1 : bk > 0.8 ? (1 - bk) / 0.2 : 1, y = H * 0.3, ts = bigTextSprite(B.title, 40), sc = Math.min(1, (W - 40) / Math.max(1, ts.w - 40));
+    resetView(); blit(ts, W / 2, y, 0, sc * (0.9 + 0.1 * Math.min(1, bk * 8)), a);
+    const s1 = textSprite(B.sub, 17, '#fff8ec', 'rgba(8,11,28,0.9)', 800), s2 = textSprite(B.line, 14, '#ffd77a', 'rgba(8,11,28,0.85)', 700);
+    blit(s1, W / 2, y + 40, 0, Math.min(1, (W - 30) / s1.tw), a); blit(s2, W / 2, y + 66, 0, Math.min(1, (W - 30) / s2.tw), a);
+    ui.bannerBox = { title: B.title, sub: B.sub, line: B.line, a, y };
+  } else smash.banner = null;
+  const T = smash.tag, tk = T ? (now - T.t) / 2200 : 1; ui.tagBox = null;
+  if (T && tk < 1) { const sp = textSprite(T.text, 16, '#141b34', null, 800), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = (ui.hud ? ui.hud.y + ui.hud.h : 40) + 30 - 10 * (1 - e);
+    blit(pillSprite(SMASH_ACCENT[smash.scene], pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e); ui.tagBox = { text: T.text, x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph }; }
+  else smash.tag = null;
+  ui.clearBox = null;
+  if (smash.phase === 'clear' || (smash.phase === 'out' && smash.run === 'free')) { // 'Smashed!' over a turning burst of light
+    const q = (now - smash.phaseAt) / SMASH_CLEAR_MS, a = smash.phase === 'out' ? Math.max(0, 1 - (now - smash.phaseAt) / SMASH_OUT_MS) : Math.min(1, q * 5), y = H * 0.36, txt = t('smClear');
+    resetView(); blit(burstSprite(), W / 2, y, now * 0.0006, Math.min(W, H) / 520, a * 0.9);
+    const ts = bigTextSprite(txt, 48), sc = Math.min(1, (W - 30) / Math.max(1, ts.w - 48)) * (1 + 0.06 * Math.sin(now / 120)); blit(ts, W / 2, y, 0, sc * Math.min(1, 0.6 + q * 3), a);
+    ui.clearBox = { text: txt, a };
+  }
+}
+function smStarHint(r) { // the line under the stars: how they came, and how to get 3
+  if (r.stars === 3) return t('smStarsPerfect', { n: r.left });
+  return t(r.stars === 2 ? 'smStars2' : 'smStars1', { n: r.left, m: r.star3 });
+}
+function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
+  const E = smash, ui = E.ui, r = E.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear, acc = SMASH_ACCENT[r.scene];
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
+  const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
+  blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
+  const ts = bigTextSprite(clear ? t('stageClear') : t('soClose'), 34); blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
+  blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('sc_' + r.scene), 14, acc, null, 700), cx, y0 + 84);
+  ui.stars = null; ui.starHint = null; ui.failBar = null;
+  if (clear) {
+    const sy = y0 + 134, gap = 72, st = [];
+    for (let i = 0; i < 3; i++) {
+      const at = E.overAt + 350 + i * 420, q = Math.min(1, Math.max(0, (now - at) / 320)), on = i < r.stars, sx = cx + (i - 1) * gap * (rtl ? -1 : 1), big = i === 1 ? 1.15 : 1;
+      if (on && q > 0 && !r['s' + i]) { r['s' + i] = now; sfx('xylo', [784, 988, 1175][i]); if (i === 2) sfx('chord'); burst(sx, sy, '#ffd77a', 12); ring(sx, sy, 'rgba(255,214,120,0.9)', 40, 380, 3); }
+      blit(shapeStarSprite(26, false), sx, sy - (i === 1 ? 8 : 0), 0, big);
+      if (on && q > 0) { const sc = (1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2)) * big; blit(shapeStarSprite(26, true), sx, sy - (i === 1 ? 8 : 0) - (1 - q) * 70, (1 - q) * 2.5, sc); }
+      st.push({ x: sx, y: sy, on: on && q >= 1 });
+    }
+    ui.stars = { n: r.stars, shown: st.filter((s) => s.on).length, stars: st };
+    const txt = smStarHint(r), hs = textSprite(txt, 13, r.stars === 3 ? '#ffd77a' : 'rgba(241,233,218,0.88)', null, r.stars === 3 ? 700 : 500), hsc = Math.min(1, (cw - 28) / hs.tw), hy = y0 + 182;
+    const ha = Math.min(1, Math.max(0, (now - E.overAt - 350 - Math.max(0, r.stars - 1) * 420 - 200) / 300));
+    blit(hs, cx, hy, 0, hsc, ha); ui.starHint = { text: txt, a: ha, x: cx - hs.tw * hsc / 2, y: hy - 9, w: hs.tw * hsc, h: 18 };
+  } else { // how far it got
+    const pct = Math.round(r.pct * 100), bw = cw - 80, bx = cx - bw / 2, by = y0 + 140;
+    blit(textSprite(t('smPct', { n: pct }), 22, '#fff8ec', null, 800), cx, y0 + 118);
+    resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(bx, by, bw, 14, 7); ctx.fill();
+    const fw = bw * Math.min(1, r.pct / CONFIG.SMASH_CLEAR); ctx.fillStyle = '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, Math.max(14, fw), 14, 7); ctx.fill();
+    ui.failBar = { pct, x: bx, y: by, w: bw, h: 14 };
+  }
+  { const py = y0 + (clear ? 196 + HN : 180), ph = 26, items = [];
+    if (r.coins) items.push({ sp: textSprite(LRM + '+' + r.coins, 14, '#ffd77a', null, 800), coin: true });
+    if (meta.roundXp > 0) items.push({ sp: textSprite(t('xpN', { n: meta.roundXp }), 14, '#bfe3ff', null, 800) });
+    if (clear && !r.first) items.push({ sp: textSprite(t('advBest', { n: r.best }), 13, 'rgba(241,233,218,0.8)', null, 700) });
+    const ws = items.map((it) => it.sp.tw + (it.coin ? 40 : 22)), tot = ws.reduce((a, b) => a + b, 0) + 8 * Math.max(0, items.length - 1); let x = cx - tot / 2; ui.pay = [];
+    items.forEach((it, i) => { const w = ws[i], bx = rtl ? cx + tot / 2 - (x - (cx - tot / 2)) - w : x; blit(glassSprite(w, ph, 13), bx - 1, py - 1); if (it.coin) { blit(coinSprite(8), rtl ? bx + w - 14 : bx + 14, py + ph / 2); edgeText(it.sp, rtl ? bx + w - 27 : bx + 27, py + ph / 2, rtl); } else blit(it.sp, bx + w / 2, py + ph / 2); ui.pay.push({ x: bx, y: py, w, h: ph }); x += w + 8; }); }
+  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN : 230), bh = 56, sh = 46, hw = (bw - 10) / 2;
+  ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
+    : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
+  const main = clear ? 'next' : 'retry', label = { next: r.n >= SMASH_N ? t('mapBtn') : t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn') }; ui.labels = {}; for (const key in ui.buttons) ui.labels[key] = label[key];
+  for (const key in ui.buttons) {
+    const b = ui.buttons[key], hot = ui.hover === key, mx = b.x + b.w / 2, my = b.y + b.h / 2, pri = key === main; let bk = hot ? 1.04 : 1;
+    if (pri) { const ph = 0.5 + 0.5 * Math.sin(now / 280); if (!hot) bk = 1 + 0.035 * ph; ui.againPulse = bk; resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)'; ctx.beginPath(); ctx.roundRect(mx - b.w * bk / 2, my - b.h * bk / 2, b.w * bk, b.h * bk, 14); ctx.fill(); ctx.restore(); }
+    blit(overButtonSprite(pri ? 'again' : 'home', b.w, b.h), mx, my, 0, bk);
+    if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 14); ctx.fill(); }
+    const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
+  }
+  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  ctx.restore();
+  if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
+}
+function renderSmash(now) {
+  const k = (now - shake.t) / shake.ms; let vx = 0, vy = 0;
+  if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); vx = Math.sin(now * 0.11) * a; vy = Math.cos(now * 0.17) * a; }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0c1026'; ctx.fillRect(0, 0, W, H);
+  view.x = vx + smash.slide; view.y = vy;
+  resetView(); ctx.drawImage(smBgSprite(smash.scene).c, 0, 0, W, H);
+  if (smash.decal) ctx.drawImage(smash.decal, 0, 0, W, H);
+  smDrawScene(now);
+  drawParticles(); drawRings(now); drawFloaters(smash.floaters);
+  view.x = view.y = 0;
+  const dt = Math.min(100, now - (smash.ui.lastDraw || now)); smash.ui.lastDraw = now;
+  if (mode !== 'none') { drawSmashHud(now, dt); drawSmashBanners(now); }
+  drawCoinPill(now);
+  if (smash.over && smash.result) drawSmashCard(now);
+  drawFist(now); // the glove stays on top so it can aim at the card buttons
+}
+
+/* --- runs: free play (scene after scene, no clock) and stages (a scene against the clock, 1-3 stars) --- */
+function clearSmash() { if (!engine) return; smClearWorld(); smash.floaters.length = 0; engine.enableSleeping = false; smash.phase = 'play'; smash.over = false; } // leaving Smash for another game
+function resetSmash(now) { // a fresh start of what the map armed, else the same again (Restart, Play again)
+  if (!engine) return;
   if (held) dropHeld();
   if (bodies.length) { M.Composite.remove(world, bodies); bodies = []; } // sandbox objects make way
-  clearSmash(); particles.length = 0;
-  try { smash.best = Math.max(smash.best, +localStorage.getItem('smashBest') || 0); } catch {}
-  smash.score = 0; smash.over = false; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.bricksOut = smash.carsOut = smash.bigHit = 0; roundStart(); grippySay('start');
+  smash.floaters.length = 0; roundStart(); smFlushTrack(now, true);
+  const a = smash.armed; smash.armed = null;
+  const run = a ? a.run : smash.run, n = a && a.n ? a.n : smash.n;
+  smash.over = false; smash.overAt = 0; smash.result = null; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.hurry = false; smash.banner = smash.tag = null; smash.slide = 0;
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
-  smash.endAt = now + CONFIG.SMASH_ROUND_S * 1000;
-  smash.nextCar = now + 1500 + Math.random() * 1500;
-  (W > 720 ? [W * 0.3, W * 0.7] : [W * 0.5]).forEach((x, i) => buildWall(x, i));
+  if (run === 'stage' && n) smStageBegin(n, now); else smFreeBegin(now, !a && smash.run === 'free' && smash.objs.length > 0);
+  grippySay('start');
 }
-function buildWall(x, id) {
-  const s = smashScale(), bw = BRICK.w * s, bh = BRICK.h * s;
-  const cols = Math.max(3, Math.min(6, Math.floor(Math.min(W * 0.36, 300 * s) / bw)));
-  const rows = Math.max(5, Math.min(9, Math.floor(H * 0.42 / bh)));
-  const wall = { id, x, left: 0, rebuildAt: 0 };
-  for (let r = 0; r < rows; r++) { // staggered courses: odd rows start and end with a half brick
-    const ws = r % 2 ? [bw / 2, ...Array(cols - 1).fill(bw), bw / 2] : Array(cols).fill(bw);
-    let cx = x - cols * bw / 2;
-    for (const w of ws) {
-      const b = M.Bodies.rectangle(cx + w / 2, H - (r + 0.5) * bh, w - 1.5, bh - 1.5, { isStatic: true, friction: 0.6, restitution: 0.1, density: 0.003, label: 'brick' });
-      b.plugin = { color: BRICK.colors[(r + Math.round(cx / bw)) % BRICK.colors.length], r: Math.hypot(w, bh) / 2, kind: 'rect', wall, w, h: bh, sw: w - 1.5, sh: bh - 1.5, lastBurst: 0 };
-      smash.bricks.push(b); wall.left++; cx += w;
-    }
+function smFreeBegin(now, same) {
+  smash.run = 'free'; smash.n = 0; smash.plan = null; smash.endAt = Infinity;
+  if (!same) { smash.sceneNo = 0; smash.scene = 'wall'; smash.variant = 1; }
+  smBuild(smash.scene, smash.variant, Math.floor(Math.random() * 1e9), now);
+  smash.phase = 'play'; smash.phaseAt = smash.startAt = now;
+}
+function smFreeNext(now) { // free play's next scene: in order, round and round, a little fuller each lap
+  smash.sceneNo++; const i = (SMASH_SCENES.indexOf(smash.scene) + 1) % SMASH_SCENES.length, lap = Math.floor(smash.sceneNo / SMASH_SCENES.length);
+  smBuild(SMASH_SCENES[i], Math.min(4, 1 + lap), Math.floor(Math.random() * 1e9), now);
+}
+function smStageBegin(n, now) {
+  const P = smash.plan = smashPlan(n); smash.run = 'stage'; smash.n = P.n;
+  smBuild(P.scene, P.v, P.n, now);
+  smash.timeMs = P.time * 1000; smash.endAt = now + smash.timeMs; smash.startAt = now; smash.phase = 'play'; smash.phaseAt = now;
+  smash.banner = { t: now, title: t('stageN', { n: P.n }), sub: t('sc_' + P.scene) + '  ·  ' + smashClockFor(P.time), line: t('smStarGoal', { n: P.star3 }) };
+}
+function smClear(now) { // the meter is full: everything left goes up in a cascade, 'Smashed!'; free play pays the scene, a stage its stars
+  smash.phase = 'clear'; smash.phaseAt = now; smash.cascade.length = 0; let i = 0;
+  const alive = smash.objs.filter((o) => o.alive); for (const o of shuffled(alive, Math.random)) { o.boomAt = now + 150 + (i++) * Math.min(90, 900 / Math.max(1, alive.length)); smash.cascade.push(o); }
+  for (const T of smash.tiles) if (T.alive) smTileCrumble(T, now);
+  sfx('fanfare'); confetti(W * 0.3, H * 0.25, 50, 1.3); confetti(W * 0.7, H * 0.25, 50, 1.3); shakeScreen(3);
+  if (smash.run === 'free') { addCoins(ECONOMY.smash.scene); meta.roundXp = 0; roundDone(0, 15); grippySay('smashClear'); }
+  else {
+    const P = smash.plan, A = profile.smash, left = Math.max(0, Math.ceil(smashLeft(now) / 1000)), stars = smashStarsFor(P, left), prev = A.stars[P.n] || 0, first = !prev, E = ECONOMY.smashStage;
+    const coins = first ? E.first + stars : Math.max(0, stars - prev) * E.star;
+    A.stars[P.n] = Math.max(prev, stars); if (P.n < SMASH_N) A.unlocked = Math.max(A.unlocked, P.n + 1); saveProfile();
+    smash.result = { clear: true, n: P.n, scene: P.scene, stars, prev, best: A.stars[P.n], first, coins, left, time: P.time, star3: P.star3, star2: P.star2, pct: 1 };
+    smash.endAt = Infinity; if (coins) addCoins(coins); meta.roundXp = 0; roundDone(0, 15 + 5 * stars); grippySay(stars === 3 ? 'advPerfect' : 'advClear');
   }
-  smash.walls.push(wall);
-  M.Composite.add(world, smash.bricks.filter((b) => b.plugin.wall === wall));
+  smFlushTrack(now, true);
 }
-function spawnCar(now = performance.now()) {
-  const s = smashScale(), w = 150 * s, h = 34 * s, wr = 16 * s, dir = Math.random() < 0.5 ? 1 : -1;
-  const x = dir > 0 ? -w : W + w, y = H - wr - h / 2 + 4 * s;
-  const parts = [M.Bodies.rectangle(x, y, w, h), M.Bodies.rectangle(x - dir * w * 0.05, y - h / 2 - 15 * s, w * 0.5, 30 * s),
-    M.Bodies.circle(x - w * 0.3, y + h / 2, wr), M.Bodies.circle(x + w * 0.3, y + h / 2, wr)];
-  const car = M.Body.create({ parts, isStatic: true, label: 'car' });
-  car.plugin = { color: COLORS[Math.floor(Math.random() * 5)], dir, w, h, wr, s, dist: 0, y: car.position.y, lastBurst: 0 };
-  smash.cars.push(car); M.Composite.add(world, car);
-  return car;
+function smFail(now) { // a stage's clock ran out
+  const P = smash.plan; smash.phase = 'card'; smash.phaseAt = now; smash.endAt = Infinity;
+  smash.result = { clear: false, n: P.n, scene: P.scene, stars: 0, best: profile.smash.stars[P.n] || 0, coins: 0, left: 0, time: P.time, star3: P.star3, star2: P.star2, pct: smash.meter };
+  smash.over = true; smash.overAt = now; smash.punching = false; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null;
+  sfx('chime'); meta.roundXp = 0; roundDone(0, 6); grippySay('advFail'); smFlushTrack(now, true);
 }
+function smashNext() { const r = smash.result, n = r ? r.n : smash.n; if (r && r.clear && n < SMASH_N && smashPlayable(n + 1)) return smashStageStart(n + 1); return openSmashMap({}); }
+function smashStageStart(n, how) { // play stage n: from the map (the start screen: with the camera or touch) or at once in a game
+  n = Math.max(1, Math.min(SMASH_N, n | 0 || 1)); if (!smashPlayable(n)) return false;
+  closeSmashMap(true); smash.armed = { run: 'stage', n };
+  if (gameMode !== 'smash') setGameMode('smash');
+  if (mode === 'none') { audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
+  else { hideHint(); unpauseGame(); resetSmash(performance.now()); }
+  return true;
+}
+function smashFreeStart(how) {
+  closeSmashMap(true); smash.armed = { run: 'free' };
+  if (gameMode !== 'smash') setGameMode('smash');
+  if (mode === 'none') { audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
+  else { hideHint(); unpauseGame(); resetSmash(performance.now()); }
+  return true;
+}
+function smMoveTick(now, dt) { // cars drive (round the screen), balloons bob
+  const s = smashScale();
+  for (const o of smash.objs) {
+    if (!o.alive) continue;
+    if (o.kind === 'car') { const e = o.extra, b = o.body, step = e.dir * e.speed * s * dt; e.dist += Math.abs(step); let x = b.position.x + step; if (x > W + o.w) x = -o.w; else if (x < -o.w) x = W + o.w; _sv.x = x; _sv.y = b.position.y; M.Body.setPosition(b, _sv); }
+    else if (o.kind === 'balloon') { _sv.x = o.x0 + Math.sin(now * 0.0013 + o.ph) * o.w * 0.12; _sv.y = o.y0 + Math.sin(now * 0.002 + o.ph) * o.h * 0.08; M.Body.setPosition(o.body, _sv); }
+  }
+}
+function smashTick(now, dt) {
+  tickFloaters(smash.floaters, dt);
+  if (smashMapOpen()) { smashMapTick(now); return; } // the stage map over the game (from a stage card): everything waits
+  if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
+  if (smash.over) { smash.prev = null; smash.punching = false; endCardTick(now); return; } // a stage's card: buttons by tap / dwell, a wave elsewhere: next / try again
+  if (pause.on || menu.open) { if (smash.endAt !== Infinity) smash.endAt += dt; smash.phaseAt += dt; if (smash.banner) smash.banner.t += dt; smash.prev = null; smash.punching = false; smash.taps.length = 0; return; } // the clock waits (the pause sheet, or the hand missing)
+  smPiecesTick(now); smFxTick(now); smMoveTick(now, dt); smFlushTrack(now, false);
+  while (smash.queue.length) { const o = smash.queue.shift(); o.queued = false; if (o.alive) smBreak(o, o.body.position.x, o.body.position.y - o.h * 0.3, 0, 0, 0.5, now); } // fragile things that took a hard knock
+  smash.meter = smMeter();
+  const ph = smash.phase, q = now - smash.phaseAt;
+  if (ph === 'clear') {
+    for (let i = smash.cascade.length - 1; i >= 0; i--) { const o = smash.cascade[i]; if (now >= o.boomAt) { smash.cascade.splice(i, 1); if (o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, -0.3, 0.8, now); } }
+    if (q >= SMASH_CLEAR_MS) { if (smash.run === 'free') { smash.phase = 'out'; smash.phaseAt = now; sfx('whoosh'); } else { smash.phase = 'card'; smash.over = true; smash.overAt = now; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null; if (smash.result.stars === 3) sfx('chime'); } }
+  } else if (ph === 'out') {
+    smash.slide = -W * ease(q / SMASH_OUT_MS);
+    if (q >= SMASH_OUT_MS) { smFreeNext(now); smash.phase = 'in'; smash.phaseAt = now; smash.slide = W; smash.tag = { t: now, text: t('sc_' + smash.scene) }; grippySay('smashScene'); sfx('rise'); }
+  } else if (ph === 'in') {
+    smash.slide = W * (1 - ease(q / SMASH_IN_MS));
+    if (q >= SMASH_IN_MS) { smash.slide = 0; smash.phase = 'play'; smash.phaseAt = now; }
+  }
+  const cur = cursor.present ? cursor : null, cam = mode === 'camera', v = cam ? Math.max(cursorSpeed(now), hand.rawSpeed) : cursorSpeed(now);
+  if (smash.phase !== 'play') { smash.prev = null; smash.punching = false; smash.taps.length = 0; return; }
+  if (smash.run === 'stage') { // the clock: 'Hurry!' at 10 s, a tick each of the last 5, then the card
+    const left = smashLeft(now); if (left <= 0) { smFail(now); return; }
+    const sec = Math.ceil(left / 1000); if (sec <= 5 && sec !== smash.lastTick) { smash.lastTick = sec; sfx('tick'); }
+    if (sec <= SMASH_HURRY_S && !smash.hurry) { smash.hurry = true; grippySay('smashHurry'); }
+  }
+  const s = smashScale(), R = CONFIG.FIST_RADIUS;
+  for (const tp of smash.taps) { smash.punchId++; smPunch(tp.x, tp.y, R, 0, 0, smStrength(CONFIG.SMASH_TAP_V * s), now); } // a tap: a punch right there
+  smash.taps.length = 0;
+  if (cur && smash.prev) {
+    const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
+    if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
+    // Camera: any contact of the hand punches (a laggy tracker under-reads speed; kids just touch things), speed only makes the hit bigger.
+    // Mouse / touch: a pressed pointer must swipe fast enough to sweep (a tap is its own punch, above).
+    const gate = cam ? 0 : (ptr.type === 'touch' ? CONFIG.PUNCH_SPEED_TOUCH : CONFIG.PUNCH_SPEED) * s;
+    smash.punching = punchGesture() && v >= gate;
+    const still = cam && len < 4 * s && v < CONFIG.PUNCH_SPEED * s * 0.5; // a camera hand resting on things knocks every 220 ms (not every frame)
+    if (smash.punching && (!still || now - (smash.camAt || 0) >= 220)) { if (still) smash.camAt = now; smSweep(smash.prev.x, smash.prev.y, cur.x, cur.y, R, smStrength(cam ? Math.max(v, CONFIG.PUNCH_SPEED * s) : v), now); }
+  } else smash.punching = false;
+  if (cur) { if (!smash.prev) smash.prev = { x: cur.x, y: cur.y }; else { smash.prev.x = cur.x; smash.prev.y = cur.y; } } else smash.prev = null;
+  smash.meter = smMeter();
+  if (smash.meter >= CONFIG.SMASH_CLEAR) smClear(now);
+}
+function smashResize() { // the screen changed: sprites redrawn at the new resolution; a big change (a phone turned) lays the scene out afresh
+  for (const o of smash.objs) o.sp = null; for (const b of smash.pieces) b.plugin.sp = null; for (const list of smash.pool.values()) for (const b of list) b.plugin.sp = null;
+  if (!smash.objs.length && !smash.tiles.length) return;
+  for (const T of smash.tiles) smTileDraw(T);
+  const big = Math.abs(W - smash.layoutW) > smash.layoutW * 0.15 || Math.abs(H - smash.layoutH) > smash.layoutH * 0.2;
+  if (big && mode !== 'none' && gameMode === 'smash' && smash.phase === 'play') { const now = performance.now(), left = smashLeft(now); smBuild(smash.scene, smash.variant, Math.floor(Math.random() * 1e9), now); if (smash.run === 'stage') smash.endAt = now + left; }
+}
+
+/* --- the Smash map: Free play on top, then the 20 stages in five scene groups (stars, locks) --- */
+const smap = { how: 'mouse', dwell: null };
+function smashMapOpen() { return !$('smashMap').hidden; }
+function anyMapOpen() { return advMapOpen() || smashMapOpen(); }
+function smSceneIcon(c, scene) { // a little picture of the scene, drawn with its own art
+  const g = c.getContext('2d'), S = c.width; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, S, S); const k = S / 56, fake = (kind, w, h, col, seed, extra) => ({ kind, w, h, col, seed: seed || 0, extra: extra || null });
+  const put = (kind, x, y, w, h, col, seed, extra) => { g.save(); g.setTransform(k, 0, 0, k, x * k, y * k); SM_ART[kind](g, w, h, col, seed || 0, rng(7), fake(kind, w, h, col, seed, extra)); g.restore(); };
+  if (scene === 'wall') { g.setTransform(k, 0, 0, k, 0, 0); for (let r = 0; r < 6; r++) for (let i = -1; i < 4; i++) { const sp = brickSprite(BRICK.colors[(r + i + 4) % 4], 17, 7, false); g.drawImage(sp.c, i * 18 + (r % 2 ? 9 : 0) + 1 - sp.ox + 8.5, r * 9 + 4 - sp.oy + 4, sp.w, sp.h); } put('gem', 30, 32, 14, 16, '#4fd2ff'); }
+  else if (scene === 'room') { put('tv', 22, 26, 26, 21, '#ff8a5c'); put('vase', 44, 34, 11, 18, '#e85d75', 1); }
+  else if (scene === 'city') { for (let f = 0; f < 3; f++) put('floor', 18, 47 - f * 12, 22, 12, '#e9a46a', 0, { top: f === 2 }); for (let f = 0; f < 4; f++) put('floor', 40, 47 - f * 12, 20, 12, '#7fb3d5', 0, { top: f === 3 }); }
+  else if (scene === 'blocks') { put('block', 16, 42, 15, 15, '#ff6f59', 0); put('block', 16, 27, 15, 15, '#54c6eb', 1); put('balloon', 39, 22, 16, 20, '#ffcf3f'); put('block', 38, 44, 13, 13, '#43d9a3', 2); }
+  else { put('watermelon', 21, 34, 26, 26, '#3f9b3a'); put('tomato', 43, 41, 15, 15, '#ff3b30'); put('egg', 44, 21, 10, 13, '#fff1d6'); }
+}
+function renderSmashMap() {
+  const A = profile.smash, cur = smashCurrent(), list = $('smList');
+  $('smStarTotal').querySelector('b').textContent = String(smashStarTotal()); $('smStarTotal').querySelector('small').textContent = '/ ' + SMASH_N * 3;
+  const fc = $('smashFree').querySelector('canvas'); fc.width = fc.height = Math.round(56 * SS); { const g = fc.getContext('2d'), sp = gloveSprite(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, fc.width, fc.height); g.setTransform(SS * 0.62, 0, 0, SS * 0.62, fc.width / 2, fc.height / 2); g.rotate(-0.5); g.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); }
+  list.replaceChildren(...SMASH_SCENES.map((sc, si) => {
+    const sec = document.createElement('section'); sec.className = 'smScene'; sec.dataset.scene = sc; sec.style.setProperty('--wc', SMASH_ACCENT[sc]);
+    const hd = document.createElement('header'), ic = document.createElement('canvas'); ic.width = ic.height = Math.round(56 * SS); ic.setAttribute('aria-hidden', 'true'); smSceneIcon(ic, sc);
+    const nm = document.createElement('b'); nm.textContent = t('sc_' + sc); let got = 0; for (let j = 1; j <= SMASH_PER; j++) got += A.stars[si * SMASH_PER + j] || 0;
+    const ct = document.createElement('small'); ct.textContent = '★ ' + got + '/' + SMASH_PER * 3; hd.append(ic, nm, ct);
+    const row = document.createElement('div'); row.className = 'smRow';
+    for (let j = 1; j <= SMASH_PER; j++) {
+      const n = si * SMASH_PER + j, st = A.stars[n] || 0, open = smashPlayable(n), b = document.createElement('button'); b.type = 'button';
+      b.className = 'smNode' + (open ? '' : ' locked') + (st ? ' done' : '') + (n === cur && open ? ' cur' : ''); b.dataset.n = String(n); b.dataset.stars = String(st);
+      const disc = document.createElement('span'); disc.className = 'disc'; if (open) disc.textContent = String(n); else disc.innerHTML = ADV_LOCK_SVG;
+      const ss = document.createElement('span'); ss.className = 'st'; ss.innerHTML = [0, 1, 2].map((i) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (i < st ? ' class="on"' : '') + '>' + ADV_STAR_SVG + '</svg>').join('');
+      b.append(disc, ss); b.setAttribute('aria-label', t('stageN', { n }) + ' · ' + (open ? t('advStarsN', { n: st }) : t('advLockedAria')));
+      if (!open) b.setAttribute('aria-disabled', 'true');
+      b.addEventListener('click', () => smashNodeTap(n, b)); row.appendChild(b);
+    }
+    sec.append(hd, row); return sec;
+  }));
+}
+function smashNodeTap(n, b) {
+  if (!smashPlayable(n)) { toast('advLocked', { n: Math.max(1, n - 1) }, 'star'); sfx('whiff'); if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } return false; }
+  sfx('click'); return smashStageStart(n, smap.how);
+}
+function openSmashMap(o = {}) { // o.how: how a choice starts from the start screen (camera / touch)
+  smap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : smap.how; smap.dwell = null;
+  const el = $('smashMap'); el.hidden = false; $('smDwell').hidden = true; renderSmashMap();
+  const c = $('smList').querySelector('.smNode.cur'); if (c && profile.smash.unlocked > 4) try { c.scrollIntoView({ block: 'center' }); } catch {}
+  try { $('smashFree').focus({ preventScroll: true }); } catch {}
+  routeEnter('smash'); // (/smash: the map is Smash's front door)
+  return true;
+}
+function closeSmashMap(quiet) { // Back: from a stage card, home; from the start screen, just the map away
+  const el = $('smashMap'); if (el.hidden) return false; el.hidden = true; $('smDwell').hidden = true; smap.dwell = null;
+  if (!quiet && mode !== 'none' && gameMode === 'smash') goHome(); else if (!quiet && mode === 'none') routeHome();
+  return true;
+}
+function smashMapTick(now) { // camera play over the map: a ring follows the hand; a point / pinch / fist held 600 ms on a button presses it
+  const ring = $('smDwell'); if (mode !== 'camera' || !cursor.present) { ring.hidden = true; smap.dwell = null; return; }
+  ring.hidden = false; ring.style.transform = 'translate(' + Math.round(cursor.x) + 'px,' + Math.round(cursor.y) + 'px)';
+  const sc = $('smBody'), r = sc.getBoundingClientRect(); if (cursor.y < r.top + 70 && cursor.y > r.top) sc.scrollTop -= 6; else if (cursor.y > r.bottom - 70 && cursor.y < r.bottom) sc.scrollTop += 6;
+  const el = document.elementFromPoint(cursor.x, cursor.y), btn = el && el.closest && el.closest('#smashMap button'), on = btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist');
+  if (!on) { smap.dwell = null; ring.style.setProperty('--q', '0'); return; }
+  if (!smap.dwell || smap.dwell.el !== btn) smap.dwell = { el: btn, t: now };
+  const q = Math.min(1, (now - smap.dwell.t) / 600); ring.style.setProperty('--q', q.toFixed(3));
+  if (q >= 1) { smap.dwell = null; btn.click(); }
+}
+
+/* ---------------- Smash: the old sprites kept (bricks, cars, wheels, the glove) ---------------- */
 function cursorSpeed(now, win = 80) { // px/ms over the last few samples
   const h = cursor.history; let i = h.length - 1;
   while (i > 0 && now - h[i - 1].t <= win) i--;
@@ -2308,141 +3402,6 @@ function cursorVel(now, win = 80) { // px/ms per axis over the last few samples 
   const a = h[i], z = h[h.length - 1];
   return a && z && z.t > a.t ? { x: (z.x - a.x) / (z.t - a.t), y: (z.y - a.y) / (z.t - a.t) } : { x: 0, y: 0 };
 }
-function fistContacts(targets, p, R) { // the bodies (bricks, cars) a circle of radius R at p touches: circle vs the axis-aligned bounds of each part
-  const out = [];
-  for (const b of targets) {
-    const parts = b.parts.length > 1 ? b.parts.slice(1) : b.parts;
-    for (const q of parts) {
-      const dx = Math.max(q.bounds.min.x - p.x, 0, p.x - q.bounds.max.x), dy = Math.max(q.bounds.min.y - p.y, 0, p.y - q.bounds.max.y);
-      if (dx * dx + dy * dy <= R * R) { out.push(b); break; }
-    }
-  }
-  return out;
-}
-function addPiece(b, vel, now, small) {
-  b.plugin.born = now; b.plugin.small = !!small; b.plugin.lastBurst = 0;
-  if (b.isStatic) M.Body.setStatic(b, false);
-  M.Body.setVelocity(b, vel); M.Body.setAngularVelocity(b, (Math.random() - 0.5) * 0.4);
-  if (!M.Composite.get(world, b.id, 'body')) M.Composite.add(world, b);
-  smash.pieces.push(b);
-}
-function capPieces() {
-  while (smash.pieces.length > CONFIG.SMASH_MAX_PIECES) {
-    let i = smash.pieces.findIndex((p) => p.plugin.small); if (i < 0) i = 0;
-    M.Composite.remove(world, smash.pieces[i]); smash.pieces.splice(i, 1);
-  }
-}
-// Everything within SMASH_RADIUS of p comes loose; the closest bricks may split into shards.
-function smashBricks(p, dir, v, now) {
-  const s = smashScale(), R = CONFIG.SMASH_RADIUS * s, kick = Math.min(24, 4 + v * 8);
-  let n = 0;
-  for (let i = smash.bricks.length - 1; i >= 0; i--) {
-    const b = smash.bricks[i], dx = b.position.x - p.x, dy = b.position.y - p.y, d = Math.hypot(dx, dy);
-    if (d > R) continue;
-    smash.bricks.splice(i, 1); b.plugin.wall.left--; n++;
-    if (b.plugin.wall.left <= 0) track('wall', 1); // the whole wall is down
-    const k = 1 - d / R * 0.6, ox = dx / (d || 1), oy = dy / (d || 1);
-    const vel = { x: (dir.x * kick + ox * kick * 0.4) * k, y: (dir.y * kick + oy * kick * 0.4) * k - 3 * k };
-    smash.score++;
-    if (d < R * 0.55 && Math.random() < 0.6) {
-      M.Composite.remove(world, b);
-      const parts = 2 + (Math.random() < 0.4 ? 1 : 0), pw = b.plugin.w / parts, { x, y } = b.position;
-      for (let j = 0; j < parts; j++) {
-        const sh = M.Bodies.rectangle(x - b.plugin.w / 2 + pw * (j + 0.5), y, pw - 1.5, b.plugin.h - 1.5, { ...PIECE, density: 0.003 });
-        sh.plugin = { color: b.plugin.color, r: Math.hypot(pw, b.plugin.h) / 2, kind: 'rect', sw: pw - 1.5, sh: b.plugin.h - 1.5, raw: true };
-        addPiece(sh, { x: vel.x + (Math.random() - 0.5) * 3, y: vel.y + (Math.random() - 0.5) * 3 }, now, true); smash.score++;
-      }
-    } else addPiece(b, vel, now);
-    burst(b.position.x, b.position.y, BRICK.dust, 6 + v * 6);
-  }
-  if (n) {
-    if (!smash.bricksOut && n > 0) grippySay('firstHit');
-    smash.bricksOut += n; smash.bigHit = Math.max(smash.bigHit, n); { const c0 = Math.floor((smash.bricksOut - n) / ECONOMY.smash.bricksPerCoin), c1 = Math.floor(smash.bricksOut / ECONOMY.smash.bricksPerCoin); if (c1 > c0) addCoins(c1 - c0); } track('brick', n); // a coin per 10 bricks
-    smash.floaters.push({ x: p.x, y: p.y - 30, text: '+' + n, big: false, life: 1 });
-    if (now - smash.lastCrunch > 60) { // one shockwave + dust cloud + shake per punch, not per brick group
-      smash.lastCrunch = now; sfx('crunch');
-      ring(p.x, p.y, 'rgba(255,255,255,0.9)', (56 + n * 6) * s, 300, 3.5); dust(p.x, p.y, Math.min(12, 5 + n)); shakeScreen(Math.min(4, 1.5 + v * 1.2));
-    }
-  }
-  capPieces();
-}
-function crumpleCar(car, p, dir, v, now) {
-  const { color, w, h, wr, s } = car.plugin, b = car.parts[1].position, c = car.parts[2].position, kick = Math.min(26, 6 + v * 8);
-  M.Composite.remove(world, car); smash.cars.splice(smash.cars.indexOf(car), 1);
-  const mk = [ // [body, colour, kind, radius, small, sprite w, sprite h]
-    [M.Bodies.rectangle(b.x, b.y, w, h, { ...PIECE, chamfer: { radius: 6 * s } }), color, 'rect', Math.hypot(w, h) / 2, false, w, h],
-    [M.Bodies.rectangle(c.x, c.y, w * 0.5, 30 * s, PIECE), color, 'rect', w * 0.3, false, w * 0.5, 30 * s],
-    [M.Bodies.rectangle(b.x - w * 0.2, b.y, w * 0.22, h * 0.75, PIECE), color, 'rect', w * 0.14, false, w * 0.22, h * 0.75],
-    [M.Bodies.rectangle(b.x + w * 0.2, b.y, w * 0.22, h * 0.75, PIECE), color, 'rect', w * 0.14, false, w * 0.22, h * 0.75],
-    [M.Bodies.circle(car.parts[3].position.x, car.parts[3].position.y, wr, { ...PIECE, friction: 0.8 }), TYRE, 'circle', wr],
-    [M.Bodies.circle(car.parts[4].position.x, car.parts[4].position.y, wr, { ...PIECE, friction: 0.8 }), TYRE, 'circle', wr],
-  ];
-  const glass = 6 + Math.floor(Math.random() * 5);
-  for (let i = 0; i < glass; i++) {
-    const g = M.Bodies.polygon(c.x + (Math.random() - 0.5) * w * 0.4, c.y + (Math.random() - 0.5) * 20 * s, 3, (4 + Math.random() * 4) * s, { ...PIECE, density: 0.0005, frictionAir: 0.02 });
-    mk.push([g, GLASS, 'poly', 8 * s, true]);
-  }
-  for (const [body, col, kind, r, small, sw, sh] of mk) {
-    body.plugin = { color: col, r, kind, hub: kind === 'circle', car: kind === 'rect', sw, sh };
-    const dx = body.position.x - p.x, dy = body.position.y - p.y, d = Math.hypot(dx, dy) || 1, k = small ? 1.4 : 0.9;
-    addPiece(body, { x: (dir.x * kick * 0.7 + dx / d * kick * 0.5) * k, y: (dir.y * kick * 0.5 + dy / d * kick * 0.5 - 5) * k }, now, small);
-  }
-  const pts = 25 + mk.length; smash.score += pts; smash.carsOut++; smash.bigHit = Math.max(smash.bigHit, pts); addCoins(ECONOMY.smash.car); track('car', 1);
-  smash.floaters.push({ x: b.x, y: c.y - 30 * s, text: '+' + pts, big: true, life: 1 });
-  burst(p.x, p.y, GLASS, 20); burst(b.x, b.y, color, 16); sfx('car');
-  ring(p.x, p.y, 'rgba(255,255,255,0.95)', 110 * s, 340, 5); ring(b.x, b.y, 'rgba(255,194,75,0.8)', 70 * s, 260, 3); dust(b.x, b.y, 14, 1.6); shakeScreen(4);
-  capPieces();
-}
-function endRound(now) {
-  smash.over = true; smash.overAt = now; smash.punching = false; hideHint();
-  const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = smash.score > smash.best;
-  if (ui.newBest) { smash.best = smash.score; try { localStorage.setItem('smashBest', String(smash.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
-  else sfx('chime');
-  roundDone(smash.score);
-}
-function smashTick(now, dt) {
-  tickFloaters(smash.floaters, dt);
-  if (smash.over) { smash.prev = null; endCardTick(now); return; } // round-over card: buttons via tap / dwell, a punch elsewhere restarts
-  if (pause.on) { smash.endAt += dt; smash.nextCar += dt; smash.prev = null; return; } // the clock waits for the hand
-  if (smashLeft(now) <= 0) { endRound(now); return; }
-  const sec = Math.ceil(smashLeft(now) / 1000);
-  if (sec <= 5 && sec !== smash.lastTick) { smash.lastTick = sec; sfx('tick'); }
-  const s = smashScale();
-  if (now >= smash.nextCar && smash.cars.length < 2) { spawnCar(now); const [a, b] = CONFIG.CAR_INTERVAL_MS; smash.nextCar = now + a + Math.random() * (b - a); }
-  for (let i = smash.cars.length - 1; i >= 0; i--) {
-    const c = smash.cars[i], step = c.plugin.dir * CONFIG.CAR_SPEED * s * dt, x = c.position.x + step;
-    c.plugin.dist += Math.abs(step);
-    if (x > W + c.plugin.w || x < -c.plugin.w) { M.Composite.remove(world, c); smash.cars.splice(i, 1); continue; }
-    M.Body.setPosition(c, { x, y: c.plugin.y }, true);
-  }
-  for (let i = smash.walls.length - 1; i >= 0; i--) {
-    const wl = smash.walls[i];
-    if (wl.left > 0) continue;
-    if (!wl.rebuildAt) wl.rebuildAt = now + CONFIG.WALL_REBUILD_MS;
-    else if (now >= wl.rebuildAt) { smash.walls.splice(i, 1); buildWall(wl.x, wl.id); }
-  }
-  const cur = cursor.present ? { x: cursor.x, y: cursor.y } : null, cam = mode === 'camera', v = cam ? Math.max(cursorSpeed(now), hand.rawSpeed) : cursorSpeed(now);
-  if (cur && smash.prev) {
-    const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
-    if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
-    // Camera: any contact of the fist punches (a laggy tracker under-reads speed; kids just touch the wall), speed only makes the hit bigger.
-    // Mouse / touch: a pressed pointer must move fast enough (smaller screen, smaller motions; a finger is slower than a mouse).
-    const gate = cam ? 0 : (ptr.type === 'touch' ? CONFIG.PUNCH_SPEED_TOUCH : CONFIG.PUNCH_SPEED) * s;
-    smash.punching = punchGesture() && v >= gate;
-    if (smash.punching) {
-      const dir = len > 0 ? { x: dx / len, y: dy / len } : { x: 0, y: 0 }, pv = cam ? Math.max(v, CONFIG.PUNCH_SPEED * s) : v; // camera: at least a medium punch
-      const targets = [...smash.bricks, ...smash.cars];
-      const hits = len > 0 ? M.Query.ray(targets, smash.prev, cur, CONFIG.FIST_RADIUS * 2).map((h) => h.bodyA.parent) : []; // swept along the path
-      for (const b of fistContacts(targets, cur, CONFIG.FIST_RADIUS)) if (!hits.includes(b)) hits.push(b);            // plus whatever the fist body sits on
-      for (const b of hits) {
-        if (b.label === 'car') { if (smash.cars.includes(b)) crumpleCar(b, cur, dir, pv, now); }
-        else if (smash.bricks.includes(b)) smashBricks(b.position, dir, pv, now);
-      }
-    }
-  } else smash.punching = false;
-  smash.prev = cur;
-}
-/* ---------------- Smash rendering: bricks, cars, glove ---------------- */
 function brickSprite(col, w, h, raw) {
   const key = 'brick|' + col + '|' + Math.round(w) + 'x' + Math.round(h) + (raw ? '|raw' : ''), pad = 2;
   return makeSprite(key, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => {
@@ -2455,22 +3414,6 @@ function brickSprite(col, w, h, raw) {
     g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,235,210,0.34)'; g.beginPath(); g.moveTo(-w / 2 + 0.8, h / 2 - 0.8); g.lineTo(-w / 2 + 0.8, -h / 2 + 0.8); g.lineTo(w / 2 - 0.8, -h / 2 + 0.8); g.stroke(); // bevel
     g.strokeStyle = 'rgba(20,5,0,0.34)'; g.beginPath(); g.moveTo(w / 2 - 0.8, -h / 2 + 0.8); g.lineTo(w / 2 - 0.8, h / 2 - 0.8); g.lineTo(-w / 2 + 0.8, h / 2 - 0.8); g.stroke();
     g.lineWidth = 1; g.strokeStyle = darken(base, 0.5); g.strokeRect(-w / 2, -h / 2, w, h);
-  });
-}
-function carPartSprite(p) { // crumpled panel: keeps the car colour, dents drawn as dark strokes
-  const w = p.sw, h = p.sh, key = 'cp|' + p.color + '|' + Math.round(w) + 'x' + Math.round(h);
-  return makeSprite(key, w + 6, h + 6, w / 2 + 3, h / 2 + 3, (g) => {
-    const r = rng(strSeed(key)), rr = Math.min(6, h * 0.25);
-    const path = () => { g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, rr); };
-    shadedFill(g, path, p.color, Math.hypot(w, h) / 2); rimLight(g, path, Math.hypot(w, h) / 2, 0.3);
-    g.save(); path(); g.clip(); g.strokeStyle = 'rgba(8,10,28,0.5)'; g.lineWidth = 1.6;
-    for (let i = 0, n = 2 + Math.floor(w / 30); i < n; i++) {
-      let x = -w / 2 + r() * w, y = -h / 2 + r() * h; g.beginPath(); g.moveTo(x, y);
-      for (let k = 0; k < 3; k++) { x += (r() - 0.5) * w * 0.35; y += (r() - 0.5) * h * 0.6; g.lineTo(x, y); }
-      g.stroke();
-    }
-    g.fillStyle = 'rgba(8,10,28,0.22)'; for (let i = 0; i < 2; i++) { g.beginPath(); g.ellipse(-w / 2 + r() * w, -h / 2 + r() * h, 4 + r() * w * 0.12, 3 + r() * h * 0.2, r() * 3, 0, TAU); g.fill(); }
-    g.restore(); outline(g, path, p.color);
   });
 }
 function wheelSprite(wr) {
@@ -2536,19 +3479,6 @@ function gloveSprite(skin = skinOf('hand')) { // Smash's fist: a boxing glove in
     g.strokeStyle = robot ? 'rgba(20,27,52,0.6)' : 'rgba(90,20,10,0.45)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(R * 0.72, -R * 0.4); g.quadraticCurveTo(R * 0.9, 0, R * 0.72, R * 0.35); g.stroke();
   });
 }
-const glassPieces = [];
-function drawPiece(b) {
-  const p = b.plugin, x = b.position.x, y = b.position.y;
-  if (p.kind === 'rect') blit(p.car ? carPartSprite(p) : brickSprite(p.color, p.sw, p.sh, p.raw), x, y, b.angle);
-  else if (p.hub) blit(wheelSprite(b.circleRadius), x, y, b.angle);
-  else glassPieces.push(b);
-}
-function drawCar(c) {
-  const p = c.plugin, b = c.parts[1].position, bounce = Math.sin(p.dist / (7 * p.s)) * 0.9 * p.s;
-  blit(carSprite(p), b.x, b.y + bounce, 0, 1, 1, p.dir);
-  const sp = wheelSprite(p.wr);
-  for (const part of [c.parts[3], c.parts[4]]) blit(sp, part.position.x, part.position.y, p.dir * p.dist / p.wr);
-}
 function punchGesture() { return mode === 'camera' ? gesture !== 'none' && gesture !== 'pinch' : gesture === 'fist'; } // camera: a fist, an open hand or a pointing finger all punch; mouse / touch: pressed
 function drawFist(now) {
   if (!cursor.present) return;
@@ -2565,25 +3495,6 @@ function drawFist(now) {
   drawShadow(cursor.x + 5, cursor.y + 10, R * 2.4, R * 1.2, 0.4);
   blit(gloveSprite(), cursor.x, cursor.y, smash.ang, smash.punching ? 1.12 : 1);
 }
-function renderSmash(now) {
-  beginFrame('smash', now);
-  for (const b of smash.bricks) blit(brickSprite(b.plugin.color, b.plugin.sw, b.plugin.sh, false), b.position.x, b.position.y);
-  glassPieces.length = 0;
-  for (const b of smash.pieces) drawPiece(b);
-  if (glassPieces.length) {
-    resetView(); ctx.fillStyle = GLASS; ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
-    for (const b of glassPieces) { bodyPath(ctx, b); ctx.fill(); ctx.stroke(); }
-  }
-  for (const c of smash.cars) drawCar(c);
-  drawParticles(); drawRings(now);
-  drawFloaters(smash.floaters);
-  const sec = Math.ceil(smashLeft(now) / 1000);
-  drawScore(String(smash.score), scoreY(), smashClock(now), sec <= 5 && !smash.over ? '#ff6f59' : 'rgba(241,233,218,0.7)');
-  drawCoinPill(now);
-  if (smash.over) drawEndCard(now, smash, { score: smash.score, best: smash.best, stats: [[smash.bricksOut, 'bricks'], [smash.carsOut, 'cars'], [smash.bigHit, 'bigHit']], again: 'playAgain' });
-  drawFist(now); // the glove stays on top so it can aim at the card buttons
-}
-
 /* ---------------- Busy Board mode ---------------- */
 // A toddler busy board: chunky things to touch that click, light up and turn. No score, no clock.
 // Every widget is a plain object { kind, x, y, w, h, state, ... } (x/y = centre, w/h = touch cell) with
@@ -6055,6 +6966,10 @@ function endCardAction(key, now) {
     if (key === 'again') key = adv.result.clear ? 'next' : 'retry';
     if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap({});
   }
+  if (gameMode === 'smash' && smash.run === 'stage' && smash.result) { // a Smash stage's card: Next / Play again / Map (a fail: Try again / Map; a wave: next after a clear, a retry after a fail)
+    if (key === 'again') key = smash.result.clear ? 'next' : 'retry';
+    if (key === 'next') return smashNext(); if (key === 'retry') return smashStageStart(smash.n); if (key === 'map') return openSmashMap({});
+  }
   if (key === 'home') return goHome();
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
@@ -6062,7 +6977,7 @@ function endCardAction(key, now) {
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
-  if (!$('newCard').hidden || advMapOpen()) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
+  if (!$('newCard').hidden || anyMapOpen()) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
   const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
   ui.hover = btn;
   if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
@@ -7082,6 +7997,13 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
     }
     else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'clink') { [1900, 2650, 3500].forEach((q, i) => tone('sine', q * (0.96 + Math.random() * 0.08), 0, [0.11, 0.06, 0.04][i], 220 - i * 40, t0 + i * 0.02)); f.type = 'highpass'; f.frequency.value = 2400; env(f, 0.08, 70, t0); noise(t0, 70, f); } // Smash: china breaking (plates, cups, vases)
+    else if (kind === 'spark') { f.type = 'highpass'; f.frequency.value = 2600; env(f, 0.13, 260, t0); noise(t0, 260, f); tone('sawtooth', 2400, 500, 0.05, 180, t0); tone('square', 1200, 300, 0.035, 90, t0 + 0.12); tone('sine', 150, 55, 0.18, 160, t0); } // a TV going bzzt-pop
+    else if (kind === 'pop') { f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = 0.9; env(f, 0.22, 50, t0); noise(t0, 50, f); tone('sine', 700, 180, 0.12, 70, t0); } // a balloon / a bulb
+    else if (kind === 'splat') { f.type = 'lowpass'; f.frequency.setValueAtTime(1100, t0); f.frequency.exponentialRampToValueAtTime(220, t0 + 0.16); env(f, 0.22, 180, t0); noise(t0, 180, f); tone('sine', 240, 70, 0.17, 170, t0); } // a squishy fruit / an egg
+    else if (kind === 'confetti') { f.type = 'bandpass'; f.frequency.value = 1500; env(f, 0.18, 45, t0); noise(t0, 45, f); tone('triangle', 520, 1400, 0.07, 260, t0 + 0.04); [1568, 2093, 2637].forEach((q, i) => tone('sine', q, 0, 0.04, 140, t0 + 0.12 + i * 0.05)); } // a surprise box bursting: pop + party horn + sparkles
+    else if (kind === 'splash') { f.type = 'bandpass'; f.Q.value = 0.8; f.frequency.setValueAtTime(1400, t0); f.frequency.exponentialRampToValueAtTime(350, t0 + 0.45); env(f, 0.2, 480, t0); noise(t0, 480, f); tone('sine', 320, 110, 0.12, 260, t0); } // water
+    else if (kind === 'wood') { f.type = 'bandpass'; f.frequency.value = 750; f.Q.value = 1.1; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('triangle', 330, 120, 0.13, 110, t0); } // wood cracking
     else if (kind === 'beat') { tone('sine', 72, 48, 0.09, 120, t0); tone('sine', 64, 44, 0.06, 120, t0 + 0.16); } // Strike's heartbeat: a soft low lub-dub
     else if (kind === 'chime') { tone('sine', 660, 0, 0.12, 420, t0); tone('sine', 880, 0, 0.12, 520, t0 + 0.14); tone('sine', 1320, 0, 0.08, 620, t0 + 0.28); }
     else if (kind === 'tone') toneOn(arg || 440);
@@ -7224,11 +8146,11 @@ const MISSION_POOL = [ // ev: the track() event it counts; goals / rewards by ti
   { id: 'close', ev: 'close', goals: [3], rewards: [20] }, { id: 'daily', ev: 'daily', goals: [1], rewards: [15] }, { id: 'guest', ev: 'guest', goals: [3], rewards: [20] },
   { id: 'shapes', ev: 'shape', goals: [15], rewards: [20] },
 ];
-const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds' };
+const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls', boss: 'bosses', powerup: 'powerups', round: 'rounds', smash: 'smashed' }; // (Smash: 'brick' = bricks, tiles, toy blocks and building floors; 'wall' = a tile wall or a building all the way down; 'smash' = anything smashed)
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
-    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0 }, daily: {}, grippy: true, tips: [],
-    adv: { stars: {}, unlocked: 1, open: [], seen: [] }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
+    adv: { stars: {}, unlocked: 1, open: [], seen: [] }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -7251,6 +8173,10 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(ADV_N, a.unlocked | 0));
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))]; }
+    if (p.smash && typeof p.smash === 'object') { const a = p.smash, A = d.smash; // Smash stages: the best stars per stage (1-3), the furthest stage open
+      if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= SMASH_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
+      if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(SMASH_N, a.unlocked | 0));
+      for (const k in A.stars) A.unlocked = Math.max(A.unlocked, Math.min(SMASH_N, +k + 1)); }
     if (p.habit && typeof p.habit === 'object') { const h = p.habit, D = d.habit, iso = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x);
       if (h.gift && Number.isInteger(h.gift.day) && h.gift.day >= 1 && h.gift.day <= 7 && iso(h.gift.date)) D.gift = { day: h.gift.day, date: h.gift.date };
       if (Array.isArray(h.play)) D.play = [...new Set(h.play.filter(iso))].sort().slice(-60);
@@ -7333,8 +8259,8 @@ function coinPillPos() { // where the coin pill sits: beside the score at the st
   return { x: rtl ? W - 16 : 16, y: scoreY() - 15, end: false };
 }
 function drawCoinPill(now) {
-  if (gameMode === 'strike') { // a decluttered Strike: no pill, just the '+n' floaters rising at the top end corner under the bar
-    const dt = Math.min(100, now - (coinUi.lastDraw || now)); coinUi.lastDraw = now; coinUi.box = null; const h = strike.ui.hud;
+  if (gameMode === 'strike' || gameMode === 'smash') { // a decluttered Strike / Smash: no pill, just the '+n' floaters rising at the top end corner under the bar
+    const dt = Math.min(100, now - (coinUi.lastDraw || now)); coinUi.lastDraw = now; coinUi.box = null; const h = gameMode === 'smash' ? smash.ui.hud : strike.ui.hud;
     coinUi.anchor = h ? { x: lang === 'he' ? h.x + h.w - 70 : h.x + 70, y: h.y + h.h + 6 } : { x: 60, y: 90 }; // (by the score)
     tickFloaters(coinUi.floaters, dt); drawFloaters(coinUi.floaters); return;
   }
@@ -7503,7 +8429,7 @@ function openGifts(auto) { // the calendar (auto: the once-a-day pop-up)
 }
 function closeGifts() { const P = $('gifts'); if (P.hidden) return false; P.hidden = true; syncMeta(); setTimeout(maybeNewCard, 350); return true; }
 function maybeGift() { // the first open of the day: the calendar pops up by itself (once a day; not over a game, a panel or a NEW UNLOCKED card)
-  if (!giftAutoOk() || mode !== 'none' || $('start').hidden || !$('gifts').hidden || !$('newCard').hidden || advMapOpen() || document.querySelector('.ov:not([hidden])')) return false;
+  if (!giftAutoOk() || mode !== 'none' || $('start').hidden || !$('gifts').hidden || !$('newCard').hidden || anyMapOpen() || document.querySelector('.ov:not([hidden])')) return false;
   const s = giftState(); if (s.opened || s.seen) return false;
   return openGifts(true);
 }
@@ -7972,6 +8898,9 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     advPerfect: ['Three stars!', 'Perfect!', 'Wow!'],
     advFail: ['So close!', 'Almost!', 'Try again!'],
     shapesLevel: ['Hooray!', 'All done!', 'Great job!'],
+    smashClear: ['Kaboom!', 'All smashed!', 'Wow, smashed!'],
+    smashScene: ['New place!', "What's next?", 'Look at this!'],
+    smashHurry: ['Hurry up!', 'Quick, quick!', 'Almost time!'],
   },
   he: {
     start: ['יאללה!', 'מוכנים? צאו!', 'מתחילים!'],
@@ -7986,6 +8915,9 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     advPerfect: ['שלושה כוכבים!', 'מושלם!', 'וואו!'],
     advFail: ['כמעט!', 'עוד פעם!', 'ממש קרוב!'],
     shapesLevel: ['הידד!', 'כל הכבוד!', 'יש!'],
+    smashClear: ['בום טראח!', 'הכל מנופץ!', 'וואו, ניפצתם!'],
+    smashScene: ['מקום חדש!', 'מה יש פה?', 'תראו את זה!'],
+    smashHurry: ['מהר מהר!', 'זריזות!', 'עוד רגע נגמר!'],
   },
 };
 const GRIPPY_ALIAS = { daily: 'start' }; // the daily's start: the same 'Let's go!'
@@ -8009,7 +8941,7 @@ function grippySay(ev, vars, now = performance.now()) { // a spoken line for an 
   if (!profile.grippy || !grippyActive()) return false;
   const L = GRIPPY[lang] || GRIPPY.en, lines = L[ev]; if (!lines) return false; // (a quiet event)
   const skip = (why) => { grippy.skipped.push({ event: ev, why, t: now }); if (grippy.skipped.length > 40) grippy.skipped.shift(); return false; };
-  if (now - grippy.lastAt < GRIPPY_GAP) return skip('cooldown');
+  if (now - grippy.lastAt < (ev === 'smashScene' && grippy.last && grippy.last.event === 'smashClear' ? 1500 : GRIPPY_GAP)) return skip('cooldown'); // (a new Smash scene may follow its clear's line sooner)
   if (ev === 'close' && now - grippy.closeAt < GRIPPY_CLOSE_GAP) return skip('rare');
   if (gameMode === 'strike' && strike.balls.some((b) => b.dir > 0 && b.z < CONFIG.STRIKE_Z_FAR * 0.4)) return skip('ball'); // never while a ball is in the last 40% of its approach
   let i = Math.floor(Math.random() * lines.length); if (lines.length > 1 && i === grippy.prev[ev]) i = (i + 1 + Math.floor(Math.random() * (lines.length - 1))) % lines.length; // never the same line twice in a row
@@ -8115,8 +9047,9 @@ function startWorld(n, how) { // play Strike from world n's first level (n: an u
   else { daily.on = false; hideHint(); resetStrike(performance.now()); }
   return strike.level;
 }
-function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel)
+function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel); Smash its map (Free play or a stage)
   if (gameMode === 'strike' && !daily.armed) { openAdvMap({ how }); return; }
+  if (gameMode === 'smash') { openSmashMap({ how }); return; }
   if (how === 'camera') enableCamera(); else fallbackToMouse([]);
 }
 /* --- Strike Adventure: the saga map. A full-screen overlay: a winding path from the bottom up, 40 numbered stops in five world bands (each in its
@@ -8324,8 +9257,10 @@ $('giftOk').addEventListener('click', () => { if (giftState().opened) closeGifts
 $('gifts').querySelector('.xBtn').addEventListener('click', closeGifts);
 $('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) { closeGifts(); return; } if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box; on the backdrop it closes
 $('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
+$('smBack').addEventListener('click', () => closeSmashMap());
+$('smashFree').addEventListener('click', () => { audioInit(); sfx('click'); smashFreeStart(smap.how); });
 window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
-window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeGifts()) return; if (closeAlbum()) return; if (closeNewCard()) return; if (closeAdvMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (closeGifts()) return; if (closeAlbum()) return; if (closeNewCard()) return; if (closeAdvMap()) return; if (closeSmashMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
@@ -8341,7 +9276,7 @@ function setGameMode(m) {
   if (m === 'strike') resetStrike(performance.now());
   if (m === 'shapes') resetShapes(); else if (was === 'shapes') { shapes.held = null; shapes.over = false; }
   if (engine) {
-    if (was === 'smash' && m !== 'smash') clearSmash();
+    if (was === 'smash' && m !== 'smash') { clearSmash(); closeSmashMap(true); }
     if (m === 'sandbox' && !bodies.length) spawnObjects();
     if (m === 'smash' && mode !== 'none') resetSmash(performance.now());
   }
@@ -8390,7 +9325,7 @@ function updateHud() {
   const pd = isNaN(hand.pinchD) ? '-' : hand.pinchD.toFixed(3);
   const rowsH = [
     ['h_mode', t('gm_' + gameMode) + (gameMode === 'slice' ? '  ' + t('h_score') + ' ' + slice.score + '  ' + t('h_missed') + ' ' + slice.missed + '  ' + t('h_lives') + ' ' + slice.lives
-      : gameMode === 'smash' ? '  ' + t('h_score') + ' ' + smash.score + '  ' + smashClock()
+      : gameMode === 'smash' ? '  ' + t('sc_' + smash.scene) + ' ' + Math.round(smash.meter * 100) + '%  ' + smash.things + (smash.run === 'stage' ? '  #' + smash.n + ' ' + smashClock() : '') + '  ' + smash.pieces.length + '/' + smPieceCap()
       : gameMode === 'shapes' ? '  L' + shapes.level + ' ' + shapes.shapes.filter((s) => s.placed).length + '/' + shapes.shapes.length
       : gameMode === 'strike' ? '  ' + t('h_score') + ' ' + strike.score + '  ' + t('h_lives') + ' ' + strike.lives + '  L' + strike.level + ' ' + strike.progress + '/' + strike.goal + (strike.boss ? '  boss ' + strike.boss.hp + '/' + strike.boss.maxHp : '') + (strike.ball ? '  z ' + Math.round(strike.ball.z) : '') : '')],
     ['h_fps', fps.toFixed(0)],
@@ -8415,9 +9350,9 @@ $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetS
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-function syncChromeMode() { const on = gameMode === 'strike'; document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
+function syncChromeMode() { const on = gameMode === 'strike' || gameMode === 'smash'; document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
 function openMenu() {
-  if (menu.open || mode === 'none' || gameMode !== 'strike') return false;
+  if (menu.open || mode === 'none' || (gameMode !== 'strike' && gameMode !== 'smash')) return false;
   menu.open = true; menu.dwell = null; pauseGame(); hideHint();
   chromeEl.classList.add('open'); $('menuVeil').hidden = false; $('pauseBtn').setAttribute('aria-expanded', 'true');
   musicSync(); return true;
@@ -8434,7 +9369,7 @@ $('resumeBtn').addEventListener('click', () => closeMenu(true));
 $('resetBtn').addEventListener('click', () => closeMenu(true)); // (after its own handler restarted the round)
 $('hudBtn').addEventListener('click', () => closeMenu(true)); // the stats panel shows live numbers: back to play
 $('menuVeil').addEventListener('pointerdown', (e) => { e.preventDefault(); closeMenu(true); }); // a tap beside the sheet resumes
-window.addEventListener('keydown', (e) => { if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && mode !== 'none' && gameMode === 'strike' && !advMapOpen()) { if (!closeMenu(true)) openMenu(); } });
+window.addEventListener('keydown', (e) => { if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && mode !== 'none' && (gameMode === 'strike' || gameMode === 'smash') && !anyMapOpen()) { if (!closeMenu(true)) openMenu(); } });
 function menuDwellTick(now) { // camera: a point / pinch / fist held 600 ms on the pause button (or on a sheet button) presses it; while the sheet is open a ring follows the hand
   const ring = $('menuDwell'), g = gesture === 'point' || gesture === 'pinch' || gesture === 'fist';
   const el = cursor.present ? document.elementFromPoint(cursor.x, cursor.y) : null, btn = el && el.closest ? el.closest(menu.open ? '.chrome.open button' : '#pauseBtn') : null, on = !!btn && g;
@@ -8728,12 +9663,12 @@ function goHome() {
   if (held) dropHeld();
   shapes.held = null; if (gameMode === 'shapes') shapes.over = false; // (the next start deals a fresh Shapes round)
   if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
-  if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; } // the clock stops; the next start deals a fresh round
+  if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; smash.taps.length = 0; smFlushTrack(performance.now(), true); } // the clock stops; the next start deals a fresh run
   closeMenu(false); unpauseGame();
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true;
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -8956,7 +9891,8 @@ function renderHints() { // the selected mode's gestures as an icon row under it
 }
 function syncBests() { // best scores on the Slice / Smash / Strike cards; Strike's 'New!' dot while something unlocked on the road waits for its first run
   { const d = document.querySelector('.modes button[data-mode="strike"] .newDot'); if (d) d.hidden = !(profile.road && profile.road.fresh.length); }
-  for (const m of ['slice', 'smash', 'strike']) {
+  { const n = smashStarTotal(), el = document.querySelector('.modes button[data-mode="smash"] .best'); if (el) { el.hidden = !n; el.textContent = n ? '★ ' + n : ''; el.title = n ? t('advStarsN', { n }) : ''; } } // Smash: the stars of its stages
+  for (const m of ['slice', 'strike']) {
     let v = 0, lv = 0; try { v = +localStorage.getItem(m + 'Best') || 0; if (m === 'strike') lv = +localStorage.getItem('strikeLevelBest') || 0; } catch {}
     const el = document.querySelector('.modes button[data-mode="' + m + '"] .best'); el.hidden = !v && !lv; // Strike: best score and best level ('★ 120 · L5')
     el.textContent = [v ? '★ ' + v : '', lv ? 'L' + lv : ''].filter(Boolean).join(' · '); el.title = (v ? t('best', { n: v }) : '') + (v && lv ? ' · ' : '') + (lv ? t('levelBest', { n: lv }) : '');
@@ -8990,6 +9926,7 @@ function onLangChange() {
   if (!hudEl.hidden) updateHud();
   syncMuteBtn(); syncMeta(); syncGrippyBtn();
   if (advMapOpen()) { const sc = $('advScroll'), y = sc.scrollTop; renderAdvMap(); sc.scrollTop = y; } // (the map: its names and its mirrored path)
+  if (smashMapOpen()) { const sc = $('smBody'), y = sc.scrollTop; renderSmashMap(); sc.scrollTop = y; }
 }
 applyLang();
 for (const id of ['camBtn', 'mouseBtn']) $(id).addEventListener('click', audioInit);
@@ -9014,7 +9951,17 @@ window.__grasp = {
   get muted() { return muted; }, set muted(v) { setMuted(v); }, chromeRow, chromeRowBottom, scoreY, hintBottom,
   get state() { return { mode, gesture, held: held ? bodies.indexOf(held.body) : -1, pinch: hand.pinch, fist: hand.fist, pinchD: hand.pinchD, cursor: { x: cursor.x, y: cursor.y }, lastThrow, fps }; },
   get bodies() { return bodies; },
-  slice, smash, busy, strike, pause, previews, setGameMode, setGfx, spawnWave, spawnCar, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  slice, smash, busy, strike, pause, previews, setGameMode, setGfx, spawnWave, resetSmash, resetBusy, resetSlice, setStrikeDiff, strikeParams, punchGesture, endCardAt, setRoundEnd(atMs) { smash.endAt = atMs; }, get pianoVoices() { return pianoVoices.length; },
+  // Smash: build(scene, v) lays a scene out at once; punch(x, y, k) / sweep(...) hit like a tap / a swipe; meter / objs / kinds read the scene; breakTo(f) breaks things until the meter reaches f;
+  // stage(n) / free() start a run as the map does; plan(n); openMap / closeMap; snd: the breaking sounds asked for ({ k: sfx kind, o: thing kind })
+  sm: { scenes: SMASH_SCENES, N: SMASH_N, plan: smashPlan, starsFor: smashStarsFor, build(scene, v = 1) { smBuild(scene, v, 1, performance.now()); smash.phase = 'play'; smash.slide = 0; return smash.objs.length; },
+    get meter() { return smMeter(); }, get disp() { return smDisp(); }, get objs() { return smash.objs; }, get tiles() { return smash.tiles; }, alive(kind) { return smash.objs.filter((o) => o.alive && (!kind || o.kind === kind)); },
+    kinds() { const k = {}; for (const o of smash.objs) k[o.kind] = (k[o.kind] || 0) + 1; return k; }, punch(x, y, k = 0.5) { smash.punchId++; return smPunch(x, y, CONFIG.FIST_RADIUS, 0, 0, k, performance.now()); }, sweep(x0, y0, x1, y1, k = 0.6) { return smSweep(x0, y0, x1, y1, CONFIG.FIST_RADIUS, k, performance.now()); },
+    breakObj(o, k = 0.6) { if (o && o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, 0, k, performance.now()); return o && !o.alive; },
+    breakTo(f) { const now = performance.now(); for (const T of smash.tiles) { if (smMeter() >= f) break; for (let i = 0; i < T.cells.length && smMeter() < f; i++) if (T.cells[i]) { const r = Math.floor(i / T.nc), c = i % T.nc; smTileKnock(T, i, r, c, 0, 0, 2, now, false); } }
+      for (const o of smash.objs) { if (smMeter() >= f) break; if (o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, 0, 0.5, now); } return smMeter(); },
+    stage: (n) => smashStageStart(n, 'mouse'), free: () => smashFreeStart('mouse'), openMap: (o) => openSmashMap(o || {}), closeMap: () => closeSmashMap(true), get mapOpen() { return smashMapOpen(); },
+    get snd() { return smash.snd; }, get heard() { return smash.heard; }, get pieces() { return smash.pieces.length; }, get cap() { return smPieceCap(); }, get pool() { let n = 0; for (const l of smash.pool.values()) n += l.length; return n; }, get stars() { return { ...profile.smash.stars }; }, get unlocked() { return profile.smash.unlocked; }, get current() { return smashCurrent(); }, get total() { return smashStarTotal(); } },
   // meta progression: the profile, coins / XP, missions, the collection; setDate is test-only (it picks the mission day and survives a reload in the tab)
   get profile() { return profile; }, profileReset, addCoins, addXp, levelOf, track, claimMission, coinUi, get events() { return meta.events; }, get toasts() { return meta.toasts; },
   get missions() { ensureMissions(); return profile.missions.list; }, missionPool: MISSION_POOL,
@@ -9078,7 +10025,7 @@ window.__grasp = {
 const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox'];
 const route = { applying: false, log: [] };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
-function routeNow() { return (mode !== 'none' || advMapOpen()) && ROUTE_MODES.includes(gameMode) ? gameMode : null; } // the game on screen (the Adventure map counts as Strike)
+function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? gameMode : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
 function routeEnter(m) {
   if (route.applying || !ROUTE_MODES.includes(m)) return;
   try { const cur = routeOf(location.pathname); if (cur === m) return;
@@ -9100,7 +10047,7 @@ window.addEventListener('popstate', () => {
   if (want === cur) return;
   route.applying = true;
   try {
-    if (cur) { if (mode !== 'none') goHome(); else closeAdvMap(true); }
+    if (cur) { if (mode !== 'none') goHome(); else { closeAdvMap(true); closeSmashMap(true); } }
     if (want) routeOpen(want);
   } finally { route.applying = false; }
 });

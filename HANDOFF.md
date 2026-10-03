@@ -17,7 +17,7 @@ Read this first, then NOTES.md (deploy, phone findings) and DESIGN.md (game desi
   - Test hooks on `window.__grasp`.
 
 ## Games (start screen: one grid of 6 tiles, tap = play)
-Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (toddler widgets), Strike, Shapes (shape sorter with levels, colours and spoken names).
+Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy Board (toddler widgets), Strike, Shapes (shape sorter with levels, colours and spoken names).
 
 **Strike** is the main game: a 3D corridor where you slap a ball into walls of bricks.
 - **The Strike tile:** opens the **Adventure** saga map.
@@ -36,6 +36,16 @@ Sandbox, Slice (katana), Smash (fist, walls, cars), Busy Board (toddler widgets)
   - Code: `pullTick` / `waitTick` / `playerServe(force, now, aim)` (force: a tier or a speed); hooks `strike.pull`, `strike.lastServe { tier, v, aim, flick }`, `strike.ui.serve { charge, armed, text }`; `playerServe(power)` stays the test hook. First serve ever: the one-time tip `tipFlick` (`tipOnce('flick')`).
 - **In-game screen (minimal):** one round pause button in the top corner (tap, Escape or a camera dwell) opens a sheet: Resume, Restart, Sound, Language, Stats, Home. The HUD is one slim row: hearts + a walls pill (Adventure: walls broken / stage walls; Endless: walls toward the next level). No score, progress line, NEXT card, streak chip, perk badges or bottom power bar. Other modes keep the full 5-icon toolbar.
 - **Hit meter:** never on screen permanently. On a hit (or serve) a small power arc pops up just above the hit point, fills to the hit's power in the tier colour (soft / medium / hard / SUPER, `METER_ZONES`, `speedTier`, `TIER_COL`) with the tier's name, and fades within 1 s (`METER_POP_MS`, `drawMeterPop`, hook `strike.ui.meterPop`). Same in 2D and 3D (it is drawn on the 2D overlay).
+
+**Smash** (rebuilt; player feedback: "it's a bit poor, allow smashing much more"):
+- **Tile:** opens the **Smash map** (`#smashMap`): a big **Free play** button, then 20 stages in 5 scene groups (4 each, stars, locks). `/smash` opens the map too.
+- **Scenes** (all drawn in code, `SM_BUILD` / `SM_ART` / `SM_BG`; every thing = one Matter body, kinds in `SMK`, materials in `SMM`): `wall` (a full-screen brick wall; behind it a room with its own tiled wall; behind that a treasure cave: layers 0 / 1 / 2, front first), `room` (window, frames, clock, ceiling lamps, shelves with jars / plants / books / bottles, table with plates and cups, TV on a cabinet, vase, floor lamp), `city` (buildings of stacked floors that collapse floor by floor, cars driving round, street lamps, a tree, a water tower, a hydrant), `blocks` (lettered toy towers, balloons, surprise boxes with confetti and toys), `food` (watermelons, pumpkins, tomatoes, oranges, apples on crates; shelves of eggs and bottles; juice splats painted on the scene).
+- Each thing breaks its own way (debris, juice, sparks, sound: glass / clink / spark / pop / splat / confetti / crunch / wood / splash / clack...). Fragile things break when they fall or are knocked hard (`fr`, chain reactions: a shelf drops its jars, a building collapses floor by floor, the tower's tank bursts). Wall tiles are grid data drawn into one canvas each (`smTileWall`), cleared cell by cell.
+- **Input:** a tap = a punch at that point; a swipe = a sweep along the path (strength by speed, `smStrength`); camera: any contact of the hand (a resting hand knocks every 220 ms).
+- **Meter:** share of the scene's value broken; shown full at `SMASH_CLEAR` (90%), then everything left goes up ("Smashed!"). **Free play:** the next scene slides in (wall → room → city → blocks → food → round again, fuller each lap), 6 coins + 15 XP a scene, no clock, no losing. **Stages:** `smashPlan(n)` (scene, variant, clock 120 s on stage 1, shorter each stage); stars by time left (★★★ ≥ 45% left, ★★ ≥ 20%); start banner with the ★★★ line; card like Strike's: Next / **Play again** / Map, fail: **Try again** / Map; `ECONOMY.smashStage` (first clear 3 + stars, replay only stars added); saved in `profile.smash { stars, unlocked }` (validated).
+- **Screen:** the pause button + sheet as in Strike (`minChrome` for Smash too); HUD = one pill: the meter (stages: + clock + stars still in reach). Voice: start, `smashClear`, `smashScene`, `smashHurry` (10 s left), advClear / advPerfect / advFail on stage cards.
+- **Performance:** debris pooled by shape (`smPiece` / `smRetire`), fades after `SMASH_PIECE_MS`, cap `SMASH_MAX_PIECES` 140 / 80 on a phone; resting bodies sleep (`engine.enableSleeping` while in Smash); stacks keep upright (`lock`: no rotation) until disturbed; stats flushed to `track()` once a second ('brick', 'car', 'wall', 'smash' → `stats.smashed`).
+- Hooks: `__grasp.sm` (build, punch, sweep, breakObj, breakTo, stage, free, plan, snd, heard, pieces, cap, pool...). Tests: `test_smash` (map, scenes, sounds, debris, chains, free play, pause, mouse / touch / camera) and `test_smash2` (stages, stars, cards, profile, voice; screenshots `tests/out/smash2_*.png`).
 
 Around the games:
 - **Meta:** coins, XP and player level, 3 daily missions, a shop (labelled), Grippy the cheering **voice** (see below), and a daily challenge (seeded run with its own streak).
@@ -56,7 +66,7 @@ Around the games:
 - **Economy:** coins are deliberately scarce, about 15–35 per run; shop items cost 120–1000. The numbers are in the `ECONOMY` table.
 
 ## Direct links (per game URL)
-- `/strike` (opens the Adventure map), `/smash`, `/slice`, `/busy`, `/shapes`, `/sandbox` (and with a trailing slash): `vercel.json` rewrites them to `/index.html`; the page starts that game with the remembered input (touch until the camera is picked). Any other path = the start screen (on Vercel only these six are rewritten; `/tremorti/` and the `/tremor` redirect unchanged).
+- `/strike` (opens the Adventure map), `/smash` (opens the Smash map), `/slice`, `/busy`, `/shapes`, `/sandbox` (and with a trailing slash): `vercel.json` rewrites them to `/index.html`; the page starts that game with the remembered input (touch until the camera is picked). Any other path = the start screen (on Vercel only these six are rewritten; `/tremorti/` and the `/tremor` redirect unchanged).
 - Entering a game pushes its path (`routeEnter`, in `startGame` and `openAdvMap`); Home goes to `/` (`history.back()` when the game was entered from the start screen, else `replaceState`); the browser Back from a game = Home (`goHome`), Forward re-enters. Hook `__grasp.route { modes, of, now, log }`.
 - The page's own URLs are root-absolute (`/assets/guests/...`, `/tremorti/`) so they load at `/strike`.
 - Tests serve through `tests/serve.py` (http.server + vercel.json's rewrites), used by `run_fast.sh` and the suites' own fallback server (`test_sandbox.py`, `test_chrome.py`).
@@ -76,8 +86,9 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 10 minutes for 26 runs (24 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 11 minutes for 27 runs (25 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
   - `routes` covers the direct links, pushState / Back / Forward, unknown paths and assets at a sub-path (EN / HE; screenshots `tests/out/route_*.png`). `serve` covers the pull-back + flick serve on mouse, touch (synthetic pointer events, `__gest`) and the camera stub (screenshots `tests/out/serve_*.png`).
+  - `smash` + `smash2` cover Smash (see above).
   - `hudmin` covers the minimal in-game screen, the pause sheet, the hit-meter pop (2D and 3D) and the clear card's stars line / buttons on a phone (screenshots `tests/out/hud_min_*.png`, `tests/out/fix_*.png`).
   - `tests/run_fast.sh adventure habit` runs only the named suites. Use that before a small ship.
   - Logs are in `tests/out/logs/`, screenshots in `tests/out/`.
@@ -101,7 +112,7 @@ Around the games:
   - 3D performance;
   - cow size in play;
   - the gift pop-up.
-- **Phone check:** fist vs pinch detection in Smash.
+- **Phone check:** fist vs pinch detection in Smash; Smash scenes' density / stage clocks with a real child; phone CPU with many bodies.
 - **Monkey art:** waiting for the user's images.
 - **Possible next steps:**
   - more worlds after world 5;
