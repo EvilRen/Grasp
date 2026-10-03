@@ -112,7 +112,7 @@ async def main():
             # mostly blocked: the ball's circle mostly over the bricks beside the hole -> a normal (medium) hit, not a clip
             h = await page.evaluate(HOLE + "(0, 0, 0)")
             r = await page.evaluate(f"(() => {{ const s = {S}, w = s.walls.find(q => q.id === {h['id']}), b = s.ball, r = ballRad(b); b.x = {h['hole'][0]} - r * 0.3; b.lx = b.x; s.lastClip = null; const open = s.ballGapContact(w).open, out = smashWall(w, b, performance.now()); return {{ open, out, left: w.left, clip: s.lastClip }}; }})()"); gc = r['open']
-            check(f'{tag}: the circle mostly over the bricks (open {gc:.2f} < 0.5): a normal hit (the medium footprint), not a clip', gc < 0.5 and r['clip'] is None and h['left'] - r['left'] >= 3, [gc, r])
+            check(f'{tag}: the circle mostly over the bricks (open {gc:.2f} < 0.5): a normal hit (v4: the medium footprint, the brick + a neighbour), not a clip, and the ball bounces', gc < 0.5 and r['clip'] is None and 1 <= h['left'] - r['left'] <= 2 and r['out'] == 'bounce', [gc, r])
             # a real flight across the edge: at the crossing frame (and after) no live brick overlaps the ball's circle, and the drawn bricks (3D) match
             h = await page.evaluate(HOLE + "(0, 0, 0)")
             await page.evaluate(f"(() => {{ const b = {S}.ball, r = ballRad(b); b.x = {h['hole'][0]} + r * 0.9; b.lx = b.x; b.vx = -0.05; b.speed = {S}.pace; }})()")

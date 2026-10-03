@@ -88,3 +88,33 @@ Idea from the player: *all the walls break, and when they are broken you move on
 **Applied: the sticker album and world music**
 - *Sticker album:* the first 3-star clear of each Adventure stage peels a sticker onto the clear card (40 drawn stickers, 8 per world: tools, glass garden, robots, jungle animals, volcano dragons and gems). The Album button in the map header opens one page per world. Missing stickers show as silhouettes with the stage number and three stars ("Get 3 ★ on stage 12"). A full page pays `ECONOMY.album.page` (30 coins) once, with confetti. Players who had 3-star stages before the album get those stickers as new ones.
 - *World music:* each world has its own quiet loop (playful square lead, airy bells, mechanical saw, marimba, dramatic minor). It plays only while a stage is being played and ducks under the stage and boss banners. A 100 ms lookahead timer schedules the notes, so nothing runs per frame. Mute silences it.
+
+## v4: challenge (after a 60-second playtest with a 13-year-old)
+
+**Feedback:** "Breaking the ball was really not a challenge: if I hit hardest it just breaks all the walls. He didn't get excited."
+
+**Why it was flat:** a SUPER slap cleared a whole wall *and flew on* through the next ones, so the best move was always "hit as hard as
+you can"; aim did not matter; nothing pushed back, so you could not really lose; and there was no number to beat.
+
+**What action games that hook teens do:** every hit is a decision (Breakout / Arkanoid aim, *Peggle*'s orange pegs, *Angry Birds*'
+weak points and keystones), power has a cost (heat / stamina bars in shooters and fighting games), the world fights back (projectiles,
+a closing wall), and a score chase with ranks and records (S-ranks, "NEW RECORD!", combo multipliers in *Tetris Effect*, *Beat Saber*).
+
+**Applied (all Strike; B and C mainly the Adventure, sensible in Endless / the daily too):**
+- *A hard hit is no "break everything" button:* the ball meets one wall and comes back off it. The damage is a bounded blast by tier
+  (soft: a chip; medium: the brick + a neighbour; hard: a plus; SUPER: the 3x3; the fireball power-up: a radius-2 diamond). A wall down
+  to its last quarter collapses, so nobody chases the last scattered brick.
+- *Aim matters:* the hit's direction picks the landing point (a reticle shows it). Armored bricks take 2-3 hits (cracks per hit),
+  glowing weak spots crack a whole row and column, a keystone brings down what rests on it, gold pays a bonus. One good shot beats three
+  wild ones.
+- *Overheat:* hard and SUPER hits heat the hand; at full heat every hit is soft for 3 s (steam, sizzle). Soft / medium hits and time cool
+  it. It forces mixing the hits instead of SUPER spam. Shown only while warm, as a slim bar under the hearts pill.
+- *Real risk:* world 1's first four stages stay a gentle on-ramp; from world 2 the pace climbs (x1.1-1.38 on top of the level curve), the
+  reach shrinks, the walls stand closer, turret bricks shoot slow shots you must slap away (or lose a heart), from stage 12 the front
+  wall closes in, and some world 3+ stages serve two balls at once (each one missed costs a heart). Stages can be failed for real; 3 stars
+  still means "no heart lost".
+- *Score chase:* a combo multiplier (x2 after 3 returns in a row ... x8) pops by the pill only when it changes; the clear card shows the
+  score, a rank (Bronze, Silver, Gold, Diamond, Legend by multiples of the stage's par), the stage's best and a "NEW RECORD!" moment with
+  a fanfare and the voice. The map shows each stage's best rank as a gem and an overall rank, a reason to replay old stages.
+- *Juice:* shake scaled to what broke, an 80 ms hit-stop on a SUPER impact, a crack sound per armor level, crack lines racing from a weak spot.
+- *Economy unchanged:* no coins for bricks, gold or records; the score and ranks are their own reward.

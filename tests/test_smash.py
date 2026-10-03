@@ -156,6 +156,8 @@ async def main():
         nx = await page.evaluate(f"({{ scene: {S}.scene, meter: {SM}.meter, slide: {S}.slide, said: __grasp.grippy.said.map(s => s.event).slice(-2), spoken: __spoken.length }})")
         check('then the next scene (the room) slides in from the side with its name, and the voice says so (smashScene)', sl['scene'] == 'room' and sl['slide'] > 0 and nx['scene'] == 'room' and nx['meter'] < 0.05 and nx['slide'] == 0 and nx['said'] == ['smashClear', 'smashScene'], [sl, nx])
         check('free play order: wall, room, city, blocks, food, then round again', await page.evaluate("(() => { const out = []; for (let i = 0; i < 6; i++) { smFreeNext(performance.now()); out.push(__grasp.smash.scene); } return out; })()") == ['city', 'blocks', 'food', 'wall', 'room', 'city'])
+        try: await page.wait_for_function("['brick', 'car', 'wall', 'smash'].every(k => __grasp.events.some(e => e[0] === k))", timeout=5000)  # (the stats are flushed to track() once a second: polled)
+        except Exception: pass
         ev = await page.evaluate("__grasp.events.map(e => e[0])"); pr = await page.evaluate("__grasp.profile.stats")
         check('smashing counts for the stats and missions: bricks (bricks, tiles, blocks, floors), cars, walls (a wall or a building all the way down), things smashed', all(k in ev for k in ['brick', 'car', 'wall', 'smash']) and pr['smashed'] > 0 and pr['bricks'] > 0 and pr['cars'] > 0 and pr['walls'] > 0, [sorted(set(ev)), pr])
         # ---- the pause sheet: everything waits ----

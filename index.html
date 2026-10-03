@@ -423,6 +423,13 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 @keyframes abob{ 0%,100%{ transform:translateY(0) rotate(-8deg); } 50%{ transform:translateY(-6px) rotate(4deg); } }
 @keyframes apop{ 0%{ transform:scale(.3); filter:brightness(2.2); } 60%{ transform:scale(1.35); } 100%{ transform:scale(1.12); filter:none; } }
 .amFoot{ flex:none; position:relative; z-index:3; display:flex; justify-content:center; padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 12px); background:linear-gradient(rgba(22,29,61,.94),#161d3d); box-shadow:0 -1px 0 var(--line); }
+.amFoot{ gap:10px; align-items:center; }
+.amRank{ display:inline-flex; align-items:center; gap:7px; min-height:44px; padding:4px 14px 4px 10px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px var(--rc,#d08a4e); color:var(--bone); line-height:1.1; }
+.amRank i{ width:16px; height:16px; transform:rotate(45deg); border-radius:3px; background:var(--rg); box-shadow:0 0 0 1.5px rgba(8,11,28,.8), 0 0 8px var(--rc); flex:none; }
+.amRank span{ display:flex; flex-direction:column; }
+.amRank small{ font-size:10px; color:var(--muted); font-weight:600; }
+.amRank b{ font-size:14px; font-weight:800; }
+.anode .rk{ position:absolute; top:-3px; inset-inline-end:-5px; width:15px; height:15px; transform:rotate(45deg); border-radius:3px; background:var(--rg); box-shadow:0 0 0 2px rgba(8,11,28,.85), 0 0 6px var(--rc); z-index:2; }
 .amEndless{ min-height:52px; padding:6px 22px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.4); color:var(--bone); display:inline-flex; align-items:center; gap:10px; text-align:start; }
 .amEndless svg{ width:26px; height:26px; stroke:var(--saffron); fill:none; stroke-width:2.2; stroke-linecap:round; flex:none; }
 .amEndless span{ display:flex; flex-direction:column; line-height:1.15; }
@@ -788,7 +795,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 <div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
   <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amAlbum" id="advAlbumBtn" type="button" aria-label="Sticker album"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M5 4.5C5 3.1 6.1 2 7.5 2H27v22H7.5C6.1 24 5 25.1 5 26.5z" fill="#5a7cff" stroke="#1d2547" stroke-width="1.6" stroke-linejoin="round"/><path d="M5 26.5C5 25.1 6.1 24 7.5 24H27v3H7.5" fill="#f1e9da" stroke="#1d2547" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16.5" cy="12" r="6.2" fill="#fbf8f2" stroke="#1d2547" stroke-width="1.3"/><path d="M16.5 8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" fill="#ffc24b"/></svg><b class="pr">0/40</b><i class="dot" hidden></i></button><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 120</small></span></header>
   <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
-  <footer class="amFoot"><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
+  <footer class="amFoot"><span class="amRank" id="advRank" hidden><i></i><span><small data-i18n="rankTitle">Rank</small><b></b></span></span><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button></footer>
   <div id="album" class="albOv" hidden role="dialog" aria-modal="true" aria-labelledby="albumTitle">
     <div class="sheet albSheet">
       <header><h2 id="albumTitle" data-i18n="albumTitle">Sticker album</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -958,6 +965,9 @@ const I18N = {
     hintStrikeCam: 'Move your hand onto the ball and slap it as it arrives. A fast slap smashes through the brick walls. Keep your hand inside the yellow box.',
     hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives. A fast swipe smashes the brick walls.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. A fast swipe smashes the brick walls. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
+    goldPts: 'GOLD +{n}', weakHit: 'Weak spot!', keyHit: 'Keystone!', overheat: 'Overheat!', overheatShort: 'Too hot!', deflected: 'Blocked!', ouch: 'Ouch!', tooClose: 'Too close!', comboWord: 'COMBO',
+    tipHeat: 'Too many hard hits overheat your hand: mix in soft and medium hits to cool it.', tipWeak: 'Aim for the glowing bricks: they crack a whole line!', tipTurret: 'Red-eyed bricks shoot back: slap the shots away!',
+    scoreN: 'Score {n}', bestN: 'Best {n}', newRecord: 'NEW RECORD!', rk_bronze: 'Bronze', rk_silver: 'Silver', rk_gold: 'Gold', rk_diamond: 'Diamond', rk_legend: 'Legend', rankAria: 'Rank: {r}', nextRank: '{r} at {n}', rankTitle: 'Rank',
     pw_soft: 'Soft', pw_medium: 'Medium', pw_hard: 'Hard', pw_super: 'SUPER!', h_lives: 'lives', diffEasy: 'Easy', diffNormal: 'Normal', diffAria: 'Strike difficulty',
     wk_final: 'Final wall!', wk_brick: 'Brick wall', wk_glass: 'Glass wall!', wk_steel: 'Steel wall!', wk_holed: 'Wall with a hole!', wk_moving: 'Moving wall!', wk_tnt: 'TNT wall!',
     pu_multi: 'Multi-ball!', pu_big: 'Big ball!', pu_slow: 'Slow-mo!', pu_fire: 'Fireball!', pu_life: '+1 life!',
@@ -1084,6 +1094,9 @@ const I18N = {
     hintStrikeCam: 'הזיזו את היד אל הכדור והכו בו כשהוא מגיע אליכם. מכה מהירה מנפצת את קירות הלבנים. שמרו על היד בתוך המסגרת הצהובה.',
     hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
+    goldPts: 'זהב +{n}', weakHit: 'נקודת תורפה!', keyHit: 'אבן ראשה!', overheat: 'היד רותחת!', overheatShort: 'חם מדי!', deflected: 'נהדף!', ouch: 'אאוץ׳!', tooClose: 'קרוב מדי!', comboWord: 'קומבו',
+    tipHeat: 'יותר מדי מכות חזקות מחממות את היד: שלבו מכות רכות ובינוניות כדי לקרר אותה.', tipWeak: 'כוונו ללבנים הזוהרות: הן סודקות שורה שלמה!', tipTurret: 'לבנים עם עין אדומה יורות בחזרה: הדפו את היריות!',
+    scoreN: 'ניקוד {n}', bestN: 'שיא {n}', newRecord: 'שיא חדש!', rk_bronze: 'ארד', rk_silver: 'כסף', rk_gold: 'זהב', rk_diamond: 'יהלום', rk_legend: 'אגדה', rankAria: 'דרגה: {r}', nextRank: '{r} ב־{n}', rankTitle: 'דרגה',
     pw_soft: 'רכה', pw_medium: 'בינונית', pw_hard: 'חזקה', pw_super: 'סופר!', h_lives: 'חיים', diffEasy: 'קל', diffNormal: 'רגיל', diffAria: 'רמת הקושי במכה',
     wk_final: 'קיר אחרון!', wk_brick: 'קיר לבנים', wk_glass: 'קיר זכוכית!', wk_steel: 'קיר פלדה!', wk_holed: 'קיר עם חור!', wk_moving: 'קיר נע!', wk_tnt: 'קיר TNT!',
     pu_multi: 'כדורים כפולים!', pu_big: 'כדור ענק!', pu_slow: 'הילוך איטי!', pu_fire: 'כדור אש!', pu_life: 'לב נוסף!',
@@ -4776,7 +4789,7 @@ function advWorldOf(n) { return Math.max(1, Math.min(WORLD_N, Math.ceil(Math.max
 function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
   n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); const w = advWorldOf(n), i = n - (w - 1) * ADV_WORLD, boss = i === ADV_WORLD, r = mulberry32(strSeed('advplan|' + n));
   const level = (w - 1) * WORLD_LEVELS + Math.max(1, Math.round(i * WORLD_LEVELS / ADV_WORLD)); // the tuning level: world 1 runs levels 1-6 (its boss stage at the old boss level 6), world 5 up to 30
-  const full = Math.min(10, 3 + w + Math.floor((i - 1) / 2)), walls = boss ? Math.max(3, full - 2) : full; // 4 walls on stage 1, a step every other stage, 10 at most; the boss stage: two fewer, then the boss
+  const full = Math.min(8, [4, 4, 5, 6, 6][w - 1] + Math.floor((i - 1) / 3)), walls = boss ? Math.max(3, full - 2) : full; // 4 walls on stage 1, a step every third stage, 8 at most (v4: a wall takes several aimed hits now); the boss stage: two fewer, then the boss
   const intro = (k) => { const wi = ADV_NEW.findIndex((ks) => ks.includes(k)), j = ADV_NEW[wi].indexOf(k); return wi * ADV_WORLD + 1 + 2 * j; }; // the stage a kind comes in on (world 4's moving walls two stages after its holed ones)
   const pool = STRIKE_KINDS.filter((k) => intro(k) <= n), fresh = pool.filter((k) => k !== 'brick' && intro(k) === n), kinds = [];
   for (let k = 0; k < walls; k++) {
@@ -4786,7 +4799,12 @@ function advPlan(n) { // stage n's fixed plan (pure: the same object for the sam
     for (let j = 0; j < pool.length; j++) { x -= wts[j]; if (x < 0) { pick = pool[j]; break; } }
     kinds.push(pick);
   }
-  return { n, world: w, index: i, boss, level, walls, kinds, hp: Math.min(4, 1 + Math.floor((n + 3) / 10)), // plain bricks: 1 hp up to stage 6, 4 from stage 27
+  const easy = w === 1 && i <= 4; // v4 (challenge): world 1's first four stages are the gentle on-ramp; from world 2 the curve is steep
+  return { n, world: w, index: i, boss, level, walls, kinds, hp: n < 5 ? 1 : n < 17 ? 2 : 3, // armored bricks' hp (plain bricks always 1): none before stage 5, 2 hp to world 2's end, 3 from world 3
+    armor: n < 5 ? 0 : [0.15, 0.25, 0.3, 0.35, 0.4][w - 1], weak: easy ? 2 : 1, gold: n >= 2 ? 0.5 : 0, key: n >= 6 ? (w >= 2 ? 1 : 0.5) : 0, // armored share; glowing weak spots a wall; gold bricks (a chance a wall); keystones (a chance a wall)
+    turret: n >= 10 ? [0, 0, 0.5, 1, 1.4, 2][w] : 0, turretMs: [0, 0, 5200, 4600, 4000, 3400][w], shotSpeed: 0.4 + 0.05 * Math.max(0, w - 2), // turret bricks a wall (from stage 10), ms between shots, their projectiles' speed
+    creep: n >= 12 ? [0, 0, 0.025, 0.035, 0.045, 0.055][w] : 0, balls: !boss && ((w >= 3 && (i === 3 || i === 6)) || (w === 5 && i % 2 === 0)) ? 2 : 1, // walls closing in (depth units / ms, from stage 12); two balls at once (some world 3+ stages)
+    paceK: easy ? 0.9 : w === 1 ? 1 : [0, 1, 1.1, 1.18, 1.24, 1.3][w] + 0.01 * i, reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75][w], magK: w === 1 ? 1 : 0.5,
     pu: n >= 3 ? Math.min(0.4, 0.2 + 0.05 * (w - 1)) : 0, guests: n >= 2, monkey: w >= 2, curve: w >= 2, wobble: w >= 4 }; // power-up bricks from stage 3 and rare; the cow from stage 2, the monkey from world 2; bending serves from world 2, S-wobbles from world 4
 }
 function advOpen(id) { // what a stage may use in place of the road: everything, but the monkey, power-ups and serve shapes come with the worlds; no perks
@@ -4798,6 +4816,15 @@ function advOpen(id) { // what a stage may use in place of the road: everything,
 }
 function advPlayable(n) { const A = profile.adv; return n >= 1 && n <= ADV_N && (n <= A.unlocked || A.open.includes(n)); }
 function advCurrent() { const A = profile.adv; let c = 0; for (let n = 1; n <= ADV_N; n++) if (advPlayable(n) && !A.stars[n]) c = n; return c || Math.min(ADV_N, A.unlocked); } // the next unplayed stage (the furthest one, for a player with worlds opened in Endless)
+// v4 (challenge): a score chase. Each stage's best score is kept; a clear's score earns a rank by thresholds on the stage's par (its walls x
+// (30 + 10 x its tuning level), + 200 x the world on a boss stage: about what a clear at x1 scores): Bronze any clear, Silver 1x par, Gold 1.8x,
+// Diamond 3x, Legend 4.5x (only with long combos). The map shows each stage's best rank; the overall rank is the average over the cleared stages.
+const RANKS = ['bronze', 'silver', 'gold', 'diamond', 'legend'], RANK_K = [0, 1, 1.8, 3, 4.5], RANK_COL = ['#d08a4e', '#c9d3e3', '#ffc24b', '#7fe6ff', '#ff7ad9'];
+function stagePar(n) { const P = advPlan(n); return P.walls * (30 + 10 * P.level) + (P.boss ? 200 * P.world : 0); }
+function rankThresholds(n) { const par = stagePar(n); return RANK_K.map((k) => Math.round(k * par)); }
+function rankFor(n, score) { if (!(score > 0)) return -1; const th = rankThresholds(n); let r = 0; for (let i = 1; i < th.length; i++) if (score >= th[i]) r = i; return r; } // -1: no score yet
+function advBestRank(n) { const A = profile.adv; return A.stars[n] ? Math.max(0, rankFor(n, A.best[n] || 0)) : -1; } // a cleared stage with no score kept (cleared before v4): Bronze
+function overallRank() { const ns = Object.keys(profile.adv.stars).map(Number); if (!ns.length) return -1; return Math.floor(ns.reduce((a, n) => a + advBestRank(n), 0) / ns.length + 1e-9); }
 function advStarTotal() { let s = 0; for (const k in profile.adv.stars) s += profile.adv.stars[k]; return s; }
 function advOpenNode(A, n) { // stage n becomes playable: the frontier moves on, or (past a gap: a world opened in Endless) it is kept on its own
   if (n < 1 || n > ADV_N || n <= A.unlocked || A.open.includes(n)) return;
@@ -4844,7 +4871,8 @@ function strikeTuning(level = strike.level, diff = strikeDiffKey()) {
     curve: L >= CURVE_AT && roadOpen('curve') ? R.curve0 + R.curve * (Math.min(L, 9) - CURVE_AT) : 0, // from level 5: the incoming ball bows sideways by this share of the corridor width
     waves: L >= R.waves && roadOpen('wobble') ? 2 : 1,   // from level 9: an S-shaped wobble instead of one bow (once unlocked on the road)
     wallGap: Math.max(R.gapMin, CONFIG.STRIKE_WALL_GAP * (1 - R.gap * q)), // depth between the queued walls (closer = less time between walls; Easy -8 a level, never under 300)
-    brickHp: L,                                           // hit points of a plain brick (glass 1, steel 3 and power-up bricks 1 at every level)
+    armor: L < 2 ? 0 : Math.min(0.4, 0.1 * (L - 1)),       // v4: the share of a wall's bricks that are armored (none on level 1, 40% from level 5)
+    brickHp: Math.min(3, L),                              // hit points of an armored brick (v4: plain bricks have 1; a share of armored ones with this many, see challengeCfg; glass 1, steel 3, power-up bricks 1)
     kindWeights: weights,                                 // the random mix once the level's own kind has been shown
     bossHpMul: 1 + R.boss * q * q,                        // x the boss's hp (12 + 4n, x0.6 on Easy); gentle at first, steep later
     bossSpeed: (1 + R.bossSpd * q) * bossK,               // x the boss's advance speed (a step faster from level 8)
@@ -4857,19 +4885,20 @@ function strikeTuning(level = strike.level, diff = strikeDiffKey()) {
     post,
   };
 }
-function strikeLevelBase() { return strikeTuning().pace * paceMul(); } // the current level's base pace, daily 'Speedy' included
+function strikeLevelBase() { return strikeTuning().pace * paceMul() * advK('paceK'); } // (an Adventure stage: x its plan's pace factor: gentler on world 1's first stages, steeper from world 2)
+function advK(key) { return adv.on && adv.plan && adv.plan[key] > 0 ? adv.plan[key] : 1; } // an Adventure stage's tuning factor (pace, reach, wall gap, magnet); 1 outside one // the current level's base pace, daily 'Speedy' included
 function levelNews(L) { // what got harder at level L: up to 3 keys for the level banner's sub-line
   const T = strikeTuning(L), P = strikeTuning(L - 1), out = [];
   const k = kindNewAt(L); if (k) out.push('nw_' + k);
   if (T.curve > 0 && !P.curve) out.push('hd_curve'); else if (T.waves > P.waves) out.push('hd_wobble');
   if (L === STRIKE_WOBBLE_AT) out.push('hd_boss'); // (the boss's step up comes with the wobble)
   if (T.pace > P.pace) out.push('hd_faster');
-  if (T.brickHp > P.brickHp) out.push('hd_tougher');
+  if (T.brickHp > P.brickHp || T.armor > P.armor) out.push('hd_tougher'); // (v4: armored bricks: tougher, or more of them)
   return out.slice(0, 3);
 }
 function levelNewsText(keys) { return (keys || []).map((k) => t(k)).join('  ·  '); }
 // strike.balls holds every ball in flight (one, or three on Multi-ball); strike.ball / speed / trail alias the first one for the hooks and tests
-const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
+const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris: [], capsules: [], powerups: [], floaters: [], shots: [], cracks: [], heat: 0, hotUntil: 0, stopUntil: 0, /* (v4: turret shots in flight, weak-spot crack lines, the hand's heat, the overheat's end, the hit-stop's end) */ pace: 0, lives: 0, maxLives: 0, score: 0, best: 0, over: false, overAt: 0,
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
   get speed() { const b = strike.balls[0]; return b ? b.speed : strike._speed; }, set speed(v) { const b = strike.balls[0]; if (b) b.speed = v; strike._speed = v; },
   get trail() { const b = strike.balls[0]; return b ? b.trail : strike._trail; },
@@ -5039,7 +5068,7 @@ document.querySelectorAll('#strikeDiff button').forEach((b) => b.addEventListene
 function resetStrike(now) {
   loadGuestArt(); gfx3dBoot(); // Strike starts: the guests' painted art loads (once); three.js loads now (once), then the corridor renders in WebGL
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
-  const A = adv.on ? advBegin() : null; // an Adventure stage: its plan, its seeded channels afresh
+  const A = adv.on ? advBegin() : null, ui0 = strike.ui; // an Adventure stage: its plan, its seeded channels afresh
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
   const w0 = A ? A.world : daily.on ? 1 : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
@@ -5050,6 +5079,8 @@ function resetStrike(now) {
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = L0 > 1 && !A ? kindNewAt(L0) : null;
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; strike.runReturns = strike.paceUps = 0; strike.ui.faster = null; roundStart();
   strike.pitches = strike.guestHits = strike.guestMisses = strike.guestsServed = 0; strike.guestKinds.length = strike.bouncers.length = 0; strike.lastGuest = null; guestRoll(); // (after the daily's generators reset: the same guests on the same serves)
+  strike.heat = 0; strike.hotUntil = 0; strike.stopUntil = 0; strike.shots.length = strike.cracks.length = 0; strike.bestMul = 1; ui0.comboPop = ui0.heatBar = null; // v4 (challenge): the heat, the hit-stop, turret shots, crack lines, the combo
+  strike.overheats = strike.shotsFired = strike.deflects = strike.shotHits = strike.crushes = strike.golds = strike.weakHits = strike.keyHits = strike.turretsDown = 0;
   strike.perks = {}; strike.perkOffer = null; strike.perkAt = 0; strike.streak = strike.bestStreak = strike.closeOnes = 0; strike.slowUntil = -1e9; strike.upcoming = null; // perks, the streak and the rest reset each round
   try { strike.levelBest = Math.max(strike.levelBest, +localStorage.getItem('strikeLevelBest') || 0); } catch {}
   strike.serveAt = now + (daily.on ? 2400 : 600); strike.cued = false; // (the daily's banner reads before the first serve)
@@ -5157,7 +5188,7 @@ function chestTick(now, dt) {
   } else if (c.state === 'open' && now - c.openAt >= CHEST_OPEN_MS) { strike.chest = null; strike.releaseUntil = now + 300; strike.serveAt = now + 1100; strike.cued = false; }
 }
 /* --- walls: grids of bricks across the corridor --- */
-function wallGap() { return strikeTuning().wallGap; } // depth between queued walls: shrinks with the level
+function wallGap() { return strikeTuning().wallGap * advK('gapK'); } // depth between queued walls: shrinks with the level
 function wallSlotZ(i) { return CONFIG.STRIKE_Z_FAR * 0.4 + i * wallGap(); }
 function nextWallZ() { // where a replacement wall spawns: its slot, or beyond the last wall in the queue, and never in front of a live boss
   let z = Math.max(wallSlotZ(strike.walls.length), strike.walls.reduce((m, q) => Math.max(m, q.z), 0) + wallGap());
@@ -5183,8 +5214,8 @@ function spawnStrikeWall(z, kind) {
   if (adv.on && !STRIKE_KINDS.includes(kind) && adv.spawned >= adv.plan.walls) return null; // an Adventure stage: its walls are all out, no more come
   kind = STRIKE_KINDS.includes(kind) ? kind : takeUpcoming(); if (adv.on) adv.spawned++;
   const g = wallGrid(), level = strike.level, cols = kind === 'moving' ? g.cols - 1 : g.cols, rows = g.rows, bricks = [];
-  const hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : adv.on ? adv.plan.hp : strikeTuning(level).brickHp; // glass shatters on any hit, steel plates take 3, bricks toughen with the level (an Adventure stage: its plan's)
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp, dent: 0, tnt: false, hole: false });
+  const C = challengeCfg(), hp = kind === 'glass' ? 1 : kind === 'steel' ? 3 : adv.on ? adv.plan.hp : strikeTuning(level).brickHp; // the wall's toughest brick: glass 1, steel plates 3, armored bricks by level (an Adventure stage: its plan's)
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ col: c, row: r, alive: true, hp: kind === 'steel' ? 3 : 1, dent: 0, tnt: false, hole: false }); // (v4: plain bricks 1 hp; a share of them armored below)
   const w = { id: strike.wallId++, z, pz: z, bricks, cols, rows, hp, level, left: bricks.length, kind, span: g.cols, ox: 0, phase: strikeRand('bricks') * TAU };
   const at = (c, r) => bricks[r * cols + c];
   if (kind === 'holed') { // a gap the ball fits through (it flies through untouched): as many cells as the ball needs each way (1 x 1 on a phone, 1 x 2 on a laptop), sometimes one wider
@@ -5204,8 +5235,31 @@ function spawnStrikeWall(z, kind) {
     for (const k of shuffled(free, () => strikeRand('bricks')).slice(0, n)) { k.pu = puKind(); k.hp = 1; } // a power-up brick breaks on any hit, however tough its wall
     n = Math.min(n, free.length); strike.puDrought = n ? 0 : strike.puDrought + 1;
   }
+  specialBricks(w, kind, C, hp); w.n0 = w.left; // (n0: the bricks it started with, for the collapse)
+  for (const k of bricks) k.max = k.hp; // (the cracks show how much of its hp a brick has lost)
   strike.walls.push(w); strike.walls.sort((a, b) => a.z - b.z);
   return w;
+}
+/* --- v4 (challenge): what a wall carries besides plain bricks (an Adventure stage: its plan; Endless / the daily: by level; the older suites' extrasOff: nothing) --- */
+const CH_NONE = { hp: 1, armor: 0, weak: 0, gold: 0, key: 0, turret: 0, turretMs: 5000, shotSpeed: 0.4, creep: 0, balls: 1 };
+const GOLD_PTS = 25, TURRET_HP = 2, CRUSH_Z = 260; // a gold brick's bonus (x the combo); a turret's hp; a wall closing in that gets this near crushes a heart
+function challengeCfg() {
+  if (adv.on && adv.plan) return adv.plan;
+  if (strike.extrasOff || strike.noSpecials) return CH_NONE; // (test-only noSpecials: plain walls for the suites that check exact brick counts)
+  const L = Math.max(1, strike.level | 0);
+  return { hp: Math.min(3, L), armor: strikeTuning(L).armor, weak: 1, gold: L >= 2 ? 0.5 : 0, key: L >= 4 ? 0.5 : 0, turret: L >= 6 ? Math.min(2, 0.5 + 0.25 * (L - 6)) : 0,
+    turretMs: Math.max(3400, 5600 - 200 * (L - 6)), shotSpeed: 0.4 + 0.01 * L, creep: L >= 9 ? Math.min(0.05, 0.02 + 0.003 * (L - 9)) : 0, balls: 1 };
+}
+function chanceN(x) { return Math.floor(x) + (strikeRand('bricks') < x % 1 ? 1 : 0); } // a count from a rate: 1.4 = one, and a second 40% of the time
+function specialBricks(w, kind, C, hp) { // armored bricks (hp 2-3), glowing weak spots, a gold brick, a keystone (not on the top row), turrets (top half); never on a TNT crate, a power-up brick or a hole
+  if (kind === 'glass' || (!C.armor && !C.weak && !C.gold && !C.key && !C.turret)) { w.turretAt = 0; return; }
+  const R = () => strikeRand('bricks'), free = (f) => shuffled(w.bricks.filter((k) => k.alive && !k.tnt && !k.pu && !k.armor && !k.weak && !k.gold && !k.key && !k.turret && (!f || f(k))), R);
+  if (kind !== 'steel' && C.armor > 0 && hp >= 2) { const pool = free(), n = Math.round(C.armor * pool.length); for (const k of pool.slice(0, n)) { k.armor = true; k.hp = hp; } }
+  for (const k of free().slice(0, chanceN(C.weak))) k.weak = true;
+  if (kind !== 'steel') for (const k of free().slice(0, chanceN(C.gold))) k.gold = true;
+  if (kind !== 'steel') for (const k of free((q) => q.row >= Math.max(1, Math.floor(w.rows / 2)) && w.bricks.some((u) => u.alive && u.row < q.row && Math.abs(u.col - q.col) <= 1)).slice(0, chanceN(C.key))) k.key = true;
+  for (const k of free((q) => q.row < Math.ceil(w.rows / 2)).slice(0, chanceN(C.turret))) { k.turret = true; k.hp = Math.max(k.hp, TURRET_HP); }
+  w.turretAt = 0; // (the first shot comes a while after the wall is in view)
 }
 function peekUpcoming() { return strike.upcoming || (strike.upcoming = wallKindFor(strike.level)); } // the kind the next spawned wall will be, rolled ahead so the telegraph can show it
 function takeUpcoming() { const k = peekUpcoming(); strike.upcoming = null; return k; }
@@ -5228,7 +5282,7 @@ function speedMul() { return powerOn('slow') ? PU_SLOW : 1; } // Slow-mo: every 
 /* --- perks, the hit streak, 'Close one!' --- */
 function perkN(id) { return strike.perks[id] || 0; }
 function reachMul() { return (1 + 0.2 * perkN('wide')) * (dailyMod() === 'bighands' ? 1.4 : 1); }                       // Wider Hands
-function magnetVal() { return strikeTuning().magnet + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
+function magnetVal() { return strikeTuning().magnet * advK('magK') + 0.15 * perkN('magnet'); } // Sticky Magnet (works on Normal too, where the base is 0)
 function puRate(L = strike.level) { // power-up bricks per wall at level L: none on levels 1-2 (the pure core), ~1/3 a wall at levels 3-4 rising to 1/2 by level 8; Lucky +50% each, 'Power-up rain' x3 from level 1 (CONFIG.STRIKE_PU_RATE scales it: 1/12 = as designed, 0 = none)
   if (adv.on) return adv.plan.pu * CONFIG.STRIKE_PU_RATE * 12; // an Adventure stage: its plan's (from stage 3, rare)
   const rain = dailyMod() === 'rain'; if ((L < PU_FROM && !rain) || !puPool().length) return 0; // (none until the first power-up is unlocked on the road)
@@ -5237,7 +5291,9 @@ function puRate(L = strike.level) { // power-up bricks per wall at level L: none
 function perkAfter(L) { return L >= 3 && L % 2 === 1; } // a perk pick after completing levels 3, 5, 7, 9 ... (not every level)
 function serveMul() { return Math.pow(0.85, perkN('slow')); }                 // Slow Start
 function coinMul() { return 1 + 0.5 * perkN('coins'); }                       // Coin Magnet
-function streakMul() { return strike.extrasOff ? 1 : 1 + 0.1 * Math.min(strike.streak, 10); } // x1.0 .. x2.0
+const COMBO_STEP = 3, COMBO_MAX = 8; // v4: the combo: x2 after 3 returns in a row without a miss, x3 after 6 ... x8 after 21
+function comboMul() { return strike.extrasOff ? 1 : Math.min(COMBO_MAX, 1 + Math.floor(strike.streak / COMBO_STEP)); }
+function streakMul() { return comboMul(); } // every point scored is x the combo
 function scorePts(p) { return Math.round(p * streakMul()); }
 function availablePerks() { return PERKS.filter((id) => perkN(id) < PERK_MAX && roadOpen(PERK_ROAD[id])); } // not maxed, and unlocked on the road
 function openPerkOffer(now) { // the run stops: 3 different perks that are not maxed yet, as cards
@@ -5290,15 +5346,99 @@ function sparkChip(now) { // Spark Trail: every return zaps a random brick (one 
   }
   sfx('zap');
 }
-function streakUp(now) { // one more return without a miss; milestones at 5 / 10 / 20 get a toast
-  strike.streak++; strike.bestStreak = Math.max(strike.bestStreak, strike.streak); strike.ui.streakLost = null; strike.ui.streakAt = now;
+function streakUp(now) { // one more return without a miss; milestones at 5 / 10 / 20 get a toast; the combo multiplier steps up every COMBO_STEP returns (a pop by the walls pill)
+  const m0 = comboMul(); strike.streak++; strike.bestStreak = Math.max(strike.bestStreak, strike.streak); strike.ui.streakLost = null; strike.ui.streakAt = now;
+  const m1 = comboMul(); if (m1 > m0) { strike.ui.comboPop = { t: now, n: m1 }; strike.bestMul = Math.max(strike.bestMul || 1, m1); sfx('combo', m1 + 1); if (m1 >= 4) sfx('swish'); }
   const key = STREAK_TOASTS[strike.streak]; if (!key || strike.extrasOff) return;
   strike.ui.streakToast = { t: now, key, n: strike.streak }; sfx('streak', strike.streak); if (strike.streak === 5 || strike.streak === 10) grippySay('streak' + strike.streak);
   const bx = strike.ui.streakBox, x = bx ? bx.x + bx.w / 2 : W / 2, y = bx ? bx.y + bx.h / 2 : H * 0.2; burst(x, y, '#ff8a3d', 16); burst(x, y, '#ffe07a', 10);
 }
-function streakReset(now) { // a miss: the streak is gone, with a small grey fizzle where the chip was
+function streakReset(now) { // a miss: the streak is gone, with a small grey fizzle where the chip was (and the combo drops to x1)
+  if (comboMul() > 1) strike.ui.comboPop = { t: now, n: 1, lost: comboMul() };
   if (strike.streak >= 2 && !strike.extrasOff) { strike.ui.streakLost = { t: now, n: strike.streak }; sfx('fizzle'); const bx = strike.ui.streakBox; if (bx) dust(bx.x + bx.w / 2, bx.y + bx.h / 2, 4, 0.5); }
   strike.streak = 0; strike.ui.streakToast = null;
+}
+/* --- v4 (challenge): the overheat. Hard and SUPER hits heat the hand, soft and medium ones (and time) cool it; full heat = an overheat:
+   for OVERHEAT_MS every hit is forced soft, steam rises off the hand and it sizzles; then it is warm (HEAT_AFTER) and cools on. It makes
+   the player mix the hits instead of slapping SUPER after SUPER. (The older suites' extrasOff: no heat.) --- */
+const HEAT = { soft: -0.3, medium: -0.12, hard: 0.28, super: 0.45 }, HEAT_COOL = 0.00006, OVERHEAT_MS = 3000, HEAT_AFTER = 0.35; // per hit; per ms; the overheat; the heat left after it
+function overheated(now = performance.now()) { return now < strike.hotUntil; }
+function heatHit(tier, now) {
+  if (strike.extrasOff || overheated(now)) return;
+  strike.heat = Math.max(0, Math.min(1, strike.heat + (HEAT[tier] || 0))); strike.ui.heatAt = now;
+  if (strike.heat >= 1) { // overheat!
+    strike.hotUntil = now + OVERHEAT_MS; strike.overheats++; strike.ui.hotAt = now; sfx('sizzle'); shakeScreen(1.5);
+    const x = cursor.present ? cursor.x : W / 2, y = cursor.present ? cursor.y : H * 0.7; strike.floaters.push({ x, y: Math.max(strike.ui.top + 90, y - 70), text: t('overheat'), big: true, life: 1.3 });
+    if (!tipOnce('heat')) grippySay('overheat');
+  }
+}
+function heatTick(now, dt) {
+  if (strike.hotUntil && now >= strike.hotUntil) { strike.hotUntil = 0; strike.heat = HEAT_AFTER; strike.ui.coolAt = now; sfx('tick'); } // cooled down
+  if (overheated(now)) { // steam off the hand, a hiss now and then
+    if (cursor.present && Math.random() < dt / 40 && particles.length < 300) { const x = cursor.x + (Math.random() - 0.5) * 60, y = cursor.y - 20 - Math.random() * 30; particles.push({ x, y, vx: (Math.random() - 0.5) * 0.05, vy: -0.08 - Math.random() * 0.08, life: 1, decay: 0.0014 + Math.random() * 0.001, r: 7 + Math.random() * 9, color: 'rgba(235,240,250,0.55)', steam: true }); }
+    if (now - (strike.ui.hissAt || 0) > 900) { strike.ui.hissAt = now; sfx('sizzle', 0.4); }
+  } else if (!strike.waiting) strike.heat = Math.max(0, strike.heat - HEAT_COOL * dt);
+}
+/* --- v4 (challenge): turret bricks shoot back. A wall in view with a live turret fires a slow glowing shot at the player every turretMs
+   (one or two at a time); it must be slapped away at the player's plane (the same forgiving reach as the ball) or it costs a heart. A slapped
+   shot flies back and chips its turret; breaking the turret silences it. --- */
+const SHOT_MAX = 2;
+function turretTick(now, dt) {
+  const Z = CONFIG.STRIKE_Z_FAR, C = challengeCfg(), hz = CONFIG.STRIKE_HIT_Z;
+  if (C.turret > 0 && !strike.boss && now >= strike.releaseUntil && !(adv.on && adv.phase !== 'play'))
+    for (const w of strike.walls) {
+      if (w.z >= Z * 0.85 || w.left <= 0) continue;
+      const ts = w.bricks.filter((k) => k.alive && k.turret); if (!ts.length) continue;
+      if (!w.turretAt) { w.turretAt = now + C.turretMs * 0.7; continue; }
+      if (now < w.turretAt || strike.shots.filter((q) => q.dir > 0).length >= SHOT_MAX) continue;
+      const k = ts[Math.floor(strikeRand('turret') * ts.length) % ts.length]; w.turretAt = now + C.turretMs * (0.8 + 0.4 * strikeRand('turret'));
+      fireShot(w, k, now, C);
+    }
+  for (let i = strike.shots.length - 1; i >= 0; i--) {
+    const q = strike.shots[i];
+    if (q.dead) { if (now - q.deadAt > 350) strike.shots.splice(i, 1); continue; }
+    if (q.dir > 0) { // incoming: from the turret to a spot in the near corridor the hand can reach
+      q.z -= q.speed * dt; const k = 1 - Math.max(0, q.z) / q.z0; q.x = q.x0 + (q.tx - q.x0) * k; q.y = q.y0 + (q.ty - q.y0) * k;
+      if (q.z <= hz * 2) {
+        const sc = shotScreen(q), reach = Math.max(sc.r * 2.4, sd('STRIKE_HIT_NEAR') * 0.7 * strikeScale(), 54 * strikeScale()) * reachMul();
+        if (pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS) <= reach || handOverlap(sc.x, sc.y, sc.r, now, CONFIG.STRIKE_HIT_PATH_MS)) { deflectShot(q, now); continue; }
+        if (q.z <= -hz * 0.6) { shotHits(q, now); continue; }
+      }
+    } else { // slapped away: back to its turret, which it chips
+      q.z += q.speed * 2.2 * dt; const k = Math.min(1, q.z / q.z0); q.x = q.bx + (q.x0 - q.bx) * k; q.y = q.by + (q.y0 - q.by) * k;
+      if (q.z >= q.z0) { const w = strike.walls.find((u) => u.id === q.wall), t0 = w && w.bricks.find((u) => u.col === q.col && u.row === q.row);
+        if (w && t0 && t0.alive) { const n = hurtBrick(w, t0, 1, { x: q.x, y: q.y }, 'medium', now); if (n) { const pts = scorePts(n); strike.score += pts; strike.ui.scoreAt = now; maybeCollapse(w, now); if (w.left <= 0) wallDown(w, now); } }
+        const sc = shotScreen(q); burst(sc.x, sc.y, '#ff8a9a', 10); q.dead = true; q.deadAt = now; }
+    }
+  }
+}
+function fireShot(w, k, now, C) {
+  const { L, R, T, B } = corridor(), c = brickCell(w, k.col, k.row), r = ballR(), z0 = w.z - 20;
+  const q = { wall: w.id, col: k.col, row: k.row, x0: c.x, y0: c.y, x: c.x, y: c.y, z: z0, z0, dir: 1, speed: C.shotSpeed * (strike.diff === 'normal' || daily.on ? 1.15 : 1), born: now, dead: false,
+    tx: (L + r) * 0.7 + strikeRand('turret') * ((R - L) - 2 * r) * 0.7, ty: (T + r) * 0.55 + strikeRand('turret') * ((B - T) - 2 * r) * 0.55 }; // (inside the middle of the near plane: always reachable)
+  strike.shots.push(q); strike.shotsFired++; k.firedAt = now; sfx('pew');
+  const p = proj(c.x, c.y, w.z); ring(p.x, p.y, 'rgba(255,80,110,0.9)', c.w * p.s * 0.9, 260, 3); burst(p.x, p.y, '#ff5a6e', 6);
+  return q;
+}
+function shotScreen(q) { const p = proj(q.x, q.y, q.z); return { x: p.x, y: p.y, r: ballR() * 0.42 * p.s, s: p.s }; }
+function deflectShot(q, now) { // slapped away: a ping, sparks, points, the combo grows; it flies back at its turret
+  const sc = shotScreen(q); q.dir = -1; q.bx = q.x; q.by = q.y; q.z = Math.max(q.z, 1); strike.deflects++;
+  sfx('deflect'); burst(sc.x, sc.y, '#ff8a9a', 14); burst(sc.x, sc.y, '#ffffff', 8); ring(sc.x, sc.y, 'rgba(255,140,160,0.95)', sc.r * 3, 300, 4); shakeScreen(1.2);
+  const pts = scorePts(5); strike.score += pts; strike.ui.scoreAt = now; strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 10, text: t('deflected') + ' +' + pts, big: false, life: 1 }); track('deflect', 1);
+  streakUp(now);
+}
+function shotHits(q, now) { // it got through: a heart, a red flash, the combo is gone
+  const sc = shotScreen(q); q.dead = true; q.deadAt = now; strike.shotHits++;
+  sfx('hurt'); shakeScreen(2.4); burst(sc.x, sc.y, '#ff5a6e', 16); strike.floaters.push({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('ouch'), big: true, life: 1.1 });
+  streakReset(now); loseLife(now);
+}
+/* --- v4 (challenge): walls closing in. From the plan's stage (Endless: level 9) the front wall creeps toward the player while the ball is in
+   play; it must be broken (or knocked back by clearing it) before it gets to CRUSH_Z, or it slams into the player: a heart, and it is shoved back. --- */
+function creepDanger() { const w = strike.walls.find((q) => q.left > 0 && q.cz > 0); return w ? Math.max(0, Math.min(1, 1 - (w.z - CRUSH_Z) / Math.max(1, wallSlotZ(0) - CRUSH_Z))) : 0; }
+function crushWall(w, now) {
+  w.cz = 0; w.z = w.pz = wallSlotZ(0); strike.crushes++; sfx('tnt'); sfx('hurt'); shakeScreen(4); strike.flash = now;
+  strike.floaters.push({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('tooClose'), big: true, life: 1.2 });
+  streakReset(now); loseLife(now);
 }
 function closeOne(b, now, why) { // a hit at the very end of the window or the edge of the reach: 'Close one!', a moment of slow motion, +2 coins
   strike.closeOnes++; strike.slowUntil = now + CLOSE_MS; strike.ui.closeAt = now; strike.lastClose = why;
@@ -5353,11 +5493,11 @@ function activatePower(kind, now) {
   if (kind === 'multi') addClones();
   if (kind === 'fire') sfx('fire');
 }
-function addClones() { // Multi-ball: two more balls beside the current one (or beside the next serve), a little to each side
+function addClones(n = 3) { // Multi-ball: two more balls beside the current one (or beside the next serve), a little to each side (a two-ball stage: one more)
   const b = strike.balls[0]; if (!b || b.wait) return; // (the waiting serve ball: the clones join when it is launched)
   const { L, R } = corridor(), r = ballR(), off = (R - L) * 0.16, clamp = (v) => Math.max(L + r, Math.min(R - r, v));
-  while (strike.balls.length < 3) {
-    const s = strike.balls.length === 1 ? -1 : 1, c = { ...b, trail: [], x: clamp(b.x + s * off), x0: clamp(b.x0 + s * off), tx: clamp(b.tx + s * off), vx: (b.vx || 0) + s * 0.04, combo: 0, born: performance.now(), guest: null, speed: b.guest ? b.speed / GUEST_SPD : b.speed }; // (the clones are plain balls)
+  while (strike.balls.length < n) {
+    const s = strike.balls.length === 1 ? -1 : 1, c = { ...b, trail: [], aim: null, x: clamp(b.x + s * off), x0: clamp(b.x0 + s * off), tx: clamp(b.tx + s * off), vx: (b.vx || 0) + s * 0.04, combo: 0, born: performance.now(), guest: null, speed: b.guest ? b.speed / GUEST_SPD : b.speed }; // (the clones are plain balls)
     strike.balls.push(c);
   }
   const sc = ballScreen(b); ring(sc.x, sc.y, 'rgba(84,198,235,0.8)', sc.r * 2.5, 320, 3);
@@ -5380,7 +5520,7 @@ function capsulesTick(now, dt) { // capsules fly toward the player; on the plane
     c.z -= CONFIG.STRIKE_PU_SPEED * dt;
     const k = 1 - Math.max(0, c.z) / c.z0; c.x = c.x0 + (c.tx - c.x0) * Math.min(1, k); c.y = c.y0 + (c.ty - c.y0) * Math.min(1, k);
     if (c.z <= hz * sd('STRIKE_HIT_WINDOW')) {
-      const sc = capsuleScreen(c, now), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach;
+      const sc = capsuleScreen(c, now), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach * advK('reachK');
       if (pathNear(sc.x, sc.y, reach, now, CONFIG.STRIKE_HIT_PATH_MS)) { catchCapsule(c, now); continue; }
       if (c.z <= -hz) c.missed = true;
     }
@@ -5389,98 +5529,142 @@ function capsulesTick(now, dt) { // capsules fly toward the player; on the plane
 function wallsTick(dt) { // walls sit in slots in depth order; a cleared one leaves a gap the rest slide forward to fill; moving walls slide sideways; a new kind coming into view gets a tag
   strike.walls.sort((a, b) => a.z - b.z);
   const Z = CONFIG.STRIKE_Z_FAR, { L, R } = corridor(), now = performance.now();
-  const bs = strike.boss;
+  const bs = strike.boss, creep = !bs && dt > 0 && !strike.waiting && now >= strike.releaseUntil && !strike.over && !(adv.on && adv.phase !== 'play') && strike.balls.length ? challengeCfg().creep : 0; // (it holds while the serve waits, in the release, round a boss)
   strike.walls.forEach((w, i) => {
     let tz = wallSlotZ(i); if (bs && w.z > bs.z) tz = Math.max(tz, bs.z + CONFIG.STRIKE_WALL_GAP + i * wallGap()); // a wall behind the boss keeps its distance: nothing slides in front of it
+    if (i === 0 && creep > 0 && w.left > 0 && w.z <= tz + 1) { w.cz = (w.cz || 0) + creep * dt; tz -= w.cz; } // v4: the front wall closes in while the ball is in play
     w.pz = w.z; if (w.z > tz) w.z = Math.max(tz, w.z - STRIKE_SLIDE * dt);
+    if (i === 0 && w.cz > 0 && w.z <= CRUSH_Z && w.left > 0) crushWall(w, now);
     if (w.kind === 'moving') { w.phase += dt * 0.0011; w.ox = (R - L) / w.span * (0.5 + 0.5 * Math.sin(w.phase)); } // one brick's width side to side on a slow sine, the free column with it
     if (w.z < Z && !bs && w.kind !== 'brick' && !strike.seenKinds.has(w.kind)) { strike.seenKinds.add(w.kind); strike.ui.tag = { t: now, kind: w.kind }; roadSpot(w.kind, now); } // (the boss keeps its own tag while it lives; a kind new on the road gets the spotlight)
     if (w.z < Z * 0.85 && w.puSeen !== true) { w.puSeen = true; for (const k of w.bricks) if (k.alive && k.pu) roadSpot('pu_' + k.pu, now); } // a power-up brick in view: the spotlight if its power-up is new on the road
     if (w.z < Z * 0.85 && !profileTip('pu') && w.bricks.some((k) => k.alive && k.pu)) tipOnce('pu'); // onboarding: the first gold brick in view
+    if (w.z < Z * 0.85 && strike.serves > 0 && !strike.extrasOff && mode !== 'none') { // v4 onboarding: the first weak spot / turret in view (after the first serve, so the serve's own hint stays)
+      if (!profileTip('weak') && w.bricks.some((k) => k.alive && k.weak)) tipOnce('weak'); else if (!profileTip('turret') && w.bricks.some((k) => k.alive && k.turret)) tipOnce('turret'); }
   });
 }
-// The returning ball crosses a wall. Bricks break by tier: soft = the brick under the ball, medium = 3x3, hard = 3x3 plus the
-// next brick out on each side (and 2 damage), SUPER = the whole wall. Other kinds: glass shatters 3x3 on any hit and never bounces
-// the ball; steel plates (3 hp) only dent under a soft / medium hit and bounce it back, lose 1 hp to a hard one and go outright to
-// SUPER; a TNT crate that breaks blows a radius-2 area (chaining into other crates); a hole (holed, or a moving wall's free column)
-// lets the ball through with a whoosh. Returns what the ball does next: bounce / slow / pass.
+// v4 (challenge): a hard hit is no 'break everything' button. The returning ball meets ONE wall and comes back off it (it never flies on
+// through a wall, never reaches a second one in a flight); what breaks is a bounded blast round the brick it hits, by tier:
+// soft = a chip (1 damage to that brick), medium = that brick (2) + its neighbour on the ball's side (1), hard = a plus (2 at the centre,
+// 1 round it), SUPER = the 3x3 round the impact (3 / 2), a fireball = a radius-2 diamond (3 each, steel too). Plain bricks have 1 hp;
+// armored ones 2-3 (cracks per hit); glass shatters 3x3 on any hit (SUPER / fireball: the diamond); steel plates (3 hp) only dent under a
+// soft / medium hit, lose 1 to a hard one, 3 at a SUPER's centre (1 round it). Special bricks reward aim: a glowing weak spot that breaks
+// cracks its whole row and column, a keystone that breaks brings down the bricks resting on it, a gold brick pays a bonus, a turret
+// shoots back until it is broken, a TNT crate blows a radius-2 area. A hole (holed / a moving wall's free column / a gap already
+// knocked out) lets the ball through untouched with a whoosh, or, when it is mostly in the gap, knocks out only the edge bricks it clips.
+// Returns what the ball does next: 'bounce' (it hit) or 'pass' (through a gap).
+const BLAST = { soft: [1, 0, 0], medium: [2, 1, 1], hard: [2, 1, 2], super: [3, 2, 3], fire: [3, 3, 4] }; // [damage at the hit brick, damage round it, shape: 0 the brick, 1 + a neighbour, 2 a plus, 3 the 3x3, 4 a radius-2 diamond]
+const STEEL_DMG = { soft: [0, 0], medium: [0, 0], hard: [1, 1], super: [3, 1], fire: [3, 3] }; // steel plates: what a tier takes off (0: a dent)
+function blastShape(dc, dr, shape) { return shape === 2 ? dc + dr <= 1 : shape === 3 ? dc <= 1 && dr <= 1 : shape === 4 ? dc + dr <= 2 || (dc <= 1 && dr <= 1) : dc + dr === 0; }
+function blastTargets(w, a, shape, b) { // [brick, ring?] for anchor a and the shape; shape 1: the live neighbour on the side of the ball's centre
+  const out = [[a, false]];
+  if (shape === 1) {
+    const c = brickCell(w, a.col, a.row), dx = (b.x - c.x) / c.w, dy = (b.y - c.y) / c.h; let best = null, bs = -Infinity;
+    for (const k of w.bricks) { if (!k.alive || Math.abs(k.col - a.col) + Math.abs(k.row - a.row) !== 1) continue; const s = (k.col - a.col) * dx + (k.row - a.row) * dy; if (s > bs) { bs = s; best = k; } }
+    if (best) out.push([best, true]);
+  } else if (shape >= 2) for (const k of w.bricks) if (k.alive && k !== a && blastShape(Math.abs(k.col - a.col), Math.abs(k.row - a.row), shape)) out.push([k, true]);
+  return out;
+}
 function smashWall(w, b, now) {
-  const fire = !!b.fire, tier0 = fire ? 'super' : b.tier || 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0, kind = w.kind || 'brick', steel = kind === 'steel', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballRad(b); // (a guest: x1.35 the footprint, never softer than medium) a fireball burns through any wall like a SUPER slap
+  const fire = !!b.fire, tier0 = b.tier || 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0, kind = w.kind || 'brick', steel = kind === 'steel', glass = kind === 'glass', { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, r = ballRad(b); // (a guest: x1.35 the footprint, never softer than medium)
   const edgeDist = (k) => { const c = brickCell(w, k.col, k.row); return Math.hypot(Math.max(0, Math.abs(b.x - c.x) - c.w / 2), Math.max(0, Math.abs(b.y - c.y) - c.h / 2)); };
   const nearest = (within) => { let best = null, bd = within; for (const k of w.bricks) { if (!k.alive) continue; const d = edgeDist(k); if (d < bd || (d === 0 && !best)) { bd = d; best = k; } } return best; };
   const ac = Math.floor((b.x - L - (w.ox || 0)) / cw), ar = Math.floor((b.y - T) / ch), under = w.bricks.find((k) => k.col === ac && k.row === ar); // the cell under the ball's centre
-  if (tier !== 'super') { // threading a hole (holed walls, a moving wall's free column, a gap of knocked-out bricks): the ball's FULL circle, swept over this frame's crossing
+  { // threading a hole (holed walls, a moving wall's free column, a gap of knocked-out bricks): the ball's FULL circle, swept over this frame's crossing
     const gc = ballGapContact(w, b);
     if (!gc.over.length) { sfx('whoosh'); return 'pass'; } // clear of every live brick: through untouched
     if (gc.open >= 0.5) { // mostly in the gap: it flies on, knocking out exactly the edge bricks it clips (the hole widens to the ball), no bounce, no slow-down
-      let n = 0; for (const k of gc.over) { if (!k.alive) continue; k.alive = false; k.hp = 0; w.left--; n++; spawnDebris(w, k, b, tier); if (k.tnt) n += explodeTnt(w, k, b, now); }
-      for (const k of w.bricks) if (k.pu && !k.alive && !k.puOut) { k.puOut = true; const c = brickCell(w, k.col, k.row); spawnCapsule(k.pu, w.z, c.x, c.y); }
+      let n = 0; for (const k of gc.over) { if (!k.alive) continue; n += breakBrick(w, k, b, tier, now); }
       strike.lastClip = { wall: w.id, n, open: gc.open }; g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind, dent: false, destroyed: n, tier, sup: false });
       const sc = ballScreen(b), pts = scorePts(n * (steel ? 3 : 1)); strike.score += pts; strike.ui.scoreAt = now; track('brick', n); sfx('crack', 0.3); sfx('whoosh');
       strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
-      if (w.left <= 0) { const bonus = 10 * strike.level; strike.score += scorePts(bonus); strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1); sfx('chime'); wallCleared(now); spawnStrikeWall(nextWallZ()); }
+      maybeCollapse(w, now); if (w.left <= 0) wallDown(w, now);
       return 'pass';
     }
   }
-  let targets;
-  if (tier === 'super') targets = w.bricks.filter((k) => k.alive);
-  else if (tier === 'soft' && kind !== 'glass') { const k = nearest(r); targets = powerOn('big') ? w.bricks.filter((q) => q.alive && edgeDist(q) < r) : k ? [k] : []; } // the brick under the ball's centre, else the nearest one the ball overlaps; a Big ball takes every brick under its footprint
-  else { // the cell under the ball's centre anchors the area; a dead cell (a brick already knocked out) only if the ball still overlaps a live neighbour
-    let a = under; if (!a || !a.alive) a = nearest(r * 0.35) || nearest(r); // (a ball too big for the gap it is centred on hits the bricks round it)
-    targets = a ? w.bricks.filter((k) => { const dc = Math.abs(k.col - a.col), dr = Math.abs(k.row - a.row); return k.alive && ((dc <= 1 && dr <= 1) || (tier === 'hard' && kind !== 'glass' && dc + dr <= 2)); }) : [];
+  let a = under; if (!a || !a.alive) a = nearest(r * 0.35) || nearest(r); // the brick it hits: the one under its centre, else the nearest one it overlaps
+  if (!a) { sfx('whoosh'); return 'pass'; }
+  const bl = BLAST[fire ? 'fire' : tier] || BLAST.soft, shape = glass ? Math.max(bl[2], fire || tier === 'super' ? 4 : 3) : bl[2];
+  let targets = blastTargets(w, a, shape, b);
+  if ((powerOn('big') || b.guest) && !glass) for (const k of w.bricks) if (k.alive && edgeDist(k) < r && !targets.some((q) => q[0] === k)) targets.push([k, 'x']); // a Big ball / a guest: every brick under its footprint too
+  if (perkN('heavy')) { // Heavy Ball: one more brick per stack, the live ones nearest the ball
+    const more = w.bricks.filter((k) => k.alive && !targets.some((q) => q[0] === k)).sort((p, q) => edgeDist(p) - edgeDist(q)).slice(0, perkN('heavy')); for (const k of more) targets.push([k, 'x']);
   }
-  if (tier !== 'super' && targets.length && perkN('heavy')) { // Heavy Ball: one more brick per stack, the live ones nearest the ball
-    const more = w.bricks.filter((k) => k.alive && !targets.includes(k)).sort((p, q) => edgeDist(p) - edgeDist(q)).slice(0, perkN('heavy')); targets = targets.concat(more);
+  let destroyed = 0, cracked = 0, dents = 0; const s0 = strike.score;
+  for (const [k, ring] of targets) {
+    if (!k.alive) continue;
+    let d = glass ? 1e9 : ring === 'x' ? Math.max(1, bl[1]) : ring ? bl[1] : bl[0]; // ('x': a brick under a Big ball's / a guest's footprint, or Heavy Ball's extra: at least 1)
+    if (steel) { const sd2 = STEEL_DMG[fire ? 'fire' : tier] || STEEL_DMG.soft; d = ring ? sd2[1] : sd2[0]; }
+    if (!d) { k.dent = (k.dent || 0) + 1; dents++; continue; }
+    const n = hurtBrick(w, k, d, b, tier, now); if (n) destroyed += n; else cracked++;
   }
-  const dent = steel && (tier === 'soft' || tier === 'medium'), dmg = tier === 'super' || kind === 'glass' ? 1e9 : tier === 'hard' && !steel ? 2 : 1;
-  let destroyed = 0, cracked = 0; const boom = [];
-  for (const k of targets) {
-    if (dent) { k.dent = (k.dent || 0) + 1; cracked++; continue; }
-    k.hp -= dmg; if (k.hp <= 0) { k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); if (k.tnt) boom.push(k); } else cracked++;
-  }
-  for (const k of boom) destroyed += explodeTnt(w, k, b, now);
-  if (!destroyed && !cracked) { sfx('whoosh'); return 'pass'; } // flew through a hole
+  const dent = dents > 0 && !destroyed && !cracked;
+  strike.lastSmash = { wall: w.id, tier: fire ? 'fire' : tier, shape, n: destroyed, cracked, dents, reach: targets.length, at: now, x: b.x, y: b.y, col: a.col, row: a.row };
   g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind, dent, destroyed, tier, sup: !!b.super || fire }); // (3D only: the impact flash, dust, sparks and shockwave)
-  const bounces = dent || (tier === 'soft' && kind !== 'glass' && !steel && w.left > 0);
-  if (!bounces) for (const k of w.bricks) { // the ball flies on: the hole it leaves is at least its own size (a 3x3 area can be smaller than the ball on a phone's small bricks), so no intact brick sits over the ball as it passes
-    if (!k.alive || Math.min(edgeDist(k), sweptDist(w, k, b)) >= r * 1.05) continue;
-    k.hp = 0; k.alive = false; w.left--; destroyed++; spawnDebris(w, k, b, tier); if (k.tnt) destroyed += explodeTnt(w, k, b, now);
-  }
-  for (const k of w.bricks) if (k.pu && !k.alive && !k.puOut) { k.puOut = true; const c = brickCell(w, k.col, k.row); spawnCapsule(k.pu, w.z, c.x, c.y); } // a broken power-up brick releases its capsule
-  const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 2 + pw * 0.4);
+  const sc = ballScreen(b), pw = STRIKE_PW[tier], size = Math.min(1, destroyed / (w.cols * w.rows) * 3 + pw * 0.4), big = tier === 'super' || fire;
   let pts = destroyed * (steel ? 3 : 1);
   if (fire) { sfx('fire'); ring(sc.x, sc.y, 'rgba(255,138,61,0.9)', sc.r * 2.8, 360, 5); burst(sc.x, sc.y, '#ff8a3d', 14); burst(sc.x, sc.y, '#ffe07a', 10); }
-  if (kind === 'glass') { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
+  if (glass) { sfx('glass', size); burst(sc.x, sc.y, '#e6f7ff', 8 + Math.min(14, destroyed)); ring(sc.x, sc.y, 'rgba(190,230,255,0.9)', sc.r * 2.6, 340, 3); shakeScreen(0.8 + pw * 2); } // a shower of sparkling shards
   else if (steel) { sfx('clang', dent ? 0.3 : size); burst(sc.x, sc.y, '#dfe8ff', 6 + destroyed * 2); ring(sc.x, sc.y, 'rgba(200,215,255,0.85)', sc.r * (1.6 + pw * 2), 240 + pw * 160, 3); shakeScreen(1.4 + pw * 2.6); if (destroyed) dust(sc.x, sc.y, Math.min(10, 2 + destroyed), 0.5 + sc.s + pw); }
-  else { sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
+  else { if (destroyed) sfx('crack', size); dust(sc.x, sc.y, Math.min(14, 3 + destroyed), 0.5 + sc.s * 1.5 + pw); shakeScreen(1 + pw * 3 + Math.min(2, destroyed * 0.12)); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.9)' : 'rgba(241,233,218,0.8)', sc.r * (2 + pw * 2), 240 + pw * 200, 2 + pw * 3); }
+  if (cracked && !glass) { const hp = Math.max(1, ...targets.filter((q) => q[0].alive).map((q) => q[0].hp)); sfx('armor', hp); } // a crack (an armored brick holding): a stony tock, lower the more it has left
+  if (big) { strike.superFlash = now; if (!strike.extrasOff) strike.stopUntil = now + (fire ? 60 : 80); } // hit-stop: the world freezes for a beat on a SUPER impact
   if (destroyed) { strike.floaters.push({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + scorePts(pts), big: false, life: 1 }); track('brick', destroyed); }
-  if (w.left <= 0) { // wall down: bonus, chime; a fresh wall (tougher per level, a new kind unlocked per level) spawns beyond the far end (or behind the boss) and the queue slides forward
-    const bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); pts += bonus;
-    strike.floaters.push({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime');
-    strike.walls.splice(strike.walls.indexOf(w), 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
-    wallCleared(now); spawnStrikeWall(nextWallZ());
+  pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the combo
+  maybeCollapse(w, now); strike.lastSmash.pts = strike.score - s0;
+  if (w.left <= 0) wallDown(w, now); // wall down: bonus, chime; a fresh wall spawns beyond the far end (or behind the boss) and the queue slides forward
+  return 'bounce';
+}
+const COLLAPSE_AT = 0.25; // v4: a wall down to its last quarter of bricks gives way (no chasing the last scattered brick)
+function maybeCollapse(w, now) {
+  if (strike.extrasOff || w.left <= 0 || !strike.walls.includes(w)) return 0;
+  const n0 = w.n0 || w.bricks.length; if (w.left > Math.max(1, Math.floor(n0 * COLLAPSE_AT))) return 0;
+  let n = 0; const c = brickCell(w, Math.floor(w.cols / 2), w.rows - 1); for (const k of w.bricks) if (k.alive) n += breakBrick(w, k, { x: brickCell(w, k.col, k.row).x, y: c.y + c.h * 2 }, 'soft', now);
+  const p = proj(0, 0, w.z); dust(p.x, p.y, 10, 0.6 + p.s); sfx('keystone'); strike.collapses = (strike.collapses || 0) + 1;
+  const pts = scorePts(n); strike.score += pts; strike.ui.scoreAt = now; track('brick', n);
+  return n;
+}
+function hurtBrick(w, k, d, b, tier, now) { // d damage to brick k; broken: what it sets off; returns the bricks that broke (0: it held, cracked)
+  if (!k.alive) return 0;
+  k.hp -= d; if (k.hp > 0) { k.hitAt = now; return 0; }
+  return breakBrick(w, k, b, tier, now);
+}
+function breakBrick(w, k, b, tier, now) { // brick k is out: debris, its capsule, and its special: TNT blows, a weak spot cracks its row and column, a keystone drops what rests on it, gold pays, a turret goes quiet
+  if (!k.alive) return 0;
+  k.alive = false; k.hp = 0; w.left--; let n = 1; spawnDebris(w, k, b, tier);
+  if (k.pu && !k.puOut) { k.puOut = true; const c = brickCell(w, k.col, k.row); spawnCapsule(k.pu, w.z, c.x, c.y); } // a broken power-up brick releases its capsule
+  if (k.tnt) n += explodeTnt(w, k, b, now);
+  const c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z);
+  if (k.gold) { // gold: a bonus (x the combo), a glint and a chime
+    const pts = scorePts(GOLD_PTS); strike.score += pts; strike.golds = (strike.golds || 0) + 1; strike.ui.scoreAt = now;
+    strike.floaters.push({ x: p.x, y: p.y - 18 * p.s, text: t('goldPts', { n: pts }), big: true, life: 1.2 }); sfx('gold'); burst(p.x, p.y, '#ffd36b', 18); burst(p.x, p.y, '#fff3c4', 10); ring(p.x, p.y, 'rgba(255,214,107,0.95)', c.w * p.s * 1.4, 380, 4); track('gold', 1);
   }
-  if (b.super) { // superhero ball: a flash per wall, and every wall after the first multiplies its points (with a combo banner)
-    b.combo++; strike.superFlash = now; strike.bestCombo = Math.max(strike.bestCombo, b.combo); if (b.combo === 3) track('combo', 1);
-    if (b.combo >= 2) { pts *= b.combo; strike.ui.banner = strike.ui.lastBanner = { t: now, n: b.combo }; sfx('combo', b.combo); sfx('swish'); if (b.combo === 3) grippySay('combo'); }
+  if (k.turret) { strike.turretsDown = (strike.turretsDown || 0) + 1; burst(p.x, p.y, '#ff5a6e', 12); sfx('clang', 0.6); }
+  if (k.weak) { // the weak spot: a crack runs along its row and its column
+    strike.weakHits = (strike.weakHits || 0) + 1; strike.ui.weakAt = now; strike.lastWeak = { wall: w.id, col: k.col, row: k.row, at: now };
+    sfx('weak'); shakeScreen(2.6); ring(p.x, p.y, 'rgba(120,255,240,0.95)', c.w * p.s * 2.4, 420, 5); burst(p.x, p.y, '#8affef', 18);
+    strike.cracks.push({ w: w.id, z: w.z, x: c.x, y: c.y, t: now });
+    strike.floaters.push({ x: p.x, y: p.y - 26 * p.s, text: t('weakHit'), big: true, life: 1.2 });
+    for (const q of w.bricks) if (q.alive && (q.col === k.col || q.row === k.row)) n += hurtBrick(w, q, w.kind === 'steel' ? 2 : 9, b, 'hard', now);
   }
-  pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the hit streak
-  if (kind === 'glass') return 'pass';
-  if (dent) return 'bounce';
-  if (steel) return tier === 'super' ? 'pass' : 'slow';
-  return tier === 'soft' && w.left > 0 ? 'bounce' : tier === 'medium' ? 'slow' : 'pass';
+  if (k.key) { // the keystone: the bricks resting on it (above it, one column each side) come down
+    strike.keyHits = (strike.keyHits || 0) + 1; strike.lastKey = { wall: w.id, col: k.col, row: k.row, at: now };
+    sfx('keystone'); shakeScreen(2.2); dust(p.x, p.y, 10, 1 + p.s);
+    strike.floaters.push({ x: p.x, y: p.y - 26 * p.s, text: t('keyHit'), big: true, life: 1.2 });
+    for (const q of w.bricks) if (q.alive && q.row < k.row && Math.abs(q.col - k.col) <= 1 && w.kind !== 'steel') { n += breakBrick(w, q, { x: brickCell(w, q.col, q.row).x, y: c.y + c.h * 3 }, 'soft', now); }
+  }
+  return n;
 }
 function incomingWalls(b, z0, x0, y0, now) { // an incoming ball crossing a standing wall from behind: through the open area untouched, else the bricks its swept circle overlaps are knocked out (toward the player) - it never passes through a live brick
   for (const w of strike.walls.slice()) {
     if (w.left <= 0 || !(z0 > Math.min(w.z, w.pz) && b.z <= w.z)) continue;
     const lx = b.lx, ly = b.ly; b.lx = x0; b.ly = y0; const r = ballRad(b), over = w.bricks.filter((k) => k.alive && sweptDist(w, k, b) < r); b.lx = lx; b.ly = ly;
     if (!over.length) continue;
-    let n = 0; for (const k of over) { if (!k.alive) continue; k.alive = false; k.hp = 0; w.left--; n++; spawnDebris(w, k, b, 'medium'); if (k.tnt) n += explodeTnt(w, k, b, now); }
-    for (const k of w.bricks) if (k.pu && !k.alive && !k.puOut) { k.puOut = true; const c = brickCell(w, k.col, k.row); spawnCapsule(k.pu, w.z, c.x, c.y); }
+    let n = 0; for (const k of over) n += breakBrick(w, k, b, 'medium', now);
     g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind: w.kind || 'brick', dent: false, destroyed: n, tier: 'medium', sup: false });
     const pts = scorePts(n); strike.score += pts; strike.ui.scoreAt = now; track('brick', n); sfx('crack', 0.4); strike.lastBack = { wall: w.id, n, at: now };
     const sc = ballScreen(b); dust(sc.x, sc.y, Math.min(10, 2 + n), 0.5 + sc.s);
-    if (w.left <= 0) wallDown(w, now);
+    maybeCollapse(w, now); if (w.left <= 0) wallDown(w, now);
   }
 }
 function wallDown(w, now) { // a wall knocked out completely (from in front or behind): its bonus, the chime, the coins; a fresh wall queues up
@@ -5510,17 +5694,16 @@ function ballFitsGap(w, b, tol = 0.1) { // does the ball's circle (radius less t
 }
 function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 of it goes, with a fireball ring, a boom and a big shake; crates inside the blast go off in turn
   if (k.boomed) return 0; k.boomed = true;
-  const c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z), chain = []; let n = 0;
-  for (const q of w.bricks) { if (!q.alive || Math.abs(q.col - k.col) > 2 || Math.abs(q.row - k.row) > 2) continue; q.alive = false; q.hp = 0; w.left--; n++; spawnDebris(w, q, b, 'super'); if (q.tnt) chain.push(q); }
+  const c = brickCell(w, k.col, k.row), p = proj(c.x, c.y, w.z); let n = 0;
+  for (const q of w.bricks) { if (!q.alive || Math.abs(q.col - k.col) > 2 || Math.abs(q.row - k.row) > 2) continue; n += breakBrick(w, q, b, 'super', now); } // (a crate inside the blast goes off in turn; a weak spot or keystone in it sets its own off)
   strike.explosions++; strike.tntAt = now; sfx('tnt'); shakeScreen(4); g3Fx('tnt', { x: c.x, y: c.y, z: w.z, r: Math.min(c.w, c.h) });
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', c.w * p.s * 3, 520, 8); ring(p.x, p.y, 'rgba(255,230,150,0.9)', c.w * p.s * 1.6, 360, 5);
   burst(p.x, p.y, '#ffc24b', 26); burst(p.x, p.y, '#ff6f59', 18); dust(p.x, p.y, 14, 1 + p.s);
-  for (const q of chain) n += explodeTnt(w, q, b, now);
   return n;
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballRad(b), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
-  b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; // never inside the wall: a ball's depth in front of it
+  b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; strike.lastBounce = { z: b.z, wz: w.z, r }; // never inside the wall: a ball's depth in front of it
   const dr = strikeTuning().drift, fx = Math.min(0.95, 0.75 * dr), fy = Math.min(0.85, 0.6 * dr); b.curve = 0;
   b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25 * dr, (L + r) * fx, (R - r) * fx); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25 * dr, (T + r) * fy, (B - r) * fy);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
@@ -5639,7 +5822,7 @@ function serveBall(now) {
   b.x = b.x0; b.y = b.y0; strikeTarget(b);
   strike.balls.length = 0; strike.balls.push(b); strike.serves++; strike.cued = false; strike.ui.cue = null;
   guestPitch(b, now); // (a surprise guest instead of the ball on its serve)
-  if (powerOn('multi')) addClones();
+  if (powerOn('multi')) addClones(); else if (challengeCfg().balls > 1) addClones(challengeCfg().balls);
 }
 function handSpeed(now, win) { return Math.max(cursorSpeed(now, win), mode === 'camera' ? hand.rawSpeed : 0); } // px/ms: the smoothed cursor or, on camera, the raw tracker samples, whichever is faster
 function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at any point in the last win ms? (a laggy tracker's cursor may already have left the spot)
@@ -5657,23 +5840,43 @@ function strikeHit(b, now, force) { // the palm meets the ball: power from the h
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
   strike.ui.tierFlash = { t: now, tier, v, x: sc.x, y: sc.y, r: sc.r, val: meterPopVal(tier, v) }; // the small power arc pops up at the hit point
   strike.floaters.push({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
-  slapFx(b, sc, pw);
+  slapFx(b, sc, pw); heatHit(tier, now);
   if (b.guest) guestHit(b, sc, now);
   else if (b.super) grippySay('super'); else if (strike.hits === 1) grippySay('firstHit');
   streakUp(now); sparkChip(now); paceUp(now);
 }
 function slapFx(b, sc, pw) { sfx('slap', pw); ring(sc.x, sc.y, b.super ? 'rgba(255,194,75,0.95)' : 'rgba(255,255,255,0.9)', sc.r * (1.2 + pw), 260 + pw * 160, 3 + pw * 3); burst(sc.x, sc.y, b.super ? '#ffc24b' : '#f1e9da', 6 + pw * 18); shakeScreen(0.8 + pw * 3.2); if (b.super) { ring(sc.x, sc.y, 'rgba(255,240,180,0.8)', sc.r * 2.4, 420, 5); strike.superFlash = performance.now(); } }
-function slapLaunch(b, now, force) { // the ball goes back down the corridor: tier from the hand speed, lateral drift and sidespin from the contact point and the hand's motion
-  const sc = ballScreen(b), s = strikeScale(), v = typeof force === 'number' ? force : force && FORCE_SPEED[force] ? FORCE_SPEED[force] : handSpeed(now, 100) / s, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
+function slapLaunch(b, now, force) { // the ball goes back down the corridor: tier from the hand speed (an overheated hand: soft), its aim and sidespin from the contact point and the hand's motion
+  const sc = ballScreen(b), s = strikeScale(), hot = overheated(now), v0 = typeof force === 'number' ? force : force && FORCE_SPEED[force] ? FORCE_SPEED[force] : handSpeed(now, 100) / s, v = hot ? Math.min(v0, FORCE_SPEED.soft) : v0, pw = Math.min(1, v / CONFIG.STRIKE_SUPER_SPEED);
   const tier0 = v >= CONFIG.STRIKE_SUPER_SPEED ? 'super' : v >= STRIKE_TIERS[1] ? 'hard' : v >= STRIKE_TIERS[0] ? 'medium' : 'soft', tier = b.guest && tier0 === 'soft' ? 'medium' : tier0; // a guest always goes back at least medium
   const offx = Math.max(-1, Math.min(1, (cursor.x - sc.x) / sc.r)), offy = Math.max(-1, Math.min(1, (cursor.y - sc.y) / sc.r));
   const hv = cursorVel(now, 100), hx = Math.max(-1, Math.min(1, hv.x / (1.6 * s))), hy = Math.max(-1, Math.min(1, hv.y / (1.6 * s))); // the hand's own direction, -1..1 per axis
   const latx = -offx * 1.2 + hx * 0.7, laty = -offy * 1.2 + hy * 0.7, straight = Math.max(0, 1 - Math.hypot(latx, laty) / 0.5); // dead centre with a hand moving straight in = a straight, faster ball
-  b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0;
-  b.vx = latx * W * 0.00035 * (0.6 + pw); b.vy = laty * H * 0.00035 * (0.6 + pw);
+  b.dir = -1; b.z = Math.max(b.z, 1); b.super = tier === 'super'; b.tier = tier; b.combo = 0; b.hot = hot;
   b.spin = Math.max(-1, Math.min(1, offx * 0.9 - hx * 0.5)); // sidespin: the ball's x path curves back toward where it came from, more the further off centre the slap
   b.speed = Math.min(strikeTuning().maxSpeed * 1.5, strike.pace * (0.55 + 1.45 * pw) * (1 + 0.12 * straight)) * (b.guest ? GUEST_SPD : 1);
-  return { sc, v, pw, tier, offx, offy, hx, hy, straight };
+  aimBall(b, latx, laty, now);
+  return { sc, v, pw, tier, offx, offy, hx, hy, straight, hot };
+}
+// v4 (challenge): the aim. A hit's direction (where on the ball the hand met it, which way the hand moved; a serve's flick sideways) picks a
+// landing point on the wall ahead: up to ~0.6 of the corridor's half-width per unit of 'lat' from where the ball was hit. The ball's
+// lateral speed is set so it lands exactly there (the sidespin's curve included), so the player can steer it onto a weak spot or a turret.
+const AIM_SPREAD = 0.3; // x the corridor's width / height per unit of lat (lat runs -1.9..1.9)
+function aimWall(b) { // what the outgoing ball meets first: the nearest standing wall ahead in view, else the boss, else the far wall
+  const Z = CONFIG.STRIKE_Z_FAR; let w = null;
+  for (const q of strike.walls) if (q.left > 0 && q.z > b.z && q.z < Z && (!w || q.z < w.z)) w = q;
+  if (strike.boss && strike.boss.z > b.z && (!w || strike.boss.z < w.z)) return { z: strike.boss.z, id: 'boss' };
+  return w ? { z: w.z, id: w.id } : { z: Z, id: 'far' };
+}
+function aimBall(b, latx, laty, now) {
+  const { L, R, T, B } = corridor(), tg = aimWall(b), tms = Math.max(120, (tg.z - b.z) / Math.max(0.05, b.speed * speedMul())), acc = (b.spin || 0) * STRIKE_CURVE * W;
+  const ax = b.x + latx * (R - L) * AIM_SPREAD, ay = b.y + laty * (B - T) * AIM_SPREAD;
+  b.vx = (ax - b.x - 0.5 * acc * tms * tms) / tms; b.vy = (ay - b.y) / tms;
+  b.aim = { x: ax, y: ay, z: tg.z, wall: tg.id, t: now, ms: tms };
+}
+function aimSpot(a) { // the landing point folded back into the corridor (a ball aimed past a side wall ricochets off it)
+  const { L, R, T, B } = corridor(), fold = (v, lo, hi) => { const span = hi - lo; let q = ((v - lo) % (2 * span) + 2 * span) % (2 * span); return lo + (q > span ? 2 * span - q : q); };
+  const r = ballR(); return { x: fold(a.x, L + r, R - r), y: fold(a.y, T + r, B - r), z: a.z };
 }
 /* --- the player serve: at the round's start, each level's start (after the release / the perk pick) and after a miss, the ball waits in front of
    the player (bobbing, following the hand / finger / mouse: its x and a little of its y, inside the corridor's near end; 'Pull back, then flick!');
@@ -5741,10 +5944,11 @@ function waitTick(now, dt) {
 function playerServe(force, now = performance.now(), aim = null) { // the waiting ball launched (force: a tier for the test hook, or the flick's speed; aim: -AIM_MAX..AIM_MAX sideways)
   let b = strike.balls[0]; if (!strike.waiting || !b || !b.wait) b = startWait(now);
   const q = slapLaunch(b, now, force); strike.waiting = false; b.wait = false; strike.serves++; pullReset();
-  if (aim !== null) { b.vx = aim * W * 0.00035 * (0.6 + q.pw) * 0.6; b.vy = 0; b.spin = 0; } // a flick: straight on down the corridor, a gentle sideways aim
+  if (aim !== null) { b.spin = 0; aimBall(b, aim / AIM_MAX * 1.2, 0, now); } // a flick: straight on down the corridor, steered sideways by the flick
+  heatHit(q.tier, now);
   strike.power = q.tier; strike.hitAt = strike.handHit = now; strike.ui.tierFlash = { t: now, tier: q.tier, v: q.v, x: q.sc.x, y: q.sc.y, r: q.sc.r, val: meterPopVal(q.tier, q.v) }; strike.lastServe = { tier: q.tier, at: now, wait: now - strike.waitSince, v: q.v, aim, flick: typeof force === 'number' };
   slapFx(b, q.sc, q.pw); tipOnce('serve');
-  if (powerOn('multi')) addClones();
+  if (powerOn('multi')) addClones(); else if (challengeCfg().balls > 1) addClones(challengeCfg().balls); // (a two-ball stage: the second ball goes with the serve)
   return q.tier;
 }
 const PACE_UP_EVERY = 5, PACE_UP = 1.05; // every 5 returns in a row on a level the pace steps up 5% (within the level's cap)
@@ -5753,9 +5957,11 @@ function paceUp(now) {
   const T = strikeTuning(), cap = Math.min(T.maxSpeed, T.paceCap) * paceMul(); if (strike.pace >= cap - 1e-9) return false;
   strike.pace = Math.min(cap, strike.pace * PACE_UP); strike.paceUps = (strike.paceUps || 0) + 1; strike.ui.faster = { t: now }; sfx('faster'); return true;
 }
-function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life
+function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life (a two-ball stage: every ball missed costs one)
   const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
-  if (B.length) { sfx('whiff'); return; }
+  const must = adv.on && adv.plan && adv.plan.balls > 1 && !powerOn('multi');
+  if (B.length && !must) { sfx('whiff'); return; }
+  if (B.length) { strike.misses++; sfx('whiff'); shakeScreen(1.2); streakReset(now); loseLife(now); return; } // (the other ball plays on)
   strike.misses++; strike.power = ''; sfx('whiff'); shakeScreen(1.2); streakReset(now); strike.runReturns = 0; // a miss breaks the run toward the next speed-up
   loseLife(now);
   if (!strike.over) { strike.serveAt = now + 800; strike.cued = false; }
@@ -5852,7 +6058,9 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const coins = first ? E.first + stars + (P.boss ? E.boss : 0) : Math.max(0, stars - prev) * E.star;
   A.stars[n] = Math.max(prev, stars); advOpenNode(A, n + 1); habitStageClear(); saveProfile(); // (today's stage chest counts every clear)
   const stk = stars === 3 ? albumAward(n) : null; // the first 3-star clear: the album's sticker (a full page: its bonus)
-  adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null };
+  const score = Math.round(strike.score), prevScore = A.best[n] || 0, record = score > prevScore && prevScore > 0; A.best[n] = Math.max(prevScore, score); saveProfile(); // v4: the stage's best score (a record: beaten, not just set)
+  adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null,
+    score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score), bestRank: rankFor(n, A.best[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
   adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
@@ -5861,7 +6069,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
   if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true)); // (Coin Magnet never applies: no perks in a stage)
-  if (!adv.travel) grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (a world's boss stage: 'New world!' during the trip instead; the loop stops: the clear's fanfare plays alone)
+  if (adv.result.record) grippySay('record'); else if (!adv.travel) grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (a new record: that line first) // (a world's boss stage: 'New world!' during the trip instead; the loop stops: the clear's fanfare plays alone)
   return adv.result;
 }
 function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
@@ -5930,11 +6138,20 @@ function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motio
   } else strike.ui.travelBox = null;
   void rtl;
 }
+function rankCss(i) { return i === 4 ? 'linear-gradient(135deg,#ffe07a,#ff7ad9 40%,#7fb6ff 75%,#7fffd4)' : 'linear-gradient(135deg,' + lighten(RANK_COL[i], 0.45) + ',' + RANK_COL[i] + ' 55%,' + darken(RANK_COL[i], 0.35) + ')'; }
+function rankGemSprite(i, R) { // a faceted gem in the rank's colour (Legend: rainbow)
+  return makeSprite('rgem|' + i + '|' + R, R * 2.4, R * 2.4, R * 1.2, R * 1.2, (g) => {
+    const col = RANK_COL[i] || RANK_COL[0], gr = g.createLinearGradient(-R, -R, R, R);
+    if (i === 4) { gr.addColorStop(0, '#ffe07a'); gr.addColorStop(0.35, '#ff7ad9'); gr.addColorStop(0.7, '#7fb6ff'); gr.addColorStop(1, '#7fffd4'); } else { gr.addColorStop(0, lighten(col, 0.45)); gr.addColorStop(0.55, col); gr.addColorStop(1, darken(col, 0.35)); }
+    g.fillStyle = gr; g.beginPath(); g.moveTo(0, -R); g.lineTo(R * 0.85, -R * 0.2); g.lineTo(0, R); g.lineTo(-R * 0.85, -R * 0.2); g.closePath(); g.fill(); g.lineWidth = Math.max(1, R * 0.16); g.strokeStyle = 'rgba(20,24,48,0.75)'; g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.moveTo(0, -R * 0.8); g.lineTo(R * 0.4, -R * 0.2); g.lineTo(0, -R * 0.05); g.lineTo(-R * 0.4, -R * 0.2); g.closePath(); g.fill();
+  });
+}
 function advStarHint(r) { const n = r.lost || 0; return n === 0 ? t('starsPerfect') : n === 1 ? t('starsLost1') : t('starsLostN', { n }); } // the line under the stars: why not 3, and how
 function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, the line on how to get 3, coins, XP; Next / Play again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
   const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
@@ -5957,6 +6174,23 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
       const ha = Math.min(1, Math.max(0, (now - E.overAt - 350 - Math.max(0, r.stars - 1) * 420 - 200) / 300));
       blit(hs, cx, hy, 0, hsc, ha); ui.advStarHint = { text: txt, x: cx - hs.tw * hsc / 2, y: hy - 9, w: hs.tw * hsc, h: 18, a: ha, lost: r.lost };
     }
+    if (SC) { // v4: the score, its rank (a gem pill), and NEW RECORD! (a fanfare, confetti) or the best and the next rank's score
+      const at = E.overAt + 350 + Math.max(0, r.stars - 1) * 420 + 450, q = Math.min(1, Math.max(0, (now - at) / 300)), sy = y0 + 214, rk = Math.max(0, r.rank), col = RANK_COL[rk];
+      const sp = textSprite(t('scoreN', { n: LRM + r.score.toLocaleString('en-US') }), 17, '#fff8ec', null, 800), rs = textSprite(t('rk_' + RANKS[rk]), 13, '#141b34', null, 800), rw = rs.tw + 34, gap = 10, tot = sp.tw + gap + rw;
+      const sx = rtl ? cx + tot / 2 - sp.tw / 2 : cx - tot / 2 + sp.tw / 2, rx = rtl ? cx - tot / 2 + rw / 2 : cx + tot / 2 - rw / 2, pop = q < 1 ? 1 + 0.25 * Math.sin(Math.PI * q) : 1;
+      blit(sp, sx, sy, 0, 1, q); blit(pillSprite(col, rw, 22), rx, sy, 0, pop, q); blit(rankGemSprite(rk, 8), rtl ? rx + rw / 2 - 13 : rx - rw / 2 + 13, sy, 0, pop, q); blit(rs, rx + (rtl ? -8 : 8), sy, 0, pop, q);
+      ui.advScore = { score: r.score, rank: RANKS[rk], x: cx - tot / 2, y: sy - 12, w: tot, h: 24, a: q, record: !!r.record };
+      if (q > 0 && !adv.sfxAt.rank) { adv.sfxAt.rank = now; sfx('xylo', [523, 659, 784, 988, 1319][rk]); if (rk >= 3) { burst(rx, sy, col, 16); ring(rx, sy, hexA(col, 0.9), 40, 380, 3); } }
+      const ly = sy + 28;
+      if (r.record) { // the record moment
+        const k2 = Math.max(0, (now - at - 250) / 400); if (k2 > 0 && !adv.sfxAt.record) { adv.sfxAt.record = now; sfx('record'); confetti(cx, ly - 10, 60, 1); burst(cx, ly, '#ffd36b', 22); shakeScreen(1.5); }
+        const bs = bigTextSprite(t('newRecord'), 24), sc2 = k2 <= 0 ? 0 : Math.min(1.15, 0.5 + k2) * (1 + 0.06 * Math.sin(now / 160)); if (sc2 > 0) blit(bs, cx, ly + 2, Math.sin(now / 300) * 0.04, Math.min(sc2, (cw - 30) / Math.max(1, bs.w - 24)));
+        ui.advRecord = { a: Math.min(1, k2), x: cx - bs.w / 2, y: ly - 14, w: bs.w, h: 28 };
+      } else {
+        ui.advRecord = null; const nx = r.next ? '  ·  ' + t('nextRank', { r: t('rk_' + RANKS[r.next.rank]), n: LRM + r.next.at.toLocaleString('en-US') }) : '';
+        const ls = textSprite(t('bestN', { n: LRM + r.bestScore.toLocaleString('en-US') }) + nx, 12, 'rgba(241,233,218,0.75)', null, 600); blit(ls, cx, ly, 0, Math.min(1, (cw - 28) / ls.tw), q);
+      }
+    }
   } else { // how far it got: the walls as bricks, the broken ones lit
     const n = r.walls, bw = Math.min(26, (cw - 60 - (n - 1) * 6) / n), bh = 16, tw = n * bw + (n - 1) * 6, wy = y0 + 140, ws = [];
     blit(textSprite(t('wallsOf', { a: r.cleared, b: r.walls }), 22, '#fff8ec', null, 800), cx, y0 + 118);
@@ -5964,15 +6198,15 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     ui.advWalls = { cleared: r.cleared, walls: r.walls, pips: ws };
   }
   { // what it paid: coins (a first clear, or the stars a replay adds) and XP; a replay that adds nothing shows the best
-    const py = y0 + (clear ? 196 + HN : 180), ph = 26, items = [];
+    const py = y0 + (clear ? 196 + HN + SC : 180), ph = 26, items = [];
     if (r.coins) items.push({ sp: textSprite(LRM + '+' + r.coins, 14, '#ffd77a', null, 800), coin: true });
     if (meta.roundXp > 0) items.push({ sp: textSprite(t('xpN', { n: meta.roundXp }), 14, '#bfe3ff', null, 800) });
     if (clear && !r.first) items.push({ sp: textSprite(t('advBest', { n: r.best }), 13, 'rgba(241,233,218,0.8)', null, 700) });
     const ws = items.map((it) => it.sp.tw + (it.coin ? 40 : 22)), tot = ws.reduce((a, b) => a + b, 0) + 8 * Math.max(0, items.length - 1); let x = cx - tot / 2; ui.advPay = [];
     items.forEach((it, i) => { const w = ws[i], bx = rtl ? cx + tot / 2 - (x - (cx - tot / 2)) - w : x; blit(glassSprite(w, ph, 13), bx - 1, py - 1); if (it.coin) { blit(coinSprite(8), rtl ? bx + w - 14 : bx + 14, py + ph / 2); edgeText(it.sp, rtl ? bx + w - 27 : bx + 27, py + ph / 2, rtl); } else blit(it.sp, bx + w / 2, py + ph / 2); ui.advPay.push({ x: bx, y: py, w, h: ph }); x += w + 8; });
   }
-  ui.advSticker = null; if (stk) drawCardSticker(now, r, E, cx, y0 + 270 + HN, cw, rtl); // a new sticker for the album, between what it paid and the buttons
-  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN : 230) + stk, bh = 56, sh = 46, hw = (bw - 10) / 2;
+  ui.advSticker = null; if (stk) drawCardSticker(now, r, E, cx, y0 + 270 + HN + SC, cw, rtl); // a new sticker for the album, between what it paid and the buttons
+  const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN + SC : 230) + stk, bh = 56, sh = 46, hw = (bw - 10) / 2;
   ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
     : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
   const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn') }; ui.advLabels = Object.fromEntries(Object.keys(ui.buttons).map((k) => [k, label[k]])); // (a clear: 'Play again'; a fail: 'Try again')
@@ -5991,7 +6225,7 @@ function finalWallTick(now) { // the last wall of a level: flagged 'final' (a gl
   if (strike.boss || strike.progress !== strike.goal - 1 || (adv.on && adv.phase !== 'play')) return;
   const Z = CONFIG.STRIKE_Z_FAR, w = strike.walls.find((q) => q.left > 0 && q.z < Z); if (!w || w.finalAt || strike.walls.some((q) => q.final && q.left > 0)) return;
   w.final = true; w.finalAt = now; strike.ui.tag = { t: now, kind: 'final' }; grippySay('final'); sfx('whoosh'); // (flagged once per wall)
-  if (strike.level >= 2 && !strike.extrasOff) for (const k of w.bricks) if (k.alive && !k.pu && !k.tnt && (k.col + k.row) % 3 === 0) k.hp++;
+  if (strike.level >= 2 && !strike.extrasOff) for (const k of w.bricks) if (k.alive && !k.pu && !k.tnt && !k.weak && !k.key && !k.gold && (k.col + k.row) % 3 === 0) { k.hp++; k.max = Math.max(k.max || 1, k.hp); }
 }
 function strikeTick(now, dt) {
   const rel = now < strike.releaseUntil; tickFloaters(strike.floaters, dt); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
@@ -6003,14 +6237,17 @@ function strikeTick(now, dt) {
   if (strike.perkOffer) { perkTick(now, dt); return; } // perk cards up: everything waits for the pick (the auto-pick clock runs even while the hand is missing)
   if (strike.perkAt && now >= strike.perkAt) { strike.perkAt = 0; if (openPerkOffer(now)) return; }
   if (strike.chest && !pause.on) chestTick(now, dt); // the boss chest: the calm holds (no serve) until it is opened
-  if (pause.on) { strike.serveAt += dt; powerupsTick(now, dt); return; } // the ball (and the next serve) waits while the hand is missing
+  if (pause.on) { strike.serveAt += dt; powerupsTick(now, dt); if (strike.hotUntil) strike.hotUntil += dt; return; } // the ball (and the next serve) waits while the hand is missing
+  if (now < strike.stopUntil) { strike.serveAt += dt; if (strike.hotUntil) strike.hotUntil += dt; return; } // v4: the hit-stop: a SUPER impact freezes the world for a beat
   if (now < strike.slowUntil) dt *= CLOSE_SLOW; // 'Close one!': a moment of slow motion
+  heatTick(now, dt);
   if (rel) strike.beatAt = 0; // the heartbeat stops during the release
   else if (strike.level >= 2 && now >= strike.beatAt && !strike.waiting) { const ms = beatMs(); if (strike.beatAt) { sfx('beat'); strike.beats++; } strike.beatAt = now + ms; } // a soft heartbeat from level 2, quicker each level and with each wall cleared in it
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
   if (strike.waiting) { if (strike.boss) strike.boss.pz = strike.boss.z; } else bossTick(now, dt); // (the boss holds while the serve waits)
   wallsTick(dt); finalWallTick(now); if (!strike.waiting) powerupsTick(now, dt); capsulesTick(now, dt);
-  if (strike.over) return; // the boss reached the player with the last life
+  if (strike.over || (adv.on && adv.phase !== 'play')) return; // the boss (or a wall closing in) reached the player with the last life
+  if (!strike.waiting) { turretTick(now, dt); if (strike.over || (adv.on && adv.phase !== 'play')) return; } // v4: turret shots fly while the ball is in play
   if (strike.waiting && (strike.extrasOff || strike.autoServe)) serveBall(now); // (the older suites' automatic serve)
   if (strike.waiting) { waitTick(now, dt); return; } // the player serve: the ball waits for the slap
   if (!strike.balls.length) { // between rallies: the ball appears in front of the player for the serve (the older suites: a whoosh and a ring at the far end 500 ms before it comes)
@@ -6039,7 +6276,7 @@ function ballTick(b, now, dt, fire, mul) {
     b.x = b.x0 + (b.tx - b.x0) * k + (b.curve ? b.curve * Math.sin(Math.PI * k * (b.waves || 1)) : 0); b.y = b.y0 + (b.ty - b.y0) * k; // (+ the level's sideways bow / wobble)
     if (!strike.extrasOff) incomingWalls(b, zi, xi, yi, now); // (the older suites' far-end serve flies through the walls untouched)
     if (b.z <= CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW')) { // slap window; on Easy it opens earlier and a late slap (just past the plane) still counts
-      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach, d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
+      const sc = ballScreen(b), reach = Math.max(sc.r * sd('STRIKE_HIT_RADIUS'), sd('STRIKE_HIT_NEAR') * strikeScale()) * reachMul() * strikeTuning().reach * advK('reachK'), d = pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS);
       const touch = d > reach && handOverlap(sc.x, sc.y, sc.r, now, CONFIG.STRIKE_HIT_PATH_MS); // the ball touching the drawn hand (e.g. the fingertips, well above the cursor point) is a hit too
       if (d <= reach || touch) { // any cursor position from the last 160 ms counts, not only this frame's
         const zo = CONFIG.STRIKE_HIT_Z * sd('STRIKE_HIT_WINDOW'), zl = -CONFIG.STRIKE_HIT_Z * sd('STRIKE_LATE_Z'), late = b.z <= zl + 0.15 * (zo - zl), edge = touch || d > 0.8 * reach;
@@ -6174,6 +6411,46 @@ function strikeBrickSprite(level, w, h, raw, kind = 'brick') { // one brick / gl
     g.lineWidth = 1; g.strokeStyle = darken(col, 0.5); g.strokeRect(-bw / 2, -bh / 2, bw, bh);
   });
 }
+function specialBrickSprite(type, w, h) { // v4: laid over a special brick (2D, and as the 3D icon plane): armored plating, a glowing weak spot, a gold bar, a keystone, a turret's eye
+  return makeSprite('spbrick|' + type + '|' + Math.round(w) + 'x' + Math.round(h), w, h, w / 2, h / 2, (g) => {
+    const m = Math.max(1.5, Math.min(w, h) * 0.05), bw = w - 2 * m, bh = h - 2 * m, r = Math.min(bw, bh);
+    if (type === 'armor') { // steel bands across the brick, bolted at the ends
+      g.fillStyle = 'rgba(30,38,60,0.28)'; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      for (const y of [-0.28, 0.28]) { const gr = g.createLinearGradient(0, bh * y - bh * 0.09, 0, bh * y + bh * 0.09); gr.addColorStop(0, '#dfe6f2'); gr.addColorStop(0.5, '#8d98ad'); gr.addColorStop(1, '#4c556a'); g.fillStyle = gr; g.fillRect(-bw / 2, bh * y - bh * 0.09, bw, bh * 0.18);
+        for (const x of [-0.4, 0, 0.4]) { g.fillStyle = '#f4f7fc'; g.beginPath(); g.arc(bw * x, bh * y, Math.max(1.2, r * 0.06), 0, TAU); g.fill(); g.strokeStyle = 'rgba(20,24,40,0.6)'; g.lineWidth = 1; g.stroke(); } }
+      g.lineWidth = Math.max(1.5, r * 0.05); g.strokeStyle = 'rgba(210,220,240,0.7)'; g.strokeRect(-bw / 2 + g.lineWidth / 2, -bh / 2 + g.lineWidth / 2, bw - g.lineWidth, bh - g.lineWidth);
+    } else if (type === 'weak') { // a glowing cyan core with crack rays: 'hit me here'
+      const g0 = g.createLinearGradient(0, -bh / 2, 0, bh / 2); g0.addColorStop(0, 'rgba(70,225,215,0.92)'); g0.addColorStop(1, 'rgba(20,150,160,0.92)'); g.fillStyle = g0; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      const gr = g.createRadialGradient(0, 0, 1, 0, 0, Math.max(bw, bh) * 0.5); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(200,255,250,0.95)'); gr.addColorStop(1, 'rgba(90,250,230,0)'); g.fillStyle = gr; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      g.strokeStyle = 'rgba(200,255,250,0.95)'; g.lineWidth = Math.max(1.2, r * 0.06); g.lineCap = 'round';
+      for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + 0.3, l = r * (0.32 + (i % 2) * 0.12); g.beginPath(); g.moveTo(Math.cos(a) * r * 0.1, Math.sin(a) * r * 0.1); g.lineTo(Math.cos(a) * l * 0.6 + Math.sin(a) * r * 0.05, Math.sin(a) * l * 0.6); g.lineTo(Math.cos(a) * l * (bw / bh > 1.4 ? 1.6 : 1), Math.sin(a) * l); g.stroke(); }
+      g.lineWidth = Math.max(1.5, r * 0.07); g.strokeStyle = 'rgba(120,255,240,0.9)'; g.strokeRect(-bw / 2 + 1, -bh / 2 + 1, bw - 2, bh - 2);
+    } else if (type === 'gold') { // a polished gold bar with a glint
+      const gr = g.createLinearGradient(-bw / 2, -bh / 2, bw / 2, bh / 2); gr.addColorStop(0, '#fff2a8'); gr.addColorStop(0.45, '#ffc93c'); gr.addColorStop(1, '#b8780c'); g.fillStyle = gr; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.moveTo(-bw * 0.42, bh * 0.3); g.lineTo(-bw * 0.12, -bh * 0.4); g.lineTo(0, -bh * 0.4); g.lineTo(-bw * 0.3, bh * 0.3); g.closePath(); g.fill();
+      sparkleOn(g, bw * 0.28, -bh * 0.18, r * 0.22, '#ffffff'); g.lineWidth = Math.max(1.5, r * 0.06); g.strokeStyle = '#8a5a08'; g.strokeRect(-bw / 2, -bh / 2, bw, bh);
+    } else if (type === 'key') { // a keystone: a pale wedge with an arch over it
+      g.fillStyle = '#e8dcc4'; g.beginPath(); g.moveTo(-bw * 0.36, -bh / 2); g.lineTo(bw * 0.36, -bh / 2); g.lineTo(bw * 0.22, bh / 2); g.lineTo(-bw * 0.22, bh / 2); g.closePath(); g.fill(); g.lineWidth = Math.max(1.2, r * 0.05); g.strokeStyle = '#6a5636'; g.stroke();
+      g.strokeStyle = '#ffd36b'; g.lineWidth = Math.max(1.5, r * 0.08); g.beginPath(); g.arc(0, bh * 0.15, Math.min(bw * 0.2, bh * 0.32), Math.PI, 0); g.stroke();
+      g.fillStyle = '#ffd36b'; g.beginPath(); g.moveTo(0, -bh * 0.38); g.lineTo(bw * 0.06, -bh * 0.18); g.lineTo(-bw * 0.06, -bh * 0.18); g.closePath(); g.fill();
+    } else if (type === 'turret') { // a dark gun port with a red eye
+      g.fillStyle = '#2a2f45'; g.fillRect(-bw / 2, -bh / 2, bw, bh); g.strokeStyle = '#ff5a6e'; g.lineWidth = Math.max(1.5, r * 0.06); g.strokeRect(-bw / 2 + 1, -bh / 2 + 1, bw - 2, bh - 2);
+      const er = r * 0.3, gr = g.createRadialGradient(0, 0, 1, 0, 0, er * 1.8); gr.addColorStop(0, '#ffe0e4'); gr.addColorStop(0.4, '#ff3a55'); gr.addColorStop(1, 'rgba(255,40,70,0)'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, er * 1.8, 0, TAU); g.fill();
+      g.fillStyle = '#1a1020'; g.beginPath(); g.arc(0, 0, er * 0.45, 0, TAU); g.fill();
+      g.strokeStyle = 'rgba(255,90,110,0.8)'; g.lineWidth = Math.max(1, r * 0.04); for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * bw * 0.42, -bh * 0.3); g.lineTo(sx * bw * 0.42, bh * 0.3); g.stroke(); }
+    }
+  });
+}
+function sparkleOn(g, x, y, r, col) { g.fillStyle = col; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.28, y - r * 0.28); g.lineTo(x + r, y); g.lineTo(x + r * 0.28, y + r * 0.28); g.lineTo(x, y + r); g.lineTo(x - r * 0.28, y + r * 0.28); g.lineTo(x - r, y); g.lineTo(x - r * 0.28, y - r * 0.28); g.closePath(); g.fill(); }
+function brickSpecial(k) { return k.turret ? 'turret' : k.weak ? 'weak' : k.key ? 'key' : k.gold ? 'gold' : k.armor ? 'armor' : null; }
+function crackLevel(k, w) { const max = k.max || w.hp || 1; return k.dent ? Math.max(1, Math.min(2, k.dent)) : k.hp < max ? (max - k.hp >= 2 || k.hp === 1 && max >= 3 ? 2 : 1) : 0; } // 0 intact, 1 cracked, 2 badly cracked
+function shotSprite() { // a turret's shot: a hot pink-red spiky orb
+  return makeSprite('tshot', 96, 96, 48, 48, (g) => {
+    const gr = g.createRadialGradient(0, 0, 2, 0, 0, 46); gr.addColorStop(0, 'rgba(255,240,245,1)'); gr.addColorStop(0.3, 'rgba(255,80,120,0.95)'); gr.addColorStop(0.62, 'rgba(255,40,80,0.45)'); gr.addColorStop(1, 'rgba(255,40,80,0)'); g.fillStyle = gr; g.fillRect(-48, -48, 96, 96);
+    g.fillStyle = '#ff3a62'; g.beginPath(); for (let i = 0; i < 16; i++) { const a = i * TAU / 16, d = i % 2 ? 14 : 26; g.lineTo(Math.cos(a) * d, Math.sin(a) * d); } g.closePath(); g.fill();
+    g.fillStyle = '#fff0f4'; g.beginPath(); g.arc(0, 0, 8, 0, TAU); g.fill();
+  });
+}
 function strikeShardSprite(w, h) { // a fine sliver of glass: a pale-blue triangle with a bright edge (drawn small, tumbling)
   const key = 'sshard|' + Math.round(w) + 'x' + Math.round(h);
   return makeSprite(key, w, h, w / 2, h / 2, (g) => {
@@ -6182,14 +6459,14 @@ function strikeShardSprite(w, h) { // a fine sliver of glass: a pale-blue triang
     g.fillStyle = gr; g.fill(); g.lineWidth = Math.max(1.5, w * 0.03); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.stroke();
   });
 }
-function strikeCrackSprite(w, h) { // dark cracks radiating from a point, laid over a damaged brick
-  const key = 'scrack|' + Math.round(w) + 'x' + Math.round(h);
+function strikeCrackSprite(w, h, lv = 1) { // dark cracks radiating from a point, laid over a damaged brick (lv 2: badly cracked, more and longer)
+  const key = 'scrack|' + Math.round(w) + 'x' + Math.round(h) + (lv > 1 ? '|2' : '');
   return makeSprite(key, w, h, w / 2, h / 2, (g) => {
-    const r = rng(strSeed(key)), cx = (r() - 0.5) * w * 0.3, cy = (r() - 0.5) * h * 0.3, n = 4 + Math.floor(r() * 2);
+    const r = rng(strSeed(key)), cx = (r() - 0.5) * w * 0.3, cy = (r() - 0.5) * h * 0.3, n = (lv > 1 ? 7 : 4) + Math.floor(r() * 2);
     for (const [col, lw, ox] of [['rgba(255,240,220,0.35)', Math.max(1.5, w * 0.012), 1], ['rgba(20,8,4,0.75)', Math.max(1.2, w * 0.009), 0]]) {
       g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round';
       for (let i = 0; i < n; i++) {
-        const a = i * TAU / n + r() * 0.8, len = Math.min(w, h) * (0.35 + r() * 0.35); let x = cx + ox, y = cy + ox;
+        const a = i * TAU / n + r() * 0.8, len = Math.min(w, h) * (lv > 1 ? 0.5 + r() * 0.45 : 0.35 + r() * 0.35) * (lv > 1 && w > h * 1.4 && i % 2 ? 1.5 : 1); let x = cx + ox, y = cy + ox;
         g.beginPath(); g.moveTo(x, y);
         for (let k = 1; k <= 4; k++) { x = cx + ox + Math.cos(a) * len * k / 4 + (r() - 0.5) * w * 0.08; y = cy + ox + Math.sin(a) * len * k / 4 + (r() - 0.5) * h * 0.08; g.lineTo(x, y); }
         g.stroke();
@@ -6200,14 +6477,17 @@ function strikeCrackSprite(w, h) { // dark cracks radiating from a point, laid o
 function drawStrikeWall(w, now) { // every live brick blitted through one depth transform, then a fog wash that deepens with distance; per kind: TNT crates, a motion sheen, glowing hole edges
   const Z = CONFIG.STRIKE_Z_FAR; if (w.z >= Z) return;
   const { L, R, T, B } = corridor(), v = vanish(), s = STRIKE_F / (STRIKE_F + w.z), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, x0 = L + (w.ox || 0), kind = w.kind || 'brick';
-  const sp = strikeBrickSprite(w.level, cw, ch, false, kind === 'tnt' ? 'brick' : kind), spT = kind === 'tnt' ? strikeBrickSprite(w.level, cw, ch, false, 'tnt') : null, cr = w.hp > 1 ? strikeCrackSprite(cw, ch) : null;
+  const sp = strikeBrickSprite(w.level, cw, ch, false, kind === 'tnt' ? 'brick' : kind), spT = kind === 'tnt' ? strikeBrickSprite(w.level, cw, ch, false, 'tnt') : null;
   ctx.setTransform(DPR * s, 0, 0, DPR * s, (v.x + view.x) * DPR, (v.y + view.y) * DPR);
   for (const k of w.bricks) {
     if (!k.alive) continue;
-    const x = x0 + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch, q = k.tnt ? spT : sp;
+    const x = x0 + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch, q = k.tnt ? spT : sp, spc = brickSpecial(k), cl = crackLevel(k, w);
+    if (k.hitAt && now - k.hitAt < 140) { ctx.save(); ctx.translate(Math.sin(now * 0.9) * cw * 0.04, 0); } // a brick that held shudders
     ctx.drawImage(q.c, x - q.ox, y - q.oy, q.w, q.h);
-    if (cr && (k.dent || k.hp < (k.tnt || k.pu ? 1 : w.hp))) ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h);
+    if (spc && spc !== 'weak' && spc !== 'turret' && spc !== 'gold') { const o = specialBrickSprite(spc, cw, ch); ctx.drawImage(o.c, x - o.ox, y - o.oy, o.w, o.h); } // (the glowing ones go on after the fog)
+    if (cl) { const cr = strikeCrackSprite(cw, ch, cl); ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h); } // (more cracks per hit an armored brick takes)
     if (k.pu) { const o = puBrickSprite(k.pu, cw, ch); ctx.drawImage(o.c, x - o.ox, y - o.oy, o.w, o.h); } // a power-up brick: gold rim + icon
+    if (k.hitAt && now - k.hitAt < 140) ctx.restore();
   }
   ctx.save(); ctx.beginPath(); for (const k of w.bricks) if (k.alive) ctx.rect(x0 + k.col * cw, T + k.row * ch, cw, ch); ctx.clip();
   const ao = Math.min(cw, ch) * 0.9; // ambient occlusion: the wall darkens where it meets the corridor's floor, ceiling and sides
@@ -6221,6 +6501,13 @@ function drawStrikeWall(w, now) { // every live brick blitted through one depth 
   const fog = Math.min(0.8, (1 - s) * 0.72);
   if (fog > 0.02) { ctx.fillStyle = 'rgba(12,20,50,' + fog.toFixed(3) + ')'; ctx.fillRect(L, T, R - L, B - T); }
   ctx.restore();
+  for (const k of w.bricks) { // v4: weak spots, turrets and gold glow through the depth fog (pulsing), so they can be aimed at from afar
+    if (!k.alive || !(k.weak || k.turret || k.gold)) continue; const spc = brickSpecial(k), o = specialBrickSprite(spc, cw, ch), x = x0 + (k.col + 0.5) * cw, y = T + (k.row + 0.5) * ch, pk = 0.5 + 0.5 * Math.sin(now * (spc === 'weak' ? 0.008 : 0.012) + k.col * 1.7);
+    ctx.globalAlpha = spc === 'gold' ? 0.95 : 0.8 + 0.2 * pk; ctx.drawImage(o.c, x - o.ox, y - o.oy, o.w, o.h);
+    if (spc !== 'gold') { ctx.globalAlpha = 0.25 + 0.35 * pk; ctx.fillStyle = spc === 'weak' ? 'rgba(120,255,240,1)' : 'rgba(255,70,100,1)'; ctx.fillRect(x - cw * 0.55, y - ch * 0.55, cw * 1.1, ch * 1.1); } // a soft halo spilling over the edges
+    const cl = crackLevel(k, w); if (cl) { ctx.globalAlpha = 1; const cr = strikeCrackSprite(cw, ch, cl); ctx.drawImage(cr.c, x - cr.ox, y - cr.oy, cr.w, cr.h); }
+    ctx.globalAlpha = 1;
+  }
   if (w.final) { // the level's final wall: a glowing gold outline, pulsing
     const pk = 0.55 + 0.45 * Math.sin(now * 0.008), lw = Math.min(cw, ch) * 0.07;
     ctx.save(); ctx.shadowColor = 'rgba(255,194,75,0.95)'; ctx.shadowBlur = 18 * DPR * s; ctx.lineWidth = lw * (1 + 0.4 * pk); ctx.strokeStyle = 'rgba(255,214,110,' + (0.6 + 0.4 * pk).toFixed(3) + ')';
@@ -6602,6 +6889,7 @@ function nextIconSprite(kind) { // a tiny picture of the wall kind for the NEXT 
 function drawStreakToast(now) { // 'On fire!' (5), 'Unstoppable!' (10), 'Legendary!' (20): a flame-coloured title rising over a light burst
   const S = strike.ui.streakToast; if (!S) return;
   const k = (now - S.t) / 1200; if (k >= 1) { strike.ui.streakToast = null; return; }
+  if (!strike.extrasOff) return; // v4: the combo's own pop by the pill says it now (the milestone keeps its sound and voice)
   const a = k < 0.1 ? k / 0.1 : k > 0.7 ? (1 - k) / 0.3 : 1, pop = Math.max(0, 1 - k * 4), y = H * 0.42 - 24 * k;
   blit(burstSprite(), W / 2, y, now * 0.002, 0.55 + 0.25 * Math.min(1, k * 4), a * 0.75);
   blit(bigTextSprite(t(S.key), 36), W / 2, y, 0, 1 + 0.3 * Math.sin(Math.PI * pop), a);
@@ -6646,6 +6934,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   const col = adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
   blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
   ui.wallsPill = { x: pc - pw / 2, y: cy - ph / 2, w: pw, h: ph, text: tx }; ui.advPill = adv.on && adv.plan ? ui.wallsPill : null;
+  drawHeatAndCombo(now, ui, rtl);
   ui.hudParts = ['hearts', 'walls']; ui.streakBox = null; ui.progBar = null; ui.advPips = null; ui.perkIcons.length = 0; ui.nextCard = null; // (no streak chip, progress line, wall pips, perk badges or NEXT card on screen)
   const yb = ui.top + 4; // transient things hang under the top row
   drawPowerIcons(now, rtl ? W - 10 : 10, yb + 12, rtl); // active power-ups with their timers, at the start edge (only while one runs)
@@ -6656,6 +6945,64 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
     const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = ui.puIcons.length ? yb + 58 : yb + 26 - 10 * (1 - e); // (below the power-up badges when there are any)
     ui.tagBox = { x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk };
     blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e);
+  }
+}
+function drawChallengeFx(now) { // v4, on the overlay in both renderers: weak-spot crack lines, the aim reticle on the wall ahead, a wall closing in, turret flashes and shots
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const Z = CONFIG.STRIKE_Z_FAR;
+  for (let i = strike.cracks.length - 1; i >= 0; i--) { // a weak spot's crack racing along its row and column
+    const c = strike.cracks[i], k = (now - c.t) / 450; if (k >= 1) { strike.cracks.splice(i, 1); continue; }
+    const w = strike.walls.find((q) => q.id === c.w), z = w ? w.z : c.z, { L, R, T, B } = corridor(), e = Math.min(1, k * 3), a = 1 - k;
+    ctx.save(); ctx.lineCap = 'round'; ctx.shadowColor = 'rgba(120,255,240,0.95)'; ctx.shadowBlur = 14; ctx.strokeStyle = 'rgba(200,255,250,' + a.toFixed(3) + ')';
+    const p0 = proj(c.x, c.y, z), lw = Math.max(2, 7 * p0.s * (1 - k * 0.5));
+    for (const [x1, y1] of [[c.x + (L - c.x) * e, c.y], [c.x + (R - c.x) * e, c.y], [c.x, c.y + (T - c.y) * e], [c.x, c.y + (B - c.y) * e]]) { const p1 = proj(x1, y1, z); ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(p0.x, p0.y); const mx = (p0.x + p1.x) / 2 + Math.sin(c.t + x1) * 6 * p0.s, my = (p0.y + p1.y) / 2 + Math.cos(c.t + y1) * 6 * p0.s; ctx.lineTo(mx, my); ctx.lineTo(p1.x, p1.y); ctx.stroke(); }
+    ctx.restore();
+  }
+  strike.ui.aimMarks = [];
+  if (!strike.extrasOff) for (const b of strike.balls) { // where the ball will land: a ring on the wall ahead, fading in after the hit
+    const A = b.aim; if (b.dir >= 0 || !A || b.z >= A.z - 4 || A.wall === 'far') continue;
+    const p = aimSpot(A), q = proj(p.x, p.y, A.z), age = now - A.t, a = Math.min(1, age / 120) * 0.85, r = ballRad(b) * q.s * (1.15 + 0.08 * Math.sin(now * 0.02));
+    ctx.save(); ctx.globalAlpha = a; ctx.lineWidth = 2.5; ctx.strokeStyle = b.super ? '#ffd36b' : 'rgba(255,255,255,0.9)'; ctx.setLineDash([6, 5]); ctx.lineDashOffset = -now * 0.03;
+    ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 2; ctx.beginPath();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ctx.moveTo(q.x + dx * r * 0.55, q.y + dy * r * 0.55); ctx.lineTo(q.x + dx * r * 1.25, q.y + dy * r * 1.25); } ctx.stroke(); ctx.restore();
+    strike.ui.aimMarks.push({ x: q.x, y: q.y, r, wall: A.wall });
+  }
+  const dg = creepDanger(); strike.ui.danger = dg;
+  if (dg > 0.25) { // the wall closing in (past a quarter of the way): a red frame round it, pulsing faster as it nears; the screen's edges warm red
+    const w = strike.walls.find((q) => q.left > 0 && q.cz > 0), { L, R, T, B } = corridor(), a = proj(L + (w.ox || 0), T, w.z), c = proj(R, B, w.z), pk = 0.5 + 0.5 * Math.sin(now * (0.006 + 0.02 * dg));
+    ctx.save(); ctx.lineWidth = 3 + 5 * dg; ctx.strokeStyle = 'rgba(255,70,70,' + (0.35 + 0.55 * dg * pk).toFixed(3) + ')'; ctx.shadowColor = 'rgba(255,40,40,0.9)'; ctx.shadowBlur = 16 * dg; ctx.strokeRect(a.x, a.y, c.x - a.x, c.y - a.y); ctx.restore();
+    if (dg > 0.45) { const gr = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.6); gr.addColorStop(0, 'rgba(255,40,40,0)'); gr.addColorStop(1, 'rgba(255,40,40,' + (0.28 * (dg - 0.45) / 0.55 * (0.6 + 0.4 * pk)).toFixed(3) + ')'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); }
+  }
+  for (const w of strike.walls) { if (w.z >= Z) continue; for (const k of w.bricks) if (k.alive && k.turret && k.firedAt && now - k.firedAt < 220) { const c = brickCell(w, k.col, k.row), p = proj(c.x + (w.ox || 0) * 0, c.y, w.z), q = 1 - (now - k.firedAt) / 220; blit(burstSprite(), p.x, p.y, now * 0.01, c.w * p.s / 260 * (1 + q), q); } }
+  strike.ui.shots = [];
+  for (const q of strike.shots) { // the turret shots, spinning, a warning ring once they are close
+    const sc = shotScreen(q), a = q.dead ? Math.max(0, 1 - (now - q.deadAt) / 350) : 1; if (a <= 0) continue;
+    if (!q.dead && q.dir > 0 && q.z < CONFIG.STRIKE_HIT_Z * 5) { const k = 1 - q.z / (CONFIG.STRIKE_HIT_Z * 5); ctx.save(); ctx.globalAlpha = 0.4 + 0.5 * k; ctx.lineWidth = 3; ctx.strokeStyle = '#ff5a6e'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (2.6 - 0.8 * k) + 4 * Math.sin(now * 0.03), 0, TAU); ctx.stroke(); ctx.restore(); }
+    drawShadow(sc.x, proj(q.x, corridor().B, q.z).y, sc.r * 2, sc.r * 0.7, 0.4 * sc.s * a);
+    blit(shotSprite(), sc.x, sc.y, now * 0.012 * (q.dir > 0 ? 1 : -2), sc.r / 26 * (1 + 0.1 * Math.sin(now * 0.04)) * (q.dead ? 1 + (1 - a) : 1), a);
+    strike.ui.shots.push({ x: sc.x, y: sc.y, r: sc.r, dir: q.dir, dead: q.dead });
+  }
+}
+function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while there is something to say): the hand's heat as a slim bar (flashing red with steam when overheated), and the combo's pop when it changes
+  const H0 = ui.hud; if (!H0) return; const hot = overheated(now), v = hot ? 1 : strike.heat, sinceHeat = now - (ui.heatAt || -1e9), cool = now - (ui.coolAt || -1e9);
+  ui.heatBar = null;
+  if (!strike.extrasOff && (v > 0.04 || hot || cool < 700)) {
+    const w = Math.min(H0.w - 18, 96), h = 5, x = Math.round(H0.x + H0.w / 2 - w / 2), y = Math.round(H0.y + H0.h + 5), a = hot ? 0.75 + 0.25 * Math.sin(now * 0.025) : Math.min(1, 0.55 + 0.45 * Math.max(0, 1 - sinceHeat / 900) + v * 0.4);
+    resetView(); ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(x - 1, y - 1, w + 2, h + 2, 4); ctx.fill();
+    const col = hot ? '#ff3b3b' : v > 0.7 ? '#ff6a3d' : v > 0.4 ? '#ffb13d' : '#ffd36b', fw = Math.max(2, w * v), fx = rtl ? x + w - fw : x;
+    ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = hot ? 10 : 4; ctx.beginPath(); ctx.roundRect(fx, y, fw, h, 3); ctx.fill(); ctx.restore();
+    if (hot) { const ic = textSprite(t('overheatShort'), 11, '#fff8ec', 'rgba(255,59,59,0.9)', 800); blit(ic, rtl ? x + w + 8 + ic.tw / 2 : x - 8 - ic.tw / 2, y + h / 2, 0, 1, a); } // 'Too hot!' beside the bar
+    ui.heatBar = { x, y, w, h, val: v, hot };
+  }
+  const P = ui.comboPop, k = P ? (now - P.t) / 1100 : 1; ui.comboBox = null;
+  if (P && k >= 0 && k < 1) { // 'x3 COMBO!' pops in big by the pill, bounces, fades; a lost combo: a grey 'x1' sinking
+    const R0 = ui.row || { left: 0, right: W }, sx = rtl ? H0.x - 46 : H0.x + H0.w + 46, side = sx - 40 >= R0.left && sx + 40 <= R0.right; // beside the pill when the top row has room (a laptop), else just under it (a phone)
+    const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, cx = side ? sx : Math.max(60, Math.min(W - 60, pc)), cy = side ? H0.y + H0.h / 2 + 2 : H0.y + H0.h + 42, a = k > 0.7 ? (1 - k) / 0.3 : 1;
+    if (P.lost) { const sp = textSprite(LRM + '×1', 18, 'rgba(241,233,218,0.75)', 'rgba(60,64,84,0.85)', 800); blit(sp, cx, cy + 12 * k, 0, 1 - 0.2 * k, a); ui.comboBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, n: 1, lost: true }; }
+    else {
+      const sc = (k < 0.12 ? 0.4 + 0.9 * k / 0.12 : 1.3 - 0.3 * Math.min(1, (k - 0.12) / 0.2)) * (1 + 0.05 * P.n), big = bigTextSprite(LRM + '×' + P.n, 30), sub = textSprite(t('comboWord'), 11, '#2a1a00', '#ffc24b', 800);
+      if (P.n >= 4) blit(burstSprite(), cx, cy, now * 0.002, 0.28 + 0.03 * P.n, a * 0.7);
+      blit(big, cx, cy, 0, sc, a); blit(sub, cx, cy + 24 * sc, 0, 1, a); ui.comboBox = { x: cx - big.w * sc / 2, y: cy - big.h * sc / 2, w: big.w * sc, h: big.h * sc + 30, n: P.n, lost: false };
+    }
   }
 }
 function drawFaster(now, cx, cy) { // 'Faster!' after an in-level speed-up: pops in, pulses twice, fades (1.1 s)
@@ -7122,6 +7469,7 @@ function renderStrike(now) {
   if (g3) { for (const c of strike.capsules) capsuleRing(c, now); } // (3D: everything but the capsules' 'grab me' ring is in the WebGL scene)
   else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
   if (strike.boss) drawBossBar(strike.boss, now);
+  drawChallengeFx(now); // v4: crack lines, the aim reticle, a wall closing in, turret shots
   drawBouncers(now); // missed guests boinging off the screen (on the overlay in both renderers)
   drawParticles(); drawRings(now);
   drawSparks(now); drawFloaters(strike.floaters);
@@ -7160,7 +7508,7 @@ function renderStrike(now) {
   }
   if (strike.over && adv.on && adv.result) { drawAdvCard(now); drawStrikeHand(now); } // an Adventure stage's card
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
-    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + strike.bestCombo, 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
+    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + (strike.bestMul || 1), 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
   }
 }
@@ -7539,7 +7887,7 @@ function g3Im(e, key) { // an instanced mesh per look in this wall (created on f
 function g3BrickLook(w, k) { // which material a brick uses: TNT crate, power-up gold, a cracked variant once damaged, else the wall kind's
   if (k.tnt) return 'tnt'; if (k.pu) return 'pu';
   const base = w.kind === 'glass' ? 'glass' : w.kind === 'steel' ? 'steel' : 'brick';
-  const dmg = w.hp > 1 && (k.dent || k.hp < w.hp); return dmg && base !== 'glass' ? base + 'Crack' : base;
+  const dmg = crackLevel(k, w) > 0; return dmg && base !== 'glass' ? base + 'Crack' : base;
 }
 function g3BuildWall(e, w) { // instance matrices / colours: only when a brick changes (the group moves with z and the moving wall's ox)
   const S = G3, T = S.T, { L, R, T: top, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - top) / w.rows, kind = w.kind || 'brick';
@@ -7553,6 +7901,12 @@ function g3BuildWall(e, w) { // instance matrices / colours: only when a brick c
     m4.makeScale(cw - gap * 2, ch - gap * 2, depth); m4.setPosition(x, -y, 0); im.setMatrixAt(im.count, m4);
     if (look === 'brick' || look === 'brickCrack') col.copy(lv).multiplyScalar(j); else if (look === 'pu') col.copy(gold); else if (look === 'steel' || look === 'steelCrack') col.copy(steel).multiplyScalar(0.9 + rv * 0.15); else col.copy(white);
     im.setColorAt(im.count, col); im.count++;
+    const spc = brickSpecial(k), cl = crackLevel(k, w);
+    for (const [j, sp] of [spc && specialBrickSprite(spc, cw, ch), cl > 1 && strikeCrackSprite(cw, ch, 2)].entries()) { if (!sp) continue; // v4: a special brick's face (armor bands, weak spot, gold, keystone, turret eye) and heavy cracks, on a plane just in front of it
+      let p = e.icons[ic]; if (!p) { p = new T.Mesh(S.plane, null); p.renderOrder = 2; e.icons.push(p); e.group.add(p); }
+      p.material = g3IconMat(sp.c); p.position.set(x, -y, 0.6 + 0.05 * j); p.scale.set(cw - gap * 2, ch - gap * 2, 1); p.visible = true;
+      let gl = (e.puGlows || (e.puGlows = []))[ic]; if (!gl) { gl = new T.Mesh(S.plane, S.puGlowMat); gl.renderOrder = 2; e.puGlows.push(gl); e.group.add(gl); } gl.visible = false; ic++;
+    }
     if (k.pu) { // the power-up icon (gold rim + glyph from the 2D art) on a plane just in front of the face
       let p = e.icons[ic]; if (!p) { p = new T.Mesh(S.plane, null); p.renderOrder = 2; e.icons.push(p); e.group.add(p); }
       p.material = g3IconMat(puBrickSprite(k.pu, cw, ch).c); p.position.set(x, -y, 0.6); p.scale.set(cw - gap * 2, ch - gap * 2, 1); p.visible = true;
@@ -7645,7 +7999,7 @@ function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any ov
   const seen = new Set();
   for (const w of strike.walls) {
     if (w.z >= Z) continue; seen.add(w.id);
-    const e = g3WallEntry(w.id); let sig = w.level + w.kind + w.rows + 'x' + w.cols + (w.final ? 'F' : ''); for (const k of w.bricks) sig += k.alive ? (k.hp * 2 + (k.dent ? 1 : 0)).toString(36) + (k.tnt ? 't' : k.pu ? 'p' : '') : '.';
+    const e = g3WallEntry(w.id); let sig = w.level + w.kind + w.rows + 'x' + w.cols + (w.final ? 'F' : ''); for (const k of w.bricks) sig += k.alive ? (k.hp * 2 + (k.dent ? 1 : 0)).toString(36) + (k.tnt ? 't' : k.pu ? 'p' : '') + (brickSpecial(k) || '')[0] + crackLevel(k, w) : '.';
     if (sig !== e.sig) { g3BuildWall(e, w); e.sig = sig; }
     e.group.position.set(w.ox || 0, 0, -w.z);
     const ro = lift && w.z < lift.z ? 4 : 0; for (const k in e.ims) e.ims[k].renderOrder = ro;
@@ -8042,6 +8396,15 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       [1, 2.76, 5.4].forEach((m, i) => tone('triangle', 520 * m, 480 * m, [0.14, 0.06, 0.03][i] * (0.7 + 0.3 * k), 260 - i * 60, t0));
       f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 1.4; env(f, 0.08 + 0.06 * k, 50, t0); noise(t0, 50, f);
     }
+    else if (kind === 'sizzle') { const k = arg || 1; f.type = 'highpass'; f.frequency.setValueAtTime(3200, t0); f.frequency.linearRampToValueAtTime(5200, t0 + 0.5 * k); env(f, 0.11 * k, 520 * k, t0); noise(t0, 520 * k, f); if (k >= 1) tone('sine', 300, 120, 0.08, 300, t0); } // overheat: steam hissing off the hand (a low 'pfff' with the first one)
+    else if (kind === 'armor') { const n = Math.max(1, Math.min(3, arg || 1)), f0 = [0, 720, 520, 380][n]; tone('triangle', f0, f0 * 0.8, 0.12, 120, t0); tone('square', f0 * 2.1, f0 * 1.5, 0.03, 60, t0); f.type = 'bandpass'; f.frequency.value = 1400 + 400 * n; f.Q.value = 1.6; env(f, 0.12, 70, t0); noise(t0, 70, f); } // an armored brick holds: a stony tock, lower the more hp it has left
+    else if (kind === 'weak') { f.type = 'bandpass'; f.frequency.setValueAtTime(600, t0); f.frequency.exponentialRampToValueAtTime(3600, t0 + 0.28); f.Q.value = 1.1; env(f, 0.2, 360, t0); noise(t0, 360, f); tone('sawtooth', 160, 60, 0.1, 340, t0); [880, 1320, 1760].forEach((q, i) => tone('triangle', q, 0, 0.06, 160, t0 + 0.05 + i * 0.05)); } // a weak spot cracks: a splitting rip and a bright run
+    else if (kind === 'keystone') { f.type = 'lowpass'; f.frequency.value = 520; env(f, 0.22, 600, t0); noise(t0, 600, f); tone('sine', 90, 40, 0.22, 600, t0); [0.1, 0.22, 0.34].forEach((d) => tone('triangle', 260 - d * 300, 120, 0.06, 90, t0 + d)); } // a keystone gives: a rumble and stones tumbling
+    else if (kind === 'gold') { [1318.5, 1760, 2637].forEach((q, i) => tone('sine', q, 0, 0.09, 260, t0 + i * 0.06)); tone('triangle', 3520, 0, 0.03, 300, t0 + 0.18); } // gold: a bright ching
+    else if (kind === 'pew') { tone('square', 1500, 380, 0.05, 160, t0); tone('sine', 900, 200, 0.07, 180, t0); } // a turret fires
+    else if (kind === 'deflect') { tone('triangle', 1200, 2400, 0.1, 120, t0); tone('sine', 2400, 1800, 0.05, 160, t0 + 0.04); f.type = 'highpass'; f.frequency.value = 2600; env(f, 0.07, 80, t0); noise(t0, 80, f); } // a shot slapped away: a bright 'ping'
+    else if (kind === 'hurt') { tone('sawtooth', 220, 90, 0.12, 280, t0); tone('square', 150, 70, 0.06, 240, t0 + 0.02); f.type = 'lowpass'; f.frequency.value = 900; env(f, 0.16, 200, t0); noise(t0, 200, f); } // a shot (or a wall) got through: a buzz
+    else if (kind === 'record') { [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((q, i) => { tone('triangle', q, 0, 0.09, 240 + i * 40, t0 + i * 0.08); tone('sine', q * 2, 0, 0.03, 200, t0 + i * 0.08); }); f.type = 'highpass'; f.frequency.value = 3200; env(f, 0.05, 420, t0 + 0.4); noise(t0 + 0.4, 420, f); } // NEW RECORD: a longer fanfare with a shimmer
     else if (kind === 'tnt') { f.type = 'lowpass'; f.frequency.setValueAtTime(2200, t0); f.frequency.exponentialRampToValueAtTime(90, t0 + 0.5); env(f, 0.25, 560, t0); noise(t0, 560, f); tone('sine', 120, 28, 0.25, 600, t0); tone('sawtooth', 90, 40, 0.06, 300, t0 + 0.02); tone('triangle', 3000, 500, 0.05, 150, t0); } // TNT: deeper and longer than a bomb
     else if (kind === 'ricochet') { f.type = 'bandpass'; f.frequency.setValueAtTime(3400, t0); f.frequency.exponentialRampToValueAtTime(900, t0 + 0.12); f.Q.value = 3; env(f, 0.08, 130, t0); noise(t0, 130, f); tone('sine', 2100, 700, 0.06, 140, t0); } // the ball glances off the corridor wall
     else if (kind === 'combo') { const n = arg || 2, f0 = 440 * Math.pow(1.19, n); tone('triangle', f0, 0, 0.1, 220, t0); tone('sine', f0 * 2, 0, 0.05, 260, t0 + 0.03); } // SUPER combo: a step up the scale per wall
@@ -8150,7 +8513,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    adv: { stars: {}, unlocked: 1, open: [], seen: [] }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -8172,7 +8535,8 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(ADV_N, a.unlocked | 0));
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
-      if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))]; }
+      if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))];
+      if (a.best && typeof a.best === 'object') for (const k of Object.keys(a.best)) { const n = +k, v = a.best[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isFinite(v) && v > 0) A.best[n] = Math.min(9999999, Math.round(v)); } } // v4: the best score per stage
     if (p.smash && typeof p.smash === 'object') { const a = p.smash, A = d.smash; // Smash stages: the best stars per stage (1-3), the furthest stage open
       if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= SMASH_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(SMASH_N, a.unlocked | 0));
@@ -8901,6 +9265,7 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     smashClear: ['Kaboom!', 'All smashed!', 'Wow, smashed!'],
     smashScene: ['New place!', "What's next?", 'Look at this!'],
     smashHurry: ['Hurry up!', 'Quick, quick!', 'Almost time!'],
+    record: ['New record!', 'Record!', 'Wow, a record!'], overheat: ['Too hot!', 'Cool it!', 'Easy now!'],
   },
   he: {
     start: ['יאללה!', 'מוכנים? צאו!', 'מתחילים!'],
@@ -8918,6 +9283,7 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     smashClear: ['בום טראח!', 'הכל מנופץ!', 'וואו, ניפצתם!'],
     smashScene: ['מקום חדש!', 'מה יש פה?', 'תראו את זה!'],
     smashHurry: ['מהר מהר!', 'זריזות!', 'עוד רגע נגמר!'],
+    record: ['שיא חדש!', 'שיא!', 'וואו, שיא!'], overheat: ['חם מדי!', 'תקררו!', 'לאט לאט!'],
   },
 };
 const GRIPPY_ALIAS = { daily: 'start' }; // the daily's start: the same 'Let's go!'
@@ -8952,7 +9318,7 @@ function grippySay(ev, vars, now = performance.now()) { // a spoken line for an 
   grippy.said.push(grippy.last); if (grippy.said.length > 40) grippy.said.shift();
   return true;
 }
-const TIP_KEYS = { flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest' };
+const TIP_KEYS = { flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest', heat: 'tipHeat', weak: 'tipWeak', turret: 'tipTurret' };
 function profileTip(id) { return (profile.tips || []).includes(id); }
 function tipOnce(id) { // onboarding: a thing explained the first time it shows up on this profile (once ever), as the hint toast; the serve is the mode's own start hint
   if (profileTip(id)) return false;
@@ -9088,13 +9454,15 @@ function renderAdvMap() {
     if (P.boss) disc.insertAdjacentHTML('afterbegin', ADV_CROWN_SVG);
     const ss = document.createElement('span'); ss.className = 'st'; ss.innerHTML = [0, 1, 2].map((i) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (i < st ? ' class="on"' : '') + '>' + ADV_STAR_SVG + '</svg>').join('');
     b.append(disc, ss);
+    const rk = advBestRank(n); if (rk >= 0) { const g = document.createElement('span'); g.className = 'rk'; g.dataset.rank = RANKS[rk]; g.style.setProperty('--rc', RANK_COL[rk]); g.style.setProperty('--rg', rankCss(rk)); disc.appendChild(g); b.dataset.rank = RANKS[rk]; } // v4: the stage's best rank, a small gem on the stop
     if (n === cur && open) { const c = document.createElement('canvas'); c.className = 'hand'; c.width = c.height = Math.round(56 * SS); c.setAttribute('aria-hidden', 'true'); const it = ITEMS.find((q) => q.type === 'hand' && q.skin === skinOf('hand')); if (it) drawItemPreview(c.getContext('2d'), it); b.appendChild(c); }
-    b.setAttribute('aria-label', t('stageN', { n }) + (P.boss ? ' · ' + t('advBoss') : '') + ' · ' + (open ? t('advStarsN', { n: st }) : t('advLockedAria')));
+    b.setAttribute('aria-label', t('stageN', { n }) + (P.boss ? ' · ' + t('advBoss') : '') + ' · ' + (open ? t('advStarsN', { n: st }) : t('advLockedAria')) + (rk >= 0 ? ' · ' + t('rankAria', { r: t('rk_' + RANKS[rk]) }) : ''));
     if (!open) b.setAttribute('aria-disabled', 'true');
     b.addEventListener('click', () => advNodeTap(n, b));
     host.appendChild(b);
   }
   renderStarChests(host, L); renderDayChest(); renderAlbumBtn();
+  { const o = overallRank(), el = $('advRank'); el.hidden = o < 0; if (o >= 0) { el.dataset.rank = RANKS[o]; el.style.setProperty('--rc', RANK_COL[o]); el.style.setProperty('--rg', rankCss(o)); el.querySelector('b').textContent = t('rk_' + RANKS[o]); el.querySelector('small').textContent = t('rankTitle'); el.setAttribute('aria-label', t('rankAria', { r: t('rk_' + RANKS[o]) })); } } // v4: the overall rank
   $('advStarTotal').querySelector('b').textContent = String(advStarTotal()); $('advStarTotal').querySelector('small').textContent = '/ ' + ADV_N * 3;
 }
 function advNodeY(n) { const p = amap.layout && amap.layout.nodes[n - 1]; return p ? p.y : 0; }

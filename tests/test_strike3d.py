@@ -79,7 +79,7 @@ async def step2(page):  # Strike 3D step 2: shatter chunks, glow, impact juice, 
     gl = await page.evaluate(f"(() => {{ const L = {LIVE}; return {{ n: L.length, cls: [...new Set(L.map(c => c.cls))], thin: L.every(c => c.sz < c.sy * 0.25), mat: G3.chMats.glass.transparent && G3.chMats.glass.opacity < 0.6, glints: G3.fxAdd.count }}; }})()")
     check('glass breaks into thin translucent shards (8-cell pattern, transparent physical material) with sparkle glints', gl['n'] >= 8 and gl['cls'] == ['glass'] and gl['thin'] and gl['mat'] and gl['glints'] > 0, gl)
     await page.evaluate(f"{S}.gfxFreeze = false")
-    await smash_kind(page, 'steel', 'hard'); await page.evaluate(f"{S}.gfxFreeze = true")
+    await smash_kind(page, 'steel', 'super'); await page.evaluate(f"{S}.gfxFreeze = true")  # (v4: a hard hit only chips steel; a SUPER breaks the plate it hits)
     st = await page.evaluate(f"(() => {{ const L = {LIVE}; return {{ n: L.length, cls: [...new Set(L.map(c => c.cls))], metal: G3.chMats.steel.metalness, sparks: G3.pAdd.filter(p => p.cell === 1).length, dark: L.every(c => c.col.r < 0.4) }}; }})()")
     check('steel breaks into darker metallic plates with sparks (streaks)', st['n'] >= 4 and st['cls'] == ['steel'] and st['metal'] > 0.8 and st['sparks'] >= 4 and st['dark'], st)
     await page.evaluate(f"{S}.gfxFreeze = false")
@@ -124,7 +124,7 @@ async def shatter_shots(page, tag, pr):  # mid-shatter screenshots at full resol
     for name, kind, power, ms in [('brick', 'brick', 'hard', 220), ('glass', 'glass', 'medium', 200), ('tnt', 'tnt', 'medium', 150), ('super', 'brick', 'super', 220)]:
         await smash_kind(page, kind, power); await hold(page, ms)
         if name == 'super':
-            await page.evaluate(f"(() => {{ const b = {S}.ball; b.super = true; b.dir = -1; b.speed = 0; b.z = 520; b.x = -innerWidth * 0.12; b.y = innerHeight * 0.08; b.trail.length = 0; G3.balls[0].hist.length = 0; for (let i = 8; i >= 0; i--) G3.balls[0].hist.push({{ x: b.x + 40 * i, y: -b.y - 28 * i, z: -b.z + 60 * i, t: performance.now() - 25 * i }}); }})()")
+            await page.evaluate(f"(() => {{ if (!{S}.ball) {S}.serve(); const b = {S}.ball; b.super = true; b.dir = -1; b.speed = 0; b.z = 520; b.x = -innerWidth * 0.12; b.y = innerHeight * 0.08; b.trail.length = 0; G3.balls[0].hist.length = 0; for (let i = 8; i >= 0; i--) G3.balls[0].hist.push({{ x: b.x + 40 * i, y: -b.y - 28 * i, z: -b.z + 60 * i, t: performance.now() - 25 * i }}); }})()")
         await page.evaluate(f"{S}.gfxPr = {pr}"); await frames(page, 2); await page.screenshot(path=f'tests/out/strike3d2_{tag}_{name}.png'); await page.evaluate(f"{S}.gfxPr = 0.5; {S}.gfxFreeze = false")
         await page.evaluate(f"{S}.ball = null; {S}.serve(); {S}.setBallZ(2300, 30, 30)")
     await page.evaluate(f"(() => {{ const s = {S}; __grasp.CONFIG.STRIKE_BOSS_EVERY = 8; {CLEAR}; s.walls.length = 0; const b = s.spawnBoss(1); b.z = 900; b.speed = 0; s.ui.tag = null; s.setBallZ(300, innerWidth * 0.45, innerHeight * 0.5); s.serveAt = performance.now() + 1e9; for (const q of s.balls) q.speed = 0; }})()")

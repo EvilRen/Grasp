@@ -51,7 +51,7 @@ async def main():
         check('plan(n) is deterministic (the same with Math.random poisoned)', plans == again)
         walls = [q['walls'] for q in plans]
         check('stage 1: 4 walls, all brick, 1 hp', plans[0]['walls'] == 4 and plans[0]['kinds'] == ['brick'] * 4 and plans[0]['hp'] == 1, plans[0])
-        check('walls ramp: never fewer within a world (boss stages aside), 10 at most, ~10 by world 5', all(walls[i] <= walls[i + 1] for w in range(5) for i in range(w * 8, w * 8 + 6)) and max(walls) == 10 and min(walls[32:39]) >= 8 and walls[0] == 4, walls)
+        check('walls ramp: never fewer within a world (boss stages aside), 8 at most (v4: a wall takes several aimed hits), 6-8 in world 5', all(walls[i] <= walls[i + 1] for w in range(5) for i in range(w * 8, w * 8 + 6)) and max(walls) == 8 and min(walls[32:39]) >= 6 and walls[0] == 4, walls)
         bosses = [q['n'] for q in plans if q['boss']]
         check('the 8th stage of each world is its boss stage (fewer walls, then the boss)', bosses == [8, 16, 24, 32, 40] and all(plans[n - 1]['walls'] < plans[n - 2]['walls'] for n in bosses), bosses)
         intro = {}
@@ -62,7 +62,7 @@ async def main():
         allowed = {1: {'brick'}, 2: {'brick', 'glass'}, 3: {'brick', 'glass', 'steel'}, 4: {'brick', 'glass', 'steel', 'holed', 'moving'}, 5: {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'}}
         check('a stage only uses what its world has', all(set(q['kinds']) <= allowed[q['world']] and len(q['kinds']) == q['walls'] for q in plans))
         lv = [q['level'] for q in plans]; hp = [q['hp'] for q in plans]
-        check('difficulty ramps: the tuning level climbs (world 1: 1..6, the boss stage at 6; world 5 up to 30), brick hp 1 -> 4', lv == sorted(lv) and lv[0] == 1 and lv[7] == 6 and lv[39] == 30 and hp == sorted(hp) and hp[0] == 1 and hp[39] == 4, [lv, hp])
+        check('difficulty ramps: the tuning level climbs (world 1: 1..6, the boss stage at 6; world 5 up to 30), armored bricks\' hp 1 (none) -> 2 (stage 5) -> 3 (world 3)', lv == sorted(lv) and lv[0] == 1 and lv[7] == 6 and lv[39] == 30 and hp == sorted(hp) and hp[0] == 1 and hp[4] == 2 and hp[16] == 3 and hp[39] == 3, [lv, hp])
         check('power-up bricks from stage 3 (rare), the cow from stage 2, the monkey and bending serves from world 2, S-wobbles from world 4',
               [q['pu'] > 0 for q in plans[:3]] == [False, False, True] and all(0 < q['pu'] <= 0.4 for q in plans[2:]) and [q['guests'] for q in plans[:2]] == [False, True]
               and [q['monkey'] for q in plans[7:9]] == [False, True] and plans[8]['curve'] and not plans[7]['curve'] and plans[24]['wobble'] and not plans[23]['wobble'])
@@ -117,7 +117,11 @@ async def main():
         await page.evaluate(DOWN); await page.evaluate(DOWN)
         mid = await page.evaluate(f"({{ walls: {S}.walls.length, prog: {S}.progress, phase: {A}.phase, spawned: {A}.spawned, coins: {P}.coins }})")
         check('walls down pay no coins in a stage; the last one standing is all that is left', mid['walls'] == 1 and mid['prog'] == 3 and mid['phase'] == 'play' and mid['spawned'] == 4 and mid['coins'] == c0, mid)
-        await page.evaluate(f"(() => {{ const s = {S}; s.serveAt = 0; s.smashTest('super'); }})()")  # the last wall: a real SUPER smash in play
+        for _ in range(12):  # the last wall: real SUPER smashes in play (v4: each takes the 3x3 round its impact; the wall gives way at its last quarter)
+            await page.evaluate(f"(() => {{ const s = {S}; s.serveAt = 0; if ({A}.phase === 'play' && s.walls.some(w => w.left > 0)) s.smashTest('super'); }})()")
+            try: await page.wait_for_function(f"{A}.phase !== 'play' || ({S}.ball && {S}.ball.dir === 1)", timeout=3000)
+            except Exception: pass
+            if await page.evaluate(f"{A}.phase !== 'play'"): break
         await page.wait_for_function(f"{A}.phase !== 'play'", timeout=6000)
         r = await page.evaluate(A + ".result")
         check('the last wall clears the stage: one life lost = 2 stars; a first clear pays 3 + 2 coins', await page.evaluate(A + ".phase") == 'clear' and r['clear'] and r['stars'] == 2 and r['first'] and r['coins'] == 5 and await page.evaluate(P + ".coins") == c0 + 5, r)

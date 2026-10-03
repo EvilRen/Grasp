@@ -278,8 +278,8 @@ async def main():
         check('4000 seeded chest opens: mostly coins (~70%), sometimes a skin (~22%), rarely a Golden ticket (~8%); coins 25-60 (the economy); skins only ones not owned yet',
               0.64 <= sh['coins'] <= 0.76 and 0.17 <= sh['skin'] <= 0.27 and 0.05 <= sh['ticket'] <= 0.11 and 25 <= dist['lo'] <= 28 and 57 <= dist['hi'] <= 60 and dist['bad'] == 0 and dist['items'] >= 8 and dist['same'], dist)
         check('with every skin owned, a skin roll pays coins instead', dist['owned']['skin'] == 0 and dist['owned']['coins'] > 1700, dist['owned'])
-        await page.evaluate(f"{S}.chestAutoMs = 500; {S}.dropChest()")
-        await page.wait_for_function(f"{S}.chest && {S}.chest.state === 'open'", timeout=4000)
+        await page.evaluate(f"window.__sr0 = strikeRand; strikeRand = (ch) => ch === 'chest' ? 0.5 : __sr0(ch); {S}.chestAutoMs = 500; {S}.dropChest()")  # (a coins prize: a random 8% ticket here would upset the ticket count below)
+        await page.wait_for_function(f"{S}.chest && {S}.chest.state === 'open'", timeout=4000); await page.evaluate("strikeRand = __sr0")
         check('no tap: the chest opens by itself after its wait (camera-friendly)', await page.evaluate(f"!!{S}.lastChest"))
         await page.wait_for_function(f"!{S}.chest", timeout=5000)
         await page.evaluate(f"(() => {{ window.__sr = strikeRand; strikeRand = (ch) => ch === 'chest' ? 0.01 : __sr(ch); {S}.chestAutoMs = null; {S}.dropChest().open(); strikeRand = __sr; }})()")
@@ -316,7 +316,7 @@ async def main():
         c0 = await page.evaluate(f"{P}.coins")
         for i in range(9):
             await page.wait_for_function(f"{S}.walls.some(w => w.left > 0 && w.z < __grasp.CONFIG.STRIKE_Z_FAR) && !{S}.chest", timeout=8000)
-            await page.evaluate(f"(() => {{ const s = {S}; s.perkAt = 0; s.perkOffer = null; s.balls.length = 0; s.walls.forEach(w => w.bricks.forEach(k => {{ k.hp = 1; k.tnt = false; }})); s.smashTest('super'); s.ball.speed = 1; }})()")
+            await page.evaluate(f"(() => {{ const s = {S}; s.perkAt = 0; s.perkOffer = null; s.balls.length = 0; const w = s.walls.filter(q => q.left > 0 && q.z < __grasp.CONFIG.STRIKE_Z_FAR).sort((a, b) => a.z - b.z)[0]; wallDown(w, performance.now()); }})()")  # (v4: a wall takes several hits now: the scripted run knocks the nearest one out)
             await page.wait_for_function(f"{S}.cleared >= {i + 1}", timeout=8000); await page.evaluate(f"{S}.balls.length = 0")
         await page.evaluate(f"(() => {{ const s = {S}, b = s.spawnGuest('cow'); s.setBallZ(30, 640, 420); b.guest = 'cow'; strikeHit(s.ball, performance.now()); s.catchTest('big'); s.catchTest('slow'); }})()")
         ec = await page.evaluate(f"({{ coins: {P}.coins - {c0}, cleared: {S}.cleared, level: {S}.level, cheapest: Math.min(...__grasp.collection.items.filter(i => i.cost > 0).map(i => i.cost)), table: ECONOMY.strike, prices: ECONOMY.prices }})")

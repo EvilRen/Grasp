@@ -52,7 +52,7 @@ async def main():
             col = lambda k: [x[k] for x in T[d]]
             check(f'{d}: pace, max speed, aim range, boss hp and boss advance rise at every level 1 -> 8', all(mono(col(k)) for k in ('pace', 'maxSpeed', 'drift', 'bossHpMul', 'bossSpeed')), {k: [round(v, 3) for v in col(k)] for k in ('pace', 'maxSpeed', 'drift', 'bossHpMul')})
             check(f'{d}: the wall gap and the heartbeat interval shrink at every level 1 -> 8', mono(col('wallGap'), False) and mono(col('beatMs'), False), [round(v) for v in col('wallGap')])
-            check(f'{d}: no curve on levels 1-3, a curve from level 4 that grows; brick hp = the level', all(x['curve'] == 0 for x in T[d][:3]) and mono(col('curve')[3:]) and col('brickHp') == list(range(1, 9)), col('curve'))
+            check(f'{d}: no curve on levels 1-3, a curve from level 4 that grows; armored bricks\' hp = the level up to 3 (v4), their share 0 -> 40% by level 5', all(x['curve'] == 0 for x in T[d][:3]) and mono(col('curve')[3:]) and col('brickHp') == [1, 2, 3, 3, 3, 3, 3, 3] and [round(a, 2) for a in col('armor')] == [0, 0.1, 0.2, 0.3, 0.4, 0.4, 0.4, 0.4], [col('curve'), col('brickHp'), col('armor')])
             check(f'{d}: each level\'s pace cap sits between its base and the next level\'s base', all(x['pace'] < x['paceCap'] < y['pace'] for x, y in zip(T[d], T[d][1:])))
         es, ns = [x['speedMul'] for x in T['easy']], [x['speedMul'] for x in T['normal']]
         check('Normal ramps 12% per level, Easy 10% (level 8: x1.84 vs x1.70); Normal faster than Easy at every level from 2', abs(ns[1] - 1.12) < 1e-9 and abs(es[1] - 1.10) < 1e-9 and abs(ns[7] - 1.84) < 1e-9 and abs(es[7] - 1.70) < 1e-9 and all(a > b for a, b in zip(ns[1:], es[1:])), [ns, es])
@@ -93,7 +93,7 @@ async def main():
         check('the banner draws the sub-line inside the screen', nb['text'] == lu['text'] and nb['x'] >= 0 and nb['x'] + nb['w'] <= 1280, nb)
         await page.screenshot(path='tests/out/strike7_banner_desktop.png')
         allnews = await page.evaluate("[2,3,4,5,6,7,8,9,10].map(l => levelNews(l))")
-        check('every level-up 2 -> 10 names what got harder, "Faster!" every time; from 3 the new thing first: glass, steel, curve, holed, moving, TNT, wobble + faster boss', all(len(x) >= 2 and 'hd_faster' in x for x in allnews) and allnews[0][0] == 'hd_faster' and [x[0] for x in allnews[1:8]] == ['nw_glass', 'nw_steel', 'hd_curve', 'nw_holed', 'nw_moving', 'nw_tnt', 'hd_wobble'] and allnews[7][1] == 'hd_boss', allnews)
+        check('every level-up 2 -> 10 names what got harder, "Faster!" every time; from 3 the new thing first: glass, steel, curve, holed, moving, TNT, wobble + faster boss', all(len(x) >= 1 and 'hd_faster' in x for x in allnews) and allnews[0][0] == 'hd_faster' and [x[0] for x in allnews[1:8]] == ['nw_glass', 'nw_steel', 'hd_curve', 'nw_holed', 'nw_moving', 'nw_tnt', 'hd_wobble'] and allnews[7][1] == 'hd_boss', allnews)
         he = await page.evaluate("(() => { setLang('he'); const r = ['nw_holed', 'hd_curve', 'hd_faster', 'hd_tougher', 'nw_moving'].map(k => t(k)); const all = ['glass', 'steel', 'holed', 'moving', 'tnt'].every(k => I18N.he['nw_' + k] && I18N.en['nw_' + k]) && ['faster', 'tougher', 'curve', 'wobble', 'boss'].every(k => I18N.he['hd_' + k] && I18N.en['hd_' + k]); setLang('en'); return { r, all }; })()")
         check('Hebrew sub-lines (and every news string in EN + HE)', he['r'] == [HE_NEWS[k] for k in ['nw_holed', 'hd_curve', 'hd_faster', 'hd_tougher', 'nw_moving']] and he['all'], he)
 
@@ -111,7 +111,7 @@ async def main():
           s.boss = null; const bs = s.spawnBoss(1); r.boss = {{ hp: bs.maxHp, speed: bs.speed, z: bs.z }}; s.boss = null; s.setLevel(6);
           s.setLevel(1); r.trail1 = s.trailMs({{}}); r.gap1 = wallSlotZ(1) - wallSlotZ(0); s.setLevel(6); return r; }})()""")
         t6 = lv['t']
-        check('level 6 (Easy): brick hp 6, wall slots closer (tuned gap), magnet faded to its 0.15 floor (full on levels 1-2)', lv['hp'] == 6 and abs(lv['gap'] - t6['wallGap']) < 1e-9 and lv['gap'] < lv['gap1'] and abs(lv['magnet'] - t6['magnet']) < 1e-9 and abs(lv['magnet'] - 0.15) < 1e-9, lv)
+        check('level 6 (Easy): armored brick hp 3 (v4: the cap), wall slots closer (tuned gap), magnet faded to its 0.15 floor (full on levels 1-2)', lv['hp'] == 3 and abs(lv['gap'] - t6['wallGap']) < 1e-9 and lv['gap'] < lv['gap1'] and abs(lv['magnet'] - t6['magnet']) < 1e-9 and abs(lv['magnet'] - 0.15) < 1e-9, lv)
         check('level 6 boss: hp 16 x 0.85 x the level factor, advancing faster (tuned crossing time)', lv['boss']['hp'] == round(16 * 0.85 * t6['bossHpMul']) and lv['boss']['hp'] > 10 and abs(lv['boss']['speed'] - (lv['boss']['z'] - 450) / t6['bossMs']) < 1e-12 and t6['bossMs'] < 40000, lv['boss'])
         check('the ball trail is longer at the faster level-6 pace (160 ms at level 1)', lv['trail1'] == 160 and lv['trail6'] > 160 * 1.2, [lv['trail1'], lv['trail6']])
         # heartbeat: none on level 1, a soft beat from level 2, quicker each level

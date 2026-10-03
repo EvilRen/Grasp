@@ -27,7 +27,7 @@ async def play_strike(page, tap=False):
     if tap: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
     else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.ball", timeout=8000)
-    await page.evaluate(SFX_JS + ";\n" + HELP_JS + "\n__grasp.CONFIG.STRIKE_PU_RATE = 0; park()")
+    await page.evaluate(SFX_JS + ";\n" + HELP_JS + "\n__grasp.CONFIG.STRIKE_PU_RATE = 0; __grasp.strike.noSpecials = true; park()")
 
 async def frames(page, n=1):
     for _ in range(n): await page.evaluate(FRAMES)
@@ -103,7 +103,7 @@ async def main():
         await page.evaluate(f"park(); {S}.setLevel(1)")  # 1-hp bricks
         w = await page.evaluate(f"(() => {{ const w = {S}.smashTest('soft'); return {{ id: w.id, left: w.left }}; }})()"); await page.wait_for_function(f"{S}.ball.dir === 1", timeout=4000)
         left = await page.evaluate(f"{S}.walls.find(w => w.id === {w['id']}).left"); await page.evaluate("park()")
-        check('Heavy Ball: a soft hit takes 2 bricks instead of 1 (footprint 2)', w['left'] - left == 2 and await page.evaluate(f"{S}.perkStats().footprint") == 2, [w, left])
+        check('Heavy Ball: a soft hit takes 2 bricks instead of 1 (footprint 2)', w['left'] - left == 2 and await page.evaluate(f"{S}.perkStats().footprint") == 2, [w, left, await page.evaluate(f"{S}.lastSmash")])
         await page.evaluate("forceOffer(['slow'])"); await page.evaluate(f"{S}.pickPerk(0)")
         sv = await page.evaluate(f"(() => {{ const s = {S}; s.serve(); const r = {{ speed: s.ball.speed, pace: s.pace }}; park(); return r; }})()")
         check('Slow Start: a serve comes in 15% slower', abs(sv['speed'] - sv['pace'] * 0.85) < 1e-9, sv)
@@ -154,7 +154,7 @@ async def main():
         check('level 3: the telegraph knows the next wall is the new kind (glass), but no NEXT card is drawn (minimal HUD)', nc['next'] == 'glass' and nc['card'] is None, nc)
         check('no perk pick after level 2', await page.evaluate(f"!{S}.perkAt && !{S}.perkOffer")); await page.evaluate("park()")
         ids0 = await page.evaluate(f"{S}.walls.map(w => w.id)")
-        await page.evaluate(f"{S}.smashTest('super')")
+        await page.evaluate(f"wallDown({S}.walls.slice().sort((a, b) => a.z - b.z)[0], performance.now())")  # (v4: no SUPER clears a wall any more: the nearest one knocked out)
         try: await page.wait_for_function(f"{S}.walls.some(q => !{ids0}.includes(q.id))", timeout=8000)  # poll: under load the spawn can take longer than a fixed wait
         except Exception: pass
         await page.evaluate("park()")
@@ -175,15 +175,15 @@ async def main():
         await page.mouse.move(640, 400); await page.wait_for_timeout(250)
         for i in range(1, 4): await hit(page, 640, 400)
         st = await page.evaluate(f"({{ streak: {S}.streak, hits: {S}.hits, mul: {S}.streakMul }})")
-        check('every return without a miss adds to the streak (3 hits -> 3, multiplier x1.3)', st['streak'] == 3 and st['hits'] == 3 and abs(st['mul'] - 1.3) < 1e-9, st)
+        check('every return without a miss adds to the streak (3 hits -> 3, the combo x2: v4 steps x1 -> x8 every 3)', st['streak'] == 3 and st['hits'] == 3 and st['mul'] == 2, st)
         await frames(page, 2); sb = await page.evaluate(f"({{ box: {S}.ui.streakBox, hud: {S}.ui.hud }})")
         check('minimal HUD: the streak counts (3) but no streak chip sits in the HUD row', sb['box'] is None and await page.evaluate(f"{S}.streak") == 3 and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls', sb)
         await page.evaluate(f"{S}.streak = 10"); s0 = await page.evaluate(f"{S}.score"); await hit(page, 640, 400)
         sc = await page.evaluate(f"({{ ds: {S}.score - {s0}, power: {S}.power, fl: {S}.floaters.map(f => f.text) }})")
-        check('streak 10: score multiplier x2 (a soft hit worth 1 scores 2)', sc['power'] == 'soft' and sc['ds'] == 2 and '+2' in sc['fl'], sc)
+        check('streak 10: the combo x4 (a soft hit worth 1 scores 4)', sc['power'] == 'soft' and sc['ds'] == 4 and '+4' in sc['fl'], sc)
         s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"{S}.setLevel(1); {S}.smashTest('soft')"); await page.wait_for_function(f"{S}.ball.dir === 1", timeout=4000); await page.evaluate("park()")
-        check('the multiplier applies to bricks too (1 brick -> +2 at x2)', await page.evaluate(f"{S}.score") - s0 == 2)
-        check('the multiplier caps at x2 (streak 11 -> x2)', await page.evaluate(f"{S}.streakMul") == 2)
+        check('the multiplier applies to bricks too (1 brick -> +4 at x4)', await page.evaluate(f"{S}.score") - s0 == 4)
+        check('the combo caps at x8 (streak 11 -> x4, 21 -> x8, 40 -> x8)', await page.evaluate(f"{S}.streakMul") == 4 and await page.evaluate(f"(() => {{ const s = {S}, k = s.streak; s.streak = 21; const a = s.streakMul; s.streak = 40; const b = s.streakMul; s.streak = k; return a === 8 && b === 8; }})()"))
         await page.evaluate(f"{S}.streak = 4; __sfx.length = 0"); await hit(page, 640, 400)
         tt = await page.evaluate(f"({{ streak: {S}.streak, toast: {S}.ui.streakToast, sfx: __sfx }})")
         check('streak 5: "On fire!" milestone toast + sound', tt['streak'] == 5 and tt['toast'] and tt['toast']['key'] == 'streak5' and 'streak' in tt['sfx'] and await page.evaluate("t('streak5')") == 'On fire!' and await page.evaluate("t('streak10')") == 'Unstoppable!', tt)

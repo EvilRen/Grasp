@@ -22,7 +22,7 @@ async def new_page(b, gfx=None, ctx=None):
 async def play(page):
     await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
-    await page.evaluate(SFX_JS); await page.mouse.move(640, 760)
+    await page.evaluate(SFX_JS + "; __grasp.strike.noSpecials = true; __grasp.strike.walls.forEach(w => w.bricks.forEach(k => { k.weak = k.key = k.gold = k.turret = k.armor = false; }))"); await page.mouse.move(640, 760)  # (v4: plain walls: this suite counts brick hp and the onboarding tips; tests/test_challenge.py covers the special bricks)
 
 async def main():
     async with async_playwright() as p:
@@ -82,7 +82,7 @@ async def main():
         await clear_to(cl6 + 5); m5 = await page.evaluate(f"({{ fin: {S}.finalWall, tension: {S}.pacing.tension, beat: {S}.pacing.beatMs, level: {S}.level, progress: {S}.progress }})")
         await page.wait_for_function(f"performance.now() > {S}.releaseUntil", timeout=5000)
         await clear_to(cl6 + 6); await page.wait_for_function(f"{S}.finalWall", timeout=5000); await frames(page, 2)
-        fw = await page.evaluate(f"""(() => {{ const s = {S}, w = s.walls.find(q => q.final), base = s.tuning(6).brickHp; return {{ level: s.level, progress: s.progress, goal: s.goal, tag: s.ui.tag && s.ui.tag.kind, box: !!s.ui.tagBox, text: s.ui.tagBox ? t('wk_final') : '', quiet: __grasp.grippy.say('final') === false,
+        fw = await page.evaluate(f"""(() => {{ const s = {S}, w = s.walls.find(q => q.final), base = 1; return {{ level: s.level, progress: s.progress, goal: s.goal, tag: s.ui.tag && s.ui.tag.kind, box: !!s.ui.tagBox, text: s.ui.tagBox ? t('wk_final') : '', quiet: __grasp.grippy.say('final') === false,
           tough: w.bricks.filter(k => k.hp === base + 1).length, n: w.bricks.length, front: w === s.walls.filter(q => q.left > 0).sort((a, b) => a.z - b.z)[0], tension: s.pacing.tension, beat: s.pacing.beatMs }}; }})()""")
         check(f"the level's last wall is the 'final wall': flagged, the 'Final wall!' tag, no voice line (a quiet event), +1 hp on {fw['tough']} of {fw['n']} bricks (a third)",
               fw['level'] == 6 and fw['progress'] == fw['goal'] - 1 and fw['front'] and fw['tag'] == 'final' and fw['box'] and fw['text'] == 'Final wall!' and fw['quiet'] and abs(fw['tough'] - fw['n'] / 3) <= 2, fw)

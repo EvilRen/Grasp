@@ -4,7 +4,7 @@ Read this first, then NOTES.md (deploy, phone findings) and DESIGN.md (game desi
 
 ## The project
 - **Grasp:** a hand-gesture browser game for a parent and a young child. They speak Hebrew and play on a phone.
-  - The whole game is one file: `index.html`, about 9,100 lines.
+  - The whole game is one file: `index.html`, about 10,400 lines.
   - Live: https://grasp-weld.vercel.app/ (Tremorti, a tremor meter, is at `/tremorti/`).
   - Repo `evilren/grasp`. Vercel deploys `main` automatically on every push.
 - **Stack:**
@@ -36,6 +36,15 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
   - Code: `pullTick` / `waitTick` / `playerServe(force, now, aim)` (force: a tier or a speed); hooks `strike.pull`, `strike.lastServe { tier, v, aim, flick }`, `strike.ui.serve { charge, armed, text }`; `playerServe(power)` stays the test hook. First serve ever: the one-time tip `tipFlick` (`tipOnce('flick')`).
 - **In-game screen (minimal):** one round pause button in the top corner (tap, Escape or a camera dwell) opens a sheet: Resume, Restart, Sound, Language, Stats, Home. The HUD is one slim row: hearts + a walls pill (Adventure: walls broken / stage walls; Endless: walls toward the next level). No score, progress line, NEXT card, streak chip, perk badges or bottom power bar. Other modes keep the full 5-icon toolbar.
 - **Hit meter:** never on screen permanently. On a hit (or serve) a small power arc pops up just above the hit point, fills to the hit's power in the tier colour (soft / medium / hard / SUPER, `METER_ZONES`, `speedTier`, `TIER_COL`) with the tier's name, and fades within 1 s (`METER_POP_MS`, `drawMeterPop`, hook `strike.ui.meterPop`). Same in 2D and 3D (it is drawn on the 2D overlay).
+- **v4 "challenge" (playtest: "hitting hardest just breaks all the walls", a 13-year-old was not excited):** see DESIGN.md "v4: challenge".
+  - **Bounded blast, always a bounce:** the hit ball meets ONE wall and comes back off it (never through, never a second wall a flight). What breaks (`BLAST`, `blastTargets`, `smashWall` → `hurtBrick` / `breakBrick`): soft = a chip (1 dmg, 1 brick), medium = the brick (2) + a neighbour on the ball's side (1), hard = a plus (2 / 1), SUPER = the 3x3 (3 / 2), fireball = a radius-2 diamond (3, steel too). Glass: 3x3 on any hit; steel (`STEEL_DMG`): dents under soft / medium. A hole still lets the ball through (clean, or clipping its edges). A wall down to its last quarter collapses (`maybeCollapse`, `COLLAPSE_AT`). SUPER / fireball impact: an 80 ms hit-stop (`strike.stopUntil`), shake by bricks broken.
+  - **Aim:** `slapLaunch` → `aimBall`: the hit's direction (contact offset + hand motion; a serve's flick) picks a landing point on the wall ahead (`AIM_SPREAD`), lateral speed solved so it lands there (spin curve included); a dashed reticle on that wall (`drawChallengeFx`, `ui.aimMarks`).
+  - **Special bricks** (`specialBricks`, from `challengeCfg()`: an Adventure stage's plan, Endless by level, nothing with `extrasOff` / the test flag `strike.noSpecials`): plain bricks 1 hp; **armored** (2-3 hp, `k.max`, crack levels `crackLevel`, an 'armor' tock per level), **weak spot** (glowing cyan: breaks its row + column, `strike.cracks` crack lines), **keystone** (bottom half: what rests on it, one column each side, comes down), **gold** (+25 x combo), **turret** (red eye, 2 hp: shoots back). 2D overlays drawn over the fog (`specialBrickSprite`); 3D as icon planes in `g3BuildWall`.
+  - **Overheat** (`HEAT`, `heatHit`, `heatTick`, `overheated`): hard +0.28 / SUPER +0.45, medium -0.12 / soft -0.3, time -0.06/s; full = 3 s of forced-soft hits, steam, sizzle, 'Overheat!' (tip `tipHeat`, voice 'overheat'); a slim heat bar under the HUD pill only while warm (`ui.heatBar`). No heat with `extrasOff`.
+  - **Turrets** (`turretTick`, `fireShot`, `deflectShot`, `shotHits`, `strike.shots`): a slow shot at the near plane every `turretMs`; slapped = it flies back and chips its turret (+5, combo grows); missed = a heart. **Walls closing in** (`creep`, `w.cz`, `crushWall`, `CRUSH_Z`): the front wall creeps while the ball is in play; at the player: a heart, shoved back (red frame / vignette past a quarter, `creepDanger`). **Two-ball stages** (`plan.balls`): every ball missed costs a heart.
+  - **Adventure ramp** (`advPlan`): walls 4..8 (`[4,4,5,6,6][w] + (i-1)/3`), stages 1-4 gentle (`paceK` 0.9, `reachK` 1.08, 2 weak spots, no armor); then `paceK` 1.1-1.38, `reachK` 0.93-0.82, `gapK` 0.9-0.75, `magK` 0.5 (applied by `advK()`), armor from stage 5 (hp 2, 3 from world 3), turrets from stage 10, closing walls from 12, two balls on some world 3+ stages. Stars unchanged (3 = no heart lost).
+  - **Combo** (`comboMul`, `COMBO_STEP` 3, `COMBO_MAX` 8; `streakMul()` returns it): every point x the combo; a pop by the walls pill when it changes (`ui.comboPop`, `ui.comboBox`), a grey x1 on a miss. The old streak toast is no longer drawn (state, sound and voice kept).
+  - **Score chase:** the clear card shows the score, its **rank** (`RANKS` Bronze / Silver / Gold / Diamond / Legend at `RANK_K` x the stage's par `stagePar(n)`), and NEW RECORD! (beating a previous best: 'record' fanfare + voice) or the best + the next rank's score. `profile.adv.best[n]` (validated on load). The map: a rank gem on each cleared stop (`.anode .rk`), the overall rank chip in the footer (`#advRank`, `overallRank()`). Endless' card: best combo = `strike.bestMul`.
 
 **Smash** (rebuilt; player feedback: "it's a bit poor, allow smashing much more"):
 - **Tile:** opens the **Smash map** (`#smashMap`): a big **Free play** button, then 20 stages in 5 scene groups (4 each, stars, locks). `/smash` opens the map too.
@@ -86,7 +95,8 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 11 minutes for 27 runs (25 suites incl. `adventure`, `habit`, `album`, `hudmin`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 12 minutes for 28 runs (26 suites incl. `adventure`, `habit`, `album`, `hudmin`, `challenge`, plus `strike2` and `strike3` again in 3D).
+  - `challenge` covers v4 (the blast + bounce, aim, armor / weak spot / keystone / gold, overheat, turrets, closing walls, two balls, the ramp, combo, score / record / ranks / map badges, profile validation; screenshots `tests/out/challenge_*.png`, EN / HE, phone, 3D).
   - `routes` covers the direct links, pushState / Back / Forward, unknown paths and assets at a sub-path (EN / HE; screenshots `tests/out/route_*.png`). `serve` covers the pull-back + flick serve on mouse, touch (synthetic pointer events, `__gest`) and the camera stub (screenshots `tests/out/serve_*.png`).
   - `smash` + `smash2` cover Smash (see above).
   - `hudmin` covers the minimal in-game screen, the pause sheet, the hit-meter pop (2D and 3D) and the clear card's stars line / buttons on a phone (screenshots `tests/out/hud_min_*.png`, `tests/out/fix_*.png`).
@@ -114,6 +124,7 @@ Around the games:
   - the gift pop-up.
 - **Phone check:** fist vs pinch detection in Smash; Smash scenes' density / stage clocks with a real child; phone CPU with many bodies.
 - **Monkey art:** waiting for the user's images.
+- **v4 not yet checked on a real phone:** the difficulty curve with a real hand (world 2's pace / reach, turret shots, closing walls), whether the overheat feels fair, the rank thresholds (`RANK_K`) against real scores, the reticle's readability.
 - **Possible next steps:**
   - more worlds after world 5;
   - a level ladder for Shapes too;
