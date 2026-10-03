@@ -498,7 +498,7 @@ async def main():
         check('meter follows the hand speed: empty at rest, high after a fast move, empty again', m0 < 0.05 and m1['v'] > 0.4 and m1['tier'] in ('hard', 'super') and m2 < 0.08, [m0, m1, m2])
         await page.evaluate(hit_js(640, 600, 50)); await page.wait_for_timeout(100)
         tf = await page.evaluate(f"({{ tier: {S}.ui.tierFlash.tier, age: performance.now() - {S}.ui.tierFlash.t, txt: {S}.floaters.map(f => f.text) }})")
-        check('medium hit: tier label flashes on the meter, the floater only shows the points', tf['tier'] == 'medium' and tf['age'] < 600 and any(x == '+2' for x in tf['txt']) and not any('Medium' in x for x in tf['txt']), tf)
+        check('medium hit: tier label flashes on the meter; no small "+n" points pop (clutter) and no tier floater', tf['tier'] == 'medium' and tf['age'] < 600 and not any(re.match(r'^\+\d+$', x) for x in tf['txt']) and not any('Medium' in x for x in tf['txt']), tf)
         await page.screenshot(path='tests/out/strike_ui_desktop.png')
         # a SUPER smash (v4): a warm flash, the ball comes back off that wall; no multi-wall combo banner any more
         await page.mouse.move(1200, 760); await page.wait_for_timeout(700)

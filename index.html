@@ -898,7 +898,8 @@ const CONFIG = {
   PUNCH_SPEED_TOUCH: 0.35,    // ...the same gate for a finger on a touch screen
   FIST_RADIUS: 40,
   SMASH_TAP_V: 0.9,           // px/ms: a tap punches as hard as a swipe this fast (a medium hit)
-  SMASH_CLEAR: 0.9,           // the meter's share at which a scene counts as smashed (the rest then goes up by itself)
+  SMASH_CLEAR: 0.85,          // v3: the share of a wave smashed at which the scene moves on (the next wave rolls in; after the last one the boss)
+  SMASH_SCROLL_MS: 1100,      // v3: the scene scrolling on to the next wave / the boss
   SMASH_MAX_PIECES: 140,      // debris bodies on screen at most (the oldest fade out first)
   SMASH_MAX_PIECES_PHONE: 80, // ...on a phone-sized screen
   SMASH_PIECE_MS: 3500,       // a piece of debris lies about this long, then fades
@@ -972,10 +973,10 @@ const I18N = {
     hintSandCam: 'Pinch to grab, open to throw, point to poke. Keep your hand inside the yellow box.',
     hintSandTouch: 'Drag to grab and flick to throw. Two fingers to poke.',
     hintSandMouse: 'Drag to grab, release to throw. Hold right button to poke. D for HUD.',
-    hintSmashCam: 'Punch or touch things with your hand to smash them; move fast for bigger hits. Fill the meter! Keep your hand inside the yellow box.',
-    hintSmashTouch: 'Tap or swipe to smash everything! Fill the meter to clear the scene.', hintSmashMouse: 'Click or swipe fast to smash everything! Fill the meter to clear the scene.',
+    hintSmashCam: 'Punch or touch things with your hand to smash them; move fast for bigger hits. Smash your way to the boss! Keep your hand inside the yellow box.',
+    hintSmashTouch: 'Tap and swipe to smash! Big things take a few hits. Smash your way to the boss!', hintSmashMouse: 'Click or swipe fast to smash! Big things take a few hits. Smash your way to the boss!',
     smTitle: 'Smash', smFree: 'Free play', smFreeSub: 'Smash everything, no clock', smClear: 'Smashed!', smPct: '{n}% smashed', smStarGoal: '★★★ = finish with {n} s left', smStarsPerfect: 'Super fast, {n} s to spare!', smStars2: '{n} s left. Finish with {m} s left for ★★★', smStars1: 'Phew! Finish with {m} s left for ★★★', smStages: 'Stages',
-    sc_wall: 'The Brick Wall', sc_room: 'The Living Room', sc_city: 'Little City', sc_blocks: 'Toy Towers', sc_food: 'Fruit Market',
+    smBoss: 'BOSS', smBossTag: 'Boss!', smWave: 'Onward! {n}/{m}', sc_wall: 'The Brick Wall', sc_room: 'The Living Room', sc_city: 'Little City', sc_blocks: 'Toy Towers', sc_food: 'Fruit Market',
     hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone and the wheel. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
     hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Drag the board to see more.',
     hintBusyMouse: 'Click the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Scroll or drag the board to see more. D for HUD.',
@@ -1109,10 +1110,10 @@ const I18N = {
     hintSandCam: 'צבטו כדי לתפוס, פתחו את היד כדי לזרוק, הצביעו כדי לדחוף. שמרו על היד בתוך המסגרת הצהובה.',
     hintSandTouch: 'גררו כדי לתפוס והעיפו כדי לזרוק. שתי אצבעות כדי לדחוף.',
     hintSandMouse: 'גררו כדי לתפוס, שחררו כדי לזרוק. החזיקו את הכפתור הימני כדי לדחוף. D למדדים.',
-    hintSmashCam: 'תנו אגרוף או געו בדברים עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר. מלאו את המד! שמרו על היד בתוך המסגרת הצהובה.',
-    hintSmashTouch: 'הקישו או החליקו כדי לנפץ הכל! מלאו את המד כדי לסיים את המקום.', hintSmashMouse: 'לחצו או החליקו מהר כדי לנפץ הכל! מלאו את המד כדי לסיים את המקום.',
+    hintSmashCam: 'תנו אגרוף או געו בדברים עם היד כדי לנפץ; תנועה מהירה = מכה גדולה יותר. נפצו את הדרך עד הבוס! שמרו על היד בתוך המסגרת הצהובה.',
+    hintSmashTouch: 'הקישו והחליקו כדי לנפץ! דברים גדולים צריכים כמה מכות. נפצו את הדרך עד הבוס!', hintSmashMouse: 'לחצו או החליקו מהר כדי לנפץ! דברים גדולים צריכים כמה מכות. נפצו את הדרך עד הבוס!',
     smTitle: 'ניפוץ', smFree: 'משחק חופשי', smFreeSub: 'מנפצים הכל, בלי שעון', smClear: 'ניפצתם הכל!', smPct: '{n}% מנופץ', smStarGoal: '★★★ = לסיים כשנשארו {n} שניות', smStarsPerfect: 'סופר מהר! נשארו {n} שניות', smStars2: 'נשארו {n} שניות. סיימו עם {m} שניות לשלושה ★★★', smStars1: 'פיו! סיימו עם {m} שניות לשלושה ★★★', smStages: 'שלבים',
-    sc_wall: 'קיר הלבנים', sc_room: 'הסלון', sc_city: 'עיר קטנה', sc_blocks: 'מגדלי צעצועים', sc_food: 'שוק הפירות',
+    smBoss: 'בוס', smBossTag: 'בוס!', smWave: 'קדימה! {n}/{m}', sc_wall: 'קיר הלבנים', sc_room: 'הסלון', sc_city: 'עיר קטנה', sc_blocks: 'מגדלי צעצועים', sc_food: 'שוק הפירות',
     hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון והגלגל. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
     hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גררו את הלוח כדי לראות עוד.',
     hintBusyMouse: 'לחצו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. גללו או גררו את הלוח כדי לראות עוד. D למדדים.',
@@ -2354,28 +2355,30 @@ function drawHearts(ui, lives, max, cx, cy, now, k = 0.66, gap = 26) { // a row 
    tick / render loops beyond what Matter itself does. --- */
 const SMASH_SCENES = ['wall', 'room', 'city', 'blocks', 'food'], SMASH_PER = 4, SMASH_N = SMASH_SCENES.length * SMASH_PER;
 const SMASH_ACCENT = { wall: '#ff7a59', room: '#ffc24b', city: '#54c6eb', blocks: '#c58bff', food: '#5fd77a' };
-const SMASH_TIME = { wall: 100, room: 60, city: 50, blocks: 50, food: 55 }; // a stage's clock (s) on its scene's first stage; the later ones a little shorter
-const SMASH_STAR3 = 0.45, SMASH_STAR2 = 0.2, SMASH_HURRY_S = 10; // stars by the share of the clock left at the clear; the 'Hurry!' line
-const SMASH_CLEAR_MS = 1500, SMASH_OUT_MS = 450, SMASH_IN_MS = 600, SMASH_BANNER_MS = 2600;
+const SMASH_CLOCK = [125, 110, 160, 145, 85, 100, 105, 120, 95, 135, 140, 165, 85, 105, 110, 120, 105, 125, 130, 150]; // v3: each stage's clock (s): ~1.3 x how long a simulated child takes (3 taps a second, a third of them missing; test_smash2 measures it)
+const SMASH_WAVES = [3, 4, 4, 5], SMASH_WAVES_AT = { wall: [3, 3, 4, 4] }, SMASH_BOSS_HP = [50, 55, 60, 60]; // v3: waves before the boss (the wall's are bigger: fewer), the boss's hp, by the stage within its scene
+const SMASH_STAR3 = 0.4, SMASH_STAR2 = 0.15, SMASH_HURRY_S = 10; // stars by the share of the clock left at the clear; the 'Hurry!' line
+const SMASH_CLEAR_MS = 1500, SMASH_OUT_MS = 450, SMASH_IN_MS = 600, SMASH_BANNER_MS = 2600, SMASH_BOSS_MS = 1300; // (SMASH_BOSS_MS: the boss's final explosion before 'Smashed!')
 const SMC = { FLOOR: 0x0001, OBJ: 0x0002, BACK: 0x0004, DEB: 0x0008 }; // collision categories: the screen's walls, the scene's things, the wall scene's treasure layer, debris
 const smash = {
   run: 'free', scene: 'wall', variant: 1, n: 0, sceneNo: 0, oid: 0, // run: 'free' | 'stage'; n: the stage in a stage run; sceneNo: scenes played in this free run
-  phase: 'play', phaseAt: 0, // 'play' | 'clear' (the cascade + 'Smashed!') | 'out' / 'in' (the next scene slides) | 'card' (a stage's card)
+  phase: 'play', phaseAt: 0, // 'play' | 'scroll' (on to the next wave / the boss) | 'boom' (the boss blowing up) | 'clear' ('Smashed!') | 'out' / 'in' (the next scene slides) | 'card' (a stage's card)
   objs: [], pieces: [], pool: new Map(), heard: {}, tiles: [], fx: [], floaters: [], taps: [], queue: [], cascade: [], snd: [], trk: { smash: 0, brick: 0, car: 0, wall: 0 }, trkAt: 0,
   total: 0, done: 0, meter: 0, shown: 0, things: 0, broke: {}, endAt: Infinity, startAt: 0, armAt: 0, timeMs: 0, plan: null, clearLeft: 0,
-  over: false, overAt: 0, result: null, armed: null, prev: null, ang: 0, punching: false, punchId: 0, lastTick: -1, hurry: false, lastCrunch: 0, sndAt: {}, sndN: 0, sndWin: 0,
+  wave: 0, waves: 3, bossHp: 30, boss: null, seg: 'wave', scrollX: 0, scrolled: 0, bgX: 0, decalX: 0, waveLog: [], hairAt: 0, strokeId: 0, strokeAt: 0, hits: 0, falls: 0, // v3: waves, the boss, the scroll
+  over: false, overAt: 0, result: null, armed: null, prev: null, ang: 0, punching: false, punchId: 0, pidSeq: 0, lastTick: -1, hurry: false, lastCrunch: 0, sndAt: {}, sndN: 0, sndWin: 0,
   decal: null, decalG: null, slide: 0, banner: null, tag: null, layoutW: 0, layoutH: 0,
-  ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false, hud: null, row: null, card: null, meterBox: null, timerBox: null, starsBox: null, bannerBox: null, labels: null, starHint: null, stars: null, pay: null } };
+  ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false, hud: null, row: null, card: null, meterBox: null, trackBox: null, bossBar: null, timerBox: null, starsBox: null, bannerBox: null, labels: null, starHint: null, stars: null, pay: null } };
 const BRICK = { w: 48, h: 22, colors: ['#c8654a', '#b95a41', '#d17055', '#bd5d44'], dust: '#e0a48a' };
 const GLASS = 'rgba(84,198,235,0.7)', TYRE = '#2b2f45';
 const _sv = { x: 0, y: 0 }; // a scratch vector for Matter calls in the per-frame loops
 function smashScale() { return Math.max(0.62, Math.min(1.1, Math.min(W / 560, H / 640))); }
 function smU() { return 40 * smashScale(); }
 function smPhone() { return W * H < 420000; }
-function smashPlan(n) { // stage n: its scene (four stages a scene), its layout variant (more to smash) and its clock (a little shorter each stage)
+function smashPlan(n) { // stage n: its scene (four stages a scene), its layout variant (more to smash), its waves, its boss and its clock
   n = Math.max(1, Math.min(SMASH_N, n | 0 || 1)); const si = Math.floor((n - 1) / SMASH_PER), v = n - si * SMASH_PER, scene = SMASH_SCENES[si];
-  const time = Math.round(SMASH_TIME[scene] * [1.2, 1.05, 0.95, 0.85][v - 1] / 5) * 5;
-  return { n, scene, v, time, star3: Math.round(time * SMASH_STAR3), star2: Math.round(time * SMASH_STAR2) };
+  const time = SMASH_CLOCK[n - 1];
+  return { n, scene, v, waves: (SMASH_WAVES_AT[scene] || SMASH_WAVES)[v - 1], bossHp: SMASH_BOSS_HP[v - 1], time, star3: Math.round(time * SMASH_STAR3), star2: Math.round(time * SMASH_STAR2) };
 }
 function smashStarsFor(plan, leftS) { return leftS >= plan.star3 ? 3 : leftS >= plan.star2 ? 2 : 1; }
 function smashPlayable(n) { return n >= 1 && n <= SMASH_N && n <= profile.smash.unlocked; }
@@ -2390,17 +2393,18 @@ function smBodyOpts(o) {
   return { isStatic: !!(o.stat || o.deco), density: o.d || 0.002, friction: o.friction ?? 0.7, frictionStatic: 1, restitution: o.restitution ?? 0.05, frictionAir: 0.012, slop: 0.02,
     collisionFilter: { category: cat, mask: o.deco ? 0 : SMC.FLOOR | cat, group: 0 }, label: 'smash' };
 }
-const SMK = { // per kind: hp, value (its share of the meter), material (its debris and its sound), fr: the impact speed that breaks it (0: only a punch), d: density; deco: static on the wall, nothing rests on it; stat: static but things rest on it
-  window: { hp: 1, v: 3, mat: 'glass', deco: 1 }, frame: { hp: 1, v: 2, mat: 'glass', deco: 1 }, clock: { hp: 1, v: 2, mat: 'ceramic', deco: 1 }, ceilLamp: { hp: 1, v: 2, mat: 'bulb', deco: 1 },
-  shelf: { hp: 2, v: 2, mat: 'wood', stat: 1 }, jar: { hp: 1, v: 1, mat: 'glass', fr: 2.4 }, table: { hp: 3, v: 3, mat: 'wood', d: 0.004 }, plate: { hp: 1, v: 1, mat: 'ceramic', fr: 2.2 },
-  cup: { hp: 1, v: 1, mat: 'ceramic', fr: 2.2 }, vase: { hp: 1, v: 2, mat: 'ceramic', fr: 2.8 }, tv: { hp: 2, v: 4, mat: 'tv', fr: 4.5, d: 0.003 }, cabinet: { hp: 2, v: 2, mat: 'wood', d: 0.004 },
-  floorLamp: { hp: 1, v: 2, mat: 'bulb', fr: 4, d: 0.0015 },
-  floor: { hp: 1, v: 1, mat: 'concrete', fr: 3, d: 0.004, brick: 1 }, car: { hp: 1, v: 3, mat: 'metal', deco: 1 }, streetLamp: { hp: 1, v: 2, mat: 'bulb', deco: 1 }, tree: { hp: 2, v: 2, mat: 'leaves', deco: 1 },
-  towerLegs: { hp: 2, v: 1, mat: 'steel', stat: 1 }, tank: { hp: 1, v: 3, mat: 'water', fr: 2.6, d: 0.003 }, hydrant: { hp: 1, v: 2, mat: 'hydrant', d: 0.004 },
-  block: { hp: 1, v: 1, mat: 'toy', fr: 9, d: 0.0018, brick: 1 }, balloon: { hp: 1, v: 1, mat: 'rubber', deco: 1 }, gift: { hp: 1, v: 3, mat: 'gift', d: 0.0015 },
-  watermelon: { hp: 2, v: 3, mat: 'melon', fr: 5.5, d: 0.003 }, tomato: { hp: 1, v: 1, mat: 'tomato', fr: 3.5 }, egg: { hp: 1, v: 1, mat: 'egg', fr: 1.8, d: 0.0015 }, pumpkin: { hp: 2, v: 3, mat: 'pumpkin', fr: 6, d: 0.003 },
-  crate: { hp: 2, v: 2, mat: 'wood', d: 0.0025 }, plant: { hp: 1, v: 1, mat: 'ceramic', fr: 2.6 }, book: { hp: 1, v: 1, mat: 'paper' }, bottle: { hp: 1, v: 1, mat: 'glass', fr: 2.4 },
-  orange: { hp: 1, v: 1, mat: 'orange', fr: 3.5 }, apple: { hp: 1, v: 1, mat: 'apple', fr: 3.5 }, chest: { hp: 3, v: 6, mat: 'gold', d: 0.006 }, gem: { hp: 1, v: 2, mat: 'gem', fr: 6 }, trophy: { hp: 1, v: 3, mat: 'goldcup', d: 0.003, fr: 6 },
+const SMK = { // per kind: hp (v3: hits it takes, 2-5; glass 1-2, china 2, furniture 3-4), value (its share of the meter), material (its debris and its sound), fr: the impact speed that hurts it (a fall: one hit's worth; 0: only a punch), d: density; deco: static on the wall, nothing rests on it; stat: static but things rest on it
+  window: { hp: 2, v: 3, mat: 'glass', deco: 1 }, frame: { hp: 2, v: 2, mat: 'glass', deco: 1 }, clock: { hp: 2, v: 2, mat: 'ceramic', deco: 1 }, ceilLamp: { hp: 1, v: 2, mat: 'bulb', deco: 1 },
+  shelf: { hp: 4, v: 2, mat: 'wood', stat: 1 }, jar: { hp: 2, v: 1, mat: 'glass', fr: 2.4 }, table: { hp: 4, v: 3, mat: 'wood', d: 0.004 }, plate: { hp: 2, v: 1, mat: 'ceramic', fr: 2.2 },
+  cup: { hp: 2, v: 1, mat: 'ceramic', fr: 2.2 }, vase: { hp: 2, v: 2, mat: 'ceramic', fr: 2.8 }, tv: { hp: 4, v: 4, mat: 'tv', fr: 4.5, d: 0.003 }, cabinet: { hp: 4, v: 2, mat: 'wood', d: 0.004 },
+  floorLamp: { hp: 2, v: 2, mat: 'bulb', fr: 4, d: 0.0015 },
+  floor: { hp: 3, v: 1, mat: 'concrete', fr: 3, d: 0.004, brick: 1 }, car: { hp: 4, v: 3, mat: 'metal', deco: 1 }, streetLamp: { hp: 2, v: 2, mat: 'bulb', deco: 1 }, tree: { hp: 4, v: 2, mat: 'leaves', deco: 1 },
+  towerLegs: { hp: 4, v: 1, mat: 'steel', stat: 1 }, tank: { hp: 4, v: 3, mat: 'water', fr: 2.6, d: 0.003 }, hydrant: { hp: 3, v: 2, mat: 'hydrant', d: 0.004 },
+  block: { hp: 4, v: 1, mat: 'toy', fr: 9, d: 0.0018, brick: 1 }, balloon: { hp: 1, v: 1, mat: 'rubber', deco: 1 }, gift: { hp: 2, v: 3, mat: 'gift', d: 0.0015 },
+  watermelon: { hp: 5, v: 3, mat: 'melon', fr: 5.5, d: 0.003 }, tomato: { hp: 2, v: 1, mat: 'tomato', fr: 3.5 }, egg: { hp: 1, v: 1, mat: 'egg', fr: 1.8, d: 0.0015 }, pumpkin: { hp: 5, v: 3, mat: 'pumpkin', fr: 6, d: 0.003 },
+  crate: { hp: 4, v: 2, mat: 'wood', d: 0.0025 }, plant: { hp: 2, v: 1, mat: 'ceramic', fr: 2.6 }, book: { hp: 1, v: 1, mat: 'paper' }, bottle: { hp: 2, v: 1, mat: 'glass', fr: 2.4 },
+  orange: { hp: 2, v: 1, mat: 'orange', fr: 3.5 }, apple: { hp: 2, v: 1, mat: 'apple', fr: 3.5 }, chest: { hp: 5, v: 6, mat: 'gold', d: 0.006 }, gem: { hp: 2, v: 2, mat: 'gem', fr: 6 }, trophy: { hp: 3, v: 3, mat: 'goldcup', d: 0.003, fr: 6 },
+  boss: { hp: 40, v: 0, mat: 'boss', stat: 1 }, // v3: the scene's boss (its hp from the plan; not part of a wave's meter)
 };
 const SMM = { // per material: its sound, its debris shape ('r' slabs, 'p3' / 'p4' / 'p5' shards, 'c' chunks), how many pieces at most, their colours (null: the thing's own)
   glass: { snd: 'glass', sh: 'p3', n: 8, cols: ['#bfe9ff', '#e8f8ff'] }, ceramic: { snd: 'clink', sh: 'p4', n: 6, cols: null }, bulb: { snd: 'pop', sh: 'p3', n: 5, cols: ['#fff3b0', '#e8f8ff'] },
@@ -2409,6 +2413,7 @@ const SMM = { // per material: its sound, its debris shape ('r' slabs, 'p3' / 'p
   hydrant: { snd: 'splash', sh: 'p4', n: 3, cols: null }, toy: { snd: 'clack', sh: 'r', n: 3, cols: null }, rubber: { snd: 'pop', sh: 'p3', n: 2, cols: null }, gift: { snd: 'confetti', sh: 'r', n: 3, cols: null },
   melon: { snd: 'splat', sh: 'c', n: 4, cols: ['#3f9b3a', '#ff5a5f'] }, tomato: { snd: 'splat', sh: 'c', n: 2, cols: null }, egg: { snd: 'splat', sh: 'p3', n: 4, cols: ['#fff6e2', '#f3e2c4'] },
   pumpkin: { snd: 'splat', sh: 'p5', n: 4, cols: null }, paper: { snd: 'swish', sh: 'r', n: 3, cols: null }, orange: { snd: 'splat', sh: 'c', n: 2, cols: null }, apple: { snd: 'splat', sh: 'c', n: 2, cols: ['#ff5a5f', '#fff1c9'] }, gold: { snd: 'confetti', sh: 'r', n: 3, cols: ['#8a5a32', '#ffc93b'] }, gem: { snd: 'clink', sh: 'p3', n: 5, cols: null }, goldcup: { snd: 'clang', sh: 'p4', n: 4, cols: ['#ffc93b', '#ffe38a'] },
+  boss: { snd: 'bossdown', sh: 'r', n: 8, cols: null },
 };
 const SM_JUICE = { melon: ['#ff4f5e', '#1d1d1d'], tomato: ['#ff3b30', '#ffd36a'], egg: ['#ffc21a', '#fff6e2'], pumpkin: ['#ff9a1f', '#fff1c9'], orange: ['#ffa41b', '#fff3c4'], apple: ['#ffe9a8', '#5a3a1a'] }; // splat colour, seed colour
 // a thing: one Matter body (a rect or a circle); o: { x, y, w, h (circle: w = diameter), col, layer, seed, extra, art } plus SMK overrides
@@ -2418,7 +2423,7 @@ function smAdd(kind, shape, o) {
   const b = shape === 'c' ? M.Bodies.circle(q.x, q.y, q.w / 2, opt) : M.Bodies.rectangle(q.x, q.y, q.w, q.h, opt);
   const ob = { id: ++smash.oid, kind, body: b, alive: true, hp: q.hp, maxHp: q.hp, value: q.v, mat: q.mat, layer: q.layer || 1, fragile: q.fr || 0, deco: !!q.deco, stat: !!(q.stat || q.deco),
     col: q.col || '#c48a4f', w: q.w, h: q.h, seed: q.seed || 0, extra: q.extra || null, brick: !!q.brick, group: q.group || null, sp: null, hitAt: -1e9, stamp: 0, queued: false,
-    x0: q.x, y0: q.y, ph: Math.random() * TAU, z: smash.objs.length, inertia: 0 };
+    x0: q.x, y0: q.y, ph: Math.random() * TAU, z: smash.objs.length, inertia: 0, hits: 0, hair: 0, fallAt: -1e9, tremAt: -1e9, wave: smash.wave };
   if (shape === 'c') ob.h = q.w;
   b.plugin = { so: ob }; smash.objs.push(ob); smash.total += ob.value; M.Composite.add(world, b);
   if (q.lock && !ob.stat) { ob.inertia = b.inertia; M.Body.setInertia(b, Infinity); } // a stacked floor / block keeps upright until its stack is disturbed
@@ -2427,12 +2432,12 @@ function smAdd(kind, shape, o) {
 function smUnlock(group) { if (!group) return; for (const o of smash.objs) if (o.alive && o.group === group && o.inertia) { M.Body.setInertia(o.body, o.inertia); o.inertia = 0; } }
 function smWake() { for (const o of smash.objs) if (o.alive && !o.stat && o.body.isSleeping) M.Sleeping.set(o.body, false); }
 // a tile wall: a grid of cells (bricks or glazed tiles) kept as data and drawn once into its own canvas; a knocked-out cell is cleared from it and flies off as debris
-function smTileWall(kind, x0, y0, w, h, cw, ch, layer, value, stagger, cols) {
+function smTileWall(kind, x0, y0, w, h, cw, ch, layer, value, stagger, cols, chp = 2) { // chp (v3): the hits a cell takes (it cracks before it goes)
   const nc = Math.ceil(w / cw) + (stagger ? 1 : 0), nr = Math.ceil(h / ch);
-  const T = { kind, x0, y0, w, h, cw, ch, nc, nr, stagger, layer, value, cols, cells: new Uint8Array(nc * nr), col: new Uint8Array(nc * nr), alive: 0, total: 0, c: null, g: null, down: false };
+  const T = { kind, x0, y0, w, h, cw, ch, nc, nr, stagger, layer, value, cols, chp, cells: new Uint8Array(nc * nr), col: new Uint8Array(nc * nr), hp: new Uint8Array(nc * nr), st: new Uint32Array(nc * nr), alive: 0, total: 0, c: null, g: null, down: false, wave: smash.wave };
   for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) {
     const x = x0 + c * cw - (stagger && r % 2 ? cw / 2 : 0); if (x + cw <= x0 + 1 || x >= x0 + w - 1) continue;
-    T.cells[r * nc + c] = 1; T.col[r * nc + c] = (r * 7 + c * 3 + ((r * c) % 5)) % cols.length; T.alive++;
+    T.cells[r * nc + c] = 1; T.col[r * nc + c] = (r * 7 + c * 3 + ((r * c) % 5)) % cols.length; T.hp[r * nc + c] = chp; T.alive++;
   }
   T.total = T.alive; smash.tiles.push(T); smash.total += value; smTileDraw(T); return T;
 }
@@ -2453,7 +2458,15 @@ function smTileDraw(T) { // the whole wall into its canvas (once per build / res
   const c = T.c || (T.c = document.createElement('canvas')); c.width = Math.max(1, Math.ceil(T.w * SS)); c.height = Math.max(1, Math.ceil(T.h * SS));
   const g = T.g = c.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, T.w, T.h);
   for (let r = 0; r < T.nr; r++) for (let k = 0; k < T.nc; k++) { const i = r * T.nc + k; if (!T.cells[i]) continue;
-    const sp = smTileSprite(T, i), x = smTileCx(T, r, k) - T.x0, y = (r + 0.5) * T.ch; g.drawImage(sp.c, x - sp.ox, y - sp.oy, sp.w, sp.h); }
+    const sp = smTileSprite(T, i), x = smTileCx(T, r, k) - T.x0, y = (r + 0.5) * T.ch; g.drawImage(sp.c, x - sp.ox, y - sp.oy, sp.w, sp.h); if (T.hp[i] < T.chp) smTileCrack(T, i, r, k); }
+}
+function smTileCrack(T, i, r, c) { // v3: a cell that took a hit shows its cracks (drawn once into the wall's canvas; deeper the more hits)
+  const g = T.g, cx = smTileCx(T, r, c) - T.x0, cy = (r + 0.5) * T.ch, lv = T.chp - T.hp[i], R = rng(i * 7919 + 13), w = T.cw - 4, h = T.ch - 4;
+  g.save(); g.beginPath(); g.rect(cx - w / 2, cy - h / 2, w, h); g.clip(); g.lineCap = 'round';
+  for (let b = 0; b < 1 + lv; b++) { let x = cx + (R() - 0.5) * w * 0.3, y = cy + (R() - 0.5) * h * 0.3; const a = R() * TAU; g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 2 + lv; k++) { x += Math.cos(a + (R() - 0.5) * 1.5) * w * 0.16; y += Math.sin(a + (R() - 0.5) * 1.5) * h * 0.3; g.lineTo(x, y); }
+    g.strokeStyle = 'rgba(25,10,5,0.75)'; g.lineWidth = 1.6 + lv * 0.4; g.stroke(); g.strokeStyle = 'rgba(255,255,255,0.3)'; g.lineWidth = 0.8; g.stroke(); }
+  g.restore();
 }
 function smTileTouch(T, x, y, R) { // is an intact cell within R of the point?
   if (!T.alive) return false;
@@ -2473,23 +2486,26 @@ function smTileKnock(T, i, r, c, dirx, diry, kick, now, body) { // one cell out:
   if (body) smPiece('r', T.cw * 0.48, T.ch - 3, col, T.kind === 'brick' ? 'brick' : 'tile', cx + (Math.random() - 0.5) * T.cw * 0.3, cy, dirx * kick + (Math.random() - 0.5) * 3, diry * kick - 2 - Math.random() * 3, now);
   else if (particles.length < 300) burst(cx, cy, col, 6);
 }
-function smTileHit(T, x, y, Rb, dirx, diry, k, now) { // knock out every cell within Rb of the point (at least the nearest one); returns how many
+function smTileHit(T, x, y, Rb, dirx, diry, k, now) { // v3: every cell within Rb of the point (at least the nearest one) takes a hit: it cracks, or goes if already cracked; returns how many went
   const r0 = Math.max(0, Math.floor((y - Rb - T.y0) / T.ch)), r1 = Math.min(T.nr - 1, Math.floor((y + Rb - T.y0) / T.ch)), kick = 4 + 9 * k;
-  let n = 0, bodies = 0, best = -1, bd = Infinity, br = 0, bc = 0;
+  let n = 0, cr = 0, lv = 1, bodies = 0, best = -1, bd = Infinity, br = 0, bc = 0;
+  const hit = (i, r, c, d) => { T.st[i] = smash.punchId; if (--T.hp[i] > 0) { smTileCrack(T, i, r, c); cr++; lv = Math.max(lv, T.chp - T.hp[i]); return; }
+    const cx = smTileCx(T, r, c), cy = T.y0 + (r + 0.5) * T.ch, ox = (cx - x) / (d || 1), oy = (cy - y) / (d || 1);
+    smTileKnock(T, i, r, c, dirx * 0.7 + ox * 0.6, diry * 0.7 + oy * 0.6, kick * (1 - Math.min(1, d / Math.max(1, Rb)) * 0.5), now, bodies < 6); bodies++; n++; };
   for (let r = r0; r <= r1; r++) {
     const off = T.stagger && r % 2 ? T.cw / 2 : 0, c0 = Math.max(0, Math.floor((x - Rb - T.x0 + off) / T.cw)), c1 = Math.min(T.nc - 1, Math.floor((x + Rb - T.x0 + off) / T.cw));
-    for (let c = c0; c <= c1; c++) { const i = r * T.nc + c; if (!T.cells[i]) continue;
+    for (let c = c0; c <= c1; c++) { const i = r * T.nc + c; if (!T.cells[i] || T.st[i] === smash.punchId) continue; // (once per tap / swipe)
       const cx = smTileCx(T, r, c), cy = T.y0 + (r + 0.5) * T.ch, d = Math.hypot(cx - x, cy - y);
-      if (d <= Rb) { const ox = (cx - x) / (d || 1), oy = (cy - y) / (d || 1); smTileKnock(T, i, r, c, dirx * 0.7 + ox * 0.6, diry * 0.7 + oy * 0.6, kick * (1 - d / Rb * 0.5), now, bodies < 6); bodies++; n++; }
-      else if (d < bd) { bd = d; best = i; br = r; bc = c; } }
+      if (d <= Rb) hit(i, r, c, d); else if (d < bd) { bd = d; best = i; br = r; bc = c; } }
   }
-  if (!n && best >= 0) { smTileKnock(T, best, br, bc, dirx, diry, kick, now, true); n = 1; }
+  if (!n && !cr && best >= 0) hit(best, br, bc, bd);
   if (n) {
     smash.things += n; smash.trk.smash += n; smash.trk.brick += n;
     smSnd(T.kind === 'brick' ? 'crunch' : 'clink', k, T.kind === 'brick' ? 'brick' : 'tile', now);
     if (now - smash.lastCrunch > 70) { smash.lastCrunch = now; ring(x, y, 'rgba(255,255,255,0.85)', (40 + n * 5) * smashScale(), 280, 3.5); dust(x, y, Math.min(9, 3 + n)); shakeScreen(Math.min(4, 1.2 + k * 2.5)); }
     if (T.alive / T.total <= 0.12) smTileCrumble(T, now); // nearly gone: the rest comes down
-  }
+  } else if (cr) { smSnd('smcrack', lv, T.kind === 'brick' ? 'brick' : 'tile', now); if (particles.length < 300) burst(x, y, BRICK.dust, 4); shakeScreen(0.8 + k); }
+  if (n || cr) smash.hits++;
   return n;
 }
 function smTileCrumble(T, now) { // the last bricks of a wall tumble down together
@@ -2499,8 +2515,8 @@ function smTileCrumble(T, now) { // the last bricks of a wall tumble down togeth
   smash.things += spawned; smash.trk.smash += spawned; smash.trk.brick += spawned; smash.trk.wall++;
   smSnd('crunch', 1, T.kind === 'brick' ? 'brick' : 'tile', now); dust(W / 2, H * 0.6, 12, 3); shakeScreen(3.5);
 }
-function smMeter() { // the share of the scene smashed: the things' values broken + each tile wall's value by the share of its cells out
-  let d = smash.done; for (const T of smash.tiles) d += T.value * (1 - T.alive / Math.max(1, T.total));
+function smMeter() { // the share of the wave smashed: the things' values broken + each tile wall's value by the share of its cells out
+  let d = smash.done; for (const T of smash.tiles) if (T.wave === smash.wave) d += T.value * (1 - T.alive / Math.max(1, T.total));
   return smash.total ? Math.min(1, d / smash.total) : 0;
 }
 
@@ -2535,7 +2551,7 @@ function smPiecesClear() { while (smash.pieces.length) smRetire(smash.pieces.len
 
 /* --- hitting and breaking --- */
 function smSnd(kind, arg, obj, now) { // a breaking sound (a few at most per 100 ms; the same one at most every 45 ms); logged for the tests
-  smash.snd.push({ k: kind, o: obj }); if (smash.snd.length > 80) smash.snd.shift(); smash.heard[kind] = (smash.heard[kind] || 0) + 1;
+  smash.snd.push({ k: kind, o: obj, a: arg }); if (smash.snd.length > 80) smash.snd.shift(); smash.heard[kind] = (smash.heard[kind] || 0) + 1;
   if (now - smash.sndWin > 100) { smash.sndWin = now; smash.sndN = 0; }
   if (smash.sndN >= 4 || now - (smash.sndAt[kind] || -1e9) < 45) return;
   smash.sndN++; smash.sndAt[kind] = now; sfx(kind, arg);
@@ -2545,31 +2561,38 @@ function smTouch(o, x, y, R) { // the circle (x, y, R) against the thing's box
   return dx * dx + dy * dy <= R * R;
 }
 function smStrength(v) { return Math.max(0, Math.min(1, (v / smashScale() - 0.35) / 1.6)); } // 0..1 from the hand's speed (px/ms)
+function smNewId() { return (smash.punchId = ++smash.pidSeq); } // a fresh hit id: everything is hit at most once per id (a tap, or a whole swipe)
 function smPunch(x, y, R, dirx, diry, k, now) { // one hit at a point: the front-most thing(s) or wall under it; true if anything was hit
   for (let L = 0; L <= 2; L++) {
     let hit = 0;
     for (const o of smash.objs) if (o.alive && o.layer === L && o.stamp !== smash.punchId && smTouch(o, x, y, R)) { smHit(o, x, y, dirx, diry, k, now); hit++; }
     if (hit) return true;
-    for (const T of smash.tiles) if (T.layer === L && T.alive && smTileTouch(T, x, y, R)) { smTileHit(T, x, y, T.cw * (0.75 + 0.75 * k), dirx, diry, k, now); return true; }
+    for (const T of smash.tiles) if (T.layer === L && T.alive && smTileTouch(T, x, y, R)) { smTileHit(T, x, y, T.cw * (0.8 + 0.4 * k), dirx, diry, k, now); return true; }
   }
   return false;
 }
-function smSweep(x0, y0, x1, y1, R, k, now) { // a swipe: hits all along the path (each thing once per swipe)
+function smSweep(x0, y0, x1, y1, R, k, now, id) { // a swipe: hits all along the path; v3: each thing (and each wall) once per swipe (id: the swipe's own id, kept across frames)
   const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), dirx = len ? dx / len : 0, diry = len ? dy / len : 0, n = Math.max(1, Math.min(24, Math.ceil(len / (R * 0.6))));
-  smash.punchId++; let hit = false;
+  if (id) smash.punchId = id; else smNewId(); let hit = false;
   for (let i = 1; i <= n; i++) { const q = i / n; if (smPunch(x0 + dx * q, y0 + dy * q, R, dirx, diry, k, now)) hit = true; }
   return hit;
 }
+function smCrackLv(o) { return o.hits ? Math.max(1, Math.min(4, Math.ceil(4 * (o.maxHp - o.hp) / o.maxHp - 0.01))) : 0; } // v3: 1..4, the cracks' stage
 function smHit(o, x, y, dirx, diry, k, now) {
-  o.stamp = smash.punchId; o.hitAt = now;
-  const dmg = 1 + (k > 0.55 ? 1 : 0) + (k > 0.9 ? 1 : 0); o.hp -= dmg;
-  smUnlock(o.group);
+  o.stamp = smash.punchId; smash.hits++;
+  if (o.kind === 'boss') { smBossHit(o, x, y, k, now); return; }
+  smUnlock(o.group); smDamage(o, 1, x, y, dirx, diry, k, now, false);
+}
+function smDamage(o, dmg, x, y, dirx, diry, k, now, fall) { // v3: a hit (or a fall: one hit's worth, and never the end of a thing not yet cracked): cracks that grow, a wobble, a deeper knock each time; only the last hit breaks it
+  if (!o.alive) return;
+  if (fall) { if (now - o.fallAt < 600) return; o.fallAt = now; smash.falls++; if (!o.hits && o.hp - dmg <= 0) dmg = Math.max(0, o.hp - 1); }
+  o.hp -= dmg; o.hits++; o.hitAt = now;
   if (o.hp <= 0) { smBreak(o, x, y, dirx, diry, k, now); return; }
-  const s = smashScale(); // not yet: it cracks, wobbles and is shoved
-  smSnd(o.mat === 'toy' ? 'clack' : o.mat === 'steel' || o.mat === 'gold' ? 'clang' : 'thud', k, o.kind, now);
-  if (!o.stat) { M.Sleeping.set(o.body, false); const kick = (2 + 6 * k); _sv.x = o.body.velocity.x + (dirx || (o.body.position.x - x) * 0.02) * kick; _sv.y = o.body.velocity.y + diry * kick - 1.5; M.Body.setVelocity(o.body, _sv); M.Body.setAngularVelocity(o.body, (Math.random() - 0.5) * 0.1); }
+  const s = smashScale(), lv = smCrackLv(o); // not yet: it cracks, wobbles and is shoved a little
+  smSnd('smcrack', lv, o.kind, now);
+  if (!fall && !o.stat) { M.Sleeping.set(o.body, false); const kick = 1 + 3 * k; _sv.x = o.body.velocity.x + (dirx || (o.body.position.x - x) * 0.02) * kick; _sv.y = o.body.velocity.y + diry * kick - 1; M.Body.setVelocity(o.body, _sv); M.Body.setAngularVelocity(o.body, (Math.random() - 0.5) * 0.06); }
   if (o.kind === 'tree') smLeaves(o.body.position.x, o.body.position.y - o.h * 0.2, 10);
-  ring(x, y, 'rgba(255,255,255,0.8)', 30 * s, 220, 3); burst(x, y, o.col, 6 + 6 * k); shakeScreen(1 + k * 1.5);
+  ring(x, y, 'rgba(255,255,255,0.8)', (24 + lv * 6) * s, 220, 3); burst(x, y, o.col, 4 + 2 * lv); if (!fall) shakeScreen(0.6 + lv * 0.35 + k);
 }
 function smLeaves(x, y, n) { for (let i = 0; i < n && particles.length < 320; i++) { const a = Math.random() * TAU, v = 0.05 + Math.random() * 0.2; particles.push({ x: x + (Math.random() - 0.5) * 40, y: y + (Math.random() - 0.5) * 30, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.0012 + Math.random() * 0.001, r: 2.5 + Math.random() * 3, color: Math.random() < 0.5 ? '#4fb84a' : '#7ed957' }); } }
 function smJuice(x, y, col, n, spread = 1) { for (let i = 0; i < n && particles.length < 320; i++) { const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.6, v = (0.12 + Math.random() * 0.35) * spread; particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, decay: 0.0016 + Math.random() * 0.0014, r: 2 + Math.random() * 3.5, color: col }); } }
@@ -2581,7 +2604,7 @@ function smSplat(x, y, r, col) { // a juice / water splat painted onto the scene
 }
 function smBreak(o, x, y, dirx, diry, k, now) { // the thing breaks its own way: debris, juice, sparks, its sound; the meter moves on
   if (!o.alive) return;
-  o.alive = false; M.Composite.remove(world, o.body); smash.done += o.value; smash.things++; smash.trk.smash++;
+  o.alive = false; M.Composite.remove(world, o.body); if (o.wave === smash.wave) smash.done += o.value; smash.things++; smash.trk.smash++;
   smash.broke[o.kind] = (smash.broke[o.kind] || 0) + 1;
   if (o.brick) smash.trk.brick++; if (o.kind === 'car') smash.trk.car++;
   const s = smashScale(), u = smU(), b = o.body, cx = b.position.x, cy = b.position.y, Mt = SMM[o.mat], kick = 3 + 8 * k;
@@ -2630,17 +2653,14 @@ function smFxTick(now) { // sparks crackling out of a broken TV / bulb, a broken
     else for (let j = 0; j < 2; j++) particles.push({ x: f.x + (Math.random() - 0.5) * 8, y: f.y, vx: (Math.random() - 0.5) * 0.12, vy: -0.45 - Math.random() * 0.25, life: 1, decay: 0.0016, r: 2.5 + Math.random() * 3, color: Math.random() < 0.7 ? '#6fd0ff' : '#e0f6ff' });
   }
 }
-function smImpacts(pairs) { // collisions: a fragile thing hit hard enough (it fell, or something fell on it) breaks on the next tick
+function smImpacts(pairs) { // collisions: a fragile thing hit hard enough (it fell, or something fell on it) takes a hit on the next tick (v3: no longer breaks outright)
   if (smash.phase !== 'play' && smash.phase !== 'clear') return;
   const now = performance.now(); if (now < smash.armAt) return;
   for (const pair of pairs) {
     const a = pair.bodyA.parent, b = pair.bodyB.parent, c = pair.collision; if (!c) continue;
     const oa = a.plugin && a.plugin.so, ob = b.plugin && b.plugin.so; if (!oa && !ob) continue;
     const n = c.normal, rv = Math.abs((a.velocity.x - b.velocity.x) * n.x + (a.velocity.y - b.velocity.y) * n.y);
-    let tg = null;
-    if (oa && oa.alive && oa.fragile && rv > oa.fragile) tg = oa;
-    if (ob && ob.alive && ob.fragile && rv > ob.fragile && (!tg || b.speed > a.speed)) tg = ob;
-    if (tg && !tg.queued) { tg.queued = true; smash.queue.push(tg); }
+    for (const tg of [oa, ob]) if (tg && tg.alive && tg.fragile && rv > tg.fragile && !tg.queued && now - tg.fallAt >= 600) { tg.queued = true; smash.queue.push(tg); } // v3: each fragile thing in the knock takes one hit's worth (not its end)
   }
 }
 function smFlushTrack(now, force) { // the counts for the stats and missions, once a second (each track() saves the profile)
@@ -2676,7 +2696,7 @@ function smShelf(cx, y, w, r, fill, layer = 1) { // a static plank on the wall w
 }
 function smRoomFloor(r, v, layer, x0, x1) { // the room's floor things: a table with plates and cups, a TV on its cabinet, vases, a floor lamp
   const u = smU(), G = H, specs = [];
-  specs.push({ w: u * 4.6, place: (cx) => { const tw = u * 4.6, th = u * 2.3, ty = G - th; smAdd('table', 'r', { x: cx, y: G - th / 2, w: tw, h: th, col: '#c27c45', layer, group: 'table' + cx });
+  specs.push({ w: u * 4.6, place: (cx) => { const tw = u * 4.6, th = u * 2.3, ty = G - th; smAdd('table', 'r', { x: cx, y: G - th / 2, w: tw, h: th, col: '#c27c45', layer, group: 'table' + Math.round(cx) + '_' + smash.wave });
     const pw = u * 1.5, ph = u * 0.26; for (let i = 0; i < 2 + (v >= 2 ? 1 : 0); i++) smAdd('plate', 'r', { x: cx - tw * 0.24, y: ty - ph * (i + 0.5), w: pw, h: ph, col: ['#4f8cff', '#ff6f59', '#43d9a3'][i % 3], layer });
     for (const dx of [0.12, 0.34]) smAdd('cup', 'r', { x: cx + tw * dx, y: ty - u * 0.45, w: u * 0.8, h: u * 0.9, col: COLORS[Math.floor(r() * 5)], layer }); } });
   specs.push({ w: u * 3.4, place: (cx) => { const cw = u * 3.4, ch = u * 1.6; smAdd('cabinet', 'r', { x: cx, y: G - ch / 2, w: cw, h: ch, col: '#a8683c', layer });
@@ -2687,18 +2707,18 @@ function smRoomFloor(r, v, layer, x0, x1) { // the room's floor things: a table 
   const order = shuffled(specs, r); return smRow(x0, x1, order);
 }
 const SM_BUILD = {
-  wall(r, v) { // a brick wall over the whole screen; behind it a room with its own tiled wall; behind that the treasure cave
-    const u = smU(), P = H > W * 1.15, G = H;
+  wall(r, v, w = 0) { // a brick wall over the whole screen; behind it a room with its own tiled wall; behind that the treasure cave (v3: the treasure on the last wave, before the safe)
+    const u = smU(), P = H > W * 1.15, G = H, last = w >= smash.waves - 1;
     const tre = [ // the treasure on the cave floor (layer 2)
       { w: u * 3.2, place: (cx) => smAdd('chest', 'r', { x: cx, y: G - u * 1.2, w: u * 3.2, h: u * 2.4, col: '#a0612f', layer: 2 }) },
       { w: u * 1.4, place: (cx) => smAdd('trophy', 'r', { x: cx, y: G - u * 0.95, w: u * 1.3, h: u * 1.9, col: '#ffc93b', layer: 2 }) },
       { w: u * 1.7, place: (cx) => smAdd('gift', 'r', { x: cx, y: G - u * 0.8, w: u * 1.6, h: u * 1.6, col: '#ff5fa2', seed: 1, layer: 2 }) },
     ];
     for (let i = 0; i < 2 + Math.min(3, v); i++) tre.push({ w: u * 1.1, place: (cx) => smAdd('gem', 'r', { x: cx, y: G - u * 0.55, w: u * 0.95, h: u * 1.1, col: ['#ff4f8b', '#4fd2ff', '#7dff6b', '#c38bff', '#ffd23f'][i % 5], layer: 2 }) });
-    smRow(0, W, shuffled(tre, r));
-    const tw = W / (P ? 5 : 9); smTileWall('tile', 0, 0, W, H, tw, tw * 0.82, 1, 22, false, ['#9fd8e8', '#b8e6c8', '#f6d4a0', '#f4b8c8']);
+    if (last) smRow(0, W, shuffled(tre, r));
+    const tw = W / (P ? 4 : 7); smTileWall('tile', 0, 0, W, H, tw, tw * 0.82, 1, 12, false, ['#9fd8e8', '#b8e6c8', '#f6d4a0', '#f4b8c8'], 1); // (glazed tiles: one hit)
     smRoomFloor(r, v, 1, 0, W);
-    const cw = W / (P ? 7 : 12); smTileWall('brick', 0, 0, W, H, cw, cw * 0.46, 0, 32, true, BRICK.colors);
+    const cw = W / (P ? 4 : 7); smTileWall('brick', 0, 0, W, H, cw, cw * 0.5, 0, 26, true, BRICK.colors); // (bricks: two hits, a tap cracks a few)
   },
   room(r, v) {
     const u = smU(), P = H > W * 1.15, top = smTop();
@@ -2716,7 +2736,7 @@ const SM_BUILD = {
     const u = smU(), P = H > W * 1.15, G = H, fh = u * 1.45, maxF = Math.max(3, Math.floor((H - smTop() - u * 1.5) / fh)), specs = [];
     let bi = 0;
     const bldg = () => ({ w: u * (P ? 3.3 : 3.5), place: (cx) => { const i = bi++, bw = u * (P ? 3.3 : 3.5), nf = Math.max(3, Math.min(maxF, 4 + 2 * v + Math.floor(r() * 3) + (P ? 3 : 0) - (i % 2))), col = ['#e9a46a', '#7fb3d5', '#c39bd3', '#f5cba7', '#82c99a'][(i + Math.floor(r() * 5)) % 5];
-      for (let f = 0; f < nf; f++) smAdd('floor', 'r', { x: cx, y: G - fh * (f + 0.5), w: bw, h: fh, col, seed: f === nf - 1 ? 1 : 0, lock: true, group: 'bldg' + i, extra: { top: f === nf - 1, f } }); } });
+      for (let f = 0; f < nf; f++) smAdd('floor', 'r', { x: cx, y: G - fh * (f + 0.5), w: bw, h: fh, col, seed: f === nf - 1 ? 1 : 0, lock: true, group: 'bldg' + i + '_' + smash.wave, hp: 4 + (v >= 3 ? 1 : 0), extra: { top: f === nf - 1, f } }); } });
     const lamp = () => ({ w: u * 0.9, place: (cx) => smAdd('streetLamp', 'r', { x: cx, y: G - u * 2.6, w: u * 0.8, h: u * 5.2, col: '#3d4a6b' }) });
     const tree = () => ({ w: u * 2.5, place: (cx) => smAdd('tree', 'r', { x: cx, y: G - u * 2.1, w: u * 2.5, h: u * 4.2, col: '#4fb84a', seed: Math.floor(r() * 3) }) });
     const hyd = () => ({ w: u * 1, place: (cx) => smAdd('hydrant', 'r', { x: cx, y: G - u * 0.55, w: u * 0.8, h: u * 1.1, col: '#ff4b3e' }) });
@@ -2733,7 +2753,7 @@ const SM_BUILD = {
   blocks(r, v) {
     const u = smU(), P = H > W * 1.15, G = H, bs = u * (P ? 1.55 : 1.5), maxB = Math.max(3, Math.floor((H - smTop() - u * 2) / bs)), n = Math.max(2, Math.min(5, Math.floor(W / (u * 4.4)))), specs = [];
     let ti = 0, letter = Math.floor(r() * 26);
-    for (let t = 0; t < n; t++) specs.push({ w: bs * 3.2, place: (cx) => { const i = ti++, kind = ['col', 'pyr', 'col2'][(i + v) % 3], grp = 'tower' + i;
+    for (let t = 0; t < n; t++) specs.push({ w: bs * 3.2, place: (cx) => { const i = ti++, kind = ['col', 'pyr', 'col2'][(i + v) % 3], grp = 'tower' + i + '_' + smash.wave;
       const blk = (x, y) => smAdd('block', 'r', { x, y, w: bs, h: bs, col: COLORS[(letter + i) % 5], seed: letter++ % 26, lock: true, group: grp });
       if (kind === 'pyr') { let row = 0; for (const k of [3, 2, 1]) { for (let j = 0; j < k; j++) blk(cx + (j - (k - 1) / 2) * bs * 1.02, G - bs * (row + 0.5)); row++; } }
       else { const hgt = Math.max(3, Math.min(maxB, 3 + v + Math.floor(r() * 3) + (P ? 2 : 0))); for (let j = 0; j < hgt; j++) blk(cx + (kind === 'col2' && j % 2 ? bs * 0.18 : 0), G - bs * (j + 0.5));
@@ -2764,22 +2784,93 @@ function smClearWorld() { // everything of the last scene leaves the world (debr
   for (const o of smash.objs) if (o.alive) M.Composite.remove(world, o.body);
   smash.objs.length = 0; smash.tiles.length = 0; smash.fx.length = 0; smash.queue.length = 0; smash.cascade.length = 0; smash.taps.length = 0; smPiecesClear();
 }
-function smBuild(scene, v, seed, now) {
+function smBuild(scene, v, seed, now) { // a scene afresh: its first wave on screen (the waves after it and the boss roll in later, smScrollStart)
   smClearWorld(); particles.length = 0; rings.length = 0;
-  smash.scene = scene; smash.variant = v; smash.total = smash.done = 0; smash.meter = smash.shown = 0; smash.broke = {}; smash.punchId++;
-  const r = mulberry32(strSeed('smash|' + scene + '|' + v + '|' + seed));
-  SM_BUILD[scene](r, v);
-  smash.objs.sort((a, b) => b.layer - a.layer || a.z - b.z);
+  smash.scene = scene; smash.variant = v; smash.seed = seed; smash.total = smash.done = 0; smash.meter = smash.shown = 0; smash.broke = {}; smNewId();
+  smash.wave = 0; smash.seg = 'wave'; smash.boss = null; smash.bgX = 0; smash.decalX = 0; smash.waveLog = [{ w: 0, t: 0 }]; smash.hairAt = now + 4000; smash.hits = smash.falls = 0;
+  smBuildWave(0, now, 0);
   smash.armAt = now + 900; smash.layoutW = W; smash.layoutH = H;
   const c = smash.decal || (smash.decal = document.createElement('canvas')); c.width = Math.max(1, Math.round(W * SS)); c.height = Math.max(1, Math.round(H * SS));
   smash.decalG = c.getContext('2d'); smash.decalG.setTransform(SS, 0, 0, SS, 0, 0); smash.decalG.clearRect(0, 0, W, H);
   if (engine) engine.enableSleeping = true;
 }
 
+/* --- v3: waves (the scene rolls on to its next part when most of a wave is smashed), cracks ahead (tension), the boss at the end --- */
+function smWaveV(v, w) { return Math.min(4, v + (w >= 1 ? 1 : 0) + (w >= 3 ? 1 : 0)); } // the later waves of a scene a little fuller
+function smShift(o, dx) { const b = o.body; _sv.x = b.position.x + dx; _sv.y = b.position.y; M.Body.setPosition(b, _sv); o.x0 += dx; }
+function smBuildWave(w, now, off) { // wave w of the scene, built off to the right by off px (it scrolls in); the meter counts this wave alone
+  smash.wave = w; smash.seg = 'wave'; smash.total = smash.done = 0;
+  const i0 = smash.objs.length, t0 = smash.tiles.length, r = mulberry32(strSeed('smash|' + smash.scene + '|' + smash.variant + '|' + smash.seed + '|' + w));
+  SM_BUILD[smash.scene](r, smWaveV(smash.variant, w), w);
+  for (let j = i0; j < smash.objs.length; j++) { const o = smash.objs[j]; if (w && r() < 0.1 + 0.12 * w) o.hair = 1; if (off) { smShift(o, off); o.tremAt = now + CONFIG.SMASH_SCROLL_MS + r() * 500; } }
+  for (let j = t0; j < smash.tiles.length; j++) smash.tiles[j].x0 += off;
+  smash.objs.sort((a, b) => b.layer - a.layer || a.z - b.z);
+}
+const SM_BOSS = { wall: 'safe', room: 'tv', city: 'robot', blocks: 'tower', food: 'melon' }; // each scene's boss
+const SM_BOSS_LOOK = { safe: [1.0, 0.95, '#5f7894'], tv: [1.25, 0.95, '#8a5a3c'], robot: [0.8, 1.35, '#8fa3c7'], tower: [0.85, 1.4, '#ff6f59'], melon: [1.15, 0.92, '#3f9b3a'] }; // w / h shape (x the unit box), colour
+function smBuildBoss(now, off) {
+  smash.seg = 'boss'; smash.wave = smash.waves; smash.total = smash.done = 0;
+  const kind = SM_BOSS[smash.scene], L = SM_BOSS_LOOK[kind], u = smU(), room = H - smTop() - u * 1.6, base = Math.min(W * 0.72, room * 0.85, u * 11);
+  let w = base * L[0], h = base * L[1]; const k = Math.min(1, (W - 24) / w, room / h); w *= k; h *= k;
+  const o = smAdd('boss', 'r', { x: W / 2 + off, y: H - h / 2, w, h, col: L[2], hp: smash.bossHp, layer: 1, extra: { kind, ph: 1, roarAt: 0 } });
+  o.tremAt = now + CONFIG.SMASH_SCROLL_MS; smash.boss = o;
+}
+function smScrollStart(now) { // most of the wave is smashed: the scene rolls on (the leftovers slide away, the next wave or the boss slides in)
+  if (smash.wave + 1 < smash.waves) smash.waveLog.push({ w: smash.wave + 1, t: Math.round(now - smash.startAt) });
+  smash.phase = 'scroll'; smash.phaseAt = now; smash.scrolled = 0; smash.prev = null; smash.punching = false; smash.taps.length = 0; smash.queue.length = 0;
+  if (smash.wave + 1 < smash.waves) smBuildWave(smash.wave + 1, now, W); else smBuildBoss(now, W);
+  for (const o of smash.objs) { o.queued = false; if (o.alive && !o.stat) M.Sleeping.set(o.body, true); } // everything rides along, still (the new part too: built beyond the screen's right wall)
+  for (const b of smash.pieces) M.Sleeping.set(b, true);
+  sfx('whoosh'); if (smash.seg === 'boss') sfx('rise');
+}
+function smScrollTick(now) {
+  const q = Math.min(1, (now - smash.phaseAt) / CONFIG.SMASH_SCROLL_MS), want = W * ease(q), dx = want - smash.scrolled; smash.scrolled = want;
+  if (dx) { for (const o of smash.objs) if (o.alive) smShift(o, -dx); for (const T of smash.tiles) T.x0 -= dx; for (const b of smash.pieces) { _sv.x = b.position.x - dx; _sv.y = b.position.y; M.Body.setPosition(b, _sv); } smash.bgX -= dx; smash.decalX -= dx; }
+  if (q >= 1) smScrollEnd(now);
+}
+function smScrollEnd(now) {
+  const keep = []; for (const o of smash.objs) { if (o.alive && o.wave !== smash.wave) { o.alive = false; M.Composite.remove(world, o.body); } if (o.alive) keep.push(o); } smash.objs = keep; // what scrolled away is gone
+  smash.tiles = smash.tiles.filter((T) => T.wave === smash.wave);
+  for (let i = smash.pieces.length - 1; i >= 0; i--) { const b = smash.pieces[i]; if (b.position.x < 0) smRetire(i); else M.Sleeping.set(b, false); }
+  for (const o of smash.objs) if (!o.stat) M.Sleeping.set(o.body, false);
+  if (smash.decalG) smash.decalG.clearRect(0, 0, W, H); smash.decalX = 0;
+  smash.phase = 'play'; smash.phaseAt = now; smash.armAt = now + 500; smash.hairAt = now + 3500; smNewId();
+  if (smash.seg === 'boss') { smash.tag = { t: now, text: t('smBossTag') }; grippySay('smashBoss'); sfx('roar'); shakeScreen(4); dust(W / 2, H - 20, 12, 3); }
+  else { smash.tag = { t: now, text: t('smWave', { n: smash.wave + 1, m: smash.waves }) }; }
+}
+function smTensionTick(now) { // v3: as a wave goes on, things not yet hit start to crack and tremble by themselves (hairlines only: no damage)
+  if (now < smash.hairAt) return; smash.hairAt = now + Math.max(1200, 3200 - smash.wave * 500) * (0.7 + Math.random() * 0.6);
+  const c = smash.objs.filter((o) => o.alive && !o.hits && !o.hair && o.kind !== 'boss'); if (!c.length) return;
+  const o = c[Math.floor(Math.random() * c.length)]; o.hair = 1; o.tremAt = now; smSnd('smcrack', 0, o.kind, now);
+}
+function smProgress() { // how far through the scene: its waves, then the boss (0..1)
+  if (smash.phase === 'boom' || smash.phase === 'clear' || smash.phase === 'out' || smash.over) return 1;
+  const N = smash.waves + 1;
+  if (smash.seg === 'boss') return (smash.waves + (smash.boss ? 1 - smash.boss.hp / smash.boss.maxHp : 1)) / N;
+  return (smash.wave + Math.min(1, smash.meter / CONFIG.SMASH_CLEAR)) / N;
+}
+function smBossHit(o, x, y, k, now) { // the boss: harder hits hurt more (a tap 1, a fast swipe 2-3); cracks, then pieces fall off, then it shakes and glows; then the big one
+  if (smash.seg !== 'boss' || !o.alive || o.hp <= 0) return;
+  const dmg = 1 + (k > 0.5 ? 1 : 0) + (k > 0.85 ? 1 : 0), s = smashScale(); o.hp = Math.max(0, o.hp - dmg); o.hits++; o.hitAt = now;
+  const f = o.hp / o.maxHp, ph = f > 0.66 ? 1 : f > 0.33 ? 2 : 3, lv = 1 + Math.min(3, Math.floor((1 - f) * 4));
+  if (o.hp <= 0) { smBossDown(o, now); return; }
+  smSnd('smcrack', lv, 'boss', now); ring(x, y, 'rgba(255,255,255,0.85)', (34 + dmg * 10) * s, 240, 4); burst(x, y, o.col, 6 + dmg * 3); shakeScreen(1 + dmg * 0.8);
+  if (ph >= 2) for (let i = 0; i < (ph === 3 ? 2 : 1); i++) smPiece(i % 2 ? 'p4' : 'r', (6 + Math.random() * 8) * s, (5 + Math.random() * 5) * s, i % 2 ? darken(o.col, 0.2) : o.col, 'boss', x + (Math.random() - 0.5) * 30, y, (Math.random() - 0.5) * 6, -3 - Math.random() * 4, now); // pieces fall off
+  if (ph !== o.extra.ph) { o.extra.ph = ph; o.extra.phAt = now; sfx('thump', 1); shakeScreen(4); dust(o.body.position.x, o.body.position.y, 12, 2.5); ring(o.body.position.x, o.body.position.y, 'rgba(255,214,120,0.9)', o.w * 0.8, 420, 6);
+    for (let i = 0; i < 5; i++) smPiece('r', (10 + Math.random() * 12) * s, (8 + Math.random() * 8) * s, i % 2 ? o.col : darken(o.col, 0.25), 'boss', o.body.position.x + (Math.random() - 0.5) * o.w * 0.8, o.body.position.y - o.h * 0.3, (Math.random() - 0.5) * 9, -5 - Math.random() * 5, now); }
+}
+function smBossDown(o, now) { // the boss blows up: a big blast of its pieces, confetti, the boss-down sound; then 'Smashed!'
+  o.alive = false; M.Composite.remove(world, o.body); smash.things++; smash.trk.smash++; smash.trk.wall++; smash.broke.boss = (smash.broke.boss || 0) + 1;
+  const s = smashScale(), cx = o.body.position.x, cy = o.body.position.y;
+  for (let i = 0; i < 18; i++) { const a = Math.random() * TAU, v = 5 + Math.random() * 9; smPiece(i % 3 ? 'r' : 'p5', (8 + Math.random() * 16) * s, (6 + Math.random() * 10) * s, [o.col, darken(o.col, 0.25), lighten(o.col, 0.25)][i % 3], 'boss', cx + Math.cos(a) * o.w * 0.25, cy + Math.sin(a) * o.h * 0.25, Math.cos(a) * v, Math.sin(a) * v - 5, now); }
+  smSnd('bossdown', 1, 'boss', now); confetti(cx, cy - o.h * 0.2, 80, 1.6); confetti(W * 0.25, H * 0.3, 40, 1.2); confetti(W * 0.75, H * 0.3, 40, 1.2);
+  ring(cx, cy, 'rgba(255,255,255,0.95)', Math.max(o.w, o.h) * 1.1, 520, 8); ring(cx, cy, 'rgba(255,194,75,0.9)', Math.max(o.w, o.h) * 0.8, 420, 6); dust(cx, cy, 14, 4); shakeScreen(6);
+  smash.phase = 'boom'; smash.phaseAt = now; smash.waveLog.push({ w: 'boss', t: Math.round(now - smash.startAt) });
+}
 /* --- the things' art: glossy cartoon sprites drawn once per kind, size and colour (light from the top left, as everywhere) --- */
 function rrect(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
 function smArt(o) {
-  const w = o.w, h = o.h, pad = Math.ceil(8 + Math.max(w, h) * 0.4), key = 'sma|' + o.kind + '|' + Math.round(w) + 'x' + Math.round(h) + '|' + o.col + '|' + o.seed + (o.extra && o.extra.top ? '|top' : '');
+  const w = o.w, h = o.h, pad = Math.ceil(8 + Math.max(w, h) * 0.4), key = 'sma|' + o.kind + '|' + Math.round(w) + 'x' + Math.round(h) + '|' + o.col + '|' + o.seed + (o.extra && o.extra.top ? '|top' : '') + (o.extra && o.extra.kind ? '|' + o.extra.kind : '');
   return makeSprite(key, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => SM_ART[o.kind](g, w, h, o.col, o.seed, rng(strSeed(key)), o));
 }
 const SM_ART = {
@@ -3035,13 +3126,76 @@ const SM_ART = {
   },
   car(g, w, h, col, seed, R, o) { const e = o.extra; const sp = carSprite({ color: col, w, h: e.bh, wr: e.wr, s: e.s }); g.drawImage(sp.c, -sp.ox, -sp.oy + e.cab / 2, sp.w, sp.h); },
 };
+function smFace(g, x, y, r, mood) { // a cartoon face for a boss: two eyes under cross brows (mood 'grr'), a toothy grin
+  for (const sd of [-1, 1]) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(x + sd * r * 0.42, y, r * 0.28, r * 0.32, 0, 0, TAU); g.fill(); g.lineWidth = Math.max(1.5, r * 0.05); g.strokeStyle = '#1d2033'; g.stroke();
+    g.fillStyle = '#1d2033'; g.beginPath(); g.arc(x + sd * r * 0.36, y + r * 0.06, r * 0.13, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(x + sd * r * 0.32, y, r * 0.04, 0, TAU); g.fill();
+    g.strokeStyle = '#1d2033'; g.lineWidth = Math.max(3, r * 0.12); g.lineCap = 'round'; g.beginPath(); g.moveTo(x + sd * r * 0.7, y - r * 0.42); g.lineTo(x + sd * r * 0.16, y - r * 0.26); g.stroke(); }
+  g.fillStyle = '#1d2033'; g.beginPath(); g.ellipse(x, y + r * 0.62, r * 0.42, r * 0.2, 0, 0, TAU); g.fill();
+  g.fillStyle = '#ffffff'; for (let i = -2; i <= 1; i++) g.fillRect(x + i * r * 0.17 + r * 0.02, y + r * 0.45, r * 0.13, r * 0.13);
+}
+const SM_BOSS_ART = { // v3: the five bosses, drawn in a w x h box
+  safe(g, w, h, col) { // a huge treasure safe: steel, rivets, a big dial and a handle, gold trim, little feet
+    g.fillStyle = '#2b2f45'; for (const sd of [-1, 1]) g.fillRect(sd * w * 0.36 - w * 0.06, h * 0.44, w * 0.12, h * 0.06);
+    const body = () => rrect(g, -w / 2, -h / 2, w, h * 0.95, w * 0.07); shadedFill(g, body, col, Math.max(w, h) / 2); rimLight(g, body, Math.max(w, h) / 2, 0.4); outline(g, body, col, 3);
+    const door = () => rrect(g, -w * 0.4, -h * 0.4, w * 0.8, h * 0.76, w * 0.05); shadedFill(g, door, lighten(col, 0.12), w * 0.4); g.lineWidth = Math.max(3, w * 0.02); g.strokeStyle = '#ffc93b'; door(); g.stroke();
+    g.fillStyle = '#d9e2f0'; for (const [x, y] of [[-0.44, -0.44], [0.44, -0.44], [-0.44, 0.39], [0.44, 0.39]]) { g.beginPath(); g.arc(x * w, y * h, w * 0.022, 0, TAU); g.fill(); }
+    const R = Math.min(w, h) * 0.2, dial = () => { g.beginPath(); g.arc(-w * 0.08, -h * 0.02, R, 0, TAU); }; shadedFill(g, dial, '#c9d3e3', R); outline(g, dial, '#c9d3e3', 2.5);
+    g.strokeStyle = '#4a5570'; g.lineWidth = Math.max(2, R * 0.08); for (let i = 0; i < 12; i++) { const a = i * TAU / 12; g.beginPath(); g.moveTo(-w * 0.08 + Math.cos(a) * R * 0.72, -h * 0.02 + Math.sin(a) * R * 0.72); g.lineTo(-w * 0.08 + Math.cos(a) * R * 0.9, -h * 0.02 + Math.sin(a) * R * 0.9); g.stroke(); }
+    g.fillStyle = '#ff5a5f'; g.beginPath(); g.arc(-w * 0.08, -h * 0.02, R * 0.22, 0, TAU); g.fill();
+    g.strokeStyle = '#ffc93b'; g.lineWidth = Math.max(5, w * 0.035); g.lineCap = 'round'; g.beginPath(); g.moveTo(w * 0.25, -h * 0.12); g.lineTo(w * 0.25, h * 0.1); g.stroke();
+    g.fillStyle = '#ffc93b'; g.font = '800 ' + Math.round(h * 0.11) + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('$', -w * 0.08, h * 0.27);
+    gloss(g, body, Math.max(w, h) / 2, 0.25);
+  },
+  tv(g, w, h, col) { // a giant TV with an angry face on its screen, on stubby legs
+    g.fillStyle = '#2b2f45'; for (const sd of [-1, 1]) { g.save(); g.translate(sd * w * 0.3, h * 0.4); g.rotate(sd * 0.25); g.fillRect(-w * 0.03, 0, w * 0.06, h * 0.1); g.restore(); }
+    g.save(); g.translate(0, h * 0.06); SM_ART.tv(g, w, h * 0.72, col); g.restore();
+    smFace(g, -w * 0.09, h * 0.04, Math.min(w, h) * 0.18, 'grr');
+  },
+  robot(g, w, h, col) { // a giant robot: antenna, a head with glowing eyes, a chest of lights, arms, legs
+    const hw = w * 0.62, hh = h * 0.26, bw = w * 0.74, bh = h * 0.38, top = -h / 2 + h * 0.06;
+    g.strokeStyle = '#4a5570'; g.lineWidth = Math.max(3, w * 0.025); g.beginPath(); g.moveTo(0, top); g.lineTo(0, top - h * 0.05); g.stroke(); g.fillStyle = '#ff5a5f'; g.beginPath(); g.arc(0, top - h * 0.06, w * 0.05, 0, TAU); g.fill();
+    for (const sd of [-1, 1]) { const leg = () => rrect(g, sd * w * 0.2 - w * 0.09, h * 0.18, w * 0.18, h * 0.3, w * 0.04); shadedFill(g, leg, darken(col, 0.15), h * 0.15); outline(g, leg, col, 2);
+      const foot = () => rrect(g, sd * w * 0.2 - w * 0.14, h * 0.43, w * 0.28, h * 0.07, w * 0.04); shadedFill(g, foot, '#4a5570', w * 0.1); outline(g, foot, '#4a5570', 2);
+      const arm = () => rrect(g, sd * (bw / 2 + w * 0.02) - w * 0.08, -h * 0.12, w * 0.16, h * 0.34, w * 0.07); shadedFill(g, arm, darken(col, 0.1), h * 0.15); outline(g, arm, col, 2);
+      g.fillStyle = '#4a5570'; g.beginPath(); g.arc(sd * (bw / 2 + w * 0.02), h * 0.24, w * 0.08, 0, TAU); g.fill(); }
+    const body = () => rrect(g, -bw / 2, -h * 0.16, bw, bh, w * 0.06); shadedFill(g, body, col, bw / 2); rimLight(g, body, bw / 2, 0.4); outline(g, body, col, 3);
+    const pnl = () => rrect(g, -bw * 0.32, -h * 0.1, bw * 0.64, bh * 0.5, w * 0.03); g.fillStyle = '#2b2f45'; pnl(); g.fill();
+    ['#ff5a5f', '#ffcf3f', '#43d9a3', '#54c6eb'].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(-bw * 0.22 + i * bw * 0.146, -h * 0.1 + bh * 0.25, w * 0.035, 0, TAU); g.fill(); });
+    const head = () => rrect(g, -hw / 2, top, hw, hh, w * 0.07); shadedFill(g, head, lighten(col, 0.08), hw / 2); rimLight(g, head, hw / 2, 0.4); outline(g, head, col, 3);
+    const vis = () => rrect(g, -hw * 0.4, top + hh * 0.24, hw * 0.8, hh * 0.46, hh * 0.2); g.fillStyle = '#1d2033'; vis(); g.fill();
+    for (const sd of [-1, 1]) { const gr = g.createRadialGradient(sd * hw * 0.2, top + hh * 0.47, 1, sd * hw * 0.2, top + hh * 0.47, hh * 0.22); gr.addColorStop(0, '#fff6c4'); gr.addColorStop(0.5, '#ff5a3c'); gr.addColorStop(1, 'rgba(255,90,60,0)'); g.fillStyle = gr; g.beginPath(); g.arc(sd * hw * 0.2, top + hh * 0.47, hh * 0.22, 0, TAU); g.fill();
+      g.strokeStyle = '#1d2033'; g.lineWidth = Math.max(3, hh * 0.08); g.beginPath(); g.moveTo(sd * hw * 0.36, top + hh * 0.16); g.lineTo(sd * hw * 0.08, top + hh * 0.26); g.stroke(); }
+    gloss(g, head, hw / 2, 0.3); gloss(g, body, bw / 2, 0.22);
+  },
+  tower(g, w, h, col) { // a mega tower of lettered blocks with a gold crown on top
+    const cols = 2, rows = 3, bs = Math.min(w / cols, (h * 0.8) / rows), x0 = -bs * cols / 2, y1 = h / 2, L = [18, 18, 1, 14]; // 'BO' over 'SS', a big face block on top
+    for (let r = 0; r < 2; r++) for (let c = 0; c < cols; c++) { const i = r * cols + c; g.save(); g.translate(x0 + (c + 0.5) * bs + (r % 2 ? bs * 0.05 : 0), y1 - (r + 0.5) * bs); SM_ART.block(g, bs * 0.98, bs * 0.98, COLORS[(i + 1) % 5], L[i]); g.restore(); }
+    { const top = () => rrect(g, x0, y1 - 3 * bs, bs * 2 * 0.99, bs * 0.98, bs * 0.14); shadedFill(g, top, col, bs); rimLight(g, top, bs, 0.45); gloss(g, top, bs, 0.3); outline(g, top, col, 2); smFace(g, 0, y1 - 2.5 * bs, bs * 0.42, 'grr'); }
+    const cy = y1 - rows * bs, cw = bs * 1.3, ch = h - rows * bs; // the crown
+    const crown = () => { g.beginPath(); g.moveTo(-cw / 2, cy); g.lineTo(-cw / 2, cy - ch * 0.55); g.lineTo(-cw / 4, cy - ch * 0.3); g.lineTo(0, cy - ch * 0.8); g.lineTo(cw / 4, cy - ch * 0.3); g.lineTo(cw / 2, cy - ch * 0.55); g.lineTo(cw / 2, cy); g.closePath(); };
+    shadedFill(g, crown, '#ffc93b', cw / 2); gloss(g, crown, cw / 2, 0.45); outline(g, crown, '#ffc93b', 2.5);
+    ['#ff4f8b', '#4fd2ff', '#7dff6b'].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc((i - 1) * cw * 0.3, cy - ch * 0.16, cw * 0.06, 0, TAU); g.fill(); });
+  },
+  melon(g, w, h, col) { // a giant watermelon with a grumpy face
+    g.save(); g.scale(w / h, 1); SM_ART.watermelon(g, h, h, col); g.restore();
+    smFace(g, 0, h * 0.04, Math.min(w, h) * 0.24, 'grr');
+  },
+};
+SM_ART.boss = (g, w, h, col, seed, R, o) => SM_BOSS_ART[(o.extra && o.extra.kind) || 'safe'](g, w, h, col);
 function sparkleOn(g, x, y, r) { g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.25, y - r * 0.25); g.lineTo(x + r, y); g.lineTo(x + r * 0.25, y + r * 0.25); g.lineTo(x, y + r); g.lineTo(x - r * 0.25, y + r * 0.25); g.lineTo(x - r, y); g.lineTo(x - r * 0.25, y - r * 0.25); g.closePath(); g.fill(); }
-function smCrackSprite(o) { // cracks on a thing that took a hit but still stands
-  const w = o.w, h = o.h, key = 'smcrk|' + Math.round(w) + 'x' + Math.round(h);
+function smCrackSprite(o, lv) { // v3: the cracks on a thing, by stage (0: hairlines, 1..4: growing with each hit; the same lines, longer and more of them)
+  const w = o.w, h = o.h, base = 'smcrk|' + Math.round(w) + 'x' + Math.round(h), key = base + '|' + lv;
   return makeSprite(key, w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
-    const r = rng(strSeed(key)); g.strokeStyle = 'rgba(20,10,5,0.6)'; g.lineWidth = Math.max(1.5, Math.min(w, h) * 0.04); g.lineCap = 'round';
-    for (let i = 0; i < 3; i++) { let x = (r() - 0.5) * w * 0.3, y = (r() - 0.5) * h * 0.3; const a = r() * TAU; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += Math.cos(a + (r() - 0.5) * 1.4) * w * 0.12; y += Math.sin(a + (r() - 0.5) * 1.4) * h * 0.12; g.lineTo(x, y); } g.stroke(); }
-    g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 1; g.stroke();
+    const r = rng(strSeed(base)), nb = lv ? 1 + lv : 2, segs = lv ? 1 + lv : 2, step = lv ? 0.09 + lv * 0.012 : 0.07, m = Math.min(w, h);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (let i = 0; i < 6; i++) { // every branch from the same seed, so a crack grows where it was
+      let x = (r() - 0.5) * w * 0.3, y = (r() - 0.5) * h * 0.3; const a = r() * TAU, pts = [[x, y]];
+      for (let k = 0; k < 5; k++) { x += Math.cos(a + (r() - 0.5) * 1.4) * w * step; y += Math.sin(a + (r() - 0.5) * 1.4) * h * step; pts.push([x, y]); }
+      if (i >= nb) continue;
+      g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let k = 1; k <= segs; k++) g.lineTo(pts[k][0], pts[k][1]);
+      if (lv) { g.strokeStyle = 'rgba(20,10,5,' + (0.5 + lv * 0.1).toFixed(2) + ')'; g.lineWidth = Math.min(4.5, Math.max(1.4, m * (0.025 + lv * 0.008))); g.stroke(); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 1; g.stroke(); }
+      else { g.strokeStyle = 'rgba(20,10,5,0.38)'; g.lineWidth = 1; g.stroke(); }
+    }
   });
 }
 function smPieceSprite(b) { // a debris piece in its colour and material, from its own (pooled) shape
@@ -3105,13 +3259,40 @@ const SM_BG = {
 
 /* --- drawing the scene, the HUD, the banners and the stage card --- */
 function smDrawObj(o, now) {
-  const b = o.body, x = b.position.x, y = b.position.y, sp = o.sp || (o.sp = smArt(o)), hk = (now - o.hitAt) / 260, k = hk < 1 ? 1 + 0.08 * Math.sin(hk * Math.PI) : 1;
+  const b = o.body, sp = o.sp || (o.sp = smArt(o)), hk = (now - o.hitAt) / 320, k = hk < 1 ? 1 + 0.07 * Math.sin(hk * Math.PI) : 1, tk = (now - o.tremAt) / 700;
+  let x = b.position.x, y = b.position.y, ang = b.angle;
+  if (hk < 1) ang += 0.07 * Math.sin(hk * Math.PI * 3) * (1 - hk); // v3: a wobble on every hit
+  if (tk > 0 && tk < 1) x += Math.sin(now * 0.09 + o.ph) * 2.2 * (1 - tk) * smashScale(); // ...a tremble (arriving, or a crack starting by itself)
+  if (o.kind === 'boss') { smDrawBoss(o, now, x, y, k); return; }
   if (o.kind === 'ceilLamp') { resetView(); ctx.strokeStyle = '#3a3f55'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, -10); ctx.lineTo(x, y - o.h / 2); ctx.stroke(); }
   else if (o.kind === 'balloon') { resetView(); ctx.strokeStyle = 'rgba(60,60,80,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, y + o.h * 0.42); ctx.quadraticCurveTo(x + Math.sin(now * 0.002 + o.ph) * o.w * 0.5, y + o.h, x, y + o.h * 1.7); ctx.stroke(); }
-  if (o.kind === 'car') { const e = o.extra; blit(sp, x, y, 0, k, 1, e.dir); const ws = wheelSprite(e.wr), wy = e.yb + e.bh / 2; blit(ws, x - o.w * 0.3, wy, e.dir * e.dist / e.wr); blit(ws, x + o.w * 0.3, wy, e.dir * e.dist / e.wr); return; }
-  blit(sp, x, y, b.angle, k);
-  if (o.hp < o.maxHp) blit(smCrackSprite(o), x, y, b.angle, k);
+  if (o.kind === 'car') { const e = o.extra; blit(sp, x, y, 0, k, 1, e.dir); const ws = wheelSprite(e.wr), wy = e.yb + e.bh / 2; blit(ws, x - o.w * 0.3, wy, e.dir * e.dist / e.wr); blit(ws, x + o.w * 0.3, wy, e.dir * e.dist / e.wr); if (o.hits || o.hair) blit(smCrackSprite(o, smCrackLv(o)), x, y - e.cab * 0.2, 0, k); return; }
+  blit(sp, x, y, ang, k);
+  if (o.hits || o.hair) blit(smCrackSprite(o, smCrackLv(o)), x, y, ang, k);
 }
+function smDrawBoss(o, now, x, y, k) { // the boss: its art, cracks that grow, holes where pieces fell off, a shake and a glow at the end; its health bar is in the HUD (drawSmashBossBar)
+  const e = o.extra, f = o.hp / o.maxHp, ph = f > 0.66 ? 1 : f > 0.33 ? 2 : 3, s = smashScale();
+  if (ph === 3) { x += Math.sin(now * 0.07) * 2.5 * s; y += Math.cos(now * 0.11) * 1.2 * s; }
+  const hk = (now - o.hitAt) / 200, sq = hk < 1 ? 1 - 0.05 * Math.sin(hk * Math.PI) : 1, bob = Math.sin(now * 0.003) * 3 * s; // squash on a hit, a slow idle bob (breathing)
+  if (ph === 3) { const a = 0.25 + 0.2 * Math.sin(now / 120); blit(smBossGlowSprite(o), x, y + bob, 0, 1, a); }
+  blit(o.sp, x, y + bob, 0, k * sq);
+  if (ph >= 2) blit(smBossHoleSprite(o, ph), x, y + bob, 0, k * sq);
+  const lv = o.hits ? 1 + Math.min(3, Math.floor((1 - f) * 4)) : 0;
+  if (lv) blit(smCrackSprite(o, lv), x, y + bob, 0, k * sq);
+}
+function smBossGlowSprite(o) { const w = o.w, h = o.h, R = Math.max(w, h) * 0.75; return makeSprite('smbglow|' + Math.round(R), R * 2, R * 2, R, R, (g) => { const gr = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R); gr.addColorStop(0, 'rgba(255,80,60,0.9)'); gr.addColorStop(1, 'rgba(255,80,60,0)'); g.fillStyle = gr; g.fillRect(-R, -R, R * 2, R * 2); }); }
+function smBossHoleSprite(o, ph) { // dark bites where pieces fell off (phase 2: three, phase 3: six)
+  const w = o.w, h = o.h, key = 'smbhole|' + e2k(o) + '|' + ph;
+  return makeSprite(key, w + 4, h + 4, w / 2 + 2, h / 2 + 2, (g) => {
+    const r = rng(strSeed('smbhole|' + e2k(o)));
+    for (let i = 0; i < (ph === 3 ? 6 : 3); i++) {
+      const cx = (r() - 0.5) * w * 0.7, cy = (r() - 0.5) * h * 0.7, rr = Math.min(w, h) * (0.07 + r() * 0.06), n = 6 + Math.floor(r() * 3);
+      g.beginPath(); for (let j = 0; j < n; j++) { const a = j * TAU / n, d = rr * (0.6 + r() * 0.6); j ? g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d) : g.moveTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); } g.closePath();
+      g.fillStyle = 'rgba(25,16,30,0.82)'; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,0.3)'; g.stroke();
+    }
+  });
+}
+function e2k(o) { return o.extra.kind + '|' + Math.round(o.w) + 'x' + Math.round(o.h); }
 function smDrawScene(now) {
   for (let L = 2; L >= 0; L--) {
     for (const T of smash.tiles) if (T.layer === L && T.alive) { resetView(); ctx.drawImage(T.c, T.x0, T.y0, T.w, T.h); }
@@ -3126,31 +3307,45 @@ function smHudRow() { // the top row's free span beside the pause button (as Str
   const left = (cam ? (small ? preview.getBoundingClientRect().right : (W <= 400 ? 104 : 108)) : 4) + 8, right = c.width > 0 ? c.left - 8 : W - 12, cy = c.height > 0 ? c.top + c.height / 2 : 34;
   return (ui.row = { left, right, cy });
 }
-function smDisp() { return Math.min(1, smash.meter / CONFIG.SMASH_CLEAR); } // the meter as shown: full at the clear
-function drawSmashHud(now, dt) { // the minimal HUD: one slim pill beside the pause button: the destruction meter (and in a stage the clock and the stars still in reach)
+function smDisp() { return smProgress(); } // the HUD's track: how far through the scene (its waves, then the boss)
+function drawSmashHud(now, dt) { // the minimal HUD: one slim pill beside the pause button: the progress track through the scene (waves, then the boss's crown) and in a stage the clock and the stars still in reach
   const ui = smash.ui, rtl = lang === 'he', R = frameCount % 30 === 0 || !ui.row ? smHudRow() : ui.row, stage = smash.run === 'stage' && smash.plan;
-  const want = smDisp(); smash.shown += (want - smash.shown) * Math.min(1, dt / 140); if (Math.abs(want - smash.shown) < 0.002) smash.shown = want;
-  const pct = Math.round(smash.shown * 100), ptx = textSprite(LRM + pct + '%', 12, '#fff8ec', null, 800), h = 30, pad = 10;
+  const want = smDisp(); smash.shown += (want - smash.shown) * Math.min(1, dt / 140); if (Math.abs(want - smash.shown) < 0.002 || want < smash.shown - 0.2) smash.shown = want;
+  const pct = Math.round(smash.shown * 100), h = 30, pad = 12, ic = 14;
   let tsp = null, left = 0, nst = 3;
-  if (stage) { left = smash.phase === 'play' ? smashLeft(now) / 1000 : smash.result ? smash.result.left : 0; nst = smashStarsFor(smash.plan, Math.ceil(left)); tsp = textSprite(LRM + smashClockFor(left), 14, left <= SMASH_HURRY_S && smash.phase === 'play' ? '#ff8a7a' : '#fff8ec', null, 800); }
-  const avail = Math.max(120, R.right - R.left), extra = stage ? 10 + tsp.tw + 8 + 50 : 0, bw = Math.max(70, Math.min(170, avail - pad * 2 - ptx.tw - 8 - extra)), w = pad + bw + 8 + ptx.tw + extra + pad;
+  if (stage) { left = smash.phase === 'play' || smash.phase === 'scroll' ? smashLeft(now) / 1000 : smash.result ? smash.result.left : smashLeft(now) / 1000; nst = smashStarsFor(smash.plan, Math.ceil(left)); tsp = textSprite(LRM + smashClockFor(left), 14, left <= SMASH_HURRY_S && smash.phase === 'play' ? '#ff8a7a' : '#fff8ec', null, 800); }
+  const avail = Math.max(120, R.right - R.left), extra = stage ? 10 + tsp.tw + 8 + 50 : 0, bw = Math.max(70, Math.min(180, avail - pad * 2 - ic - 6 - extra)), w = pad + bw + 6 + ic + extra + pad;
   const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
-  ui.hud = { x, y, w, h, parts: stage ? ['meter', 'timer', 'stars'] : ['meter'] };
+  ui.hud = { x, y, w, h, parts: stage ? ['track', 'timer', 'stars'] : ['track'] };
   resetView(); blit(glassSprite(w, h, h / 2), x - 1, y - 1, 0, 1, 0.8);
-  const bx = rtl ? x + w - pad - bw : x + pad, bh = 12, by = cy - bh / 2, fw = bw * smash.shown, pop = smash.phase === 'clear' ? 1 + 0.08 * Math.sin(now / 90) : 1;
+  const bx = rtl ? x + w - pad - bw : x + pad, bh = 6, by = cy - bh / 2, fw = bw * smash.shown, N = smash.waves + 1;
   resetView(); ctx.fillStyle = 'rgba(8,11,28,0.75)'; ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, bh / 2); ctx.fill();
-  if (fw > 1) { ctx.fillStyle = smash.shown >= 1 ? '#ffd23f' : '#ff8a4d'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, fw, bh, bh / 2); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(rtl ? bx + bw - fw + 4 : bx + 4, by + 2, Math.max(0, fw - 8), 2); }
-  ui.meterBox = { x: bx, y: by, w: bw, h: bh, pct, fill: fw };
-  const tx = rtl ? bx - 8 - ptx.tw / 2 : bx + bw + 8 + ptx.tw / 2; blit(ptx, tx, cy, 0, pop);
+  if (fw > 1) { ctx.fillStyle = smash.seg === 'boss' ? '#ff6b5a' : '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, fw, bh, bh / 2); ctx.fill(); }
+  const marks = []; for (let i = 1; i < N; i++) { const mx = rtl ? bx + bw - bw * i / N : bx + bw * i / N, on = smash.shown >= i / N - 0.001; marks.push(mx); ctx.fillStyle = on ? '#fff3c4' : 'rgba(241,233,218,0.55)'; ctx.beginPath(); ctx.arc(mx, cy, on ? 3.2 : 2.6, 0, TAU); ctx.fill(); } // a dot where each wave ends
+  const cx0 = rtl ? bx - 6 - ic / 2 : bx + bw + 6 + ic / 2, pop = smash.seg === 'boss' && smash.phase === 'play' ? 1 + 0.12 * Math.abs(Math.sin(now / 200)) : 1;
+  blit(smCrownSprite(ic), cx0, cy, 0, pop, smash.seg === 'boss' ? 1 : 0.7); // the boss waits at the end of the track
+  ui.trackBox = ui.meterBox = { x: bx, y: by, w: bw, h: bh, pct, fill: fw, prog: smash.shown, marks: marks.length, wave: smash.wave, waves: smash.waves, seg: smash.seg };
   ui.timerBox = ui.starsBox = null;
   if (stage) {
-    const tcx = rtl ? tx - ptx.tw / 2 - 10 - tsp.tw / 2 : tx + ptx.tw / 2 + 10 + tsp.tw / 2, hurry = left <= SMASH_HURRY_S && smash.phase === 'play' ? 1 + 0.1 * Math.abs(Math.sin(now / 160)) : 1;
+    const tx = cx0, tw = ic, tcx = rtl ? tx - tw / 2 - 10 - tsp.tw / 2 : tx + tw / 2 + 10 + tsp.tw / 2, hurry = left <= SMASH_HURRY_S && smash.phase === 'play' ? 1 + 0.1 * Math.abs(Math.sin(now / 160)) : 1;
     blit(tsp, tcx, cy, 0, hurry); ui.timerBox = { x: tcx - tsp.tw / 2, y: cy - 9, w: tsp.tw, h: 18, text: smashClockFor(left), left };
     const s0 = rtl ? tcx - tsp.tw / 2 - 8 - 7 : tcx + tsp.tw / 2 + 8 + 7;
     for (let i = 0; i < 3; i++) blit(shapeStarSprite(7, i < nst), s0 + (rtl ? -i : i) * 16, cy, 0, 1, i < nst ? 1 : 0.6);
     ui.starsBox = { x: rtl ? s0 - 39 : s0 - 7, y: cy - 8, w: 46, h: 16, n: nst };
   }
+}
+function smCrownSprite(r) { return makeSprite('smcrown|' + r, r + 4, r + 4, r / 2 + 2, r / 2 + 2, (g) => { const w = r, h = r * 0.8; g.beginPath(); g.moveTo(-w / 2, h / 2); g.lineTo(-w / 2, -h * 0.2); g.lineTo(-w / 4, h * 0.05); g.lineTo(0, -h / 2); g.lineTo(w / 4, h * 0.05); g.lineTo(w / 2, -h * 0.2); g.lineTo(w / 2, h / 2); g.closePath(); g.fillStyle = '#ffc93b'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#8a5a12'; g.stroke(); }); }
+function drawSmashBossBar(now) { // v3: the boss's health bar, under the HUD pill while the boss stands
+  const ui = smash.ui, o = smash.boss; ui.bossBar = null;
+  if (!o || smash.seg !== 'boss' || smash.over || (smash.phase !== 'play' && smash.phase !== 'scroll' && smash.phase !== 'boom')) return;
+  const a = smash.phase === 'scroll' ? Math.max(0, (now - smash.phaseAt) / CONFIG.SMASH_SCROLL_MS * 2 - 1) : smash.phase === 'boom' ? Math.max(0, 1 - (now - smash.phaseAt) / 400) : 1; if (a <= 0) return;
+  const rtl = lang === 'he', lab = textSprite(t('smBoss'), 12, '#ffd77a', null, 800), bw = Math.min(W - 80, 300), bh = 10, w = bw + lab.tw + 30, x = W / 2 - w / 2, y = (ui.hud ? ui.hud.y + ui.hud.h : 44) + 10, cy = y + 11;
+  const f = Math.max(0, o.hp / o.maxHp), ph = f > 0.66 ? 1 : f > 0.33 ? 2 : 3, hk = (now - o.hitAt) / 180, sh = hk < 1 ? Math.sin(hk * 20) * 2 * (1 - hk) : 0;
+  resetView(); ctx.globalAlpha = a; blit(glassSprite(w, 22, 11), x - 1 + sh, y - 1, 0, 1, 0.85 * a);
+  const lx = rtl ? x + w - 10 - lab.tw / 2 : x + 10 + lab.tw / 2, bx = rtl ? x + 10 : x + 20 + lab.tw; blit(lab, lx + sh, cy, 0, 1, a);
+  resetView(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,28,0.8)'; ctx.beginPath(); ctx.roundRect(bx + sh, cy - bh / 2, bw, bh, bh / 2); ctx.fill();
+  const fw = bw * f; if (fw > 0.5) { ctx.fillStyle = ph === 1 ? '#ff6b5a' : ph === 2 ? '#ff9a3c' : '#ffd23f'; ctx.beginPath(); ctx.roundRect((rtl ? bx + bw - fw : bx) + sh, cy - bh / 2, Math.max(bh, fw), bh, bh / 2); ctx.fill(); }
+  ctx.globalAlpha = 1; ui.bossBar = { x: bx, y: cy - bh / 2, w: bw, h: bh, hp: o.hp, max: o.maxHp, ph, f };
 }
 function smashClockFor(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 function drawSmashBanners(now) {
@@ -3164,7 +3359,7 @@ function drawSmashBanners(now) {
     ui.bannerBox = { title: B.title, sub: B.sub, line: B.line, a, y };
   } else smash.banner = null;
   const T = smash.tag, tk = T ? (now - T.t) / 2200 : 1; ui.tagBox = null;
-  if (T && tk < 1) { const sp = textSprite(T.text, 16, '#141b34', null, 800), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = (ui.hud ? ui.hud.y + ui.hud.h : 40) + 30 - 10 * (1 - e);
+  if (T && tk < 1) { const sp = textSprite(T.text, 16, '#141b34', null, 800), pw = sp.tw + 30, ph = 30, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = (ui.bossBar ? ui.bossBar.y + ui.bossBar.h + 8 : ui.hud ? ui.hud.y + ui.hud.h : 40) + 30 - 10 * (1 - e);
     blit(pillSprite(SMASH_ACCENT[smash.scene], pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e); ui.tagBox = { text: T.text, x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph }; }
   else smash.tag = null;
   ui.clearBox = null;
@@ -3205,7 +3400,7 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
     const pct = Math.round(r.pct * 100), bw = cw - 80, bx = cx - bw / 2, by = y0 + 140;
     blit(textSprite(t('smPct', { n: pct }), 22, '#fff8ec', null, 800), cx, y0 + 118);
     resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(bx, by, bw, 14, 7); ctx.fill();
-    const fw = bw * Math.min(1, r.pct / CONFIG.SMASH_CLEAR); ctx.fillStyle = '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, Math.max(14, fw), 14, 7); ctx.fill();
+    const fw = bw * Math.min(1, r.pct); ctx.fillStyle = '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bw - fw : bx, by, Math.max(14, fw), 14, 7); ctx.fill();
     ui.failBar = { pct, x: bx, y: by, w: bw, h: 14 };
   }
   { const py = y0 + (clear ? 196 + HN : 180), ph = 26, items = [];
@@ -3234,13 +3429,14 @@ function renderSmash(now) {
   if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); vx = Math.sin(now * 0.11) * a; vy = Math.cos(now * 0.17) * a; }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0c1026'; ctx.fillRect(0, 0, W, H);
   view.x = vx + smash.slide; view.y = vy;
-  resetView(); ctx.drawImage(smBgSprite(smash.scene).c, 0, 0, W, H);
-  if (smash.decal) ctx.drawImage(smash.decal, 0, 0, W, H);
+  { const bg = smBgSprite(smash.scene).c, o = ((-smash.bgX % (2 * W)) + 2 * W) % (2 * W); // v3: the scene scrolls on; the backdrop repeats, every other copy mirrored (no seams)
+    for (let k = 0; k < 3; k++) { const x = -o + k * W; if (x >= W || x + W <= 0) continue; resetView(); if (k % 2) { ctx.translate(x + W, 0); ctx.scale(-1, 1); ctx.drawImage(bg, 0, 0, W, H); } else ctx.drawImage(bg, x, 0, W, H); } }
+  resetView(); if (smash.decal) ctx.drawImage(smash.decal, smash.decalX, 0, W, H);
   smDrawScene(now);
   drawParticles(); drawRings(now); drawFloaters(smash.floaters);
   view.x = view.y = 0;
   const dt = Math.min(100, now - (smash.ui.lastDraw || now)); smash.ui.lastDraw = now;
-  if (mode !== 'none') { drawSmashHud(now, dt); drawSmashBanners(now); }
+  if (mode !== 'none') { drawSmashHud(now, dt); drawSmashBossBar(now); drawSmashBanners(now); }
   drawCoinPill(now);
   if (smash.over && smash.result) drawSmashCard(now);
   drawFist(now); // the glove stays on top so it can aim at the card buttons
@@ -3263,15 +3459,17 @@ function resetSmash(now) { // a fresh start of what the map armed, else the same
 function smFreeBegin(now, same) {
   smash.run = 'free'; smash.n = 0; smash.plan = null; smash.endAt = Infinity;
   if (!same) { smash.sceneNo = 0; smash.scene = 'wall'; smash.variant = 1; }
+  smFreeSize();
   smBuild(smash.scene, smash.variant, Math.floor(Math.random() * 1e9), now);
   smash.phase = 'play'; smash.phaseAt = smash.startAt = now;
 }
 function smFreeNext(now) { // free play's next scene: in order, round and round, a little fuller each lap
   smash.sceneNo++; const i = (SMASH_SCENES.indexOf(smash.scene) + 1) % SMASH_SCENES.length, lap = Math.floor(smash.sceneNo / SMASH_SCENES.length);
-  smBuild(SMASH_SCENES[i], Math.min(4, 1 + lap), Math.floor(Math.random() * 1e9), now);
+  smFreeSize(); smBuild(SMASH_SCENES[i], Math.min(4, 1 + lap), Math.floor(Math.random() * 1e9), now);
 }
+function smFreeSize() { const lap = Math.min(1, Math.floor(smash.sceneNo / SMASH_SCENES.length)); smash.waves = SMASH_WAVES[lap]; smash.bossHp = SMASH_BOSS_HP[lap]; } // free play: 3 waves + a 30-hp boss a scene (~90 s), then 4 + 40 from the second lap
 function smStageBegin(n, now) {
-  const P = smash.plan = smashPlan(n); smash.run = 'stage'; smash.n = P.n;
+  const P = smash.plan = smashPlan(n); smash.run = 'stage'; smash.n = P.n; smash.waves = P.waves; smash.bossHp = P.bossHp;
   smBuild(P.scene, P.v, P.n, now);
   smash.timeMs = P.time * 1000; smash.endAt = now + smash.timeMs; smash.startAt = now; smash.phase = 'play'; smash.phaseAt = now;
   smash.banner = { t: now, title: t('stageN', { n: P.n }), sub: t('sc_' + P.scene) + '  ·  ' + smashClockFor(P.time), line: t('smStarGoal', { n: P.star3 }) };
@@ -3293,7 +3491,7 @@ function smClear(now) { // the meter is full: everything left goes up in a casca
 }
 function smFail(now) { // a stage's clock ran out
   const P = smash.plan; smash.phase = 'card'; smash.phaseAt = now; smash.endAt = Infinity;
-  smash.result = { clear: false, n: P.n, scene: P.scene, stars: 0, best: profile.smash.stars[P.n] || 0, coins: 0, left: 0, time: P.time, star3: P.star3, star2: P.star2, pct: smash.meter };
+  smash.result = { clear: false, n: P.n, scene: P.scene, stars: 0, best: profile.smash.stars[P.n] || 0, coins: 0, left: 0, time: P.time, star3: P.star3, star2: P.star2, pct: smProgress() };
   smash.over = true; smash.overAt = now; smash.punching = false; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null;
   sfx('chime'); meta.roundXp = 0; roundDone(0, 6); grippySay('advFail'); smFlushTrack(now, true);
 }
@@ -3327,11 +3525,13 @@ function smashTick(now, dt) {
   if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; // the pause button (and its sheet) by a held gesture
   if (smash.over) { smash.prev = null; smash.punching = false; endCardTick(now); return; } // a stage's card: buttons by tap / dwell, a wave elsewhere: next / try again
   if (pause.on || menu.open) { if (smash.endAt !== Infinity) smash.endAt += dt; smash.phaseAt += dt; if (smash.banner) smash.banner.t += dt; smash.prev = null; smash.punching = false; smash.taps.length = 0; return; } // the clock waits (the pause sheet, or the hand missing)
-  smPiecesTick(now); smFxTick(now); smMoveTick(now, dt); smFlushTrack(now, false);
-  while (smash.queue.length) { const o = smash.queue.shift(); o.queued = false; if (o.alive) smBreak(o, o.body.position.x, o.body.position.y - o.h * 0.3, 0, 0, 0.5, now); } // fragile things that took a hard knock
+  smPiecesTick(now); smFxTick(now); if (smash.phase === 'play') smMoveTick(now, dt); smFlushTrack(now, false);
+  while (smash.queue.length) { const o = smash.queue.shift(); o.queued = false; if (o.alive) smDamage(o, 1, o.body.position.x, o.body.position.y - o.h * 0.3, 0, 0, 0.4, now, true); } // v3: fragile things that took a hard knock (a fall): one hit's worth, they crack
   smash.meter = smMeter();
   const ph = smash.phase, q = now - smash.phaseAt;
-  if (ph === 'clear') {
+  if (ph === 'scroll') smScrollTick(now);
+  else if (ph === 'boom') { if (smash.endAt !== Infinity) smash.endAt += dt; if (q >= SMASH_BOSS_MS) smClear(now); } // (the clock stopped when the boss went down)
+  else if (ph === 'clear') {
     for (let i = smash.cascade.length - 1; i >= 0; i--) { const o = smash.cascade[i]; if (now >= o.boomAt) { smash.cascade.splice(i, 1); if (o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, -0.3, 0.8, now); } }
     if (q >= SMASH_CLEAR_MS) { if (smash.run === 'free') { smash.phase = 'out'; smash.phaseAt = now; sfx('whoosh'); } else { smash.phase = 'card'; smash.over = true; smash.overAt = now; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null; if (smash.result.stars === 3) sfx('chime'); } }
   } else if (ph === 'out') {
@@ -3342,35 +3542,80 @@ function smashTick(now, dt) {
     if (q >= SMASH_IN_MS) { smash.slide = 0; smash.phase = 'play'; smash.phaseAt = now; }
   }
   const cur = cursor.present ? cursor : null, cam = mode === 'camera', v = cam ? Math.max(cursorSpeed(now), hand.rawSpeed) : cursorSpeed(now);
-  if (smash.phase !== 'play') { smash.prev = null; smash.punching = false; smash.taps.length = 0; return; }
-  if (smash.run === 'stage') { // the clock: 'Hurry!' at 10 s, a tick each of the last 5, then the card
+  if (smash.run === 'stage' && (smash.phase === 'play' || smash.phase === 'scroll')) { // the clock: 'Hurry!' at 10 s, a tick each of the last 5, then the card
     const left = smashLeft(now); if (left <= 0) { smFail(now); return; }
     const sec = Math.ceil(left / 1000); if (sec <= 5 && sec !== smash.lastTick) { smash.lastTick = sec; sfx('tick'); }
     if (sec <= SMASH_HURRY_S && !smash.hurry) { smash.hurry = true; grippySay('smashHurry'); }
   }
+  if (smash.phase !== 'play') { smash.prev = null; smash.punching = false; smash.taps.length = 0; return; }
+  smTensionTick(now);
   const s = smashScale(), R = CONFIG.FIST_RADIUS;
-  for (const tp of smash.taps) { smash.punchId++; smPunch(tp.x, tp.y, R, 0, 0, smStrength(CONFIG.SMASH_TAP_V * s), now); } // a tap: a punch right there
+  for (const tp of smash.taps) { smNewId(); smPunch(tp.x, tp.y, R, 0, 0, smStrength(CONFIG.SMASH_TAP_V * s), now); } // a tap: a punch right there
   smash.taps.length = 0;
   if (cur && smash.prev) {
     const dx = cur.x - smash.prev.x, dy = cur.y - smash.prev.y, len = Math.hypot(dx, dy);
     if (len > 2) { let d = Math.atan2(dy, dx) - smash.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); smash.ang += d * 0.35; }
     // Camera: any contact of the hand punches (a laggy tracker under-reads speed; kids just touch things), speed only makes the hit bigger.
     // Mouse / touch: a pressed pointer must swipe fast enough to sweep (a tap is its own punch, above).
-    const gate = cam ? 0 : (ptr.type === 'touch' ? CONFIG.PUNCH_SPEED_TOUCH : CONFIG.PUNCH_SPEED) * s;
+    const gate = cam ? 0 : (ptr.type === 'touch' ? CONFIG.PUNCH_SPEED_TOUCH : CONFIG.PUNCH_SPEED) * s, was = smash.punching;
     smash.punching = punchGesture() && v >= gate;
     const still = cam && len < 4 * s && v < CONFIG.PUNCH_SPEED * s * 0.5; // a camera hand resting on things knocks every 220 ms (not every frame)
-    if (smash.punching && (!still || now - (smash.camAt || 0) >= 220)) { if (still) smash.camAt = now; smSweep(smash.prev.x, smash.prev.y, cur.x, cur.y, R, smStrength(cam ? Math.max(v, CONFIG.PUNCH_SPEED * s) : v), now); }
+    if (was && !smash.punching) smash.offAt = now;
+    if (smash.punching && ((!was && now - (smash.offAt || 0) > 150) || (cam && now - smash.strokeAt > 700))) { smash.strokeId = ++smash.pidSeq; smash.strokeAt = now; } // v3: one swipe = one hit on each thing it crosses (a stroke survives a short dip in speed; on the camera a hand rubbing on hits again every 700 ms)
+    if (smash.punching && (!still || now - (smash.camAt || 0) >= 220)) { if (still) { smash.camAt = now; smash.strokeId = ++smash.pidSeq; smash.strokeAt = now; } smSweep(smash.prev.x, smash.prev.y, cur.x, cur.y, R, smStrength(cam ? Math.max(v, CONFIG.PUNCH_SPEED * s) : v), now, smash.strokeId); }
   } else smash.punching = false;
   if (cur) { if (!smash.prev) smash.prev = { x: cur.x, y: cur.y }; else { smash.prev.x = cur.x; smash.prev.y = cur.y; } } else smash.prev = null;
   smash.meter = smMeter();
-  if (smash.meter >= CONFIG.SMASH_CLEAR) smClear(now);
+  if (smash.seg === 'wave' && smash.meter >= CONFIG.SMASH_CLEAR) smScrollStart(now); // most of the wave smashed: on to the next part of the scene (or the boss)
 }
 function smashResize() { // the screen changed: sprites redrawn at the new resolution; a big change (a phone turned) lays the scene out afresh
   for (const o of smash.objs) o.sp = null; for (const b of smash.pieces) b.plugin.sp = null; for (const list of smash.pool.values()) for (const b of list) b.plugin.sp = null;
   if (!smash.objs.length && !smash.tiles.length) return;
   for (const T of smash.tiles) smTileDraw(T);
   const big = Math.abs(W - smash.layoutW) > smash.layoutW * 0.15 || Math.abs(H - smash.layoutH) > smash.layoutH * 0.2;
-  if (big && mode !== 'none' && gameMode === 'smash' && smash.phase === 'play') { const now = performance.now(), left = smashLeft(now); smBuild(smash.scene, smash.variant, Math.floor(Math.random() * 1e9), now); if (smash.run === 'stage') smash.endAt = now + left; }
+  if (big && mode !== 'none' && gameMode === 'smash' && smash.phase === 'play') { const now = performance.now(), left = smashLeft(now), w = smash.wave, seg = smash.seg, bh = smash.boss ? smash.boss.hp : 0;
+    smBuild(smash.scene, smash.variant, smash.seed, now); if (smash.run === 'stage') smash.endAt = now + left;
+    if (w || seg === 'boss') { smClearWorld(); if (seg === 'boss') { smBuildBoss(now, 0); smash.boss.hp = bh || smash.boss.hp; smash.boss.extra.ph = 0; } else smBuildWave(w, now, 0); } } // (the same part of the scene, laid out afresh)
+}
+
+/* --- test-only: a simulated player on a virtual clock (the real game logic and physics, nothing drawn) to measure how long a stage takes ---
+   kid: ~3 actions a second (a fifth of them swipes across part of the screen at a random speed), taps aimed at a random thing or brick with a
+   wobbly finger, and >= 30% of taps at empty spots (human misses); good: 5 accurate taps a second, finishing cracked things first. */
+function smSim(o) {
+  o = Object.assign({ player: 'kid', maxS: 400, seed: 1, fps: 30, swipeP: 0.2, aim: 0.6, rate: 3 }, o || {});
+  const realNow = performance.now, R = mulberry32(o.seed), t0 = realNow.call(performance), dt = 1000 / o.fps, Rf = CONFIG.FIST_RADIUS, sc = smashScale(), good = o.player === 'good';
+  let vt = t0, next = t0 + 400, last = null; const st = { player: o.player, acts: 0, taps: 0, swipes: 0, aimedMiss: 0, empty: 0, t: null, scene: smash.scene, n: smash.n };
+  const touching = (x, y) => smash.objs.some((q) => q.alive && smTouch(q, x, y, Rf * 0.5)) || smash.tiles.some((T) => T.alive && smTileTouch(T, x, y, Rf * 0.5));
+  const targets = () => { const out = []; for (const q of smash.objs) if (q.alive && q.body.position.x > 0 && q.body.position.x < W) out.push({ x: q.body.position.x, y: q.body.position.y, w: q.w, h: q.h, hp: q.kind === 'boss' ? 0 : q.hp - (q.hits ? 0.5 : 0), layer: q.layer });
+    for (const T of smash.tiles) { if (!T.alive) continue; let k = 0; for (let tries = 0; tries < 40 && k < 8; tries++) { const i = Math.floor(R() * T.cells.length); if (!T.cells[i]) continue; const r = Math.floor(i / T.nc), c = i % T.nc; out.push({ x: smTileCx(T, r, c), y: T.y0 + (r + 0.5) * T.ch, w: T.cw, h: T.ch, hp: T.hp[i] - 0.5, layer: T.layer }); k++; } }
+    return out; };
+  const pick = (L) => { if (good) { let b = null, bs = Infinity; for (const q of L) { const d = last ? Math.hypot(q.x - last.x, q.y - last.y) / W : 0, sc2 = q.layer * 10 + q.hp + d; if (sc2 < bs) { bs = sc2; b = q; } } return b; } return L[Math.floor(R() * L.length)]; };
+  const act = () => {
+    st.acts++;
+    if (!good && R() < o.swipeP) { // a swipe
+      const a = R() * TAU, len = W * (0.3 + R() * 0.4), x0 = W * (0.1 + R() * 0.8), y0 = smTop() + R() * (H - smTop() - 20), x1 = Math.max(0, Math.min(W, x0 + Math.cos(a) * len)), y1 = Math.max(smTop(), Math.min(H - 5, y0 + Math.sin(a) * len)), v = (0.8 + R() * 1.2) * sc;
+      st.swipes++; smSweep(x0, y0, x1, y1, Rf, smStrength(v), vt); return;
+    }
+    st.taps++; let x, y;
+    if (good || R() < o.aim) { const L = targets(), q = pick(L); if (!q) return; const j = good ? 0.1 : 0.55; x = q.x + (R() - 0.5) * q.w * j; y = q.y + (R() - 0.5) * q.h * j; last = q; }
+    else { for (let k = 0; k < 14; k++) { x = R() * W; y = smTop() + R() * (H - smTop()); if (!touching(x, y)) break; } st.aimedMiss++; }
+    smNewId(); if (!smPunch(x, y, Rf, 0, 0, smStrength(CONFIG.SMASH_TAP_V * sc), vt)) st.empty++;
+  };
+  if (o.noClock) smash.endAt = Infinity; // (measuring only: no fail)
+  performance.now = () => vt;
+  try {
+    while (vt - t0 < o.maxS * 1000) {
+      vt += dt;
+      if (smash.phase === 'play' && vt >= next) { act(); next = vt + (good ? 1000 / 5 : (1000 / o.rate) * (0.6 + R() * 0.8)); }
+      smashTick(vt, dt); for (let i = 0; i < 2; i++) M.Engine.update(engine, STEP); updateParticles(dt); if (rings.length > 20) rings.length = 0;
+      if (smash.phase === 'boom' || smash.phase === 'clear' || smash.over) break;
+    }
+  } finally { performance.now = realNow; }
+  const done = smash.phase === 'boom' || smash.phase === 'clear' || (smash.over && smash.result && smash.result.clear);
+  st.t = done ? Math.round((vt - t0) / 100) / 10 : null; st.failed = !!(smash.over && smash.result && !smash.result.clear); st.waveLog = smash.waveLog.slice(); st.hits = smash.hits; st.falls = smash.falls; st.missRate = st.taps ? Math.round((st.aimedMiss / st.taps) * 100) / 100 : 0; st.left = smash.run === 'stage' && smash.endAt !== Infinity ? Math.round((smash.endAt - vt) / 1000) : null;
+  const back = realNow.call(performance) - vt; for (const k of ['endAt', 'phaseAt', 'startAt', 'armAt', 'hairAt', 'strokeAt', 'overAt']) if (isFinite(smash[k])) smash[k] += back; // the virtual clock back to the real one
+  if (smash.banner) smash.banner.t += back; if (smash.tag) smash.tag.t += back; shake.t += back; for (const q of rings) q.t += back; for (const q of smash.objs) { q.hitAt += back; q.tremAt += back; q.fallAt += back; } for (const b of smash.pieces) b.plugin.born += back;
+  return st;
 }
 
 /* --- the Smash map: Free play on top, then the 20 stages in five scene groups (stars, locks) --- */
@@ -5831,7 +6076,6 @@ function smashWall(w, b, now) {
       let n = 0; for (const k of gc.over) { if (!k.alive) continue; n += breakBrick(w, k, b, tier, now); }
       strike.lastClip = { wall: w.id, n, open: gc.open }; g3Fx('hit', { x: b.x, y: b.y, z: w.z, kind, dent: false, destroyed: n, tier, sup: false });
       const sc = ballScreen(b), pts = scorePts(n * (steel ? 3 : 1)); strike.score += pts; strike.ui.scoreAt = now; track('brick', n); sfx('crack', 0.3); sfx('whoosh');
-      addFloater({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + pts, big: false, life: 1 });
       maybeCollapse(w, now); if (w.left <= 0) wallDown(w, now);
       return 'pass';
     }
@@ -5867,7 +6111,7 @@ function smashWall(w, b, now) {
   if (cracked && !glass) { const hp = Math.max(1, ...targets.filter((q) => q[0].alive).map((q) => q[0].hp)); sfx('armor', hp); } // a crack (an armored brick holding): a stony tock, lower the more it has left
   if (big) strike.superFlash = now; // (v5: the hit-stop is the juice's, scaled to the impact)
   if (!strike.extrasOff) juiceImpact(w, b, destroyed, fire ? 'fire' : tier, now, targets.map((q) => q[0]).filter((k) => !k.alive)); // hit-stop, shake, big chunks at the camera, the SUPER thump
-  if (destroyed) { addFloater({ x: sc.x, y: sc.y - sc.r - 6, text: '+' + scorePts(pts), big: false, life: 1 }); track('brick', destroyed); }
+  if (destroyed) track('brick', destroyed); // (no small '+n' pop per brick: clutter; the score shows on the card, WALL +n / PERFECT / combo stay)
   pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the combo
   maybeCollapse(w, now); strike.lastSmash.pts = strike.score - s0;
   if (w.left <= 0) wallDown(w, now); // wall down: bonus, chime; a fresh wall spawns beyond the far end (or behind the boss) and the queue slides forward
@@ -6029,7 +6273,6 @@ function bossHit(tier, bl, now) { // damage by tier: soft 1, medium 2, hard 4, S
   const dmg = BOSS_DMG[tier] || 1, { L, R, T, B } = corridor(), p = proj(bl.x, bl.y, b.z), pw = STRIKE_PW[tier] || 0;
   b.hp = Math.max(0, b.hp - dmg); b.hitAt = now; b.lastTier = tier; g3Fx('boss', { x: bl.x, y: bl.y, z: b.z, dmg, tier });
   const pts = scorePts(dmg * 5); strike.score += pts; strike.ui.scoreAt = now;
-  addFloater({ x: p.x, y: p.y - 20 * p.s, text: '+' + pts, big: tier === 'super', life: 1 });
   const cw = (R - L) / 8, ch = (B - T) / 8; // bits of brick fly off the face, more the harder the hit
   for (let i = 0; i < Math.min(12, 2 + dmg * 1.5); i++) {
     while (strike.debris.length >= CONFIG.STRIKE_MAX_DEBRIS) strike.debris.shift();
@@ -6097,7 +6340,6 @@ function strikeHit(b, now, force, tm) { // the palm meets the ball: power from t
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight };
   strike.ui.tierFlash = { t: now, tier, v, x: sc.x, y: sc.y, r: sc.r, val: meterPopVal(tier, v) }; // the small power arc pops up at the hit point
-  addFloater({ x: sc.x, y: sc.y - sc.r, text: '+' + pts, big: tier === 'super', life: 1 });
   slapFx(b, sc, pw); heatHit(tier, now); timingFx(tm, sc, now, false);
   if (tier === 'super' && runPowerOn('rp_split') && !b.guest && !b.split) splitBall(b, now); // v5: Split shot
   if (b.guest) guestHit(b, sc, now);
@@ -8691,6 +8933,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
     else if (kind === 'tnt') { f.type = 'lowpass'; f.frequency.setValueAtTime(2200, t0); f.frequency.exponentialRampToValueAtTime(90, t0 + 0.5); env(f, 0.25, 560, t0); noise(t0, 560, f); tone('sine', 120, 28, 0.25, 600, t0); tone('sawtooth', 90, 40, 0.06, 300, t0 + 0.02); tone('triangle', 3000, 500, 0.05, 150, t0); } // TNT: deeper and longer than a bomb
     else if (kind === 'ricochet') { f.type = 'bandpass'; f.frequency.setValueAtTime(3400, t0); f.frequency.exponentialRampToValueAtTime(900, t0 + 0.12); f.Q.value = 3; env(f, 0.08, 130, t0); noise(t0, 130, f); tone('sine', 2100, 700, 0.06, 140, t0); } // the ball glances off the corridor wall
     else if (kind === 'combo') { const n = arg || 2, f0 = 440 * Math.pow(1.19, n); tone('triangle', f0, 0, 0.1, 220, t0); tone('sine', f0 * 2, 0, 0.05, 260, t0 + 0.03); } // SUPER combo: a step up the scale per wall
+    else if (kind === 'smcrack') { const n = Math.max(0, Math.min(4, arg | 0)), f0 = [1500, 980, 760, 560, 400][n], a = n ? 1 : 0.35; tone('triangle', f0, f0 * 0.7, 0.12 * a, 90 + n * 25, t0); tone('sine', f0 * 0.28, f0 * 0.18, 0.12 * a, 110 + n * 30, t0); f.type = 'bandpass'; f.frequency.value = f0 * 2.2; f.Q.value = 1.4; env(f, 0.11 * a, 60 + n * 15, t0); noise(t0, 60 + n * 15, f); } // v3 Smash: a thing cracks: a knock, deeper with every hit (n: the crack's stage; 0 a faint creak)
     else if (kind === 'thud') { f.type = 'lowpass'; f.frequency.value = 240; env(f, 0.22, 90, t0); noise(t0, 90, f); tone('sine', 110, 45, 0.2, 140, t0); } // locked door rattles
     else if (kind === 'count') tone('sine', 1700 + Math.random() * 300, 0, 0.025, 28, t0); // one tick of the score counting up
     else if (kind === 'fanfare') { [523.25, 659.25, 783.99, 1046.5].forEach((q, i) => { tone('sine', q, 0, 0.08, 260 + i * 60, t0 + i * 0.09); tone('triangle', q / 2, 0, 0.025, 200, t0 + i * 0.09); }); } // new best: four rising notes
@@ -9549,6 +9792,7 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     smashClear: ['Kaboom!', 'All smashed!', 'Wow, smashed!'],
     smashScene: ['New place!', "What's next?", 'Look at this!'],
     smashHurry: ['Hurry up!', 'Quick, quick!', 'Almost time!'],
+    smashBoss: ['Boss time!', 'Big boss!', 'Smash the boss!'],
     record: ['New record!', 'Record!', 'Wow, a record!'], overheat: ['Too hot!', 'Cool it!', 'Easy now!'],
   },
   he: {
@@ -9567,6 +9811,7 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
     smashClear: ['בום טראח!', 'הכל מנופץ!', 'וואו, ניפצתם!'],
     smashScene: ['מקום חדש!', 'מה יש פה?', 'תראו את זה!'],
     smashHurry: ['מהר מהר!', 'זריזות!', 'עוד רגע נגמר!'],
+    smashBoss: ['זמן בוס!', 'בוס ענק!', 'נפצו את הבוס!'],
     record: ['שיא חדש!', 'שיא!', 'וואו, שיא!'], overheat: ['חם מדי!', 'תקררו!', 'לאט לאט!'],
   },
 };
@@ -10629,10 +10874,13 @@ window.__grasp = {
   // stage(n) / free() start a run as the map does; plan(n); openMap / closeMap; snd: the breaking sounds asked for ({ k: sfx kind, o: thing kind })
   sm: { scenes: SMASH_SCENES, N: SMASH_N, plan: smashPlan, starsFor: smashStarsFor, build(scene, v = 1) { smBuild(scene, v, 1, performance.now()); smash.phase = 'play'; smash.slide = 0; return smash.objs.length; },
     get meter() { return smMeter(); }, get disp() { return smDisp(); }, get objs() { return smash.objs; }, get tiles() { return smash.tiles; }, alive(kind) { return smash.objs.filter((o) => o.alive && (!kind || o.kind === kind)); },
-    kinds() { const k = {}; for (const o of smash.objs) k[o.kind] = (k[o.kind] || 0) + 1; return k; }, punch(x, y, k = 0.5) { smash.punchId++; return smPunch(x, y, CONFIG.FIST_RADIUS, 0, 0, k, performance.now()); }, sweep(x0, y0, x1, y1, k = 0.6) { return smSweep(x0, y0, x1, y1, CONFIG.FIST_RADIUS, k, performance.now()); },
+    kinds() { const k = {}; for (const o of smash.objs) k[o.kind] = (k[o.kind] || 0) + 1; return k; }, punch(x, y, k = 0.5) { smNewId(); return smPunch(x, y, CONFIG.FIST_RADIUS, 0, 0, k, performance.now()); }, sweep(x0, y0, x1, y1, k = 0.6) { return smSweep(x0, y0, x1, y1, CONFIG.FIST_RADIUS, k, performance.now()); },
     breakObj(o, k = 0.6) { if (o && o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, 0, k, performance.now()); return o && !o.alive; },
     breakTo(f) { const now = performance.now(); for (const T of smash.tiles) { if (smMeter() >= f) break; for (let i = 0; i < T.cells.length && smMeter() < f; i++) if (T.cells[i]) { const r = Math.floor(i / T.nc), c = i % T.nc; smTileKnock(T, i, r, c, 0, 0, 2, now, false); } }
       for (const o of smash.objs) { if (smMeter() >= f) break; if (o.alive) smBreak(o, o.body.position.x, o.body.position.y, 0, 0, 0.5, now); } return smMeter(); },
+    sim: smSim, get wave() { return smash.wave; }, get waves() { return smash.waves; }, get seg() { return smash.seg; }, get boss() { return smash.boss; }, get progress() { return smProgress(); }, get waveLog() { return smash.waveLog; }, get hits() { return smash.hits; }, get falls() { return smash.falls; }, crackLv: smCrackLv,
+    hit(o, k = 0.4) { smNewId(); smHit(o, o.body.position.x, o.body.position.y, 0, 0, k, performance.now()); return o.alive ? o.hp : 0; }, nextWave() { smash.meter = 1; smScrollStart(performance.now()); },
+    toBoss() { const now = performance.now(); smash.wave = smash.waves - 1; smScrollStart(now); }, win() { const now = performance.now(); if (smash.seg !== 'boss') { smash.wave = smash.waves - 1; smScrollStart(now); smash.phaseAt = now - CONFIG.SMASH_SCROLL_MS; smScrollTick(now); grippy.lastAt = -1e9; } const b = smash.boss; if (b && b.alive) { b.hp = 1; smNewId(); smHit(b, b.body.position.x, b.body.position.y, 0, 0, 0.3, now); } },
     stage: (n) => smashStageStart(n, 'mouse'), free: () => smashFreeStart('mouse'), openMap: (o) => openSmashMap(o || {}), closeMap: () => closeSmashMap(true), get mapOpen() { return smashMapOpen(); },
     get snd() { return smash.snd; }, get heard() { return smash.heard; }, get pieces() { return smash.pieces.length; }, get cap() { return smPieceCap(); }, get pool() { let n = 0; for (const l of smash.pool.values()) n += l.length; return n; }, get stars() { return { ...profile.smash.stars }; }, get unlocked() { return profile.smash.unlocked; }, get current() { return smashCurrent(); }, get total() { return smashStarTotal(); } },
   // meta progression: the profile, coins / XP, missions, the collection; setDate is test-only (it picks the mission day and survives a reload in the tab)

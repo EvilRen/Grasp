@@ -146,3 +146,28 @@ random choice between levels (roguelite boons, *Hades*).
 - *Run powers:* the clear card's Next shows 3 of 7 (Magnet paddle, Split shot, Shield, Fire start, Slow-mo start, Combo keeper, Extra
   heart) on the perk cards; tap or point-and-hold (20 s: the first). It lasts the next stage only (a fail keeps it for the retry); none after
   a boss stage (the map). A small badge by the HUD pill shows it. One stage keeps every pick fresh and the loop short: clear, pick, play.
+
+## Smash v3: toys that end fast get dropped (after a phone playtest)
+
+**Feedback:** "The fist wall-breaking game ends so fast, I finished every stage in one to two seconds. You know what kids do with toys that end so fast?"
+v2 was tuned with an auto-play bot, not a hand: one tap broke a thing, a swipe cleared a row of them (each frame of the swipe hit again), a broken
+shelf or a building's ground floor took everything above it down, and the meter filled in seconds.
+
+**What keeps a smashing toy alive:** resistance you can feel (cracks that grow, a deeper knock each hit, only the last hit pays off), a place that
+keeps going (*Smash Hit*, *Stack Ball*, endless runners: the scene moves on and you travel through it), rising tension (things ahead already
+creaking), and a climax (a boss with a health bar, phases, and a big victory moment).
+
+**Applied:**
+- *Tougher things:* 2-5 hits by size and material (glass and china 2, furniture 4, building floors 4-5, melons 5); cracks drawn over the thing
+  grow with each hit, it wobbles, the knock drops in pitch; bricks crack before they fall out.
+- *Weak chains:* a fall is one hit's worth and never ends a thing that was not cracked yet (a shelf drops its jars: they crack; already cracked
+  ones shatter); a building loses one floor, not all; debris never hurts. A swipe hits each thing it crosses once (no mass clear).
+- *Waves and travel:* a stage is 3-5 waves; at 85% of a wave the scene scrolls on (down the street, the next room, along the market, the next
+  wall) and the next part slides in, so the screen keeps filling. A thin track in the HUD shows how far through the scene you are, with the
+  boss's crown at its end.
+- *Tension:* the waves ahead arrive with hairline cracks and a tremble; during a wave untouched things start creaking by themselves.
+- *A boss at the end of every scene* (a treasure safe, a giant TV, a giant robot, a crowned block tower, a giant melon): 50-60 hp, harder hits
+  hurt more, cracks, then pieces fall off, then it shakes and glows; a big blast, confetti and the voice.
+- *Measured, not guessed:* a simulated child on a phone (3 taps a second, a third of them at empty spots, some swipes) takes ~65-130 s a stage
+  and ~90 s a free-play scene; a good player (5 accurate taps a second) about half that. Clocks are ~1.3x the child's time; ★★★ needs 40%
+  of the clock left (about the good player's pace).

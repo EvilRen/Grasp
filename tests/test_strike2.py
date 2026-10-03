@@ -180,7 +180,7 @@ async def main():
         check('minimal HUD: the streak counts (3) but no streak chip sits in the HUD row', sb['box'] is None and await page.evaluate(f"{S}.streak") == 3 and await page.evaluate(f"{S}.ui.hudParts.join()") == 'hearts,walls', sb)
         await page.evaluate(f"{S}.streak = 10"); s0 = await page.evaluate(f"{S}.score"); await hit(page, 640, 400)
         sc = await page.evaluate(f"({{ ds: {S}.score - {s0}, power: {S}.power, fl: {S}.floaters.map(f => f.text) }})")
-        check('streak 10: the combo x4 (a soft hit worth 1 scores 4)', sc['power'] == 'soft' and sc['ds'] == 4 and '+4' in sc['fl'], sc)
+        check('streak 10: the combo x4 (a soft hit worth 1 scores 4); no small "+4" pop on the hit (clutter)', sc['power'] == 'soft' and sc['ds'] == 4 and not any(re.match(r'^\+\d+$', f) for f in sc['fl']), sc)
         s0 = await page.evaluate(f"{S}.score"); await page.evaluate(f"{S}.setLevel(1); {S}.smashTest('soft')"); await page.wait_for_function(f"{S}.ball.dir === 1", timeout=4000); await page.evaluate("park()")
         check('the multiplier applies to bricks too (1 brick -> +4 at x4)', await page.evaluate(f"{S}.score") - s0 == 4)
         check('the combo caps at x8 (streak 11 -> x4, 21 -> x8, 40 -> x8)', await page.evaluate(f"{S}.streakMul") == 4 and await page.evaluate(f"(() => {{ const s = {S}, k = s.streak; s.streak = 21; const a = s.streakMul; s.streak = 40; const b = s.streakMul; s.streak = k; return a === 8 && b === 8; }})()"))

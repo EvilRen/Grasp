@@ -106,9 +106,9 @@ async def main():
         await page.evaluate("(() => { const c = __grasp.sm.alive('car')[0]; __grasp.sm.breakObj(c); })()"); await page.wait_for_function("__grasp.events.some(e => e[0] === 'car')", timeout=4000)
         pr = await page.evaluate(P + ".stats")
         check('smash: a car counts for the cars stat / mission (track(car))', pr['cars'] == 1 and pr['smashed'] >= 1, pr)
-        await page.evaluate("__grasp.sm.breakTo(0.95)"); await page.wait_for_function("__grasp.smash.phase !== 'play'", timeout=4000); await page.wait_for_timeout(300)
+        await page.evaluate("__grasp.sm.win()"); await page.wait_for_function("['clear', 'out', 'in'].includes(__grasp.smash.phase)", timeout=6000); await page.wait_for_timeout(1300)  # (v3: a scene ends when its boss goes down; the stats flush once a second)
         pr = await page.evaluate(P)
-        check('smash: a scene smashed in free play = +6 coins, 15 XP, the rounds stat; bricks / walls counted', pr['coins'] - c0 == 6 and pr['xp'] == 15 and pr['stats']['rounds'] == 1 and pr['stats']['bricks'] >= 1 and pr['stats']['walls'] >= 1, pr)
+        check('smash: a scene smashed in free play (its boss down) = +6 coins, 15 XP, the rounds stat; bricks / walls counted', pr['coins'] - c0 == 6 and pr['xp'] == 15 and pr['stats']['rounds'] == 1 and pr['stats']['bricks'] >= 1 and pr['stats']['walls'] >= 1, pr)
         check('smash coins: no page errors', not errs, errs); await ctx.close()
 
         # ---- coins per event: Strike ----

@@ -59,7 +59,7 @@ async def main():
         ctx, page, errs = await fresh(b)
         ln = await page.evaluate(G + ".lines")
         evs = await page.evaluate(G + ".events")
-        need = ['start', 'lastLife', 'boss', 'bossDown', 'newBest', 'levelUp', 'world', 'close', 'advClear', 'advPerfect', 'advFail', 'shapesLevel', 'smashClear', 'smashScene', 'smashHurry', 'record', 'overheat']  # (v4: a stage's NEW RECORD, the hand's first overheat)
+        need = ['start', 'lastLife', 'boss', 'bossDown', 'newBest', 'levelUp', 'world', 'close', 'advClear', 'advPerfect', 'advFail', 'shapesLevel', 'smashClear', 'smashScene', 'smashHurry', 'smashBoss', 'record', 'overheat']  # (v4: a stage's NEW RECORD, the hand's first overheat; Smash v3: a scene's boss rolls in)
         quiet = ['firstHit', 'combo', 'streak5', 'streak10', 'super', 'pu_fire', 'pu_multi', 'miss', 'mission', 'final', 'cow', 'monkey', 'chest', 'unlock', 'shapesMatch', 'tip_serve', 'tip_pu']
         check('Grippy speaks at the big moments only: exactly ' + ', '.join(need), sorted(evs) == sorted(need) and sorted(ln['he']) == sorted(need), evs)
         bad = [e + ':' + l for e in need for l in ('en', 'he') if len(ln[l][e]) < 3 or len(set(ln[l][e])) != len(ln[l][e]) or any(not (1 <= len(x.split()) <= 3) or len(x) > 16 for x in ln[l][e])]
