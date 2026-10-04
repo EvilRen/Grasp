@@ -1231,10 +1231,10 @@ const I18N = {
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
 Object.assign(I18N.en, {
   modeShapes: 'Shapes', gm_shapes: 'shapes',
-  descShapes: 'A shape sorter: bright shapes on a mat, a toy box with holes. Pinch a shape and drop it into the hole with the same outline: it clunks in and says its name. Later holes turn, the box rocks and the holes slide. No lives, no clock.',
+  descShapes: 'A shape sorter: bright shapes on a mat, a toy box with holes. Tap a shape, then tap the hole with the same outline (or drag it there): it clunks in and says its name. Later holes turn, the box rocks and the holes slide. No lives, no clock.',
   hintShapesCam: 'Pinch a shape, move it over the hole with the same outline and open your hand. Twist your pinched hand to turn it. Keep your hand inside the yellow box.',
-  hintShapesTouch: 'Drag a shape onto the hole with the same outline and let go. Turn it with two fingers.',
-  hintShapesMouse: 'Drag a shape onto the hole with the same outline and let go. Scroll the wheel to turn it. D for HUD.',
+  hintShapesTouch: 'Tap a shape, then tap its hole. Or drag it there: it turns itself to fit.', tipShapesTap: 'Tap a shape, then tap its hole!',
+  hintShapesMouse: 'Click a shape, then click its hole. Or drag it onto the hole and scroll the wheel to turn it. D for HUD.',
   hSort: 'Drag to its hole', hTwist: 'Twist to turn',
   shLevelDone: 'Level {n} done!', shLevels: 'levels', shStars: 'stars', shShapes: 'shapes', playAgainShapes: 'Pinch or tap to play again',
   ms_shapes: 'Sort {n} shapes', tm_shapes: '{n} more shapes for the mission', tm_shapes1: '1 more shape for the mission',
@@ -1243,10 +1243,10 @@ Object.assign(I18N.en, {
 });
 Object.assign(I18N.he, {
   modeShapes: 'צורות', gm_shapes: 'צורות',
-  descShapes: 'משחק התאמת צורות: צורות צבעוניות על שטיח וקופסת צעצוע עם חורים. צבטו צורה והפילו אותה לחור עם אותו קו מתאר: היא נופלת פנימה ואומרת את השם שלה. בהמשך החורים מסתובבים, הקופסה מתנדנדת והחורים זזים. בלי חיים, בלי שעון.',
+  descShapes: 'משחק התאמת צורות: צורות צבעוניות על שטיח וקופסת צעצוע עם חורים. הקישו על צורה ואז על החור עם אותו קו מתאר (או גררו אותה לשם): היא נופלת פנימה ואומרת את השם שלה. בהמשך החורים מסתובבים, הקופסה מתנדנדת והחורים זזים. בלי חיים, בלי שעון.',
   hintShapesCam: 'צבטו צורה, הזיזו אותה מעל החור עם אותו קו מתאר ופתחו את היד. סובבו את היד הצובטת כדי לסובב את הצורה. שמרו על היד בתוך המסגרת הצהובה.',
-  hintShapesTouch: 'גררו צורה אל החור עם אותו קו מתאר ושחררו. סובבו אותה בשתי אצבעות.',
-  hintShapesMouse: 'גררו צורה אל החור עם אותו קו מתאר ושחררו. גללו את הגלגלת כדי לסובב אותה. D למדדים.',
+  hintShapesTouch: 'הקישו על צורה ואז על החור שלה. או גררו אותה לשם: היא תסתובב לבד.', tipShapesTap: 'הקישו על צורה ואז על החור שלה!',
+  hintShapesMouse: 'לחצו על צורה ואז על החור שלה. או גררו אותה אל החור וגללו את הגלגלת כדי לסובב אותה. D למדדים.',
   hSort: 'גררו לחור שלה', hTwist: 'סובבו',
   shLevelDone: 'שלב {n} הושלם!', shLevels: 'שלבים', shStars: 'כוכבים', shShapes: 'צורות', playAgainShapes: 'צבטו או הקישו כדי לשחק שוב',
   ms_shapes: 'מיינו {n} צורות', tm_shapes: 'עוד {n} צורות למשימה', tm_shapes1: 'עוד צורה אחת למשימה',
@@ -1553,6 +1553,7 @@ canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
   if (e.button === 0 || e.pointerType === 'touch') ptr.downAt = performance.now(); // a tap shorter than a frame still counts as a press
+  if (gameMode === 'shapes') shapesPtrDown(e);
   if (e.pointerType === 'touch') { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); ptr.present = true; recomputeTouch(); return; }
   ptr.present = true; ptr.x = e.clientX; ptr.y = e.clientY;
   if (e.button === 2) ptr.point = true; else if (e.button === 0) ptr.pinch = true;
@@ -1560,11 +1561,13 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'mouse') return;
+  if (gameMode === 'shapes') shapesPtrMove(e);
   if (e.pointerType === 'touch') { if (ptr.touches.has(e.pointerId)) { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); recomputeTouch(); } return; }
   ptr.present = true; ptr.x = e.clientX; ptr.y = e.clientY;
 });
 const endPointer = (e) => {
   if (mode !== 'mouse') return;
+  if (gameMode === 'shapes') shapesPtrUp(e, e.type === 'pointercancel');
   if (e.pointerType === 'touch') { ptr.touches.delete(e.pointerId); ptr.lastUp = performance.now(); recomputeTouch(); return; }
   if (e.button === 2) ptr.point = false; else if (e.button === 0) ptr.pinch = false;
 };
@@ -5015,9 +5018,19 @@ const SHAPE_COLS = { circle: '#ff4f45', square: '#3b8cff', triangle: '#ffc93b', 
 const SHAPE_WARM = ['#ff4f45', '#ff6a3d', '#ff8a3a', '#ff5578', '#f2554b', '#ff7058']; // level 3: similar colours (match by the outline, not the colour)
 const SHAPE_BOXES = ['#e8413a', '#2f7cf6', '#f2a516', '#22a866', '#8a5cf0'];
 const SHAPE_SNAP = 25 * Math.PI / 180, SHAPE_CATCH = 0.45, SHAPES_DONE_MS = 2600, SHAPES_BANNER_MS = 1300;
+// Toddler play (a parent: "the drag is hard for my 2-year-old on the phone"). Tap a shape, then tap a hole: the shape is picked (it hops,
+// wiggles, glows, 'boop'; every free hole pulses, no hint which), then flies to the tapped hole on an arc (following it if the box moves),
+// turning itself to fit: the right hole = the usual drop + celebration, a wrong one = a boing and back home (no mistake counted).
+// A touch that moves < SHAPE_TAP_SLOP px counts as a tap; a second finger or a palm-sized contact makes it no tap. Mouse: click-click too.
+// Touch drags get help too (mouse drags stay exact for older kids): a generous grab radius, the shape held SHAPE_TOUCH_LIFT px above the
+// finger with a light smoothing, magnet holes (shapeMagnetR: pulled in + turned; let go inside = it drops in, at any angle), a release
+// close-ish to its own hole slides it in (shapeHelpR), a lifted finger has a short grace (longer at the screen edge) before it counts as
+// letting go, and a cancelled touch just settles the shape. The magnet / help radii shrink from level 4 and again from level 8.
+const SHAPE_TAP_SLOP = 20, SHAPE_TAP_MAX_MS = 2500, SHAPE_TOUCH_LIFT = 40, SHAPE_GRACE_MS = 120, SHAPE_EDGE_GRACE_MS = 700, SHAPE_PALM = 90;
 const shapes = { level: 1, spec: null, shapes: [], holes: [], held: null, box: null, mat: null, S: 40, phase: 'play', phaseAt: 0, levelStart: 0, mistakes: 0,
   levelsDone: 0, stars: 0, placedTotal: 0, result: null, over: false, overAt: 0, best: 0, prevBest: 0, clock: 0, boxAng: 0, slide: 0, lastGesture: 'none',
-  hoverHole: -1, hoverShape: -1, spoken: '', spokenLang: '', sounds: [], boxCol: SHAPE_BOXES[0], ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+  hoverHole: -1, hoverShape: -1, spoken: '', spokenLang: '', sounds: [], boxCol: SHAPE_BOXES[0], ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false, selFx: null, holePulse: 0 },
+  sel: -1, selAt: 0, press: null, taps: [], tapLog: [], assist: null, demo: null, magnet: -1 };
 function shapesSound(kind, arg) { shapes.sounds.push(kind); if (shapes.sounds.length > 40) shapes.sounds.shift(); sfx(kind, arg); }
 function shapeLevelSpec(n) { // what level n asks for
   const k = Math.max(0, n - 7);
@@ -5113,7 +5126,7 @@ function resetShapes() { // a new round from level 1
 }
 function buildShapesLevel(n, now) { // the shapes and holes of level n, laid out for this screen
   const sp = shapes.spec = shapeLevelSpec(n), r = Math.random;
-  shapes.level = n; shapes.held = null; shapes.mistakes = 0; shapes.levelStart = now; shapes.clock = 0; shapes.boxAng = shapes.slide = 0; shapes.hoverHole = shapes.hoverShape = -1;
+  shapes.level = n; shapes.held = null; shapes.sel = -1; shapes.taps.length = 0; shapes.magnet = -1; shapes.mistakes = 0; shapes.levelStart = now; shapes.clock = 0; shapes.boxAng = shapes.slide = 0; shapes.hoverHole = shapes.hoverShape = -1;
   shapes.boxCol = SHAPE_BOXES[(n - 1) % SHAPE_BOXES.length];
   let kinds;
   if (n === 1) kinds = ['circle', 'square', 'triangle'];
@@ -5166,7 +5179,7 @@ function updateShapeHoles() { // the holes' screen positions and angles, with th
 }
 function shapeAt(p) { // the topmost loose shape under a point (generous: a little outside its outline still counts)
   let best = -1, bd = Infinity;
-  shapes.shapes.forEach((s, i) => { if (s.placed) return; const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < shapes.S * 1.25 + 10 && d < bd + 1) { bd = d; best = i; } });
+  const R = shapeGrabR(); shapes.shapes.forEach((s, i) => { if (s.placed || (s.anim && s.anim.k === 'fly')) return; const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < R && d < bd + 1) { bd = d; best = i; } });
   return best;
 }
 function shapeHoleUnder(s) { // the hole a shape is over: the nearest free one of its kind within reach, else the nearest free one
@@ -5178,9 +5191,68 @@ function twoFingers() { return mode === 'mouse' && ptr.type === 'touch' && ptr.t
 function touchTwist() { const p = [...ptr.touches.values()]; return p.length >= 2 ? Math.atan2(p[1].y - p[0].y, p[1].x - p[0].x) : 0; }
 const wrapAng = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 function shapesGrab(i, now) {
-  const s = shapes.shapes[i]; s.anim = null; s.moved = true;
-  shapes.held = { i, s, ox: s.x - cursor.x, oy: s.y - cursor.y, roll: hand.roll, tw: touchTwist(), two: twoFingers(), t0: now, overSince: 0, overHole: -1 };
-  shapesSound('tick');
+  const s = shapes.shapes[i], a = s.anim, help = shapeAssist(), sx = a && a.k === 'back' ? s.hx : s.x, sy = a && a.k === 'back' ? s.hy : s.y; s.anim = null;
+  shapes.held = { i, s, ox: help ? 0 : s.x - cursor.x, oy: help ? -SHAPE_TOUCH_LIFT : s.y - cursor.y, roll: hand.roll, tw: touchTwist(), two: twoFingers(), t0: now, overSince: 0, overHole: -1,
+    sx, sy, sa: s.angle, moved0: !!s.moved, help, upAt: 0 }; // (sx / sy / sa: where it was, for a tap that only looked like a grab)
+  s.moved = true; shapesSound('tick');
+}
+// --- toddler help: tap-tap, the touch-drag assists (see SHAPE_TAP_SLOP) ---
+function shapeAssist() { return shapes.assist != null ? !!shapes.assist : mode === 'mouse' && ptr.type === 'touch'; } // touch drags get help; mouse / camera stay exact
+function shapeGrabR() { return shapeAssist() ? Math.max(shapes.S * 1.75, shapes.S * 1.25 + 10, 44) : shapes.S * 1.25 + 10; } // (a hit area >= 88 px across on a phone)
+function shapeMagnetR() { const n = shapes.level; return shapes.S * (n <= 3 ? 2.4 : n <= 7 ? 2.0 : 1.6); } // weaker magnets on the harder levels
+function shapeHelpR() { const n = shapes.level; return shapes.S * (n <= 3 ? 4.2 : n <= 7 ? 3.4 : 2.6); }
+function shapeFlying(j) { return shapes.shapes.some((s) => s.anim && s.anim.k === 'fly' && s.anim.j === j); }
+function shapeOwnHole(s, p) { // the nearest free hole of the shape's kind (to p, default the shape) and its distance
+  let j = -1, d = Infinity; p = p || s; shapes.holes.forEach((h, k) => { if (h.filled || shapeFlying(k) || h.kind !== s.kind) return; const q = Math.hypot(p.x - h.x, p.y - h.y); if (q < d) { d = q; j = k; } });
+  return { j, d };
+}
+function shapeHoleTapAt(p) { // a free hole under a tap: generous (>= 72 px across), the nearest wins
+  const R = Math.max(shapes.S * 1.35, 36); let j = -1, d = Infinity;
+  shapes.holes.forEach((h, k) => { if (h.filled || shapeFlying(k)) return; const q = Math.hypot(p.x - h.x, p.y - h.y); if (q < R && q < d) { d = q; j = k; } });
+  return j;
+}
+function shapesPtrDown(e) { // a press starts: a tap candidate until it moves SHAPE_TAP_SLOP px, a second finger lands, or it is palm-sized
+  const now = performance.now(), touch = e.pointerType === 'touch';
+  if (!touch && e.button !== 0) return;
+  shapes.demo = shapes.demo && { ...shapes.demo, end: shapes.demo.end || now };
+  const pr = shapes.press;
+  if (pr && pr.live) { pr.multi = true; return; } // a second finger (a twist) or a palm: no tap
+  const h = shapes.held, resume = !!(h && h.upAt); // a finger back down within the grace: carry on with the held shape (no tap)
+  if (resume && Math.hypot(e.clientX - h.s.x, e.clientY - (h.s.y - h.oy)) > shapes.S * 1.6 + SHAPE_TOUCH_LIFT) h.drop = true; // ...unless it is somewhere else: let the shape go first
+  shapes.press = { id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, maxD: 0, t0: now, live: true, touch, multi: resume, palm: touch && (e.width > SHAPE_PALM || e.height > SHAPE_PALM), cancel: false }; if (shapes.press.palm) shapes.press.multi = true;
+}
+function shapesPtrMove(e) { const pr = shapes.press; if (!pr || !pr.live || e.pointerId !== pr.id) return; pr.x = e.clientX; pr.y = e.clientY; pr.maxD = Math.max(pr.maxD, Math.hypot(pr.x - pr.x0, pr.y - pr.y0)); }
+function shapesPtrUp(e, cancel) {
+  const pr = shapes.press; if (!pr || !pr.live || e.pointerId !== pr.id) return;
+  const now = performance.now(); pr.live = false; pr.t1 = now; pr.cancel = !!cancel; pr.x = e.clientX || pr.x; pr.y = e.clientY || pr.y;
+  if (!cancel && !pr.multi && pr.maxD < SHAPE_TAP_SLOP && now - pr.t0 < SHAPE_TAP_MAX_MS) shapes.taps.push({ x: pr.x0, y: pr.y0, t: now });
+  else if (shapes.held && !cancel) { const ed = Math.min(pr.x, pr.y, W - pr.x, H - pr.y) <= 10; shapes.held.upAt = now; shapes.held.edge = ed; } // a real drag lifted: the grace starts
+  if (cancel && shapes.held) shapes.held.settle = true;
+}
+function shapesSelect(i, now) {
+  const s = shapes.shapes[i]; if (!s) return;
+  shapes.sel = i; shapes.selAt = now; s.selAt = now; shapesSound('boop');
+  shapes.tapLog.push({ k: 'select', i, t: now }); if (shapes.tapLog.length > 30) shapes.tapLog.shift();
+}
+function shapesDeselect(now, why) {
+  if (shapes.sel < 0) return; shapes.tapLog.push({ k: 'deselect', i: shapes.sel, why: why || 'tap', t: now }); if (shapes.tapLog.length > 30) shapes.tapLog.shift();
+  shapes.sel = -1; if (why !== 'drag' && why !== 'fly') shapesSound('tick');
+}
+function shapesFly(i, j, now, why) { // off to hole j on an arc (the hole's live position: it may rock / slide); the right hole turns it to fit on the way
+  const s = shapes.shapes[i], hl = shapes.holes[j]; if (!s || !hl) return;
+  const dist = Math.hypot(hl.x - s.x, hl.y - s.y);
+  if (shapes.sel >= 0) shapesDeselect(now, 'fly');
+  s.anim = { k: 'fly', t0: now, x0: s.x, y0: s.y, a0: s.angle, j, ok: hl.kind === s.kind, why: why || 'tap', dur: Math.max(450, Math.min(820, 360 + dist * 0.9)), arc: Math.min(shapes.S * 2.2, 30 + dist * 0.3) };
+  s.moved = true; shapesSound('whoosh');
+  shapes.tapLog.push({ k: 'fly', i, j, ok: s.anim.ok, why: s.anim.why, t: now }); if (shapes.tapLog.length > 30) shapes.tapLog.shift();
+}
+function shapesTap(tp, now) { // a tap (a press that barely moved): pick / switch / drop the pick, or send the picked shape to the tapped hole
+  const h = shapes.held;
+  if (h) { shapes.held = null; const s = h.s; s.x = h.sx; s.y = h.sy; s.angle = h.sa; s.moved = h.moved0; } // the press grabbed it: undo (it was a tap)
+  if (shapes.phase !== 'play') return;
+  const i = shapeAt(tp);
+  if (i >= 0) { if (shapes.sel === i) shapesDeselect(now, 'again'); else shapesSelect(i, now); return; }
+  if (shapes.sel >= 0) { const j = shapeHoleTapAt(tp); if (j >= 0) shapesFly(shapes.sel, j, now, 'tap'); else shapesDeselect(now, 'elsewhere'); }
 }
 function shapesRotate(s, d) { s.angle = wrapAng(s.angle + d); }
 function shapesWheel(dy) { // the mouse wheel turns the held shape (or the one under the cursor): 15° a notch
@@ -5189,8 +5261,18 @@ function shapesWheel(dy) { // the mouse wheel turns the held shape (or the one u
   const d = Math.max(-2, Math.min(2, dy / 100)) * (15 * Math.PI / 180); shapesRotate(s, d); s.turnedAt = performance.now();
 }
 function shapesRelease(now, home) { // let go: into the hole (it fits), back home (the wrong hole / the lid), or it stays where it is on the mat
-  const h = shapes.held; if (!h) return; shapes.held = null; const s = h.s;
+  const h = shapes.held; if (!h) return; shapes.held = null; shapes.magnet = -1; const s = h.s;
   if (home) return shapeGoHome(s, now, false);
+  if (h.settle) { // a cancelled touch: no hole judged; it stays on the mat (or slides home from the lid)
+    const m = shapes.mat, S = shapes.S, onMat = m && s.y < m.y + m.h; if (!onMat) return shapeGoHome(s, now, false);
+    s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.y + S, s.y)); if (s.hx !== s.x || s.hy !== s.y) shapeGoHome(s, now, false); return;
+  }
+  if (h.help) { // touch: the magnet zone drops it in at any angle; over another hole = the usual boing; close-ish to its own hole = it slides in
+    const ju = shapeHoleUnder(s), own = shapeOwnHole(s), fin = shapeOwnHole(s, cursor), d = Math.min(own.d, fin.j === own.j ? fin.d : Infinity);
+    const wrong = ju >= 0 && shapes.holes[ju].kind !== s.kind;
+    if (!wrong && own.j >= 0 && d <= shapeMagnetR()) return placeShape(s, own.j, shapeAngDiff(s.angle, shapes.holes[own.j].wa, SHAPE_SYM[s.kind]), now);
+    if (!wrong && own.j >= 0 && own.d <= shapeHelpR()) return shapesFly(shapes.shapes.indexOf(s), own.j, now, 'help');
+  }
   const j = shapeHoleUnder(s);
   if (j >= 0) {
     const hl = shapes.holes[j], d = shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]);
@@ -5235,8 +5317,8 @@ function shapesHome() { // the toolbar's Home in a Shapes round: the card first,
   shapesFinish(performance.now()); return true;
 }
 function shapesTick(now, dt) {
-  if (shapes.over) { shapes.held = null; endCardTick(now); return; }
-  if (pause.on) { if (shapes.held) shapesRelease(now, true); shapes.phaseAt += dt; shapes.levelStart += dt; for (const s of shapes.shapes) if (s.anim) s.anim.t0 += dt; return; } // the hand is gone (or the pause sheet): the shape goes home, nothing moves, the clocks wait
+  if (shapes.over) { shapes.held = null; shapes.sel = -1; shapes.taps.length = 0; endCardTick(now); return; }
+  if (pause.on) { shapes.taps.length = 0; if (shapes.held) shapesRelease(now, true); shapes.phaseAt += dt; shapes.levelStart += dt; for (const s of shapes.shapes) if (s.anim) s.anim.t0 += dt; return; } // the hand is gone (or the pause sheet): the shape goes home, nothing moves, the clocks wait
   const sp = shapes.spec, play = shapes.phase === 'play';
   if (play) shapes.clock += dt;
   shapes.boxAng = shapes.box && shapes.box.rock ? shapes.box.rock * Math.sin(shapes.clock * sp.rockW) : 0;
@@ -5244,14 +5326,29 @@ function shapesTick(now, dt) {
   updateShapeHoles();
   if (shapes.phase === 'done' && now - shapes.phaseAt >= SHAPES_DONE_MS) { buildShapesLevel(shapes.level + 1, now); shapes.phase = 'banner'; shapes.phaseAt = now; sfx('whoosh'); }
   else if (shapes.phase === 'banner' && now - shapes.phaseAt >= SHAPES_BANNER_MS) { shapes.phase = 'play'; shapes.levelStart = now; }
-  const holding = gesture === 'pinch' || (shapes.held && twoFingers());
+  while (shapes.taps.length) shapesTap(shapes.taps.shift(), now); // taps first (a tap's press may have grabbed: undone there)
+  if (mode === 'mouse' && play && !shapes.demo && !profileTip('shapesTap') && tipOnce('shapesTap')) shapes.demo = { t0: now, end: 0 }; // first play: the tip + a finger demo
+  if (shapes.sel >= 0 && (!play || !shapes.shapes[shapes.sel] || shapes.shapes[shapes.sel].placed || (shapes.shapes[shapes.sel].anim && shapes.shapes[shapes.sel].anim.k !== 'back'))) shapes.sel = -1;
+  const pr = shapes.press;
+  let holding = gesture === 'pinch' || (shapes.held && twoFingers());
   const h = shapes.held;
+  if (h && pr && pr.live && !h.drop) h.upAt = 0; // a finger (back) down
+  const grace = !!(h && h.help && h.upAt && !h.drop && !h.settle && now - h.upAt < (h.edge ? SHAPE_EDGE_GRACE_MS : SHAPE_GRACE_MS)); // a lifted finger: a moment before it counts as letting go
+  if (grace) holding = true;
+  if (h && (h.drop || h.settle)) holding = false;
+  if (h && pr && pr.maxD >= SHAPE_TAP_SLOP && shapes.sel >= 0) shapesDeselect(now, 'drag'); // a real drag: the pick is dropped
   if (h) {
     const s = h.s;
-    if (!holding || !cursor.present || !play) shapesRelease(now, !play);
+    if (!holding || (!cursor.present && !grace) || !play) shapesRelease(now, !play);
+    else if (grace) { /* the shape waits where it is */ }
     else {
       const two = twoFingers();
       if (two) { const tw = touchTwist(); if (h.two) shapesRotate(s, wrapAng(tw - h.tw)); h.tw = tw; } // two fingers: twist to turn (the shape stays put)
+      else if (h.help) { // touch help: held above the finger, smoothed, pulled in (and turned) by its own hole's magnet
+        const tx = cursor.x + h.ox, ty = cursor.y + h.oy, own = shapeOwnHole(s, { x: tx, y: ty }), R = shapeMagnetR(); let ax = tx, ay = ty; shapes.magnet = -1;
+        if (own.j >= 0 && own.d < R) { const hl = shapes.holes[own.j], w = 0.35 + 0.55 * (1 - own.d / R); ax = tx + (hl.x - tx) * w; ay = ty + (hl.y - ty) * w; shapes.magnet = own.j; s.angle -= shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]) * Math.min(1, dt / 160); }
+        const k = 1 - Math.exp(-dt / 55); s.x += (ax - s.x) * k; s.y += (ay - s.y) * k; s.x = Math.min(W - 8, Math.max(8, s.x)); s.y = Math.min(H - 8, Math.max(8, s.y));
+      }
       else {
         if (h.two) { h.ox = s.x - cursor.x; h.oy = s.y - cursor.y; } // back to one finger: carry on from here
         if (mode === 'camera') { h.ox *= Math.pow(0.992, dt); h.oy *= Math.pow(0.992, dt); if (Number.isFinite(hand.roll) && Number.isFinite(h.roll)) shapesRotate(s, wrapAng(hand.roll - h.roll)); h.roll = hand.roll; } // pinch-twist; the grab point drifts to the pinch
@@ -5268,15 +5365,28 @@ function shapesTick(now, dt) {
     }
   } else {
     shapes.hoverHole = -1;
-    if (gesture === 'pinch' && shapes.lastGesture !== 'pinch' && cursor.present && play) { const i = shapeAt(cursor); if (i >= 0) shapesGrab(i, now); }
+    shapes.magnet = -1;
+    if (gesture === 'pinch' && shapes.lastGesture !== 'pinch' && cursor.present && play && (mode !== 'mouse' || (pr && pr.live && !pr.palm))) { const i = shapeAt(mode === 'mouse' ? { x: pr.x0, y: pr.y0 } : cursor); if (i >= 0) shapesGrab(i, now); } // (mouse / touch: only a press still down; a palm grabs nothing)
   }
   shapes.lastGesture = gesture;
   shapes.hoverShape = !shapes.held && cursor.present && gesture !== 'pinch' ? shapeAt(cursor) : -1;
   for (const s of shapes.shapes) { // the drop and go-home animations
     const a = s.anim; if (!a) { s.lift += ((shapes.held && shapes.held.s === s ? 1 : 0) - s.lift) * Math.min(1, dt / 70); continue; }
     s.lift += (0 - s.lift) * Math.min(1, dt / 90);
+    if (a.k === 'fly') { // tap-tap (or a touch release close to its hole): an arc to the hole's live position
+      const hl = shapes.holes[a.j], k = Math.min(1, (now - a.t0) / a.dur), e = k < 0.5 ? 2 * k * k : 1 - 2 * (1 - k) * (1 - k);
+      s.x = a.x0 + (hl.x - a.x0) * e; s.y = a.y0 + (hl.y - a.y0) * e - Math.sin(Math.PI * k) * a.arc;
+      if (a.ok) s.angle = a.a0 - shapeAngDiff(a.a0, hl.wa, SHAPE_SYM[s.kind]) * e;
+      if (k >= 1) {
+        s.anim = null; s.x = hl.x; s.y = hl.y;
+        if (a.ok && !hl.filled) placeShape(s, a.j, shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]), now);
+        else { shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3); shapeGoHome(s, now, true); } // the wrong hole: it bounces off and flies home (no mistake)
+      }
+      continue;
+    }
     if (a.k === 'back') { const k = Math.min(1, (now - a.t0) / 480), e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); s.x = a.x0 + (s.hx - a.x0) * e; s.y = a.y0 + (s.hy - a.y0) * e - (a.bounce ? Math.sin(Math.PI * k) * shapes.S * 1.4 : 0); if (k >= 1) { s.anim = null; s.x = s.hx; s.y = s.hy; } }
   }
+  shapes.shapes.forEach((s, i) => { s.selK = (s.selK || 0) + ((shapes.sel === i ? 1 : 0) - (s.selK || 0)) * Math.min(1, dt / 90); }); // the pick's glow / lift eases in and out
   if (play && shapes.shapes.length && shapes.shapes.every((s) => s.placed) && shapes.shapes.every((s) => !s.anim || now - s.anim.t0 > 420)) shapesLevelDone(now);
 }
 function drawShapeHud(now) { // 'Level N' and a pip per shape (filled once sorted), under the toolbar
@@ -5291,11 +5401,15 @@ function renderShapes(now) {
   const ms = shapeMatSprite(m.w, m.h); blit(ms, m.x, m.y);
   drawShadow(b.x + 6, b.y + b.h / 2 + b.depth + 2, b.w * 1.05, Math.max(26, b.h * 0.22), 0.5);
   blit(shapeBoxSprite(b.w, b.h, b.depth, shapes.boxCol), b.x, b.y, shapes.boxAng);
-  const held = shapes.held && shapes.held.s;
+  const held = shapes.held && shapes.held.s; let pulses = 0;
   shapes.holes.forEach((h, j) => {
     blit(holeSprite(h.kind, S, shapes.boxCol), h.x, h.y, h.wa);
     if (h.filled) { const s = shapes.shapes.find((q) => q.hole === j); if (s && !s.anim) { blit(shapeSprite(s.kind, s.color, S), h.x, h.y, h.wa, 0.9, 0.42); } } // sorted: its colour peeks out of the hole
-    if (held && j === shapes.hoverHole) { // a soft glow on the hole under the held shape: gold for its own hole, faint for another
+    if (shapes.sel >= 0 && !h.filled && !shapeFlying(j)) { // a shape is picked: every free hole pulses softly (an invitation to tap; no hint which)
+      const q = 0.5 + 0.5 * Math.sin(now / 260 + j * 0.9); pulses++;
+      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * (1.2 + 0.1 * q)); ctx.lineWidth = 4 + 3 * q; ctx.strokeStyle = 'rgba(255,244,214,' + (0.35 + 0.4 * q).toFixed(3) + ')'; ctx.stroke(); ctx.restore();
+    }
+    if (held && (j === shapes.hoverHole || j === shapes.magnet)) { // a soft glow on the hole under the held shape: gold for its own hole, faint for another
       resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * 1.2); ctx.lineWidth = 4; ctx.strokeStyle = h.kind === held.kind ? 'rgba(255,214,120,' + (0.6 + 0.3 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(241,233,218,0.25)'; ctx.stroke(); ctx.restore();
     }
   });
@@ -5305,12 +5419,22 @@ function renderShapes(now) {
     s.x = a.x0 + (hl.x - a.x0) * k1; s.y = a.y0 + (hl.y - a.y0) * k1; s.angle = a.a0 - shapeAngDiff(a.a0, hl.wa, SHAPE_SYM[s.kind]) * k1; // (turns the short way to the hole's angle, which may be rocking)
     blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, 1.1 - 0.12 * k1 - 0.35 * k2, 1 - 0.58 * k2);
   }
-  const order = shapes.shapes.filter((s) => !s.placed && s !== held);
+  shapes.ui.holePulse = pulses; shapes.ui.selFx = null;
+  const flyK = (s) => s.anim && s.anim.k === 'fly' ? 1 : 0, order = shapes.shapes.filter((s) => !s.placed && s !== held).sort((a, b) => flyK(a) - flyK(b)); // flying shapes on top
   for (const s of order) {
     const pop = Math.min(1, Math.max(0, (now - s.born) / 320)), k = pop < 1 ? (pop <= 0 ? 0 : 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2)) : 1; if (k <= 0) continue;
-    const hov = shapes.hoverShape >= 0 && shapes.shapes[shapes.hoverShape] === s, air = s.anim ? 0.6 : 0;
-    drawShadow(s.x + 3 + air * 6, s.y + S * 0.9 + air * 8, S * 2.2, S * 0.7, 0.35 + air * 0.15);
-    blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, k * (hov ? 1.04 : 1) * (1 + 0.1 * s.lift));
+    const hov = shapes.hoverShape >= 0 && shapes.shapes[shapes.hoverShape] === s, fly = s.anim && s.anim.k === 'fly', air = fly ? 1 : s.anim ? 0.6 : 0;
+    const fk = fly ? Math.min(1, (now - s.anim.t0) / s.anim.dur) : 0, sk = s.selK || 0, picked = shapes.shapes.indexOf(s) === shapes.sel;
+    let dy = 0, wig = 0, sc = k * (hov ? 1.04 : 1) * (1 + 0.1 * s.lift) * (1 + 0.15 * Math.sin(Math.PI * fk));
+    if (sk > 0.01 || picked) { // picked by a tap: a hop, a wiggle, a gold glow, then it hovers a little above its spot, bobbing
+      const ts = now - (s.selAt || 0), hop = picked && ts < 380 ? Math.sin(Math.PI * ts / 380) * S * 0.6 : 0;
+      dy = -(hop + sk * (S * 0.2 + Math.sin(now / 260) * S * 0.05)); wig = (picked ? Math.sin(ts / 55) * 0.2 * Math.max(0, 1 - ts / 700) : 0) + Math.sin(now / 300) * 0.05 * sk; sc *= 1 + 0.12 * sk;
+      const glow = sk * (0.55 + 0.25 * Math.sin(now / 150));
+      resetView(); ctx.save(); ctx.translate(s.x, s.y + dy); ctx.rotate(s.angle + wig); ctx.shadowColor = 'rgba(255,214,120,0.9)'; ctx.shadowBlur = 22 * sk; shapePath(ctx, s.kind, S * 1.12 * sc); ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(255,214,120,' + glow.toFixed(3) + ')'; ctx.stroke(); ctx.restore();
+      if (picked) shapes.ui.selFx = { i: shapes.sel, dy, hop, wig, glow, scale: sc, sk };
+    }
+    drawShadow(s.x + 3 + air * 6 - dy * 0.1, s.y + S * 0.9 + air * 8 + (fly ? Math.sin(Math.PI * fk) * s.anim.arc : 0), S * 2.2, S * 0.7, (0.35 + air * 0.15) * (dy ? 0.75 : 1));
+    blit(shapeSprite(s.kind, s.color, S), s.x, s.y + dy, s.angle + wig, sc);
   }
   if (held) { // lifted: bigger, a shadow further below
     const s = held, l = Math.max(0.2, s.lift);
@@ -5318,12 +5442,29 @@ function renderShapes(now) {
     blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, 1 + 0.1 * l);
   }
   drawParticles(); drawRings(now);
+  drawShapeDemo(now);
   drawShapeHud(now);
   if (shapes.phase === 'done' && shapes.result) drawShapesResult(now);
   if (shapes.phase === 'banner') { const k = (now - shapes.phaseAt) / SHAPES_BANNER_MS, pop = Math.min(1, k / 0.25), a = k < 0.8 ? 1 : Math.max(0, 1 - (k - 0.8) / 0.2); blit(textSprite(t('levelN', { n: shapes.level }), 48, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, m.y + m.h * 0.5, 0, 0.6 + 0.4 * ease(pop), a); }
   drawCoinPill(now);
   if (shapes.over) drawEndCard(now, shapes, { score: shapes.levelsDone, best: shapes.best, bestText: t('levelBest', { n: shapes.best }), stats: [[shapes.levelsDone, 'shLevels'], [shapes.stars, 'shStars'], [shapes.placedTotal, 'shShapes']], again: 'playAgainShapes' });
   else drawCursor(now);
+}
+function drawShapeDemo(now) { // first play: a finger taps a shape, then its hole (twice, or until the first touch)
+  const d = shapes.demo; if (!d || shapes.phase !== 'play') return;
+  const CYC = 3000, el = now - d.t0, fade = d.end ? Math.max(0, 1 - (now - d.end) / 300) : Math.min(1, el / 300) * Math.max(0, Math.min(1, (2 * CYC - el) / 300));
+  shapes.ui.demo = fade > 0 ? { on: true, k: (el % CYC) / CYC } : null; if (fade <= 0) return;
+  const s = shapes.shapes.find((q) => !q.placed && !q.anim); if (!s) return; const hl = shapes.holes.find((q) => !q.filled && q.kind === s.kind); if (!hl) return;
+  const q = (el % CYC) / CYC, rest = { x: W * 0.5, y: shapes.mat.y + shapes.mat.h * 0.9 }, lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * ease(t), y: a.y + (b.y - a.y) * ease(t) });
+  const p = q < 0.25 ? lerp(rest, s, q / 0.25) : q < 0.42 ? { x: s.x, y: s.y } : q < 0.72 ? lerp(s, hl, (q - 0.42) / 0.3) : q < 0.9 ? { x: hl.x, y: hl.y } : lerp(hl, rest, (q - 0.9) / 0.1);
+  const tapAt = q >= 0.25 && q < 0.42 ? (q - 0.25) / 0.17 : q >= 0.72 && q < 0.9 ? (q - 0.72) / 0.18 : -1, press = tapAt >= 0 && tapAt < 0.35 ? 1 : 0;
+  resetView(); ctx.save(); ctx.globalAlpha = fade;
+  if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, 12 + tapAt * 34, 0, TAU); ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,248,236,' + (0.8 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
+  ctx.translate(p.x + 6, p.y + 6 + press * 4); ctx.rotate(-0.35); const fw = 22, fl = 64; // a cartoon finger: the tip at the point, the hand below
+  ctx.beginPath(); ctx.roundRect(-fw / 2, 0, fw, fl, fw / 2); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#7a4a2a'; ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(-fw / 2 + 4, 4, fw - 8, 12, 5); ctx.fillStyle = '#fff1e6'; ctx.fill();
+  ctx.beginPath(); ctx.roundRect(-fw / 2 - 6, fl - 14, fw + 34, 46, 18); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.stroke();
+  ctx.restore();
 }
 function drawShapesResult(now) { // a glass card over the mat: 'Level N done!', 1-3 stars popping in one by one, the coins
   const r = shapes.result, m = shapes.mat, k = Math.min(1, (now - r.t) / 300), out = Math.max(0, Math.min(1, (SHAPES_DONE_MS - (now - r.t)) / 250));
@@ -9339,6 +9480,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
     }
     else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'boop') { tone('sine', 420, 780, 0.15, 120, t0); tone('sine', 780, 1040, 0.07, 110, t0 + 0.07); } // Shapes: a shape picked by a tap: a cute rising 'boop'
     else if (kind === 'clink') { [1900, 2650, 3500].forEach((q, i) => tone('sine', q * (0.96 + Math.random() * 0.08), 0, [0.11, 0.06, 0.04][i], 220 - i * 40, t0 + i * 0.02)); f.type = 'highpass'; f.frequency.value = 2400; env(f, 0.08, 70, t0); noise(t0, 70, f); } // Smash: china breaking (plates, cups, vases)
     else if (kind === 'spark') { f.type = 'highpass'; f.frequency.value = 2600; env(f, 0.13, 260, t0); noise(t0, 260, f); tone('sawtooth', 2400, 500, 0.05, 180, t0); tone('square', 1200, 300, 0.035, 90, t0 + 0.12); tone('sine', 150, 55, 0.18, 160, t0); } // a TV going bzzt-pop
     else if (kind === 'pop') { f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = 0.9; env(f, 0.22, 50, t0); noise(t0, 50, f); tone('sine', 700, 180, 0.12, 70, t0); } // a balloon / a bulb
@@ -10316,7 +10458,7 @@ function grippySay(ev, vars, now = performance.now()) { // a spoken line for an 
   grippy.said.push(grippy.last); if (grippy.said.length > 40) grippy.said.shift();
   return true;
 }
-const TIP_KEYS = { flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest', heat: 'tipHeat', weak: 'tipWeak', turret: 'tipTurret' };
+const TIP_KEYS = { shapesTap: 'tipShapesTap', flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest', heat: 'tipHeat', weak: 'tipWeak', turret: 'tipTurret' };
 function profileTip(id) { return (profile.tips || []).includes(id); }
 function tipOnce(id) { // onboarding: a thing explained the first time it shows up on this profile (once ever), as the hint toast; the serve is the mode's own start hint
   if (profileTip(id)) return false;
@@ -11413,7 +11555,11 @@ window.__grasp = {
   // Shapes: the level, the shapes (kind, colour, x / y, angle, size, placed) and holes (kind, x / y, angle on screen, size, filled), the held shape's index (-1: none),
   // placeTest(i): shape i straight onto its hole at the hole's angle, then let go; spoken: the last shape name said; setLevel(n): level n now (test-only)
   shapes: { get level() { return shapes.level; }, get phase() { return shapes.phase; }, get held() { return shapes.held ? shapes.shapes.indexOf(shapes.held.s) : -1; },
-    get shapes() { return shapes.shapes.map((s) => { const h = s.placed ? shapes.holes[s.hole] : null; return { kind: s.kind, color: s.color, x: h ? h.x : s.x, y: h ? h.y : s.y, angle: s.angle, size: 2 * shapes.S, placed: s.placed, anim: s.anim ? s.anim.k : null, hole: shapes.holes.findIndex((q) => !q.filled && q.kind === s.kind) }; }); },
+    get shapes() { return shapes.shapes.map((s) => { const h = s.placed ? shapes.holes[s.hole] : null; return { kind: s.kind, color: s.color, x: h ? h.x : s.x, y: h ? h.y : s.y, angle: s.angle, size: 2 * shapes.S, placed: s.placed, anim: s.anim ? s.anim.k : null, hole: shapes.holes.findIndex((q) => !q.filled && q.kind === s.kind), hx: s.hx, hy: s.hy, selected: shapes.shapes.indexOf(s) === shapes.sel, selK: s.selK || 0, flyTo: s.anim && s.anim.k === 'fly' ? s.anim.j : -1 }; }); },
+    // toddler help: the tap pick (-1: none), the last press, the tap log (select / deselect / fly), the magnet hole while dragging, the assist override (null: touch only), the radii
+    get sel() { return shapes.sel; }, get press() { return shapes.press && { ...shapes.press }; }, get tapLog() { return shapes.tapLog; }, get magnet() { return shapes.magnet; }, get demo() { return shapes.demo; },
+    get assist() { return shapeAssist(); }, set assist(v) { shapes.assist = v; }, get grabR() { return shapeGrabR(); }, get magnetR() { return shapeMagnetR(); }, get helpR() { return shapeHelpR(); }, get heldInfo() { const h = shapes.held; return h && { i: shapes.shapes.indexOf(h.s), help: h.help, ox: h.ox, oy: h.oy, upAt: h.upAt, edge: !!h.edge }; },
+    slop: SHAPE_TAP_SLOP, lift: SHAPE_TOUCH_LIFT,
     get holes() { return shapes.holes.map((h) => ({ kind: h.kind, x: h.x, y: h.y, angle: h.wa, size: 2 * shapes.S, filled: h.filled })); },
     get spoken() { return shapes.spoken; }, get spokenLang() { return shapes.spokenLang; }, get sounds() { return shapes.sounds; }, get result() { return shapes.result; }, get over() { return shapes.over; },
     get stars() { return shapes.stars; }, get levelsDone() { return shapes.levelsDone; }, get mistakes() { return shapes.mistakes; }, get best() { return shapes.best; }, get spec() { return shapes.spec; },
