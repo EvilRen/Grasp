@@ -140,15 +140,18 @@ async def tap_tests(b, he):
     await page.wait_for_timeout(250); await page.screenshot(path=f'tests/out/shapes_tap_placed_{tag}.png')
     if not he:
         # a real drag still drags (touch): picked nothing, the shape moved with the finger and stays where it was let go on the mat
-        st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, mat: {S}.mat }})")
+        st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, mat: {S}.mat }})"); LIFT = await page.evaluate(f"{S}.lift")  # (40 px x the shapes' size boost)
         i1 = next(i for i, s in enumerate(st['shapes']) if not s['placed']); s1 = st['shapes'][i1]
-        tx = s1['x'] + (70 if s1['x'] < 180 else -70)
-        await fdrag(page, s1['x'], s1['y'], tx, s1['y'] + 6, up=False)
+        # (big shapes: the release help reaches 4.2 S from its hole, most of the mat; drop it at the mat spot farthest from its hole)
+        HR = await page.evaluate(f"{S}.helpR"); S1 = s1['size'] / 2; m = st['mat']; own = next(h for h in st['holes'] if h['kind'] == s1['kind'])
+        tx, ty = max(((m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10, m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6) for gx in range(11) for gy in range(7) if math.hypot(m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10 - s1['x'], m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6 - s1['y']) > 60),
+                     key=lambda p: math.hypot(p[0] - own['x'], p[1] - own['y']))
+        await fdrag(page, s1['x'], s1['y'] + LIFT, tx, ty + LIFT, up=False)
         mid = await page.evaluate(f"({{ held: {S}.held, s: {S}.shapes[{i1}], info: {S}.heldInfo }})")
-        check('phone: a real drag (70 px) drags: held, the shape sits ~40 px above the finger', mid['held'] == i1 and abs(mid['s']['x'] - tx) < 4 and abs(mid['s']['y'] - (s1['y'] + 6 - 40)) < 4 and mid['info']['help'], mid)
-        await page.evaluate(f"fing('pointerup', 1, {tx}, {s1['y'] + 6})"); await page.wait_for_timeout(400)
+        check(f'phone: a real drag drags: held, the shape sits ~lift ({LIFT:.0f}) px above the finger', mid['held'] == i1 and abs(mid['s']['x'] - tx) < 4 and abs(mid['s']['y'] - ty) < 4 and mid['info']['help'], mid)
+        await page.evaluate(f"fing('pointerup', 1, {tx}, {ty + LIFT})"); await page.wait_for_timeout(400)
         r = await page.evaluate(f"({{ sel: {S}.sel, s: {S}.shapes[{i1}], held: {S}.held }})")
-        check('phone: ...let go on the mat: no pick, it stays where it was dropped (no fly-back)', r['sel'] == -1 and r['held'] == -1 and not r['s']['placed'] and r['s']['anim'] is None and abs(r['s']['x'] - tx) < 4 and abs(r['s']['hx'] - r['s']['x']) < 1, r)
+        check(f'phone: ...let go on the mat ({math.hypot(tx - own["x"], ty - own["y"]):.0f} px from its hole, help reach {HR:.0f}): no pick, it stays where it was dropped (no fly-back)', math.hypot(tx - own['x'], ty - own['y']) > HR and r['sel'] == -1 and r['held'] == -1 and not r['s']['placed'] and r['s']['anim'] is None and abs(r['s']['x'] - tx) < 4 and abs(r['s']['hx'] - r['s']['x']) < 1, r)
         # a pick dropped by a drag of another shape
         i2 = next(i for i, s in enumerate(st['shapes']) if not s['placed'] and i != i1); s2 = (await page.evaluate(f"{S}.shapes"))[i2]
         await tap(page, s2['x'], s2['y']); p1 = await page.evaluate(f"{S}.sel")
@@ -162,10 +165,16 @@ async def tap_tests(b, he):
         st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, mat: {S}.mat, R: {S}.grabR, M: {S}.magnetR, Hr: {S}.helpR }})")
         S_ = st['shapes'][0]['size'] / 2; s0 = st['shapes'][0]
         # grab assist: a touch 1.6 x the shape's radius away still grabs it; the shape jumps above the finger
-        gx, gy = s0['x'], s0['y'] + S_ * 1.6
+        # (the direction away from the other shapes and inside the mat: with big shapes the mat is crowded, and the nearest shape wins)
+        def _away(a):
+            x, y = s0['x'] + S_ * 1.6 * math.cos(a), s0['y'] + S_ * 1.6 * math.sin(a)
+            inside = st['mat']['x'] < x < st['mat']['x'] + st['mat']['w'] and st['mat']['y'] < y < st['mat']['y'] + st['mat']['h']
+            return (inside, min(math.hypot(x - q['x'], y - q['y']) for q in st['shapes'][1:]))
+        ga = max([math.radians(d) for d in range(0, 360, 15)], key=_away)
+        gx, gy = s0['x'] + S_ * 1.6 * math.cos(ga), s0['y'] + S_ * 1.6 * math.sin(ga)
         await page.evaluate(f"fing('pointerdown', 1, {gx}, {gy})"); await page.wait_for_timeout(400)
         r = await page.evaluate(f"({{ held: {S}.held, s: {S}.shapes[0] }})")
-        check(f'phone help: a touch {S_ * 1.6:.0f} px from a shape still grabs it (radius {st["R"]:.0f}); it sits ~40 px above the finger', r['held'] == 0 and abs(r['s']['x'] - gx) < 3 and abs(r['s']['y'] - (gy - 40)) < 3, r)
+        check(f'phone help: a touch {S_ * 1.6:.0f} px from a shape still grabs it (radius {st["R"]:.0f}); it sits ~lift px above the finger', r['held'] == 0 and abs(r['s']['x'] - gx) < 3 and abs(r['s']['y'] - (gy - LIFT)) < 3, r)
         J = 160 if gx < 180 else -160
         # smoothing: a sudden 160 px jump of the finger is followed smoothly (not in one frame)
         trail = await page.evaluate(f"""(async () => {{ const out = []; fing('pointermove', 1, {gx + J}, {gy}); for (let i = 0; i < 4; i++) {{ await new Promise(r => requestAnimationFrame(r)); out.push(__grasp.shapes.shapes[0].x); }} return out; }})()""")
@@ -182,7 +191,7 @@ async def tap_tests(b, he):
         check('phone help: the finger bouncing off the glass (up for ~50 ms) keeps the shape held', hb == 0 and await page.evaluate(f"{S}.held") == 0)
         # magnet: near its hole the shape is pulled in (and turned); let go inside the zone: it drops in
         hl = next(h for h in st['holes'] if h['kind'] == s0['kind'])
-        fx_, fy_ = hl['x'] + st['M'] * 0.75, hl['y'] + 40 - 0  # the shape's target: 0.75 x the magnet radius to the side of the hole
+        fx_, fy_ = hl['x'] + st['M'] * 0.75 * (1 if hl['x'] < 180 else -1), hl['y'] + LIFT  # the shape's target: 0.75 x the magnet radius to the side of the hole (the side with room)
         steps = 8; cx, cy = gx + J * 0.94, gy + 4
         for k in range(1, steps + 1):
             await page.evaluate(f"fing('pointermove', 1, {cx + (fx_ - cx) * k / steps}, {cy + (fy_ - cy) * k / steps})"); await page.wait_for_timeout(35)
@@ -201,7 +210,7 @@ async def tap_tests(b, he):
         tx, ty = h1['x'], h1['y'] - dist  # straight above its hole (toward the mat)
         await fdrag(page, s1['x'], s1['y'], tx, ty + 40, up=False)
         under = await page.evaluate(f"({{ mag: {S}.magnet, s: {S}.shapes[1] }})")
-        await page.evaluate(f"fing('pointerup', 1, {tx}, {ty + 40})")
+        await page.evaluate(f"fing('pointerup', 1, {tx}, {ty + LIFT})")
         ok = await wait(page, f"{S}.shapes[1].anim === 'fly'", 1500)
         lg = await page.evaluate(f"{S}.tapLog.slice(-1)[0]")
         ok2 = await wait(page, f"{S}.shapes[1].placed", 3000)
@@ -219,7 +228,7 @@ async def tap_tests(b, he):
         s2 = (await page.evaluate(f"{S}.shapes"))[2]; h2 = next(h for h in (await page.evaluate(f"{S}.holes")) if h['kind'] == s2['kind'])
         await page.evaluate("__sfx.length = 0")
         await fdrag(page, s2['x'], s2['y'], h2['x'], h2['y'] + 40, up=False)
-        await page.evaluate(f"fing('pointercancel', 1, {h2['x']}, {h2['y'] + 40})"); await page.wait_for_timeout(400)
+        await page.evaluate(f"fing('pointercancel', 1, {h2['x']}, {h2['y'] + LIFT})"); await page.wait_for_timeout(400)
         r = await page.evaluate(f"({{ held: {S}.held, s: {S}.shapes[2], sfx: __sfx.slice() }})")
         check('phone help: a cancelled touch (the browser took it) is no drop: the shape settles back, no boing', r['held'] == -1 and not r['s']['placed'] and 'boing' not in r['sfx'], r)
         # rotated level: a drag into the magnet drops it in at any angle; the magnet is weaker on harder levels
@@ -227,7 +236,7 @@ async def tap_tests(b, he):
         st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, sym: {S}.sym }})")
         cand = [(i, s, h) for i, s in enumerate(st['shapes']) for h in st['holes'] if h['kind'] == s['kind'] and st['sym'][s['kind']] in (2, 3, 4, 5, 1) and abs(math.degrees(h['angle'])) > 30]
         i4, s4, h4 = cand[0] if cand else (0, st['shapes'][0], next(h for h in st['holes'] if h['kind'] == st['shapes'][0]['kind']))
-        await fdrag(page, s4['x'], s4['y'], h4['x'], h4['y'] + 40)
+        await fdrag(page, s4['x'], s4['y'], h4['x'], h4['y'] + LIFT)
         ok = await wait(page, f"{S}.shapes[{i4}].placed", 3000)
         check(f'phone help: level 4: dragged onto its rotated hole ({math.degrees(h4["angle"]):.0f}°) it turns itself and drops in', ok, [s4['kind'], h4['angle']])
         mr = await page.evaluate("(() => { const out = []; for (const n of [1, 4, 8]) { __grasp.shapes.setLevel(n); out.push(__grasp.shapes.magnetR / (__grasp.shapes.shapes[0].size / 2)); } return out; })()")
@@ -261,6 +270,110 @@ async def click_click(b):
     ok = await wait(page, f"{S}.shapes[1].placed", 4000)
     check('mouse: click a shape, then click its hole: it flies in (click-click)', sel == 1 and ok, sel)
     check('mouse click-click: no page errors', not errs, errs); await ctx.close()
+
+# ---- big shapes (a 2-year-old on a phone): levels 1-3 ~1.5x the classic size (a shape >= ~30% of the screen width), a gradual step back from
+# level 4, never smaller than the classic size; no overlaps on the mat or in the box (pixel test of the real outlines); the toddler aids scale ----
+# the classic S (before this change) per level 1..10, measured with the old layout
+CLASSIC = {(360, 740): [36.6, 42.1, 36.2, 35.9, 35.9, 35.9, 29.3, 28.1, 22.9, 19.5], (390, 844): [39.7, 45.6, 39.2, 38.9, 38.9, 38.9, 31.7, 30.5, 25.9, 21.1],
+           (412, 915): [41.9, 48.2, 41.5, 41.1, 41.1, 41.1, 33.5, 32.2, 27.3, 22.3], (1280, 800): [70, 63, 58.8, 56, 56, 56, 56, 56, 51.6, 45.7],
+           (740, 360): [33.8, 22.8, 22.2, 22.9, 22.9, 20.3, 22.9, 19.5, 22.9, 18]}
+OVERLAP_JS = r"""(() => { // pixel test of the real outlines: the mat's shapes (at home, upright) and the holes' recesses never overlap; each stays inside its mat / lid
+  const c = document.createElement('canvas'); c.width = innerWidth; c.height = innerHeight; const g = c.getContext('2d', { willReadFrequently: true });
+  const S = shapes.S, b = shapes.box, m = shapes.mat, its = [];
+  for (const s of shapes.shapes) its.push({ k: s.kind, x: s.hx, y: s.hy, a: 0, r: S, w: 'mat', pad: 2 });
+  for (const h of shapes.holes) its.push({ k: h.kind, x: h.x, y: h.y, a: h.wa, r: S * 1.08, w: 'box', pad: 1 });
+  const draw = (it, pad) => { g.save(); g.lineJoin = 'round'; g.translate(it.x, it.y); g.rotate(it.a); shapePath(g, it.k, it.r); g.fill(); if (pad) { g.lineWidth = pad * 2; g.stroke(); } g.restore(); };
+  const any = (x0, y0, x1, y1) => { x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(c.width, Math.ceil(x1)); y1 = Math.min(c.height, Math.ceil(y1)); if (x1 <= x0 || y1 <= y0) return 0;
+    const d = g.getImageData(x0, y0, x1 - x0, y1 - y0).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; return n; };
+  const over = [], out = [];
+  for (let i = 0; i < its.length; i++) for (let j = i + 1; j < its.length; j++) {
+    const A = its[i], B = its[j]; if (A.w !== B.w) continue; const R = 1.6 * S + 4;
+    const x0 = Math.max(A.x, B.x) - R, x1 = Math.min(A.x, B.x) + R, y0 = Math.max(A.y, B.y) - R, y1 = Math.min(A.y, B.y) + R; if (x1 <= x0 || y1 <= y0) continue;
+    g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height); g.fillStyle = g.strokeStyle = '#f00'; draw(A, A.pad); g.globalCompositeOperation = 'source-in'; draw(B, B.pad);
+    const n = any(x0, y0, x1, y1); if (n) over.push([A.w, A.k, B.k, n]);
+  }
+  for (const it of its) { // inside: the shape on the mat, the hole and its rim on the lid
+    g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height); g.fillStyle = g.strokeStyle = '#f00'; draw(it, it.w === 'box' ? Math.max(4, S * 0.17) : 0);
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; if (it.w === 'mat') g.fillRect(m.x, m.y, m.w, m.h); else g.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
+    const n = any(it.x - 1.8 * S, it.y - 1.8 * S, it.x + 1.8 * S, it.y + 1.8 * S); if (n) out.push([it.w, it.k, n]);
+  }
+  return { over, out, S, n: shapes.shapes.length, grid: shapes.grid, matBottom: m.y + m.h, boxTop: b.y - b.h / 2 - Math.abs(Math.sin(b.rock || 0)) * b.w / 2 };
+})()"""
+
+async def big_layout(b, w, h, mobile, he=False, shots=()):
+    tag = f'{w}x{h}' + ('_he' if he else '')
+    ctx = await b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, is_mobile=mobile, has_touch=mobile)
+    page = await ctx.new_page(); await routes(page); errs = []; page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(INIT + SPEECH + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
+    await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("typeof engine !== 'undefined' && !!engine", timeout=15000)
+    await (page.tap if mobile else page.click)('.modes button[data-mode=shapes]'); await wait(page, "gameMode === 'shapes' && !!shapes.box", 15000); await page.wait_for_timeout(300)
+    sizes, bad = [], []
+    for n in range(1, 11):
+        worst = None
+        for rep in range(1 if n == 1 else 4): # random kinds (and hole angles from level 4): a few builds per level
+            r = await page.evaluate(f"(() => {{ __grasp.shapes.setLevel({n}); return {OVERLAP_JS}; }})()")
+            if r['over'] or r['out'] or r['matBottom'] > r['boxTop'] + 0.5: bad.append((n, r))
+            worst = r if worst is None or r['S'] < worst['S'] else worst
+        sizes.append(worst['S'])
+        if n in shots:
+            await page.evaluate(f"__grasp.shapes.setLevel({n}); shapes.demo = null"); await page.wait_for_timeout(700)
+            await page.screenshot(path=f'tests/out/shapes_big_{shots[n]}.png')
+    check(f'big {tag}: levels 1-10 fit with no overlaps on the mat or in the box, everything inside its mat / lid', not bad, bad[:3])
+    cl = CLASSIC[(w, h)]
+    check(f'big {tag}: never smaller than the classic size (levels 1-10)', all(sizes[i] >= cl[i] - 0.5 for i in range(10)), [(round(a, 1), c) for a, c in zip(sizes, cl)])
+    if mobile and w < h:
+        check(f'big {tag}: levels 1-3 very big: a shape >= 30% of the screen width ({", ".join(f"{2 * x / w:.0%}" for x in sizes[:3])}), >= 1.3x the classic level-2 size',
+              all(2 * x >= 0.30 * w for x in sizes[:3]) and sizes[1] >= 1.3 * cl[1], [round(x, 1) for x in sizes])
+        check(f'big {tag}: then a gradual step back (3 > 4 >= 5 >= 6, level 8 near the classic size)', sizes[3] < sizes[2] and sizes[4] <= sizes[3] + 0.5 and sizes[5] <= sizes[4] + 0.5 and sizes[7] < sizes[3] and sizes[7] / cl[7] < sizes[0] / cl[0], [round(x, 1) for x in sizes])
+    else:
+        check(f'big {tag}: early levels bigger than the classic size but capped by the height (no giant blobs: S <= 12% of the height)', sizes[0] >= cl[0] and max(sizes) <= 0.12 * h + 0.5 and (w < 1000 or sizes[0] >= 1.25 * cl[0]), [round(x, 1) for x in sizes])
+    check(f'big {tag}: no page errors', not errs, errs); await ctx.close()
+    return sizes
+
+async def big_play(b, he):
+    tag = 'he' if he else 'en'
+    ctx, page, errs = await ctx_page(b, True, he, init=FING_W)
+    await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(700)
+    ok = await wait(page, f"!!{S}.ui.demo && {S}.ui.demo.on", 4000)
+    d = await page.evaluate(f"{S}.ui.demo")
+    check(tag + ' big: the finger demo grows with the shapes', ok and d and d.get('scale', 0) > 1.2, d)
+    await page.evaluate(SFX_JS)
+    for lv in (1, 3):
+        await page.evaluate(f"{S}.setLevel({lv})"); await page.wait_for_timeout(500)
+        st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, S: {S}.S, big: {S}.big, R: {S}.grabR, M: {S}.magnetR, slop: {S}.slop, lift: {S}.lift }})")
+        S_ = st['S']
+        # tap-tap: a tap near the shape's edge picks it, a tap on the hole's rim sends it in
+        s0 = st['shapes'][0]; hl = next(h for h in st['holes'] if h['kind'] == s0['kind'])
+        await tap(page, s0['x'] + 0.9 * S_, s0['y'] + 0.3 * S_, jitter=int(st['slop'] - 4))
+        ok = await wait(page, f"{S}.sel === 0", 2000)
+        ai = await page.evaluate(f"({{ S: {S}.S, big: {S}.big, R: {S}.grabR, M: {S}.magnetR, H: {S}.helpR, slop: {S}.slop, lift: {S}.lift, assist: {S}.assist }})")  # (touch: the assists are on)
+        check(f'{tag} big L{lv}: the aids scale with the shapes (grab {ai["R"]:.0f} px = 1.75 S, magnet = 2.4 S, help = 4.2 S, lift {ai["lift"]:.0f} > 40, slop {ai["slop"]:.0f} > 20)',
+              ai['assist'] and ai['big'] > 1.15 and abs(ai['R'] - 1.75 * S_) < 1 and abs(ai['M'] - 2.4 * S_) < 1 and abs(ai['H'] - 4.2 * S_) < 1 and ai['lift'] > 44 and ai['slop'] > 22, ai)
+        if lv == 1: await page.wait_for_timeout(200); await page.screenshot(path=f'tests/out/shapes_big_tap_selected_{tag}.png')
+        await page.evaluate("rings.length = 0")
+        await tap(page, hl['x'] - 1.2 * S_, hl['y'])
+        ok2 = await wait(page, f"{S}.shapes[0].placed", 3000)
+        rw = await page.evaluate("Math.max(0, ...rings.map(r => r.width))")
+        check(f'{tag} big L{lv}: tap the shape (at its edge, a {st["slop"] - 4:.0f} px wobble), then the hole (at its rim): it flies in; a wider ring', ok and ok2 and rw > 6.5, [ok, ok2, rw])
+        if lv == 1: await page.wait_for_timeout(250); await page.screenshot(path=f'tests/out/shapes_big_placed_{tag}.png')
+        # a touch drag: the shape rides lift px above the finger; let go over the hole: in
+        st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes }})")
+        s1 = st['shapes'][1]; hl = next(h for h in st['holes'] if h['kind'] == s1['kind'] and not h['filled'])
+        await fdrag(page, s1['x'], s1['y'] + 0.5 * S_, hl['x'], hl['y'] + await page.evaluate(f"{S}.lift"), up=False)
+        hi = await page.evaluate(f"({{ h: {S}.heldInfo, y: {S}.shapes[1].y, m: {S}.magnet }})")
+        if lv == 1: await page.screenshot(path=f'tests/out/shapes_big_drag_{tag}.png')
+        await page.evaluate(f"fing('pointerup', 1, {hl['x']}, {hl['y']})")
+        ok = await wait(page, f"{S}.shapes[1].placed", 3000)
+        check(f'{tag} big L{lv}: a touch drag from the shape\'s lower half: held above the finger, pulled by its hole\'s magnet, let go: in', ok and hi['h'] and hi['h']['i'] == 1 and hi['h']['oy'] < -44 and hi['m'] >= 0, hi)
+    check(tag + ' big: no page errors', not errs, errs); await ctx.close()
+
+async def big_tests(b):
+    for (w, h) in ((360, 740), (390, 844), (412, 915)):
+        await big_layout(b, w, h, True, shots={1: f'phone_l1_{w}', 2: f'phone_l2_{w}', 3: f'phone_l3_{w}', 4: f'phone_l4_{w}', 8: f'phone_l8_{w}'} if w == 360 else {1: f'phone_l1_{w}'})
+    await big_layout(b, 360, 740, True, he=True, shots={1: 'phone_l1_he', 3: 'phone_l3_he'})
+    await big_layout(b, 1280, 800, False, shots={1: 'desktop_l1', 4: 'desktop_l4'})
+    await big_layout(b, 740, 360, True, shots={1: 'landscape_l1'})
+    for he in (False, True): await big_play(b, he)
 
 async def main():
     async with async_playwright() as p:
@@ -351,10 +464,10 @@ async def main():
         check('all 12 shapes have EN and HE names', len(allnames) == 12 and [x[1] for x in allnames] == ['עיגול', 'ריבוע', 'משולש', 'כוכב', 'לב', 'משושה', 'מלבן', 'אליפסה', 'סהר', 'מעוין', 'צלב', 'מחומש'] and all(x[0] for x in allnames), allnames)
         await page.evaluate("setLang('en')")
 
-        # level 3: 5 shapes in similar colours; level 5: 6 shapes, two of them in another one's colour
+        # level 3: 4 shapes in similar colours; level 5: 6 shapes, two of them in another one's colour
         await page.evaluate(f"{S}.setLevel(3)"); l3 = await page.evaluate(f"{S}.shapes")
         warm = await page.evaluate("SHAPE_WARM")
-        check('level 3: 5 shapes in similar (warm) colours', len(l3) == 5 and all(s['color'] in warm for s in l3), [s['color'] for s in l3])
+        check('level 3: 4 shapes (toddler-big levels 1-3) in similar (warm) colours', len(l3) == 4 and all(s['color'] in warm for s in l3), [s['color'] for s in l3])
         await page.evaluate(f"{S}.setLevel(5)"); l5 = await page.evaluate(f"{S}.shapes")
         cols = [s['color'] for s in l5]
         check('level 5: 6 shapes, two decoys share a colour with another shape (different outline)', len(l5) == 6 and len(set(cols)) == 4 and len({s['kind'] for s in l5}) == 6, cols)
@@ -462,6 +575,7 @@ async def main():
 
         # ---- toddler play: tap a shape, tap a hole; touch-drag help (phone EN / HE); mouse click-click ----
         for he in (False, True): await tap_tests(b, he)
+        await big_tests(b)
         await click_click(b)
 
         # ---- camera stub: an open hand hovers, a pinch grabs, the pinched hand carries it to its hole, opening the hand drops it in ----

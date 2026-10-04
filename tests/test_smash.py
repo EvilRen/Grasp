@@ -190,6 +190,8 @@ async def main():
         await page.evaluate(f"{SM}.breakTo(0.7)"); await page.wait_for_timeout(200)
         check('below 85% of the wave: still the first wave', await page.evaluate(f"{S}.phase === 'play' && {S}.wave === 0") and 0.65 <= await page.evaluate(SM + ".meter") < 0.85, await page.evaluate(SM + '.meter'))
         await page.evaluate(f"{SM}.breakTo(0.86)"); await page.wait_for_function(S + ".phase === 'scroll'", timeout=3000)
+        try: await page.wait_for_function(f"Math.abs({SM}.progress - 0.25) < 0.01", timeout=1500)  # (a loaded container: the wave's meter resets a frame later)
+        except Exception: pass
         sc0 = await page.evaluate(f"({{ wave: {S}.wave, newX: Math.min(...{SM}.objs.filter(o => o.alive && o.wave === 1).map(o => o.body.position.x - o.w / 2)), n: {SM}.objs.filter(o => o.wave === 1).length, prog: {SM}.progress, log: {SM}.waveLog.length }})")
         await page.wait_for_timeout(450)
         mid = await page.evaluate(f"({{ x: Math.min(...{SM}.objs.filter(o => o.alive && o.wave === 1).map(o => o.body.position.x - o.w / 2)), bg: {S}.bgX }})")

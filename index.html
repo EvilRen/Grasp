@@ -5030,11 +5030,11 @@ const SHAPE_TAP_SLOP = 20, SHAPE_TAP_MAX_MS = 2500, SHAPE_TOUCH_LIFT = 40, SHAPE
 const shapes = { level: 1, spec: null, shapes: [], holes: [], held: null, box: null, mat: null, S: 40, phase: 'play', phaseAt: 0, levelStart: 0, mistakes: 0,
   levelsDone: 0, stars: 0, placedTotal: 0, result: null, over: false, overAt: 0, best: 0, prevBest: 0, clock: 0, boxAng: 0, slide: 0, lastGesture: 'none',
   hoverHole: -1, hoverShape: -1, spoken: '', spokenLang: '', sounds: [], boxCol: SHAPE_BOXES[0], ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false, selFx: null, holePulse: 0 },
-  sel: -1, selAt: 0, press: null, taps: [], tapLog: [], assist: null, demo: null, magnet: -1 };
+  sel: -1, selAt: 0, press: null, taps: [], tapLog: [], assist: null, demo: null, magnet: -1, big: 1, grid: null };
 function shapesSound(kind, arg) { shapes.sounds.push(kind); if (shapes.sounds.length > 40) shapes.sounds.shift(); sfx(kind, arg); }
 function shapeLevelSpec(n) { // what level n asks for
   const k = Math.max(0, n - 7);
-  return { n, count: n === 1 ? 3 : n === 2 ? 4 : n <= 4 ? 5 : n <= 7 ? 6 : Math.min(10, n - 1), size: n === 1 ? 1 : n === 2 ? 0.9 : n === 3 ? 0.84 : 0.8,
+  return { n, count: n === 1 ? 3 : n <= 3 ? 4 : n === 4 ? 5 : n <= 7 ? 6 : Math.min(10, n - 1), size: n === 1 ? 1 : n === 2 ? 0.9 : n === 3 ? 0.84 : 0.8,
     warm: n === 3, rotated: n >= 4, decoys: n >= 5 ? 2 : 0,
     rock: n === 6 || (n >= 8 && n % 2 === 0) || n >= 10 ? 0.2 + 0.03 * k : 0, rockW: 0.00055 * (1 + 0.15 * k), // radians, rad per ms: one rock about every 11 s
     slide: n === 7 || (n >= 8 && n % 2 === 1) || n >= 10 ? 1 : 0, slideW: 0.0007 * (1 + 0.15 * k) };
@@ -5143,31 +5143,43 @@ function buildShapesLevel(n, now) { // the shapes and holes of level n, laid out
   const order = shuffled(shapes.shapes.map((_, i) => i), r); shapes.shapes.forEach((s, i) => (s.slot = order[i]));
   layoutShapes(true);
 }
+// Sizes: levels 1-3 are very big for a toddler on a phone (about 1.5x the classic size: a shape ~ a third of a 360 px wide screen), then a
+// gradual step back to the classic size (SHAPE_BIG: level 8+ = 1). Capped by the screen's height (desktop / landscape: no giant blobs) and
+// never smaller than the classic size. The search tries every hole-grid / mat-grid column count and keeps the biggest S that fits.
+const SHAPE_BIG = [1, 1.5, 1.5, 1.5, 1.3, 1.2, 1.12, 1.06], SHAPE_HCELL = 2.5, SHAPE_HCELL_ROT = 2.75, SHAPE_MCELL_W = 2.5, SHAPE_MCELL_H = 2.35, SHAPE_MSTAG = 2.1;
+function shapeRows(n, cols) { const r = []; for (let k = n; k > 0; k -= cols) r.push(Math.min(cols, k)); return r; } // items per row (the last row may be shorter)
+function shapeRowYs(rows, full, stag) { const ys = [0]; for (let i = 1; i < rows.length; i++) ys.push(ys[i - 1] + ((rows[i - 1] - rows[i]) % 2 ? stag : full)); return ys; } // row centres: a row offset by half a cell nests closer
+function shapeClassicS(sp) { return sp.size * Math.max(34, Math.min(70, Math.min(W, H) * 0.13)); } // the size before the toddler boost (the old cap)
 function layoutShapes(fresh) { // the mat (top), the box (lower middle), the hole grid on the lid and the shapes' home spots on the mat
   const sp = shapes.spec; if (!sp) return;
-  const n = shapes.shapes.length, top = Math.max(64, Math.round(chromeRow.bottom) + 8) + 36, side = 12, bottom = Math.max(18, Math.round(H * 0.03));
-  const hc = n <= 3 ? n : Math.ceil(n / 2), hr = Math.ceil(n / hc), rock = sp.rock * (W < 600 ? 0.6 : 1);
-  const cap = sp.size * Math.max(34, Math.min(70, Math.min(W, H) * 0.13));
-  let S = cap, L = null;
-  for (let it = 0; it < 60; it++, S *= 0.96) {
-    const pad = Math.max(12, S * 0.45), slideAmp = sp.slide ? S * 1.1 : 0, cell = S * 2.75;
-    const bw = Math.min(W - 2 * side, hc * cell + 2 * pad + 2 * slideAmp), bh = hr * cell + 2 * pad, depth = Math.max(12, bh * 0.1);
-    if (hc * cell + 2 * pad + 2 * slideAmp > W - 2 * side + 0.5) continue;
-    const by = H - bottom - depth - bh / 2, rockY = rock ? Math.sin(rock) * bw / 2 : 0, matTop = top, matBot = by - bh / 2 - rockY - 14, matH = matBot - matTop, matW = W - 2 * side;
-    const mc = Math.max(1, Math.min(n, Math.floor(matW / (S * 2.7)))), mr = Math.ceil(n / mc);
-    if (matH < mr * S * 2.6 && S > 18) continue;
-    L = { S, pad, slideAmp, cell, bw, bh, depth, by, matTop, matH: Math.max(matH, S * 2.6), matW, mc, mr }; break;
+  const n = shapes.shapes.length, top = Math.max(64, Math.round(chromeRow.bottom) + 8) + 36, side = 12, bottom = Math.max(18, Math.round(H * 0.03)), rock = sp.rock * (W < 600 ? 0.6 : 1);
+  const base = Math.max(34, Math.min(70, Math.min(W, H) * 0.13)), classic = shapeClassicS(sp), cap = Math.max(classic, Math.min((SHAPE_BIG[sp.n] || 1) * base, H * 0.115));
+  const hk = sp.rotated ? SHAPE_HCELL_ROT : SHAPE_HCELL; // a hole cell (in S): room for any outline at any angle, or upright
+  const fit = (S, hc, mc) => {
+    const pad = Math.max(12, S * 0.2), padX = Math.max(12, S * 0.3), slideAmp = sp.slide ? S * 1.1 : 0, cell = S * hk, hrows = shapeRows(n, hc), hys = shapeRowYs(hrows, cell, cell * 0.87); // (padX: room for a crescent's wide side)
+    const bw = hc * cell + 2 * padX + 2 * slideAmp; if (bw > W - 2 * side + 0.5) return null;
+    const bh = hys[hys.length - 1] + cell + 2 * pad, depth = Math.max(12, bh * 0.1), by = H - bottom - depth - bh / 2, rockY = rock ? Math.sin(rock) * bw / 2 : 0;
+    const matTop = top, matH = by - bh / 2 - rockY - 14 - matTop, matW = W - 2 * side; if (mc * SHAPE_MCELL_W * S > matW - 8) return null;
+    const mrows = shapeRows(n, mc), mys = shapeRowYs(mrows, SHAPE_MCELL_H * S, SHAPE_MSTAG * S); if (matH < mys[mys.length - 1] + SHAPE_MCELL_H * S + 8) return null;
+    return { S, pad, slideAmp, cell, bw, bh, depth, by, matTop, matH, matW, hc, mc, hrows, hys, mrows, mys };
+  };
+  let L = null;
+  for (let hc = n; hc >= 1; hc--) for (let mc = n; mc >= 1; mc--) { // the biggest S over the grids (ties: the wider grids, tried first)
+    if (!fit(14, hc, mc)) continue; let lo = 14, hi = cap;
+    if (fit(hi, hc, mc)) lo = hi; else for (let it = 0; it < 26; it++) { const mid = (lo + hi) / 2; if (fit(mid, hc, mc)) lo = mid; else hi = mid; }
+    if (!L || lo > L.S + 0.25) L = fit(lo, hc, mc);
   }
   if (!L) return;
-  shapes.S = L.S; S = L.S;
+  shapes.S = L.S; const S = L.S; shapes.big = Math.max(1, S / classic); shapes.grid = { hc: L.hc, mc: L.mc, cap, classic };
   shapes.box = { x: W / 2, y: L.by, w: L.bw, h: L.bh, depth: L.depth, rock };
   shapes.mat = { x: side, y: L.matTop, w: L.matW, h: L.matH };
-  const gw = hc * L.cell, gx0 = -gw / 2 + L.cell / 2, gy0 = -(hr * L.cell) / 2 + L.cell / 2;
-  shapes.holes.forEach((h, i) => { const c = i % hc, rw = Math.floor(i / hc), inRow = Math.min(hc, n - rw * hc); h.lx = gx0 + c * L.cell + (hc - inRow) * L.cell / 2; h.ly = gy0 + rw * L.cell; });
-  const cw = L.matW / L.mc, ch = L.matH / L.mr, jr = rng(shapes.level * 97 + n);
+  const hy0 = L.hys[L.hys.length - 1] / 2; let i = 0;
+  L.hrows.forEach((c, rw) => { for (let q = 0; q < c; q++, i++) { const h = shapes.holes[i]; h.lx = (q - (c - 1) / 2) * L.cell; h.ly = L.hys[rw] - hy0; } });
+  const cw = L.matW / L.mc, last = L.mys[L.mys.length - 1], k = last > 0 ? (L.matH - SHAPE_MCELL_H * S) / last : 1, jr = rng(shapes.level * 97 + n);
+  const pmin = L.mys.length > 1 ? Math.min(...L.mys.slice(1).map((y, q) => y - L.mys[q])) : 0, jx = Math.max(0, cw - SHAPE_MCELL_W * S) * 0.3, jy = Math.max(0, (k - 1) * pmin) * 0.3; // jitter: never closer than the grid's spacing
+  const slots = []; L.mrows.forEach((c, rw) => { for (let q = 0; q < c; q++) slots.push({ x: side + L.matW / 2 + (q - (c - 1) / 2) * cw, y: last > 0 ? L.matTop + SHAPE_MCELL_H * S / 2 + L.mys[rw] * k : L.matTop + L.matH / 2 }); });
   for (const s of shapes.shapes) {
-    const c = s.slot % L.mc, rw = Math.floor(s.slot / L.mc), inRow = Math.min(L.mc, n - rw * L.mc);
-    const hx = L.matW / 2 - (inRow * cw) / 2 + (c + 0.5) * cw + side + (jr() - 0.5) * Math.max(0, cw - S * 2.5) * 0.6, hy = L.matTop + (rw + 0.5) * ch + (jr() - 0.5) * Math.max(0, ch - S * 2.5) * 0.6;
+    const sl = slots[s.slot], hx = Math.min(side + L.matW - 1.27 * S, Math.max(side + 1.27 * S, sl.x + (jr() - 0.5) * jx)), hy = Math.min(L.matTop + L.matH - SHAPE_MCELL_H * S / 2, Math.max(L.matTop + SHAPE_MCELL_H * S / 2, sl.y + (jr() - 0.5) * jy)); // (jittered, kept inside the mat)
     if (fresh || !s.moved) { s.hx = hx; s.hy = hy; } else { s.hx = Math.min(W - side - S, Math.max(side + S, s.hx)); s.hy = Math.min(L.matTop + L.matH - S, Math.max(L.matTop + S, s.hy)); }
     if (!s.anim && shapes.held?.s !== s) { s.x = s.hx; s.y = s.hy; }
   }
@@ -5192,13 +5204,16 @@ function touchTwist() { const p = [...ptr.touches.values()]; return p.length >= 
 const wrapAng = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 function shapesGrab(i, now) {
   const s = shapes.shapes[i], a = s.anim, help = shapeAssist(), sx = a && a.k === 'back' ? s.hx : s.x, sy = a && a.k === 'back' ? s.hy : s.y; s.anim = null;
-  shapes.held = { i, s, ox: help ? 0 : s.x - cursor.x, oy: help ? -SHAPE_TOUCH_LIFT : s.y - cursor.y, roll: hand.roll, tw: touchTwist(), two: twoFingers(), t0: now, overSince: 0, overHole: -1,
+  shapes.held = { i, s, ox: help ? 0 : s.x - cursor.x, oy: help ? -shapeLift() : s.y - cursor.y, roll: hand.roll, tw: touchTwist(), two: twoFingers(), t0: now, overSince: 0, overHole: -1,
     sx, sy, sa: s.angle, moved0: !!s.moved, help, upAt: 0 }; // (sx / sy / sa: where it was, for a tap that only looked like a grab)
   s.moved = true; shapesSound('tick');
 }
 // --- toddler help: tap-tap, the touch-drag assists (see SHAPE_TAP_SLOP) ---
 function shapeAssist() { return shapes.assist != null ? !!shapes.assist : mode === 'mouse' && ptr.type === 'touch'; } // touch drags get help; mouse / camera stay exact
-function shapeGrabR() { return shapeAssist() ? Math.max(shapes.S * 1.75, shapes.S * 1.25 + 10, 44) : shapes.S * 1.25 + 10; } // (a hit area >= 88 px across on a phone)
+function shapeGrabR() { return shapeAssist() ? Math.max(shapes.S * 1.75, shapes.S * 1.25 + 10, 44 * shapes.big) : shapes.S * 1.25 + 10; } // (a hit area >= 88 px across on a phone)
+// the toddler aids grow with the shapes (shapes.big: S / the classic size, >= 1): the finger lift, the tap slop, the minimum hit areas, the effects
+function shapeLift() { return SHAPE_TOUCH_LIFT * Math.min(1.6, shapes.big || 1); }
+function shapeSlop() { return SHAPE_TAP_SLOP * Math.min(1.5, shapes.big || 1); }
 function shapeMagnetR() { const n = shapes.level; return shapes.S * (n <= 3 ? 2.4 : n <= 7 ? 2.0 : 1.6); } // weaker magnets on the harder levels
 function shapeHelpR() { const n = shapes.level; return shapes.S * (n <= 3 ? 4.2 : n <= 7 ? 3.4 : 2.6); }
 function shapeFlying(j) { return shapes.shapes.some((s) => s.anim && s.anim.k === 'fly' && s.anim.j === j); }
@@ -5207,7 +5222,7 @@ function shapeOwnHole(s, p) { // the nearest free hole of the shape's kind (to p
   return { j, d };
 }
 function shapeHoleTapAt(p) { // a free hole under a tap: generous (>= 72 px across), the nearest wins
-  const R = Math.max(shapes.S * 1.35, 36); let j = -1, d = Infinity;
+  const R = Math.max(shapes.S * 1.35, 36 * shapes.big); let j = -1, d = Infinity;
   shapes.holes.forEach((h, k) => { if (h.filled || shapeFlying(k)) return; const q = Math.hypot(p.x - h.x, p.y - h.y); if (q < R && q < d) { d = q; j = k; } });
   return j;
 }
@@ -5218,14 +5233,14 @@ function shapesPtrDown(e) { // a press starts: a tap candidate until it moves SH
   const pr = shapes.press;
   if (pr && pr.live) { pr.multi = true; return; } // a second finger (a twist) or a palm: no tap
   const h = shapes.held, resume = !!(h && h.upAt); // a finger back down within the grace: carry on with the held shape (no tap)
-  if (resume && Math.hypot(e.clientX - h.s.x, e.clientY - (h.s.y - h.oy)) > shapes.S * 1.6 + SHAPE_TOUCH_LIFT) h.drop = true; // ...unless it is somewhere else: let the shape go first
+  if (resume && Math.hypot(e.clientX - h.s.x, e.clientY - (h.s.y - h.oy)) > shapes.S * 1.6 + shapeLift()) h.drop = true; // ...unless it is somewhere else: let the shape go first
   shapes.press = { id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, maxD: 0, t0: now, live: true, touch, multi: resume, palm: touch && (e.width > SHAPE_PALM || e.height > SHAPE_PALM), cancel: false }; if (shapes.press.palm) shapes.press.multi = true;
 }
 function shapesPtrMove(e) { const pr = shapes.press; if (!pr || !pr.live || e.pointerId !== pr.id) return; pr.x = e.clientX; pr.y = e.clientY; pr.maxD = Math.max(pr.maxD, Math.hypot(pr.x - pr.x0, pr.y - pr.y0)); }
 function shapesPtrUp(e, cancel) {
   const pr = shapes.press; if (!pr || !pr.live || e.pointerId !== pr.id) return;
   const now = performance.now(); pr.live = false; pr.t1 = now; pr.cancel = !!cancel; pr.x = e.clientX || pr.x; pr.y = e.clientY || pr.y;
-  if (!cancel && !pr.multi && pr.maxD < SHAPE_TAP_SLOP && now - pr.t0 < SHAPE_TAP_MAX_MS) shapes.taps.push({ x: pr.x0, y: pr.y0, t: now });
+  if (!cancel && !pr.multi && pr.maxD < shapeSlop() && now - pr.t0 < SHAPE_TAP_MAX_MS) shapes.taps.push({ x: pr.x0, y: pr.y0, t: now });
   else if (shapes.held && !cancel) { const ed = Math.min(pr.x, pr.y, W - pr.x, H - pr.y) <= 10; shapes.held.upAt = now; shapes.held.edge = ed; } // a real drag lifted: the grace starts
   if (cancel && shapes.held) shapes.held.settle = true;
 }
@@ -5271,14 +5286,14 @@ function shapesRelease(now, home) { // let go: into the hole (it fits), back hom
     const ju = shapeHoleUnder(s), own = shapeOwnHole(s), fin = shapeOwnHole(s, cursor), d = Math.min(own.d, fin.j === own.j ? fin.d : Infinity);
     const wrong = ju >= 0 && shapes.holes[ju].kind !== s.kind;
     if (!wrong && own.j >= 0 && d <= shapeMagnetR()) return placeShape(s, own.j, shapeAngDiff(s.angle, shapes.holes[own.j].wa, SHAPE_SYM[s.kind]), now);
-    if (!wrong && own.j >= 0 && own.d <= shapeHelpR()) return shapesFly(shapes.shapes.indexOf(s), own.j, now, 'help');
+    if (!wrong && own.j >= 0 && own.d <= shapeHelpR() && shapes.press && shapes.press.maxD >= shapeSlop()) return shapesFly(shapes.shapes.indexOf(s), own.j, now, 'help');
   }
   const j = shapeHoleUnder(s);
   if (j >= 0) {
     const hl = shapes.holes[j], d = shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]);
     if (hl.kind === s.kind && Math.abs(d) <= SHAPE_SNAP + 1e-6) return placeShape(s, j, d, now);
     if (hl.kind !== s.kind) shapes.mistakes++; // (the right hole at the wrong angle is no mistake: it just does not fit yet)
-    shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3);
+    shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3 * shapes.big);
     return shapeGoHome(s, now, true);
   }
   const b = shapes.box, m = shapes.mat;
@@ -5290,8 +5305,8 @@ function shapeGoHome(s, now, bounce) { s.anim = { k: 'back', t0: now, x0: s.x, y
 function placeShape(s, j, d, now) {
   const hl = shapes.holes[j]; s.placed = true; s.hole = j; hl.filled = true; s.anim = { k: 'drop', t0: now, x0: s.x, y0: s.y, a0: s.angle, a1: s.angle - d };
   shapesSound('clunk'); shapesSound('rise');
-  burst(hl.x, hl.y, s.color, 22); burst(hl.x, hl.y, '#fff3c4', 14); burst(hl.x, hl.y, COLORS[(j + 2) % COLORS.length], 12);
-  ring(hl.x, hl.y, hexA(s.color, 0.95), shapes.S * 1.9, 460, 6); ring(hl.x, hl.y, 'rgba(255,255,255,0.85)', shapes.S * 1.1, 300, 3);
+  const bg = shapes.big || 1; burst(hl.x, hl.y, s.color, Math.min(30, 22 * bg)); burst(hl.x, hl.y, '#fff3c4', 14 * bg); burst(hl.x, hl.y, COLORS[(j + 2) % COLORS.length], 12 * bg); // (bigger shapes: a wider burst)
+  ring(hl.x, hl.y, hexA(s.color, 0.95), shapes.S * 1.9, 460, 6 * bg); ring(hl.x, hl.y, 'rgba(255,255,255,0.85)', shapes.S * 1.1, 300, 3 * bg);
   speakShape(s.kind); shapes.placedTotal++; track('shape', 1); grippySay('shapesMatch');
 }
 function speakShape(kind) { // the shape's name, spoken in the current language (silently skipped when speech is unavailable or muted)
@@ -5336,7 +5351,7 @@ function shapesTick(now, dt) {
   const grace = !!(h && h.help && h.upAt && !h.drop && !h.settle && now - h.upAt < (h.edge ? SHAPE_EDGE_GRACE_MS : SHAPE_GRACE_MS)); // a lifted finger: a moment before it counts as letting go
   if (grace) holding = true;
   if (h && (h.drop || h.settle)) holding = false;
-  if (h && pr && pr.maxD >= SHAPE_TAP_SLOP && shapes.sel >= 0) shapesDeselect(now, 'drag'); // a real drag: the pick is dropped
+  if (h && pr && pr.maxD >= shapeSlop() && shapes.sel >= 0) shapesDeselect(now, 'drag'); // a real drag: the pick is dropped
   if (h) {
     const s = h.s;
     if (!holding || (!cursor.present && !grace) || !play) shapesRelease(now, !play);
@@ -5380,7 +5395,7 @@ function shapesTick(now, dt) {
       if (k >= 1) {
         s.anim = null; s.x = hl.x; s.y = hl.y;
         if (a.ok && !hl.filled) placeShape(s, a.j, shapeAngDiff(s.angle, hl.wa, SHAPE_SYM[s.kind]), now);
-        else { shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3); shapeGoHome(s, now, true); } // the wrong hole: it bounces off and flies home (no mistake)
+        else { shapesSound('boing', 'soft'); ring(hl.x, hl.y, 'rgba(255,255,255,0.5)', shapes.S * 1.4, 300, 3 * shapes.big); shapeGoHome(s, now, true); } // the wrong hole: it bounces off and flies home (no mistake)
       }
       continue;
     }
@@ -5407,10 +5422,10 @@ function renderShapes(now) {
     if (h.filled) { const s = shapes.shapes.find((q) => q.hole === j); if (s && !s.anim) { blit(shapeSprite(s.kind, s.color, S), h.x, h.y, h.wa, 0.9, 0.42); } } // sorted: its colour peeks out of the hole
     if (shapes.sel >= 0 && !h.filled && !shapeFlying(j)) { // a shape is picked: every free hole pulses softly (an invitation to tap; no hint which)
       const q = 0.5 + 0.5 * Math.sin(now / 260 + j * 0.9); pulses++;
-      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * (1.2 + 0.1 * q)); ctx.lineWidth = 4 + 3 * q; ctx.strokeStyle = 'rgba(255,244,214,' + (0.35 + 0.4 * q).toFixed(3) + ')'; ctx.stroke(); ctx.restore();
+      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * (1.2 + 0.1 * q)); ctx.lineWidth = (4 + 3 * q) * shapes.big; ctx.strokeStyle = 'rgba(255,244,214,' + (0.35 + 0.4 * q).toFixed(3) + ')'; ctx.stroke(); ctx.restore();
     }
     if (held && (j === shapes.hoverHole || j === shapes.magnet)) { // a soft glow on the hole under the held shape: gold for its own hole, faint for another
-      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * 1.2); ctx.lineWidth = 4; ctx.strokeStyle = h.kind === held.kind ? 'rgba(255,214,120,' + (0.6 + 0.3 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(241,233,218,0.25)'; ctx.stroke(); ctx.restore();
+      resetView(); ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.wa); shapePath(ctx, h.kind, S * 1.2); ctx.lineWidth = 4 * shapes.big; ctx.strokeStyle = h.kind === held.kind ? 'rgba(255,214,120,' + (0.6 + 0.3 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(241,233,218,0.25)'; ctx.stroke(); ctx.restore();
     }
   });
   for (const s of shapes.shapes) if (s.anim && s.anim.k === 'drop') { // into the hole: slide onto it and turn to fit, then sink and fade
@@ -5430,7 +5445,7 @@ function renderShapes(now) {
       const ts = now - (s.selAt || 0), hop = picked && ts < 380 ? Math.sin(Math.PI * ts / 380) * S * 0.6 : 0;
       dy = -(hop + sk * (S * 0.2 + Math.sin(now / 260) * S * 0.05)); wig = (picked ? Math.sin(ts / 55) * 0.2 * Math.max(0, 1 - ts / 700) : 0) + Math.sin(now / 300) * 0.05 * sk; sc *= 1 + 0.12 * sk;
       const glow = sk * (0.55 + 0.25 * Math.sin(now / 150));
-      resetView(); ctx.save(); ctx.translate(s.x, s.y + dy); ctx.rotate(s.angle + wig); ctx.shadowColor = 'rgba(255,214,120,0.9)'; ctx.shadowBlur = 22 * sk; shapePath(ctx, s.kind, S * 1.12 * sc); ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(255,214,120,' + glow.toFixed(3) + ')'; ctx.stroke(); ctx.restore();
+      resetView(); ctx.save(); ctx.translate(s.x, s.y + dy); ctx.rotate(s.angle + wig); ctx.shadowColor = 'rgba(255,214,120,0.9)'; ctx.shadowBlur = 22 * sk * shapes.big; shapePath(ctx, s.kind, S * 1.12 * sc); ctx.lineWidth = 7 * shapes.big; ctx.strokeStyle = 'rgba(255,214,120,' + glow.toFixed(3) + ')'; ctx.stroke(); ctx.restore();
       if (picked) shapes.ui.selFx = { i: shapes.sel, dy, hop, wig, glow, scale: sc, sk };
     }
     drawShadow(s.x + 3 + air * 6 - dy * 0.1, s.y + S * 0.9 + air * 8 + (fly ? Math.sin(Math.PI * fk) * s.anim.arc : 0), S * 2.2, S * 0.7, (0.35 + air * 0.15) * (dy ? 0.75 : 1));
@@ -5458,9 +5473,10 @@ function drawShapeDemo(now) { // first play: a finger taps a shape, then its hol
   const q = (el % CYC) / CYC, rest = { x: W * 0.5, y: shapes.mat.y + shapes.mat.h * 0.9 }, lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * ease(t), y: a.y + (b.y - a.y) * ease(t) });
   const p = q < 0.25 ? lerp(rest, s, q / 0.25) : q < 0.42 ? { x: s.x, y: s.y } : q < 0.72 ? lerp(s, hl, (q - 0.42) / 0.3) : q < 0.9 ? { x: hl.x, y: hl.y } : lerp(hl, rest, (q - 0.9) / 0.1);
   const tapAt = q >= 0.25 && q < 0.42 ? (q - 0.25) / 0.17 : q >= 0.72 && q < 0.9 ? (q - 0.72) / 0.18 : -1, press = tapAt >= 0 && tapAt < 0.35 ? 1 : 0;
+  const fz = Math.min(1.8, shapes.big || 1); shapes.ui.demo.scale = fz; // the finger grows with the shapes
   resetView(); ctx.save(); ctx.globalAlpha = fade;
-  if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, 12 + tapAt * 34, 0, TAU); ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,248,236,' + (0.8 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
-  ctx.translate(p.x + 6, p.y + 6 + press * 4); ctx.rotate(-0.35); const fw = 22, fl = 64; // a cartoon finger: the tip at the point, the hand below
+  if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, (12 + tapAt * 34) * fz, 0, TAU); ctx.lineWidth = 4 * fz; ctx.strokeStyle = 'rgba(255,248,236,' + (0.8 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
+  ctx.translate(p.x + 6 * fz, p.y + (6 + press * 4) * fz); ctx.rotate(-0.35); ctx.scale(fz, fz); const fw = 22, fl = 64; // a cartoon finger: the tip at the point, the hand below
   ctx.beginPath(); ctx.roundRect(-fw / 2, 0, fw, fl, fw / 2); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#7a4a2a'; ctx.stroke();
   ctx.beginPath(); ctx.roundRect(-fw / 2 + 4, 4, fw - 8, 12, 5); ctx.fillStyle = '#fff1e6'; ctx.fill();
   ctx.beginPath(); ctx.roundRect(-fw / 2 - 6, fl - 14, fw + 34, 46, 18); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.stroke();
@@ -11559,7 +11575,7 @@ window.__grasp = {
     // toddler help: the tap pick (-1: none), the last press, the tap log (select / deselect / fly), the magnet hole while dragging, the assist override (null: touch only), the radii
     get sel() { return shapes.sel; }, get press() { return shapes.press && { ...shapes.press }; }, get tapLog() { return shapes.tapLog; }, get magnet() { return shapes.magnet; }, get demo() { return shapes.demo; },
     get assist() { return shapeAssist(); }, set assist(v) { shapes.assist = v; }, get grabR() { return shapeGrabR(); }, get magnetR() { return shapeMagnetR(); }, get helpR() { return shapeHelpR(); }, get heldInfo() { const h = shapes.held; return h && { i: shapes.shapes.indexOf(h.s), help: h.help, ox: h.ox, oy: h.oy, upAt: h.upAt, edge: !!h.edge }; },
-    slop: SHAPE_TAP_SLOP, lift: SHAPE_TOUCH_LIFT,
+    get slop() { return shapeSlop(); }, get lift() { return shapeLift(); }, get big() { return shapes.big; }, get grid() { return shapes.grid; }, get S() { return shapes.S; },
     get holes() { return shapes.holes.map((h) => ({ kind: h.kind, x: h.x, y: h.y, angle: h.wa, size: 2 * shapes.S, filled: h.filled })); },
     get spoken() { return shapes.spoken; }, get spokenLang() { return shapes.spokenLang; }, get sounds() { return shapes.sounds; }, get result() { return shapes.result; }, get over() { return shapes.over; },
     get stars() { return shapes.stars; }, get levelsDone() { return shapes.levelsDone; }, get mistakes() { return shapes.mistakes; }, get best() { return shapes.best; }, get spec() { return shapes.spec; },

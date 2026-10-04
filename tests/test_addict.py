@@ -147,7 +147,10 @@ async def main():
             bigs = await page.evaluate(f"(() => {{ const now = performance.now(); return {{ act: {S}.floaters.filter(f => f.big && !(f.wait > now)).map(f => f.text), wait: {S}.floaters.filter(f => f.wait > now).map(f => f.text) }}; }})()")
             check(tag + ': one big message at a time: Keystone! shows, WALL +170 and GOLD wait their turn', len(bigs['act']) == 1 and len(bigs['wait']) == 2, bigs)
             await frames(page, 3)
-            R = await page.evaluate("textRects()"); o = await page.evaluate("overlaps(textRects())")
+            for _ in range(8):  # (a loaded container: the layout settles over a few frames; sample until it is clear)
+                R = await page.evaluate("textRects()"); o = await page.evaluate("overlaps(textRects())")
+                if not o: break
+                await frames(page, 1)
             check(tag + ': busy moment: no two texts overlap (floaters, the combo pop, the tag, the spotlight): ' + str(len(R['fl'])) + ' floaters drawn', not o and len(R['fl']) >= 5, [o, R])
             await page.screenshot(path=f'tests/out/addict_busy_{tag}.png')
             await page.wait_for_function(f"{S}.floatLog.length >= 3", timeout=4000)
