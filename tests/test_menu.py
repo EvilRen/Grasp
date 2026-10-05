@@ -13,7 +13,7 @@ HUDR = """(() => { const R = []; const add = (k, r) => { if (r && r.w > 0 && r.h
   const hn = $('hint'); if (hn.classList.contains('show')) { const q = hn.getBoundingClientRect(); add('hint', { x: q.left, y: q.top, w: q.width, h: q.height }); }
   if (gameMode === 'slice') { const y = scoreY(); add('score', { x: W / 2 - 70, y: y - 45, w: 140, h: 75 }); add('hearts', { x: W / 2 - 50, y: y + 20, w: 100, h: 24 }); }
   if (gameMode === 'busy') add('board', busy.board);
-  if (gameMode === 'shapes' && shapes.mat) { const m = shapes.mat; add('level+mat', { x: m.x, y: m.y - 36, w: m.w, h: m.h + 36 }); }
+  if (gameMode === 'shapes' && shapes.mat) { const S = shapes.S; shapes.shapes.forEach((s, i) => add('shape' + i, { x: s.x - 1.06 * S, y: s.y - 1.06 * S, w: 2.12 * S, h: 2.12 * S })); } // (no level title any more; the mat itself reaches up beside the button, its shapes keep clear)
   return R; })()"""
 def hits(a, R):
     return [r['k'] for r in R if r['x'] < a['r'] and r['x'] + r['w'] > a['l'] and r['y'] < a['b'] and r['y'] + r['h'] > a['t']]

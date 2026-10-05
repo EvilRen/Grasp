@@ -146,7 +146,7 @@ async def tap_tests(b, he):
         HR = await page.evaluate(f"{S}.helpR"); S1 = s1['size'] / 2; m = st['mat']; own = next(h for h in st['holes'] if h['kind'] == s1['kind'])
         tx, ty = max(((m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10, m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6) for gx in range(11) for gy in range(7) if math.hypot(m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10 - s1['x'], m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6 - s1['y']) > 60),
                      key=lambda p: math.hypot(p[0] - own['x'], p[1] - own['y']))
-        await fdrag(page, s1['x'], s1['y'] + LIFT, tx, ty + LIFT, up=False)
+        await fdrag(page, s1['x'], s1['y'], tx, ty + LIFT, up=False)
         mid = await page.evaluate(f"({{ held: {S}.held, s: {S}.shapes[{i1}], info: {S}.heldInfo }})")
         check(f'phone: a real drag drags: held, the shape sits ~lift ({LIFT:.0f}) px above the finger', mid['held'] == i1 and abs(mid['s']['x'] - tx) < 4 and abs(mid['s']['y'] - ty) < 4 and mid['info']['help'], mid)
         await page.evaluate(f"fing('pointerup', 1, {tx}, {ty + LIFT})"); await page.wait_for_timeout(400)
@@ -168,7 +168,7 @@ async def tap_tests(b, he):
         # (the direction away from the other shapes and inside the mat: with big shapes the mat is crowded, and the nearest shape wins)
         def _away(a):
             x, y = s0['x'] + S_ * 1.6 * math.cos(a), s0['y'] + S_ * 1.6 * math.sin(a)
-            inside = st['mat']['x'] < x < st['mat']['x'] + st['mat']['w'] and st['mat']['y'] < y < st['mat']['y'] + st['mat']['h']
+            inside = st['mat']['x'] < x < st['mat']['x'] + st['mat']['w'] and st['mat']['top'] + LIFT < y < st['mat']['y'] + st['mat']['h']
             return (inside, min(math.hypot(x - q['x'], y - q['y']) for q in st['shapes'][1:]))
         ga = max([math.radians(d) for d in range(0, 360, 15)], key=_away)
         gx, gy = s0['x'] + S_ * 1.6 * math.cos(ga), s0['y'] + S_ * 1.6 * math.sin(ga)
@@ -207,8 +207,12 @@ async def tap_tests(b, he):
         st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes }})")
         s1 = st['shapes'][1]; h1 = next(h for h in st['holes'] if h['kind'] == s1['kind'] and not h['filled'])
         M_, H_ = await page.evaluate(f"[{S}.magnetR, {S}.helpR]"); dist = min(H_ - 6, max((M_ + H_) / 2, M_ + 48))  # the finger (40 px below the shape) outside the magnet too
-        tx, ty = h1['x'], h1['y'] - dist  # straight above its hole (toward the mat)
-        await fdrag(page, s1['x'], s1['y'], tx, ty + 40, up=False)
+        # (the whole-screen layout: the spot `dist` from its hole, on screen, farthest from the other holes and a real drag away from the shape)
+        S1 = s1['size'] / 2
+        cands = [(h1['x'] + dist * math.cos(math.radians(a)), h1['y'] + dist * math.sin(math.radians(a))) for a in range(0, 360, 10)]
+        cands = [(x, y) for x, y in cands if S1 < x < 360 - S1 and S1 + 10 < y < 740 - LIFT - 10 and math.hypot(x - s1['x'], y - s1['y']) > 90]
+        tx, ty = max(cands, key=lambda q: min(math.hypot(q[0] - h['x'], q[1] - h['y']) for h in st['holes'] if h is not h1))
+        await fdrag(page, s1['x'], s1['y'], tx, ty + LIFT, up=False)
         under = await page.evaluate(f"({{ mag: {S}.magnet, s: {S}.shapes[1] }})")
         await page.evaluate(f"fing('pointerup', 1, {tx}, {ty + LIFT})")
         ok = await wait(page, f"{S}.shapes[1].anim === 'fly'", 1500)
@@ -271,12 +275,19 @@ async def click_click(b):
     check('mouse: click a shape, then click its hole: it flies in (click-click)', sel == 1 and ok, sel)
     check('mouse click-click: no page errors', not errs, errs); await ctx.close()
 
-# ---- big shapes (a 2-year-old on a phone): levels 1-3 ~1.5x the classic size (a shape >= ~30% of the screen width), a gradual step back from
-# level 4, never smaller than the classic size; no overlaps on the mat or in the box (pixel test of the real outlines); the toddler aids scale ----
+# ---- big shapes (a 2-year-old on a phone), the whole screen (a parent: "no one cares about level 1 or money"): no level title / dots / coin pill
+# in play; the mat from the top (beside the pause pill) and the box down to the bottom fill >= 90% of the usable height (full width minus a 10 px
+# gutter; landscape / desktop: side by side when that is bigger); level 1 shapes >= 40% of a phone's width; never smaller than before (PREV) or
+# the classic size; no overlaps on the mat or in the box (pixel test of the real outlines), holes inside the lid at both slide ends, the rocking
+# box's corners on screen at its widest angle, clear of the mat; the toddler aids scale ----
 # the classic S (before this change) per level 1..10, measured with the old layout
 CLASSIC = {(360, 740): [36.6, 42.1, 36.2, 35.9, 35.9, 35.9, 29.3, 28.1, 22.9, 19.5], (390, 844): [39.7, 45.6, 39.2, 38.9, 38.9, 38.9, 31.7, 30.5, 25.9, 21.1],
            (412, 915): [41.9, 48.2, 41.5, 41.1, 41.1, 41.1, 33.5, 32.2, 27.3, 22.3], (1280, 800): [70, 63, 58.8, 56, 56, 56, 56, 56, 51.6, 45.7],
            (740, 360): [33.8, 22.8, 22.2, 22.9, 22.9, 20.3, 22.9, 19.5, 22.9, 18]}
+# the S per level 1..10 before the whole-screen layout (the smallest of several random builds), measured with that layout
+PREV = {(360, 740): [59.2, 55.6, 55.6, 43.2, 41.2, 40.1, 40.5, 33.9, 32.8, 29.9], (390, 844): [65.4, 65.3, 65.3, 47.7, 47.7, 47.3, 44.2, 40, 35.8, 32.8],
+        (412, 915): [69.4, 69.4, 69.4, 50.7, 50.7, 50.7, 46.8, 43.9, 39, 34.9], (1280, 800): [92, 92, 92, 87.6, 73.8, 73.5, 73.8, 66.7, 62.4, 55.5],
+        (740, 360): [37.5, 37.5, 37.5, 35.6, 35.6, 26.7, 35.6, 24.6, 28.6, 19.9]}
 OVERLAP_JS = r"""(() => { // pixel test of the real outlines: the mat's shapes (at home, upright) and the holes' recesses never overlap; each stays inside its mat / lid
   const c = document.createElement('canvas'); c.width = innerWidth; c.height = innerHeight; const g = c.getContext('2d', { willReadFrequently: true });
   const S = shapes.S, b = shapes.box, m = shapes.mat, its = [];
@@ -292,12 +303,25 @@ OVERLAP_JS = r"""(() => { // pixel test of the real outlines: the mat's shapes (
     g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height); g.fillStyle = g.strokeStyle = '#f00'; draw(A, A.pad); g.globalCompositeOperation = 'source-in'; draw(B, B.pad);
     const n = any(x0, y0, x1, y1); if (n) over.push([A.w, A.k, B.k, n]);
   }
-  for (const it of its) { // inside: the shape on the mat, the hole and its rim on the lid
-    g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height); g.fillStyle = g.strokeStyle = '#f00'; draw(it, it.w === 'box' ? Math.max(4, S * 0.17) : 0);
-    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; if (it.w === 'mat') g.fillRect(m.x, m.y, m.w, m.h); else g.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
+  const amp = (b.slideAmp || 0), slides = amp > 0 ? [amp, -amp] : [0], a0 = shapes.boxAng, s0 = shapes.slide;
+  for (const sl of slides) { shapes.boxAng = 0; shapes.slide = sl; updateShapeHoles(); for (const h of shapes.holes) its.push({ k: h.kind, x: h.x, y: h.y, a: h.wa, r: S * 1.08, w: 'lid', pad: 1 }); }
+  shapes.boxAng = a0; shapes.slide = s0; updateShapeHoles();
+  for (const it of its) { // inside: the shape on the mat (clear of the pause corner's row), the hole and its rim on the lid (level, at both slide ends)
+    if (it.w === 'box') continue;
+    g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, c.width, c.height); g.fillStyle = g.strokeStyle = '#f00'; draw(it, it.w === 'lid' ? Math.max(4, S * 0.17) : 0);
+    g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; if (it.w === 'mat') g.fillRect(m.x, m.top, m.w, m.y + m.h - m.top); else g.fillRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h);
     const n = any(it.x - 1.8 * S, it.y - 1.8 * S, it.x + 1.8 * S, it.y + 1.8 * S); if (n) out.push([it.w, it.k, n]);
   }
-  return { over, out, S, n: shapes.shapes.length, grid: shapes.grid, matBottom: m.y + m.h, boxTop: b.y - b.h / 2 - Math.abs(Math.sin(b.rock || 0)) * b.w / 2 };
+  const cor = []; for (const a of [-(b.rock || 0), 0, b.rock || 0]) { const c = Math.cos(a), s = Math.sin(a); for (const [x, y] of [[-b.w / 2, -b.h / 2], [b.w / 2, -b.h / 2], [-b.w / 2, b.h / 2 + b.depth], [b.w / 2, b.h / 2 + b.depth]]) cor.push([b.x + x * c - y * s, b.y + x * s + y * c]); }
+  const bb = { x0: Math.min(...cor.map((p) => p[0])), x1: Math.max(...cor.map((p) => p[0])), y0: Math.min(...cor.map((p) => p[1])), y1: Math.max(...cor.map((p) => p[1])) };
+  const zones = shapes.zones || [], R = 1.0 * S; const pill = shapes.shapes.filter((s) => zones.some((z) => s.hy - R < z.y1 && s.hx + R > z.x0 && s.hx - R < z.x1)).length;
+  const side = !!(shapes.grid && shapes.grid.side), U = innerHeight - 20, UW = innerWidth - 20;
+  return { over, out, S, n: shapes.shapes.length, grid: shapes.grid, pill, bb, W: innerWidth, H: innerHeight,
+    offscreen: cor.filter((p) => p[0] < -0.5 || p[0] > innerWidth + 0.5 || p[1] < -0.5 || p[1] > innerHeight + 0.5).length,
+    matHitsBox: m.x < bb.x1 - 0.5 && m.x + m.w > bb.x0 + 0.5 && m.y < bb.y1 - 0.5 && m.y + m.h > bb.y0 + 0.5,
+    fillH: side ? Math.min(m.h, bb.y1 - bb.y0) / U : (bb.y1 - m.y) / U, fillW: side ? (m.x + m.w - bb.x0) / UW : Math.min(m.w, bb.x1 - bb.x0) / UW, // (at its widest angle, a rocking box)
+    boxShare: side ? 0 : (b.h + b.depth) / U };
+
 })()"""
 
 async def big_layout(b, w, h, mobile, he=False, shots=()):
@@ -307,27 +331,32 @@ async def big_layout(b, w, h, mobile, he=False, shots=()):
     await page.add_init_script(INIT + SPEECH + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("typeof engine !== 'undefined' && !!engine", timeout=15000)
     await (page.tap if mobile else page.click)('.modes button[data-mode=shapes]'); await wait(page, "gameMode === 'shapes' && !!shapes.box", 15000); await page.wait_for_timeout(300)
-    sizes, bad = [], []
+    sizes, bad, fills = [], [], []
     for n in range(1, 11):
         worst = None
         for rep in range(1 if n == 1 else 4): # random kinds (and hole angles from level 4): a few builds per level
             r = await page.evaluate(f"(() => {{ __grasp.shapes.setLevel({n}); return {OVERLAP_JS}; }})()")
-            if r['over'] or r['out'] or r['matBottom'] > r['boxTop'] + 0.5: bad.append((n, r))
+            if r['over'] or r['out'] or r['offscreen'] or r['matHitsBox'] or r['pill']: bad.append((n, r))
+            fills.append((n, r['fillH'], r['fillW'], r['boxShare'], (r['grid'] or {}).get('side')))
             worst = r if worst is None or r['S'] < worst['S'] else worst
         sizes.append(worst['S'])
         if n in shots:
             await page.evaluate(f"__grasp.shapes.setLevel({n}); shapes.demo = null"); await page.wait_for_timeout(700)
-            await page.screenshot(path=f'tests/out/shapes_big_{shots[n]}.png')
-    check(f'big {tag}: levels 1-10 fit with no overlaps on the mat or in the box, everything inside its mat / lid', not bad, bad[:3])
-    cl = CLASSIC[(w, h)]
-    check(f'big {tag}: never smaller than the classic size (levels 1-10)', all(sizes[i] >= cl[i] - 0.5 for i in range(10)), [(round(a, 1), c) for a, c in zip(sizes, cl)])
+            await page.screenshot(path=f'tests/out/shapes_full_{shots[n]}.png')
+    check(f'big {tag}: levels 1-10 fit with no overlaps on the mat or in the box, everything inside its mat / lid (holes at both slide ends), no home spot under the pause pill, the rocking box on screen and clear of the mat', not bad, bad[:3])
+    cl, pv = CLASSIC[(w, h)], PREV[(w, h)]
+    check(f'big {tag}: never smaller than the classic size or than before the whole-screen layout (levels 1-10: {" / ".join(f"{a:.0f}" for a in sizes)}, was {" / ".join(f"{a:.0f}" for a in pv)})',
+          all(sizes[i] >= cl[i] - 0.5 and sizes[i] >= pv[i] - 0.5 for i in range(10)), [(round(a, 1), c, p) for a, c, p in zip(sizes, cl, pv)])
+    lo_h, lo_w = min(f[1] for f in fills), min(f[2] for f in fills)
+    check(f'big {tag}: the mat and the box fill the screen (>= 90% of the usable height: min {lo_h:.0%}; width: min {lo_w:.0%})', lo_h >= 0.9 and lo_w >= 0.9, [f for f in fills if f[1] < 0.9 or f[2] < 0.9][:4])
     if mobile and w < h:
-        check(f'big {tag}: levels 1-3 very big: a shape >= 30% of the screen width ({", ".join(f"{2 * x / w:.0%}" for x in sizes[:3])}), >= 1.3x the classic level-2 size',
-              all(2 * x >= 0.30 * w for x in sizes[:3]) and sizes[1] >= 1.3 * cl[1], [round(x, 1) for x in sizes])
-        check(f'big {tag}: then a gradual step back (3 > 4 >= 5 >= 6, level 8 near the classic size)', sizes[3] < sizes[2] and sizes[4] <= sizes[3] + 0.5 and sizes[5] <= sizes[4] + 0.5 and sizes[7] < sizes[3] and sizes[7] / cl[7] < sizes[0] / cl[0], [round(x, 1) for x in sizes])
+        check(f'big {tag}: level 1 shapes >= 40% of the screen width ({2 * sizes[0] / w:.0%}), levels 2-3 >= 30% ({", ".join(f"{2 * x / w:.0%}" for x in sizes[1:3])})',
+              2 * sizes[0] >= 0.40 * w and all(2 * x >= 0.30 * w for x in sizes[1:3]), [round(x, 1) for x in sizes])
+        check(f'big {tag}: stacked, the box ~55% of the height on level 1 ({fills[0][3]:.0%}), then smaller shapes as levels add more (level 8 < level 4 < level 1)', not fills[0][4] and 0.45 <= fills[0][3] <= 0.65 and sizes[7] < sizes[3] < sizes[0], [fills[0], [round(x, 1) for x in sizes]])
     else:
-        check(f'big {tag}: early levels bigger than the classic size but capped by the height (no giant blobs: S <= 12% of the height)', sizes[0] >= cl[0] and max(sizes) <= 0.12 * h + 0.5 and (w < 1000 or sizes[0] >= 1.25 * cl[0]), [round(x, 1) for x in sizes])
+        check(f'big {tag}: early levels bigger than before but capped by the height (no giant blobs: S <= 15% of the height)', sizes[0] >= cl[0] and max(sizes) <= 0.15 * h + 0.5 and (w < 1000 or sizes[0] >= 1.25 * cl[0]), [round(x, 1) for x in sizes])
     check(f'big {tag}: no page errors', not errs, errs); await ctx.close()
+    print(f'  sizes {tag}: S ' + ' / '.join(f'{x:.0f}' for x in sizes) + f'  (level 1 shape = {2 * sizes[0] / w:.0%} of the width; ' + ('side by side' if fills[0][4] else 'stacked') + ')')
     return sizes
 
 async def big_play(b, he):
@@ -351,7 +380,9 @@ async def big_play(b, he):
               ai['assist'] and ai['big'] > 1.15 and abs(ai['R'] - 1.75 * S_) < 1 and abs(ai['M'] - 2.4 * S_) < 1 and abs(ai['H'] - 4.2 * S_) < 1 and ai['lift'] > 44 and ai['slop'] > 22, ai)
         if lv == 1: await page.wait_for_timeout(200); await page.screenshot(path=f'tests/out/shapes_big_tap_selected_{tag}.png')
         await page.evaluate("rings.length = 0")
-        await tap(page, hl['x'] - 1.2 * S_, hl['y'])
+        # (on its rim, 1.2 S out, on the side away from the other holes: the whole-screen layout packs the holes closer)
+        ra = max([math.radians(d) for d in range(0, 360, 15)], key=lambda a: min([math.hypot(hl['x'] + 1.2 * S_ * math.cos(a) - h['x'], hl['y'] + 1.2 * S_ * math.sin(a) - h['y']) for h in st['holes'] if h is not hl] or [1e9]))
+        await tap(page, hl['x'] + 1.2 * S_ * math.cos(ra), hl['y'] + 1.2 * S_ * math.sin(ra))
         ok2 = await wait(page, f"{S}.shapes[0].placed", 3000)
         rw = await page.evaluate("Math.max(0, ...rings.map(r => r.width))")
         check(f'{tag} big L{lv}: tap the shape (at its edge, a {st["slop"] - 4:.0f} px wobble), then the hole (at its rim): it flies in; a wider ring', ok and ok2 and rw > 6.5, [ok, ok2, rw])
@@ -367,12 +398,40 @@ async def big_play(b, he):
         check(f'{tag} big L{lv}: a touch drag from the shape\'s lower half: held above the finger, pulled by its hole\'s magnet, let go: in', ok and hi['h'] and hi['h']['i'] == 1 and hi['h']['oy'] < -44 and hi['m'] >= 0, hi)
     check(tag + ' big: no page errors', not errs, errs); await ctx.close()
 
+SPY_JS = """(async (k) => { const seen = []; let coins = 0; const o = textSprite, oc = coinSprite; // what one Shapes frame draws: its texts and coins
+  textSprite = (txt, ...a) => { seen.push(String(txt)); return o(txt, ...a); }; coinSprite = (...a) => { coins++; return oc(...a); };
+  try { for (let i = 0; i < k; i++) await new Promise((r) => requestAnimationFrame(r)); } finally { textSprite = o; coinSprite = oc; }
+  return { seen, coins, box: coinUi.box, phase: shapes.phase, level: shapes.level, hud: typeof drawShapeHud }; })"""
+
+async def hud_tests(b, he):
+    tag = 'he' if he else 'en'
+    ctx, page, errs = await ctx_page(b, True, he, init=FING_W)
+    await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes' && shapes.phase === 'play'"); await page.wait_for_timeout(500)
+    await page.evaluate("shapes.demo = null")
+    for lv in (1, 4):
+        await page.evaluate(f"{S}.setLevel({lv})"); await page.wait_for_timeout(300)
+        r = await page.evaluate(SPY_JS + "(6)"); lvl = await page.evaluate(f"t('levelN', {{ n: {lv} }})")
+        check(f'{tag} phone L{lv}: no HUD in play: no level title ("{lvl}"), no progress dots, no coin pill (only the pause button)', r['phase'] == 'play' and lvl not in r['seen'] and r['coins'] == 0 and r['box'] is None and r['hud'] == 'undefined', r)
+        if lv == 1: await page.screenshot(path=f'tests/out/shapes_full_phone_l1_{tag}.png')
+    # the level-up moment keeps its card (stars + coins) and its short banner
+    await page.evaluate(f"{S}.setLevel(1)"); await page.wait_for_timeout(300)
+    await page.evaluate(f"{S}.shapes.forEach((s, i) => {S}.placeTest(i))")
+    ok = await wait(page, f"{S}.phase === 'done'", 5000); await page.wait_for_timeout(700)
+    r = await page.evaluate(SPY_JS + "(4)")
+    check(f'{tag} phone: the level-done card still shows its stars and coins', ok and r['phase'] == 'done' and r['coins'] >= 1, r)
+    ok = await wait(page, f"{S}.phase === 'banner'", 6000)
+    r = await page.evaluate(SPY_JS + "(3)"); lvl = await page.evaluate("t('levelN', { n: 2 })")
+    check(f'{tag} phone: ...then the short "{lvl}" banner (only there)', ok and lvl in r['seen'] and r['coins'] == 0, r)
+    await page.wait_for_timeout(200); await page.screenshot(path=f'tests/out/shapes_full_banner_{tag}.png')
+    check(tag + ' phone (hud): no page errors', not errs, errs); await ctx.close()
+
 async def big_tests(b):
+    for he in (False, True): await hud_tests(b, he)
     for (w, h) in ((360, 740), (390, 844), (412, 915)):
-        await big_layout(b, w, h, True, shots={1: f'phone_l1_{w}', 2: f'phone_l2_{w}', 3: f'phone_l3_{w}', 4: f'phone_l4_{w}', 8: f'phone_l8_{w}'} if w == 360 else {1: f'phone_l1_{w}'})
+        await big_layout(b, w, h, True, shots={1: f'phone_l1_{w}', 2: f'phone_l2_{w}', 3: f'phone_l3_{w}', 4: f'phone_l4_{w}', 8: f'phone_l8_{w}'} if w == 360 else {1: f'phone_l1_{w}', 3: f'phone_l3_{w}', 6: f'phone_l6_{w}'} if w == 412 else {1: f'phone_l1_{w}'})
     await big_layout(b, 360, 740, True, he=True, shots={1: 'phone_l1_he', 3: 'phone_l3_he'})
-    await big_layout(b, 1280, 800, False, shots={1: 'desktop_l1', 4: 'desktop_l4'})
-    await big_layout(b, 740, 360, True, shots={1: 'landscape_l1'})
+    await big_layout(b, 1280, 800, False, shots={1: 'desktop_l1', 4: 'desktop_l4', 8: 'desktop_l8'})
+    await big_layout(b, 740, 360, True, shots={1: 'landscape_l1', 4: 'landscape_l4', 9: 'landscape_l9'})
     for he in (False, True): await big_play(b, he)
 
 async def main():
@@ -421,9 +480,10 @@ async def main():
         bk = await page.evaluate(f"{S}.shapes[{i1}]")
         check('...and lands back on its spot on the mat', ok and abs(bk['x'] - s1['x']) < 1 and abs(bk['y'] - s1['y']) < 1, [bk, s1])
         # dropped on the mat: stays there
-        await drag(page, s1['x'], s1['y'], s1['x'] + 60, s1['y'] + 10); await page.mouse.up(); await page.wait_for_timeout(150)
+        DX = 60 if s1['x'] < 640 else -60  # (toward the middle: the big shapes' spots reach the mat's sides)
+        await drag(page, s1['x'], s1['y'], s1['x'] + DX, s1['y'] + 10); await page.mouse.up(); await page.wait_for_timeout(150)
         mv = await page.evaluate(f"{S}.shapes[{i1}]")
-        check('dropped on the mat: it stays where it was let go', abs(mv['x'] - (s1['x'] + 60)) < 2 and abs(mv['y'] - (s1['y'] + 10)) < 2 and not mv['placed'] and mv['anim'] is None, mv)
+        check('dropped on the mat: it stays where it was let go', abs(mv['x'] - (s1['x'] + DX)) < 2 and abs(mv['y'] - (s1['y'] + 10)) < 2 and not mv['placed'] and mv['anim'] is None, mv)
 
         # level completed: confetti, stars, coins, Grippy's spoken cheer, then the 'Level 2' banner and 4 shapes
         c0 = await page.evaluate("__grasp.profile.coins")
@@ -568,8 +628,8 @@ async def main():
             ok = await wait(page, f"{S}.shapes[0].placed")
             check(tag + ' phone: back to one finger, dragged onto its hole: it drops in, the name spoken', ok and await page.evaluate(f"{S}.spoken") == ({'circle': 'עיגול', 'square': 'ריבוע', 'triangle': 'משולש'} if he else {'circle': 'Circle', 'square': 'Square', 'triangle': 'Triangle'})[s0['kind']])
             await page.evaluate(f"{S}.setLevel(8)"); await page.wait_for_timeout(500)
-            st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, box: {S}.box }})")
-            check(tag + ' phone: level 8 (7 shapes) fits too', len(st['shapes']) == 7 and all(10 <= s['x'] <= 350 and 90 < s['y'] < st['box']['y'] - st['box']['h'] / 2 for s in st['shapes']), st)
+            st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, box: {S}.box, mat: {S}.mat }})")
+            check(tag + ' phone: level 8 (7 shapes) fits too', len(st['shapes']) == 7 and all(10 <= s['x'] <= 350 and st['mat']['top'] < s['y'] < st['box']['y'] - st['box']['h'] / 2 for s in st['shapes']), st)
             await page.screenshot(path='tests/out/shapes_phone_l8_' + tag + '.png')
             check(tag + ' phone: no page errors', not errs, errs); await ctx.close()
 

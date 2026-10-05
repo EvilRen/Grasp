@@ -5143,44 +5143,129 @@ function buildShapesLevel(n, now) { // the shapes and holes of level n, laid out
   const order = shuffled(shapes.shapes.map((_, i) => i), r); shapes.shapes.forEach((s, i) => (s.slot = order[i]));
   layoutShapes(true);
 }
-// Sizes: levels 1-3 are very big for a toddler on a phone (about 1.5x the classic size: a shape ~ a third of a 360 px wide screen), then a
-// gradual step back to the classic size (SHAPE_BIG: level 8+ = 1). Capped by the screen's height (desktop / landscape: no giant blobs) and
-// never smaller than the classic size. The search tries every hole-grid / mat-grid column count and keeps the biggest S that fits.
-const SHAPE_BIG = [1, 1.5, 1.5, 1.5, 1.3, 1.2, 1.12, 1.06], SHAPE_HCELL = 2.5, SHAPE_HCELL_ROT = 2.75, SHAPE_MCELL_W = 2.5, SHAPE_MCELL_H = 2.35, SHAPE_MSTAG = 2.1;
-function shapeRows(n, cols) { const r = []; for (let k = n; k > 0; k -= cols) r.push(Math.min(cols, k)); return r; } // items per row (the last row may be shorter)
-function shapeRowYs(rows, full, stag) { const ys = [0]; for (let i = 1; i < rows.length; i++) ys.push(ys[i - 1] + ((rows[i - 1] - rows[i]) % 2 ? stag : full)); return ys; } // row centres: a row offset by half a cell nests closer
+// Layout (a parent: "it's not using the screen; no one cares about level 1 or money"): no HUD in play, only the ⏸ pill. The mat starts at the top
+// (beside the pill: the shapes' home spots keep clear of it, else they start under it) and the box reaches the bottom safe area, both full width
+// minus a 10 px gutter (stacked, the box ~55% of the height; landscape / desktop: side by side when that fits bigger shapes). The search tries
+// every hole grid / mat grid (rows or columns; a short line nests into its neighbour) and keeps the biggest S that fits (bisection), capped at
+// SHAPE_BIG[level] x 15.5% of the short side and 15% of the height (desktop / landscape: no giant blobs), never below the classic size. Cells come
+// from the real outlines (SHAPE_RAD: the farthest point from the centre; an upright crescent is placed 0.24 S to the right, SHAPE_OFFX, so its
+// body is centred). A rocking box is sized so that its turned
+// corners stay inside its part of the screen; a sliding row of holes slides as far as the lid allows (up to 1.1 S, at least 0.6 S).
+const SHAPE_BIG = [1, 1.5, 1.5, 1.5, 1.3, 1.2, 1.12, 1.06], SHAPE_GUTTER = 10, SHAPE_HOLE_K = 1.08;
+const SHAPE_OFFX = { crescent: 0.24 }, SHAPE_RAD = { circle: 1, square: 1.11, rectangle: 1.12, oval: 1, star: 1.1, triangle: 1.21, hexagon: 0.98, pentagon: 1.04, diamond: 1.05, cross: 1.04, heart: 1.08, crescent: 1.26 };
+function shapeRows(n, cols) { const r = []; for (let k = n; k > 0; k -= cols) r.push(Math.min(cols, k)); return r; } // items per line (the last line may be shorter)
+function shapeRowYs(rows, full, stag) { const ys = [0]; for (let i = 1; i < rows.length; i++) ys.push(ys[i - 1] + ((rows[i - 1] - rows[i]) % 2 ? stag : full)); return ys; } // line offsets: a line offset by half a cell nests closer
 function shapeClassicS(sp) { return sp.size * Math.max(34, Math.min(70, Math.min(W, H) * 0.13)); } // the size before the toddler boost (the old cap)
-function layoutShapes(fresh) { // the mat (top), the box (lower middle), the hole grid on the lid and the shapes' home spots on the mat
+function shapeGrid(n, k, tr, rev, ca, cb, st) { // n items, k to a line (rows; tr: columns; rev: the short line first), ca apart along a line, cb (st: nested) across; centred on 0
+  const lines = shapeRows(n, k); if (rev) lines.reverse(); const offs = shapeRowYs(lines, cb, st), o0 = offs[offs.length - 1] / 2, pts = [];
+  lines.forEach((c, i) => { for (let q = 0; q < c; q++) { const a = (q - (c - 1) / 2) * ca, b = offs[i] - o0; pts.push(tr ? { x: b, y: a } : { x: a, y: b }); } });
+  const along = (Math.max(...lines) - 1) * ca, across = offs[offs.length - 1];
+  return { pts, w: tr ? across : along, h: tr ? along : across };
+}
+let shapeSafeEl = null;
+function shapeSafe() { // the safe-area insets (a notch, the home bar), read from a hidden probe
+  try {
+    if (!shapeSafeEl) { shapeSafeEl = document.createElement('div'); shapeSafeEl.setAttribute('aria-hidden', 'true'); shapeSafeEl.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)'; document.body.appendChild(shapeSafeEl); }
+    const cs = getComputedStyle(shapeSafeEl); return { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+  } catch { return { t: 0, r: 0, b: 0, l: 0 }; }
+}
+function shapeZones() { // the screen corners the ⏸ pill (and a camera preview) take: no home spot under them
+  if (document.querySelector('.chrome.open') && shapes.zones) return shapes.zones; // (the pause sheet is open: as before)
+  const z = [], c = document.querySelector('.chrome').getBoundingClientRect();
+  if (c.height > 0) z.push({ x0: c.left - 6, x1: c.right + 6, y1: c.bottom + 6 });
+  if (mode === 'camera' && !preview.hidden) { const p = preview.getBoundingClientRect(); z.push({ x0: p.left - 6, x1: p.left + 102, y1: Math.max(p.top + 20, chromeRow.bottom) + 6 }); }
+  return (shapes.zones = z);
+}
+const shapeSpanCache = new Map(), shapeCellCache = new Map(), SHAPE_SP = 48; // (outlines rasterised at S = 48 px)
+function shapeSpans(kind, k, pad) { // the upright outline at radius k S, grown by pad S (an upright crescent nudged, SHAPE_OFFX), as row spans in px from the centre
+  const key = kind + '|' + k + '|' + pad; let r = shapeSpanCache.get(key); if (r) return r;
+  const P = SHAPE_SP, N = Math.ceil(P * (1.4 * k + pad)) + 4, c = document.createElement('canvas'); c.width = c.height = 2 * N; const g = c.getContext('2d', { willReadFrequently: true });
+  g.translate(N + (SHAPE_OFFX[kind] || 0) * k * P, N); shapePath(g, kind, k * P); g.fillStyle = g.strokeStyle = '#000'; g.fill(); if (pad > 0) { g.lineJoin = 'round'; g.lineWidth = 2 * pad * P; g.stroke(); }
+  const d = g.getImageData(0, 0, 2 * N, 2 * N).data; r = { N, rows: [], l: 0, r: 0, t: 0, b: 0 };
+  for (let y = 0; y < 2 * N; y++) { const row = []; let x0 = -1; for (let x = 0; x <= 2 * N; x++) { const on = x < 2 * N && d[(y * 2 * N + x) * 4 + 3] > 10; if (on && x0 < 0) x0 = x; else if (!on && x0 >= 0) { row.push([x0 - N, x - 1 - N]); x0 = -1; } } r.rows.push(row);
+    if (row.length) { r.l = Math.min(r.l, row[0][0]); r.r = Math.max(r.r, row[row.length - 1][1]); r.t = Math.min(r.t, y - N); r.b = Math.max(r.b, y - N); } }
+  shapeSpanCache.set(key, r); return r;
+}
+function shapeSpansHit(A, B, dx, dy) { // A at 0, B at (dx, dy) px: do they overlap?
+  const ox = Math.round(dx), oy = Math.round(dy);
+  for (let y = 0; y < A.rows.length; y++) { const yb = y - A.N - oy + B.N; if (yb < 0 || yb >= B.rows.length) continue; for (const [a0, a1] of A.rows[y]) for (const [b0, b1] of B.rows[yb]) if (a0 <= b1 + ox && b0 + ox <= a1) return true; }
+  return false;
+}
+function shapeCells(kinds, hole) { // the grid spacings (in S) for these upright outlines (holes: 1.08 S + a 0.08 S gap; the mat: S + 0.25 S): side by side (x), stacked (y),
+  // a nested row half a cell along (ny), a nested column half a cell down (nx); measured on the real outlines, every ordered pair (a level's kinds differ)
+  const key = (hole ? 'h|' : 'm|') + kinds.slice().sort().join(','); let r = shapeCellCache.get(key); if (r) return r;
+  const P = SHAPE_SP, k = hole ? SHAPE_HOLE_K : 1, pad = hole ? 0.04 : 0.125, sp = kinds.map((q) => shapeSpans(q, k, pad));
+  const scan = (f, t) => { while (t > 0 && !f(t - 1)) t--; return t + 1; }; // the nearest free offset, from a surely free one (the boxes apart) to near (+1 px)
+  let x = 0, y = 0;
+  for (let i = 0; i < sp.length; i++) for (let j = 0; j < sp.length; j++) if (i !== j || sp.length === 1) {
+    x = Math.max(x, scan((t) => shapeSpansHit(sp[i], sp[j], t, 0), sp[i].r - sp[j].l + 1)); y = Math.max(y, scan((t) => shapeSpansHit(sp[i], sp[j], 0, t), sp[i].b - sp[j].t + 1));
+  }
+  let nx = 0, ny = 0;
+  for (let i = 0; i < sp.length; i++) for (let j = 0; j < sp.length; j++) if (i !== j || sp.length === 1) for (const sg of [-1, 1]) {
+    ny = Math.max(ny, scan((t) => shapeSpansHit(sp[i], sp[j], sg * x / 2, t), sp[i].b - sp[j].t + 1)); nx = Math.max(nx, scan((t) => shapeSpansHit(sp[i], sp[j], t, sg * y / 2), sp[i].r - sp[j].l + 1));
+  }
+  const ex = Math.max(...sp.map((q) => Math.max(q.r, -q.l))) / P - pad, ey = Math.max(...sp.map((q) => Math.max(q.b, -q.t))) / P - pad; // the outlines' far sides (x, y), no gap
+  r = { x: x / P, y: y / P, nx: Math.min(nx, x) / P, ny: Math.min(ny, y) / P, ex, ey }; shapeCellCache.set(key, r); return r;
+}
+function layoutShapes(fresh) { // the mat (top / the end side), the box (bottom / the start side), the hole grid on the lid and the shapes' home spots on the mat
   const sp = shapes.spec; if (!sp) return;
-  const n = shapes.shapes.length, top = Math.max(64, Math.round(chromeRow.bottom) + 8) + 36, side = 12, bottom = Math.max(18, Math.round(H * 0.03)), rock = sp.rock * (W < 600 ? 0.6 : 1);
-  const base = Math.max(34, Math.min(70, Math.min(W, H) * 0.13)), classic = shapeClassicS(sp), cap = Math.max(classic, Math.min((SHAPE_BIG[sp.n] || 1) * base, H * 0.115));
-  const hk = sp.rotated ? SHAPE_HCELL_ROT : SHAPE_HCELL; // a hole cell (in S): room for any outline at any angle, or upright
-  const fit = (S, hc, mc) => {
-    const pad = Math.max(12, S * 0.2), padX = Math.max(12, S * 0.3), slideAmp = sp.slide ? S * 1.1 : 0, cell = S * hk, hrows = shapeRows(n, hc), hys = shapeRowYs(hrows, cell, cell * 0.87); // (padX: room for a crescent's wide side)
-    const bw = hc * cell + 2 * padX + 2 * slideAmp; if (bw > W - 2 * side + 0.5) return null;
-    const bh = hys[hys.length - 1] + cell + 2 * pad, depth = Math.max(12, bh * 0.1), by = H - bottom - depth - bh / 2, rockY = rock ? Math.sin(rock) * bw / 2 : 0;
-    const matTop = top, matH = by - bh / 2 - rockY - 14 - matTop, matW = W - 2 * side; if (mc * SHAPE_MCELL_W * S > matW - 8) return null;
-    const mrows = shapeRows(n, mc), mys = shapeRowYs(mrows, SHAPE_MCELL_H * S, SHAPE_MSTAG * S); if (matH < mys[mys.length - 1] + SHAPE_MCELL_H * S + 8) return null;
-    return { S, pad, slideAmp, cell, bw, bh, depth, by, matTop, matH, matW, hc, mc, hrows, hys, mrows, mys };
+  const n = shapes.shapes.length, kinds = shapes.shapes.map((s) => s.kind), HK = SHAPE_HOLE_K;
+  const sf = shapeSafe(), gap = 10, X0 = sf.l + SHAPE_GUTTER, X1 = W - sf.r - SHAPE_GUTTER, Y0 = sf.t + SHAPE_GUTTER, Y1 = H - sf.b - SHAPE_GUTTER, zones = shapeZones();
+  const yUnder = Math.max(Y0, ...zones.map((z) => z.y1)), rock = sp.rock * (W < 600 ? 0.6 : 1), sn = Math.sin(rock), cs = Math.cos(rock), det = cs * cs - sn * sn, port = H >= W;
+  const classic = shapeClassicS(sp), cap = Math.max(classic, Math.min((SHAPE_BIG[sp.n] || 1) * 0.155 * Math.min(W, H), 0.15 * H));
+  const rads = kinds.map((k) => SHAPE_RAD[k] || 1.26).sort((a, b) => b - a);
+  const D = HK * (rads[0] + (rads[1] || rads[0])) + 0.14, hcl = sp.rotated ? { x: D, y: D, nx: D * 0.87, ny: D * 0.87 } : shapeCells(kinds, true), mcl = shapeCells(kinds, false); // the cells (in S): holes turned any way: their radii
+  const hex = sp.rotated ? HK * rads[0] : hcl.ex + 0.01, hey = sp.rotated ? HK * rads[0] : hcl.ey + 0.01; // a hole's centre to its far side (x, y; in S)
+  const mex = mcl.ex + 0.01, mey = mcl.ey + 0.01; // a shape's centre to its far side on the mat
+  const boxIn = (Wr, Hr) => ({ w: (cs * Wr - sn * Hr) / det, D: (cs * Hr - sn * Wr) / det }); // the biggest box (lid w, lid + side D) whose turned corners stay in Wr x Hr
+  const fit = (S, o) => {
+    const rim = Math.max(4, S * 0.17), hx = hex * S + rim + 1, hy = hey * S + rim + 1, d = Math.max(12, Math.min(26, S * 0.3)), slideMin = sp.slide ? S * 0.6 : 0;
+    const HG = o.htr ? shapeGrid(n, o.hc, true, false, hcl.y * S, hcl.x * S, hcl.nx * S) : shapeGrid(n, o.hc, false, false, hcl.x * S, hcl.y * S, hcl.ny * S);
+    const MG = o.mtr ? shapeGrid(n, o.mc, true, true, mcl.y * S, mcl.x * S, mcl.nx * S) : shapeGrid(n, o.mc, false, true, mcl.x * S, mcl.y * S, mcl.ny * S);
+    const bw0 = HG.w + 2 * hx + 2 * slideMin, bD0 = HG.h + 2 * hy + d, ex = mex * S + 6, ey = mey * S + 6, mw0 = MG.w + 2 * ex, mh0 = MG.h + 2 * ey, cut = o.under ? yUnder - Y0 : 0;
+    let mat, R;
+    if (!o.side) { // stacked: the mat on top, the box below (~55% of the height)
+      const Wr = X1 - X0, AH = Y1 - Y0 - gap; if (mw0 > Wr) return null;
+      const lo = (bD0 * det + sn * Wr) / cs, hi = Math.min(sn > 1e-6 ? (cs * Wr - bw0 * det) / sn : Infinity, AH - mh0 - cut); if (lo > hi) return null;
+      const Hb = Math.min(hi, Math.max(lo, AH * 0.55)); R = { x0: X0, x1: X1, y0: Y1 - Hb, y1: Y1 }; mat = { x: X0, y: Y0, w: Wr, h: AH - Hb };
+    } else { // side by side: the box at the start (left), the mat at the end (right, under the pill)
+      const AW = X1 - X0 - gap, AH = Y1 - Y0; if (mh0 + cut > AH) return null;
+      let top = Y0, Wb = 0;
+      for (let k = 0; k < 2; k++) {
+        const Hr = Y1 - top, lo = (bw0 * det + sn * Hr) / cs, hi = Math.min(sn > 1e-6 ? (cs * Hr - bD0 * det) / sn : Infinity, AW - mw0); if (lo > hi) return null;
+        Wb = Math.min(hi, Math.max(lo, AW * 0.5)); const t2 = Math.max(Y0, ...zones.filter((z) => z.x0 < X0 + Wb && z.x1 > X0).map((z) => z.y1)); if (t2 === top) break; top = t2;
+      }
+      R = { x0: X0, x1: X0 + Wb, y0: top, y1: Y1 }; mat = { x: X0 + Wb + gap, y: Y0, w: AW - Wb, h: AH };
+    }
+    const B = boxIn(R.x1 - R.x0, R.y1 - R.y0); if (B.w < bw0 - 0.5 || B.D < bD0 - 0.5) return null;
+    const bh = B.D - d, slideAmp = sp.slide ? Math.min(S * 1.1, (B.w - HG.w - 2 * hx) / 2) : 0;
+    const hsx = HG.w > 0 ? 1 + 0.5 * Math.max(0, B.w - 2 * hx - 2 * slideAmp - HG.w) / HG.w : 1, hsy = HG.h > 0 ? 1 + 0.5 * Math.max(0, bh - 2 * hy - HG.h) / HG.h : 1;
+    const top = mat.y + cut, ch = mat.y + mat.h - top; if (mw0 > mat.w + 0.5 || mh0 > ch + 0.5) return null;
+    const msx = MG.w > 0 ? 1 + 0.8 * (mat.w - mw0) / MG.w : 1, msy = MG.h > 0 ? 1 + 0.8 * (ch - mh0) / MG.h : 1;
+    const minD = (k) => { let m = Infinity; for (const p of MG.pts) for (const q of MG.pts) { const v = Math.abs(p[k] - q[k]); if (v > 0.5 && v < m) m = v; } return Number.isFinite(m) ? m : 0; };
+    const jx = 0.14 * (msx - 1) * minD('x'), jy = 0.14 * (msy - 1) * minD('y'); // jitter: never closer than the grid's spacing
+    const homes = MG.pts.map((p) => ({ x: mat.x + mat.w / 2 + p.x * msx, y: top + ch / 2 + p.y * msy })), rr = 1.06 * S + 4;
+    if (!o.under && zones.some((z) => homes.some((h) => h.y - rr - jy < z.y1 && h.x + rr + jx > z.x0 && h.x - rr - jx < z.x1))) return null; // (beside the pill: no home spot under it)
+    return { S, o, bw: B.w, bh, d, bx: (R.x0 + R.x1) / 2, by: (R.y0 + R.y1) / 2 - d / 2, slideAmp, holes: HG.pts.map((p) => ({ x: p.x * hsx, y: p.y * hsy })), homes, jx, jy, ex, ey,
+      mat: { x: mat.x, y: mat.y, w: mat.w, h: mat.h, top } };
   };
   let L = null;
-  for (let hc = n; hc >= 1; hc--) for (let mc = n; mc >= 1; mc--) { // the biggest S over the grids (ties: the wider grids, tried first)
-    if (!fit(14, hc, mc)) continue; let lo = 14, hi = cap;
-    if (fit(hi, hc, mc)) lo = hi; else for (let it = 0; it < 26; it++) { const mid = (lo + hi) / 2; if (fit(mid, hc, mc)) lo = mid; else hi = mid; }
-    if (!L || lo > L.S + 0.25) L = fit(lo, hc, mc);
+  for (const side of port ? [false] : [false, true]) for (const under of [false, true]) for (let hc = n; hc >= 1; hc--) for (const htr of [false, true]) for (let mc = n; mc >= 1; mc--) for (const mtr of [false, true]) {
+    if ((htr && hc === 1) || (mtr && mc === 1)) continue; // (one item to a column = one row: already tried)
+    const o = { side, under, hc, htr, mc, mtr }, need = L ? L.S * (side && !L.o.side ? 1.03 : 1) + 0.25 : 14; // the biggest S wins (side by side: only if clearly bigger)
+    if (need > cap || !fit(need, o)) continue; let lo = need, hi = cap;
+    if (fit(hi, o)) lo = hi; else for (let it = 0; it < 22; it++) { const mid = (lo + hi) / 2; if (fit(mid, o)) lo = mid; else hi = mid; }
+    L = fit(lo, o);
   }
   if (!L) return;
-  shapes.S = L.S; const S = L.S; shapes.big = Math.max(1, S / classic); shapes.grid = { hc: L.hc, mc: L.mc, cap, classic };
-  shapes.box = { x: W / 2, y: L.by, w: L.bw, h: L.bh, depth: L.depth, rock };
-  shapes.mat = { x: side, y: L.matTop, w: L.matW, h: L.matH };
-  const hy0 = L.hys[L.hys.length - 1] / 2; let i = 0;
-  L.hrows.forEach((c, rw) => { for (let q = 0; q < c; q++, i++) { const h = shapes.holes[i]; h.lx = (q - (c - 1) / 2) * L.cell; h.ly = L.hys[rw] - hy0; } });
-  const cw = L.matW / L.mc, last = L.mys[L.mys.length - 1], k = last > 0 ? (L.matH - SHAPE_MCELL_H * S) / last : 1, jr = rng(shapes.level * 97 + n);
-  const pmin = L.mys.length > 1 ? Math.min(...L.mys.slice(1).map((y, q) => y - L.mys[q])) : 0, jx = Math.max(0, cw - SHAPE_MCELL_W * S) * 0.3, jy = Math.max(0, (k - 1) * pmin) * 0.3; // jitter: never closer than the grid's spacing
-  const slots = []; L.mrows.forEach((c, rw) => { for (let q = 0; q < c; q++) slots.push({ x: side + L.matW / 2 + (q - (c - 1) / 2) * cw, y: last > 0 ? L.matTop + SHAPE_MCELL_H * S / 2 + L.mys[rw] * k : L.matTop + L.matH / 2 }); });
+  shapes.S = L.S; const S = L.S; shapes.big = Math.max(1, S / classic); shapes.grid = { ...L.o, cap, classic };
+  shapes.box = { x: L.bx, y: L.by, w: L.bw, h: L.bh, depth: L.d, rock, slideAmp: L.slideAmp };
+  shapes.mat = L.mat; const m = L.mat;
+  shapes.holes.forEach((h, i) => { h.lx = L.holes[i].x + (sp.rotated ? 0 : (SHAPE_OFFX[h.kind] || 0) * HK * S); h.ly = L.holes[i].y; }); // (an upright crescent: its body centred)
+  const jr = rng(shapes.level * 97 + n), x0 = m.x + L.ex, x1 = m.x + m.w - L.ex, y0 = m.top + L.ey, y1 = m.y + m.h - L.ey;
   for (const s of shapes.shapes) {
-    const sl = slots[s.slot], hx = Math.min(side + L.matW - 1.27 * S, Math.max(side + 1.27 * S, sl.x + (jr() - 0.5) * jx)), hy = Math.min(L.matTop + L.matH - SHAPE_MCELL_H * S / 2, Math.max(L.matTop + SHAPE_MCELL_H * S / 2, sl.y + (jr() - 0.5) * jy)); // (jittered, kept inside the mat)
-    if (fresh || !s.moved) { s.hx = hx; s.hy = hy; } else { s.hx = Math.min(W - side - S, Math.max(side + S, s.hx)); s.hy = Math.min(L.matTop + L.matH - S, Math.max(L.matTop + S, s.hy)); }
+    const sl = L.homes[s.slot], hx = Math.min(x1, Math.max(x0, sl.x + (jr() - 0.5) * 2 * L.jx)) + (SHAPE_OFFX[s.kind] || 0) * S, hy = Math.min(y1, Math.max(y0, sl.y + (jr() - 0.5) * 2 * L.jy)); // (jittered, kept inside the mat)
+    if (fresh || !s.moved) { s.hx = hx; s.hy = hy; } else { s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.hx)); s.hy = Math.min(m.y + m.h - S, Math.max(m.top + S, s.hy)); }
     if (!s.anim && shapes.held?.s !== s) { s.x = s.hx; s.y = s.hy; }
   }
   updateShapeHoles();
@@ -5279,8 +5364,8 @@ function shapesRelease(now, home) { // let go: into the hole (it fits), back hom
   const h = shapes.held; if (!h) return; shapes.held = null; shapes.magnet = -1; const s = h.s;
   if (home) return shapeGoHome(s, now, false);
   if (h.settle) { // a cancelled touch: no hole judged; it stays on the mat (or slides home from the lid)
-    const m = shapes.mat, S = shapes.S, onMat = m && s.y < m.y + m.h; if (!onMat) return shapeGoHome(s, now, false);
-    s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.y + S, s.y)); if (s.hx !== s.x || s.hy !== s.y) shapeGoHome(s, now, false); return;
+    const m = shapes.mat, S = shapes.S, onMat = m && s.y < m.y + m.h && s.x > m.x && s.x < m.x + m.w; if (!onMat) return shapeGoHome(s, now, false);
+    s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.top + S, s.y)); if (s.hx !== s.x || s.hy !== s.y) shapeGoHome(s, now, false); return;
   }
   if (h.help) { // touch: the magnet zone drops it in at any angle; over another hole = the usual boing; close-ish to its own hole = it slides in
     const ju = shapeHoleUnder(s), own = shapeOwnHole(s), fin = shapeOwnHole(s, cursor), d = Math.min(own.d, fin.j === own.j ? fin.d : Infinity);
@@ -5298,7 +5383,7 @@ function shapesRelease(now, home) { // let go: into the hole (it fits), back hom
   }
   const b = shapes.box, m = shapes.mat;
   if (b && Math.abs(s.x - b.x) < b.w / 2 + shapes.S * 0.3 && Math.abs(s.y - b.y) < b.h / 2 + b.depth) return shapeGoHome(s, now, false); // dropped on the lid: it slides back
-  const S = shapes.S; s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.y + S, s.y)); // on the mat: it stays there (inside the mat)
+  const S = shapes.S; s.hx = Math.min(m.x + m.w - S, Math.max(m.x + S, s.x)); s.hy = Math.min(m.y + m.h - S, Math.max(m.top + S, s.y)); // on the mat: it stays there (inside the mat, clear of the ⏸ corner's row)
   if (s.hx !== s.x || s.hy !== s.y) shapeGoHome(s, now, false); else shapesSound('tick');
 }
 function shapeGoHome(s, now, bounce) { s.anim = { k: 'back', t0: now, x0: s.x, y0: s.y, bounce }; }
@@ -5337,7 +5422,7 @@ function shapesTick(now, dt) {
   const sp = shapes.spec, play = shapes.phase === 'play';
   if (play) shapes.clock += dt;
   shapes.boxAng = shapes.box && shapes.box.rock ? shapes.box.rock * Math.sin(shapes.clock * sp.rockW) : 0;
-  shapes.slide = sp.slide && shapes.box ? shapes.S * 1.1 * Math.sin(shapes.clock * sp.slideW) : 0;
+  shapes.slide = sp.slide && shapes.box ? shapes.box.slideAmp * Math.sin(shapes.clock * sp.slideW) : 0;
   updateShapeHoles();
   if (shapes.phase === 'done' && now - shapes.phaseAt >= SHAPES_DONE_MS) { buildShapesLevel(shapes.level + 1, now); shapes.phase = 'banner'; shapes.phaseAt = now; sfx('whoosh'); }
   else if (shapes.phase === 'banner' && now - shapes.phaseAt >= SHAPES_BANNER_MS) { shapes.phase = 'play'; shapes.levelStart = now; }
@@ -5404,12 +5489,6 @@ function shapesTick(now, dt) {
   shapes.shapes.forEach((s, i) => { s.selK = (s.selK || 0) + ((shapes.sel === i ? 1 : 0) - (s.selK || 0)) * Math.min(1, dt / 90); }); // the pick's glow / lift eases in and out
   if (play && shapes.shapes.length && shapes.shapes.every((s) => s.placed) && shapes.shapes.every((s) => !s.anim || now - s.anim.t0 > 420)) shapesLevelDone(now);
 }
-function drawShapeHud(now) { // 'Level N' and a pip per shape (filled once sorted), under the toolbar
-  const y = Math.max(64, Math.round(chromeRow.bottom) + 8) + 12, n = shapes.shapes.length, done = shapes.shapes.filter((s) => s.placed).length;
-  blit(textSprite(t('levelN', { n: shapes.level }), 18, '#fff8ec', 'rgba(255,194,75,0.6)'), W / 2, y);
-  const gap = 13, x0 = W / 2 - (n - 1) * gap / 2; resetView();
-  for (let i = 0; i < n; i++) { const x = lang === 'he' ? W - x0 - i * gap : x0 + i * gap; ctx.beginPath(); ctx.arc(x, y + 19, 4, 0, TAU); ctx.fillStyle = i < done ? '#ffc24b' : 'rgba(241,233,218,0.22)'; ctx.fill(); }
-}
 function renderShapes(now) {
   beginFrame('shapes', now);
   const b = shapes.box, m = shapes.mat, S = shapes.S; if (!b || !m) { drawCursor(now); return; }
@@ -5457,10 +5536,9 @@ function renderShapes(now) {
     blit(shapeSprite(s.kind, s.color, S), s.x, s.y, s.angle, 1 + 0.1 * l);
   }
   drawParticles(); drawRings(now);
-  drawShapeDemo(now);
-  drawShapeHud(now);
+  drawShapeDemo(now); // (no HUD in play: no level title, no dots, no coins; only the ⏸ pill)
   if (shapes.phase === 'done' && shapes.result) drawShapesResult(now);
-  if (shapes.phase === 'banner') { const k = (now - shapes.phaseAt) / SHAPES_BANNER_MS, pop = Math.min(1, k / 0.25), a = k < 0.8 ? 1 : Math.max(0, 1 - (k - 0.8) / 0.2); blit(textSprite(t('levelN', { n: shapes.level }), 48, '#fff8ec', 'rgba(255,194,75,0.9)'), W / 2, m.y + m.h * 0.5, 0, 0.6 + 0.4 * ease(pop), a); }
+  if (shapes.phase === 'banner') { const k = (now - shapes.phaseAt) / SHAPES_BANNER_MS, pop = Math.min(1, k / 0.25), a = k < 0.8 ? 1 : Math.max(0, 1 - (k - 0.8) / 0.2); blit(textSprite(t('levelN', { n: shapes.level }), 48, '#fff8ec', 'rgba(255,194,75,0.9)'), m.x + m.w / 2, m.y + m.h * 0.5, 0, 0.6 + 0.4 * ease(pop), a); }
   drawCoinPill(now);
   if (shapes.over) drawEndCard(now, shapes, { score: shapes.levelsDone, best: shapes.best, bestText: t('levelBest', { n: shapes.best }), stats: [[shapes.levelsDone, 'shLevels'], [shapes.stars, 'shStars'], [shapes.placedTotal, 'shShapes']], again: 'playAgainShapes' });
   else drawCursor(now);
@@ -5484,11 +5562,11 @@ function drawShapeDemo(now) { // first play: a finger taps a shape, then its hol
 }
 function drawShapesResult(now) { // a glass card over the mat: 'Level N done!', 1-3 stars popping in one by one, the coins
   const r = shapes.result, m = shapes.mat, k = Math.min(1, (now - r.t) / 300), out = Math.max(0, Math.min(1, (SHAPES_DONE_MS - (now - r.t)) / 250));
-  const cw = Math.min(300, W - 40), ch = 170, x = W / 2 - cw / 2, y = Math.max(m.y + 4, m.y + m.h / 2 - ch / 2) + (1 - ease(k)) * 20;
+  const cw = Math.min(300, W - 40), ch = 170, cx = Math.min(W - cw / 2 - 10, Math.max(cw / 2 + 10, m.x + m.w / 2)), x = cx - cw / 2, y = Math.max(m.y + 4, m.y + m.h / 2 - ch / 2) + (1 - ease(k)) * 20;
   ctx.save(); ctx.globalAlpha = ease(k) * out; resetView(); blit(glassSprite(cw, ch, 20, true), x - 1, y - 1);
-  const ts = textSprite(t('shLevelDone', { n: r.level }), 24, '#fff8ec', 'rgba(255,194,75,0.7)'); blit(ts, W / 2, y + 34, 0, Math.min(1, (cw - 30) / ts.tw));
-  for (let i = 0; i < 3; i++) { const at = r.t + 250 + i * 220, q = Math.min(1, Math.max(0, (now - at) / 260)), sc = q <= 0 ? 0.001 : 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2), on = i < r.stars; blit(shapeStarSprite(22, on && q > 0), W / 2 + (i - 1) * 56 * (lang === 'he' ? -1 : 1), y + 88, 0, on ? sc : 1); }
-  blit(coinSprite(9), W / 2 - 22, y + 140); blit(textSprite(LRM + '+' + r.coins, 18, '#ffd77a', null), W / 2 + 8, y + 140);
+  const ts = textSprite(t('shLevelDone', { n: r.level }), 24, '#fff8ec', 'rgba(255,194,75,0.7)'); blit(ts, cx, y + 34, 0, Math.min(1, (cw - 30) / ts.tw));
+  for (let i = 0; i < 3; i++) { const at = r.t + 250 + i * 220, q = Math.min(1, Math.max(0, (now - at) / 260)), sc = q <= 0 ? 0.001 : 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2), on = i < r.stars; blit(shapeStarSprite(22, on && q > 0), cx + (i - 1) * 56 * (lang === 'he' ? -1 : 1), y + 88, 0, on ? sc : 1); }
+  blit(coinSprite(9), cx - 22, y + 140); blit(textSprite(LRM + '+' + r.coins, 18, '#ffd77a', null), cx + 8, y + 140);
   ctx.restore();
 }
 
@@ -9775,6 +9853,7 @@ function coinPillPos() { // where the coin pill sits: beside the score at the st
   return { x: rtl ? W - 16 : 16, y: scoreY() - 15, end: false };
 }
 function drawCoinPill(now) {
+  if (gameMode === 'shapes') { coinUi.lastDraw = now; coinUi.box = null; coinUi.anchor = null; coinUi.floaters.length = 0; return; } // Shapes: no coins on screen in play (the level card and the end card show them)
   if (gameMode === 'strike' || gameMode === 'smash') { // a decluttered Strike / Smash: no pill, just the '+n' floaters rising at the top end corner under the bar
     const dt = Math.min(100, now - (coinUi.lastDraw || now)); coinUi.lastDraw = now; coinUi.box = null; const h = gameMode === 'smash' ? smash.ui.hud : strike.ui.hud;
     coinUi.anchor = h ? { x: lang === 'he' ? h.x + h.w - 70 : h.x + 70, y: h.y + h.h + 6 } : { x: 60, y: 90 }; // (by the score)
@@ -10843,7 +10922,7 @@ function hintText() {
   return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike', shapes: 'hintShapes' }[gameMode] + how);
 }
 function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, above Shapes' toy box, else a small margin
-  if (gameMode === 'shapes' && shapes.box) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
+  if (gameMode === 'shapes' && shapes.box && !(shapes.grid && shapes.grid.side)) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
