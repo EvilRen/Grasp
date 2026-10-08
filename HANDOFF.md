@@ -21,7 +21,7 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
 
 **Strike** is the main game: a 3D corridor where you slap a ball into walls of bricks.
 - **The Strike tile:** opens the **Adventure** saga map.
-  - 40 stages: 5 worlds × 8, the 8th stage of each world a boss.
+  - 40 stages: 5 worlds × 8, the 8th stage of each world a real boss fight (see Real bosses).
   - Break **all** walls to clear a stage; 3 hearts; stars: 3 = no heart lost, 2 = one lost, 1 = more.
   - The stage start banner has a small line "★★★ = don't lose a heart"; the clear card has a line under the stars ("Lost 1 heart — clear without losing a heart for ★★★", or "Perfect — no hearts lost!").
   - Clear card: Next / **Play again** / Map. Fail card ("So close!"): **Try again** / Map. Success cards say "Play again" (HE "לשחק שוב"), only a fail says "Try again" (HE "שוב").
@@ -68,6 +68,28 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
 - Hooks: `__grasp.themes` { ids, defs, prices, now, owned, buy, equip, state, look, col, wallLv, ballSkin, guestLook, sfx, fog, thumb, openShop, chip, track, g3 }, `__grasp.music.theme`.
 - Tests: `tests/test_themes.py` (Shop cards / prices / buy once / not enough / equip / persist, validation, each theme's floor and walls by pixels in 2D (desktop + phone) and 3D, one cached background, world 4 darker than world 1, the bricks' looks, specials vs plain bricks on a pixel grid (2D + 3D), the ball's pixels / 3D skin, the stubbed themed sfx per theme, the sounds rendered offline (audible, <= 0.3 peak, silent when muted), Classic silent, the music variation, mascots + lines EN / HE, the daily / Frenzy use it, the map chip (EN / HE, phone fit, opens the Shop over the map, buy there, Escape)). Screenshots `tests/out/theme_{gym,basketball,baseball}_{phone,desktop,3d}.png`, `theme_shop_{en,he}.png`, `theme_map_chip.png`.
 - Not yet checked on a real phone: the sounds' balance (crowd, buzzer, whistle) and the 3D arena's look / GPU cost (3 extra surface textures, 512x2048), whether the 3D bricks read too pale under the lights, the crowd's busy look on a tall phone, and kids' reaction to the prices.
+
+**Real bosses (Adventure stage 8 / 16 / 24 / 32 / 40; parent: "a 13-year-old should get excited")** — see DESIGN.md "Real bosses". Code: the block `Adventure real bosses` before `strikeTarget` (logic, `rbSim`), the art block `the real bosses' art` before `bossBodySprite`.
+- **The stage is the fight:** `advPlan` gives boss stages 0 walls; `resetStrike` spawns `spawnRealBoss(world, now, 1700)` into `strike.boss` (`b.real`, so every `strike.boss` gate still holds: no turrets / creep / final wall). It waits beyond the far end, walks (the dragon flies) in after the stage banner with a roar, the name banner (`drawRealBossIntro`, `ui.rbIntro`) and the voice ('boss'). The intro plays while the serve waits (`rbTick(now, dt, idle)`); the fight's own clock (`b.clock`) only runs while the ball is in play.
+- **Roster** (`BOSS_DEFS[world]`: name `bn_<id>`, colour = the world's accent, hp (Easy; Normal x1.2 `RB.normalHp`), attacks per phase, ms between attacks, projectile, weak point, arm): W1 Brick Golem (rocks; + mini-walls; + charge), W2 Glass Queen (mirror shards, shield; + walls; + spinning mirror blades), W3 Steel Robot (rockets, shield; + charge; + claw arm), W4 Jungle King Kong (barrels, charge; + swinging log; + walls), W5 Lava Dragon (fireballs, tail sweep; + shield, charge; + walls; flies side to side). hp 125 / 190 / 310 / 345 / 490.
+- **Damage** `RB_DMG` soft 1 / medium 2 / hard 3 / SUPER 4 (x(1 + 0.15 x Heavier ball)); the **weak point** (`rbWeakPos`, glows `RB.weakOn` 3 s, off 4 / 3.4 / 2.8 s by phase) x3 (`RB.weakMul`); a returned projectile 3 (`RB.shotBack`, through the shield). Hitbox: an ellipse on the body (`rbInBody`); a ball beside it flies past to the far wall. The aim's height lands on its body (`aimBall`), sideways aim still counts. The ball bounces back off it at 0.9x pace; boss stages use a calmer `paceK` (1 .. 1.18).
+- **Phases** at 66% / 33% (`rbPhase`): a roar, hit-stop, "It's angry!" / "Final phase!", **all hearts back** (a checkpoint; the stars still count every heart lost), more attack kinds and shorter gaps; the art cracks (phase 2), loses pieces + sparks + an angry face (phase 3).
+- **Attacks** (`rbPickAttack` -> `rbAttack` wind-up with a '!' and a sound -> `rbFire`): `shot` (`rbShot` into `strike.shots` with `q.boss`; slapped back it flies at the boss, `rbShotBack`); `shield` (`b.shield`, 7 s; only SUPER / PERFECT (`b.perf` on the ball from `strikeHit`) / a fireball break it, else 'Blocked!'); `wall` (`rbSummon`: 1-2 mini-walls `w.summon` in front of it, plain bricks over its body; `wallDown` gives no stage progress); `charge` (`b.charge`, a red glow; a hit knocks it back, else `rbSlam`: a heart); `arm` (`b.arm`, `rbArmSegs`, a plane `RB.armDz` in front: a ball meeting a blade bounces off).
+- **HUD:** the bar under the hearts pill (`drawRealBossBar`, `ui.bossBar`: name in the world colour, phase notches, a cyan rim while shielded); the pill shows its hp %; what hangs under the pill (heat bar, combo / speed pops, tags) drops below it (`hudDrop`).
+- **Victory** (`rbDefeated` via `bossDefeated`): explosion rings / bursts in its colour, pieces at the camera (`rbChunkSprite` debris), confetti, hit-stop, then `advClear` (slow-mo, coins by the usual rules: +5 for a boss stage's first clear), "Victory!" + "Brick Golem defeated!" (`drawAdvFx`, `ui.victoryBox`), the trip to the next world. **Fail:** the usual card, with "Glass Queen: 42% left" and a bar (`ui.advBoss`) instead of wall pips.
+- **Drawing:** `RB_ART[id]` draws each boss in code (glossy fills `rbFill`, eyes `rbEyes`, mouth, cracks / bites / sparks) into one canvas a frame (`rbRender`); 2D draws it in perspective (`drawRealBoss`), 3D puts it on a plane at its depth (`g3RealBoss`, a textured billboard, `G3.rb`). Projectile sprites `rbShotSprite` (rock / shard / rocket / barrel / fire).
+- **Endless keeps its boss wall** (`spawnBoss`, unchanged): reusing a real boss there would change the Endless suites' exact timings; noted for later.
+- **Measured** (`__grasp.boss.sim`, phone, Easy, rally on; a careful child returns 94%, slaps back 75% of shots, mostly medium; a good player 97% / 92%, SUPER on shields, aims at the weak point and around the arm): W1 child ~47-67 s (median ~57), good ~31-40; W2-W4 good ~65-90 s; W5 good ~115-130 s, child ~170-190 s. Hearts lost per phase (child, W1): mostly 0-2, so a careful child usually survives it.
+- Hooks: `__grasp.boss` { defs, cfg, b, state(), screen(), enter(), calm(on), attack(kind), fire(kind), hit(tier, o), ball(tier, x, y, perfect), weak(on), weakPos(), arm(), sim(o), aimAt, last }. Tests: `tests/test_boss.py` (screenshots `tests/out/boss_w{1..5}_{2d,2d_phase3,3d}.png`, `boss_intro.png`, `boss_w1_he.png`, `boss_victory.png`, `boss_victory_card.png`, `boss_fail.png`, `boss_wall.png`, `boss_charge.png`).
+- Not yet checked on a real phone: whether the fights feel long enough / too long with a real hand, the art's readability at phone size, the 3D billboard's per-frame texture upload cost.
+
+**Challenge a friend** — see DESIGN.md "Challenge a friend". Code: the block `Challenge a friend` before `PACE_UP_EVERY`.
+- **The button** "Challenge a friend" (`ui.buttons.duel`, `endCardAction('duel')` -> `duelShare`) on the Adventure clear and fail cards, the Frenzy card (beside Share) and the Endless round-over card (not the daily). The first time a small sheet asks for a name (`#duelName`, optional, `duelSanitize`: letters / digits / spaces / . _ ' -, 16 at most; kept in `profile.duelName`, `profile.duelAsked`; the camera skips it). Then `navigator.share({ title, text, url })`, else the clipboard + "Challenge link copied!" (`duelSend`). Message `duelMsgAdv / Frz / End` EN / HE ("I scored 1234 on Grasp stage 12 — can you beat me? 💥").
+- **The link** (`duelLink`): `https://grasp-weld.vercel.app/duel?m=adv&s=12&score=1234&by=<base64url UTF-8>&d=e` (Frenzy / Endless: `seed=<base64url 32 bit>`, Endless `s` = its start world; the page's own https origin when deployed). `duelParse` validates everything (unknown mode = no duel: the Adventure map; numbers clamped; bad seed / name / difficulty dropped; values over 64 characters ignored).
+- **Seeded runs:** every Endless / Frenzy run now has `strike.runSeed` (random; a duel: the link's) and `strikeRand` uses its own 'duel|seed' channels (`strike.rngs`); the daily (date seed) and the stages (`adv|n`) are untouched. Same screen size = the same walls, special / power-up bricks and guests (the brick grid follows the screen).
+- **Opening /duel** (`ROUTE_MODES` has 'duel', `route.duelQ` keeps the query in the address; vercel.json + tests/serve.py rewrite it): `duelOpen` plays the challenge at once (an Adventure stage even if not reached yet; the challenger's difficulty for the run only, `duel.prevDiff` restored by `duelEnd`). In play: "Beat 1234 (from Dana)" under the pill with a bar and the friend's ghost (`drawDuelBar`, `ui.duelBar`), passing it: "You passed Dana!" (`duelTick`). The card: a WIN / LOSE / TIE panel above it with both scores (`drawDuelPanel`, `ui.duelCard`) and "Send back" (the same challenge with your score). Play again / Try again keep the duel; Map, Home, another stage or mode end it.
+- Hooks: `__grasp.duel` { on, link, parse, build, sanitize, seedEnc / seedDec, nameEnc / nameDec, ctx(), text(), share(), send(), askDone(go), result(), open(q), end, passed, lastLink, lastText, asking, runSeed, score() }. Tests: `tests/test_duel.py` (screenshots `tests/out/duel_*.png`).
+- Not yet checked on a real phone: the native share sheet with a URL + text (some apps drop one of them), whether kids type a name.
 
 **Smash** (rebuilt; player feedback: "it's a bit poor, allow smashing much more"):
 - **Tile:** opens the **Smash map** (`#smashMap`): a big **Free play** button, then 20 stages in 5 scene groups (4 each, stars, locks). `/smash` opens the map too.
@@ -145,7 +167,7 @@ Around the games:
 - **Economy:** coins are deliberately scarce, about 15–35 per run; shop items cost 120–1000. The numbers are in the `ECONOMY` table.
 
 ## Direct links (per game URL)
-- `/strike` (opens the Adventure map), `/smash` (opens the Smash map), `/slice`, `/busy`, `/shapes`, `/sandbox`, `/frenzy` (Strike's Frenzy run) (and with a trailing slash): `vercel.json` rewrites them to `/index.html`; the page starts that game with the remembered input (touch until the camera is picked). Any other path = the start screen (on Vercel only these seven are rewritten; `/tremorti/` and the `/tremor` redirect unchanged).
+- `/strike` (opens the Adventure map), `/smash` (opens the Smash map), `/slice`, `/busy`, `/shapes`, `/sandbox`, `/frenzy` (Strike's Frenzy run), `/duel?...` (a friend's challenge, the query kept) (and with a trailing slash): `vercel.json` rewrites them to `/index.html`; the page starts that game with the remembered input (touch until the camera is picked). Any other path = the start screen (on Vercel only these eight are rewritten; `/tremorti/` and the `/tremor` redirect unchanged).
 - Entering a game pushes its path (`routeEnter`, in `startGame` and `openAdvMap`); Home goes to `/` (`history.back()` when the game was entered from the start screen, else `replaceState`); the browser Back from a game = Home (`goHome`), Forward re-enters. Hook `__grasp.route { modes, of, now, log }`.
 - The page's own URLs are root-absolute (`/assets/guests/...`, `/tremorti/`) so they load at `/strike`.
 - Tests serve through `tests/serve.py` (http.server + vercel.json's rewrites), used by `run_fast.sh` and the suites' own fallback server (`test_sandbox.py`, `test_chrome.py`).
@@ -165,12 +187,13 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 14 minutes for 33 runs (31 suites incl. `themes`, `menu`, `guitar`, `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 15 minutes for 35 runs (33 suites incl. `boss`, `duel`, `themes`, `menu`, `guitar`, `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
   - `addict` covers v5 (timing judge / PERFECT / serve ring, juice + reduced motion, no-overlap floaters, upgrades, run powers; screenshots `tests/out/addict_*.png`).
   - `challenge` covers v4 (the blast + bounce, aim, armor / weak spot / keystone / gold, overheat, turrets, closing walls, two balls, the ramp, combo, score / record / ranks / map badges, profile validation; screenshots `tests/out/challenge_*.png`, EN / HE, phone, 3D).
   - `frenzy` covers the rally (growth, caps, reset on a miss, speed / reach, visuals + sfx scaling, the pop, points, power, heat, noRally) and Frenzy (map button EN / HE, /frenzy, shield, uncapped growth, end on a miss, record / best / share, profile validation; screenshots `tests/out/frenzy_*.png`, phone EN / HE, 3D).
   - `routes` covers the direct links, pushState / Back / Forward, unknown paths and assets at a sub-path (EN / HE; screenshots `tests/out/route_*.png`). `serve` covers the pull-back + flick serve on mouse, touch (synthetic pointer events, `__gest`) and the camera stub (screenshots `tests/out/serve_*.png`).
   - `themes` covers the Strike themes (see Strike themes).
+  - `boss` covers the real bosses, `duel` Challenge a friend (see those sections). `boss` runs the fight simulation (a minute or two).
   - `smash` + `smash2` cover Smash (see above).
   - `menu` covers the corner menu in Sandbox / Slice / Busy Board / Shapes (see Corner menu).
   - `hudmin` covers the minimal in-game screen, the pause sheet, the hit-meter pop (2D and 3D) and the clear card's stars line / buttons on a phone (screenshots `tests/out/hud_min_*.png`, `tests/out/fix_*.png`).
@@ -210,14 +233,13 @@ Around the games:
 
 ## Parked backlog (the user said: "keep everything not built aside, we'll come back to it")
 Not started. Ask the user before picking one up.
-1. **Strike real boss battles:** bosses with health bars, attack patterns and weak points to hit. The user picked this for a 13-year-old.
-2. **Challenge a friend:** share a link to a seeded stage or run; the friend tries to beat your score on the same layout. The user picked this too.
-3. **More worlds after world 5:** new themes, music and stickers.
-4. **A level ladder for Shapes:** a map and stars like Adventure.
-5. **Monkey art:** process `monkey_{in,happy,dizzy,squash}` like the cow's (the pipeline is in Art) once the user sends the images.
-6. **Smaller items:**
+1. **More worlds after world 5:** new themes, music and stickers.
+2. **A level ladder for Shapes:** a map and stars like Adventure.
+3. **Monkey art:** process `monkey_{in,happy,dizzy,squash}` like the cow's (the pipeline is in Art) once the user sends the images.
+4. **Smaller items:**
    - a share card for stars;
    - 3D effects for world travel;
    - the city scene briefly shows two suns while scrolling;
    - the wall scene's arriving wave looks like the old wall;
-   - unknown URL paths get a 404 page instead of the start screen (only the game paths are rewritten).
+   - unknown URL paths get a 404 page instead of the start screen (only the game paths are rewritten);
+   - a real boss in Endless every N levels (Endless keeps its boss wall for now).

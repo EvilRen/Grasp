@@ -57,8 +57,8 @@ async def main():
 
         # ---- Normal Strike is untouched: Math.random path; the daily is always Normal with 3 lives ----
         await page.evaluate("__grasp.setGameMode('strike')")
-        nr = await page.evaluate("(() => { const o = Math.random; Math.random = () => 0.123; const v = [__grasp.strikeRand('walls'), __grasp.strikeRand('perks'), __grasp.strikeRand()]; Math.random = o; return { v, on: __grasp.daily.on }; })()")
-        check('normal Strike (daily off): strikeRand is Math.random', not nr['on'] and nr['v'] == [0.123, 0.123, 0.123], nr)
+        nr = await page.evaluate("(() => { const o = Math.random; Math.random = () => 0.123; const v = [__grasp.strikeRand('walls'), __grasp.strikeRand('perks'), __grasp.strikeRand()]; Math.random = o; return { v, on: __grasp.daily.on, seed: __grasp.duel.runSeed }; })()")
+        check('normal Strike (daily off): strikeRand is the run\'s own seeded generator (Challenge a friend replays it), not Math.random', not nr['on'] and isinstance(nr['seed'], int) and all(0 <= x < 1 and x != 0.123 for x in nr['v']), nr)
         await page.evaluate("__grasp.setStrikeDiff('easy'); __grasp.setGameMode('strike')")
         ez = await page.evaluate("({ p: __grasp.strikeParams(), lives: " + S + ".lives, rate: " + S + ".perkStats().puRate })")
         await page.evaluate(D + ".forceModifier = 'tiny'; __grasp.startDaily()")

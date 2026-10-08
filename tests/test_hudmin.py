@@ -209,8 +209,8 @@ async def main():
             hw = c['h']
             check(tag + ' phone: 2 stars, the line under them: "' + c['want'] + '"', hw['text'] == c['want'] and (hw['text'].startswith('איבדתם לב אחד') if he else hw['text'].startswith('Lost 1 heart')) and '★★★' in hw['text'], hw)
             check(tag + ' phone: the line fits inside the card', hw['x'] >= c['card']['x'] + 4 and hw['x'] + hw['w'] <= c['card']['x'] + c['card']['w'] - 4 and c['card']['x'] + c['card']['w'] <= c['W'], [hw, c['card']])
-            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}
-            check(tag + ' phone: buttons Next / Play again / Map', c['lb'] == want, c['lb'])
+            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה', 'duel': 'אתגרו חבר'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map', 'duel': 'Challenge a friend'}
+            check(tag + ' phone: buttons Next / Play again / Map / Challenge a friend', c['lb'] == want, c['lb'])
             await page.screenshot(path=f'tests/out/fix_clear_2star_{tag.lower()}.png')
             check(tag + ' card: no page errors', not errs, errs); await ctx.close()
 

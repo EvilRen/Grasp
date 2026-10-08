@@ -514,6 +514,14 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
 #menuDwell{ z-index:10; } #menuDwell[hidden]{ display:none; }
 #newCard{ z-index:14; }
+#duelName{ z-index:15; }
+.dnSheet{ width:min(340px,100%); text-align:center; }
+.dnSheet h2{ margin:4px 0 6px; font-size:20px; }
+.dnSheet p{ margin:0 0 12px; opacity:.8; font-size:14px; }
+.dnSheet input{ width:100%; box-sizing:border-box; font:inherit; font-size:18px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#0e1430; color:var(--bone); text-align:center; margin:0 0 12px; }
+.dnRow{ display:flex; gap:10px; }
+.dnRow button{ flex:1; min-height:48px; border-radius:14px; }
+#duelNameSkip{ background:rgba(241,233,218,.08); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
 .nuSheet{ text-align:center; width:min(340px,100%); overflow:hidden; background:radial-gradient(120% 80% at 50% 0%, rgba(255,194,75,.28), rgba(22,29,61,1) 60%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.7), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes nupop{ from{ transform:scale(.6); opacity:0; } }
 .nuKick{ margin:4px 0 6px; font-size:22px; font-weight:800; letter-spacing:.04em; background:linear-gradient(135deg,#fff3c4,var(--saffron) 50%,var(--coral)); -webkit-background-clip:text; background-clip:text; color:transparent; }
@@ -866,6 +874,14 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <button class="primary" id="nuOk" type="button" data-i18n="nuOk">Awesome!</button>
   </div>
 </div>
+<div class="ov" id="duelName" hidden role="dialog" aria-modal="true" aria-labelledby="duelNameT">
+  <div class="sheet dnSheet">
+    <h2 id="duelNameT" data-i18n="duelNameTitle">Your name (optional)</h2>
+    <p data-i18n="duelNameSub">Your friend sees who challenged them.</p>
+    <input id="duelNameIn" type="text" maxlength="24" autocomplete="nickname" enterkeyhint="send" spellcheck="false">
+    <div class="dnRow"><button type="button" id="duelNameSkip" data-i18n="duelNameSkip">Skip</button><button type="button" class="primary" id="duelNameGo" data-i18n="duelNameGo">Share</button></div>
+  </div>
+</div>
 <div class="ov" id="gifts" hidden role="dialog" aria-modal="true" aria-labelledby="giftTitle">
   <div class="sheet giftSheet">
     <header><h2 id="giftTitle" data-i18n="giftTitle">Daily gift</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1098,8 +1114,15 @@ const I18N = {
     it_ball_lava: 'Lava ball', it_trail_lava: 'Lava trail', it_hand_legend: 'Legend hand',
     // Strike Adventure: the saga map, the stages, their cards
     advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', frenzy: 'Frenzy', frenzySub: 'Faster and faster!', frenzySubBest: 'Best: {n} in a row', frenzyTitle: 'Frenzy!', frenzyGoal: 'Faster every hit. Don\'t miss!', frenzyOver: 'Frenzy over', frenzyBest: 'Best: {n} in a row', frenzyHits: 'in a row', topSpeed: 'top speed', speedWord: 'SPEED', speedMax: 'MAX SPEED!', frenzyShare: 'Grasp Frenzy ⚡ {n} hits in a row · top speed ×{k}', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
-    stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Break {n} walls, then the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
+    stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Beat the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
     nextBtn: 'Next', retryBtn: 'Try again', replayBtn: 'Play again', mapBtn: 'Map', starsPerfect: 'Perfect — no hearts lost!', starsLost1: 'Lost 1 heart — clear without losing a heart for ★★★', starsLostN: 'Lost {n} hearts — clear without losing a heart for ★★★', starsRule: "★★★ = don't lose a heart", advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
+    // real bosses (each world's stage 8) and Challenge a friend
+    bn_golem: 'Brick Golem', bn_queen: 'Glass Queen', bn_robot: 'Steel Robot', bn_kong: 'Jungle King Kong', bn_dragon: 'Lava Dragon', bossOfWorld: 'World {n} boss', bossBlocked: 'Blocked!', bossShield: 'Shield up!', bossShieldBroken: 'Shield broken!',
+    bossWeak: 'WEAK SPOT ×3', bossReturned: 'Returned!', bossKnock: 'Knocked back!', bossCharge: 'Charge!', bossPhase2: "It's angry!", bossPhase3: 'Final phase!', bossVictory: 'Victory!', bossDefeated: '{b} defeated!', bossLeft: '{b}: {p}% left', bossWall: 'Break the wall!',
+    bossShieldTip: 'A shield! Only a SUPER or a PERFECT hit breaks it.', bossWeakTip: 'Hit the glowing spot for ×3 damage!', bossShotTip: 'Slap its shots back to hurt it!',
+    duelBtn: 'Challenge a friend', duelSendBack: 'Send back', duelBeat: 'Beat {n} (from {b})', duelBeat0: 'Beat {n}', duelPassed: 'You passed {b}!', duelPassed0: 'You passed them!', duelWin: 'WIN', duelLose: 'LOSE', duelTie: 'TIE', duelVsLine: 'You {a} · {b} {c}', duelFriend: 'Friend',
+    duelMsgAdv: 'I scored {n} on Grasp stage {s} — can you beat me? 💥', duelMsgFrz: 'I hit {n} in a row on Grasp Frenzy — can you beat me? 💥', duelMsgEnd: 'I scored {n} on Grasp Endless — can you beat me? 💥',
+    duelNameTitle: 'Your name (optional)', duelNameSub: 'Your friend sees who challenged them.', duelNamePh: 'Name', duelNameGo: 'Share', duelNameSkip: 'Skip', duelCopied: 'Challenge link copied!', duelTag: 'Duel',
     // the daily habit: the gift calendar, the play streak, the stage chest, the star chests
     giftTitle: 'Daily gift', giftDayN: 'Day {n}', giftSub: 'A gift for every day you come. Day 7 is a big chest!', giftMissed: 'A new week of gifts! Come every day to reach the big chest.',
     giftOpen: 'Open it!', giftYay: 'Yay!', giftTomorrow: 'Come back tomorrow for the day {n} gift', giftToast: 'Daily gift: +{c} coins',
@@ -1236,8 +1259,14 @@ const I18N = {
     chestToastSkin: 'אוצר! {i} שלכם', chestToastTicket: 'כרטיס זהב: לב נוסף במשחק הבא!', ticketUsed: 'כרטיס זהב: לב נוסף במשחק הזה!', xpN: '‎+{n} XP',
     it_ball_lava: 'כדור לבה', it_trail_lava: 'שובל לבה', it_hand_legend: 'יד האגדה',
     advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', frenzy: 'טירוף', frenzySub: 'מהר יותר ויותר!', frenzySubBest: 'שיא: {n} ברצף', frenzyTitle: 'טירוף!', frenzyGoal: 'מהר יותר בכל מכה. אל תפספסו!', frenzyOver: 'הטירוף נגמר', frenzyBest: 'שיא: {n} ברצף', frenzyHits: 'ברצף', topSpeed: 'מהירות שיא', speedWord: 'מהירות', speedMax: 'מהירות מקסימלית!', frenzyShare: 'Grasp טירוף ⚡ {n} מכות ברצף · מהירות שיא ×{k}', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
-    stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'שברו {n} קירות ואז את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
+    stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'נצחו את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
     nextBtn: 'הבא', retryBtn: 'שוב', replayBtn: 'לשחק שוב', mapBtn: 'מפה', starsPerfect: 'מושלם — לא איבדתם אף לב!', starsLost1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★', starsLostN: 'איבדתם {n} לבבות — סיימו בלי לאבד לב ותקבלו ★★★', starsRule: '★★★ = בלי לאבד לב', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
+    bn_golem: 'גולם הלבנים', bn_queen: 'מלכת הזכוכית', bn_robot: 'רובוט הפלדה', bn_kong: 'קינג קונג של הג׳ונגל', bn_dragon: 'דרקון הלבה', bossOfWorld: 'הבוס של עולם {n}', bossBlocked: 'נחסם!', bossShield: 'מגן!', bossShieldBroken: 'המגן נשבר!',
+    bossWeak: 'נקודת תורפה ×3', bossReturned: 'הוחזר!', bossKnock: 'נהדף אחורה!', bossCharge: 'הסתערות!', bossPhase2: 'הוא כועס!', bossPhase3: 'שלב אחרון!', bossVictory: 'ניצחון!', bossDefeated: '{b} הובס!', bossLeft: '{b}: נשארו {p}%', bossWall: 'שברו את הקיר!',
+    bossShieldTip: 'מגן! רק מכת סופר או מכה מושלמת שוברת אותו.', bossWeakTip: 'פגעו בנקודה הזוהרת: נזק ×3!', bossShotTip: 'הדפו את היריות שלו בחזרה כדי לפגוע בו!',
+    duelBtn: 'אתגרו חבר', duelSendBack: 'החזירו אתגר', duelBeat: 'עקפו את {n} (של {b})', duelBeat0: 'עקפו את {n}', duelPassed: 'עקפתם את {b}!', duelPassed0: 'עקפתם!', duelWin: 'ניצחון', duelLose: 'הפסד', duelTie: 'תיקו', duelVsLine: 'אתם {a} · {b} {c}', duelFriend: 'חבר',
+    duelMsgAdv: 'השגתי {n} בשלב {s} ב-Grasp — תצליחו לנצח אותי? 💥', duelMsgFrz: 'עשיתי {n} ברצף בטירוף של Grasp — תצליחו לנצח אותי? 💥', duelMsgEnd: 'השגתי {n} במשחק האינסופי של Grasp — תצליחו לנצח אותי? 💥',
+    duelNameTitle: 'השם שלכם (לא חובה)', duelNameSub: 'החבר יראה מי אתגר אותו.', duelNamePh: 'שם', duelNameGo: 'שיתוף', duelNameSkip: 'דלגו', duelCopied: 'קישור האתגר הועתק!', duelTag: 'דו-קרב',
     giftTitle: 'מתנה יומית', giftDayN: 'יום {n}', giftSub: 'מתנה על כל יום שבאים. ביום 7 תיבת אוצר גדולה!', giftMissed: 'שבוע מתנות חדש! בואו כל יום כדי להגיע לתיבה הגדולה.',
     giftOpen: 'לפתוח!', giftYay: 'יש!', giftTomorrow: 'חזרו מחר למתנה של יום {n}', giftToast: 'מתנה יומית: ‎+{c} מטבעות',
     giftMystery: 'מראה חדש', giftChest: 'תיבה גדולה', giftOpened: 'נפתחה',
@@ -5846,7 +5875,7 @@ function advWorldOf(n) { return Math.max(1, Math.min(WORLD_N, Math.ceil(Math.max
 function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
   n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); const w = advWorldOf(n), i = n - (w - 1) * ADV_WORLD, boss = i === ADV_WORLD, r = mulberry32(strSeed('advplan|' + n));
   const level = (w - 1) * WORLD_LEVELS + Math.max(1, Math.round(i * WORLD_LEVELS / ADV_WORLD)); // the tuning level: world 1 runs levels 1-6 (its boss stage at the old boss level 6), world 5 up to 30
-  const full = Math.min(8, [4, 4, 5, 6, 6][w - 1] + Math.floor((i - 1) / 3)), walls = boss ? Math.max(3, full - 2) : full; // 4 walls on stage 1, a step every third stage, 8 at most (v4: a wall takes several aimed hits now); the boss stage: two fewer, then the boss
+  const full = Math.min(8, [4, 4, 5, 6, 6][w - 1] + Math.floor((i - 1) / 3)), walls = boss ? 0 : full; // 4 walls on stage 1, a step every third stage, 8 at most (v4: a wall takes several aimed hits now); the boss stage: the fight alone (a real boss, no walls)
   const intro = (k) => { const wi = ADV_NEW.findIndex((ks) => ks.includes(k)), j = ADV_NEW[wi].indexOf(k); return wi * ADV_WORLD + 1 + 2 * j; }; // the stage a kind comes in on (world 4's moving walls two stages after its holed ones)
   const pool = STRIKE_KINDS.filter((k) => intro(k) <= n), fresh = pool.filter((k) => k !== 'brick' && intro(k) === n), kinds = [];
   for (let k = 0; k < walls; k++) {
@@ -5861,7 +5890,7 @@ function advPlan(n) { // stage n's fixed plan (pure: the same object for the sam
     armor: n < 5 ? 0 : [0.15, 0.25, 0.3, 0.35, 0.4][w - 1], weak: easy ? 2 : 1, gold: n >= 2 ? 0.5 : 0, key: n >= 6 ? (w >= 2 ? 1 : 0.5) : 0, // armored share; glowing weak spots a wall; gold bricks (a chance a wall); keystones (a chance a wall)
     turret: n >= 10 ? [0, 0, 0.5, 1, 1.4, 2][w] : 0, turretMs: [0, 0, 5200, 4600, 4000, 3400][w], shotSpeed: 0.4 + 0.05 * Math.max(0, w - 2), // turret bricks a wall (from stage 10), ms between shots, their projectiles' speed
     creep: n >= 12 ? [0, 0, 0.025, 0.035, 0.045, 0.055][w] : 0, balls: !boss && ((w >= 3 && (i === 3 || i === 6)) || (w === 5 && i % 2 === 0)) ? 2 : 1, // walls closing in (depth units / ms, from stage 12); two balls at once (some world 3+ stages)
-    paceK: easy ? 0.9 : w === 1 ? 1 : [0, 1, 1.1, 1.18, 1.24, 1.3][w] + 0.01 * i, reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75][w], magK: w === 1 ? 1 : 0.5,
+    paceK: easy ? 0.9 : w === 1 ? 1 : boss ? [0, 1, 1.05, 1.1, 1.14, 1.18][w] : [0, 1, 1.1, 1.18, 1.24, 1.3][w] + 0.01 * i, /* (a boss fight: a calmer ball, the boss is the threat) */ reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75][w], magK: w === 1 ? 1 : 0.5,
     pu: n >= 3 ? Math.min(0.4, 0.2 + 0.05 * (w - 1)) : 0, guests: n >= 2, monkey: w >= 2, curve: w >= 2, wobble: w >= 4 }; // power-up bricks from stage 3 and rare; the cow from stage 2, the monkey from world 2; bending serves from world 2, S-wobbles from world 4
 }
 function advOpen(id) { // what a stage may use in place of the road: everything, but the monkey, power-ups and serve shapes come with the worlds; no perks
@@ -5877,7 +5906,7 @@ function advCurrent() { const A = profile.adv; let c = 0; for (let n = 1; n <= A
 // (30 + 10 x its tuning level), + 200 x the world on a boss stage: about what a clear at x1 scores): Bronze any clear, Silver 1x par, Gold 1.8x,
 // Diamond 3x, Legend 4.5x (only with long combos). The map shows each stage's best rank; the overall rank is the average over the cleared stages.
 const RANKS = ['bronze', 'silver', 'gold', 'diamond', 'legend'], RANK_K = [0, 1, 1.8, 3, 4.5], RANK_COL = ['#d08a4e', '#c9d3e3', '#ffc24b', '#7fe6ff', '#ff7ad9'];
-function stagePar(n) { const P = advPlan(n); return P.walls * (30 + 10 * P.level) + (P.boss ? 200 * P.world : 0); }
+function stagePar(n) { const P = advPlan(n); return P.boss ? 200 * P.world + Math.round(8 * BOSS_DEFS[P.world].hp) : P.walls * (30 + 10 * P.level); } // (a boss stage: its bonus + about its hp's points at a small combo)
 function rankThresholds(n) { const par = stagePar(n); return RANK_K.map((k) => Math.round(k * par)); }
 function rankFor(n, score) { if (!(score > 0)) return -1; const th = rankThresholds(n); let r = 0; for (let i = 1; i < th.length; i++) if (score >= th[i]) r = i; return r; } // -1: no score yet
 function advBestRank(n) { const A = profile.adv; return A.stars[n] ? Math.max(0, rankFor(n, A.best[n] || 0)) : -1; } // a cleared stage with no score kept (cleared before v4): Bronze
@@ -5891,10 +5920,11 @@ function advOpenNode(A, n) { // stage n becomes playable: the frontier moves on,
 function advSyncWorlds(p) { for (let w = 2; w <= p.worlds.unlocked; w++) advOpenNode(p.adv, (w - 1) * ADV_WORLD + 1); } // worlds opened in Endless (or before the Adventure): their first stage is open on the map, so nobody loses access
 function advXp(clear) { return runXp({ walls: strike.progress, levels: 0, bosses: adv.bossDone ? 1 : 0 }) + (clear && adv.result ? 10 * adv.result.stars : 0); } // 20 for playing, 4 a wall, 30 the boss, 10 a star
 function strikeRand(ch = 'misc') {
+  if (typeof ch !== 'string') ch = ch == null ? 'misc' : String(ch); // (a channel name, whatever the caller passed)
   if (adv.on) { const r = adv.rngs[ch] || (adv.rngs[ch] = mulberry32(strSeed('adv|' + adv.n) ^ strSeed(ch))); return r(); } // an Adventure stage: its own seeded channels
-  if (!daily.on) return Math.random();
-  const r = daily.rngs[ch] || (daily.rngs[ch] = mulberry32(dailySeed(daily.date) ^ strSeed(ch)));
-  return r();
+  if (daily.on) { const r = daily.rngs[ch] || (daily.rngs[ch] = mulberry32(dailySeed(daily.date) ^ strSeed(ch))); return r(); }
+  if (strike.runSeed !== null) { const r = strike.rngs[ch] || (strike.rngs[ch] = mulberry32(strSeed('duel|' + strike.runSeed) ^ strSeed(ch))); return r(); } // an Endless / Frenzy run: its own seed (a duel link replays it)
+  return Math.random();
 }
 function dailyMod() { return daily.on ? daily.modifier : null; }
 function strikeEasy() { return strike.diff !== 'normal' && !daily.on; } // the daily is always Normal
@@ -5959,6 +5989,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   get ball() { return strike.balls[0] || null; }, set ball(v) { if (v) strike.balls[0] = v; else strike.balls.length = 0; },
   get speed() { const b = strike.balls[0]; return b ? b.speed : strike._speed; }, set speed(v) { const b = strike.balls[0]; if (b) b.speed = v; strike._speed = v; },
   get trail() { const b = strike.balls[0]; return b ? b.trail : strike._trail; },
+  runSeed: null, rngs: {}, // an Endless / Frenzy run's seed and its strikeRand channels (Challenge a friend replays the run from the seed)
   puDrought: 0, puDurMs: null, caught: 0, // walls spawned in a row without a power-up brick; test-only duration override; capsules caught this round
   diff: (() => { try { const v = localStorage.getItem('strikeDiff'); if (v === 'easy' || v === 'normal') return v; } catch {} return 'easy'; })(), // 'easy' (default) | 'normal'
   serveAt: 0, cued: false, scroll: 0, flash: -1e9, superFlash: -1e9, hitAt: -1e9, handHit: -1e9, power: '', hits: 0, misses: 0, serves: 0, bounces: 0, lastHit: null,
@@ -6031,7 +6062,7 @@ const strike = { balls: [], _speed: 0, _trail: [], walls: [], sparks: [], debris
   },
   setCleared(n) { strike.cleared = Math.max(0, (n | 0) - 1); wallCleared(performance.now()); }, // test helper: as if the n-th wall was just cleared (level-ups and the boss on its multiples included)
   spawnBoss(n) { return spawnBoss(n, performance.now()); }, // test helper / hook: a boss wall now (number n, default the next one)
-  bossHit(tier) { const b = strike.boss; if (!b) return 0; const bl = strike.ball || { x: 0, y: 0, z: b.z, tier: '' }; return bossHit(tier || 'soft', bl, performance.now()); }, // test helper: one hit of the tier on the boss, at the ball's x/y (or its centre)
+  bossHit(tier) { const b = strike.boss; if (!b) return 0; const bl = b.real ? { x: b.g.x, y: b.g.y + b.g.hh * 0.45, z: b.z, tier: '' } : strike.ball || { x: 0, y: 0, z: b.z, tier: '' }; return bossHit(tier || 'soft', bl, performance.now()); }, // test helper: one hit of the tier on the boss, at the ball's x/y (or its centre)
   bossScreen() { return strike.ui.boss; },
   handShape() { // the drawn hand's hit shape in screen px (null with no hand): the palm rect, finger / thumb capsules, the scale; dist(x, y) = px from a screen point to it (<= 0 inside)
     if (!cursor.present) return null; const s = handScale(), cx = cursor.x, cy = cursor.y, [rx, ry, rw, rh, rr] = HAND_PALM;
@@ -6127,10 +6158,12 @@ function resetStrike(now) {
   loadGuestArt(); gfx3dBoot(); // Strike starts: the guests' painted art loads (once); three.js loads now (once), then the corridor renders in WebGL
   if (daily.on) { daily.date = missionDay(); daily.modifier = daily.forceModifier || modifierFor(daily.date); daily.rngs = {}; } // every attempt replays the same seeded run (a new day after midnight)
   if (adv.on || daily.on) frenzy.on = false; frenzy.result = null;
+  strike.rngs = {}; strike.runSeed = adv.on || daily.on ? null : duel.on && duel.link && duel.link.m !== 'adv' && duel.link.seed !== null ? duel.link.seed : (Math.random() * 4294967296) >>> 0; // (a duel: the challenger's seed)
+  if (duel.on && !(duel.link && ((duel.link.m === 'adv' && adv.on) || (duel.link.m === 'frz' && frenzy.on) || (duel.link.m === 'end' && !adv.on && !frenzy.on && !daily.on)))) duelEnd(); duel.passed = false; duel.passedAt = -1e9; duel.lastResult = null;
   const A = adv.on ? advBegin() : null, ui0 = strike.ui; // an Adventure stage: its plan, its seeded channels afresh
   strike.balls.length = strike._trail.length = strike.sparks.length = strike.floaters.length = strike.walls.length = strike.debris.length = strike.capsules.length = strike.powerups.length = 0; particles.length = 0; rings.length = 0;
   try { strike.best = Math.max(strike.best, +localStorage.getItem('strikeBest') || 0); } catch {}
-  const w0 = A ? A.world : daily.on ? 1 : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
+  const w0 = A ? A.world : daily.on ? 1 : duel.on && duel.link && duel.link.m === 'end' ? duel.link.s : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
   strike.waiting = false; strike.runWorld = w0; strike.gate = A ? 0 : worldGate(L0); strike.worldUp = 0; strike.chest = null; strike.chests = 0; strike.lastChest = null; strike.spots.length = 0; strike.lastSpot = null; strike.previewed.clear();
   strike.score = 0; strike.lives = strike.maxLives = (A ? ADV_LIVES : sd('STRIKE_LIVES')) + upgLv('heart'); /* (v5: + the Extra heart upgrade) */ strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
   strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = L0; strike.cleared = strike.cleared0 = clearedAtLevel(L0); strike.power = ''; strike.lastHit = null;
@@ -6153,6 +6186,7 @@ function resetStrike(now) {
   strike.ticket = false;
   if (!daily.on && !A && !frenzy.on && mode !== 'none' && profile.tickets > 0) { profile.tickets--; saveProfile(); strike.lives++; strike.ticket = true; strike.ui.heartPop = { i: strike.lives - 1, t: now + 400 }; toast('ticketUsed', null, 'star'); } // a Golden ticket from a chest: +1 life this run (never in the daily)
   for (let i = 0; i < 4; i++) spawnStrikeWall(wallSlotZ(i));
+  ui.rbIntro = ui.rbIntroBox = ui.rbDown = ui.bossBar = null; strike.lastBoss = null; adv.rbResult = null; if (A && A.boss) spawnRealBoss(A.world, now, 1700); // a world's boss stage: the boss itself (it walks in as the stage banner goes)
   strike.releaseUntil = -1e9; runPowerStart(now); // v5: the run power picked after the last clear
   strike.rally = strike.rallyBest = 0; strike.rallyTop = 1; strike.rallyLost = null; strike.rallyLog.length = 0; ui.speedPop = ui.speedBox = ui.rally = null; // the rally starts at the base speed
   if (frenzy.on) { strike.lives = strike.maxLives = 1; strike.shield = 1; ui.levelBanner = { t: now + 200, level: 1, frenzy: true, ms: 2000 }; } // Frenzy: one miss ends it (the very first is shielded)
@@ -6184,7 +6218,7 @@ function syncLevel(now, fx) { // the level and the progress within it follow the
 }
 function wallCleared(now) { // one more wall down: the level progress ticks (a pulse on the bar), a level may complete, and the last wall of a world's last level brings its boss
   strike.cleared++; strike.ui.progressAt = now;
-  if (adv.on) { strike.progress = strike.cleared - strike.cleared0; if (strike.progress >= strike.goal && adv.phase === 'play') { if (adv.plan.boss && !adv.bossDone) { if (!strike.boss) spawnBoss(adv.plan.world, now); } else advClear(now); } return; } // an Adventure stage: no levels; its last wall clears it (or brings its boss)
+  if (adv.on) { strike.progress = strike.cleared - strike.cleared0; if (strike.progress >= strike.goal && adv.phase === 'play') { if (adv.plan.boss && !adv.bossDone) { if (!strike.boss) spawnRealBoss(adv.plan.world, now); } else advClear(now); } return; } // an Adventure stage: no levels; its last wall clears it (or brings its boss)
   if (frenzy.on) { strike.progress = strike.cleared - strike.cleared0; return; } // Frenzy: one long rally, no levels, no boss
   syncLevel(now, true);
   if (bossDue()) spawnBoss(strike.gate / WORLD_LEVELS, now);
@@ -6678,7 +6712,7 @@ function turretTick(now, dt) {
       fireShot(w, k, now, C);
     }
   for (let i = strike.shots.length - 1; i >= 0; i--) {
-    const q = strike.shots[i];
+    const q = strike.shots[i]; if (!q) continue; // (a boss beaten by a returned shot clears the list mid-loop)
     if (q.dead) { if (now - q.deadAt > 350) strike.shots.splice(i, 1); continue; }
     if (q.dir > 0) { // incoming: from the turret to a spot in the near corridor the hand can reach
       q.z -= q.speed * dt; const k = 1 - Math.max(0, q.z) / q.z0; q.x = q.x0 + (q.tx - q.x0) * k; q.y = q.y0 + (q.ty - q.y0) * k;
@@ -6687,6 +6721,10 @@ function turretTick(now, dt) {
         if (pathDist(sc.x, sc.y, now, CONFIG.STRIKE_HIT_PATH_MS) <= reach || handOverlap(sc.x, sc.y, sc.r, now, CONFIG.STRIKE_HIT_PATH_MS)) { deflectShot(q, now); continue; }
         if (q.z <= -hz * 0.6) { shotHits(q, now); continue; }
       }
+    } else if (q.boss) { // a boss's shot slapped back: it flies at the boss and hurts it
+      const bs = strike.boss, G = bs && bs.real ? bs.g : null, tz = G ? Math.max(1, bs.z - 20) : q.z0; q.z += q.speed * 2.2 * dt;
+      if (G) { q.x0 = G.x + bs.def.mouth[0] * G.k * 0.4; q.y0 = G.y + bs.def.mouth[1] * G.k * 0.4; } const k = Math.min(1, q.z / tz); q.x = q.bx + (q.x0 - q.bx) * k; q.y = q.by + (q.y0 - q.by) * k;
+      if (q.z >= tz) { if (G) rbShotBack(q, now); else { q.dead = true; q.deadAt = now; } }
     } else { // slapped away: back to its turret, which it chips
       q.z += q.speed * 2.2 * dt; const k = Math.min(1, q.z / q.z0); q.x = q.bx + (q.x0 - q.bx) * k; q.y = q.by + (q.y0 - q.by) * k;
       if (q.z >= q.z0) { const w = strike.walls.find((u) => u.id === q.wall), t0 = w && w.bricks.find((u) => u.col === q.col && u.row === q.row);
@@ -6954,6 +6992,7 @@ function incomingWalls(b, z0, x0, y0, now) { // an incoming ball crossing a stan
   }
 }
 function wallDown(w, now) { // a wall knocked out completely (from in front or behind): its bonus, the chime, the coins; a fresh wall queues up
+  if (w.summon) { sfx('chime'); wallFlashFx(w, now); const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); strike.score += scorePts(10); rbWallDown(w, now); return; } // (a boss's mini-wall: no stage progress, no new wall)
   const { T, B } = corridor(), bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); strike.score += scorePts(bonus); strike.ui.scoreAt = now;
   addFloater({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime'); wallFlashFx(w, now);
   const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
@@ -6989,7 +7028,7 @@ function explodeTnt(w, k, b, now) { // a broken TNT crate: every brick within 2 
 }
 function bounceOffWall(b, w) { // a soft ball comes straight back off the wall it chipped, at the normal pace, drifting a little
   const Z = CONFIG.STRIKE_Z_FAR, { L, R, T, B } = corridor(), r = ballRad(b), clamp = (v, a, c) => Math.max(a, Math.min(c, v));
-  b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; strike.lastBounce = { z: b.z, wz: w.z, r }; // never inside the wall: a ball's depth in front of it
+  b.dir = 1; b.z = Math.max(1, w.z - r); b.super = false; b.tier = ''; b.spin = 0; b.perf = false; b.passed = false; strike.lastBounce = { z: b.z, wz: w.z, r }; // never inside the wall: a ball's depth in front of it
   const dr = strikeTuning().drift, fx = Math.min(0.95, 0.75 * dr), fy = Math.min(0.85, 0.6 * dr); b.curve = 0;
   b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25 * dr, (L + r) * fx, (R - r) * fx); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25 * dr, (T + r) * fy, (B - r) * fy);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
@@ -7027,7 +7066,7 @@ function spawnBoss(n, now) { // boss number n (default the next): hp = 12 + 4n o
 }
 function bossRoar(b, now) { b.roarAt = now; b.nextRoar = now + 3500 + strikeRand('boss') * 2500; sfx('roar'); shakeScreen(3); }
 function bossTick(now, dt) {
-  const b = strike.boss; if (!b) return;
+  const b = strike.boss; if (!b) return; if (b.real) return rbTick(now, dt, false); // (an Adventure boss: its own fight)
   const Z = CONFIG.STRIKE_Z_FAR, near = CONFIG.STRIKE_HIT_Z * 3; b.pz = b.z;
   if (b.retreat) { b.z += 1.6 * dt; if (b.z >= Z * BOSS_Z0) { b.z = Z * BOSS_Z0; b.retreat = false; } } // thrown back after a slam, then it comes again
   else {
@@ -7053,7 +7092,7 @@ function crumbleWall(w, now, respawn) { // every live brick flies off as debris;
   if (respawn) spawnStrikeWall(nextWallZ());
 }
 function bossHit(tier, bl, now) { // damage by tier: soft 1, medium 2, hard 4, SUPER / fireball 8; the face winces, bits fly off, points per damage; at 0 hp it goes down
-  const b = strike.boss; if (!b || b.hp <= 0) return 0;
+  const b = strike.boss; if (!b || b.hp <= 0) return 0; if (b.real) return rbHit(b, tier, bl, now, {});
   const dmg = BOSS_DMG[tier] || 1, { L, R, T, B } = corridor(), p = proj(bl.x, bl.y, b.z), pw = STRIKE_PW[tier] || 0;
   b.hp = Math.max(0, b.hp - dmg); b.hitAt = now; b.lastTier = tier; g3Fx('boss', { x: bl.x, y: bl.y, z: b.z, dmg, tier });
   const pts = scorePts(dmg * 5); strike.score += pts; strike.ui.scoreAt = now;
@@ -7075,6 +7114,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
   }
 }
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
+  if (b.real) return rbDefeated(b, now);
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n; g3Fx('bossdown', { z: b.z });
   strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; addFloater({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
@@ -7095,6 +7135,248 @@ function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 
   }
   strike.walls.length = 0; for (let i = 0; i < 4; i++) spawnStrikeWall(CONFIG.STRIKE_Z_FAR + i * wallGap() * 0.5); // normal walls resume, sliding in from the far end
   if (!strike.extrasOff) dropChest(now + 900); // a treasure chest drops after the boss (the older suites' exact timings: none)
+}
+/* --- Adventure real bosses (the 8th stage of each world; DESIGN.md 'Real bosses'). A stage 8 is one fight: the boss walks (or flies) in at the
+   far end while the stage banner reads, roars, and its name drops in; a health bar with its name sits under the hearts pill. Damage by tier
+   (soft 1, medium 2, hard 3, SUPER 5; the Heavier ball upgrade adds a little), x3 on its glowing weak point (on ~3 s, off a few s). At 66% and
+   33% of its hp it changes phase: it roars, cracks, then loses pieces and throws sparks, attacks more often and with more kinds. Attacks (each
+   telegraphed by a wind-up): a slow projectile (the turret shots' code) that hurts the boss when slapped back; a shield only a SUPER / PERFECT hit
+   (or a fireball) breaks; summoned mini-walls in front of it; a charge toward the player that a hit knocks back (else a heart and a slam); a
+   spinning arm (or tail) at its depth that blocks the balls that meet it. The dragon flies side to side. Endless keeps its boss wall. --- */
+const RB = { zHome: 0.32, enterMs: 1400, introMs: 2600, weakOn: 3000, weakOff: [4000, 3400, 2800], weakMul: 3, shotBack: 3, shieldMs: 7000, armMs: 8000, near: 2, armDz: 50,
+  wind: { shot: 650, shield: 520, wall: 700, charge: 1000, arm: 620 }, normalHp: 1.2 };
+const RB_DMG = { soft: 1, medium: 2, hard: 3, super: 4 };
+const RB_INK = '#21162b';
+const BOSS_DEFS = [null, // per world: name key (bn_<id>), the bar / banner colour (the world's accent), hp (Easy; Normal x1.2), body size (share of the corridor; art box aw x ah), attacks by phase, ms between attacks by phase,
+  // its projectile, shot speed, the charge's crossing time, the weak point (art x, y, r), where shots leave it (art x, y), its spinning arm (pivot y, length, blades, thickness, rad/ms), flying
+  { id: 'golem', col: '#ef9a78', hp: 125, w: 0.62, h: 0.86, aw: 200, ah: 232, atk: [['shot'], ['shot', 'wall'], ['shot', 'wall', 'charge']], atkMs: [6500, 5800, 5000], shot: 'rock', shotSpeed: 0.3, chargeMs: 8000, weak: [0, 18, 19], mouth: [96, -60], arm: null },
+  { id: 'queen', col: '#7fe6cf', hp: 190, w: 0.58, h: 0.88, aw: 200, ah: 248, atk: [['shot', 'shield'], ['shot', 'shield', 'wall'], ['shot', 'shield', 'wall', 'arm']], atkMs: [4300, 3700, 3100], shot: 'shard', shotSpeed: 0.38, chargeMs: 7000, weak: [0, -103, 15], mouth: [84, -40], arm: { y: 30, len: 128, n: 2, w: 16, spd: 0.0017 } },
+  { id: 'robot', col: '#b8c4d8', hp: 310, w: 0.62, h: 0.86, aw: 200, ah: 236, atk: [['shot', 'shield'], ['shot', 'shield', 'charge'], ['shot', 'shield', 'charge', 'arm']], atkMs: [4000, 3400, 2900], shot: 'rocket', shotSpeed: 0.42, chargeMs: 6800, weak: [0, 14, 17], mouth: [-84, -64], arm: { y: 14, len: 132, n: 1, w: 20, spd: 0.0019 } },
+  { id: 'kong', col: '#86e05a', hp: 345, w: 0.64, h: 0.86, aw: 200, ah: 236, atk: [['shot', 'charge'], ['shot', 'charge', 'arm'], ['shot', 'charge', 'arm', 'wall']], atkMs: [3800, 3200, 2700], shot: 'barrel', shotSpeed: 0.46, chargeMs: 6000, weak: [0, 22, 16], mouth: [-96, -30], arm: { y: 20, len: 134, n: 1, w: 24, spd: 0.0021 } },
+  { id: 'dragon', col: '#ff8048', hp: 490, w: 0.56, h: 0.62, aw: 200, ah: 200, fly: true, atk: [['shot', 'arm'], ['shot', 'arm', 'shield', 'charge'], ['shot', 'arm', 'shield', 'charge', 'wall']], atkMs: [3600, 3000, 2500], shot: 'fire', shotSpeed: 0.48, chargeMs: 5600, weak: [0, 30, 15], mouth: [0, -48], arm: { y: 40, len: 128, n: 1, w: 18, spd: 0.0022 } },
+];
+function rbDef(world) { return BOSS_DEFS[Math.max(1, Math.min(WORLD_N, world | 0 || 1))]; }
+function rbHpFor(world) { const D = rbDef(world); return Math.max(8, Math.round(D.hp * (strikeEasy() ? 1 : RB.normalHp))); } // (hp: Easy's; Normal x1.2, its ball is faster too; the daily never has a boss)
+function rbGeom(b) { // the body in corridor units at its depth: k = corridor units per art unit, the half sizes, the centre (a ground boss stands on the floor; the dragon flies)
+  const { L, R, T, B } = corridor(), D = b.def, cw = R - L, ch = B - T, tall = H > W * 1.1;
+  const k = Math.min((tall ? 0.9 : D.w) * cw / D.aw, D.h * ch / D.ah), hw = D.aw * k / 2, hh = D.ah * k / 2; // (a tall phone: wide as most of the corridor)
+  const y = D.fly ? T + ch * 0.4 + Math.sin((b.clock || 0) * 0.0021) * ch * 0.035 : B - hh - ch * 0.01;
+  return { k, hw, hh, x: b.x, y, L, R, T, B };
+}
+function rbWeakPos(b, G = b.g || rbGeom(b)) { const w = b.def.weak; return { x: G.x + w[0] * G.k, y: G.y + w[1] * G.k, r: Math.max(w[2] * G.k, ballR() * 0.45) }; }
+function rbArmSegs(b, G = b.g || rbGeom(b)) { // the spinning arm's blades as segments (corridor units) at the arm's depth
+  const A = b.arm, D = b.def; if (!A || !D.arm) return [];
+  const px = G.x, py = G.y + D.arm.y * G.k, L0 = D.arm.len * G.k, out = [];
+  for (let i = 0; i < D.arm.n; i++) { const a = A.a + i * TAU / D.arm.n; out.push({ x0: px, y0: py, x1: px + Math.cos(a) * L0, y1: py + Math.sin(a) * L0, w: D.arm.w * G.k, a }); }
+  return out;
+}
+function segDist(px, py, s) { const dx = s.x1 - s.x0, dy = s.y1 - s.y0, q = Math.max(0, Math.min(1, ((px - s.x0) * dx + (py - s.y0) * dy) / Math.max(1e-6, dx * dx + dy * dy))); return Math.hypot(px - (s.x0 + dx * q), py - (s.y0 + dy * q)); }
+function rbInBody(b, x, y, pad = 0) { const G = b.g || rbGeom(b), rx = G.hw * 0.94 + pad, ry = G.hh * 0.94 + pad; return ((x - G.x) / rx) ** 2 + ((y - G.y) / ry) ** 2 <= 1; }
+function spawnRealBoss(world, now, delay = 0) { // the boss of world n: it waits beyond the far end, then walks / flies in (delay: after the stage banner)
+  const D = rbDef(world), Z = CONFIG.STRIKE_Z_FAR, maxHp = rbHpFor(world);
+  const b = { real: true, def: D, kind: D.id, n: world, hp: maxHp, maxHp, z: Z * 1.05, pz: Z * 1.05, zHome: Z * RB.zHome, x: 0, sx: 0, clock: 0, phase: 1, phaseAt: -1e9, born: now, enterAt: now + delay, roared: false,
+    look: { x: 0, y: 0 }, hitAt: -1e9, roarAt: -1e9, slamAt: -1e9, blockAt: -1e9, knockAt: -1e9, angry: false, atk: null, nextAtk: 0, lastAtk: '', shield: null, arm: null, charge: null, shieldBrokeAt: -1e9,
+    weak: { on: false, next: 0, until: 0, at: -1e9 }, log: [], fired: {}, countered: {}, dmgLog: [], weakHits: 0, blocked: 0, armBlocks: 0, slams: 0, knocks: 0, returned: 0, nextShotAt: 0, g: null, retreat: false, speed: 0, gate: false };
+  b.g = rbGeom(b);
+  strike.boss = b; strike.seenKinds.add('boss'); strike.shots.length = 0;
+  for (const w of strike.walls.slice()) if (w.z < Z) crumbleWall(w, now, false); strike.walls.length = 0; // (a boss stage has no walls of its own; the summoned mini-walls come later)
+  return b;
+}
+function rbEntered(b, now) { return now >= b.enterAt + RB.enterMs; }
+function rbRoar(b, now, big) { b.roarAt = now; sfx('roar'); shakeScreen(big ? 3.2 : 2.4); if (big) { grippySay('boss'); strike.ui.rbIntro = { t: now, ms: RB.introMs, kind: b.kind, n: b.n }; } }
+function rbTick(now, dt, idle) { // idle: the serve is waiting (only the entrance and the looks go on; the fight's clock holds)
+  const b = strike.boss, D = b.def, Z = CONFIG.STRIKE_Z_FAR, near = CONFIG.STRIKE_HIT_Z * RB.near; b.pz = b.z;
+  if (!rbEntered(b, now)) { // the entrance: from beyond the far end to its spot, with a roar and the name banner
+    if (now >= b.enterAt) { const q = Math.min(1, (now - b.enterAt) / RB.enterMs), e = 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2); b.z = Z * 1.02 + (b.zHome - Z * 1.02) * e; if (!b.roared) { b.roared = true; rbRoar(b, now, true); } }
+    b.g = rbGeom(b); rbLook(b, dt); return;
+  }
+  if (b.z > b.zHome && !b.charge && b.z >= Z) b.z = b.zHome; // (entered)
+  if (idle) { b.g = rbGeom(b); rbLook(b, dt); return; }
+  b.clock += dt; const c = b.clock;
+  if (b.charge) { b.z -= b.charge.v * dt; if (b.z <= near) { rbSlam(b, now); if (strike.over || (adv.on && adv.phase !== 'play')) return; } }
+  else if (b.z < b.zHome) b.z = Math.min(b.zHome, b.z + 1.3 * dt); // backing off to its spot after a slam / a knock-back
+  else b.z = b.zHome;
+  const { L, R } = corridor(), amp = D.fly ? (R - L) * (0.17 + 0.04 * b.phase) : (R - L) * 0.025; // the dragon flies side to side (wider and faster each phase); the others sway a little
+  b.sx += dt * (D.fly ? 0.00095 * (1 + 0.3 * (b.phase - 1)) : 0.0006); b.x = Math.sin(b.sx) * amp; b.g = rbGeom(b); rbLook(b, dt);
+  const f = b.hp / b.maxHp, ph = f <= 1 / 3 ? 3 : f <= 2 / 3 ? 2 : 1; if (ph > b.phase) rbPhase(b, ph, now);
+  const Wk = b.weak; // the weak point glows now and then (more often in the later phases)
+  if (b.calm) { if (b.shield && c >= b.shield.until) b.shield = null; if (b.arm) { b.arm.a += b.arm.w * dt; if (c >= b.arm.until) b.arm = null; } return; } // (test-only: no attacks or weak-point timers of its own)
+  if (!Wk.next) Wk.next = c + 1200;
+  if (Wk.on && c >= Wk.until) { Wk.on = false; Wk.next = c + RB.weakOff[b.phase - 1]; } else if (!Wk.on && c >= Wk.next) { Wk.on = true; Wk.until = c + RB.weakOn; Wk.at = now; sfx('tink'); if (!profileTip('bossWeak')) tipOnce('bossWeak'); }
+  if (b.shield && c >= b.shield.until) { b.shield = null; sfx('fizzle'); }
+  if (b.arm) { b.arm.a += b.arm.w * dt; if (c >= b.arm.until) b.arm = null; }
+  if (b.nextShotAt && c >= b.nextShotAt) { b.nextShotAt = 0; rbShot(b, now); } // (phase 3: a second shot right after the first)
+  if (b.atk) { if (c >= b.atk.fireAt) rbFire(b, b.atk, now); }
+  else { if (!b.nextAtk) b.nextAtk = c + 900; if (c >= b.nextAtk && !b.charge) rbPickAttack(b, now); }
+  for (const w of strike.walls.slice()) if (w.left > 0 && b.pz >= w.z && b.z < w.z + 30) crumbleWall(w, now, false); // charging through its own mini-walls
+}
+function rbLook(b, dt) { const ball = strike.balls[0], G = b.g, q = Math.min(1, dt / 90); const tx = ball ? Math.max(-1, Math.min(1, (ball.x - G.x) / (G.hw * 1.6))) : 0, ty = ball ? Math.max(-1, Math.min(1, (ball.y - G.y) / (G.hh * 1.6))) : 0; b.look.x += (tx - b.look.x) * q; b.look.y += (ty - b.look.y) * q; }
+function rbPhase(b, ph, now) { // 66% / 33%: a roar, a shake, a beat of hit-stop; it attacks sooner
+  b.phase = ph; b.phaseAt = now; b.angry = ph >= 3; rbRoar(b, now, false);
+  if (strike.lives < strike.maxLives) { const n = strike.maxLives - strike.lives; strike.lives = strike.maxLives; strike.ui.heartPop = { i: strike.lives - 1, t: now + 300 }; sfx('life'); b.hearts = (b.hearts || 0) + n; addFloater({ x: W / 2, y: Math.max(strike.ui.top + 160, H * 0.5), text: '+' + n + ' ❤', big: true, life: 1.2 }); } // (the hearts back at each new phase, a checkpoint: a long fight stays fair; the stars still count every heart lost) if (!reducedMotion()) strike.stopUntil = Math.max(strike.stopUntil, now + 120);
+  b.nextAtk = Math.min(b.nextAtk || Infinity, b.clock + 900); const G = b.g, p = proj(G.x, G.y, b.z);
+  addFloater({ x: p.x, y: Math.max(strike.ui.top + 120, p.y - G.hh * p.s - 20), text: t(ph === 2 ? 'bossPhase2' : 'bossPhase3'), big: true, life: 1.3 });
+  burst(p.x, p.y, b.def.col, 22); dust(p.x, p.y, 10, 1 + p.s); ring(p.x, p.y, hexA(b.def.col, 0.9), G.hw * p.s * 1.6, 520, 6); sfx('crack', 0.9);
+}
+function rbPickAttack(b, now) {
+  const summoned = strike.walls.filter((w) => w.summon && w.left > 0).length;
+  const pool = b.def.atk[b.phase - 1].filter((k) => !(k === 'shield' && b.shield) && !(k === 'arm' && b.arm) && !(k === 'wall' && summoned >= 2) && !(k === 'charge' && b.z < b.zHome - 5));
+  if (!pool.length) { b.nextAtk = b.clock + 700; return; }
+  let k = pool[Math.floor(strikeRand('rboss') * pool.length) % pool.length];
+  if (k === b.lastAtk && pool.length > 1) k = pool[(pool.indexOf(k) + 1 + Math.floor(strikeRand('rboss') * (pool.length - 1))) % pool.length];
+  rbAttack(b, k, now);
+}
+function rbAttack(b, kind, now) { // the wind-up the player can read (a glow, a sound); the attack itself lands at fireAt
+  b.atk = { kind, at: b.clock, fireAt: b.clock + RB.wind[kind] * (b.phase === 3 ? 0.8 : 1), t: now }; b.lastAtk = kind; b.log.push(kind); if (b.log.length > 60) b.log.shift();
+  if (kind === 'charge') { sfx('rise'); const p = proj(b.g.x, b.g.y, b.z); addFloater({ x: W / 2, y: Math.max(strike.ui.top + 130, H * 0.4), text: t('bossCharge'), big: true, life: 1.1 }); void p; }
+  else if (kind === 'shield' || kind === 'arm') sfx('swish'); else sfx('tick');
+  return b.atk;
+}
+function rbFire(b, A, now) {
+  b.atk = null; b.nextAtk = b.clock + b.def.atkMs[b.phase - 1] * (0.85 + 0.3 * strikeRand('rboss'));
+  b.fired[A.kind] = (b.fired[A.kind] || 0) + 1;
+  const G = b.g, p = proj(G.x, G.y, b.z);
+  if (A.kind === 'shot') { rbShot(b, now); if (b.phase === 3) b.nextShotAt = b.clock + 420; if (!profileTip('bossShot')) tipOnce('bossShot'); }
+  else if (A.kind === 'shield') { b.shield = { at: b.clock, until: b.clock + RB.shieldMs, t: now }; sfx('powerup'); addFloater({ x: p.x, y: Math.max(strike.ui.top + 120, p.y - G.hh * p.s - 24), text: t('bossShield'), big: true, life: 1.1 }); if (!profileTip('bossShield')) tipOnce('bossShield'); }
+  else if (A.kind === 'wall') { rbSummon(b, now); }
+  else if (A.kind === 'charge') { const near = CONFIG.STRIKE_HIT_Z * RB.near; b.charge = { t: now, at: b.clock, v: Math.max(0.05, (b.z - near) / (b.def.chargeMs * (b.phase === 3 ? 0.85 : 1) * (strikeEasy() ? 1.15 : 1))) }; sfx('roar'); shakeScreen(2); }
+  else if (A.kind === 'arm') { b.arm = { a: strikeRand('rboss') * TAU, w: (strikeRand('rboss') < 0.5 ? -1 : 1) * b.def.arm.spd * (1 + 0.2 * (b.phase - 1)), at: b.clock, until: b.clock + RB.armMs, t: now }; sfx('whoosh'); }
+}
+function rbShot(b, now) { // a slow projectile from its hand / mouth to a reachable spot at the player's plane (the turret shots' flight; slapped back, it hurts the boss)
+  if (strike.shots.filter((q) => q.dir > 0 && !q.dead).length >= SHOT_MAX) return null;
+  const G = b.g, D = b.def, { L, R, T, B } = corridor(), r = ballR(), m = D.mouth, x0 = G.x + m[0] * G.k, y0 = G.y + m[1] * G.k, z0 = Math.max(200, b.z - 30);
+  const q = { boss: true, kind: D.shot, wall: -1, x0, y0, x: x0, y: y0, z: z0, z0, dir: 1, speed: D.shotSpeed * (strikeEasy() ? 0.85 : 1), born: now, dead: false, spin: strikeRand('rboss') < 0.5 ? -1 : 1,
+    tx: (L + r) * 0.7 + strikeRand('rboss') * ((R - L) - 2 * r) * 0.7, ty: (T + r) * 0.55 + strikeRand('rboss') * ((B - T) - 2 * r) * 0.55 };
+  strike.shots.push(q); strike.shotsFired++; sfx(D.shot === 'fire' ? 'fire' : D.shot === 'rocket' ? 'zap' : 'pew');
+  const p = proj(x0, y0, z0); ring(p.x, p.y, hexA(D.col, 0.9), r * p.s * 1.6, 260, 3); burst(p.x, p.y, D.col, 8);
+  return q;
+}
+function rbShotBack(q, now) { // a slapped shot reaches the boss: it hurts (through the shield too)
+  const b = strike.boss; q.dead = true; q.deadAt = now; if (!b || !b.real || b.hp <= 0) return 0;
+  b.returned++; b.countered.shot = (b.countered.shot || 0) + 1;
+  const sc = shotScreen(q); burst(sc.x, sc.y, b.def.col, 14); ring(sc.x, sc.y, hexA(b.def.col, 0.95), sc.r * 4, 320, 4);
+  addFloater({ x: sc.x, y: Math.max(strike.ui.top + 110, sc.y - 40), text: t('bossReturned'), big: false, life: 1 });
+  return rbHit(b, 'medium', { x: q.x, y: q.y }, now, { dmg: RB.shotBack, shot: true });
+}
+function rbSummon(b, now) { // one (phase 3: two) mini-walls of plain bricks in front of the boss, covering it: break them to reach it
+  const n = b.phase === 3 ? 2 : 1, G = b.g, out = [];
+  for (let i = 0; i < n; i++) {
+    const z = Math.max(CRUSH_Z + 120, b.z - 130 - i * 130), w = spawnStrikeWall(z, 'brick'); if (!w) continue;
+    w.summon = true; w.final = false; w.cz = 0; w.turretAt = Infinity;
+    for (const k of w.bricks) { const c = brickCell(w, k.col, k.row), keep = k.alive && Math.abs(c.x - G.x) <= G.hw * 0.8 + c.w * 0.45 && c.y + c.h * 0.5 >= G.y - G.hh * 0.95 && c.y - c.h * 0.5 <= G.y + G.hh;
+      if (!keep) { if (k.alive) { k.alive = false; k.hp = 0; k.hole = true; w.left--; } } else { k.weak = k.key = k.gold = k.turret = k.armor = k.tnt = false; k.pu = null; k.hp = k.max = 1; } }
+    w.n0 = w.left; if (w.left <= 0) { const j = strike.walls.indexOf(w); if (j >= 0) strike.walls.splice(j, 1); continue; }
+    out.push(w); const p = proj(G.x, G.y, z); dust(p.x, p.y, 10, 1 + p.s); ring(p.x, p.y, hexA(b.def.col, 0.8), G.hw * p.s, 380, 4);
+  }
+  if (out.length) { sfx('clunk'); shakeScreen(1.6); addFloater({ x: W / 2, y: Math.max(strike.ui.top + 130, H * 0.42), text: t('bossWall'), big: true, life: 1.1 }); }
+  return out;
+}
+function rbWallDown(w, now) { const b = strike.boss; if (b && b.real) b.countered.wall = (b.countered.wall || 0) + 1; } // (a summoned wall broken: counted, no stage progress)
+function rbSlam(b, now) { // the charge reached the player: a heart, a slam, it backs off; the balls in play are thrown back at the player
+  const near = CONFIG.STRIKE_HIT_Z * RB.near; b.z = near; b.charge = null; b.slamAt = now; b.slams++; rbRoar(b, now, false); shakeScreen(4); sfx('tnt'); strike.flash = now;
+  addFloater({ x: W / 2, y: Math.max(strike.ui.top + 90, H * 0.4), text: t('ouch'), big: true, life: 1.1 });
+  for (const bl of strike.balls) if (bl.dir < 0) { bl.dir = 1; bl.z = Math.min(bl.z, near - ballR()); bl.super = false; bl.tier = ''; bl.curve = 0; bl.speed = strike.pace; }
+  streakReset(now); loseLife(now);
+}
+function rbHit(b, tier, bl, now, o = {}) { // a hit on the boss (a ball, or a returned shot): the shield, the weak point, a knock-back, the damage, the phase, the end
+  if (!b || b.hp <= 0) return 0;
+  const strong = tier === 'super' || !!o.perfect || !!bl.perf || !!bl.fire, G = b.g || rbGeom(b), p = proj(bl.x, bl.y, b.z);
+  if (b.shield && !o.shot) {
+    if (!strong) { b.blocked++; b.blockAt = now; sfx('clang'); burst(p.x, p.y, '#bff6ff', 10); ring(p.x, p.y, 'rgba(160,240,255,0.9)', ballR() * p.s * 2.2, 260, 3); addFloater({ x: p.x, y: Math.max(strike.ui.top + 110, p.y - 50), text: t('bossBlocked'), big: false, life: 0.9 }); streakReset(now); return 0; }
+    b.shield = null; b.shieldBrokeAt = now; b.countered.shield = (b.countered.shield || 0) + 1; sfx('glass'); sfx('thump'); shakeScreen(2.5);
+    burst(p.x, p.y, '#dffcff', 24); burst(p.x, p.y, b.def.col, 14); ring(p.x, p.y, 'rgba(200,250,255,0.95)', G.hw * p.s * 1.8, 460, 6);
+    addFloater({ x: p.x, y: Math.max(strike.ui.top + 110, p.y - 60), text: t('bossShieldBroken'), big: true, life: 1.2 });
+  }
+  const wp = rbWeakPos(b, G), weak = !!o.weak || (b.weak.on && !o.shot && Math.hypot(bl.x - wp.x, bl.y - wp.y) <= wp.r + ballR() * 0.5);
+  let dmg = o.dmg !== undefined ? o.dmg : Math.round((RB_DMG[bl.fire ? 'super' : tier] || 1) * (1 + 0.15 * upgLv('heavy')));
+  if (weak) { dmg *= RB.weakMul; b.weakHits++; b.weak.on = false; b.weak.next = b.clock + RB.weakOff[b.phase - 1]; sfx('weak'); const wq = proj(wp.x, wp.y, b.z); burst(wq.x, wq.y, '#ffe07a', 22); ring(wq.x, wq.y, 'rgba(255,224,122,0.95)', wp.r * wq.s * 3, 420, 5);
+    addFloater({ x: wq.x, y: Math.max(strike.ui.top + 110, wq.y - 56), text: t('bossWeak'), big: true, life: 1.2 }); }
+  if (b.charge) { b.charge = null; b.knocks++; b.knockAt = now; b.z = Math.min(b.zHome, b.z + 260); b.countered.charge = (b.countered.charge || 0) + 1; sfx('boom'); shakeScreen(2.4); addFloater({ x: p.x, y: Math.max(strike.ui.top + 110, p.y - 70), text: t('bossKnock'), big: true, life: 1.1 }); }
+  b.hp = Math.max(0, b.hp - dmg); b.hitAt = now; b.lastTier = tier; b.dmgLog.push({ t: b.clock, dmg, tier, weak, shot: !!o.shot }); if (b.dmgLog.length > 200) b.dmgLog.shift();
+  g3Fx('rboss', { x: bl.x, y: bl.y, z: b.z, dmg, tier, col: b.def.col });
+  const pts = scorePts(dmg * 5); strike.score += pts; strike.ui.scoreAt = now;
+  const pw = STRIKE_PW[tier] || 0; sfx('crack', 0.5 + pw * 0.5); sfx('thud'); shakeScreen(1.2 + pw * 2.2 + (weak ? 1 : 0)); dust(p.x, p.y, 3 + Math.min(8, dmg), 0.5 + p.s * 1.5 + pw);
+  burst(p.x, p.y, b.def.col, 6 + Math.min(16, dmg * 2)); ring(p.x, p.y, tier === 'super' ? 'rgba(255,194,75,0.9)' : 'rgba(255,255,255,0.85)', ballR() * p.s * (2 + pw * 2), 260 + pw * 200, 2 + pw * 3);
+  const f = b.hp / b.maxHp, ph = f <= 1 / 3 ? 3 : f <= 2 / 3 ? 2 : 1; if (b.hp > 0 && ph > b.phase) rbPhase(b, ph, now);
+  if (b.hp <= 0) bossDefeated(b, now);
+  return dmg;
+}
+function rbBall(b, bl, z0, now) { // an outgoing ball at the boss: its spinning arm first (a block), then the body (a hit) or past it (a miss: on to the far wall); true = it bounced
+  const G = b.g || rbGeom(b), r = ballRad(bl);
+  if (b.arm) { const az = b.z - RB.armDz, pz = b.pz - RB.armDz;
+    if (z0 < pz && bl.z >= az) for (const s of rbArmSegs(b, G)) if (segDist(bl.x, bl.y, s) <= r * 0.7 + s.w / 2) {
+      b.armBlocks++; b.blockAt = now; const p = proj(bl.x, bl.y, az); sfx('clang'); burst(p.x, p.y, '#fff3c4', 12); ring(p.x, p.y, 'rgba(255,240,200,0.9)', r * p.s * 2, 240, 3);
+      addFloater({ x: p.x, y: Math.max(strike.ui.top + 110, p.y - 50), text: t('bossBlocked'), big: false, life: 0.9 }); streakReset(now); bounceOffWall(bl, { z: az }); return true; } }
+  if (!(z0 < b.pz && bl.z >= b.z)) return false;
+  if (!rbInBody(b, bl.x, bl.y, r * 0.5)) { if (!bl.passed) { bl.passed = true; sfx('whoosh'); } return false; } // a miss: it flies past
+  rbHit(b, bl.fire ? 'super' : bl.tier || 'soft', bl, now, { perfect: !!bl.perf }); if (strike.boss === b || !strike.boss) { bounceOffWall(bl, { z: b.z }); bl.speed *= 0.9; } return true; // (thrown back a beat calmer than a wall's bounce)
+}
+function rbDefeated(b, now) { // the big one: an explosion of its colours and pieces, slow motion, confetti, 'Victory!' and the stage clear (then the trip to the next world)
+  const G = b.g || rbGeom(b), p = proj(G.x, G.y, b.z), bonus = 200 * b.n, col = b.def.col; g3Fx('bossdown', { z: b.z, col });
+  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; track('boss', 1); strike.shots.length = 0;
+  strike.ui.rbDown = { t: now, kind: b.kind, n: b.n, col, x: p.x, y: p.y }; strike.lastBoss = { kind: b.kind, n: b.n, t: b.clock, weakHits: b.weakHits, fired: { ...b.fired }, countered: { ...b.countered } };
+  addFloater({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
+  sfx('bossdown'); sfx('boom'); themeSfx('big', 1); shakeScreen(5); strike.tntAt = now; if (!reducedMotion()) strike.stopUntil = Math.max(strike.stopUntil, now + 140);
+  const R0 = Math.min(W, H); ring(p.x, p.y, 'rgba(255,120,40,0.95)', R0 * 0.55, 680, 10); ring(p.x, p.y, 'rgba(255,240,170,0.95)', R0 * 0.32, 440, 6); ring(p.x, p.y, hexA(col, 0.9), R0 * 0.75, 900, 5);
+  burst(p.x, p.y, '#ffc24b', 34); burst(p.x, p.y, '#ff6f59', 24); burst(p.x, p.y, col, 30); burst(p.x, p.y, '#ffffff', 16); dust(p.x, p.y, 18, 1.2 + p.s); confetti(W / 2, H * 0.28, 120, 1.15);
+  for (let i = 0; i < 26; i++) { while (strike.debris.length >= CONFIG.STRIKE_MAX_DEBRIS) strike.debris.shift(); const cw = G.hw * 0.35, ch = G.hh * 0.22; // its pieces fly at the camera
+    strike.debris.push({ x: G.x + (Math.random() - 0.5) * G.hw * 1.6, y: G.y + (Math.random() - 0.5) * G.hh * 1.6, z: b.z, vx: (Math.random() - 0.5) * 0.5, vy: -0.15 - Math.random() * 0.35, vz: -(0.8 + Math.random() * 1), rot: Math.random() * TAU, vr: (Math.random() - 0.5) * 0.03, k: 0.3 + Math.random() * 0.3, level: 1, kind: 'rboss', col, shard: false, w: cw, h: ch, life: 1, decay: 1 / (700 + Math.random() * 500) }); }
+  for (const w of strike.walls.slice()) if (w.z < CONFIG.STRIKE_Z_FAR) crumbleWall(w, now, false); strike.walls.length = 0;
+  if (adv.on) { adv.bossDone = true; adv.rbResult = { kind: b.kind, n: b.n, t: Math.round(b.clock / 100) / 10 }; advClear(now); }
+}
+function rbState(b = strike.boss) { if (!b || !b.real) return null; const G = b.g || rbGeom(b);
+  return { kind: b.kind, n: b.n, name: t('bn_' + b.kind), hp: b.hp, maxHp: b.maxHp, phase: b.phase, z: b.z, zHome: b.zHome, x: G.x, y: G.y, hw: G.hw, hh: G.hh, k: G.k, shield: !!b.shield, arm: !!b.arm, charge: !!b.charge, atk: b.atk ? b.atk.kind : '', weakOn: b.weak.on,
+    log: b.log.slice(), fired: { ...b.fired }, countered: { ...b.countered }, weakHits: b.weakHits, blocked: b.blocked, armBlocks: b.armBlocks, knocks: b.knocks, slams: b.slams, returned: b.returned, clock: b.clock, entered: rbEntered(b, performance.now()), def: { atk: b.def.atk, fly: !!b.def.fly, hp: b.def.hp } }; }
+function rbAimAt(b, ax, ay, now) { // test / sim: send an outgoing ball so it lands at (ax, ay) on whatever it meets first (aimBall's maths with an explicit point)
+  const tg = aimWall(b), tms = Math.max(120, (tg.z - b.z) / Math.max(0.05, b.speed * speedMul())), acc = (b.spin || 0) * STRIKE_CURVE * W;
+  b.vx = (ax - b.x - 0.5 * acc * tms * tms) / tms; b.vy = (ay - b.y) / tms; b.aim = { x: ax, y: ay, z: tg.z, wall: tg.id, t: now, ms: tms }; return tms;
+}
+function rbSim(o) { // test-only: the fight played out on a virtual clock (nothing drawn) by a simulated player. 'good': quick and accurate (returns 97%, slaps back 92% of the
+  // shots, ~30% PERFECT, hard / SUPER hits minding the heat, aims for the weak point when it glows, around the spinning arm, SUPER on a shield); 'kid': a careful child
+  // (returns 94%, slaps back 75% of the shots, mostly medium hits, a wobbly aim, rarely PERFECT). noFail: hearts are topped up (the time to beat it is measured; hearts lost are counted)
+  o = Object.assign({ player: 'good', seed: 1, maxS: 400, fps: 50, noFail: true }, o || {});
+  const b0 = strike.boss; if (!b0 || !b0.real || !adv.on || adv.phase !== 'play') return null;
+  const realNow = performance.now, R = mulberry32(o.seed), Rm = mulberry32(o.seed * 7919 + 13), t0 = realNow.call(performance), dt = 1000 / o.fps, good = o.player === 'good', hz = CONFIG.STRIKE_HIT_Z;
+  const P = good ? { ret: 0.97, shot: 0.92, perf: 0.3, react: 500, err: 0.22, weak: 0.85, dodge: 0.85 } : { ret: 0.94, shot: 0.75, perf: 0.08, react: 1100, err: 0.6, weak: 0.3, dodge: 0.3 };
+  const st = { player: o.player, kind: b0.kind, n: b0.n, hp: b0.maxHp, t: null, swings: 0, misses: 0, lost: 0, shots: 0, deflected: 0, phases: [], tiers: { soft: 0, medium: 0, hard: 0, super: 0 } };
+  let vt = t0, lost0 = adv.lost; b0.enterAt = Math.min(b0.enterAt, t0 - RB.enterMs - 1); cursor.present = false; cursor.history.length = 0;
+  const tierFor = (b) => { const hot = overheated(vt) || strike.heat > 0.6; if (good) return b.shield && !hot ? 'super' : hot ? 'medium' : R() < 0.35 ? 'super' : 'hard'; const r = R(); return r < 0.18 ? 'soft' : r < 0.65 ? 'medium' : r < 0.92 ? 'hard' : 'super'; };
+  const target = (bl, b) => { const G = b.g, sp = Math.max(0.05, bl.speed * speedMul()), tms = Math.max(120, (b.z - bl.z) / sp), D = b.def, amp = D.fly ? (G.R - G.L) * (0.17 + 0.04 * b.phase) : 0;
+    const bx = D.fly ? Math.sin(b.sx + tms * 0.00095 * (1 + 0.3 * (b.phase - 1))) * amp : G.x, wp = rbWeakPos(b, G), willGlow = b.weak.on && b.weak.until - b.clock > tms * 0.8;
+    const cands = [[bx + wp.x - G.x, wp.y], [bx, G.y], [bx - G.hw * 0.5, G.y + G.hh * 0.3], [bx + G.hw * 0.5, G.y + G.hh * 0.3], [bx, G.y - G.hh * 0.55], [bx, G.y + G.hh * 0.6]];
+    let pick = willGlow && R() < P.weak ? cands[0] : cands[1];
+    if (b.arm && R() < P.dodge) { const fa = { ...b.arm, a: b.arm.a + b.arm.w * tms }, segs = rbArmSegs({ ...b, arm: fa, g: { ...G, x: bx } }), clear = (q) => Math.min(...segs.map((s) => segDist(q[0], q[1], s) - s.w / 2));
+      const ok = cands.filter((q) => clear(q) > ballR() * 0.9); if (ok.length) pick = willGlow && ok.includes(cands[0]) && R() < P.weak ? cands[0] : ok[Math.floor(R() * ok.length)]; }
+    return [pick[0] + (R() - 0.5) * 2 * P.err * G.hw * (good ? 0.5 : 1), pick[1] + (R() - 0.5) * 2 * P.err * G.hh * (good ? 0.4 : 0.8)]; };
+  performance.now = () => vt;
+  try {
+    while (vt - t0 < o.maxS * 1000) {
+      vt += dt; const b = strike.boss; if (!b || !adv.on || adv.phase !== 'play' || strike.over) break;
+      if (o.noFail && strike.lives < 2) strike.lives = 2;
+      if (b.phase > st.phases.length + 1) { st.phases.push(Math.round((vt - t0) / 100) / 10); st.segAt = (st.segAt || []).concat(adv.lost - lost0); }
+      if (strike.waiting && vt - strike.waitSince > P.react) { const tm = R() < P.perf ? judgeTiming(0) : null, tier = tierFor(b); playerServe(tier, vt, null, tm); const bl = strike.balls[0]; if (bl) { bl.perf = !!(tm && tm.grade === 'perfect'); const [ax, ay] = target(bl, b); rbAimAt(bl, ax, ay, vt); } st.swings++; }
+      const Zn = hitZone();
+      for (const bl of strike.balls.slice()) {
+        if (bl.dir < 0) { bl._sim = 0; continue; }
+        if (bl._sim || bl.z - ballSpeedNow(bl, vt) * dt * 1.5 > Zn.zi) continue; bl._sim = 1; st.dec = (st.dec || 0) + 1; // (at the ideal moment, or the last frame before it)
+        if (Rm() >= P.ret) { st.misses++; continue; } // let it go by
+        const tier = tierFor(b), sp = ballSpeedNow(bl, vt), tm = judgeTiming(R() < P.perf ? 0 : (R() < 0.5 ? 1 : -1) * (120 + R() * 60), sp, (Zn.zo - Zn.zl) / sp);
+        strikeHit(bl, vt, tier, tm); st.swings++; st.tiers[tier]++; if (strike.boss) { const [ax, ay] = target(bl, strike.boss); rbAimAt(bl, ax, ay, vt); }
+      }
+      for (const q of strike.shots) if (q.boss && q.dir > 0 && !q.dead && !q._sim && q.z <= hz * 2) { q._sim = 1; st.shots++; if (R() < P.shot) { deflectShot(q, vt); st.deflected++; } }
+      strikeTick(vt, dt);
+    }
+  } finally { performance.now = realNow; }
+  const done = !strike.boss && adv.on && (adv.phase === 'clear' || adv.phase === 'card') && adv.result && adv.result.clear;
+  st.t = done ? Math.round((vt - t0) / 100) / 10 : null; st.lost = adv.lost - lost0; st.failed = !!(strike.over && adv.result && !adv.result.clear);
+  { const at = [0].concat(st.segAt || [], st.lost); st.segLost = at.slice(1).map((v, i) => v - at[i]); delete st.segAt; } // (hearts lost in each phase: the hearts come back at each new phase)
+  Object.assign(st, { weak: b0.weakHits, blocked: b0.blocked, armBlocks: b0.armBlocks, knocks: b0.knocks, slams: b0.slams, returned: b0.returned, fired: { ...b0.fired }, countered: { ...b0.countered }, hpLeft: b0.hp, log: b0.log.slice() });
+  const back = realNow.call(performance) - vt; // the virtual clock back to the real one
+  for (const k of ['clearAt', 'cardAt']) if (isFinite(adv[k]) && adv[k]) adv[k] += back;
+  for (const k of ['releaseUntil', 'serveAt', 'stopUntil', 'slowUntil', 'overAt', 'camPushAt', 'hotUntil', 'perfectAt', 'hitAt', 'handHit', 'flash', 'superFlash', 'tntAt', 'waitSince', 'bossDownAt']) if (isFinite(strike[k]) && strike[k] > 0) strike[k] += back;
+  for (const k of ['rbIntro', 'rbDown', 'tierFlash', 'comboPop', 'speedPop', 'heartLost', 'meterPop', 'levelBanner', 'bossBanner']) { const u = strike.ui[k]; if (u && isFinite(u.t)) u.t += back; }
+  if (adv.travel) adv.travel.t += back; shake.t = (shake.t || 0) + back; for (const q of rings) q.t += back; for (const f of strike.floaters) if (isFinite(f.t)) f.t += back; if (strike.boss) { strike.boss.enterAt += back; strike.boss.hitAt += back; strike.boss.roarAt += back; }
+  return st;
 }
 function strikeTarget(b) { // where the incoming ball drifts to: a random spot inside the corridor, so the player has to move
   const { L, R, T, B } = corridor(), r = ballRad(b), tu = strikeTuning(), fx = Math.min(0.95, 0.75 * tu.drift), fy = Math.min(0.85, 0.6 * tu.drift); // the aim range widens with the level
@@ -7119,7 +7401,7 @@ function pathNear(x, y, r, now, win) { // was the cursor within r of (x, y) at a
 }
 const FORCE_SPEED = { soft: 0.3, medium: (STRIKE_TIERS[0] + STRIKE_TIERS[1]) / 2, hard: (STRIKE_TIERS[1] + CONFIG.STRIKE_SUPER_SPEED) / 2, super: CONFIG.STRIKE_SUPER_SPEED * 1.05 }; // a forced tier (the test hook's serve, a tap): the hand speed it stands for
 function strikeHit(b, now, force, tm) { // the palm meets the ball: power from the hand speed over the last 100 ms (or a forced tier); direction and sidespin from where on the ball it landed and which way the hand was moving; tm: its timing (v5: PERFECT = +1 tier, x2 points)
-  const q = slapLaunch(b, now, force, tm), { sc, v, pw, tier, offx, offy, hx, hy, straight } = q, perfect = !!(tm && tm.grade === 'perfect');
+  const q = slapLaunch(b, now, force, tm), { sc, v, pw, tier, offx, offy, hx, hy, straight } = q, perfect = !!(tm && tm.grade === 'perfect'); b.perf = perfect; b.passed = false; // (a PERFECT hit breaks a boss's shield)
   const pts = scorePts(1 + STRIKE_BONUS[tier]) * (perfect ? 2 : 1); strike.score += pts; // (x the streak multiplier: the returns before this one; x2 for a PERFECT)
   strike.hits++; strike.power = tier; strike.hitAt = strike.handHit = now; strike.ui.scoreAt = now;
   strike.lastHit = { v, pw, tier, pts, offx, offy, hx, hy, spin: b.spin, straight, boost: q.boost, k: rallyK() };
@@ -7154,12 +7436,12 @@ const AIM_SPREAD = 0.3; // x the corridor's width / height per unit of lat (lat 
 function aimWall(b) { // what the outgoing ball meets first: the nearest standing wall ahead in view, else the boss, else the far wall
   const Z = CONFIG.STRIKE_Z_FAR; let w = null;
   for (const q of strike.walls) if (q.left > 0 && q.z > b.z && q.z < Z && (!w || q.z < w.z)) w = q;
-  if (strike.boss && strike.boss.z > b.z && (!w || strike.boss.z < w.z)) return { z: strike.boss.z, id: 'boss' };
+  if (strike.boss && strike.boss.z > b.z && strike.boss.z < Z && (!w || strike.boss.z < w.z)) return { z: strike.boss.z, id: 'boss' };
   return w ? { z: w.z, id: w.id } : { z: Z, id: 'far' };
 }
 function aimBall(b, latx, laty, now) {
   const { L, R, T, B } = corridor(), tg = aimWall(b), tms = Math.max(120, (tg.z - b.z) / Math.max(0.05, b.speed * speedMul())), acc = (b.spin || 0) * STRIKE_CURVE * W;
-  const ax = b.x + latx * (R - L) * AIM_SPREAD, ay = b.y + laty * (B - T) * AIM_SPREAD;
+  const ax = b.x + latx * (R - L) * AIM_SPREAD, bs = strike.boss, G = tg.id === 'boss' && bs && bs.real ? bs.g : null, ay0 = b.y + laty * (B - T) * AIM_SPREAD, ay = G ? Math.max(G.y - G.hh * 0.8, Math.min(G.y + G.hh * 0.8, ay0)) : ay0; // (a real boss: the height lands on its body; sideways aim still counts)
   b.vx = (ax - b.x - 0.5 * acc * tms * tms) / tms; b.vy = (ay - b.y) / tms;
   b.aim = { x: ax, y: ay, z: tg.z, wall: tg.id, t: now, ms: tms };
 }
@@ -7289,12 +7571,129 @@ function frenzyOver(now) { // Frenzy's one miss (the shield used up): the run is
 function frenzyShareText() { const r = frenzy.result || { hits: profile.frenzy.best, top: profile.frenzy.top }; return t('frenzyShare', { n: r.hits, k: (+r.top || 1).toFixed(1) }); }
 async function shareFrenzy() { const text = frenzyShareText(); frenzy.lastShare = text; return shareText0(text); }
 function strikeFrenzy(how) { // the map's Frenzy button (or /frenzy): the uncapped rally
+  if (!duelKeeps('frz')) duelEnd();
   closeAdvMap(true); adv.on = adv.armed = false; daily.on = daily.armed = false; $('worldMap').hidden = true;
   if (gameMode !== 'strike') setGameMode('strike');
-  if (mode !== 'none') { frenzy.on = true; frenzy.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); routeEnter('frenzy'); return true; }
+  if (mode !== 'none') { frenzy.on = true; frenzy.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); routeEnter(duel.on ? 'duel' : 'frenzy'); return true; }
   frenzy.armed = true; audioInit();
   if ((how || amap.how) === 'camera') enableCamera(); else fallbackToMouse([]);
   return true;
+}
+/* ===== Challenge a friend (DESIGN.md 'Challenge a friend'): the stage / Frenzy / Endless card's 'Challenge a friend' button builds a short link,
+   /duel?m=adv&s=12&score=1234&by=RGFuYQ&d=e (m: adv | frz | end; s: the stage, or Endless' start world; seed: the run's seed, base64url, for Frenzy /
+   Endless; score; by: the name, base64url UTF-8, optional, asked once and kept; d: e / n, the difficulty), and opens the share sheet (else the
+   clipboard + a toast). Opening it plays the same run: an Adventure stage is seeded by its number already; an Endless / Frenzy run is seeded by its
+   own run seed (strike.runSeed, every such run has one: the 'duel|seed' channels of strikeRand; the daily and the stages keep theirs), so the walls,
+   the guests and the power-ups come in the same order. A small banner 'Beat 1234 (from Dana)' with a bar and a ghost at their score; passing it:
+   'You passed Dana!'; the card says WIN / LOSE / TIE with both scores and 'Send back' (the same challenge with your score). No network: the link is it.
+   Every parameter is checked and clamped; anything broken is ignored (a link without a valid mode opens the Adventure map). ===== */
+const DUEL_ORIGIN = 'https://grasp-weld.vercel.app', DUEL_MAX = 9999999, DUEL_NAME_MAX = 16;
+const duel = { on: false, link: null, passed: false, passedAt: -1e9, prevDiff: null, lastLink: null, lastText: null, lastResult: null, asking: null, log: [] };
+function b64urlEnc(bytes) { let s = ''; for (const x of bytes) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function b64urlDec(str) { if (typeof str !== 'string' || !/^[A-Za-z0-9_-]{2,64}$/.test(str) || str.length % 4 === 1) return null; try { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - str.length % 4) % 4)); return Uint8Array.from(s, (c) => c.charCodeAt(0)); } catch { return null; } }
+function duelSeedEnc(u) { u = u >>> 0; return b64urlEnc([u >>> 24, (u >>> 16) & 255, (u >>> 8) & 255, u & 255]); }
+function duelSeedDec(s) { const b = b64urlDec(s); return b && b.length === 4 ? ((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]) >>> 0 : null; }
+function duelSanitize(name) { // letters (any script), digits, spaces and . _ ' - only; one space between words; 16 characters at most
+  if (typeof name !== 'string') return ''; let s = name.normalize ? name.normalize('NFC') : name;
+  s = s.replace(/[^\p{L}\p{M}\p{N} ._'-]/gu, '').replace(/\s+/g, ' ').trim(); return Array.from(s).slice(0, DUEL_NAME_MAX).join('').trim();
+}
+function duelNameEnc(name) { const s = duelSanitize(name); return s ? b64urlEnc(new TextEncoder().encode(s)) : ''; }
+function duelNameDec(str) { const b = b64urlDec(str); if (!b || b.length > 64) return ''; try { return duelSanitize(new TextDecoder('utf-8', { fatal: true }).decode(b)); } catch { return ''; } }
+function duelLink(o) { // { m, s, seed, score, by, d } -> the link (the deployed origin, or the live site from a local copy)
+  const m = o.m === 'frz' || o.m === 'end' ? o.m : 'adv', q = ['m=' + m];
+  if (m === 'adv') q.push('s=' + Math.max(1, Math.min(ADV_N, o.s | 0 || 1))); else { if (m === 'end') q.push('s=' + Math.max(1, Math.min(WORLD_N, o.s | 0 || 1))); q.push('seed=' + duelSeedEnc(o.seed)); }
+  q.push('score=' + Math.max(0, Math.min(DUEL_MAX, Math.round(+o.score || 0)))); const by = duelNameEnc(o.by || ''); if (by) q.push('by=' + by); q.push('d=' + (o.d === 'normal' ? 'n' : 'e'));
+  let origin = DUEL_ORIGIN; try { if (/^https:$/.test(location.protocol) && location.host) origin = location.origin; } catch {}
+  return origin + '/duel?' + q.join('&');
+}
+function duelParse(search) { // the link's parameters, checked and clamped; null when it names no mode we know (everything else broken is just ignored)
+  let P; try { P = new URLSearchParams(typeof search === 'string' ? search : ''); } catch { return null; }
+  const get = (k) => { const v = P.get(k); return typeof v === 'string' && v.length <= 64 ? v : null; }, mode = get('m'), m = mode === 'adv' || mode === 'frz' || mode === 'end' ? mode : null; if (!m) return null;
+  const si = /^\d{1,3}$/.test(get('s') || '') ? +get('s') : 1, s = m === 'adv' ? Math.max(1, Math.min(ADV_N, si)) : m === 'end' ? Math.max(1, Math.min(WORLD_N, si)) : 1;
+  const seed = m === 'adv' ? null : duelSeedDec(get('seed')), sc = /^\d{1,9}$/.test(get('score') || '') ? Math.min(DUEL_MAX, +get('score')) : 0, dd = get('d');
+  return { m, s, seed, seedOk: seed !== null, score: sc, by: duelNameDec(get('by') || ''), d: dd === 'n' ? 'normal' : dd === 'e' ? 'easy' : null };
+}
+function duelScore() { return frenzy.on ? strike.hits : Math.round(strike.score); } // (Frenzy: hits in a row; else the score)
+function duelOpen(search, how) { // /duel?...: play the challenge (from the start screen, or over a game)
+  const L = duelParse(search); duel.log.push(L ? 'open:' + L.m : 'open:bad');
+  if (gameMode !== 'strike') setGameMode('strike');
+  if (!L) { duelEnd(); audioInit(); strikeStart(how || inputPref()); return false; } // a broken link: the Adventure map
+  duelEnd(); duel.on = true; duel.link = L; duel.passed = false; duel.passedAt = -1e9; duel.lastResult = null;
+  if (L.d && L.d !== strike.diff) { duel.prevDiff = strike.diff; strike.diff = L.d; } // (the challenger's difficulty for this run, not saved)
+  if (L.m === 'adv') return duelStartAdv(L.s, how);
+  if (L.m === 'frz') return strikeFrenzy(how || inputPref());
+  closeAdvMap(true); adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; daily.on = daily.armed = false; $('worldMap').hidden = true; strike.startWorld = L.s;
+  if (mode !== 'none') { hideHint(); unpauseGame(); resetStrike(performance.now()); return true; }
+  audioInit(); if ((how || inputPref()) === 'camera') enableCamera(); else fallbackToMouse([]); return true;
+}
+function duelStartAdv(n, how) { closeAdvMap(true); adv.n = n; $('worldMap').hidden = true; daily.armed = daily.on = false; frenzy.on = frenzy.armed = false;
+  if (mode === 'none') { adv.armed = true; audioInit(); if ((how || inputPref()) === 'camera') enableCamera(); else fallbackToMouse([]); } else { adv.on = true; adv.armed = false; hideHint(); unpauseGame(); resetStrike(performance.now()); } return true; }
+function duelEnd() { if (duel.prevDiff) { strike.diff = duel.prevDiff; duel.prevDiff = null; } duel.on = false; } // (back to the player's own difficulty)
+function duelKeeps(m, n) { return duel.on && duel.link && duel.link.m === m && (m !== 'adv' || duel.link.s === n); } // (a retry of the same challenge keeps it on)
+function duelCtx() { // what a card's 'Challenge a friend' / 'Send back' shares: the run that just ended
+  const d = strike.diff === 'normal' ? 'normal' : 'easy';
+  if (adv.on && adv.result) return { m: 'adv', s: adv.result.n, score: adv.result.score !== undefined ? adv.result.score : Math.round(strike.score), d };
+  if (frenzy.on && frenzy.result) return { m: 'frz', seed: strike.runSeed >>> 0, score: frenzy.result.hits, d };
+  if (strike.over && !daily.on && strike.runSeed !== null) return { m: 'end', s: strike.runWorld, seed: strike.runSeed >>> 0, score: Math.round(strike.score), d };
+  return null;
+}
+function duelText(c) { return c.m === 'adv' ? t('duelMsgAdv', { n: c.score, s: c.s }) : c.m === 'frz' ? t('duelMsgFrz', { n: c.score }) : t('duelMsgEnd', { n: c.score }); }
+async function duelShare() { // the card's button: the name once (a small sheet), then the share sheet
+  const c = duelCtx(); if (!c) return null; strike.ui.dwell = null;
+  if (!profile.duelAsked && mode !== 'camera') { duelAsk(c); return 'asking'; }
+  return duelSend(c);
+}
+async function duelSend(c) {
+  const url = duelLink({ ...c, by: profile.duelName || '' }), text = duelText(c); duel.lastLink = url; duel.lastText = text; duel.log.push('share:' + c.m);
+  if (navigator.share) { try { await navigator.share({ title: 'Grasp', text, url }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'aborted'; } }
+  const all = text + ' ' + url;
+  try { await navigator.clipboard.writeText(all); toast('duelCopied', null, 'check'); return 'copied'; } catch {}
+  try { const ta = document.createElement('textarea'); ta.value = all; document.body.append(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); if (ok) { toast('duelCopied', null, 'check'); return 'copied'; } } catch {}
+  toast('shareFail', null, 'star'); return 'failed';
+}
+function duelAsk(c) { // the name, asked once: typed (sanitized, kept in the profile) or skipped; either way the share goes on from the sheet's button (a tap: the share sheet may open)
+  duel.asking = c; const ov = $('duelName'), inp = $('duelNameIn'); inp.value = profile.duelName || ''; inp.placeholder = t('duelNamePh'); ov.hidden = false; try { inp.focus({ preventScroll: true }); } catch {}
+}
+function duelAskDone(go) {
+  const ov = $('duelName'); if (ov.hidden) return null; ov.hidden = true; const c = duel.asking; duel.asking = null; duel.sheetAt = performance.now(); // (the hand that tapped it is no wave to restart)
+  profile.duelAsked = true; if (go) profile.duelName = duelSanitize($('duelNameIn').value); saveProfile();
+  return c ? duelSend(c) : null;
+}
+function duelResultNow() { // the card's verdict: your score vs theirs
+  const L = duel.link; if (!duel.on || !L) return null; const you = duelScore();
+  return { you, them: L.score, by: L.by, m: L.m, win: you > L.score, tie: you === L.score };
+}
+function duelTick(now) { // passing their score: a cheer, a burst at the ghost, 'You passed Dana!'
+  const L = duel.link; if (!duel.on || !L || duel.passed || strike.over || L.score <= 0) return;
+  if (duelScore() > L.score) { duel.passed = true; duel.passedAt = now; sfx('levelup'); themeSfx('big', 1); const g = strike.ui.duelBar; const x = g ? g.ghostX : W / 2, y = g ? g.y + g.h / 2 : strike.ui.top + 60; burst(x, y, '#9ff0ff', 18); ring(x, y, 'rgba(159,240,255,0.9)', 40, 420, 4);
+    addFloater({ x: W / 2, y: Math.max(strike.ui.top + 140, H * 0.36), text: L.by ? t('duelPassed', { b: L.by }) : t('duelPassed0'), big: true, life: 1.4 }); }
+}
+function ghostSprite(r, passed) { return makeSprite('ghost|' + r + '|' + (passed ? 1 : 0), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => { // the friend's ghost on the bar (a friendly sheet ghost)
+  g.beginPath(); g.moveTo(-r * 0.8, r * 0.9); g.lineTo(-r * 0.8, -r * 0.1); g.arc(0, -r * 0.1, r * 0.8, Math.PI, 0); g.lineTo(r * 0.8, r * 0.9);
+  for (let i = 0; i < 3; i++) { const x1 = r * 0.8 - (i + 0.5) * r * 0.533, x2 = r * 0.8 - (i + 1) * r * 0.533; g.quadraticCurveTo(x1, r * 0.55, x2, r * 0.9); } g.closePath();
+  g.fillStyle = passed ? 'rgba(200,220,235,0.75)' : '#eaf6ff'; g.fill(); g.lineWidth = Math.max(1.2, r * 0.14); g.strokeStyle = '#2a3a5a'; g.stroke();
+  g.fillStyle = '#2a3a5a'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * r * 0.3, -r * 0.15, r * 0.13, r * 0.2, 0, 0, TAU); g.fill(); } }); }
+function drawDuelBar(now, ui, rtl) { // 'Beat 1234 (from Dana)' under the HUD pill (and a boss's bar): a slim bar your score fills, their ghost at their score
+  ui.duelBar = null; const L = duel.link, H0 = ui.hud; if (!duel.on || !L || !H0 || strike.over) return;
+  const you = duelScore(), passed = duel.passed || (L.score > 0 && you > L.score), txt = passed ? (L.by ? t('duelPassed', { b: L.by }) : t('duelPassed0')) : L.by ? t('duelBeat', { n: L.score.toLocaleString('en-US'), b: L.by }) : t('duelBeat0', { n: L.score.toLocaleString('en-US') });
+  const bw = Math.round(Math.min(W - 40, 240)), x = Math.round(W / 2 - bw / 2), y = Math.round(H0.y + H0.h + 6 + hudDropBoss(ui)), h = 30, sp = textSprite(txt, 11, passed ? '#9ff0ff' : '#fff8ec', null, 800), pk = Math.max(0, 1 - (now - duel.passedAt) / 700);
+  blit(glassSprite(bw, h, 10), x - 1, y - 1, 0, 1, 0.85); blit(sp, W / 2, y + 9, 0, Math.min(1, (bw - 12) / sp.tw) * (1 + 0.15 * pk));
+  const max = Math.max(L.score * 1.25, you * 1.05, 10), bx = x + 10, bwi = bw - 20, by = y + 19, f = Math.min(1, you / max), gx0 = Math.min(1, L.score / max), gx = rtl ? bx + bwi * (1 - gx0) : bx + bwi * gx0;
+  resetView(); ctx.fillStyle = 'rgba(8,11,28,0.75)'; ctx.beginPath(); ctx.roundRect(bx, by, bwi, 5, 3); ctx.fill();
+  if (f > 0) { ctx.fillStyle = passed ? '#5fd8ff' : '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? bx + bwi * (1 - f) : bx, by, bwi * f, 5, 3); ctx.fill(); }
+  if (L.score > 0) blit(ghostSprite(7, passed), gx, by + 2 - (pk > 0 ? 6 * Math.sin(Math.PI * pk) : 0), 0, 1, passed ? 0.8 : 1);
+  ui.duelBar = { x, y, w: bw, h, text: txt, you, them: L.score, by: L.by, ghostX: gx, passed }; blockRect('duelBar', ui.duelBar);
+}
+function hudDropBoss(ui) { const b = ui.bossBar, H0 = ui.hud; return b && H0 ? Math.max(0, b.y + b.h + 2 - (H0.y + H0.h)) : 0; }
+function drawDuelPanel(now, x0, y, cw, rtl) { // over a card in a duel: 'WIN' / 'LOSE' / 'TIE' and both scores (you · Dana)
+  const r = duelResultNow(); strike.ui.duelCard = null; if (!r) return;
+  if (!duel.lastResult || duel.lastResult.at !== strike.overAt) { duel.lastResult = { ...r, at: strike.overAt }; if (r.win) { sfx('record'); confetti(W / 2, y, 50, 0.9); } else if (!r.tie) sfx('fizzle'); }
+  const h = 56, col = r.win ? '#43d9a3' : r.tie ? '#ffc24b' : '#ff6f59', k = Math.min(1, (now - strike.overAt) / 380);
+  blit(glassSprite(cw, h, 16, true), x0 - 1, y - 1, 0, 1, k); resetView(); ctx.save(); ctx.globalAlpha = k; ctx.lineWidth = 2; ctx.strokeStyle = col; ctx.beginPath(); ctx.roundRect(x0, y, cw, h, 16); ctx.stroke(); ctx.restore();
+  const big = bigTextSprite(t(r.win ? 'duelWin' : r.tie ? 'duelTie' : 'duelLose'), 26), bk = Math.min(1, 66 / Math.max(1, big.h)), line = textSprite(t('duelVsLine', { a: LRM + r.you.toLocaleString('en-US'), b: r.by || t('duelFriend'), c: LRM + r.them.toLocaleString('en-US') }), 14, '#fff8ec', null, 700);
+  const bx = rtl ? x0 + cw - 16 - big.w * bk / 2 * 0.8 : x0 + 16 + big.w * bk / 2 * 0.8; blit(big, bx, y + h / 2, 0, bk * 0.8 * (r.win ? 1 + 0.04 * Math.sin(now / 160) : 1), k);
+  const room = cw - 32 - big.w * bk * 0.8 - 10, lx = rtl ? x0 + 16 + room / 2 : x0 + cw - 16 - room / 2; blit(line, lx, y + h / 2, 0, Math.min(1, room / line.tw), k);
+  strike.ui.duelCard = { x: x0, y, w: cw, h, win: r.win, tie: r.tie, you: r.you, them: r.them, by: r.by, text: t(r.win ? 'duelWin' : r.tie ? 'duelTie' : 'duelLose') };
 }
 const PACE_UP_EVERY = 5, PACE_UP = 1.05; // every 5 returns in a row on a level the pace steps up 5% (within the level's cap)
 function paceUp(now) {
@@ -7407,7 +7806,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const stk = stars === 3 ? albumAward(n) : null; // the first 3-star clear: the album's sticker (a full page: its bonus)
   const score = Math.round(strike.score), prevScore = A.best[n] || 0, record = score > prevScore && prevScore > 0; A.best[n] = Math.max(prevScore, score); saveProfile(); // v4: the stage's best score (a record: beaten, not just set)
   adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null,
-    score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score), bestRank: rankFor(n, A.best[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
+    score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score), rb: P.boss ? adv.rbResult || { kind: rbDef(P.world).id, n: P.world } : null, bestRank: rankFor(n, A.best[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
   adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
@@ -7422,7 +7821,8 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
 }
 function advFail(now) { // the last heart is gone: the stage's fail card (how far it got), Try again at once or the map
   if (adv.power && !adv.pendingPower) adv.pendingPower = adv.power; // v5: a run power is kept for the retry after a fail
-  const P = adv.plan; adv.phase = 'card'; adv.result = { clear: false, n: P.n, stars: 0, best: profile.adv.stars[P.n] || 0, coins: 0, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost };
+  const P = adv.plan, rb = P.boss && strike.boss && strike.boss.real ? strike.boss : null; adv.phase = 'card'; adv.result = { clear: false, n: P.n, stars: 0, best: profile.adv.stars[P.n] || 0, coins: 0, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, score: Math.round(strike.score),
+    rb: rb ? { kind: rb.kind, n: rb.n, hp: rb.hp, maxHp: rb.maxHp, left: Math.ceil(100 * rb.hp / rb.maxHp) } : null };
   strike.over = true; strike.overAt = now; hideHint(); const ui = strike.ui; ui.dwell = ui.hover = ui.buttons = null; ui.newBest = false; sfx('chime');
   roundDone(strike.score, advXp(false)); grippySay('advFail'); musicSync();
   return adv.result;
@@ -7480,6 +7880,12 @@ function drawAdvFx(now) { // over the corridor: 'Stage clear!' in the slow-motio
     blit(burstSprite(), W / 2, y, now * 0.0016, 0.8 + 0.4 * Math.min(1, bk * 3), a * 0.9);
     const scs = bigTextSprite(t('stageClear'), 44), sck = (1 + 0.3 * Math.sin(Math.PI * pop)) * (1 + 0.25 * fq); blit(scs, W / 2, y, 0, sck, a); blockRect('stageClear', { x: W / 2 - scs.w * sck / 2, y: y - scs.h * sck * 0.35, w: scs.w * sck, h: scs.h * sck * 0.7, a });
   }
+  if (r.boss && r.rb && bk < (ADV_BOSS_BURST_MS + 1100) / ADV_BURST_MS && !(T && T.q >= 0.45)) { // a boss down: 'Victory!' + 'Brick Golem defeated!'
+    const vk = bk * ADV_BURST_MS / (ADV_BOSS_BURST_MS + 1100), a = vk < 0.08 ? vk / 0.08 : vk > 0.85 ? Math.max(0, (1 - vk) / 0.15) : 1, pop = Math.max(0, 1 - vk * 5), D = rbDef(r.rb.n);
+    blit(burstSprite(), W / 2, y, now * 0.0016, 1 + 0.3 * Math.min(1, vk * 4), a * 0.9); const vs = bigTextSprite(t('bossVictory'), 48), vsc = (1 + 0.35 * Math.sin(Math.PI * pop)) * Math.min(1, (W - 30) / Math.max(1, vs.w - 30));
+    blit(vs, W / 2, y - 6, 0, vsc, a); const ds = textSprite(t('bossDefeated', { b: t('bn_' + D.id) }), 18, D.col, 'rgba(8,11,28,0.9)', 800); blit(ds, W / 2, y + 40, 0, Math.min(1, (W - 30) / ds.tw), a);
+    strike.ui.victoryBox = { x: W / 2 - vs.w * vsc / 2, y: y - 40, w: vs.w * vsc, h: 100, a }; blockRect('victory', strike.ui.victoryBox);
+  } else strike.ui.victoryBox = null;
   if (T && T.q >= 0.5) { // 'World 2' + 'Glass Garden' in its colour
     const k = (T.q - 0.5) / 0.5, [off, a] = bannerSlide(Math.min(0.84, k)), x = W / 2 + off, main = bigTextSprite(t('worldN', { n: T.to }), 44), sub = textSprite(t('wn_' + T.to), 22, acc, 'rgba(8,11,28,0.9)', 800);
     const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72); strike.ui.travelBox = { x: x - pw / 2, y: y - 52, w: pw, h: 112, a }; blockRect('travel', strike.ui.travelBox);
@@ -7501,14 +7907,15 @@ function advStarHint(r) { const n = r.lost || 0; return n === 0 ? t('starsPerfec
 function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, the line on how to get 3, coins, XP; Next / Play again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
   const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  const DB = 52, DU = duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button under the others; a duel: the WIN / LOSE panel above the card)
+  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC + DB, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16 + DU, (H - ch - DU) / 2 + DU) + (1 - e) * 26;
   view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
   const title = clear ? (r.boss ? t('worldClear', { n: r.world }) : t('stageClear')) : t('soClose'), ts = bigTextSprite(title, 34);
   blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
   blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('wn_' + r.world), 14, acc, null, 700), cx, y0 + 84);
-  ui.advStars = null; ui.advWalls = null; ui.advStarHint = null;
+  ui.advStars = null; ui.advWalls = null; ui.advStarHint = null; ui.advBoss = null;
   if (clear) { // three star slots; the earned ones fly in one by one, each with a note (the third with a chord)
     const sy = y0 + 134, gap = 72, st = [];
     for (let i = 0; i < 3; i++) {
@@ -7541,6 +7948,11 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
         const ls = textSprite(t('bestN', { n: LRM + r.bestScore.toLocaleString('en-US') }) + nx, 12, 'rgba(241,233,218,0.75)', null, 600); blit(ls, cx, ly, 0, Math.min(1, (cw - 28) / ls.tw), q);
       }
     }
+  } else if (r.rb) { // a boss stage: its name and how much of it was left, as a bar
+    const D = rbDef(r.rb.n), bw = cw - 80, bx0 = cx - bw / 2, by0 = y0 + 138, frac = r.rb.hp / Math.max(1, r.rb.maxHp), fw = bw * frac;
+    const ls = textSprite(t('bossLeft', { b: t('bn_' + D.id), p: r.rb.left }), 18, '#fff8ec', null, 800); blit(ls, cx, y0 + 116, 0, Math.min(1, (cw - 30) / ls.tw));
+    resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(bx0, by0, bw, 12, 6); ctx.fill(); if (fw > 0) { ctx.fillStyle = D.col; ctx.beginPath(); ctx.roundRect(rtl ? bx0 + bw - fw : bx0, by0, fw, 12, 6); ctx.fill(); }
+    ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(241,233,218,0.45)'; ctx.beginPath(); ctx.roundRect(bx0, by0, bw, 12, 6); ctx.stroke(); ui.advBoss = { kind: r.rb.kind, left: r.rb.left, x: bx0, y: by0, w: bw, h: 12 };
   } else { // how far it got: the walls as bricks, the broken ones lit
     const n = r.walls, bw = Math.min(26, (cw - 60 - (n - 1) * 6) / n), bh = 16, tw = n * bw + (n - 1) * 6, wy = y0 + 140, ws = [];
     blit(textSprite(t('wallsOf', { a: r.cleared, b: r.walls }), 22, '#fff8ec', null, 800), cx, y0 + 118);
@@ -7559,16 +7971,18 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
   const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN + SC : 230) + stk, bh = 56, sh = 46, hw = (bw - 10) / 2;
   ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
     : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
-  const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn') }; ui.advLabels = Object.fromEntries(Object.keys(ui.buttons).map((k) => [k, label[k]])); // (a clear: 'Play again'; a fail: 'Try again')
+  ui.buttons.duel = { x: bx, y: by + bh + 10 + sh + 10, w: bw, h: 42 };
+  const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn'), duel: duel.on ? t('duelSendBack') : t('duelBtn') }; ui.advLabels = Object.fromEntries(Object.keys(ui.buttons).map((k) => [k, label[k]])); // (a clear: 'Play again'; a fail: 'Try again')
   for (const key in ui.buttons) {
     const b = ui.buttons[key], hot = ui.hover === key, mx = b.x + b.w / 2, my = b.y + b.h / 2, pri = key === main; let bk = hot ? 1.04 : 1;
     if (pri) { const ph = 0.5 + 0.5 * Math.sin(now / 280); if (!hot) bk = 1 + 0.035 * ph; ui.againPulse = bk; resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)'; ctx.beginPath(); ctx.roundRect(mx - b.w * bk / 2, my - b.h * bk / 2, b.w * bk, b.h * bk, 14); ctx.fill(); ctx.restore(); }
-    blit(overButtonSprite(pri ? 'again' : 'home', b.w, b.h), mx, my, 0, bk);
+    blit(overButtonSprite(pri ? 'again' : key === 'duel' ? 'on' : 'home', b.w, b.h), mx, my, 0, bk);
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 14); ctx.fill(); }
-    const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
+    const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : key === 'duel' ? '#ffd77a' : '#f1e9da', null, pri || key === 'duel' ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
+  if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
 }
 function finalWallTick(now) { // the last wall of a level: flagged 'final' (a glowing, pulsing outline; 'Final wall!'), a bit tougher from level 2 (+1 hp on a third of its bricks)
@@ -7581,6 +7995,7 @@ function strikeTick(now, dt) {
   const rel = now < strike.releaseUntil; tickStrikeFloaters(now, dt); camPushTick(now); debrisTick(rel ? dt * 0.3 : dt); bouncersTick(now, dt); // (the release: debris in slow motion)
   if (advMapOpen()) { advMapTick(now); return; } // the Adventure map over the game (from a stage card): everything waits
   menuTick(now); // the pause button (and its sheet) by a held gesture
+  if (duel.on) duelTick(now); // (Challenge a friend: passing their score)
   if (menu.open) { if (!strike.over) { strike.serveAt += dt; for (const p of strike.powerups) p.until += dt; } if (strike.perkOffer) strike.perkOfferAt += dt; return; } // the pause sheet: everything waits (the ball, the serve, the power-ups, the perk clock)
   if (strike.perkOffer && strike.perkMode === 'run') { perkTick(now, dt); return; } // v5: the run-power cards over the clear card
   if (strike.over) { endCardTick(now); return; } // round-over card: buttons via tap / dwell, a wave elsewhere restarts
@@ -7595,7 +8010,7 @@ function strikeTick(now, dt) {
   if (rel) strike.beatAt = 0; // the heartbeat stops during the release
   else if (strike.level >= 2 && now >= strike.beatAt && !strike.waiting) { const ms = beatMs(); if (strike.beatAt) { sfx('beat'); strike.beats++; } strike.beatAt = now + ms; } // a soft heartbeat from level 2, quicker each level and with each wall cleared in it
   strike.scroll = (strike.scroll + strike.pace * dt * 0.5) % STRIPE_GAP;
-  if (strike.waiting) { if (strike.boss) strike.boss.pz = strike.boss.z; } else bossTick(now, dt); // (the boss holds while the serve waits)
+  if (strike.waiting) { if (strike.boss) { strike.boss.pz = strike.boss.z; if (strike.boss.real) rbTick(now, dt, true); } } else bossTick(now, dt); // (the boss holds while the serve waits; a real boss still walks in)
   wallsTick(dt); finalWallTick(now); if (!strike.waiting) powerupsTick(now, dt); capsulesTick(now, dt);
   if (strike.over || (adv.on && adv.phase !== 'play')) return; // the boss (or a wall closing in) reached the player with the last life
   if (!strike.waiting) { turretTick(now, dt); if (strike.over || (adv.on && adv.phase !== 'play')) return; } // v4: turret shots fly while the ball is in play
@@ -7646,10 +8061,11 @@ function ballTick(b, now, dt, fire, mul) {
       if (out === 'bounce') { bounceOffWall(b, w); break; }
       if (out === 'slow') b.speed = Math.max(strike.pace * 0.5, b.speed * 0.7);
     }
-    const bs = strike.boss; // the boss takes the hit by tier (a fireball as SUPER) and always throws the ball back
-    if (bs && b.dir < 0 && z0 < bs.pz && b.z >= bs.z) { bossHit(b.fire ? 'super' : b.tier || 'soft', b, now); bounceOffWall(b, { z: bs.z }); }
+    const bs = strike.boss; // the boss takes the hit by tier (a fireball as SUPER) and always throws the ball back (a real boss: its arm, its body or past it)
+    if (bs && bs.real) { if (b.dir < 0) rbBall(bs, b, z0, now); }
+    else if (bs && b.dir < 0 && z0 < bs.pz && b.z >= bs.z) { bossHit(b.fire ? 'super' : b.tier || 'soft', b, now); bounceOffWall(b, { z: bs.z }); }
     if (b.dir < 0 && b.z >= Z) {
-      b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
+      b.z = Z; b.dir = 1; b.super = false; b.tier = ''; b.spin = 0; b.perf = false; b.passed = false; b.x0 = b.x; b.y0 = b.y; strikeTarget(b); strike.bounces++;
       if (b === strike.balls[0]) { const T = strikeTuning(); strike.pace = Math.max(strike.pace, Math.min(Math.min(T.maxSpeed, T.paceCap) * paceMul(), strike.pace * T.grow)); } // the pace grows per far-wall bounce (of the first ball: extra balls never triple it)
       b.speed = strike.pace;
       if (b === strike.balls[0]) guestPitch(b, now); // the rebound is the next serve: a guest may come instead (and a guest that went back comes as a ball)
@@ -7946,7 +8362,7 @@ function drawStrikeWall(w, now) { // every live brick blitted through one depth 
   }
   resetView();
 }
-function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.shard ? strikeShardSprite(d.w, d.h) : strikeBrickSprite(d.level, d.w, d.h, true, d.kind), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
+function drawDebris(d) { const p = proj(d.x, d.y, d.z); blit(d.col ? rbChunkSprite(d.col, d.w, d.h) : d.shard ? strikeShardSprite(d.w, d.h) : strikeBrickSprite(d.level, d.w, d.h, true, d.kind), p.x, p.y, d.rot, p.s * d.k, Math.min(1, d.life * 2)); }
 function drawStrikeBall(bl, now) {
   const sc = ballScreen(bl), { B } = corridor(), fl = proj(bl.x, B, bl.z), curving = Math.abs(bl.spin || 0) > 0.08, fire = !!bl.fire, tw = bl.super || fire || curving ? 320 : 160;
   drawShadow(fl.x, fl.y, sc.r * 2.4, sc.r * 0.9, 0.5 + 0.35 * sc.s); // a firm floor shadow: depth reads against the walls
@@ -8413,7 +8829,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   }
   const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives), compact = nL > 6; // an extra life (power-up) adds a heart; more than fit: one heart and ×N
   const gap = nL > 4 ? 18 : 21, k = nL > 4 ? 0.46 : 0.52, xsp = compact ? textSprite(LRM + '×' + strike.lives, 13, '#fff8ec', null, 800) : null, hw = compact ? 20 + 4 + xsp.tw : (nL - 1) * gap + 18;
-  const goal = strike.goal, tx = frenzy.on ? '⚡' + LRM + strike.hits : LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 + 6 * Math.max(0, tx.length - 6) : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
+  const goal = strike.goal, rbs = strike.boss && strike.boss.real ? strike.boss : null, tx = frenzy.on ? '⚡' + LRM + strike.hits : adv.on && adv.plan && adv.plan.boss ? LRM + (rbs ? Math.ceil(100 * rbs.hp / rbs.maxHp) : adv.bossDone ? 0 : 100) + '%' : LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 + 6 * Math.max(0, tx.length - 6) : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
   const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
   ui.hud = { x, y, w, h };
   resetView(); blit(glassSprite(w, h, h / 2), x - 1, y - 1, 0, 1, 0.7);
@@ -8428,7 +8844,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   const col = frenzy.on ? '#ffb13d' : adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
   blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
   ui.wallsPill = { x: pc - pw / 2, y: cy - ph / 2, w: pw, h: ph, text: tx }; ui.advPill = adv.on && adv.plan ? ui.wallsPill : null;
-  drawHeatAndCombo(now, ui, rtl); drawSpeedPop(now, ui, rtl); drawRunBadge(now, ui, rtl);
+  drawRealBossBar(now, ui, rtl); drawDuelBar(now, ui, rtl); drawHeatAndCombo(now, ui, rtl); drawSpeedPop(now, ui, rtl); drawRunBadge(now, ui, rtl);
   if (ui.heatBar) blockRect('heat', { x: ui.heatBar.x - 70, y: ui.heatBar.y - 2, w: ui.heatBar.w + 140, h: ui.heatBar.h + 4 }); if (ui.comboBox) blockRect('combo', ui.comboBox);
   ui.hudParts = ['hearts', 'walls']; ui.streakBox = null; ui.progBar = null; ui.advPips = null; ui.perkIcons.length = 0; ui.nextCard = null; // (no streak chip, progress line, wall pips, perk badges or NEXT card on screen)
   const yb = ui.top + 4; // transient things hang under the top row
@@ -8437,7 +8853,7 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
   const tg = ui.tag, tk = tg ? (now - tg.t) / 2400 : 1;
   if (tk >= 1) { ui.tag = ui.tagBox = null; return; }
   { // a new kind of wall came into view (or a power-up was caught): its name on a tinted pill under the top row, dropping in and fading out
-    const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = ui.puIcons.length ? yb + 58 : yb + 26 - 10 * (1 - e); // (below the power-up badges when there are any)
+    const sp = textSprite(t((tg.perk ? 'pk_' : tg.pu ? 'pu_' : 'wk_') + tg.kind), 14, '#141b34', null), pw = sp.tw + 26, ph = 26, e = tk < 0.15 ? 1 - Math.pow(1 - tk / 0.15, 3) : 1, a = tk > 0.8 ? (1 - tk) / 0.2 : 1, ty = (ui.puIcons.length ? yb + 58 : yb + 26 - 10 * (1 - e)) + hudDrop(ui); // (below the power-up badges when there are any; below a boss's bar / a duel's banner)
     ui.tagBox = { x: W / 2 - pw / 2, y: ty - ph / 2, w: pw, h: ph, kind: tg.kind, pu: !!tg.pu, perk: !!tg.perk }; blockRect('tag', ui.tagBox);
     blit(pillSprite((tg.perk ? PERK_COL[tg.kind] : tg.pu ? PU_COL[tg.kind] : STRIKE_KIND_COL[tg.kind]) || '#ffc24b', pw, ph), W / 2, ty, 0, 1, a * e); blit(sp, W / 2, ty, 0, 1, a * e);
   }
@@ -8473,15 +8889,16 @@ function drawChallengeFx(now) { // v4, on the overlay in both renderers: weak-sp
     const sc = shotScreen(q), a = q.dead ? Math.max(0, 1 - (now - q.deadAt) / 350) : 1; if (a <= 0) continue;
     if (!q.dead && q.dir > 0 && q.z < CONFIG.STRIKE_HIT_Z * 5) { const k = 1 - q.z / (CONFIG.STRIKE_HIT_Z * 5); ctx.save(); ctx.globalAlpha = 0.4 + 0.5 * k; ctx.lineWidth = 3; ctx.strokeStyle = '#ff5a6e'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (2.6 - 0.8 * k) + 4 * Math.sin(now * 0.03), 0, TAU); ctx.stroke(); ctx.restore(); }
     drawShadow(sc.x, proj(q.x, corridor().B, q.z).y, sc.r * 2, sc.r * 0.7, 0.4 * sc.s * a);
-    blit(shotSprite(), sc.x, sc.y, now * 0.012 * (q.dir > 0 ? 1 : -2), sc.r / 26 * (1 + 0.1 * Math.sin(now * 0.04)) * (q.dead ? 1 + (1 - a) : 1), a);
+    blit(q.boss ? rbShotSprite(q.kind) : shotSprite(), sc.x, sc.y, now * 0.012 * (q.dir > 0 ? 1 : -2) * (q.kind === 'rocket' ? 0.15 : 1), sc.r / 26 * (1 + 0.1 * Math.sin(now * 0.04)) * (q.dead ? 1 + (1 - a) : 1), a);
     strike.ui.shots.push({ x: sc.x, y: sc.y, r: sc.r, dir: q.dir, dead: q.dead });
   }
 }
+function hudDrop(ui) { const H0 = ui.hud; if (!H0) return 0; let y = H0.y + H0.h; for (const b of [ui.bossBar, ui.duelBar]) if (b) y = Math.max(y, b.y + b.h + 2); return y - (H0.y + H0.h); } // (a boss's health bar, a duel's banner under the pill: what hangs there goes below them)
 function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while there is something to say): the hand's heat as a slim bar (flashing red with steam when overheated), and the combo's pop when it changes
   const H0 = ui.hud; if (!H0) return; const hot = overheated(now), v = hot ? 1 : strike.heat, sinceHeat = now - (ui.heatAt || -1e9), cool = now - (ui.coolAt || -1e9);
   ui.heatBar = null;
   if (!strike.extrasOff && (v > 0.04 || hot || cool < 700)) {
-    const w = Math.min(H0.w - 18, 96), h = 5, x = Math.round(H0.x + H0.w / 2 - w / 2), y = Math.round(H0.y + H0.h + 5), a = hot ? 0.75 + 0.25 * Math.sin(now * 0.025) : Math.min(1, 0.55 + 0.45 * Math.max(0, 1 - sinceHeat / 900) + v * 0.4);
+    const w = Math.min(H0.w - 18, 96), h = 5, x = Math.round(H0.x + H0.w / 2 - w / 2), y = Math.round(H0.y + H0.h + 5 + hudDrop(ui)), a = hot ? 0.75 + 0.25 * Math.sin(now * 0.025) : Math.min(1, 0.55 + 0.45 * Math.max(0, 1 - sinceHeat / 900) + v * 0.4);
     resetView(); ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(x - 1, y - 1, w + 2, h + 2, 4); ctx.fill();
     const col = hot ? '#ff3b3b' : v > 0.7 ? '#ff6a3d' : v > 0.4 ? '#ffb13d' : '#ffd36b', fw = Math.max(2, w * v), fx = rtl ? x + w - fw : x;
     ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = hot ? 10 : 4; ctx.beginPath(); ctx.roundRect(fx, y, fw, h, 3); ctx.fill(); ctx.restore();
@@ -8491,7 +8908,7 @@ function drawHeatAndCombo(now, ui, rtl) { // v4, under the HUD pill (only while 
   const P = ui.comboPop, k = P ? (now - P.t) / 1100 : 1; ui.comboBox = null;
   if (P && k >= 0 && k < 1) { // 'x3 COMBO!' pops in big by the pill, bounces, fades; a lost combo: a grey 'x1' sinking
     const R0 = ui.row || { left: 0, right: W }, sx = rtl ? H0.x - 46 : H0.x + H0.w + 46, side = sx - 40 >= R0.left && sx + 40 <= R0.right; // beside the pill when the top row has room (a laptop), else just under it (a phone)
-    const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, cx = side ? sx : Math.max(60, Math.min(W - 60, pc)), tgb = ui.tag && ui.tagBox, cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42, tgb ? tgb.y + tgb.h + 40 : 0), a = k > 0.7 ? (1 - k) / 0.3 : 1; // (v5: under the tag pill when one shows)
+    const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, cx = side ? sx : Math.max(60, Math.min(W - 60, pc)), tgb = ui.tag && ui.tagBox, cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42 + hudDrop(ui), tgb ? tgb.y + tgb.h + 40 : 0), a = k > 0.7 ? (1 - k) / 0.3 : 1; // (v5: under the tag pill when one shows; under a boss's health bar)
     if (P.lost) { const sp = textSprite(LRM + '×1', 18, 'rgba(241,233,218,0.75)', 'rgba(60,64,84,0.85)', 800); blit(sp, cx, cy + 12 * k, 0, 1 - 0.2 * k, a); ui.comboBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, n: 1, lost: true }; }
     else {
       const sc = (k < 0.12 ? 0.4 + 0.9 * k / 0.12 : 1.3 - 0.3 * Math.min(1, (k - 0.12) / 0.2)) * (1 + 0.05 * P.n), big = bigTextSprite(LRM + '×' + P.n, 30), sub = textSprite(t('comboWord'), 11, '#2a1a00', '#ffc24b', 800);
@@ -8505,7 +8922,7 @@ function drawSpeedPop(now, ui, rtl) { // the rally's 'x1.4 SPEED' pop: in the co
   const a = k > 0.7 ? (1 - k) / 0.3 : 1, txt = P.lost ? LRM + '×' + P.lost.toFixed(1) : P.max && !frenzy.on ? t('speedMax') : LRM + '×' + P.k.toFixed(1) + ' ' + t('speedWord');
   const tw = textSprite(txt, 17, '#fff', null, 800).tw * 1.2 + 8, R0 = ui.row || { left: 0, right: W }, sx = rtl ? H0.x - 10 - tw / 2 : H0.x + H0.w + 10 + tw / 2, side = sx - tw / 2 >= R0.left && sx + tw / 2 <= R0.right; // beside the pill when the row has room for the whole pop, else under it
   const pc = ui.wallsPill ? ui.wallsPill.x + ui.wallsPill.w / 2 : W / 2, tgb = ui.tag && ui.tagBox, cb = ui.comboBox;
-  const cx = side ? sx : Math.max(tw / 2 + 8, Math.min(W - tw / 2 - 8, pc)); let cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42, tgb ? tgb.y + tgb.h + 40 : 0);
+  const cx = side ? sx : Math.max(tw / 2 + 8, Math.min(W - tw / 2 - 8, pc)); let cy = side ? H0.y + H0.h / 2 + 2 : Math.max(H0.y + H0.h + 42 + hudDrop(ui), tgb ? tgb.y + tgb.h + 40 : 0);
   if (cb && cb.x < cx + tw / 2 && cx - tw / 2 < cb.x + cb.w) cy = Math.max(cy, cb.y + cb.h + 22); // (under the combo pop when they would meet)
   if (P.lost) { const sp = textSprite(txt, 16, 'rgba(241,233,218,0.7)', 'rgba(60,64,84,0.85)', 800); blit(sp, cx, cy + 10 * k, 0, 1 - 0.15 * k, a); ui.speedBox = { x: cx - sp.tw / 2, y: cy - 12, w: sp.tw, h: 24, k: P.k, lost: true, text: txt }; blockRect('speed', ui.speedBox); return; }
   const c = rallyCol(rallyHeat(P.k)), col = 'rgb(' + c.join(',') + ')', sc = (k < 0.12 ? 0.5 + 0.7 * k / 0.12 : 1.2 - 0.2 * Math.min(1, (k - 0.12) / 0.2)), sp = textSprite(txt, 17, '#fff8ec', 'rgba(' + c.join(',') + ',0.95)', 800);
@@ -8766,6 +9183,247 @@ function drawChest(now) { // the boss chest on the overlay (both renderers): dro
     if (p.kind === 'ticket') blit(textSprite(t('chestTicketSub'), 15, '#ffd77a', null, 600), cx, py + 80 * s, 0, 1, out * e);
   }
 }
+/* --- the real bosses' art: drawn in code in the glossy cartoon style (light from the top-left, a soft rim, an ink outline), in art units (the body
+   about 200 wide, its centre at 0, 0), into one canvas a frame: the 2D renderer draws that canvas in perspective at the boss's depth; the 3D one
+   puts it on a plane there (a textured billboard). State in the picture: the eyes follow the ball, the mouth opens on a roar / wind-up, the arm
+   rises to throw, cracks (phase 2), missing pieces + sparks + an angry face (phase 3), a red flash on a hit, the weak point's glow, the shield,
+   the spinning arm, the charge's red glow. --- */
+const RB_BOX = { x: 175, top: 70, bot: 40 }; // the canvas round the body (art units): the arm's sweep, the crown / horns, the shield
+function rbFill(g, path, col, o = {}) {
+  path(); g.fillStyle = col; g.fill();
+  if (!o.flat) { g.save(); path(); g.clip(); const cx = o.cx || 0, cy = o.cy || 0, R = o.R || 110, gr = g.createRadialGradient(cx - R * 0.35, cy - R * 0.45, R * 0.04, cx, cy, R * 1.12);
+    gr.addColorStop(0, 'rgba(255,255,255,' + (o.hi || 0.4) + ')'); gr.addColorStop(0.42, 'rgba(255,255,255,0.05)'); gr.addColorStop(1, 'rgba(14,4,26,' + (o.lo || 0.38) + ')'); g.fillStyle = gr; g.fillRect(cx - R * 2.2, cy - R * 2.2, R * 4.4, R * 4.4); g.restore(); }
+  if (o.lw !== 0) { path(); g.lineWidth = o.lw || 4.5; g.strokeStyle = o.ink || RB_INK; g.stroke(); }
+}
+function rbGlint(g, x, y, rx, ry, a = 0.55) { g.fillStyle = 'rgba(255,255,255,' + a + ')'; g.beginPath(); g.ellipse(x, y, rx, ry, -0.5, 0, TAU); g.fill(); }
+function rbEyes(g, st, ex, ey, er, o = {}) { // cartoon eyes looking at the ball; shut on a hit; angry brows once angry (phase 3) or winding up
+  const shut = st.hit > 0.45, mad = st.ph >= 3 || st.wind > 0, lx = st.look.x * er * 0.42, ly = st.look.y * er * 0.32;
+  for (const s of [-1, 1]) { const x = s * ex;
+    if (o.glow) { g.save(); g.shadowColor = o.glow; g.shadowBlur = er * 1.4; g.fillStyle = o.glow; g.beginPath(); g.ellipse(x, ey, er * 1.05, shut ? er * 0.12 : er * (mad ? 0.62 : 0.85), 0, 0, TAU); g.fill(); g.restore(); }
+    else { g.fillStyle = '#fffaf0'; g.beginPath(); g.ellipse(x, ey, er, shut ? er * 0.14 : er * (mad ? 0.78 : 1), 0, 0, TAU); g.fill(); g.lineWidth = er * 0.16; g.strokeStyle = RB_INK; g.stroke(); }
+    if (!shut) { g.fillStyle = o.pupil || '#1c1028'; g.beginPath(); g.arc(x + lx, ey + ly, er * (o.glow ? 0.34 : 0.5), 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(x + lx - er * 0.16, ey + ly - er * 0.18, er * 0.15, 0, TAU); g.fill(); }
+    const by = ey - er * (mad ? 1.05 : 1.35), dr = er * (mad ? 0.75 : 0.25); g.lineCap = 'round'; g.lineWidth = er * 0.42; g.strokeStyle = o.brow || RB_INK;
+    g.beginPath(); g.moveTo(x + s * er * 1.2, by - dr * 0.4); g.lineTo(x - s * er * 1.05, by + dr); g.stroke(); }
+}
+function rbMouth(g, st, x, y, w, h, o = {}) { // a grin with teeth, wide open on a roar or a wind-up
+  const open = Math.max(st.roar, st.wind * 0.8, st.hit * 0.5), mh = h * (0.45 + 1.1 * open);
+  g.fillStyle = o.inside || '#3a0f1e'; g.beginPath(); g.roundRect(x - w / 2, y - mh / 2, w, mh, Math.min(w, mh) * 0.42); g.fill();
+  if (open > 0.15) { g.fillStyle = o.tongue || '#ff6f8a'; g.beginPath(); g.ellipse(x, y + mh * 0.28, w * 0.28, mh * 0.2, 0, 0, TAU); g.fill(); }
+  g.fillStyle = o.teeth || '#fffaf0'; const n = o.n || 5, tw = w / n; for (let i = 0; i < n; i++) { g.beginPath(); g.moveTo(x - w / 2 + i * tw + tw * 0.12, y - mh / 2 + 1); g.lineTo(x - w / 2 + (i + 1) * tw - tw * 0.12, y - mh / 2 + 1); g.lineTo(x - w / 2 + (i + 0.5) * tw, y - mh / 2 + Math.min(mh * 0.45, tw * 0.9)); g.closePath(); g.fill(); }
+  g.lineWidth = 3.5; g.strokeStyle = RB_INK; g.beginPath(); g.roundRect(x - w / 2, y - mh / 2, w, mh, Math.min(w, mh) * 0.42); g.stroke();
+}
+function rbCracks(g, st, pts) { // phase 2+: dark cracks spreading from fixed spots (more and longer in phase 3)
+  if (st.ph < 2) return; const R = rng(st.seed + 11); g.save(); g.lineCap = g.lineJoin = 'round'; g.strokeStyle = 'rgba(28,10,24,0.85)';
+  pts.forEach(([x, y, a], i) => { if (st.ph < 3 && i % 2) return; let px = x, py = y, ang = a; g.lineWidth = 3.4; g.beginPath(); g.moveTo(px, py);
+    for (let j = 0; j < (st.ph >= 3 ? 5 : 3); j++) { ang += (R() - 0.5) * 1.2; const d = 9 + R() * 11; px += Math.cos(ang) * d; py += Math.sin(ang) * d; g.lineTo(px, py); if (R() < 0.4) { g.moveTo(px, py); g.lineTo(px + Math.cos(ang + 1.2) * 8, py + Math.sin(ang + 1.2) * 8); g.moveTo(px, py); } }
+    g.stroke(); }); g.restore();
+}
+function rbBites(g, st, bites) { // phase 3: pieces knocked off (real holes in the picture)
+  if (st.ph < 3) return; g.save(); g.globalCompositeOperation = 'destination-out'; const R = rng(st.seed + 29);
+  for (const [x, y, r] of bites) { g.beginPath(); for (let i = 0; i < 7; i++) { const a = i * TAU / 7, d = r * (0.6 + R() * 0.5); g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); } g.closePath(); g.fill(); }
+  g.restore();
+}
+function rbSparks(g, st, pts) { // phase 3: sparks fizzing off the damage
+  if (st.ph < 3) return; for (const [x, y] of pts) { const f = (st.now * 0.02 + x * 0.37 + y * 0.11) % 1; if (f > 0.55) continue; const r = 4 + 6 * (1 - f / 0.55);
+    g.fillStyle = f < 0.2 ? '#fffbe0' : '#ffb13d'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * TAU / 8 + st.now * 0.01, d = i % 2 ? r * 0.35 : r; g.lineTo(x + Math.cos(a) * d, y - f * 18 + Math.sin(a) * d); } g.closePath(); g.fill(); }
+}
+const RB_ART = {
+  golem(g, st) { // the Brick Golem: a hulk of terracotta bricks, a stone head, a glowing amber heart-crystal; it hurls rocks
+    const c = '#c8643e', dk = darken(c, 0.3), lt = lighten(c, 0.12), up = st.atk === 'shot' ? st.wind : st.throwK;
+    for (const s of [-1, 1]) rbFill(g, () => { g.beginPath(); g.roundRect(s * 50 - 24, 80, 48, 38, 12); }, dk, { cx: s * 50, cy: 98, R: 40 }); // legs
+    rbFill(g, () => { g.beginPath(); g.roundRect(-114, -44, 38, 108, 18); }, c, { cx: -95, cy: 0, R: 70 }); rbFill(g, () => { g.beginPath(); g.arc(-96, 72, 25, 0, TAU); }, lt, { cx: -96, cy: 72, R: 30 }); // left arm + fist
+    g.save(); g.translate(92, -32); g.rotate(-up * 2.2); rbFill(g, () => { g.beginPath(); g.roundRect(-18, -12, 38, 104, 18); }, c, { cx: 0, cy: 40, R: 70 }); rbFill(g, () => { g.beginPath(); g.arc(1, 100, 25, 0, TAU); }, lt, { cx: 1, cy: 100, R: 30 });
+    if (up > 0.2) rbFill(g, () => { g.beginPath(); g.arc(1, 128, 16 * up, 0, TAU); }, '#8a7b70', { cx: 1, cy: 128, R: 18 }); g.restore(); // the rock in its fist
+    rbFill(g, () => { g.beginPath(); g.roundRect(-84, -50, 168, 138, 28); }, c, { cx: 0, cy: 10, R: 120 }); // torso
+    g.save(); g.beginPath(); g.roundRect(-84, -50, 168, 138, 28); g.clip(); g.strokeStyle = 'rgba(60,20,10,0.4)'; g.lineWidth = 3; // mortar
+    for (let r = 0; r < 5; r++) { const y = -50 + r * 28; g.beginPath(); g.moveTo(-90, y); g.lineTo(90, y); g.stroke(); for (let k = -3; k <= 3; k++) { const x = k * 42 + (r % 2 ? 21 : 0); g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 28); g.stroke(); } } g.restore();
+    rbFill(g, () => { g.beginPath(); g.moveTo(0, -4); g.lineTo(20, 14); g.lineTo(0, 40); g.lineTo(-20, 14); g.closePath(); }, '#ffb04a', { cx: 0, cy: 14, R: 26, hi: 0.7 }); // the heart crystal (its glow: the weak point)
+    rbFill(g, () => { g.beginPath(); g.roundRect(-48, -118, 96, 76, 20); }, '#a8988a', { cx: 0, cy: -80, R: 64 }); // stone head
+    g.fillStyle = 'rgba(40,20,20,0.35)'; g.beginPath(); g.roundRect(-40, -104, 80, 14, 6); g.fill();
+    rbEyes(g, st, 20, -88, 11, { glow: st.ph >= 3 ? '#ff5a3a' : '#ffcf4a', pupil: '#5a1a00', brow: '#4a3a30' });
+    rbMouth(g, st, 0, -60, 46, 14, { n: 6 });
+    rbGlint(g, -60, -34, 14, 6, 0.35); rbGlint(g, -32, -110, 10, 4, 0.4);
+    rbCracks(g, st, [[-50, -20, 0.6], [44, 30, 2.4], [-20, -110, 1.2], [60, 70, -2], [-70, 50, -0.6], [30, -84, 0.3]]);
+    rbBites(g, st, [[84, -50, 22], [-48, -118, 18], [-84, 80, 16]]); rbSparks(g, st, [[70, -36], [-40, -104], [-74, 70]]);
+  },
+  queen(g, st) { // the Glass Queen: a gown of mint crystal, a pale face, a crown of shards with a gem (her weak point); she flings mirror shards
+    const c = '#7fe6cf', up = st.atk === 'shot' ? st.wind : st.throwK;
+    rbFill(g, () => { g.beginPath(); g.moveTo(-96, 122); g.lineTo(96, 122); g.lineTo(36, -16); g.lineTo(-36, -16); g.closePath(); }, 'rgba(127,230,207,0.92)', { cx: 0, cy: 60, R: 120, hi: 0.55 });
+    g.save(); g.beginPath(); g.moveTo(-96, 122); g.lineTo(96, 122); g.lineTo(36, -16); g.lineTo(-36, -16); g.closePath(); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 2.5; // facets
+    for (const [x0, y0, x1, y1] of [[-36, -16, -70, 122], [0, -16, -20, 122], [0, -16, 30, 122], [36, -16, 72, 122], [-80, 70, 80, 70], [-60, 20, 60, 20]]) { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); } g.restore();
+    rbGlint(g, -40, 40, 10, 34, 0.35);
+    for (const s of [-1, 1]) { g.save(); g.translate(s * 30, -26); g.rotate(s * (0.9 + (s > 0 ? -up * 1.6 : 0))); rbFill(g, () => { g.beginPath(); g.roundRect(-7, 0, 14, 62, 7); }, '#d8fff6', { cx: 0, cy: 30, R: 40 }); g.restore(); } // arms
+    g.save(); g.translate(30, -26); g.rotate(0.9 - up * 1.6); g.translate(0, 62); rbFill(g, () => { g.beginPath(); g.moveTo(0, -6); g.lineTo(14, 22); g.lineTo(0, 46); g.lineTo(-14, 22); g.closePath(); }, '#c9fff2', { cx: 0, cy: 20, R: 30, hi: 0.8 }); g.restore(); // the shard in her hand
+    rbFill(g, () => { g.beginPath(); g.roundRect(-30, -44, 60, 46, 16); }, '#4fbfa8', { cx: 0, cy: -20, R: 40 }); // bodice
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, -72, 40, 30, 0, 0, TAU); }, '#2a6f66', { cx: 0, cy: -72, R: 44 }); // hair
+    rbFill(g, () => { g.beginPath(); g.arc(0, -66, 29, 0, TAU); }, '#e6fffa', { cx: 0, cy: -66, R: 34 }); // face
+    rbEyes(g, st, 12, -70, 7.5, { pupil: '#155e56', brow: '#1d4f48' });
+    const open = Math.max(st.roar, st.wind * 0.8); g.fillStyle = '#9b3a7a'; g.beginPath(); g.ellipse(0, -51, 9, 3 + 6 * open, 0, 0, TAU); g.fill(); g.lineWidth = 2.5; g.strokeStyle = RB_INK; g.stroke();
+    for (let i = -2; i <= 2; i++) { const h = i === 0 ? 34 : Math.abs(i) === 1 ? 26 : 18; rbFill(g, () => { g.beginPath(); g.moveTo(i * 14 - 8, -94); g.lineTo(i * 14, -94 - h); g.lineTo(i * 14 + 8, -94); g.closePath(); }, '#b8fff0', { cx: i * 14, cy: -100, R: 26, hi: 0.8, lw: 3 }); }
+    rbFill(g, () => { g.beginPath(); g.roundRect(-38, -98, 76, 10, 5); }, '#ffd77a', { cx: 0, cy: -93, R: 30, lw: 3 }); rbFill(g, () => { g.beginPath(); g.arc(0, -103, 9, 0, TAU); }, '#ff7ad9', { cx: 0, cy: -103, R: 12, hi: 0.8, lw: 3 }); // crown band + gem
+    rbCracks(g, st, [[-30, 40, 1.2], [40, 80, -2], [10, 0, 1.8], [-60, 100, -1], [20, -66, 0.4], [-10, 60, 2.6]]);
+    rbBites(g, st, [[90, 118, 20], [-30, -112, 12], [-92, 116, 18]]); rbSparks(g, st, [[60, 100], [-40, 60], [30, -100]]);
+  },
+  robot(g, st) { // the Steel Robot: a riveted steel box on treads, a visor with LED eyes, rocket pods on its shoulders, a glowing reactor in its chest (the weak point)
+    const c = '#9aa6bc', dk = '#5c667a', up = st.atk === 'shot' ? st.wind : st.throwK;
+    for (const s of [-1, 1]) { rbFill(g, () => { g.beginPath(); g.roundRect(s * 54 - 32, 84, 64, 34, 14); }, '#3a4050', { cx: s * 54, cy: 100, R: 40 }); for (let i = 0; i < 3; i++) { g.fillStyle = '#8a92a4'; g.beginPath(); g.arc(s * 54 - 20 + i * 20, 101, 7, 0, TAU); g.fill(); } }
+    for (const s of [-1, 1]) { rbFill(g, () => { g.beginPath(); g.roundRect(s * 98 - 10, -30, 20, 84, 8); }, dk, { cx: s * 98, cy: 10, R: 50 }); rbFill(g, () => { g.beginPath(); g.moveTo(s * 98 - 16, 54); g.lineTo(s * 98 + 16, 54); g.lineTo(s * 98 + 22, 78); g.lineTo(s * 98, 66); g.lineTo(s * 98 - 22, 78); g.closePath(); }, '#ff5a4a', { cx: s * 98, cy: 64, R: 24, lw: 3.5 }); }
+    rbFill(g, () => { g.beginPath(); g.roundRect(-86, -52, 172, 138, 18); }, c, { cx: 0, cy: 0, R: 120 }); // torso
+    g.strokeStyle = 'rgba(40,46,60,0.5)'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(-86, 50); g.lineTo(86, 50); g.moveTo(-50, -52); g.lineTo(-50, 86); g.moveTo(50, -52); g.lineTo(50, 86); g.stroke();
+    g.fillStyle = '#e8eef8'; for (const [x, y] of [[-76, -42], [76, -42], [-76, 76], [76, 76], [-60, 40], [60, 40]]) { g.beginPath(); g.arc(x, y, 3.5, 0, TAU); g.fill(); }
+    rbFill(g, () => { g.beginPath(); g.arc(0, 14, 26, 0, TAU); }, '#2c3446', { cx: 0, cy: 14, R: 30 }); rbFill(g, () => { g.beginPath(); g.arc(0, 14, 17, 0, TAU); }, '#5fe8ff', { cx: 0, cy: 14, R: 20, hi: 0.75, lw: 2.5 }); // reactor
+    for (const s of [-1, 1]) { g.save(); g.translate(s * 80, -62); g.rotate(s < 0 ? up * 0.5 : 0); rbFill(g, () => { g.beginPath(); g.roundRect(-26, -18, 52, 36, 10); }, dk, { cx: 0, cy: 0, R: 34 }); // rocket pods
+      for (const dx of [-12, 0, 12]) { g.fillStyle = '#1a1e28'; g.beginPath(); g.arc(dx, -2, 5.5, 0, TAU); g.fill(); if (s < 0 && up > 0.3) { g.fillStyle = '#ffb13d'; g.beginPath(); g.arc(dx, -2, 3.5 * up, 0, TAU); g.fill(); } } g.restore(); }
+    rbFill(g, () => { g.beginPath(); g.roundRect(-50, -122, 100, 70, 16); }, '#b4bed0', { cx: 0, cy: -88, R: 64 }); // head
+    g.strokeStyle = RB_INK; g.lineWidth = 3; g.beginPath(); g.moveTo(0, -122); g.lineTo(0, -140); g.stroke(); g.fillStyle = (Math.floor(st.now / 400) % 2) ? '#ff5a4a' : '#ffd36b'; g.beginPath(); g.arc(0, -144, 6, 0, TAU); g.fill(); g.stroke(); // antenna
+    rbFill(g, () => { g.beginPath(); g.roundRect(-40, -106, 80, 26, 10); }, '#14182a', { cx: 0, cy: -94, R: 40, hi: 0.25 }); // visor
+    const shut = st.hit > 0.45, ec = st.ph >= 3 || st.wind > 0 ? '#ff4a3a' : '#5fe8ff'; g.save(); g.shadowColor = ec; g.shadowBlur = 10; g.fillStyle = ec;
+    for (const s of [-1, 1]) { g.beginPath(); if (shut) g.roundRect(s * 18 - 9, -95, 18, 3, 1.5); else g.roundRect(s * 18 - 8 + st.look.x * 4, -100 + st.look.y * 3, 16, st.ph >= 3 ? 7 : 11, 3); g.fill(); } g.restore();
+    g.fillStyle = '#2c3446'; g.beginPath(); g.roundRect(-22, -72, 44, 10 + 8 * Math.max(st.roar, st.wind * 0.6), 4); g.fill(); g.fillStyle = '#7fe6ff'; for (let i = -2; i <= 2; i++) { g.fillRect(i * 8 - 2, -70, 4, 6 + 6 * Math.max(st.roar, st.wind * 0.6)); } // speaker grille mouth
+    rbGlint(g, -60, -36, 16, 6, 0.4); rbGlint(g, -34, -114, 12, 4, 0.45);
+    rbCracks(g, st, [[-60, 0, 0.4], [50, 70, 2.6], [30, -112, 0.8], [-40, 60, -0.5], [70, -20, 2], [-20, -80, 3]]);
+    rbBites(g, st, [[86, 86, 18], [-86, -52, 16], [50, -122, 14]]); rbSparks(g, st, [[70, 70], [-74, -44], [40, -110], [-30, 40]]);
+  },
+  kong(g, st) { // Jungle King Kong: a huge dark gorilla with a crown of leaves and a golden amulet on a vine (the weak point); it hurls barrels
+    const c = '#4a3426', fur = '#5e4230', face = '#c79a72', up = st.atk === 'shot' ? st.wind : st.throwK, beat = st.atk === 'charge' ? Math.abs(Math.sin(st.now * 0.03)) * st.wind : 0;
+    for (const s of [-1, 1]) rbFill(g, () => { g.beginPath(); g.ellipse(s * 46, 104, 30, 16, 0, 0, TAU); }, c, { cx: s * 46, cy: 104, R: 34 }); // feet
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, 34, 92, 84, 0, 0, TAU); }, fur, { cx: 0, cy: 20, R: 110 }); // body
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, 40, 58, 56, 0, 0, TAU); }, '#8a6248', { cx: 0, cy: 34, R: 66, lw: 3 }); // chest
+    g.strokeStyle = 'rgba(40,20,10,0.4)'; g.lineWidth = 3; g.beginPath(); g.moveTo(-30, 16); g.quadraticCurveTo(0, 28, 30, 16); g.moveTo(-26, 50); g.quadraticCurveTo(0, 60, 26, 50); g.stroke();
+    g.strokeStyle = '#3f8a2a'; g.lineWidth = 5; g.beginPath(); g.moveTo(-40, -6); g.quadraticCurveTo(0, 30, 40, -6); g.stroke(); // vine necklace
+    rbFill(g, () => { g.beginPath(); g.moveTo(0, 6); g.lineTo(16, 22); g.lineTo(0, 40); g.lineTo(-16, 22); g.closePath(); }, '#ffcf4a', { cx: 0, cy: 22, R: 22, hi: 0.75, lw: 3 }); // the amulet
+    for (const s of [-1, 1]) { const raise = s > 0 ? up : beat; g.save(); g.translate(s * 74, -18); g.rotate(s * (0.25 - raise * 1.9)); // arms (the right one throws; both drum the chest before a charge)
+      rbFill(g, () => { g.beginPath(); g.roundRect(-18, -8, 36, 112, 18); }, fur, { cx: 0, cy: 40, R: 70 }); rbFill(g, () => { g.beginPath(); g.ellipse(0, 108, 22, 17, 0, 0, TAU); }, '#3a281c', { cx: 0, cy: 108, R: 26 });
+      if (s > 0 && up > 0.2) { rbFill(g, () => { g.beginPath(); g.roundRect(-16, 116, 32, 30 * up, 6); }, '#a8683a', { cx: 0, cy: 130, R: 24, lw: 3 }); } g.restore(); }
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, -62, 46, 44, 0, 0, TAU); }, c, { cx: 0, cy: -62, R: 52 }); // head
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, -52, 34, 30, 0, 0, TAU); }, face, { cx: 0, cy: -52, R: 36, lw: 3 });
+    g.fillStyle = '#2a1a10'; g.beginPath(); g.roundRect(-34, -84, 68, 12, 6); g.fill(); // brow ridge
+    rbEyes(g, st, 14, -68, 7, { pupil: '#2a1206', brow: '#1a0e06' });
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, -44, 22, 14, 0, 0, TAU); }, '#a87a58', { cx: 0, cy: -44, R: 22, lw: 2.5 }); g.fillStyle = '#2a1a10'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 7, -46, 4, 3, 0, 0, TAU); g.fill(); }
+    rbMouth(g, st, 0, -30, 32, 8, { n: 4 });
+    for (let i = -3; i <= 3; i++) rbFill(g, () => { g.beginPath(); g.ellipse(i * 13, -104 - (3 - Math.abs(i)) * 3, 9, 15, i * 0.35, 0, TAU); }, i % 2 ? '#5fc23a' : '#86e05a', { cx: i * 13, cy: -106, R: 16, lw: 2.5 }); // crown of leaves
+    rbGlint(g, -54, 0, 14, 8, 0.25); rbGlint(g, -22, -88, 10, 4, 0.35);
+    rbCracks(g, st, [[-50, 20, 0.5], [40, 60, 2.5], [-10, -90, 1.4], [60, -10, 2], [-60, 70, -0.8], [20, -60, 0.2]]);
+    rbBites(g, st, [[-92, 40, 16], [70, -60, 14], [88, 60, 16]]); rbSparks(g, st, [[60, 50], [-50, -40], [20, 80]]);
+  },
+  dragon(g, st) { // the Lava Dragon: red scales, bat wings that flap, golden belly plates with a glowing magma heart (the weak point); it breathes fireballs
+    const c = '#e0502a', dk = '#9a2a14', flap = Math.sin(st.now * 0.009) * 0.35;
+    for (const s of [-1, 1]) { g.save(); g.translate(s * 30, -30); g.rotate(s * flap); // wings
+      rbFill(g, () => { g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(s * 60, -70, s * 108, -64); g.lineTo(s * 96, -30); g.quadraticCurveTo(s * 100, 0, s * 104, 24); g.quadraticCurveTo(s * 70, 14, s * 60, 44); g.quadraticCurveTo(s * 40, 20, 0, 40); g.closePath(); }, '#c8401e', { cx: s * 50, cy: -10, R: 80, lo: 0.45 });
+      g.strokeStyle = dk; g.lineWidth = 3.5; for (const [x, y] of [[108, -64], [104, 24], [60, 44]]) { g.beginPath(); g.moveTo(0, 0); g.lineTo(s * x, y); g.stroke(); } g.restore(); }
+    rbFill(g, () => { g.beginPath(); g.moveTo(20, 70); g.quadraticCurveTo(70, 96, 40, 104); g.quadraticCurveTo(20, 104, 10, 84); g.closePath(); }, c, { cx: 30, cy: 86, R: 30, lw: 3.5 }); // tail stub (the long tail is the spinning attack)
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, 24, 50, 62, 0, 0, TAU); }, c, { cx: 0, cy: 20, R: 70 }); // body
+    g.save(); g.beginPath(); g.ellipse(0, 30, 30, 50, 0, 0, TAU); g.clip(); rbFill(g, () => { g.beginPath(); g.ellipse(0, 30, 30, 50, 0, 0, TAU); }, '#ffcf6a', { cx: 0, cy: 30, R: 50, lw: 0 }); g.strokeStyle = 'rgba(150,80,20,0.6)'; g.lineWidth = 3; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(-34, -10 + i * 16); g.quadraticCurveTo(0, -4 + i * 16, 34, -10 + i * 16); g.stroke(); } g.restore();
+    g.lineWidth = 4; g.strokeStyle = RB_INK; g.beginPath(); g.ellipse(0, 30, 30, 50, 0, 0, TAU); g.stroke();
+    rbFill(g, () => { g.beginPath(); g.arc(0, 30, 13, 0, TAU); }, '#ff7a2a', { cx: 0, cy: 30, R: 16, hi: 0.8, lw: 3 }); // magma heart
+    for (const s of [-1, 1]) rbFill(g, () => { g.beginPath(); g.ellipse(s * 34, 80, 12, 10, 0, 0, TAU); }, dk, { cx: s * 34, cy: 80, R: 14, lw: 3 }); // claws
+    rbFill(g, () => { g.beginPath(); g.roundRect(-16, -50, 32, 34, 12); }, c, { cx: 0, cy: -34, R: 30 }); // neck
+    for (const s of [-1, 1]) rbFill(g, () => { g.beginPath(); g.moveTo(s * 18, -78); g.quadraticCurveTo(s * 40, -104, s * 30, -122); g.quadraticCurveTo(s * 26, -98, s * 8, -86); g.closePath(); }, '#ffe0b0', { cx: s * 26, cy: -100, R: 26, lw: 3 }); // horns
+    rbFill(g, () => { g.beginPath(); g.ellipse(0, -66, 34, 28, 0, 0, TAU); }, c, { cx: 0, cy: -66, R: 40 }); // head
+    const open = Math.max(st.roar, st.wind, st.hit * 0.5); rbFill(g, () => { g.beginPath(); g.roundRect(-22, -60, 44, 22 + 10 * open, 10); }, '#f06a3a', { cx: 0, cy: -48, R: 30, lw: 3.5 }); // snout
+    if (open > 0.2) { g.fillStyle = '#3a0a06'; g.beginPath(); g.roundRect(-16, -44, 32, 12 * open, 4); g.fill(); g.fillStyle = 'rgba(255,200,80,' + (0.8 * st.wind) + ')'; g.beginPath(); g.arc(0, -40 + 6 * open, 8 * st.wind + 1, 0, TAU); g.fill(); }
+    g.fillStyle = RB_INK; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 8, -54, 3, 2.2, 0, 0, TAU); g.fill(); }
+    rbEyes(g, st, 15, -74, 7, { glow: '#ffd23f', pupil: '#5a1000', brow: '#5a1408' });
+    rbGlint(g, -24, 4, 10, 18, 0.3); rbGlint(g, -14, -82, 8, 4, 0.4);
+    rbCracks(g, st, [[-30, 10, 0.4], [30, 50, 2.5], [-10, -70, 1.6], [24, -20, 2.2], [-40, 60, -1], [10, 70, 1]]);
+    rbBites(g, st, [[100, -60, 16], [-100, 20, 14], [40, 80, 12]]); rbSparks(g, st, [[60, -40], [-60, 0], [20, 60], [-20, -70]]);
+  },
+};
+function rbArmArt(g, b, st, G) { // the spinning arm / tail, in front of the body (art units, pivot at the arm's pivot)
+  const D = b.def, A = b.arm; if (!A || !D.arm) return; const L0 = D.arm.len, w = D.arm.w, fade = Math.min(1, (st.now - A.t) / 250) * Math.min(1, (A.until - b.clock) / 250);
+  g.save(); g.globalAlpha = Math.max(0, fade); g.translate(0, D.arm.y);
+  for (let i = 0; i < D.arm.n; i++) { const a = A.a + i * TAU / D.arm.n; g.save(); g.rotate(a);
+    if (D.id === 'queen') { rbFill(g, () => { g.beginPath(); g.moveTo(10, 0); g.lineTo(L0 * 0.55, -w * 0.9); g.lineTo(L0, 0); g.lineTo(L0 * 0.55, w * 0.9); g.closePath(); }, 'rgba(200,255,244,0.95)', { cx: L0 * 0.6, cy: 0, R: L0 * 0.5, hi: 0.8, lw: 3 }); g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 2; g.beginPath(); g.moveTo(16, 0); g.lineTo(L0 - 8, 0); g.stroke(); }
+    else if (D.id === 'robot') { rbFill(g, () => { g.beginPath(); g.roundRect(0, -w / 2, L0 - 18, w, 6); }, '#7c869a', { cx: L0 / 2, cy: 0, R: L0 * 0.5, lw: 3.5 }); g.fillStyle = '#e8eef8'; for (let x = 16; x < L0 - 24; x += 22) { g.beginPath(); g.arc(x, 0, 3, 0, TAU); g.fill(); }
+      rbFill(g, () => { g.beginPath(); g.moveTo(L0 - 22, -w); g.lineTo(L0 + 6, -w * 1.3); g.lineTo(L0 - 4, 0); g.lineTo(L0 + 6, w * 1.3); g.lineTo(L0 - 22, w); g.closePath(); }, '#ff5a4a', { cx: L0 - 8, cy: 0, R: 26, lw: 3.5 }); }
+    else if (D.id === 'kong') { rbFill(g, () => { g.beginPath(); g.roundRect(0, -w / 2, L0, w, w / 2); }, '#9a6236', { cx: L0 / 2, cy: 0, R: L0 * 0.5, lw: 4 }); g.strokeStyle = 'rgba(60,30,10,0.55)'; g.lineWidth = 2.5; for (let x = 20; x < L0 - 10; x += 26) { g.beginPath(); g.moveTo(x, -w / 2 + 3); g.quadraticCurveTo(x + 8, 0, x, w / 2 - 3); g.stroke(); }
+      rbFill(g, () => { g.beginPath(); g.ellipse(L0, 0, w * 0.3, w / 2, 0, 0, TAU); }, '#e0b080', { cx: L0, cy: 0, R: w, lw: 3 }); g.strokeStyle = '#3f8a2a'; g.lineWidth = 4; g.beginPath(); g.moveTo(L0 * 0.4, -w / 2); g.quadraticCurveTo(L0 * 0.5, w, L0 * 0.62, -w / 2); g.stroke(); }
+    else { rbFill(g, () => { g.beginPath(); g.moveTo(0, -w * 0.7); g.quadraticCurveTo(L0 * 0.6, -w * 0.5, L0 - 10, -w * 0.18); g.lineTo(L0 + 12, 0); g.lineTo(L0 - 10, w * 0.18); g.quadraticCurveTo(L0 * 0.6, w * 0.5, 0, w * 0.7); g.closePath(); }, '#e0502a', { cx: L0 / 2, cy: 0, R: L0 * 0.5, lw: 3.5 }); // the dragon's tail with spikes
+      g.fillStyle = '#ffcf6a'; for (let x = 20; x < L0 - 16; x += 20) { g.beginPath(); g.moveTo(x - 6, -w * 0.45); g.lineTo(x, -w * 0.95); g.lineTo(x + 6, -w * 0.45); g.closePath(); g.fill(); } }
+    g.restore(); }
+  rbFill(g, () => { g.beginPath(); g.arc(0, 0, w * 0.75, 0, TAU); }, '#3a3044', { cx: 0, cy: 0, R: w, lw: 3 }); g.restore(); void G; void st;
+}
+const RB_CANVAS = {}; // one drawing canvas per renderer ('2d' / '3d')
+function rbArtState(b, now) { const A = b.atk, wind = A ? Math.min(1, (b.clock - A.at) / Math.max(1, A.fireAt - A.at)) : 0;
+  return { now, ph: b.phase, look: b.look, seed: b.n * 97, hit: Math.max(0, 1 - (now - b.hitAt) / 260), roar: Math.max(0, 1 - (now - b.roarAt) / 700), atk: A ? A.kind : '', wind: A ? wind : 0, throwK: Math.max(0, 1 - (now - (b.shotAt || -1e9)) / 300) * 0 }; }
+function rbRender(b, now, ppu, slot) { // the boss's picture into the slot's canvas at ppu pixels per art unit; returns { c, x0, y0, w, h } (the canvas's extent in art units)
+  const D = b.def, x0 = -RB_BOX.x, y0 = -D.ah / 2 - RB_BOX.top, aw = RB_BOX.x * 2, ah = D.ah + RB_BOX.top + RB_BOX.bot, cw = Math.max(2, Math.round(aw * ppu)), ch = Math.max(2, Math.round(ah * ppu));
+  let c = RB_CANVAS[slot]; if (!c) c = RB_CANVAS[slot] = document.createElement('canvas'); if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch; }
+  const g = c.getContext('2d'), st = rbArtState(b, now), bob = (D.fly ? Math.sin(now * 0.004) * 4 : Math.sin(now * 0.0035) * 2) + (st.hit > 0 ? -st.hit * 3 : 0), jig = st.roar > 0 ? Math.sin(now * 0.09) * 3 * st.roar : 0;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cw, ch); g.setTransform(ppu, 0, 0, ppu, -x0 * ppu, -y0 * ppu); g.lineJoin = g.lineCap = 'round';
+  const chg = b.charge ? 1 : b.atk && b.atk.kind === 'charge' ? st.wind : 0;
+  if (chg > 0) { g.save(); const gr = g.createRadialGradient(0, 0, 20, 0, 0, 170); gr.addColorStop(0, 'rgba(255,60,40,' + (0.35 * chg) + ')'); gr.addColorStop(1, 'rgba(255,60,40,0)'); g.fillStyle = gr; g.fillRect(x0, y0, aw, ah); g.restore(); } // the charge: a red glow round it
+  g.save(); g.translate(jig, bob); if (chg > 0) { g.translate(0, 6 * chg); g.scale(1 + 0.04 * chg, 1 - 0.04 * chg); }
+  RB_ART[D.id](g, st); g.restore();
+  if (st.hit > 0) { g.save(); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,70,60,' + (0.5 * st.hit) + ')'; g.fillRect(x0, y0, aw, ah); g.restore(); } // the red flash of a hit
+  if (b.weak.on || now - b.weak.at < 200) { const w = D.weak, pk = 0.5 + 0.5 * Math.sin(now * 0.012), fin = Math.min(1, (now - b.weak.at) / 200); // the weak point: a pulsing gold glow and a target ring
+    g.save(); g.globalAlpha = fin; const gr = g.createRadialGradient(w[0], w[1] + bob, 1, w[0], w[1] + bob, w[2] * 2.6); gr.addColorStop(0, 'rgba(255,255,230,1)'); gr.addColorStop(0.35, 'rgba(255,214,90,' + (0.7 + 0.3 * pk) + ')'); gr.addColorStop(1, 'rgba(255,180,40,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(w[0], w[1] + bob, w[2] * 2.6, 0, TAU); g.fill(); g.lineWidth = 3; g.strokeStyle = 'rgba(255,240,170,' + (0.6 + 0.4 * pk) + ')'; g.setLineDash([6, 5]); g.lineDashOffset = -now * 0.04;
+    g.beginPath(); g.arc(w[0], w[1] + bob, w[2] * (1.5 + 0.25 * pk), 0, TAU); g.stroke(); g.setLineDash([]); g.restore(); }
+  rbArmArt(g, b, st);
+  if (b.shield) { const age = now - b.shield.t, fin = Math.min(1, age / 260), left = (b.shield.until - b.clock), blink = left < 1200 ? 0.55 + 0.45 * Math.sin(now * 0.03) : 1, hb = Math.max(0, 1 - (now - b.blockAt) / 300); // the shield: a glassy hex bubble
+    g.save(); g.globalAlpha = fin * blink; const rx = 118, ry = D.ah * 0.58, gr = g.createRadialGradient(-30, -ry * 0.4, 10, 0, 0, Math.max(rx, ry)); gr.addColorStop(0, 'rgba(220,255,255,0.32)'); gr.addColorStop(0.7, 'rgba(110,220,255,' + (0.18 + 0.25 * hb) + ')'); gr.addColorStop(1, 'rgba(110,220,255,0.5)');
+    g.fillStyle = gr; g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.fill(); g.save(); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.clip(); g.strokeStyle = 'rgba(200,250,255,0.45)'; g.lineWidth = 2;
+    for (let y = -ry; y <= ry; y += 26) for (let x = -rx; x <= rx; x += 30) { const ox = x + ((Math.round((y + ry) / 26)) % 2 ? 15 : 0); g.beginPath(); for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + TAU / 12; g.lineTo(ox + Math.cos(a) * 14, y + Math.sin(a) * 14); } g.closePath(); g.stroke(); } g.restore();
+    g.lineWidth = 4; g.strokeStyle = 'rgba(170,240,255,0.95)'; g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.stroke(); rbGlint(g, -rx * 0.45, -ry * 0.55, 26, 10, 0.5); g.restore(); }
+  if (b.atk && st.wind > 0) { const k = st.wind, y = y0 + 36 + Math.sin(now * 0.03) * 3; g.save(); g.globalAlpha = Math.min(1, k * 3); g.fillStyle = b.atk.kind === 'charge' ? '#ff4a3a' : '#ffd23f'; g.strokeStyle = RB_INK; g.lineWidth = 4; // the wind-up's '!'
+    g.beginPath(); g.arc(0, y, 18, 0, TAU); g.fill(); g.stroke(); g.fillStyle = RB_INK; g.font = '900 28px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('!', 0, y + 1); g.restore(); }
+  return { c, x0, y0, w: aw, h: ah, bob };
+}
+function rbScreenBox(b) { // the boss on screen (the overlay's coordinates): its body, weak point, arm, for the tests and the HUD
+  const G = b.g || rbGeom(b), p = proj(G.x, G.y, b.z), wp = rbWeakPos(b, G), wq = proj(wp.x, wp.y, b.z);
+  return { kind: b.kind, x: p.x - G.hw * p.s, y: p.y - G.hh * p.s, w: G.hw * 2 * p.s, h: G.hh * 2 * p.s, cx: p.x, cy: p.y, s: p.s, phase: b.phase, hp: b.hp, maxHp: b.maxHp, shield: !!b.shield, charge: !!b.charge, atk: b.atk ? b.atk.kind : '',
+    weak: { x: wq.x, y: wq.y, r: wp.r * wq.s, on: b.weak.on }, arm: rbArmSegs(b, G).map((s) => { const a = proj(s.x0, s.y0, b.z - RB.armDz), c = proj(s.x1, s.y1, b.z - RB.armDz); return { x0: a.x, y0: a.y, x1: c.x, y1: c.y }; }), visible: b.z < CONFIG.STRIKE_Z_FAR };
+}
+function drawRealBoss(b, now) { // 2D: the picture in perspective at the boss's depth, with a floor shadow and the depth haze
+  const Z = CONFIG.STRIKE_Z_FAR; strike.ui.boss = rbScreenBox(b); if (b.z >= Z) return;
+  const G = b.g || rbGeom(b), p = proj(G.x, G.y, b.z), upp = G.k * p.s, ppu = Math.min(4, Math.max(0.6, upp * DPR)), r = rbRender(b, now, ppu, '2d');
+  const fl = proj(G.x, G.B, b.z); drawShadow(fl.x, fl.y, G.hw * 2.1 * p.s, G.hw * 0.45 * p.s, b.def.fly ? 0.3 : 0.55);
+  const fog = Math.min(0.5, Math.max(0, (1 - p.s / (STRIKE_F / (STRIKE_F + b.zHome))) * 0.4)); void fog;
+  ctx.setTransform(DPR, 0, 0, DPR, view.x * DPR, view.y * DPR); ctx.drawImage(r.c, p.x + r.x0 * upp, p.y + r.y0 * upp, r.w * upp, r.h * upp); resetView();
+}
+function drawRealBossBar(now, ui, rtl) { // the health bar under the hearts pill: the boss's name in its world's colour, the bar, the phase notches; a shield ring while shielded
+  const b = strike.boss; ui.bossBar = null; if (!b || !b.real || !ui.hud || now < b.enterAt) return;
+  const H0 = ui.hud, D = b.def, a = Math.min(1, (now - b.enterAt) / 400), bw = Math.round(Math.min(W - 40, 300)), x = Math.round(W / 2 - bw / 2), ny = H0.y + H0.h + 6, by = ny + 15, bh = 8, frac = b.hp / b.maxHp;
+  const hit = Math.max(0, 1 - (now - b.hitAt) / 260), name = textSprite(t('bn_' + D.id), 11, D.col, 'rgba(8,11,28,0.9)', 800);
+  resetView(); ctx.save(); ctx.globalAlpha = a; blit(name, W / 2, ny + 5, 0, Math.min(1, (bw - 8) / name.tw), a);
+  resetView(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,28,0.8)'; ctx.beginPath(); ctx.roundRect(x - 2, by - 2, bw + 4, bh + 4, 6); ctx.fill();
+  const fw = Math.max(0, bw * frac), fx = rtl ? x + bw - fw : x; if (fw > 0) { const gr = ctx.createLinearGradient(0, by, 0, by + bh); gr.addColorStop(0, lighten(D.col, 0.3)); gr.addColorStop(1, darken(D.col, 0.15)); ctx.fillStyle = gr; ctx.beginPath(); ctx.roundRect(fx, by, fw, bh, 4); ctx.fill(); }
+  if (hit > 0) { ctx.globalAlpha = a * hit * 0.7; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(fx, by, Math.max(4, fw), bh, 4); ctx.fill(); ctx.globalAlpha = a; }
+  ctx.fillStyle = 'rgba(8,11,28,0.9)'; for (const q of [1 / 3, 2 / 3]) { const nx = rtl ? x + bw * (1 - q) : x + bw * q; ctx.fillRect(Math.round(nx) - 1, by - 2, 2, bh + 4); } // the phase notches
+  ctx.lineWidth = b.shield ? 2 : 1; ctx.strokeStyle = b.shield ? 'rgba(150,235,255,0.95)' : 'rgba(241,233,218,0.45)'; ctx.beginPath(); ctx.roundRect(x - 1, by - 1, bw + 2, bh + 2, 5); ctx.stroke(); ctx.restore();
+  ui.bossBar = { x, y: ny - 2, w: bw, h: by + bh + 3 - (ny - 2), barY: by, barH: bh, frac, phase: b.phase, name: t('bn_' + D.id), col: D.col, shield: !!b.shield };
+  blockRect('bossBar', { x: x - 4, y: ny - 4, w: bw + 8, h: ui.bossBar.h + 6 });
+}
+function drawRealBossIntro(now) { // the name banner as it arrives: 'BRICK GOLEM' + 'World 1 boss'
+  const I = strike.ui.rbIntro; strike.ui.rbIntroBox = null; if (!I) return; const k = (now - I.t) / I.ms; if (k >= 1 || k < 0) { if (k >= 1) strike.ui.rbIntro = null; return; }
+  const D = rbDef(I.n), [off, a] = bannerSlide(k), x = W / 2 + off, y = H * 0.3, main = bigTextSprite(t('bn_' + D.id), 40), sub = textSprite(t('bossOfWorld', { n: I.n }), 18, D.col, 'rgba(8,11,28,0.9)', 800);
+  const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw) + 72), ph = 108, sc = Math.min(1, (pw - 20) / Math.max(1, main.w - 30));
+  blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - ph / 2 - 1, 0, 1, a); blit(burstSprite(), x, y - 10, now * 0.0014, 0.9, a * 0.6);
+  blit(main, x, y - 12, 0, sc * (1 + 0.05 * Math.sin(k * Math.PI * 8) * (1 - k)), a); blit(sub, x, y + 30, 0, Math.min(1, (pw - 24) / sub.tw), a);
+  strike.ui.rbIntroBox = { x: x - pw / 2, y: y - ph / 2, w: pw, h: ph, a, name: t('bn_' + D.id) }; blockRect('bossIntro', strike.ui.rbIntroBox);
+}
+function rbShotSprite(kind) { // the bosses' projectiles (radius ~26 like the turret shot, a warm glow behind)
+  return makeSprite('rbshot|' + kind, 96, 96, 48, 48, (g) => {
+    const glow = { rock: 'rgba(255,170,110,', shard: 'rgba(140,255,230,', rocket: 'rgba(255,190,90,', barrel: 'rgba(255,200,120,', fire: 'rgba(255,120,40,' }[kind] || 'rgba(255,90,110,';
+    const gr = g.createRadialGradient(0, 0, 2, 0, 0, 46); gr.addColorStop(0, glow + '0.75)'); gr.addColorStop(0.55, glow + '0.3)'); gr.addColorStop(1, glow + '0)'); g.fillStyle = gr; g.fillRect(-48, -48, 96, 96); g.lineJoin = g.lineCap = 'round';
+    if (kind === 'rock') { rbFill(g, () => { g.beginPath(); for (let i = 0; i < 9; i++) { const a = i * TAU / 9, d = 22 + (i % 3) * 4; g.lineTo(Math.cos(a) * d, Math.sin(a) * d); } g.closePath(); }, '#8a7b70', { cx: 0, cy: 0, R: 28, lw: 3.5 }); g.fillStyle = 'rgba(40,30,30,0.35)'; g.beginPath(); g.arc(6, 6, 5, 0, TAU); g.arc(-8, 8, 3, 0, TAU); g.fill(); }
+    else if (kind === 'shard') { rbFill(g, () => { g.beginPath(); g.moveTo(0, -28); g.lineTo(14, -4); g.lineTo(6, 26); g.lineTo(-12, 10); g.lineTo(-10, -12); g.closePath(); }, '#b8fff0', { cx: 0, cy: 0, R: 28, hi: 0.85, lw: 3 }); g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -24); g.lineTo(2, 20); g.stroke(); }
+    else if (kind === 'rocket') { g.fillStyle = '#ffb13d'; g.beginPath(); g.moveTo(-8, 18); g.lineTo(0, 40); g.lineTo(8, 18); g.closePath(); g.fill(); rbFill(g, () => { g.beginPath(); g.roundRect(-10, -26, 20, 46, 10); }, '#d8dee8', { cx: 0, cy: -4, R: 26, lw: 3 }); rbFill(g, () => { g.beginPath(); g.moveTo(-10, -12); g.quadraticCurveTo(0, -40, 10, -12); g.closePath(); }, '#ff5a4a', { cx: 0, cy: -20, R: 14, lw: 3 }); for (const s of [-1, 1]) rbFill(g, () => { g.beginPath(); g.moveTo(s * 10, 6); g.lineTo(s * 20, 22); g.lineTo(s * 10, 18); g.closePath(); }, '#ff5a4a', { cx: s * 14, cy: 14, R: 10, lw: 2.5 }); }
+    else if (kind === 'barrel') { rbFill(g, () => { g.beginPath(); g.roundRect(-20, -24, 40, 48, 12); }, '#a8683a', { cx: 0, cy: 0, R: 30, lw: 3.5 }); g.strokeStyle = '#5a5a66'; g.lineWidth = 4; for (const y of [-12, 12]) { g.beginPath(); g.moveTo(-20, y); g.lineTo(20, y); g.stroke(); } g.strokeStyle = 'rgba(60,30,10,0.5)'; g.lineWidth = 2; for (const x of [-8, 6]) { g.beginPath(); g.moveTo(x, -22); g.lineTo(x, 22); g.stroke(); } }
+    else { const fg = g.createRadialGradient(-6, -6, 2, 0, 0, 26); fg.addColorStop(0, '#fffbe0'); fg.addColorStop(0.35, '#ffd23f'); fg.addColorStop(0.75, '#ff6a1a'); fg.addColorStop(1, 'rgba(200,40,10,0.9)'); g.fillStyle = fg; g.beginPath(); for (let i = 0; i < 14; i++) { const a = i * TAU / 14, d = i % 2 ? 20 : 27; g.lineTo(Math.cos(a) * d, Math.sin(a) * d); } g.closePath(); g.fill(); }
+  });
+}
+function rbChunkSprite(col, w, h) { const W0 = Math.max(6, Math.round(w)), H0 = Math.max(6, Math.round(h)); return makeSprite('rbchunk|' + col + '|' + W0 + 'x' + H0, W0 + 8, H0 + 8, W0 / 2 + 4, H0 / 2 + 4, (g) => { // a piece of the boss flying off
+  rbFill(g, () => { g.beginPath(); g.moveTo(-W0 / 2, -H0 * 0.2); g.lineTo(-W0 * 0.1, -H0 / 2); g.lineTo(W0 / 2, -H0 * 0.3); g.lineTo(W0 * 0.4, H0 / 2); g.lineTo(-W0 * 0.3, H0 * 0.4); g.closePath(); }, col, { cx: 0, cy: 0, R: Math.max(W0, H0) * 0.6, lw: Math.max(1.5, Math.min(W0, H0) * 0.08) }); }); }
+function g3RealBoss(b, now) { // 3D: the same picture on a plane at the boss's depth (a textured billboard; balls and chunks pass in front of / behind it by depth)
+  const S = G3, T = S.T; if (!S.rb) { const c0 = document.createElement('canvas'); c0.width = c0.height = 4; S.rbTex = g3Tex(c0, true); S.rb = new T.Mesh(S.plane, new T.MeshBasicMaterial({ map: S.rbTex, transparent: true, depthWrite: false, toneMapped: false, fog: false })); S.rb.renderOrder = 2; S.scene.add(S.rb); S.rbCanvas = null; }
+  strike.ui.boss = rbScreenBox(b); if (b.z >= CONFIG.STRIKE_Z_FAR) { S.rb.visible = false; return; }
+  const G = b.g || rbGeom(b), ppu = Math.min(2.6, 900 / (RB_BOX.x * 2)), r = rbRender(b, now, ppu, '3d');
+  if (S.rbCanvas !== r.c || S.rbW !== r.c.width || S.rbH !== r.c.height) { S.rbTex.dispose(); S.rbTex = g3Tex(r.c, true); S.rb.material.map = S.rbTex; S.rb.material.needsUpdate = true; S.rbCanvas = r.c; S.rbW = r.c.width; S.rbH = r.c.height; }
+  S.rbTex.needsUpdate = true;
+  const cx = G.x + (r.x0 + r.w / 2) * G.k, cy = G.y + (r.y0 + r.h / 2) * G.k; S.rb.position.set(cx, -cy, -b.z); S.rb.scale.set(r.w * G.k, r.h * G.k, 1); S.rb.visible = true;
+}
 function bossBodySprite(w, h) { // the boss's body: a purple brick grid the size of the corridor's mouth, cached
   return makeSprite('bossbody|' + Math.round(w) + 'x' + Math.round(h), w, h, w / 2, h / 2, (g) => {
     const cols = 8, rows = 6, cw = w / cols, ch = h / rows, sp = strikeBrickSprite(1, cw, ch, false, 'boss');
@@ -8845,6 +9503,7 @@ function endCardAt(px, py) { // which card button (if any) is under a screen poi
   return null;
 }
 function endCardAction(key, now) {
+  if (key === 'duel') return duelShare(); // Challenge a friend / Send back
   if (gameMode === 'strike' && adv.on && adv.result) { // an Adventure stage's card: Next / Try again / Map (a wave: the next stage after a clear, a retry after a fail)
     if (key === 'again') key = adv.result.clear ? 'next' : 'retry';
     if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap({});
@@ -8860,19 +9519,20 @@ function endCardAction(key, now) {
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
-  if (!$('newCard').hidden || anyMapOpen() || menu.open) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
+  if (!$('newCard').hidden || !$('duelName').hidden || anyMapOpen() || menu.open) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
   const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
   ui.hover = btn;
   if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
     if (!ui.dwell || ui.dwell.key !== btn) ui.dwell = { key: btn, t: now };
     else if (now - ui.dwell.t >= 400) { ui.dwell = null; endCardAction(btn, now); return; }
   } else ui.dwell = null;
-  if (now - E.overAt > 1000 && cursor.present && !btn && cursorSpeed(now) >= 1.2) endCardAction('again', now);
+  if (now - E.overAt > 1000 && now - (duel.sheetAt || -1e9) > 1200 && cursor.present && !btn && cursorSpeed(now) >= 1.2) endCardAction('again', now);
 }
 function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key] x3], diff: show the Easy / Normal pill, again: i18n key of the 'play again' line under the card }
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), pill = !!o.diff, dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill || o.share ? 372 : 316) + 34) + TZ + OY, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84), (H - ch) / 2) + (1 - e) * 26;
+  const du = !!o.duel && E === strike, DUp = du && duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button; a duel: the WIN / LOSE panel above the card)
+  const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill || o.share || du ? 372 : 316) + 34) + TZ + OY + (du && pill ? 54 : 0), cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84) + DUp, (H - ch - DUp) / 2 + DUp) + (1 - e) * 26;
   view.x = view.y = 0; resetView();
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
@@ -8943,7 +9603,9 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
   }
   if (dly || o.share) ui.buttons.share = { x: x0 + 20, y: by + bh + 12, w: cw - 40, h: 44 }; // the daily: Share under the buttons (no Easy / Normal: the daily is always Normal)
-  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share'), shop: t('collection') };
+  if (du) { if (o.share) { const hw2 = (cw - 50) / 2; ui.buttons.share = { x: rtl ? x0 + cw - 20 - hw2 : x0 + 20, y: by + bh + 12, w: hw2, h: 44 }; ui.buttons.duel = { x: rtl ? x0 + 20 : x0 + cw - 20 - hw2, y: by + bh + 12, w: hw2, h: 44 }; } // (Frenzy: Share | Challenge)
+    else ui.buttons.duel = { x: x0 + 20, y: by + bh + 12 + (pill ? 54 : 0), w: cw - 40, h: 44 }; }
+  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share'), shop: t('collection'), duel: duel.on ? t('duelSendBack') : t('duelBtn') };
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
     let bk = hot ? 1.04 : 1;
@@ -8952,13 +9614,14 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
       resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)';
       ctx.beginPath(); ctx.roundRect(mx - r.w * bk / 2, my - r.h * bk / 2, r.w * bk, r.h * bk, 14); ctx.fill(); ctx.restore();
     }
-    blit(overButtonSprite(key === 'again' ? 'again' : on || key === 'share' || key === 'shop' ? 'on' : 'home', r.w, r.h), mx, my, 0, bk);
+    blit(overButtonSprite(key === 'again' ? 'again' : on || key === 'share' || key === 'shop' || key === 'duel' ? 'on' : 'home', r.w, r.h), mx, my, 0, bk);
     if (key === 'shop') { resetView(); ctx.fillStyle = '#ff4d3d'; ctx.beginPath(); ctx.arc(rtl ? r.x + 8 : r.x + r.w - 8, r.y + 8, 5, 0, TAU); ctx.fill(); } // the red dot: something new to buy
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
-    blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
+    blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' || key === 'duel' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' || key === 'duel' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
   }
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
+  if (DUp) drawDuelPanel(now, x0, y0 - DUp, cw, rtl); else if (E === strike) strike.ui.duelCard = null;
   if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
     const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round';
     ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke();
@@ -8997,6 +9660,7 @@ function renderStrike(now) {
   const items = []; // walls, debris, capsules and the balls painted far to near, so a wall behind the ball is under it and one in front covers it
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
   if (strike.boss) items.push({ z: strike.boss.z, boss: strike.boss }); else strike.ui.boss = null;
+  if (g3 && strike.boss && strike.boss.real) strike.ui.boss = rbScreenBox(strike.boss);
   for (const d of strike.debris) items.push({ z: d.z, d });
   for (const c of strike.capsules) items.push({ z: c.z, c });
   for (const b of balls) items.push({ z: b.z, b });
@@ -9004,8 +9668,8 @@ function renderStrike(now) {
   for (const bl of balls) if (bl.dir < 0) for (const it of items) if (it.w && it.w.z < bl.z && bl.z - it.w.z < CONFIG.STRIKE_WALL_GAP * 0.15) { it.z = Math.max(it.z, bl.z + 1); if (!strike.ui.ballOver.includes(it.w.id)) strike.ui.ballOver.push(it.w.id); }
   items.sort((a, b) => b.z - a.z);
   if (g3) { for (const c of strike.capsules) capsuleRing(c, now); } // (3D: everything but the capsules' 'grab me' ring is in the WebGL scene)
-  else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) drawBoss(it.boss, now); else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
-  if (strike.boss) drawBossBar(strike.boss, now);
+  else for (const it of items) { if (it.w) drawStrikeWall(it.w, now); else if (it.boss) { if (it.boss.real) drawRealBoss(it.boss, now); else drawBoss(it.boss, now); } else if (it.d) drawDebris(it.d); else if (it.c) drawCapsule(it.c, now); else drawStrikeBall(it.b, now); }
+  if (strike.boss && !strike.boss.real) drawBossBar(strike.boss, now);
   drawRallyFx(now); // the rally: speed lines, the ball's heat glow and trail
   drawChallengeFx(now); // v4: crack lines, the aim reticle, a wall closing in, turret shots
   drawBouncers(now); // missed guests boinging off the screen (on the overlay in both renderers)
@@ -9025,7 +9689,7 @@ function renderStrike(now) {
   const dt = Math.min(100, now - strike.ui.lastDraw || 16); strike.ui.lastDraw = now;
   drawStrikeHud(now, dt); drawCoinPill(now); // (Strike: no coin pill, only the rising +n when coins come in)
   drawPowerMeter(now, dt);
-  drawServePrompt(now); drawComboBanner(now); drawLevelBanners(now); drawStreakToast(now); drawSpotlight(now); drawChest(now);
+  drawServePrompt(now); drawComboBanner(now); drawLevelBanners(now); drawRealBossIntro(now); drawStreakToast(now); drawSpotlight(now); drawChest(now);
   drawStrikeFloaters(now); drawJuiceFx(now); // v5: never overlapping each other or the banners; the wall-down / PERFECT flashes
   drawPerkOffer(now);
   drawStrikeHand(now);
@@ -9047,11 +9711,11 @@ function renderStrike(now) {
   }
   if (strike.over && adv.on && adv.result) { if (!strike.perkOffer) drawAdvCard(now); else strike.ui.buttons = null; drawStrikeHand(now); } // an Adventure stage's card (v5: under the run-power cards, hidden)
   else if (strike.over && frenzy.on && frenzy.result) { // Frenzy: hits in a row, the top speed, NEW RECORD! and Share
-    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true });
+    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true, duel: true });
     drawStrikeHand(now);
   }
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
-    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + (strike.bestMul || 1), 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
+    drawEndCard(now, strike, { score: strike.score, best: strike.best, stats: [[strike.hits, 'hits'], [strike.cleared, 'walls'], [LRM + '×' + (strike.bestMul || 1), 'bestCombo'], [strike.bosses, 'bosses']], diff: !daily.on && !duel.on, duel: !daily.on, again: 'playAgainWave', daily: daily.on ? dailyCardInfo() : null });
     drawStrikeHand(now);
   }
 }
@@ -9690,7 +10354,9 @@ function gfx3dFrame(now) { // called from renderStrike in 3D mode, before any ov
   for (const [id, e] of S.walls) if (!seen.has(id)) { S.scene.remove(e.group); S.walls.delete(id); S.wallPool.push(e); }
   // boss: its face drawn by the 2D code into the (still empty) overlay, copied into a texture on a plane at the boss's depth
   const bs = strike.boss;
-  if (bs && bs.z < Z) {
+  if (S.rb && !(bs && bs.real)) S.rb.visible = false;
+  if (bs && bs.real) { g3RealBoss(bs, now); S.boss.visible = S.bossBody.visible = S.bossBack.visible = false; }
+  else if (bs && bs.z < Z) {
     if (!S.bossB || S.bossB.id !== bs.born || S.bossB.key !== W + 'x' + H) g3BossLayout(bs);
     const vx = view.x, vy = view.y; view.x = view.y = 0; drawBoss(bs, now, true); view.x = vx; view.y = vy;
     const a = proj(L, top, bs.z), c = proj(R, B, bs.z), sx = Math.max(1, (c.x - a.x) * DPR), sy = Math.max(1, (c.y - a.y) * DPR), k = Math.min(1, 1024 / Math.max(sx, sy)), bw = Math.max(2, Math.round(sx * k)), bh = Math.max(2, Math.round(sy * k));
@@ -9893,9 +10559,13 @@ function g3Fx(type, d) { // game events the 3D renderer dresses up (a no-op in 2
     g3BossPop(d, false); g3Flash(x, y, z + 80, col, 3 + pw * 4, 260 + pw * 160, 1300);
     g3P(true, 3, x, y, z + 2, { size: rB * 1.2, grow: 3.5 + pw * 2, ms: 380, col, a: 0.95, pow: 1.3 });
     for (let i = 0; i < 6 * m; i++) g3P(false, 0, x + (R() - 0.5) * rB * 2, y + (R() - 0.5) * rB * 1.5, z + R() * 30, { vx: (R() - 0.5) * 0.12, vy: 0.02 + R() * 0.05, vz: 0.05 + R() * 0.1, drag: 0.0015, size: rB * (0.9 + R() * 0.8), grow: 1.6, ms: 700 + R() * 400, col: '#8a6ab0', a: 0.4, pow: 1.2, rot: R() * TAU });
+  } else if (type === 'rboss') { // a real boss hit: a flash, a ring and sparks in its colour
+    const x = d.x, y = -d.y, z = -d.z + 6, pw = STRIKE_PW[d.tier] || 0, col = d.tier === 'super' ? '#ffc24b' : d.col || '#ff7a7a';
+    g3Flash(x, y, z + 80, col, 3 + pw * 4, 260 + pw * 160, 1300); g3P(true, 3, x, y, z + 2, { size: rB * 1.2, grow: 3.5 + pw * 2, ms: 380, col, a: 0.95, pow: 1.3 });
+    for (let i = 0; i < (5 + Math.min(10, d.dmg || 1)) * m; i++) g3Spark(x, y, z + 4, 0.8 + pw * 0.6, R() < 0.5 ? col : '#fff3c4');
   } else if (type === 'bossdown') {
     const { T: top, B } = corridor(), y = -(top + B) / 2, z = -d.z + 10; g3BossPop(null, true);
-    g3Boom(0, y, z, Math.min(W, H) * 0.25, '#c05ce6'); g3Flash(0, y, z + 120, '#ffb070', 9, 700, 2400);
+    g3Boom(0, y, z, Math.min(W, H) * 0.25, d.col || '#c05ce6'); g3Flash(0, y, z + 120, '#ffb070', 9, 700, 2400);
     for (let i = 0; i < 24 * m; i++) g3Spark((R() - 0.5) * W * 0.5, y + (R() - 0.5) * H * 0.3, z, 1.6, R() < 0.5 ? '#ffe07a' : '#e0a0ff');
   }
 }
@@ -10236,7 +10906,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -10260,6 +10930,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.open)) for (const n of a.open) if (Number.isInteger(n)) advOpenNode(A, n);
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))];
       if (a.best && typeof a.best === 'object') for (const k of Object.keys(a.best)) { const n = +k, v = a.best[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isFinite(v) && v > 0) A.best[n] = Math.min(9999999, Math.round(v)); } } // v4: the best score per stage
+    if (typeof p.duelName === 'string') d.duelName = duelSanitize(p.duelName); if (p.duelAsked === true) d.duelAsked = true;
     if (p.frenzy && typeof p.frenzy === 'object') { const f = p.frenzy; if (Number.isFinite(f.best) && f.best > 0) d.frenzy.best = Math.min(99999, Math.round(f.best)); if (Number.isFinite(f.top) && f.top >= 1) d.frenzy.top = Math.min(50, Math.round(f.top * 100) / 100); if (Number.isFinite(f.runs) && f.runs > 0) d.frenzy.runs = Math.min(1e6, Math.floor(f.runs)); } // Frenzy: the best hits in a row, the top speed (x), runs
     if (Array.isArray(p.themes)) d.themes = [...new Set(['classic'].concat(p.themes.filter((id) => THEME_IDS.includes(id))))]; // Strike themes: only known ids, classic always owned; the equipped one must be owned
     if (typeof p.theme === 'string' && d.themes.includes(p.theme)) d.theme = p.theme;
@@ -11059,7 +11730,7 @@ function grippySay(ev, vars, now = performance.now()) { // a spoken line for an 
   grippy.said.push(grippy.last); if (grippy.said.length > 40) grippy.said.shift();
   return true;
 }
-const TIP_KEYS = { shapesTap: 'tipShapesTap', flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest', heat: 'tipHeat', weak: 'tipWeak', turret: 'tipTurret' };
+const TIP_KEYS = { shapesTap: 'tipShapesTap', flick: 'tipFlick', pu: 'tipPu', perk: 'tipPerk', guest: 'tipGuest', heat: 'tipHeat', weak: 'tipWeak', turret: 'tipTurret', bossShield: 'bossShieldTip', bossWeak: 'bossWeakTip', bossShot: 'bossShotTip' };
 function profileTip(id) { return (profile.tips || []).includes(id); }
 function tipOnce(id) { // onboarding: a thing explained the first time it shows up on this profile (once ever), as the hint toast; the serve is the mode's own start hint
   if (profileTip(id)) return false;
@@ -11215,7 +11886,7 @@ function advNodeTap(n, b) {
   sfx('click'); return advStart(n, amap.how);
 }
 function openAdvMap(o = {}) { // o.how: the way a stop starts from the start screen; o.from / o.pop: after a world's boss, the map rises from stop `from` to the new world's first stop, which pops open
-  amap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : amap.how; amap.fromGame = mode !== 'none'; adv.dwell = null;
+  amap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : amap.how; amap.fromGame = mode !== 'none'; adv.dwell = null; duelEnd();
   advSyncWorlds(profile); const M = $('advMap'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim);
   if (o.pop && advPlayable(o.pop)) {
     advScrollTo(o.from || o.pop - 1, false); amap.popped = o.pop;
@@ -11231,7 +11902,7 @@ function closeAdvMap(quiet) { // Back: from a stage card, home; from the start s
   return true;
 }
 function advStart(n, how) { // play stage n (a playable one): from the start screen with the camera or the mouse, or at once in a game
-  n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); if (!advPlayable(n)) return false;
+  n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); if (!advPlayable(n) && !duelKeeps('adv', n)) return false; if (!duelKeeps('adv', n)) duelEnd(); // (a duel's stage plays even if not reached yet)
   closeAdvMap(true); adv.n = n; $('worldMap').hidden = true;
   if (gameMode !== 'strike') setGameMode('strike');
   daily.armed = daily.on = false; frenzy.on = frenzy.armed = false;
@@ -11240,6 +11911,7 @@ function advStart(n, how) { // play stage n (a playable one): from the start scr
   return true;
 }
 function strikeEndless(how) { // the map's Endless: the old run, exactly as before (the world map first once a second world is open)
+  duelEnd();
   closeAdvMap(true); adv.on = adv.armed = false; frenzy.on = frenzy.armed = false;
   if (gameMode !== 'strike') setGameMode('strike');
   if (profile.worlds.unlocked > 1) { openWorldMap(how || amap.how); return; }
@@ -11427,6 +12099,8 @@ $('missionsBtn').addEventListener('click', () => openPanel('missions'));
 $('collectionBtn').addEventListener('click', () => openPanel('collection'));
 $('roadBtn').addEventListener('click', () => openPanel('road'));
 $('nuOk').addEventListener('click', closeNewCard);
+$('duelNameGo').addEventListener('click', () => duelAskDone(true)); $('duelNameSkip').addEventListener('click', () => duelAskDone(false)); // Challenge a friend: the name, once
+$('duelNameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); duelAskDone(true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); $('duelName').hidden = true; duel.asking = null; duel.sheetAt = performance.now(); } });
 $('newCard').addEventListener('pointerdown', (e) => { if (e.target === $('newCard')) closeNewCard(); });
 $('metaPill').addEventListener('click', () => openPanel('collection'));
 $('dailyBtn').addEventListener('click', openDaily);
@@ -11862,7 +12536,7 @@ function goHome() {
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
+  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; duelEnd(); $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -11889,7 +12563,7 @@ function startGame(m) {
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
-  routeEnter(gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
+  routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
@@ -12191,6 +12865,24 @@ window.__grasp = {
   // the rally + Frenzy: k() the speed factor now, cap(), on(); frenzy.start(how) as the map's button does; result / profile / shareText / share
   rally: { cfg: RALLY, k: (n) => rallyK(n), cap: () => rallyCap(), on: () => rallyOn(), heat: (k) => rallyHeat(k), col: (h) => rallyCol(h), pts: (k) => rallyPtsMul(k), reach: () => rallyReach() },
   frenzy: { get on() { return frenzy.on; }, start: (how) => strikeFrenzy(how || 'mouse'), get result() { return frenzy.result; }, get profile() { return profile.frenzy; }, shareText: () => frenzyShareText(), share: () => shareFrenzy(), get lastShare() { return frenzy.lastShare; } },
+  // the real bosses (Adventure stage 8 / 16 / 24 / 32 / 40): defs, the live boss's state(), enter() (skip the walk-in), attack(kind) (its wind-up now) / fire(kind) (the attack at once),
+  // hit(tier, { weak, perfect, shot }) one hit on its body (or its weak point), ball(tier, x, y, perfect) an outgoing ball meeting it there (the arm, the body or a miss), weak(on), sim(o)
+  boss: { defs: BOSS_DEFS, cfg: RB, dmg: RB_DMG, get b() { return strike.boss && strike.boss.real ? strike.boss : null; }, state: () => rbState(), screen: () => strike.ui.boss, get last() { return strike.lastBoss; },
+    enter() { const b = strike.boss; if (b && b.real) { b.enterAt = performance.now() - RB.enterMs - 1; b.roared = true; rbTick(performance.now(), 16, true); } return !!b; },
+    attack(kind) { const b = strike.boss; if (!b || !b.real) return null; b.atk = null; return rbAttack(b, kind, performance.now()); },
+    fire(kind) { const b = strike.boss; if (!b || !b.real) return null; b.atk = null; rbFire(b, { kind, at: b.clock, fireAt: b.clock }, performance.now()); return rbState(); },
+    hit(tier, o = {}) { const b = strike.boss; if (!b || !b.real) return 0; const G = b.g || rbGeom(b), p = o.weak ? rbWeakPos(b, G) : { x: G.x, y: G.y + G.hh * 0.45 }; return rbHit(b, tier || 'medium', { x: p.x, y: p.y, perf: !!o.perfect }, performance.now(), { perfect: !!o.perfect, shot: !!o.shot }); },
+    ball(tier, x, y, perfect) { const b = strike.boss; if (!b || !b.real) return null; let bl = strike.balls[0]; if (!bl || strike.waiting) { serveBall(performance.now()); bl = strike.balls[0]; }
+      bl.dir = -1; bl.tier = tier || 'medium'; bl.super = bl.tier === 'super'; bl.fire = false; bl.guest = null; bl.perf = !!perfect; bl.passed = false; bl.x = bl.lx = x; bl.y = bl.ly = y; bl.vx = bl.vy = 0; bl.spin = 0; const z0 = b.z - RB.armDz - 20; bl.z = b.z + 1;
+      const hp0 = b.hp, hit = rbBall(b, bl, z0, performance.now()); return { hit, dmg: hp0 - b.hp, dir: bl.dir, passed: !!bl.passed }; },
+    weak(on) { const b = strike.boss; if (!b || !b.real) return null; b.weak.on = !!on; b.weak.at = performance.now(); b.weak.until = b.clock + RB.weakOn; b.weak.next = b.clock + 99999; return rbWeakPos(b); },
+    calm(on = true) { const b = strike.boss; if (b && b.real) { b.calm = !!on; b.atk = null; } return !!b; }, // test-only: it attacks only when told (attack / fire)
+    weakPos: () => strike.boss && strike.boss.real ? rbWeakPos(strike.boss) : null, arm: () => strike.boss && strike.boss.real ? rbArmSegs(strike.boss) : [], sim: rbSim, aimAt: (x, y) => strike.balls[0] ? rbAimAt(strike.balls[0], x, y, performance.now()) : 0 },
+  // Challenge a friend: parse / build a link, the name's sanitizer and base64url, the seed's, the link for the card now (ctx) and its message, share() as the card's button does,
+  // askDone(go) (the name sheet's buttons), result() (WIN / LOSE now), open(search) as /duel?... does; on, link, passed, lastLink / lastText, runSeed
+  duel: { get on() { return duel.on; }, get link() { return duel.link; }, parse: duelParse, build: duelLink, sanitize: duelSanitize, seedEnc: duelSeedEnc, seedDec: duelSeedDec, nameEnc: duelNameEnc, nameDec: duelNameDec,
+    ctx: () => duelCtx(), text: (c) => duelText(c || duelCtx()), share: () => duelShare(), send: (c) => duelSend(c || duelCtx()), askDone: (go) => duelAskDone(go), result: () => duelResultNow(), open: (q, how) => duelOpen(q, how || 'mouse'), end: duelEnd,
+    get passed() { return duel.passed; }, get lastLink() { return duel.lastLink; }, get lastText() { return duel.lastText; }, get asking() { return !$('duelName').hidden; }, get log() { return duel.log; }, get runSeed() { return strike.runSeed; }, score: () => duelScore() },
   adventure: { count: ADV_N, perWorld: ADV_WORLD, lives: ADV_LIVES, plan: advPlan, start: advStart, endless: strikeEndless, playable: advPlayable, economy: ECONOMY.adv, travelMs: ADV_TRAVEL_MS,
     get on() { return adv.on; }, get stage() { return adv.on ? adv.n : null; }, get phase() { return adv.on ? adv.phase : null; }, get result() { return adv.result; }, get lost() { return adv.lost; }, get spawned() { return adv.spawned; }, get world() { return adv.world; },
     get stars() { return { ...profile.adv.stars }; }, get unlocked() { return profile.adv.unlocked; }, get open() { return profile.adv.open.slice(); }, get seen() { return profile.adv.seen.slice(); }, get current() { return advCurrent(); }, get total() { return advStarTotal(); },
@@ -12231,15 +12923,16 @@ window.__grasp = {
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy']; // (frenzy: Strike's Frenzy run)
-const route = { applying: false, log: [] };
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel']; // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
-function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
+function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
 function routeEnter(m) {
   if (route.applying || !ROUTE_MODES.includes(m)) return;
   try { const cur = routeOf(location.pathname); if (cur === m) return;
-    if (cur) history.replaceState({ grasp: m, fromHome: !!(history.state && history.state.fromHome) }, '', '/' + m);
-    else { history.pushState({ grasp: m, fromHome: true }, '', '/' + m); route.log.push('push:' + m); } } catch {}
+    const p = '/' + m + (m === 'duel' ? route.duelQ : '');
+    if (cur) history.replaceState({ grasp: m, fromHome: !!(history.state && history.state.fromHome) }, '', p);
+    else { history.pushState({ grasp: m, fromHome: true }, '', p); route.log.push('push:' + m); } } catch {}
 }
 function routeHome() {
   if (route.applying) return;
@@ -12249,7 +12942,7 @@ function routeHome() {
 }
 function routeOpen(m) { // the start screen's tile for m, as if tapped
   if (mode !== 'none' || physicsError) return false;
-  if (!$('gifts').hidden) closeGifts(); if (m === 'frenzy') { setGameMode('strike'); return strikeFrenzy(inputPref()); } setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
+  if (!$('gifts').hidden) closeGifts(); if (m === 'frenzy') { setGameMode('strike'); return strikeFrenzy(inputPref()); } if (m === 'duel') { route.duelQ = location.search; return duelOpen(location.search, inputPref()); } setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
 }
 window.addEventListener('popstate', () => {
   const want = routeOf(location.pathname), cur = routeNow(); route.log.push('pop:' + (want || '/'));
@@ -12262,7 +12955,7 @@ window.addEventListener('popstate', () => {
 });
 function routeBoot() { // on load: a game's path opens it (no start screen first); anything else stays on the start screen
   const m = routeOf(location.pathname); if (!m) return false;
-  route.applying = true; try { history.replaceState({ grasp: m, fromHome: false }, '', '/' + m); routeOpen(m); } catch {} finally { route.applying = false; }
+  route.applying = true; try { if (m === 'duel') route.duelQ = location.search; history.replaceState({ grasp: m, fromHome: false }, '', '/' + m + (m === 'duel' ? location.search : '')); routeOpen(m); } catch {} finally { route.applying = false; }
   return true;
 }
 window.__grasp.route = { modes: ROUTE_MODES, of: routeOf, get now() { return routeNow(); }, get log() { return route.log; } };

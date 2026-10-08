@@ -200,3 +200,43 @@ understands, and "one more, I can beat 23" is the pull.
   the challenge.
 - Score = hits in a row (the HUD pill counts them), plus the top speed; the best is kept, NEW RECORD! with the record fanfare and the voice, and a
   share line ("Grasp Frenzy ⚡ 34 hits in a row · top speed ×2.4").
+
+## Real bosses (each world's stage 8)
+
+**Ask (parent, for a 13-year-old):** "real boss battles". The old boss was a brick wall with a face that crept forward: one more thing to hit hard.
+
+**What makes a boss fight exciting** (*Zelda* / *Cuphead* / *Punch-Out!!*): a character with a name and an entrance; a health bar that visibly drops; phases
+that change the fight and the look (it gets angry, breaks apart); attacks you read from a wind-up and answer with the right move (deflect, break,
+dodge, knock back); weak points that reward aim; a big payoff when it falls.
+
+**Applied:**
+- *The stage is the fight:* stage 8 / 16 / 24 / 32 / 40 has no walls. The boss walks (the dragon flies) in after the stage banner with a roar, its name drops
+  in, the voice calls it; a health bar with its name in the world's colour sits under the hearts.
+- *Five bosses drawn in code* (glossy cartoon, light from the top-left, ink outlines; 2D in perspective, 3D as a textured plane at its depth): Brick Golem
+  (rocks), Glass Queen (mirror shards, a crystal shield, spinning mirror blades), Steel Robot (rockets, an energy shield, a claw arm, a charge), Jungle King
+  Kong (barrels, chest-drum charge, a swinging log), Lava Dragon (fireballs, tail sweep, flies side to side). Sport themes keep the arena; the boss keeps its look.
+- *Read and answer:* every attack has a wind-up (a '!' and a sound): a slow projectile you slap back (it hurts the boss), a shield only a SUPER or PERFECT
+  hit breaks (the timing skill pays off), mini-walls to break first, a charge a hit knocks back (else a heart), a spinning arm that blocks the balls that
+  meet it (time or aim around it). A glowing weak point takes x3; the aim ring shows where the ball will land.
+- *Phases at 66% / 33%:* a roar, more kinds of attack and shorter gaps; cracks, then missing pieces, sparks and an angry face. The hearts come back at each new
+  phase (a checkpoint, so a long fight stays fair for a careful child); 3 stars still means no heart lost.
+- *Balance, measured with a simulated player* (not guessed): world 1 ~45-65 s for a careful child (who usually survives it), ~30-40 s for a good player;
+  world 5 ~2 minutes for a good player and hard. Boss stages use a calmer ball than their world's stages (the boss is the threat).
+- *Payoff:* an explosion in its colours, its pieces at the camera, slow motion, confetti, "Victory!", the coins by the usual rules, the trip to the next world.
+- *Endless keeps its boss wall* (its suites check exact timings; a real boss there is a later step).
+
+## Challenge a friend
+
+**Ask (parent, for a 13-year-old):** challenge a friend to beat your score on the same layout.
+
+**What works** (*Wordle*'s shared result, *Clash Royale* friendly battles, ghost races in racing games): one tap to send, a link that opens straight into
+the same challenge, the rival's number visible while you play, a clear verdict and a one-tap reply.
+
+**Applied:**
+- *One button* on the stage card (clear or fail), the Frenzy card and the Endless card: "Challenge a friend". The name is asked once (optional) and kept.
+  The share sheet (or the clipboard) gets "I scored 1234 on Grasp stage 12 — can you beat me? 💥" and a short link.
+- *The same run:* an Adventure stage is already seeded by its number; every Endless / Frenzy run now carries its own seed (in the link), so the friend gets the
+  same walls, bricks, power-ups and guests. The daily and the stages keep their seeds. No server: the link is the whole challenge.
+- *While playing:* "Beat 1234 (from Dana)" with a bar and the friend's ghost; passing it: "You passed Dana!" and a cheer.
+- *The verdict:* WIN / LOSE / TIE with both scores above the card, and "Send back" (the same challenge with your score).
+- *Safe links:* every parameter is checked and clamped, a name keeps only letters, digits and a few marks, anything broken is ignored.
