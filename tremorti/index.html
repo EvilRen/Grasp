@@ -189,6 +189,132 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
 .toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,10px); background:var(--bone); color:var(--ink); padding:10px 18px; border-radius:999px; font-weight:500; font-size:15px;
   box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:9; white-space:nowrap; }
 .toast.on{ opacity:1; transform:translate(-50%,0); }
+/* ---- v2: tabs, journal, trends, routine, guidance, quality, spiral, report ---- */
+.iconbtn{ display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; flex:none; border-radius:999px; border:0; background:var(--ink-2); color:var(--bone);
+  box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; padding:0; }
+.iconbtn svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+#muteBtn[aria-pressed="true"] .snd, #muteBtn[aria-pressed="false"] .mut{ display:none; }
+#muteBtn[aria-pressed="true"]{ color:var(--muted); }
+.tabs{ position:sticky; top:0; z-index:5; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; margin:0 0 14px; background:var(--ink-2); border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,.3), inset 0 0 0 1.5px var(--line); }
+.tabs button{ min-height:44px; border:0; border-radius:12px; background:transparent; color:var(--muted); font-weight:500; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 4px; }
+.tabs button svg{ width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.tabs button[aria-selected="true"]{ background:var(--ink); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--saffron); }
+.secondary.accent{ box-shadow:inset 0 0 0 2px var(--saffron); color:var(--saffron); font-weight:700; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.streak{ display:flex; align-items:center; gap:12px; text-align:start; }
+.streak b{ font-size:40px; line-height:1; font-weight:700; color:var(--saffron); font-variant-numeric:tabular-nums; min-width:1.2ch; text-align:center; }
+.st-t{ font-weight:700; font-size:16px; }
+.st-s{ font-size:14px; color:var(--muted); }
+.today-due{ margin:12px 0 0; padding:10px 14px; border-radius:14px; background:var(--warn-bg); color:var(--warn); font-size:15px; }
+.today-due.done{ background:rgba(67,217,163,.12); color:var(--mint); }
+.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chips button{ min-height:40px; padding:0 13px; border-radius:999px; border:0; background:var(--ink); color:var(--bone); font:inherit; font-size:14px; font-weight:500;
+  box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; }
+.chips button[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px var(--saffron); color:var(--saffron); }
+.fgroup{ margin:0 0 10px; text-align:start; }
+.fgroup .k{ font-size:12px; color:var(--muted); margin:0 0 5px; letter-spacing:.04em; text-transform:uppercase; }
+[dir=rtl] .fgroup .k{ text-transform:none; letter-spacing:0; font-size:13px; }
+.flabel{ display:block; font-size:14px; color:var(--muted); margin:12px 0 0; }
+/* heatmap */
+.heat{ display:grid; grid-template-rows:repeat(7,auto); grid-auto-flow:column; grid-auto-columns:1fr; gap:3px; direction:ltr; margin:14px 0 0; }
+.heat i{ display:block; aspect-ratio:1; border-radius:4px; background:var(--field); box-shadow:inset 0 0 0 1px var(--line); }
+.heat i.l1, .heat-leg i.l1{ background:rgba(67,217,163,.35); box-shadow:none; } .heat i.l2, .heat-leg i.l2{ background:rgba(67,217,163,.65); box-shadow:none; }
+.heat i.l3, .heat-leg i.l3{ background:var(--mint); box-shadow:none; }
+.heat i.today{ outline:2px solid var(--saffron); outline-offset:1px; }
+.heat i.future{ visibility:hidden; }
+.heat-leg{ display:flex; align-items:center; justify-content:flex-end; gap:4px; font-size:12px; color:var(--muted); margin:8px 0 0; }
+.heat-leg i{ width:12px; height:12px; border-radius:3px; background:var(--field); box-shadow:inset 0 0 0 1px var(--line); }
+/* journal */
+.jday{ font-size:13px; color:var(--muted); font-weight:700; margin:16px 0 2px; text-align:start; }
+.jday:first-child{ margin-top:4px; }
+.jitem{ width:100%; display:grid; grid-template-columns:52px 1fr auto; gap:0 10px; align-items:center; text-align:start; padding:10px 2px; border:0; border-top:1px solid var(--line);
+  background:none; color:var(--bone); cursor:pointer; min-height:58px; font:inherit; }
+.jitem .tm{ font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; grid-row:span 2; align-self:start; padding-top:3px; }
+.jitem .hz{ font-weight:700; font-size:16px; }
+.jitem .hz.clear{ color:var(--coral); } .jitem .hz.weak{ color:var(--saffron); } .jitem .hz.none{ color:var(--mint); }
+.jitem .sub{ font-size:13px; color:var(--muted); grid-column:2; }
+.jitem .sub .chip{ margin-inline-start:0; margin-inline-end:4px; }
+.jitem .go{ grid-row:span 2; display:flex; align-items:center; gap:8px; }
+.jitem .go svg{ width:16px; height:16px; fill:none; stroke:var(--muted); stroke-width:2; } [dir=rtl] .jitem .go svg{ transform:scaleX(-1); }
+.qdot{ display:inline-block; width:10px; height:10px; border-radius:50%; flex:none; }
+.q-good{ background:var(--mint); } .q-fair{ background:var(--saffron); } .q-low{ background:var(--coral); }
+.toggle{ position:relative; width:56px; height:32px; flex:none; border-radius:999px; border:0; background:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; padding:0; }
+.toggle i{ position:absolute; top:4px; inset-inline-start:4px; width:24px; height:24px; border-radius:50%; background:var(--muted); transition:inset-inline-start .15s, background .15s; }
+.toggle[aria-pressed="true"]{ background:rgba(255,194,75,.2); box-shadow:inset 0 0 0 1.5px var(--saffron); }
+.toggle[aria-pressed="true"] i{ inset-inline-start:28px; background:var(--saffron); }
+.rem-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; text-align:start; }
+.rem-time{ display:flex; align-items:center; gap:8px; margin:8px 0 0; }
+.rem-time .input{ margin:0; flex:1; max-width:160px; }
+/* quality + guidance + steps */
+.quality{ display:flex; align-items:center; gap:12px; margin:14px 0 0; padding:10px 14px; background:var(--ink); border-radius:14px; text-align:start; font-size:14px; }
+.quality .qk{ color:var(--muted); font-size:13px; }
+.quality .qv{ font-weight:700; }
+.qbar{ flex:none; width:56px; height:8px; border-radius:4px; background:var(--field); overflow:hidden; direction:ltr; }
+.qbar i{ display:block; height:100%; border-radius:4px; }
+.qwhy{ font-size:13px; color:var(--muted); margin:2px 0 0; }
+.guide{ display:flex; align-items:center; gap:12px; margin:0 0 12px; padding:10px 12px; border-radius:14px; background:var(--ink); text-align:start; font-size:15px; min-height:64px; }
+.guide p{ margin:0; }
+.guide.warn{ color:var(--warn); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.45); }
+.level{ position:relative; flex:none; width:44px; height:44px; border-radius:50%; box-shadow:inset 0 0 0 1.5px var(--line); }
+.level::after{ content:''; position:absolute; left:50%; top:50%; width:16px; height:16px; margin:-8px; border-radius:50%; box-shadow:inset 0 0 0 1px var(--grid-strong); }
+.level i{ position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; border-radius:50%; background:var(--mint); transition:transform .15s; }
+.guide.warn .level i{ background:var(--saffron); }
+.step{ text-align:start; background:var(--ink); border-radius:14px; padding:12px 14px; margin:0 0 6px; }
+.step-k{ font-size:13px; color:var(--muted); }
+.step-t{ font-size:19px; font-weight:700; line-height:1.25; }
+.step-h{ font-size:15px; margin:4px 0 0; }
+.dots{ display:flex; gap:5px; margin:10px 0 0; direction:ltr; }
+.dots i{ flex:1; height:5px; border-radius:3px; background:var(--line); }
+.dots i.done{ background:var(--mint); } .dots i.cur{ background:var(--saffron); }
+#record.compact .count{ font-size:68px; margin:2px 0 8px; }
+#record.compact .strip{ height:130px; }
+.res-saved{ font-size:13px; color:var(--muted); margin:0 0 10px; }
+/* session summary */
+.sess{ grid-template-columns:1.1fr 1fr 1fr; }
+.cellbtn{ display:flex; flex-direction:column; align-items:center; gap:1px; min-height:58px; justify-content:center; padding:6px 4px; border:0; border-radius:12px; background:var(--ink);
+  color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); cursor:pointer; font:inherit; }
+.cellbtn b{ font-size:18px; font-variant-numeric:tabular-nums; direction:ltr; }
+.cellbtn b.clear{ color:var(--coral); } .cellbtn b.weak{ color:var(--saffron); } .cellbtn b.none{ color:var(--mint); }
+.cellbtn span{ font-size:12px; color:var(--muted); direction:ltr; }
+.cellbtn:disabled{ opacity:.45; cursor:default; }
+.sum{ margin:14px 0 0; padding:0 0 0 18px; text-align:start; font-size:15px; }
+[dir=rtl] .sum{ padding:0 18px 0 0; }
+.sum li + li{ margin-top:6px; }
+.med-sum{ margin:0; font-size:16px; font-weight:500; text-align:start; }
+/* spiral */
+.spcanvas{ width:100%; aspect-ratio:1; display:block; border-radius:16px; background:var(--field); touch-action:none; margin:12px 0 0; -webkit-user-select:none; user-select:none; }
+.spimg{ width:220px; max-width:100%; aspect-ratio:1; border-radius:14px; display:block; margin:12px auto 0; background:var(--field); }
+.spscore{ margin:10px 0 0; }
+.spscore b{ font-size:56px; line-height:1; font-weight:700; direction:ltr; display:inline-block; }
+.spscore b small{ font-size:22px; color:var(--muted); font-weight:400; }
+.spscore span{ display:block; font-weight:700; color:var(--saffron); }
+/* modal */
+.modal{ position:fixed; inset:0; z-index:20; display:flex; align-items:flex-end; justify-content:center; padding:16px; background:rgba(5,8,20,.62); }
+.sheet{ width:100%; max-width:480px; background:var(--ink-2); border-radius:20px; padding:18px 16px; box-shadow:var(--shadow); }
+.sheet p{ margin:0 0 4px; font-size:16px; }
+.danger{ min-height:52px; border:0; border-radius:16px; background:var(--coral); color:#2a0d08; font:inherit; font-weight:700; font-size:16px; cursor:pointer; }
+/* report paper (light, printable) */
+.paper{ background:#fff; color:#1b1d24; border-radius:8px; padding:18px 16px; font-size:12.5px; line-height:1.45; box-shadow:var(--shadow); text-align:start; margin:0 0 14px; overflow-wrap:anywhere; }
+.paper h1{ font-size:19px; color:#111; margin:0 0 2px; }
+.paper h2{ font-size:14px; color:#111; margin:14px 0 4px; }
+.paper p{ margin:0 0 4px; }
+.paper .muted{ color:#5d6070; }
+.paper .meta{ display:flex; flex-wrap:wrap; gap:2px 14px; color:#3b3e4a; margin:4px 0 0; }
+.paper table{ width:100%; border-collapse:collapse; font-size:12px; }
+.paper th, .paper td{ border-bottom:1px solid #e1e1e6; padding:4px 3px; text-align:start; vertical-align:top; }
+.paper th{ color:#5d6070; font-weight:500; }
+.paper td.n{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+.paper img{ width:100%; height:auto; display:block; margin:4px 0; border:1px solid #e6e6ea; border-radius:4px; }
+.paper .nd{ border:1.5px solid #c8402c; background:#fff3f0; padding:8px 10px; border-radius:6px; margin:12px 0 0; }
+.paper .bar{ height:4px; background:#ffc24b; border-radius:2px; margin:0 0 10px; }
+@media print{
+  @page{ size:A4; margin:14mm; }
+  html, body{ background:#fff !important; }
+  .topbar, .tabs, .toast, .modal, .disclaimer, main > section:not(#report), #report > :not(#reportPaper){ display:none !important; }
+  main{ max-width:none; padding:0; }
+  #reportPaper{ box-shadow:none; padding:0; margin:0; font-size:10.5pt; border-radius:0; }
+  #reportPaper img{ break-inside:avoid; }
+}
 @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
 </style>
 </head>
@@ -207,14 +333,25 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
   <symbol id="i-no" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-both" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
   <symbol id="i-one" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M8.5 5.5v13M5.5 8.5v7"/></symbol>
+  <symbol id="i-action" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.5"/><path d="M6 10v10M6 13l5-2.5M14 9h6M17.5 6.5 20 9l-2.5 2.5M11 10.5l3-1.5"/></symbol>
+  <symbol id="i-measure" viewBox="0 0 24 24"><path d="M2.5 12h3l2-5 3.5 11 3-9 2 3h5.5"/></symbol>
+  <symbol id="i-journal" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3.5 19.5h17M5 15l4.5-4.5 3.5 3 6-6.5"/><path d="M15 7h4v4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="i-two" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M8.5 5.5v13M5.5 8.5v7M15.5 5.5v13M18.5 8.5v7"/></symbol>
 </svg>
 <main>
   <div class="topbar">
     <a class="back" href="../" id="backLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="back">Grasp</span></a>
     <div class="brand"><span></span><b data-i18n="title">Tremorti</b></div>
+    <button class="iconbtn" id="muteBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="snd" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="mut" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
     <button class="lang" id="langBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 3.9 6 3.9 9.5s-1.3 6.7-3.9 9.5c-2.6-2.8-3.9-6-3.9-9.5s1.3-6.7 3.9-9.5z"/></svg><span id="langLabel">עב</span></button>
   </div>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="setup" id="tabMeasure"><svg aria-hidden="true"><use href="#i-measure"/></svg><span data-i18n="tabMeasure">Measure</span></button>
+    <button type="button" role="tab" data-tab="journal" id="tabJournal"><svg aria-hidden="true"><use href="#i-journal"/></svg><span data-i18n="tabJournal">Journal</span></button>
+    <button type="button" role="tab" data-tab="trends" id="tabTrends"><svg aria-hidden="true"><use href="#i-trend"/></svg><span data-i18n="tabTrends">Trends</span></button>
+  </nav>
 
   <section id="setup">
     <div class="card">
@@ -222,6 +359,15 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
       <p class="lede" data-i18n="lede">Measures how fast a hand or leg shakes, from your phone's motion sensor or its camera.</p>
     </div>
     <div id="setupError" class="error" role="alert" hidden></div>
+    <div class="card" id="todayCard">
+      <div class="streak"><b id="streakNum">0</b><div><div class="st-t" id="streakTxt"></div><div class="st-s" id="streakSub"></div></div></div>
+      <p class="today-due" id="todayDue" hidden></p>
+      <div class="stack" style="margin-top:14px">
+        <button class="secondary accent" id="routineBtn" type="button" data-i18n="routineBtn">Full check (~3 min)</button>
+        <button class="secondary" id="spiralBtn" type="button" data-i18n="spiralBtn">Spiral drawing test</button>
+      </div>
+      <p class="note" data-i18n="routineNote"></p>
+    </div>
     <div class="card">
       <fieldset>
         <legend data-i18n="measureWith">Measure with</legend>
@@ -243,6 +389,7 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
         <div class="seg" data-key="posture">
           <button type="button" data-v="rest"><svg><use href="#i-rest"/></svg><span data-i18n="segRest">At rest</span></button>
           <button type="button" data-v="hold"><svg><use href="#i-hold"/></svg><span data-i18n="segHold">Held out</span></button>
+          <button type="button" data-v="action"><svg><use href="#i-action"/></svg><span data-i18n="segAction">Moving</span></button>
           <button type="button" data-v="stand"><svg><use href="#i-stand"/></svg><span data-i18n="segStand">Standing</span></button>
         </div>
       </fieldset>
@@ -277,6 +424,15 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
       </fieldset>
     </div>
     <div class="card">
+      <fieldset>
+        <legend data-i18n="lenLbl">Recording length</legend>
+        <div class="seg row" data-key="len">
+          <button type="button" data-v="20"><span data-i18n="len20">20 s</span></button>
+          <button type="button" data-v="30"><span data-i18n="len30">30 s</span></button>
+          <button type="button" data-v="60"><span data-i18n="len60">60 s</span></button>
+        </div>
+        <p class="note" data-i18n="lenNote"></p>
+      </fieldset>
       <div class="howto" id="howto"></div>
       <button class="primary" id="startBtn" type="button" data-i18n="start">Start measuring</button>
       <div class="stack" style="margin-top:10px"><button class="secondary" id="compareBtn" type="button" data-i18n="compare">Compare left and right</button></div>
@@ -286,9 +442,11 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
 
   <section id="record" hidden aria-live="polite">
     <div class="card">
+      <div class="step" id="stepCard" hidden><div class="step-k" id="stepK"></div><div class="step-t" id="stepT"></div><p class="step-h" id="stepH"></p><div class="dots" id="stepDots"></div></div>
       <p class="rec-status" id="recStatus">Get ready</p>
       <p class="rec-side" id="recSide"></p>
       <div class="count" id="count"></div>
+      <div class="guide" id="guide" hidden><div class="level" id="level" aria-hidden="true"><i></i></div><p id="guideTxt"></p></div>
       <canvas class="camview" id="camView" hidden aria-label="Camera view with hand points" data-i18n-aria="ariaCam"></canvas>
       <canvas class="chart strip" id="strip" aria-label="Live movement trace" data-i18n-aria="ariaStrip"></canvas>
       <p class="note" id="recNote"></p>
@@ -302,11 +460,19 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
       <p class="res-freq" id="resFreq"></p>
       <p class="res-sub" id="resSub"></p>
       <p class="res-notes" id="resNotes"></p>
+      <p class="res-saved" id="resSaved" hidden></p>
       <canvas class="chart spectrum" id="spectrum" aria-label="Frequency spectrum of the movement" data-i18n-aria="ariaSpectrum"></canvas>
       <div class="ov-note" id="ovNote" hidden><span id="ovText"></span><button class="chipbtn" id="ovOff" type="button" data-i18n="ovOff">Remove example</button></div>
       <dl class="details" id="resDetails"></dl>
+      <div class="quality" id="resQuality" hidden></div>
       <div class="warn" id="resWarn" hidden></div>
     </div>
+    <div id="tagSlot"><div class="card" id="tagCard" hidden>
+      <h2 data-i18n="tagTitle">Notes and tags</h2>
+      <div class="chips" id="tagChips"></div>
+      <input class="input" id="entryNote" type="text" maxlength="120" autocomplete="off" data-i18n-ph="entryNotePh" placeholder="Note (optional)">
+      <p class="note" data-i18n="tagNote"></p>
+    </div></div>
     <div class="card" id="compareCard" hidden>
       <h2 data-i18n="cmpTitle">Left vs right</h2>
       <div class="cmp" id="cmpGrid"></div>
@@ -341,36 +507,143 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
     <div class="stack">
       <button class="primary" id="againBtn" type="button" data-i18n="again">Measure again</button>
       <button class="secondary" id="setupBtn" type="button" data-i18n="changeSetup">Change setup</button>
+      <button class="secondary" id="resBack" type="button" data-i18n="backBtn" hidden>Back</button>
+      <button class="link" id="resDelete" type="button" data-i18n="delOne" hidden>Delete this measurement</button>
     </div>
   </section>
 
-  <section id="historyWrap" hidden>
+  <section id="session" hidden>
     <div class="card">
-      <h2 data-i18n="trendTitle">Trend over time</h2>
-      <div class="seg row" data-key="trendSide" style="margin-bottom:12px">
-        <button type="button" data-v="both"><svg><use href="#i-both"/></svg><span data-i18n="trendBoth">Both</span></button>
-        <button type="button" data-v="left"><svg><use href="#i-left"/></svg><span data-i18n="segLeft">Left</span></button>
-        <button type="button" data-v="right"><svg><use href="#i-right"/></svg><span data-i18n="segRight">Right</span></button>
+      <h1 data-i18n="sessTitle">Full check</h1>
+      <p class="lede" id="sessLead"></p>
+      <div class="cmp sess" id="sessGrid" style="margin-top:14px"></div>
+      <ul class="sum" id="sessSum"></ul>
+      <div class="safety"><p><strong data-i18n="safety1">Not a diagnosis.</strong> <span data-i18n="safety2"></span></p></div>
+    </div>
+    <div class="stack">
+      <button class="primary" id="sessReport" type="button" data-i18n="reportBtn">Share with doctor</button>
+      <button class="secondary" id="sessDone" type="button" data-i18n="sessDone">Done</button>
+    </div>
+  </section>
+
+  <section id="spiral" hidden>
+    <div id="spDraw">
+      <div class="card">
+        <h1 data-i18n="spTitle">Spiral drawing test</h1>
+        <p class="lede" data-i18n="spLede"></p>
+        <div class="howto" style="margin:12px 0 14px" data-i18n="spHow"></div>
+        <fieldset>
+          <legend data-i18n="spHand">Hand</legend>
+          <div class="seg row" data-key="spSide">
+            <button type="button" data-v="left"><svg><use href="#i-left"/></svg><span data-i18n="segLeft">Left</span></button>
+            <button type="button" data-v="right"><svg><use href="#i-right"/></svg><span data-i18n="segRight">Right</span></button>
+          </div>
+        </fieldset>
+        <canvas class="spcanvas" id="spCanvas" aria-label="Spiral drawing area" data-i18n-aria="spAria"></canvas>
+        <p class="note" id="spMsg"></p>
+        <div class="row2"><button class="secondary" id="spClear" type="button" data-i18n="spClear">Start over</button><button class="primary" id="spDone" type="button" data-i18n="spDone" disabled>Done</button></div>
       </div>
-      <div class="legend" id="trendLegend"><span><i style="background:var(--sky)"></i><span data-i18n="legFreq">Shakes per second (Hz)</span></span><span><i style="background:var(--lilac);height:2px"></i><span data-i18n="legAmp">Size (mm)</span></span></div>
-      <canvas class="chart trend" id="trend" aria-label="Trend of shaking frequency over time" data-i18n-aria="ariaTrend"></canvas>
-      <p class="trend-empty" id="trendEmpty" hidden data-i18n="trendEmpty">At least two measurements with this setup are needed to draw a trend.</p>
-      <p class="trend-info" id="trendInfo"></p>
-      <p class="trend-hint" id="trendHint"></p>
+      <div class="stack"><button class="secondary" id="spCancel" type="button" data-i18n="backBtn">Back</button></div>
+    </div>
+    <div id="spResult" hidden>
+      <div class="card" style="text-align:center">
+        <p class="res-head" data-i18n="spResTitle">Spiral result</p>
+        <p class="res-sub" id="spSub" style="margin-top:8px"></p>
+        <p class="res-saved" id="spSaved"></p>
+        <img class="spimg" id="spImg" alt="">
+        <div class="spscore"><b id="spScore"></b><span id="spScoreLv"></span></div>
+        <p class="note" data-i18n="spScoreNote"></p>
+        <dl class="details" id="spDetails"></dl>
+        <div class="quality" id="spQuality" hidden></div>
+        <div class="warn" id="spWarn" hidden></div>
+        <p class="i-caveat" data-i18n="spNoteAction"></p>
+      </div>
+      <div id="spTagSlot"></div>
+      <div class="stack">
+        <button class="primary" id="spAgain" type="button" data-i18n="spAgain">Draw again</button>
+        <button class="secondary" id="spBack" type="button" data-i18n="backBtn">Back</button>
+        <button class="link" id="spDelete" type="button" data-i18n="delOne">Delete this measurement</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="journal" hidden>
+    <div class="card">
+      <h2 data-i18n="heatTitle">Your tracking</h2>
+      <div class="streak"><b id="jStreakNum">0</b><div><div class="st-t" id="jStreakTxt"></div><div class="st-s" id="jStreakSub"></div></div></div>
+      <div class="heat" id="heat" role="img"></div>
+      <div class="heat-leg" aria-hidden="true"><span data-i18n="heatLess">Less</span><i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><span data-i18n="heatMore">More</span></div>
+    </div>
+    <div class="card" id="remCard">
+      <h2 data-i18n="remTitle">Daily reminder</h2>
+      <div class="rem-row"><span data-i18n="remOn">Remind me every day</span><button class="toggle" id="remToggle" type="button" aria-pressed="false" data-i18n-aria="remOn"><i></i></button></div>
+      <div id="remTimes"></div>
+      <div class="actions" style="justify-content:flex-start"><button class="chipbtn" id="remAdd" type="button" data-i18n="remAdd">Add a time</button></div>
+      <p class="note" id="remNote"></p>
     </div>
     <div class="card">
-      <h2 data-i18n="pastTitle">Past measurements</h2>
-      <ol class="hist" id="histList"></ol>
+      <h2 data-i18n="jTitle">Measurements</h2>
+      <p class="trend-empty" id="jEmpty" hidden data-i18n="jEmpty"></p>
+      <div id="jList"></div>
+      <div class="stack" id="jMoreWrap" hidden><button class="secondary" id="jMore" type="button" data-i18n="showMore">Show more</button></div>
       <div class="actions">
-        <button class="chipbtn" id="exportBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M5 17v3h14v-3"/></svg><span data-i18n="export">Export CSV</span></button>
-        <button class="link" id="clearHist" type="button" data-i18n="clearHist">Clear history</button>
+        <button class="chipbtn" id="exportJson" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M5 17v3h14v-3"/></svg><span data-i18n="exportJson">Export backup</span></button>
+        <button class="chipbtn" id="importJson" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 17v3h14v-3"/></svg><span data-i18n="importJson">Import backup</span></button>
+        <button class="chipbtn" id="exportBtn" type="button"><span data-i18n="export">Export CSV</span></button>
+      </div>
+      <div class="actions"><button class="link" id="clearHist" type="button" data-i18n="delAll">Delete all</button></div>
+      <p class="note" id="storageNote" style="text-align:center"></p>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+    <button class="primary" id="reportBtn2" type="button" data-i18n="reportBtn">Share with doctor</button>
+  </section>
+
+  <section id="trends" hidden>
+    <div class="card">
+      <h2 data-i18n="trTitle">Trends</h2>
+      <div class="fgroup"><div class="k" data-i18n="fLimb">Body part</div><div class="chips" data-f="limb">
+        <button type="button" data-v="all" data-i18n="fAll">All</button><button type="button" data-v="hand" data-i18n="segHand">Hand</button><button type="button" data-v="leg" data-i18n="segLeg">Leg</button></div></div>
+      <div class="fgroup"><div class="k" data-i18n="fCond">Condition</div><div class="chips" data-f="cond">
+        <button type="button" data-v="all" data-i18n="fAll">All</button><button type="button" data-v="rest" data-i18n="segRest">At rest</button><button type="button" data-v="hold" data-i18n="segHold">Held out</button>
+        <button type="button" data-v="action" data-i18n="segAction">Moving</button><button type="button" data-v="stand" data-i18n="segStand">Standing</button><button type="button" data-v="spiral" data-i18n="condSpiral">Spiral</button></div></div>
+      <div class="fgroup"><div class="k" data-i18n="side">Side</div><div class="chips" data-f="side">
+        <button type="button" data-v="both" data-i18n="trendBoth">Both</button><button type="button" data-v="left" data-i18n="segLeft">Left</button><button type="button" data-v="right" data-i18n="segRight">Right</button></div></div>
+      <div class="fgroup"><div class="k" data-i18n="fRange">Period</div><div class="chips" data-f="range">
+        <button type="button" data-v="30" data-i18n="r30">30 days</button><button type="button" data-v="90" data-i18n="r90">90 days</button><button type="button" data-v="all" data-i18n="fAll">All</button></div></div>
+      <div class="legend" id="trendLegend"><span><i style="background:var(--sky);height:8px;width:8px;border-radius:50%"></i><span data-i18n="legDots">Measurement</span></span><span><i style="background:var(--sky)"></i><span data-i18n="legMed">Rolling median</span></span></div>
+      <canvas class="chart trend" id="trend" aria-label="Trend of shaking rate and size over time" data-i18n-aria="ariaTrend"></canvas>
+      <p class="trend-empty" id="trendEmpty" hidden data-i18n="trEmpty"></p>
+      <p class="trend-info" id="trendInfo"></p>
+    </div>
+    <div class="card" id="lrCard"><h2 data-i18n="lrTitle">Left vs right</h2><div class="cmp" id="lrGrid"></div><p class="cmp-diff" id="lrTxt"></p></div>
+    <div class="card" id="medCard"><h2 data-i18n="medTitle">Before and after medication</h2><p class="med-sum" id="medTxt"></p><p class="note" id="medSub"></p></div>
+    <button class="primary" id="reportBtn" type="button" data-i18n="reportBtn">Share with doctor</button>
+  </section>
+
+  <section id="report" hidden>
+    <div class="card" id="reportForm">
+      <h1 data-i18n="rpTitle">Report for the doctor</h1>
+      <p class="lede" data-i18n="rpNote"></p>
+      <label class="flabel" for="rpName" data-i18n="rpName">Name (optional)</label>
+      <input class="input" id="rpName" type="text" maxlength="60" autocomplete="off">
+      <label class="flabel" for="rpAge" data-i18n="rpAge">Age (optional)</label>
+      <input class="input" id="rpAge" type="number" inputmode="numeric" min="1" max="120" autocomplete="off">
+      <div class="fgroup" style="margin-top:14px"><div class="k" data-i18n="fRange">Period</div><div class="chips" data-f="rpRange">
+        <button type="button" data-v="30" data-i18n="r30">30 days</button><button type="button" data-v="90" data-i18n="r90">90 days</button><button type="button" data-v="all" data-i18n="fAll">All</button></div></div>
+      <div class="stack">
+        <button class="primary" id="rpPrint" type="button" data-i18n="rpPrint">Print / save as PDF</button>
+        <button class="secondary" id="rpImage" type="button" data-i18n="rpImage">Share as image</button>
+        <button class="link" id="rpBack" type="button" data-i18n="backBtn">Back</button>
       </div>
     </div>
+    <div class="paper" id="reportPaper"></div>
   </section>
 
   <p class="disclaimer" data-i18n="disclaimer">Not a medical device. The numbers are for comparing the same person over time with the same setup, not for diagnosis.</p>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal" id="confirm" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTxt"><div class="sheet"><p id="confirmTxt"></p>
+  <div class="row2"><button class="secondary" id="confirmNo" type="button" data-i18n="cancel">Cancel</button><button class="danger" id="confirmYes" type="button" data-i18n="del">Delete</button></div></div></div>
 
 <script>
 /* ============================================================
@@ -378,12 +651,22 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
    ============================================================ */
 const CONFIG = {
   COUNTDOWN_S: { motion: 5, camera: 3 }, // time to strap the phone on / get the hand in frame
-  RECORD_S: 20,
+  RECORD_S: 20,          // default length; the setup's 20 / 30 / 60 s choice is used
+  RECORD_OVERRIDE_S: 0,  // tests: force a short recording (0 = off)
   COMPARE_GAP_S: 6,      // pause between the left and the right measurement (switch hands)
   START_DELAY_MS: 350,   // skip the moment of the start beep
-  BAND_LO: 3,            // Hz: slower movement than this is posture drift, not tremor
+  BAND_LO: 1.5,          // Hz: bottom of the analysed band (slower = drifting, not tremor)
+  BAND_LO_ACTION: 2.5,   // Hz: finger-to-nose itself moves at ~0.5-1.5 Hz, so its band starts higher
   BAND_HI: 20,           // Hz: upper end of the search (capped by what the sample rate can see)
-  SEG_S: 4,              // Welch segment length in seconds (sets frequency resolution)
+  HP_HZ: 0.8,            // high-pass (zero-phase Butterworth): removes gravity / tilt and slow drift
+  HP_HZ_ACTION: 1.5,
+  DRIFT_HZ: 3,           // a peak below this must stand out from its surroundings ...
+  DRIFT_PROM: 2.5,       // ... by this factor (prominence), or it is treated as drift
+  ROUTINE_REC_S: 20, ROUTINE_PREP_S: 6, ROUTINE_SWITCH_S: 10, ROUTINE_FIRST_S: 8,
+  PAIR_WINDOW_H: 6,      // before / after medication: the "after" must follow the "before" within this
+  JOURNAL_MAX: 1000, JOURNAL_BYTES: 1500000, // localStorage is shared with the Grasp game on this origin
+  SPEC_STEP: 0.2,        // Hz: journal spectra are kept at this step (max-pooled)
+  SPIRAL_TURNS: 3, SPIRAL_MIN_TURNS: 2,
   STRONG_RATIO: 8,       // peak power / median power in the band for "clear rhythm"
   WEAK_RATIO: 3,         // ...for "weak rhythm"
   STILL_ACCEL: 0.015,    // m/s² RMS below this = the phone barely moved
@@ -394,7 +677,26 @@ const CONFIG = {
 };
 
 const $ = (id) => document.getElementById(id);
-const state = { sensor: 'motion', limb: 'hand', posture: 'rest', trendSide: 'both' };
+const state = { sensor: 'motion', limb: 'hand', posture: 'rest', trendSide: 'both', len: '20', spSide: 'right' };
+/* settings: { mute, len, rem: { on, times[] }, remLast, name, tf } - validated on load */
+const SKEY = 'tremor.settings.v1';
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+function loadSettings() {
+  let o = {}; try { o = JSON.parse(localStorage.getItem(SKEY) || '{}') || {}; } catch {}
+  const r = o.rem && typeof o.rem === 'object' ? o.rem : {}, tf = o.tf && typeof o.tf === 'object' ? o.tf : {};
+  const pick = (v, ok, d) => (ok.includes(v) ? v : d);
+  return { mute: o.mute === true, len: pick(String(o.len), ['20', '30', '60'], '20'),
+    rem: { on: r.on === true, times: (Array.isArray(r.times) ? r.times : ['09:00']).filter((x) => TIME_RE.test(x)).slice(0, 3) },
+    remLast: typeof o.remLast === 'string' ? o.remLast.slice(0, 20) : '', name: typeof o.name === 'string' ? o.name.slice(0, 60) : '',
+    tf: { limb: pick(tf.limb, ['all', 'hand', 'leg'], 'all'), cond: pick(tf.cond, ['all', 'rest', 'hold', 'action', 'stand', 'spiral'], 'all'),
+      side: pick(tf.side, ['both', 'left', 'right'], 'both'), range: pick(tf.range, ['30', '90', 'all'], '90'), rpRange: pick(tf.rpRange, ['30', '90', 'all'], '30') } };
+}
+const settings = loadSettings();
+if (!settings.rem.times.length) settings.rem.times = ['09:00'];
+state.len = settings.len;
+function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch {} }
+let nowOverride = 0; // tests: a fixed "now"
+const nowMs = () => nowOverride || Date.now();
 const NKEY = 'tremor.notes.v1';
 const notes = Object.assign({ side: '', sides: '', med: '', medText: '', note: '', age: '' }, (() => { try { return JSON.parse(localStorage.getItem(NKEY) || '{}'); } catch { return {}; } })());
 function saveNotes() { try { localStorage.setItem(NKEY, JSON.stringify(notes)); } catch {} }
@@ -632,6 +934,185 @@ const I18N = {
     },
   },
 };
+/* ---- v2 strings ---- */
+Object.assign(I18N.en, {
+  tabMeasure: 'Measure', tabJournal: 'Journal', tabTrends: 'Trends', mute: 'Mute sound and voice', unmute: 'Turn sound and voice on',
+  segAction: 'Moving', lenLbl: 'Recording length', len20: '20 s', len30: '30 s', len60: '60 s', lenNote: 'Longer recordings give a finer, steadier reading.',
+  routineBtn: 'Full check (~3 min)', spiralBtn: 'Spiral drawing test',
+  routineNote: 'Full check: at rest, arms held out and finger-to-nose, both hands, with spoken steps. Hold the phone in your hand.',
+  streakN: '{n} days in a row', streak1: 'Measured today or yesterday: a good start', streak0: 'Every measurement adds to the picture. Start when it suits you.',
+  daysOf: 'Measured on {n} of the last 14 days', daysOf0: 'Your measurements are kept on this phone.',
+  todayDone: "Today's check is done. Nice work.", todayDue: "Time for today's check (about 3 minutes).",
+  stepOf: 'Step {i} of {n}', handL: 'Left hand', handR: 'Right hand',
+  stepName: { rest: 'At rest', hold: 'Arm held out', action: 'Finger to nose' },
+  stepHow: { rest: 'Hold the phone loosely. Rest your forearm on a table or your thigh and let the hand relax completely.',
+    hold: 'Hold the phone and stretch your arm straight out in front of you, palm down.',
+    action: "Hold the phone and slowly move your hand from your nose to arm's length and back, again and again." },
+  stepSwitch: 'Switch hands: hold the phone in your right hand.', sayRecording: 'Recording.', routineDone: 'Full check done. Well done.',
+  sessTitle: 'Full check', sessLead: '{date} · {n} of 6 steps', sessDone: 'Done', sessCell: '{f} Hz', sessCellMm: '≈ {mm} mm',
+  sumLargest: 'Largest shaking: {where}, {f} Hz, ≈ {mm} mm.', sumWhere: '{hand}, {step}',
+  sumRestMore: 'The shaking was larger at rest than with the arm held out.', sumHoldMore: 'The shaking was larger with the arm held out than at rest.',
+  sumRestHoldSame: 'About the same size at rest and with the arm held out.', sumActMore: 'It was larger during finger-to-nose than with the arm held out.',
+  sumLR: '{side} shook more: about {x}× the other.', sumLRSame: 'Both hands were similar in size.',
+  sumPattern: 'Overall pattern resembles: {name} ({lvl}). A pattern, not a diagnosis.', sumNone: 'No clear rhythm in any step.',
+  sumLowQ: '{n} step(s) had low quality: consider repeating the check.',
+  gWait: 'Waiting for the motion sensor…', gTable: 'The phone seems to be lying still on a surface. Hold it in your hand (or strap it to the leg).',
+  gMoving: 'Big movements: settle into position and stay there.', gTilt: 'Keep the phone at the same angle.',
+  gRest: 'Rest your forearm on a table or your thigh and let the hand go loose.', gFlatHold: 'Tip: hold the phone flat, screen up, with your arm straight out.',
+  gOk: 'Good: steady position.', gOkAction: 'Good: keep moving slowly between nose and arm\'s length.', gHand: 'Hand not in view.', gCloser: 'Move your hand a little closer to the camera.',
+  gFarther: 'Move your hand a little farther from the camera.', gCenter: 'Move your hand to the middle of the picture.',
+  dQuality: 'Measurement quality', qVal: '{s}/100 · {lvl}', qLv: { good: 'good', fair: 'fair', low: 'low' },
+  qAdviceLow: 'Low quality: please repeat this measurement.', qAdviceFair: 'Fair quality: usable, a repeat would make it firmer.',
+  qWhy: 'Why: {r}.', qR: { snr: 'the rhythm barely stands out from the background', drop: 'the sensor stopped sending data for part of the time',
+    jit: 'the sensor timing was uneven', art: 'sudden movements or bumps during the recording', rate: 'the sample rate is low',
+    hand: 'the hand was often lost', still: 'almost no movement reached the sensor', short: 'the recording was short' },
+  wDrift: 'Most of the movement was slow drifting (below about 3 Hz) rather than a steady rhythm, so it is not counted as tremor. Rest the forearm and measure again.',
+  wDriftSkip: 'Slow drifting movement was set aside; the rhythm at {f} Hz stands out above it.',
+  tagTitle: 'Notes and tags', tagNote: 'Saved in your journal on this phone. Tags help comparisons, e.g. before and after medication.', entryNotePh: 'Note (optional)',
+  tags: { beforeMed: 'before meds', afterMed: 'after meds', coffee: 'after coffee', tired: 'tired', stress: 'stress', exercise: 'after exercise', goodDay: 'good day' },
+  savedOn: 'Saved in your journal · {date}', delOne: 'Delete this measurement', delOneQ: "Delete this measurement from the journal? This can't be undone.",
+  del: 'Delete', deleted: 'Deleted', backBtn: 'Back',
+  heatTitle: 'Your tracking', heatLess: 'Less', heatMore: 'More', heatAria: '{n} measurements over the last 12 weeks',
+  remTitle: 'Daily reminder', remOn: 'Remind me every day', remAdd: 'Add a time', remRemove: 'Remove', remTimeAria: 'Reminder time',
+  remNoteOk: "Reminders show while Tremorti is open or in a background tab. You'll also see today's check on the Measure tab.",
+  remNoteDenied: "Notifications are blocked for this site, so the reminder shows on the Measure tab when you open Tremorti.",
+  remNoteNoApi: "This browser can't show notifications, so the reminder shows on the Measure tab when you open Tremorti.",
+  remNoteOff: "Pick a time that suits you. A short daily check makes changes easier to see.", remNext: 'Next reminder: {when}.',
+  notifTitle: "Tremorti: today's check", notifBody: 'A 3-minute check, whenever it suits you.',
+  jTitle: 'Measurements', jEmpty: 'No measurements yet. They are saved here, on this phone only.', today: 'Today', yesterday: 'Yesterday',
+  sessionItem: 'Full check · {n} steps', spiralItem: 'Spiral · score {s}/10', lowQ: 'low quality', showMore: 'Show more',
+  exportJson: 'Export backup', importJson: 'Import backup', delAll: 'Delete all',
+  delAllQ: 'Delete all {n} measurements from this phone? Export a backup first if you want to keep them.',
+  imported: 'Imported {n} measurements ({d} already there)', importBad: "This file isn't a Tremorti backup.", storageNote: 'Kept only on this phone, up to {max} measurements.',
+  trTitle: 'Trends', fLimb: 'Body part', fCond: 'Condition', fRange: 'Period', fAll: 'All', r30: '30 days', r90: '90 days', condSpiral: 'Spiral',
+  legDots: 'Measurement', legMed: 'Rolling median', trEmpty: 'At least two measurements matching these filters are needed to draw a trend.',
+  lrTitle: 'Left vs right', lrNone: 'Measure both sides (or use Compare left and right) to see this.',
+  lrMore: 'The {side} side: size about {x}× the other side (medians of {a} left and {b} right measurements).', lrSame: 'Both sides were similar in size (medians of {a} left and {b} right measurements).',
+  stepLow: { rest: 'at rest', hold: 'arm held out', action: 'finger to nose' }, rpTrendFor: 'Trend: {setup}', open: 'Open',
+  lrN: 'n = {n}',
+  medTitle: 'Before and after medication',
+  medNone: "Tag a measurement 'before meds' and a later one 'after meds' within {h} hours (or use Medication taken: No / Yes) to compare.",
+  medSmaller: 'After medication your tremor size was on average {p}% smaller in {n} paired measurements.',
+  medLarger: 'After medication your tremor size was on average {p}% larger in {n} paired measurements.',
+  medSame: 'After medication your tremor size was about the same (within 10%) in {n} paired measurements.',
+  medRate: 'Rate: {a} Hz before, {b} Hz after (averages).', medFew: 'Only a few pairs, so treat this with care.',
+  medCaveat: 'A pattern in your own measurements, not proof of how well a medicine works.',
+  reportBtn: 'Share with doctor', rpTitle: 'Report for the doctor', rpNote: 'A one-page summary. It stays on this phone until you print or share it.',
+  rpName: 'Name (optional)', rpAge: 'Age (optional)', rpPrint: 'Print / save as PDF', rpImage: 'Share as image', rpShared: 'Report image ready', rpSaved: 'Report image saved',
+  rpHead: 'Tremor measurements', rpPatient: 'Name: {v}', rpAgeV: 'Age: {v}', rpPeriod: 'Period: {a} – {b}', rpCount: '{n} measurements', rpCountSp: '{n} measurements, {s} spiral drawings',
+  rpMade: 'Made {date} with Tremorti (phone motion sensor, camera or touch screen).', rpTable: 'Median values by condition and side',
+  rpCond: 'Condition', rpSide: 'Side', rpN: 'n', rpHz: 'Rate (Hz)', rpMM: 'Size (mm)', rpSideNone: 'not set', rpTrend: 'Trend (rate and size)',
+  rpMed: 'Before / after medication', rpLR: 'Left vs right', rpSpec: 'Latest spectrum: {date}, {setup}', rpPattern: 'Pattern match (latest reading with a rhythm)',
+  rpResembles: '{f} Hz, {setup}: resembles {list}.', rpNoPattern: 'No reading with a clear rhythm in this period.',
+  rpSpiral: 'Spiral drawings', rpSpiralV: '{n} drawing(s); latest {date}: score {s}/10, {f}, ≈ {mm} mm.', rpQuality: '{n} low-quality measurement(s) included.',
+  rpNotDx: 'Not a diagnosis. Phone measurements for following changes over time; sizes are approximate and depend on how the phone was held. Please interpret together with a clinical examination.',
+  rpEmpty: 'No measurements in this period.', rpTrendNone: 'Fewer than two measurements: no trend.',
+  spTitle: 'Spiral drawing test', spLede: 'A standard drawing task: trace the spiral from the centre outward without lifting your finger.',
+  spHow: "Lay the phone flat on a table. With the hand you want to test, start at the dot in the middle and trace the spiral outward at a steady speed. Don't rest your hand on the screen.",
+  spHand: 'Hand', spClear: 'Start over', spDone: 'Done', spKeep: 'Keep going: trace at least 2 turns.', spReady: 'Lift your finger at the end, then tap Done.',
+  spAria: 'Spiral drawing area', spResTitle: 'Spiral result', spScoreNote: '0 = a smooth line; higher = more shaking in the line. Approximate, for comparing your own drawings over time.',
+  spLv: ['smooth', 'slightly shaky', 'shaky', 'very shaky'], spRate: 'Rhythm in the line', spRateV: '{f} Hz ({s})', spNoRhythm: 'no clear rhythm',
+  spSize: 'Size of the wobble', spSizeV: '≈ {mm} mm back and forth (approximate)', spTurns: 'Turns drawn', spTime: 'Drawing time', spTimeV: '{d} s',
+  spAgain: 'Draw again', spTooShort: 'The drawing was too short: trace at least 2 turns, then tap Done.',
+  spNoteAction: 'Drawing is an action task: a rhythm here is more typical of action tremors (for example essential tremor) than of rest tremor. Not a diagnosis.',
+  spSub: 'Spiral drawing, {side} hand', kindSpiral: 'Spiral drawing',
+});
+Object.assign(I18N.en.label.posture, { action: 'moving', spiral: 'spiral' });
+Object.assign(I18N.en.label.sensor, { touch: 'touch screen' });
+Object.assign(I18N.en.misPosture, { action: 'less typical during movement' });
+Object.assign(I18N.en.howto, {
+  'motion-hand-action': ['Hold the phone in your hand.', "Slowly move the hand from your nose to arm's length and back, again and again."],
+  'camera-hand-action': ['Stand the phone up facing you, about 50 cm away.', 'Point with your index finger and slowly move it from your nose toward the camera and back, keeping the hand in view.'],
+});
+Object.assign(I18N.he, {
+  tabMeasure: 'מדידה', tabJournal: 'יומן', tabTrends: 'מגמות', mute: 'השתקת צליל וקול', unmute: 'הפעלת צליל וקול',
+  segAction: 'בתנועה', lenLbl: 'משך ההקלטה', len20: '20 שנ׳', len30: '30 שנ׳', len60: '60 שנ׳', lenNote: 'הקלטה ארוכה יותר נותנת מדידה מדויקת ויציבה יותר.',
+  routineBtn: 'בדיקה מלאה (כ־3 דק׳)', spiralBtn: 'מבחן ציור ספירלה',
+  routineNote: 'בדיקה מלאה: במנוחה, ידיים מושטות ואצבע לאף, בשתי הידיים, עם הנחיות קוליות. מחזיקים את הטלפון ביד.',
+  streakN: '{n} ימים ברצף', streak1: 'נמדד היום או אתמול: התחלה טובה', streak0: 'כל מדידה מוסיפה לתמונה. מתחילים מתי שנוח.',
+  daysOf: 'נמדד ב־{n} מתוך 14 הימים האחרונים', daysOf0: 'המדידות נשמרות בטלפון הזה.',
+  todayDone: 'הבדיקה של היום בוצעה. כל הכבוד.', todayDue: 'הגיע הזמן לבדיקה של היום (כ־3 דקות).',
+  stepOf: 'שלב {i} מתוך {n}', handL: 'יד שמאל', handR: 'יד ימין',
+  stepName: { rest: 'במנוחה', hold: 'יד מושטת', action: 'אצבע לאף' },
+  stepHow: { rest: 'מחזיקים את הטלפון באחיזה רפויה. מניחים את האמה על שולחן או על הירך ומרפים את היד לגמרי.',
+    hold: 'מחזיקים את הטלפון ומושיטים את היד ישר קדימה, כף היד כלפי מטה.',
+    action: 'מחזיקים את הטלפון ומזיזים לאט את היד מהאף למרחק יד מושטת וחזרה, שוב ושוב.' },
+  stepSwitch: 'מחליפים ידיים: מחזיקים את הטלפון ביד ימין.', sayRecording: 'מקליטים.', routineDone: 'הבדיקה המלאה הסתיימה. כל הכבוד.',
+  sessTitle: 'בדיקה מלאה', sessLead: '{date} · {n} מתוך 6 שלבים', sessDone: 'סיום', sessCell: '[{f} Hz]', sessCellMm: '≈ {mm} מ״מ',
+  sumLargest: 'הרעד הגדול ביותר: {where}, [{f} Hz], ≈ {mm} מ״מ.', sumWhere: '{hand}, {step}',
+  sumRestMore: 'הרעד היה גדול יותר במנוחה מאשר ביד מושטת.', sumHoldMore: 'הרעד היה גדול יותר ביד מושטת מאשר במנוחה.',
+  sumRestHoldSame: 'גודל דומה במנוחה וביד מושטת.', sumActMore: 'הרעד היה גדול יותר בתנועת אצבע לאף מאשר ביד מושטת.',
+  sumLR: '{side} רעדה יותר: בערך פי {x} מהשנייה.', sumLRSame: 'שתי הידיים היו דומות בגודל הרעד.',
+  sumPattern: 'הדפוס הכללי דומה ל: {name} ({lvl}). דפוס, לא אבחון.', sumNone: 'לא נמצא קצב ברור באף שלב.',
+  sumLowQ: 'ב־{n} שלבים האיכות הייתה נמוכה: כדאי לחזור על הבדיקה.',
+  gWait: 'מחכים לחיישן התנועה…', gTable: 'נראה שהטלפון מונח ללא תנועה על משטח. מחזיקים אותו ביד (או קושרים לרגל).',
+  gMoving: 'תנועות גדולות: מתמקמים בתנוחה ונשארים בה.', gTilt: 'שומרים על הטלפון באותה זווית.',
+  gRest: 'מניחים את האמה על שולחן או על הירך ומרפים את היד.', gFlatHold: 'טיפ: מחזיקים את הטלפון שטוח, המסך למעלה, והיד מושטת ישר.',
+  gOk: 'מצוין: תנוחה יציבה.', gOkAction: 'מצוין: ממשיכים לנוע לאט בין האף למרחק יד.', gHand: 'היד לא בתמונה.', gCloser: 'מקרבים מעט את היד למצלמה.',
+  gFarther: 'מרחיקים מעט את היד מהמצלמה.', gCenter: 'מזיזים את היד לאמצע התמונה.',
+  dQuality: 'איכות המדידה', qVal: '{s}/100 · {lvl}', qLv: { good: 'טובה', fair: 'בינונית', low: 'נמוכה' },
+  qAdviceLow: 'איכות נמוכה: כדאי לחזור על המדידה.', qAdviceFair: 'איכות בינונית: אפשר להשתמש, מדידה חוזרת תחזק את התוצאה.',
+  qWhy: 'הסיבה: {r}.', qR: { snr: 'הקצב כמעט לא בולט מעל הרקע', drop: 'החיישן הפסיק לשלוח נתונים לחלק מהזמן',
+    jit: 'התזמון של החיישן לא היה אחיד', art: 'תנועות פתאומיות או מכות במהלך ההקלטה', rate: 'קצב הדגימה נמוך',
+    hand: 'היד לא זוהתה הרבה פעמים', still: 'כמעט לא הגיעה תנועה לחיישן', short: 'ההקלטה הייתה קצרה' },
+  wDrift: 'רוב התנועה הייתה סחיפה איטית (מתחת לכ־[3 Hz]) ולא קצב קבוע, ולכן היא לא נספרת כרעד. מניחים את האמה ומודדים שוב.',
+  wDriftSkip: 'תנועת סחיפה איטית הוצאה מהחישוב; הקצב של [{f} Hz] בולט מעליה.',
+  tagTitle: 'הערות ותגיות', tagNote: 'נשמר ביומן בטלפון הזה. תגיות עוזרות להשוות, למשל לפני ואחרי תרופה.', entryNotePh: 'הערה (לא חובה)',
+  tags: { beforeMed: 'לפני תרופה', afterMed: 'אחרי תרופה', coffee: 'אחרי קפה', tired: 'עייפות', stress: 'לחץ', exercise: 'אחרי פעילות גופנית', goodDay: 'יום טוב' },
+  savedOn: 'נשמר ביומן · {date}', delOne: 'מחיקת המדידה', delOneQ: 'למחוק את המדידה מהיומן? אי אפשר לבטל את זה.',
+  del: 'מחיקה', deleted: 'נמחק', backBtn: 'חזרה',
+  heatTitle: 'המעקב שלכם', heatLess: 'פחות', heatMore: 'יותר', heatAria: '{n} מדידות ב־12 השבועות האחרונים',
+  remTitle: 'תזכורת יומית', remOn: 'להזכיר לי כל יום', remAdd: 'הוספת שעה', remRemove: 'הסרה', remTimeAria: 'שעת התזכורת',
+  remNoteOk: 'התזכורות מופיעות כשטרימורטי פתוח או בלשונית ברקע. הבדיקה של היום תופיע גם בלשונית המדידה.',
+  remNoteDenied: 'ההתראות חסומות לאתר הזה, ולכן התזכורת תופיע בלשונית המדידה כשפותחים את טרימורטי.',
+  remNoteNoApi: 'הדפדפן הזה לא יכול להציג התראות, ולכן התזכורת תופיע בלשונית המדידה כשפותחים את טרימורטי.',
+  remNoteOff: 'בוחרים שעה נוחה. בדיקה יומית קצרה עוזרת לראות שינויים.', remNext: 'התזכורת הבאה: {when}.',
+  notifTitle: 'טרימורטי: הבדיקה של היום', notifBody: 'בדיקה של 3 דקות, מתי שנוח.',
+  jTitle: 'מדידות', jEmpty: 'עדיין אין מדידות. הן נשמרות כאן, רק בטלפון הזה.', today: 'היום', yesterday: 'אתמול',
+  sessionItem: 'בדיקה מלאה · {n} שלבים', spiralItem: 'ספירלה · ציון {s}/10', lowQ: 'איכות נמוכה', showMore: 'להציג עוד',
+  exportJson: 'ייצוא גיבוי', importJson: 'ייבוא גיבוי', delAll: 'מחיקת הכול',
+  delAllQ: 'למחוק את כל {n} המדידות מהטלפון? כדאי לייצא גיבוי קודם אם רוצים לשמור אותן.',
+  imported: 'יובאו {n} מדידות ({d} כבר היו)', importBad: 'הקובץ הזה אינו גיבוי של טרימורטי.', storageNote: 'נשמר רק בטלפון הזה, עד {max} מדידות.',
+  trTitle: 'מגמות', fLimb: 'איבר', fCond: 'מצב', fRange: 'תקופה', fAll: 'הכול', r30: '30 יום', r90: '90 יום', condSpiral: 'ספירלה',
+  legDots: 'מדידה', legMed: 'חציון נע', trEmpty: 'כדי לצייר מגמה צריך לפחות שתי מדידות שמתאימות לסינון.',
+  lrTitle: 'שמאל מול ימין', lrNone: 'מודדים את שני הצדדים (או משתמשים בהשוואה בין שמאל לימין) כדי לראות את זה.',
+  lrMore: 'צד {side}: הרעד גדול בערך פי {x} מהצד השני (חציון של {a} מדידות בשמאל ו־{b} בימין).', lrSame: 'שני הצדדים היו דומים בגודל (חציון של {a} מדידות בשמאל ו־{b} בימין).',
+  stepLow: { rest: 'במנוחה', hold: 'יד מושטת', action: 'אצבע לאף' }, rpTrendFor: 'מגמה: {setup}', open: 'פתיחה',
+  lrN: 'n = {n}',
+  medTitle: 'לפני ואחרי תרופה',
+  medNone: 'מתייגים מדידה "לפני תרופה" ומדידה מאוחרת יותר "אחרי תרופה" בתוך {h} שעות (או משתמשים ב"נלקחה תרופה: לא / כן") כדי להשוות.',
+  medSmaller: 'אחרי התרופה גודל הרעד היה קטן בממוצע ב־{p}% ב־{n} מדידות מזווגות.',
+  medLarger: 'אחרי התרופה גודל הרעד היה גדול בממוצע ב־{p}% ב־{n} מדידות מזווגות.',
+  medSame: 'אחרי התרופה גודל הרעד היה בערך אותו דבר (בטווח של 10%) ב־{n} מדידות מזווגות.',
+  medRate: 'קצב: [{a} Hz] לפני, [{b} Hz] אחרי (ממוצעים).', medFew: 'יש רק מעט זוגות, ולכן כדאי להתייחס לזה בזהירות.',
+  medCaveat: 'זה דפוס במדידות שלכם, לא הוכחה ליעילות של תרופה.',
+  reportBtn: 'שיתוף עם הרופא', rpTitle: 'דוח לרופא', rpNote: 'סיכום בעמוד אחד. הוא נשאר בטלפון עד שמדפיסים או משתפים אותו.',
+  rpName: 'שם (לא חובה)', rpAge: 'גיל (לא חובה)', rpPrint: 'הדפסה / שמירה כ־PDF', rpImage: 'שיתוף כתמונה', rpShared: 'תמונת הדוח מוכנה', rpSaved: 'תמונת הדוח נשמרה',
+  rpHead: 'מדידות רעד', rpPatient: 'שם: {v}', rpAgeV: 'גיל: {v}', rpPeriod: 'תקופה: {a} – {b}', rpCount: '{n} מדידות', rpCountSp: '{n} מדידות, {s} ציורי ספירלה',
+  rpMade: 'הופק ב־{date} בטרימורטי (חיישן התנועה של הטלפון, מצלמה או מסך מגע).', rpTable: 'ערכי חציון לפי מצב וצד',
+  rpCond: 'מצב', rpSide: 'צד', rpN: 'n', rpHz: 'קצב (Hz)', rpMM: 'גודל (מ״מ)', rpSideNone: 'לא צוין', rpTrend: 'מגמה (קצב וגודל)',
+  rpMed: 'לפני / אחרי תרופה', rpLR: 'שמאל מול ימין', rpSpec: 'הספקטרום האחרון: {date}, {setup}', rpPattern: 'התאמת דפוס (המדידה האחרונה עם קצב)',
+  rpResembles: '[{f} Hz], {setup}: דומה ל{list}.', rpNoPattern: 'אין בתקופה הזאת מדידה עם קצב ברור.',
+  rpSpiral: 'ציורי ספירלה', rpSpiralV: '{n} ציורים; האחרון {date}: ציון {s}/10, {f}, ≈ {mm} מ״מ.', rpQuality: 'כולל {n} מדידות באיכות נמוכה.',
+  rpNotDx: 'זה לא אבחון. מדידות טלפון למעקב אחרי שינויים לאורך זמן; הגדלים משוערים ותלויים באופן החזקת הטלפון. יש לפרש אותם יחד עם בדיקה קלינית.',
+  rpEmpty: 'אין מדידות בתקופה הזאת.', rpTrendNone: 'פחות משתי מדידות: אין מגמה.',
+  spTitle: 'מבחן ציור ספירלה', spLede: 'משימת ציור מקובלת: עוברים על הספירלה מהמרכז החוצה בלי להרים את האצבע.',
+  spHow: 'מניחים את הטלפון שטוח על שולחן. ביד שרוצים לבדוק מתחילים בנקודה שבאמצע ועוברים על הספירלה החוצה במהירות קבועה. לא מניחים את היד על המסך.',
+  spHand: 'יד', spClear: 'מתחילים מחדש', spDone: 'סיום', spKeep: 'ממשיכים: לפחות 2 סיבובים.', spReady: 'מרימים את האצבע בסוף ולוחצים על סיום.',
+  spAria: 'אזור ציור הספירלה', spResTitle: 'תוצאת הספירלה', spScoreNote: '0 = קו חלק; מספר גבוה יותר = יותר רעד בקו. משוער, להשוואה בין הציורים שלכם לאורך זמן.',
+  spLv: ['חלק', 'רועד מעט', 'רועד', 'רועד מאוד'], spRate: 'קצב בקו', spRateV: '[{f} Hz] ({s})', spNoRhythm: 'אין קצב ברור',
+  spSize: 'גודל הסטייה', spSizeV: '≈ {mm} מ״מ הלוך ושוב (משוער)', spTurns: 'סיבובים', spTime: 'זמן הציור', spTimeV: '{d} שנ׳',
+  spAgain: 'ציור נוסף', spTooShort: 'הציור היה קצר מדי: עוברים לפחות 2 סיבובים ואז לוחצים על סיום.',
+  spNoteAction: 'ציור הוא משימת פעולה: קצב כאן אופייני יותר לרעד פעולה (למשל רעד ראשוני) מאשר לרעד מנוחה. זה לא אבחון.',
+  spSub: 'ציור ספירלה, יד {side}', kindSpiral: 'ציור ספירלה',
+});
+Object.assign(I18N.he.label.posture, { action: 'בתנועה', spiral: 'ספירלה' });
+Object.assign(I18N.he.label.sensor, { touch: 'מסך מגע' });
+Object.assign(I18N.he.misPosture, { action: 'פחות אופייני בזמן תנועה' });
+Object.assign(I18N.he.howto, {
+  'motion-hand-action': ['מחזיקים את הטלפון ביד.', 'מזיזים לאט את היד מהאף למרחק יד מושטת וחזרה, שוב ושוב.'],
+  'camera-hand-action': ['מעמידים את הטלפון מולכם, במרחק של כ־50 ס״מ.', 'מצביעים עם האצבע ומזיזים אותה לאט מהאף לכיוון המצלמה וחזרה, כשכל כף היד בתמונה.'],
+});
 let lang = (() => { try { const l = localStorage.getItem('lang'); if (I18N[l]) return l; } catch {} return /^he/i.test(navigator.language || '') ? 'he' : 'en'; })();
 // An island never breaks across lines (a wrapped isolate reorders badly in RTL): no-break space, word joiner after a dash.
 function ltrIslands(s) { return s.replace(/\[([^\]]*)\]/g, (m, x) => '⁦' + x.replace(/ /g, '\u00a0').replace(/–/g, '–\u2060') + '⁩'); }
@@ -640,6 +1121,10 @@ function t(key, vars) {
   return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : s;
 }
 const LABEL = () => I18N[lang].label;
+function tn(group, key, vars) { // a string from a nested group, e.g. tn('stepName', 'rest')
+  const g = I18N[lang][group] || {}, s = ltrIslands(g[key] ?? (I18N.en[group] || {})[key] ?? key);
+  return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : s;
+}
 const said = {}; // element id -> [key, vars], re-rendered on language change
 function say(id, key, vars) { said[id] = [key, vars]; $(id).textContent = key ? t(key, vars) : ''; }
 function applyLang() {
@@ -650,8 +1135,9 @@ function applyLang() {
   const lb = $('langLabel'); lb.textContent = lang === 'he' ? 'EN' : 'עב'; lb.lang = lang === 'he' ? 'en' : 'he';
   $('langBtn').setAttribute('aria-label', t('langSwitch')); $('langBtn').title = t('langSwitch');
   for (const id in said) say(id, ...said[id]);
-  renderError(); renderSetup();
-  if (!$('result').hidden && lastResult) renderResult(lastResult, true); else renderHistory();
+  renderError(); renderSetup(); renderMute();
+  if (!$('result').hidden && lastResult) renderResult(lastResult, true);
+  refreshView();
 }
 function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {} applyLang(); }
 
@@ -659,12 +1145,14 @@ function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {
 function renderSetup() {
   if (state.sensor === 'camera') state.limb = 'hand';
   if (state.limb === 'hand' && state.posture === 'stand') state.posture = 'rest';
+  if (state.limb === 'leg' && state.posture === 'action') state.posture = 'rest';
   document.querySelectorAll('.seg').forEach((seg) => {
     const key = seg.dataset.key, cur = key in state ? state[key] : notes[key];
     seg.querySelectorAll('button').forEach((b) => {
       b.setAttribute('aria-pressed', String(cur === b.dataset.v));
       b.disabled = (key === 'limb' && b.dataset.v === 'leg' && state.sensor === 'camera') ||
-                   (key === 'posture' && b.dataset.v === 'stand' && state.limb === 'hand');
+                   (key === 'posture' && b.dataset.v === 'stand' && state.limb === 'hand') ||
+                   (key === 'posture' && b.dataset.v === 'action' && state.limb === 'leg');
     });
   });
   $('medText').hidden = notes.med !== 'yes';
@@ -681,21 +1169,37 @@ document.querySelectorAll('.seg').forEach((seg) => seg.addEventListener('click',
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   const key = seg.dataset.key, v = b.dataset.v;
   if (key in state) state[key] = v; else { notes[key] = notes[key] === v ? '' : v; saveNotes(); } // notes toggle off on a second tap
-  if (key !== 'trendSide' && errState) { errState = null; renderError(); } // a changed setup clears the old error
+  if (key === 'len') { settings.len = v; saveSettings(); }
+  if (key !== 'spSide' && errState) { errState = null; renderError(); } // a changed setup clears the old error
   renderSetup();
-  if (key === 'trendSide') renderHistory();
 }));
 $('medText').addEventListener('input', () => { notes.medText = $('medText').value.trim(); saveNotes(); });
 $('noteText').addEventListener('input', () => { notes.note = $('noteText').value.trim(); saveNotes(); });
+const SECTIONS = ['setup', 'record', 'result', 'session', 'spiral', 'journal', 'trends', 'report'];
+let view = 'setup';
 function show(id) {
-  for (const s of ['setup', 'record', 'result']) $(s).hidden = s !== id;
-  $('historyWrap').hidden = id === 'record' || !loadHistory().length;
+  view = id;
+  for (const s of SECTIONS) $(s).hidden = s !== id;
+  $('tabs').hidden = id === 'record' || id === 'report';
+  const tab = id === 'journal' ? 'journal' : id === 'trends' ? 'trends' : 'setup';
+  document.querySelectorAll('#tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+  if (id !== 'record') { $('record').classList.remove('compact'); }
   window.scrollTo(0, 0);
+  refreshView();
 }
+function refreshView() { // re-render the visible data screen (after a language change, a save or a delete)
+  if (view === 'setup') renderToday();
+  else if (view === 'journal') renderJournal();
+  else if (view === 'trends') renderTrends();
+  else if (view === 'session' && sessionShown) renderSession(sessionShown);
+  else if (view === 'report') renderReport();
+  else if (view === 'spiral') renderSpiralView();
+}
+function goTab(tab) { if (flow) return; viewing = null; show(tab); }
 const isBrave = () => !!(navigator.brave && navigator.brave.isBrave);
 const browserVars = () => ({ browser: isBrave() ? 'Brave' : t('yourBrowser'), brave: isBrave() ? ' ' + t('braveShields') : '' });
 let errState = null; // { key, vars, action: 'reload' | 'retry' }
-function setupError(key, vars, action) { rec = null; compare = null; show('setup'); errState = key ? { key, vars, action } : null; renderError(); }
+function setupError(key, vars, action) { const retry = flow && flow.retry; rec = null; flow = null; stopGuideLoop(); hush(); show('setup'); errState = key ? { key, vars, action, retry } : null; renderError(); }
 function renderError() {
   const box = $('setupError'); box.innerHTML = ''; box.hidden = !errState; if (!errState) return;
   const vars = { ...browserVars(), ...(errState.vars || {}) };
@@ -703,17 +1207,17 @@ function renderError() {
   const p = document.createElement('p'); p.textContent = t(errState.key, vars); box.append(p);
   if (errState.action) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'chipbtn'; b.id = 'errAction'; b.textContent = t(errState.action === 'reload' ? 'reload' : 'tryAgain');
-    b.addEventListener('click', () => { if (errState && errState.action === 'reload') location.reload(); else { errState = null; renderError(); start(); } });
+    b.addEventListener('click', () => { if (errState && errState.action === 'reload') location.reload(); else { const go = (errState && errState.retry) || start; errState = null; renderError(); go(); } });
     box.append(b);
   }
 }
 let toastT = 0;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2200); }
 
-/* ---------------- sound ---------------- */
+/* ---------------- sound + voice (both respect the mute button) ---------------- */
 let actx = null;
 function beep(freq, ms, vol = 0.25) {
-  if (!actx) return;
+  if (!actx || settings.mute) return;
   try {
     const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
     o.frequency.value = freq; o.connect(g); g.connect(actx.destination);
@@ -721,18 +1225,36 @@ function beep(freq, ms, vol = 0.25) {
     o.start(t); o.stop(t + ms / 1000 + 0.02);
   } catch {}
 }
+function audioOn() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {} }
+const voice = { said: 0, skipped: 0 }; // test hook
+function speak(text) {
+  const plain = String(text || '').replace(/[⁦-⁩⁠]/g, '').replace(/ /g, ' ').trim();
+  if (!plain) return false;
+  if (settings.mute) { voice.skipped++; return false; }
+  try {
+    const ss = window.speechSynthesis; if (!ss || typeof SpeechSynthesisUtterance === 'undefined') return false;
+    ss.cancel(); const u = new SpeechSynthesisUtterance(plain); u.lang = lang === 'he' ? 'he-IL' : 'en-US'; u.rate = 0.95;
+    const v = (ss.getVoices ? ss.getVoices() : []).find((x) => x.lang && x.lang.toLowerCase().startsWith(lang === 'he' ? 'he' : 'en')); if (v) u.voice = v;
+    ss.speak(u); voice.said++; return true;
+  } catch { return false; }
+}
+function hush() { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {} }
+function renderMute() { const b = $('muteBtn'); b.setAttribute('aria-pressed', String(settings.mute)); b.setAttribute('aria-label', t('mute')); b.title = t(settings.mute ? 'unmute' : 'mute'); }
+$('muteBtn').addEventListener('click', () => { settings.mute = !settings.mute; saveSettings(); if (settings.mute) hush(); renderMute(); });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* ---------------- recording ---------------- */
-let rec = null, wakeLock = null, compare = null; // compare: { id, stage: 'left'|'right', left: result }
+/* ---------------- recording: one engine, three flows (single, compare left/right, full check) ---------------- */
+let rec = null, wakeLock = null, flow = null, flowSeq = 0; // flow: { id, kind, retry, session, done[] }
+const alive = (fid) => !!flow && flow.id === fid;
 
 function onMotion(e) {
   if (!rec || rec.sensor !== 'motion') return;
   const a = e.acceleration && e.acceleration.x != null ? e.acceleration : null;
-  const g = !a && e.accelerationIncludingGravity && e.accelerationIncludingGravity.x != null ? e.accelerationIncludingGravity : null;
-  const v = a || g; if (!v) return;
+  const gi = e.accelerationIncludingGravity && e.accelerationIncludingGravity.x != null ? e.accelerationIncludingGravity : null;
+  const v = a || gi; if (!v) return;
   const t = e.timeStamp > 0 ? e.timeStamp : performance.now();
-  addMotion(t, v.x || 0, v.y || 0, v.z || 0, !!g);
+  guideMotion(t, a ? [a.x || 0, a.y || 0, a.z || 0] : null, gi ? [gi.x || 0, gi.y || 0, gi.z || 0] : null);
+  addMotion(t, v.x || 0, v.y || 0, v.z || 0, !a);
 }
 function addMotion(t, x, y, z, gravity) {
   rec.seen++; rec.lastEventAt = performance.now();
@@ -743,79 +1265,62 @@ function addMotion(t, x, y, z, gravity) {
   rec.ema = rec.ema === null ? m : rec.ema + 0.05 * (m - rec.ema);
   rec.live.push({ t, y: m - rec.ema });
 }
-
-async function start() {
-  if (rec) return; // already running
-  if (errState) { errState = null; renderError(); }
-  // iOS asks for motion permission; it must be requested straight from the tap.
-  if (state.sensor === 'motion' && typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') return setupError('motionDenied', null, 'reload'); }
-    catch (e) { return setupError('motionReqFail', { m: e.message || e }); }
+async function motionPermission() { // iOS asks for motion permission; it must be requested straight from the tap
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try { if ((await DeviceMotionEvent.requestPermission()) !== 'granted') { setupError('motionDenied', null, 'reload'); return false; } }
+    catch (e) { setupError('motionReqFail', { m: e.message || e }); return false; }
   }
-  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {}
-  const id = Date.now();
-  rec = { id, sensor: state.sensor, limb: state.limb, posture: state.posture, side: compare ? compare.stage : notes.side, notes: { ...notes },
-          phase: 'prep', samples: [], live: [], ema: null, seen: 0, lastEventAt: 0, usedGravity: false, frames: 0, missed: 0, palm: [], startAt: Infinity, endAt: Infinity };
-  show('record');
-  $('count').textContent = ''; say('recNote', null); say('recStatus', 'getReady');
-  say('recSide', compare ? (compare.stage === 'left' ? 'nowLeft' : 'nowRight') : null);
-  $('camView').hidden = rec.sensor !== 'camera';
-  try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
+  return true;
+}
+function recordSeconds(kind) { return CONFIG.RECORD_OVERRIDE_S || (kind === 'routine' ? CONFIG.ROUTINE_REC_S : (+state.len || CONFIG.RECORD_S)); }
+function newFlow(kind, retry) { flow = { id: ++flowSeq, kind, retry, done: [] }; return flow.id; }
+function baseOpts() { return { sensor: state.sensor, limb: state.limb, posture: state.posture, notes: { ...notes }, recS: recordSeconds(), countS: CONFIG.COUNTDOWN_S[state.sensor] }; }
 
+// One recording: countdown with live holding guidance, record, analyse. Resolves to a result, or null when
+// cancelled or when the sensor could not start (the error is then shown on the setup screen).
+async function measureOnce(fid, o) {
+  const id = Date.now() + Math.random();
+  rec = { id, fid, sensor: o.sensor, limb: o.limb, posture: o.posture, side: o.side || '', notes: { ...o.notes }, recS: o.recS,
+          phase: 'prep', samples: [], live: [], ema: null, seen: 0, lastEventAt: 0, usedGravity: false, frames: 0, missed: 0, palm: [], startAt: Infinity, endAt: Infinity };
+  resetGuide();
+  show('record'); $('record').classList.toggle('compact', !!o.step); renderStep(o.step);
+  $('count').textContent = ''; say('recNote', null); say('recStatus', 'getReady');
+  say('recSide', o.sideKey || null);
+  $('camView').hidden = rec.sensor !== 'camera';
+  const ok = () => alive(fid) && !!rec && rec.id === id;
+  try { if (!wakeLock) wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
   if (rec.sensor === 'camera') {
     say('recStatus', 'camStarting');
     try { await startCamera(); await getLandmarker(); }
-    catch (e) { console.error('[tremor] camera', e); stopAll(); const [k, v] = explainCamera(e); return setupError(k, v, k === 'camDenied' ? 'reload' : 'retry'); }
-    if (!rec || rec.id !== id) return;
+    catch (e) { console.error('[tremor] camera', e); stopAll(); const [k, v] = explainCamera(e); setupError(k, v, k === 'camDenied' ? 'reload' : 'retry'); return null; }
+    if (!ok()) return null;
     requestAnimationFrame(camLoop);
-  } else {
-    window.addEventListener('devicemotion', onMotion);
-  }
-
-  const n = CONFIG.COUNTDOWN_S[rec.sensor];
-  for (let i = n; i > 0; i--) {
-    if (!rec || rec.id !== id) return;
+  } else window.addEventListener('devicemotion', onMotion);
+  startGuideLoop();
+  if (o.voice) speak(o.voice);
+  for (let i = o.countS; i > 0; i--) {
+    if (!ok()) return null;
     say('recStatus', rec.sensor === 'camera' ? 'handIntoView' : 'intoPosition');
     $('count').textContent = i; beep(660, 90, 0.18);
     await sleep(1000);
   }
-  if (!rec || rec.id !== id) return;
+  if (!ok()) return null;
   if (rec.sensor === 'motion' && rec.seen === 0) {
     await sleep(800);
-    if (!rec || rec.id !== id) return;
-    if (rec.seen === 0) { stopAll(); return setupError('noMotion', null, 'reload'); }
+    if (!ok()) return null;
+    if (rec.seen === 0) { stopAll(); setupError('noMotion', null, 'reload'); return null; }
   }
   beep(1040, 260);
   rec.startAt = performance.now() + CONFIG.START_DELAY_MS;
-  rec.endAt = rec.startAt + CONFIG.RECORD_S * 1000;
+  rec.endAt = rec.startAt + rec.recS * 1000;
   rec.phase = 'rec';
   $('count').textContent = ''; say('recStatus', 'recording');
   drawStrip();
-  await sleep(CONFIG.RECORD_S * 1000 + CONFIG.START_DELAY_MS + 60);
-  if (!rec || rec.id !== id) return;
-  finish();
+  await sleep(rec.recS * 1000 + CONFIG.START_DELAY_MS + 60);
+  if (!ok()) return null;
+  return finishRec();
 }
-function startCompare() { if (rec) return; compare = { id: Date.now(), stage: 'left', left: null }; start(); }
-async function compareGap() { // between the two sides: prompt + countdown, then the right side
-  const id = compare.id;
-  show('record'); $('camView').hidden = true; $('count').textContent = '';
-  say('recStatus', 'nowRight'); say('recSide', null); say('recNote', 'switchSides');
-  for (let i = CONFIG.COMPARE_GAP_S; i > 0; i--) {
-    if (!compare || compare.id !== id) return;
-    $('count').textContent = i; beep(660, 90, 0.18); await sleep(1000);
-  }
-  if (!compare || compare.id !== id) return;
-  start();
-}
-
-function stopAll() {
-  window.removeEventListener('devicemotion', onMotion);
-  stopCamera();
-  try { wakeLock && wakeLock.release(); } catch {} wakeLock = null;
-}
-function cancel() { stopAll(); rec = null; compare = null; show('setup'); }
-
-function finish() {
+function finishRec() {
   const r = rec; r.phase = 'done'; stopAll();
   beep(520, 320); try { navigator.vibrate && navigator.vibrate(200); } catch {}
   let samples = r.samples, unit;
@@ -824,19 +1329,131 @@ function finish() {
     samples = samples.map((s) => ({ t: s.t, v: s.v.map((x) => x * k) }));
     unit = 'mm';
   } else unit = 'accel';
-  const res = analyze(samples, { unit, ampChannels: r.sensor === 'camera' ? [0, 1] : [0, 1, 2] });
-  res.sensor = r.sensor; res.limb = r.limb; res.posture = r.posture; res.side = r.side; res.notes = r.notes; res.ts = Date.now();
-  res.plannedS = CONFIG.RECORD_S;
+  const res = analyze(samples, { unit, ampChannels: r.sensor === 'camera' ? [0, 1] : [0, 1, 2], posture: r.posture });
+  Object.assign(res, { kind: 'tremor', sensor: r.sensor, limb: r.limb, posture: r.posture, side: r.side, notes: r.notes, ts: nowMs(), plannedS: r.recS, tags: [] });
   if (r.sensor === 'camera') { res.handPct = r.frames ? 1 - r.missed / r.frames : 0; res.delegate = trackerDelegate; }
-  lastResult = res;
-  if (!res.error) saveHistory(res);
+  if (!res.error) res.q = scoreQuality(res);
   rec = null;
-  if (compare && !res.error) {
-    if (compare.stage === 'left') { compare.left = res; compare.stage = 'right'; return compareGap(); }
-    res.compare = { left: compare.left, right: { ...res } };
-  }
-  compare = null;
+  return res;
+}
+
+async function start() { // a single measurement with the current setup
+  if (flow) return;
+  if (errState) { errState = null; renderError(); }
+  if (state.sensor === 'motion' && !(await motionPermission())) return;
+  audioOn();
+  const fid = newFlow('single', start);
+  const res = await measureOnce(fid, { ...baseOpts(), side: notes.side });
+  if (!res || !alive(fid)) return;
+  flow = null; viewing = null;
+  if (!res.error) saveResult(res);
   renderResult(res);
+}
+async function startCompare() { // left, a pause to switch, then right
+  if (flow) return;
+  if (errState) { errState = null; renderError(); }
+  if (state.sensor === 'motion' && !(await motionPermission())) return;
+  audioOn();
+  const fid = newFlow('compare', startCompare);
+  const L = await measureOnce(fid, { ...baseOpts(), side: 'left', sideKey: 'nowLeft' });
+  if (!L || !alive(fid)) return;
+  if (L.error) { flow = null; viewing = null; renderResult(L); return; }
+  saveResult(L);
+  show('record'); renderStep(null); $('camView').hidden = true; stopGuideLoop(); $('count').textContent = '';
+  say('recStatus', 'nowRight'); say('recSide', null); say('recNote', 'switchSides');
+  for (let i = CONFIG.COMPARE_GAP_S; i > 0; i--) {
+    if (!alive(fid)) return;
+    $('count').textContent = i; beep(660, 90, 0.18); await sleep(1000);
+  }
+  if (!alive(fid)) return;
+  const R = await measureOnce(fid, { ...baseOpts(), side: 'right', sideKey: 'nowRight' });
+  if (!R || !alive(fid)) return;
+  flow = null; viewing = null;
+  if (!R.error) { R.compare = { left: L, right: { ...R } }; R.pair = L.id; saveResult(R); }
+  renderResult(R);
+}
+/* Full check (~3 min): rest -> arm held out -> finger to nose, left hand then right, with spoken step cards. */
+const ROUTINE = [['left', 'rest'], ['left', 'hold'], ['left', 'action'], ['right', 'rest'], ['right', 'hold'], ['right', 'action']];
+async function startRoutine() {
+  if (flow) return;
+  if (errState) { errState = null; renderError(); }
+  if (!(await motionPermission())) return;
+  audioOn();
+  const fid = newFlow('routine', startRoutine), session = 's' + nowMs().toString(36);
+  flow.session = session;
+  for (let i = 0; i < ROUTINE.length; i++) {
+    const [side, posture] = ROUTINE[i], sw = i === ROUTINE.length / 2;
+    const step = { i, n: ROUTINE.length, side, posture, sw };
+    const say1 = (sw ? t('stepSwitch') + ' ' : '') + t(side === 'left' ? 'handL' : 'handR') + '. ' + tn('stepName', posture) + '. ' + tn('stepHow', posture);
+    const res = await measureOnce(fid, { sensor: 'motion', limb: 'hand', posture, side, notes: { ...notes, side }, recS: recordSeconds('routine'),
+      countS: i === 0 ? CONFIG.ROUTINE_FIRST_S : sw ? CONFIG.ROUTINE_SWITCH_S : CONFIG.ROUTINE_PREP_S, step, voice: say1 });
+    if (!res || !alive(fid)) return;
+    if (!res.error) { res.session = session; res.step = i; saveResult(res); }
+    flow.done.push(res);
+  }
+  flow = null; viewing = null;
+  speak(t('routineDone'));
+  sessionShown = session; show('session');
+}
+function renderStep(step) {
+  $('stepCard').hidden = !step; if (!step) return;
+  $('stepK').textContent = t('stepOf', { i: step.i + 1, n: step.n });
+  $('stepT').textContent = t(step.side === 'left' ? 'handL' : 'handR') + ' · ' + tn('stepName', step.posture);
+  $('stepH').textContent = (step.sw ? t('stepSwitch') + ' ' : '') + tn('stepHow', step.posture);
+  $('stepDots').innerHTML = ''; for (let k = 0; k < step.n; k++) { const d = document.createElement('i'); d.className = k < step.i ? 'done' : k === step.i ? 'cur' : ''; $('stepDots').append(d); }
+}
+
+function stopAll() {
+  window.removeEventListener('devicemotion', onMotion);
+  stopCamera(); stopGuideLoop();
+  try { wakeLock && wakeLock.release(); } catch {} wakeLock = null;
+}
+function cancel() {
+  stopAll(); rec = null; hush();
+  const f = flow; flow = null;
+  if (f && f.kind === 'routine' && f.done.some((r) => !r.error)) { sessionShown = f.session; show('session'); } else show('setup');
+}
+
+/* ---------------- holding guidance: phone orientation, steadiness and gravity checks (advice only) ---------------- */
+const guide = { key: '', level: '', tilt: [0, 0], g: null, gHist: [], slow: null, slowHist: [], fastHist: [], last: 0, lt: 0, cam: null, timer: 0 };
+function resetGuide() { Object.assign(guide, { key: '', level: '', tilt: [0, 0], g: null, gHist: [], slow: null, slowHist: [], fastHist: [], last: 0, lt: 0, cam: null }); }
+function guideMotion(t, lin, gi) {
+  guide.last = performance.now();
+  const dt = guide.lt ? Math.min(0.2, Math.max(0.001, (t - guide.lt) / 1000)) : 1 / 60; guide.lt = t;
+  if (gi) { const k = 1 - Math.exp(-dt / 0.5); guide.g = guide.g ? guide.g.map((x, i) => x + k * (gi[i] - x)) : gi.slice(); guide.gHist.push({ t, g: guide.g.slice() }); }
+  const L = lin || (gi && guide.g ? gi.map((x, i) => x - guide.g[i]) : null); if (!L) return;
+  const k2 = 1 - Math.exp(-dt / 0.3); guide.slow = guide.slow ? guide.slow.map((x, i) => x + k2 * (L[i] - x)) : L.slice();
+  guide.slowHist.push({ t, v: guide.slow[0] ** 2 + guide.slow[1] ** 2 + guide.slow[2] ** 2 });
+  guide.fastHist.push({ t, v: L[0] * L[0] + L[1] * L[1] + L[2] * L[2] });
+  const cut = t - 2000; for (const h of [guide.gHist, guide.slowHist, guide.fastHist]) while (h.length && h[0].t < cut) h.shift();
+}
+const angleDeg = (a, b) => { const n = Math.hypot(...a) * Math.hypot(...b) || 1; return Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / n))) * 180 / Math.PI; };
+function evalGuide(r) { // -> [message key, 'ok' | 'hint' | 'warn']
+  if (!r) return ['', ''];
+  if (r.sensor === 'camera') return guide.cam || ['gHand', 'warn'];
+  if (!guide.last || performance.now() - guide.last > 600) return ['gWait', 'warn'];
+  const ms = (h, since) => { let s = 0, n = 0; for (const x of h) if (x.t >= since) { s += x.v; n++; } return n ? Math.sqrt(s / n) : 0; };
+  const tEnd = guide.fastHist.length ? guide.fastHist[guide.fastHist.length - 1].t : 0;
+  const slow = ms(guide.slowHist, tEnd - 2000), fast = ms(guide.fastHist, tEnd - 1000), g = guide.g, act = r.posture === 'action';
+  let fromZ = 90, tiltChg = 0;
+  if (g) {
+    const n = Math.hypot(...g) || 1; fromZ = Math.acos(Math.min(1, Math.abs(g[2]) / n)) * 180 / Math.PI; guide.tilt = [g[0] / n, g[1] / n];
+    const h = guide.gHist; if (h.length > 5) tiltChg = angleDeg(h[0].g, h[h.length - 1].g);
+  }
+  if (g && fast < 0.008 && fromZ < 3 && tiltChg < 1) return ['gTable', 'warn'];
+  if (!act && slow > 0.6) return ['gMoving', 'warn'];
+  if (!act && tiltChg > 12) return ['gTilt', 'warn'];
+  if (r.posture === 'rest' && r.limb === 'hand' && slow > 0.2) return ['gRest', 'hint'];
+  if (r.posture === 'hold' && r.limb === 'hand' && g && fromZ > 55) return ['gFlatHold', 'hint'];
+  return [act ? 'gOkAction' : 'gOk', 'ok'];
+}
+function startGuideLoop() { stopGuideLoop(); $('guide').hidden = false; $('level').hidden = !rec || rec.sensor === 'camera'; guide.timer = setInterval(renderGuide, 200); renderGuide(); }
+function stopGuideLoop() { clearInterval(guide.timer); guide.timer = 0; $('guide').hidden = true; }
+function renderGuide() {
+  const [key, level] = evalGuide(rec); guide.key = key; guide.level = level;
+  $('guide').classList.toggle('warn', level === 'warn');
+  const el = $('guideTxt'), k = key + '|' + lang; if (el.dataset.k !== k) { el.dataset.k = k; el.textContent = key ? t(key) : ''; }
+  const [x, y] = guide.tilt; $('level').querySelector('i').style.transform = 'translate(' + (-x * 15).toFixed(1) + 'px,' + (y * 15).toFixed(1) + 'px)';
 }
 
 /* ---------------- camera ---------------- */
@@ -900,12 +1517,14 @@ function camLoop() {
 function addCameraFrame(t, lm, vw, vh) {
   const recording = rec.phase === 'rec' && t >= rec.startAt && t <= rec.endAt;
   if (recording) rec.frames++;
-  if (!lm || lm.length < 21) { if (recording) rec.missed++; if (rec.phase !== 'done') say('recNote', 'handNotFound'); return; }
+  if (!lm || lm.length < 21) { if (recording) rec.missed++; guide.cam = ['gHand', 'warn']; if (rec.phase !== 'done') say('recNote', 'handNotFound'); return; }
   say('recNote', null);
-  if (!recording) return;
   const P = (i) => ({ x: lm[i].x * vw, y: lm[i].y * vh });
   const tip = P(8), c = [0, 5, 9, 13, 17].map(P);
   const palm = { x: c.reduce((s, p) => s + p.x, 0) / 5, y: c.reduce((s, p) => s + p.y, 0) / 5 };
+  const size = dist(P(0), P(9)) / vw, cx = palm.x / vw, cy = palm.y / vh; // camera guidance: distance and framing
+  guide.cam = size < 0.07 ? ['gCloser', 'hint'] : size > 0.32 ? ['gFarther', 'hint'] : (cx < 0.12 || cx > 0.88 || cy < 0.1 || cy > 0.9) ? ['gCenter', 'hint'] : ['gOk', 'ok'];
+  if (!recording) return;
   rec.palm.push(dist(P(0), P(9)));
   rec.samples.push({ t, v: [tip.x, tip.y, palm.x, palm.y] });
   rec.ema = rec.ema === null ? tip.y : rec.ema + 0.08 * (tip.y - rec.ema);
@@ -946,8 +1565,8 @@ function paperGrid(c, w, h, xStep, yStep) {
 function drawStrip() {
   if (!rec || rec.phase !== 'rec') return;
   const { c, w, h } = sizeCanvas($('strip'));
-  paperGrid(c, w, h, w / CONFIG.RECORD_S, h / 8);
-  const now = performance.now(), T = CONFIG.RECORD_S * 1000;
+  paperGrid(c, w, h, w / rec.recS, h / 8);
+  const now = performance.now(), T = rec.recS * 1000;
   const pts = rec.live;
   let peak = 1e-9; for (let i = Math.max(0, pts.length - 400); i < pts.length; i++) peak = Math.max(peak, Math.abs(pts[i].y));
   const scale = (h * 0.42) / peak;
@@ -979,12 +1598,28 @@ function resample(samples, fs) {
   }
   return out;
 }
-function detrend(x) {
+function detrend(x) { // least-squares line removed
   const n = x.length; let sx = 0, sy = 0, sxx = 0, sxy = 0;
   for (let i = 0; i < n; i++) { sx += i; sy += x[i]; sxx += i * i; sxy += i * x[i]; }
   const b = (n * sxy - sx * sy) / ((n * sxx - sx * sx) || 1), a = (sy - b * sx) / n;
   const y = new Float64Array(n); for (let i = 0; i < n; i++) y[i] = x[i] - (a + b * i); return y;
 }
+// 2nd-order Butterworth high-pass, run forward and backward (zero phase, 4th-order roll-off), with odd extension at
+// both ends so the edges don't ring. Removes gravity / tilt changes and slow drift before the spectrum.
+function highpass(x, fs, fc) {
+  const n = x.length; if (n < 8 || !(fc > 0)) return Float64Array.from(x);
+  const K = Math.tan(Math.PI * Math.min(fc, fs * 0.45) / fs), norm = 1 / (1 + Math.SQRT2 * K + K * K);
+  const b0 = norm, b1 = -2 * norm, b2 = norm, a1 = 2 * (K * K - 1) * norm, a2 = (1 - Math.SQRT2 * K + K * K) * norm;
+  const pad = Math.min(n - 2, Math.round(3 * fs / fc)), ext = new Float64Array(n + 2 * pad);
+  for (let i = 0; i < pad; i++) ext[i] = 2 * x[0] - x[pad - i];
+  ext.set(x, pad);
+  for (let i = 0; i < pad; i++) ext[pad + n + i] = 2 * x[n - 1] - x[n - 2 - i];
+  const run = (s) => { let x1 = s[0], x2 = s[0], y1 = 0, y2 = 0;
+    for (let i = 0; i < s.length; i++) { const v = s[i], y = b0 * v + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2; x2 = x1; x1 = v; y2 = y1; y1 = y; s[i] = y; } };
+  run(ext); ext.reverse(); run(ext); ext.reverse();
+  return ext.slice(pad, pad + n);
+}
+const hpGain = (f, fc) => { const r = Math.pow(f / fc, 4); return Math.pow(r / (1 + r), 2); }; // power gain of highpass() at f
 function fft(re, im) { // in-place radix-2
   const n = re.length;
   for (let i = 1, j = 0; i < n; i++) {
@@ -1004,64 +1639,110 @@ function fft(re, im) { // in-place radix-2
     }
   }
 }
-// One-sided power spectral density (units^2 / Hz), Hann window, 50% overlap.
-function welch(x, fs, nfft) {
-  const w = new Float64Array(nfft); let wss = 0;
-  for (let i = 0; i < nfft; i++) { w[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (nfft - 1)); wss += w[i] * w[i]; }
-  const starts = []; for (let s = 0; s + nfft <= x.length; s += nfft / 2) starts.push(s);
-  if (!starts.length) starts.push(0);
-  const out = new Float64Array(nfft / 2 + 1), re = new Float64Array(nfft), im = new Float64Array(nfft);
-  for (const s of starts) {
-    let mean = 0, cnt = 0; for (let i = 0; i < nfft && s + i < x.length; i++) { mean += x[s + i]; cnt++; } mean /= cnt || 1;
-    for (let i = 0; i < nfft; i++) { re[i] = s + i < x.length ? (x[s + i] - mean) * w[i] : 0; im[i] = 0; }
+// Welch PSD (one-sided, units^2/Hz): segments of L samples with 50% overlap, each linearly detrended and
+// Hann-windowed, zero-padded to N (a finer grid for the peak interpolation; the resolution is set by L).
+function welchPSD(x, fs, L, N) {
+  const n = x.length; L = Math.max(8, Math.min(L, n));
+  const w = new Float64Array(L); let wss = 0;
+  for (let i = 0; i < L; i++) { w[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (L - 1)); wss += w[i] * w[i]; }
+  const step = Math.max(1, Math.floor(L / 2)), starts = [];
+  for (let s0 = 0; s0 + L <= n; s0 += step) starts.push(s0);
+  if (starts[starts.length - 1] + L < n - step / 2) starts.push(n - L); // the tail, so no data is left out
+  const out = new Float64Array(N / 2 + 1), re = new Float64Array(N), im = new Float64Array(N), seg = new Float64Array(L);
+  for (const s0 of starts) {
+    for (let i = 0; i < L; i++) seg[i] = x[s0 + i];
+    const d = detrend(seg); re.fill(0); im.fill(0);
+    for (let i = 0; i < L; i++) re[i] = d[i] * w[i];
     fft(re, im);
-    for (let k = 0; k <= nfft / 2; k++) out[k] += (k === 0 || k === nfft / 2 ? 1 : 2) * (re[k] * re[k] + im[k] * im[k]) / (fs * wss);
+    for (let k = 0; k <= N / 2; k++) out[k] += (k === 0 || k === N / 2 ? 1 : 2) * (re[k] * re[k] + im[k] * im[k]) / (fs * wss);
   }
   for (let k = 0; k < out.length; k++) out[k] /= starts.length;
   return out;
 }
+const segSeconds = (dur) => (dur >= 55 ? 10 : dur >= 28 ? 6 : 4); // longer recordings: longer segments = finer resolution
+function refinePeak(P, k) { // parabola through the log power of the peak bin and its neighbours (Gaussian interpolation)
+  if (k <= 0 || k >= P.length - 1) return k;
+  const a = Math.log(P[k - 1] || 1e-30), b = Math.log(P[k] || 1e-30), c = Math.log(P[k + 1] || 1e-30), d = a - 2 * b + c;
+  return d < 0 ? k + Math.max(-0.5, Math.min(0.5, 0.5 * (a - c) / d)) : k;
+}
 const aErr = (key, vars) => ({ error: t(key, vars), errKey: [key, vars] });
-// samples: [{t: ms, v: [channels]}]. unit: 'accel' (m/s^2) or 'mm' (displacement).
-function analyze(samples, { unit = 'accel', ampChannels = null } = {}) {
+// samples: [{t: ms, v: [channels]}]. unit: 'accel' (m/s^2) or 'mm' (displacement). posture 'action' starts the band higher.
+function analyze(samples, { unit = 'accel', ampChannels = null, posture = '' } = {}) {
   if (samples.length < 32) return aErr('errFew', { n: samples.length });
   const n = samples.length, dur = (samples[n - 1].t - samples[0].t) / 1000;
   if (dur < 3) return aErr('errShort');
-  const fs = (n - 1) / dur, nyq = fs / 2;
-  const chans = resample(samples, fs).map(detrend);
+  const fs = (n - 1) / dur, nyq = fs / 2, act = posture === 'action', fc = act ? CONFIG.HP_HZ_ACTION : CONFIG.HP_HZ;
+  const chans = resample(samples, fs).map((x) => highpass(detrend(x), fs, fc));
   const m = chans[0].length;
-  const nfft = Math.max(32, Math.min(nextPow2(Math.round(fs * CONFIG.SEG_S)), prevPow2(m)));
-  const df = fs / nfft;
-  const psds = chans.map((x) => welch(x, fs, nfft));
-  const K = nfft / 2 + 1, all = new Float64Array(K), amp = new Float64Array(K);
+  const L = Math.min(m, Math.round(fs * segSeconds(dur))), N = Math.max(64, nextPow2(L) * 2), df = fs / N;
+  const psds = chans.map((x) => welchPSD(x, fs, L, N));
+  const K = N / 2 + 1, all = new Float64Array(K), amp = new Float64Array(K);
   const ampIdx = ampChannels || psds.map((_, i) => i);
   psds.forEach((p, c) => { for (let k = 0; k < K; k++) { all[k] += p[k]; if (ampIdx.includes(c)) amp[k] += p[k]; } });
-  const lo = CONFIG.BAND_LO, hi = Math.min(CONFIG.BAND_HI, nyq - 0.5);
+  const lo = act ? CONFIG.BAND_LO_ACTION : CONFIG.BAND_LO, hi = Math.min(CONFIG.BAND_HI, nyq - 0.5);
   if (hi <= lo + 1) return Object.assign(aErr('errRate', { fs: fs.toFixed(0) }), { fs, nyq, dur });
   const kLo = Math.ceil(lo / df), kHi = Math.floor(hi / df);
+  const band = Array.from(all.slice(kLo, kHi + 1)), med = median(band) || 1e-12;
+  const W = Math.max(2, Math.round(1 / df)); // prominence: peak over the higher of the lowest points within 1 Hz on each side
+  const prom = (k) => { let l = Infinity, r = Infinity;
+    for (let j = Math.max(1, k - W); j < k; j++) l = Math.min(l, all[j]);
+    for (let j = k + 1; j <= Math.min(K - 1, k + W); j++) r = Math.min(r, all[j]);
+    return all[k] / (Math.max(l, r) || 1e-30); };
+  const isMax = (k) => k > 0 && k < K - 1 && all[k] >= all[k - 1] && all[k] >= all[k + 1];
   let kp = kLo; for (let k = kLo; k <= kHi; k++) if (all[k] > all[kp]) kp = k;
-  // Edge of the analysed band: BAND_LO (3 Hz) is a deliberate floor (slower = posture drift), BAND_HI or
-  // just under Nyquist is the ceiling. A peak in the first / last bin is flagged; "out" = the power keeps
-  // rising past the edge (the strongest movement is outside the band), otherwise it is a real local peak
-  // that happens to sit at the edge (e.g. a 3.0 Hz rhythm lands in the 3.05 Hz bin at 60 samples/s).
+  // Slow-drift rejection: below DRIFT_HZ a peak only counts when it is a real local maximum that stands out from
+  // its surroundings. Otherwise it is the shoulder of slow drifting movement: the strongest real peak above it is
+  // used instead ('skipped'), or, when there is none, the reading is "no clear rhythm" ('only').
+  let drift = '';
+  if (kp * df < CONFIG.DRIFT_HZ && !(isMax(kp) && prom(kp) >= CONFIG.DRIFT_PROM)) {
+    let best = -1;
+    for (let k = kLo + 1; k < kHi; k++) if (isMax(k) && (k * df >= CONFIG.DRIFT_HZ || prom(k) >= CONFIG.DRIFT_PROM) && (best < 0 || all[k] > all[best])) best = k;
+    if (best >= 0) { kp = best; drift = 'skipped'; } else drift = 'only';
+  }
+  // Edge of the analysed band: a peak in the first / last bin is flagged; "out" = the power keeps rising past the edge.
   const edge = kp === kLo ? 'lo' : kp === kHi ? 'hi' : '';
   const edgeOut = (edge === 'lo' && kLo > 0 && all[kLo - 1] >= all[kp]) || (edge === 'hi' && kHi < K - 1 && all[kHi + 1] >= all[kp]);
-  let f0 = kp * df; // parabolic refinement of the peak (neighbours just outside the band are fine to use)
-  if (kp > 0 && kp < K - 1 && !edgeOut) {
-    const a = all[kp - 1], b = all[kp], c = all[kp + 1], d = a - 2 * b + c;
-    if (d < 0) f0 = (kp + Math.max(-0.5, Math.min(0.5, 0.5 * (a - c) / d))) * df;
-    f0 = Math.max(lo, Math.min(hi, f0));
-  }
-  const band = Array.from(all.slice(kLo, kHi + 1));
-  const ratio = all[kp] / (median(band) || 1e-12);
-  const strength = ratio >= CONFIG.STRONG_RATIO ? 'clear' : ratio >= CONFIG.WEAK_RATIO ? 'weak' : 'none';
-  let pw = 0; for (let k = Math.max(0, Math.round((f0 - 1) / df)); k <= Math.min(K - 1, Math.round((f0 + 1) / df)); k++) pw += amp[k] * df;
+  let f0 = kp * df;
+  if (!edgeOut) f0 = Math.max(lo, Math.min(hi, refinePeak(all, kp) * df));
+  const ratio = all[kp] / med;
+  let strength = ratio >= CONFIG.STRONG_RATIO ? 'clear' : ratio >= CONFIG.WEAK_RATIO ? 'weak' : 'none';
+  if (drift === 'skipped' && strength === 'none') drift = 'only';
+  if (drift === 'only') strength = 'none';
+  // size: power within the peak, corrected for the high-pass filter
+  const hw = Math.min(1, Math.max(0.5, 0.35 * f0));
+  let pw = 0; for (let k = Math.max(1, Math.round((f0 - hw) / df)); k <= Math.min(K - 1, Math.round((f0 + hw) / df)); k++) pw += amp[k] * df / Math.max(0.25, hpGain(k * df, fc));
   const rms = Math.sqrt(pw);
   const pp = unit === 'accel' ? 2 * Math.SQRT2 * rms / Math.pow(2 * Math.PI * f0, 2) * 1000 : 2 * Math.SQRT2 * rms; // mm, peak to peak
   const freqs = Array.from({ length: K }, (_, k) => k * df);
-  // trace for display: strongest channel, detrended. moveRms = overall movement in that channel (quality guard)
+  // trace for display: strongest channel. moveRms = overall movement in that channel (quality guard)
   let best = 0, bv = -1; chans.forEach((x, i) => { let v = 0; for (const s of x) v += s * s; if (v > bv) { bv = v; best = i; } });
   const moveRms = Math.sqrt(bv / (m || 1));
-  return { fs, nyq, dur, n, f0, ratio, strength, rms, pp, unit, moveRms, freqs, psd: Array.from(all), band: [lo, hi], edge, edgeOut, trace: Array.from(chans[best]) };
+  // quality inputs: gaps and jitter from the raw timestamps, bumps from 1 s windows of the filtered signal
+  const dts = []; for (let i = 1; i < n; i++) dts.push(samples[i].t - samples[i - 1].t);
+  const mdt = median(dts) || 1, reg = []; let gap = 0;
+  for (const d of dts) { if (d > 3 * mdt) gap += d - mdt; else reg.push(d); }
+  const mean = reg.reduce((x, y) => x + y, 0) / (reg.length || 1), sd = Math.sqrt(reg.reduce((x, y) => x + (y - mean) ** 2, 0) / (reg.length || 1));
+  const win = Math.max(4, Math.round(fs)), rmsW = [];
+  for (let s0 = 0; s0 + win <= m; s0 += win) { let v = 0; for (const x of chans) for (let i = s0; i < s0 + win; i++) v += x[i] * x[i]; rmsW.push(Math.sqrt(v / win)); }
+  const mw = median(rmsW), art = mw > 0 ? rmsW.filter((v) => v > 4 * mw).length : 0;
+  const qIn = { gapFrac: gap / 1000 / dur, cv: sd / (mean || 1), artSec: art, artFrac: rmsW.length ? art / rmsW.length : 0 };
+  return { fs, nyq, dur, n, f0, ratio, strength, rms, pp, unit, moveRms, freqs, psd: Array.from(all), band: [lo, hi], edge, edgeOut, drift, df, segS: L / fs, qIn, trace: Array.from(chans[best]) };
+}
+// Quality score 0-100: signal-to-noise (rhythm vs background), dropouts, timing jitter, movement artefacts,
+// plus sample rate, hand tracking and length. 'low' -> advice to repeat.
+function scoreQuality(res) {
+  const qi = res.qIn || {}, still = res.moveRms < (res.unit === 'mm' ? CONFIG.STILL_MM : CONFIG.STILL_ACCEL), cl = (x) => Math.max(0, Math.min(1, x));
+  const parts = { snr: still ? 0 : res.strength === 'none' ? 0.6 : cl((10 * Math.log10(res.ratio || 1) - 4.8) / 10),
+    drop: cl(1 - (qi.gapFrac || 0) / 0.15), jit: cl(1 - ((qi.cv || 0) - 0.15) / 0.6), art: cl(1 - (qi.artFrac || 0) / 0.25) };
+  let s = 100 * (0.3 * parts.snr + 0.25 * parts.drop + 0.15 * parts.jit + 0.3 * parts.art);
+  const r = [];
+  if (still) r.push('still'); else if (parts.snr < 0.4 && res.strength !== 'none') r.push('snr');
+  if (parts.drop < 0.7) r.push('drop'); if (parts.jit < 0.6) r.push('jit'); if (parts.art < 0.7) r.push('art');
+  if (res.nyq < 12) { s *= 0.8; r.push('rate'); }
+  if (res.sensor === 'camera' && res.handPct != null && res.handPct < 0.9) { s *= Math.max(0.3, res.handPct); r.push('hand'); }
+  if (res.plannedS && res.dur < res.plannedS * 0.8) { s *= 0.85; r.push('short'); }
+  const score = Math.round(Math.max(0, Math.min(100, s)));
+  return { s: score, lv: score >= 75 ? 'good' : score >= 50 ? 'fair' : 'low', r: r.slice(0, 4), parts };
 }
 
 /* ---------------- result ---------------- */
@@ -1082,14 +1763,34 @@ function qualityWarnings(res) { // measurement quality guard: sample rate and am
   else if (res.nyq < 12) w.push(t('wLowRate', { fs: res.fs.toFixed(0), nyq: res.nyq.toFixed(0) }));
   if (res.moveRms < (res.unit === 'mm' ? CONFIG.STILL_MM : CONFIG.STILL_ACCEL)) w.push(t('wStill'));
   else if (res.strength !== 'none' && res.pp < 0.1) w.push(t('wTiny'));
+  if (res.drift === 'only') w.push(t('wDrift'));
+  else if (res.drift === 'skipped') w.push(t('wDriftSkip', { f: res.f0.toFixed(1) }));
   if (res.edge && res.strength !== 'none') w.push(t(res.edge === 'hi' ? 'wEdgeHi' : res.edgeOut ? 'wEdgeLoOut' : 'wEdgeLo', { lo: fmtHz(res.band[0]), hi: fmtHz(res.band[1]) }));
   if (res.sensor === 'camera' && res.handPct < 0.8) w.push(t('wLost', { p: Math.round((1 - res.handPct) * 100) }));
   if (res.dur < res.plannedS * 0.8) w.push(t('wShort', { d: res.dur.toFixed(1) }));
   return w;
 }
+function renderQuality(el, q) {
+  el.hidden = !q; el.innerHTML = ''; if (!q) return;
+  const col = q.lv === 'good' ? 'mint' : q.lv === 'fair' ? 'saffron' : 'coral';
+  const bar = document.createElement('div'); bar.className = 'qbar'; const fillEl = document.createElement('i'); fillEl.style.width = q.s + '%'; fillEl.style.background = cssVar('--' + col); bar.append(fillEl);
+  const box = document.createElement('div');
+  const k = document.createElement('div'); k.className = 'qk'; k.textContent = t('dQuality');
+  const v = document.createElement('div'); v.className = 'qv'; v.textContent = t('qVal', { s: q.s, lvl: tn('qLv', q.lv) }); v.style.color = cssVar('--' + col);
+  box.append(k, v);
+  if (q.lv !== 'good') { const a = document.createElement('div'); a.className = 'qwhy'; a.textContent = t(q.lv === 'low' ? 'qAdviceLow' : 'qAdviceFair'); box.append(a); }
+  if (q.r && q.r.length) { const w = document.createElement('div'); w.className = 'qwhy'; w.textContent = t('qWhy', { r: q.r.map((x) => tn('qR', x)).join('; ') }); box.append(w); }
+  el.dataset.level = q.lv; el.dataset.score = q.s; el.append(bar, box);
+}
 function renderResult(res, keep) { // keep: re-render in place (language change), no scroll
   if (!keep) { show('result'); overlayId = null; }
   lastResult = res;
+  const saved = res.id && jFind(res.id);
+  $('resSaved').hidden = !(saved && viewing); if (saved && viewing) $('resSaved').textContent = t('savedOn', { date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(res.ts)) });
+  $('againBtn').hidden = !!viewing; $('setupBtn').hidden = !!viewing; $('resBack').hidden = !viewing; $('resDelete').hidden = !saved;
+  $('shareBtn').parentElement.hidden = !!res.error;
+  renderQuality($('resQuality'), res.error ? null : res.q);
+  mountTags($('tagSlot'), saved ? res.id : null);
   $('resSub').textContent = setupText(res);
   $('resNotes').textContent = notesText(res.notes || {});
   const dl = $('resDetails'); dl.innerHTML = '';
@@ -1101,7 +1802,7 @@ function renderResult(res, keep) { // keep: re-render in place (language change)
     warns.push(res.errKey ? t(...res.errKey) : res.error);
     $('spectrum').hidden = true;
   } else {
-    $('spectrum').hidden = false;
+    $('spectrum').hidden = !res.psd;
     $('resHead').textContent = t(res.strength === 'none' ? 'noneAt' : res.strength); $('resHead').className = 'res-head ' + res.strength;
     $('resFreq').innerHTML = '';
     $('resFreq').append(document.createTextNode(res.f0.toFixed(1)));
@@ -1115,14 +1816,13 @@ function renderResult(res, keep) { // keep: re-render in place (language change)
     row(t('dRec'), t('vRec', { d: res.dur.toFixed(1), n: res.n }));
     if (res.sensor === 'camera') row(t('dTracker'), t('vTracker', { d: res.delegate || '-', p: Math.round((res.handPct || 0) * 100) }));
     warns = qualityWarnings(res);
-    requestAnimationFrame(() => drawSpectrum(res));
+    if (res.psd) requestAnimationFrame(() => drawSpectrum(res));
   }
   $('resWarn').innerHTML = '';
   warns.forEach((w) => { const p = document.createElement('p'); p.textContent = w; $('resWarn').append(p); });
   $('resWarn').hidden = !warns.length;
   renderCompare(res.compare);
   renderInterp(res);
-  renderHistory();
 }
 function renderCompare(cmp) {
   $('compareCard').hidden = !cmp; if (!cmp) return;
@@ -1143,18 +1843,22 @@ function renderCompare(cmp) {
   d.append(s, p);
 }
 let __ovDrawn = null; // test hook: which example the spectrum chart last drew
-function drawSpectrum(res) {
-  const { c, w, h } = sizeCanvas($('spectrum'));
+// Chart colours: the page's dark theme, or a light print theme for the doctor report.
+function darkTheme() { return { field: cssVar('--field'), grid: cssVar('--grid'), text: cssVar('--bone'), muted: cssVar('--muted'), shade: cssVar('--bone'), shadeA: 0.06,
+  sky: cssVar('--sky'), lilac: cssVar('--lilac'), coral: cssVar('--coral'), saffron: cssVar('--saffron'), mint: cssVar('--mint') }; }
+const LIGHT = { field: '#ffffff', grid: '#e4e5ea', text: '#1b1d24', muted: '#5d6070', shade: '#1b1d24', shadeA: 0.05, sky: '#1f8fbf', lilac: '#7b5cff', coral: '#e2533c', saffron: '#d99a12', mint: '#1fa97a' };
+function drawSpectrum(res) { const { c, w, h } = sizeCanvas($('spectrum')); drawSpectrumOn(c, w, h, res, darkTheme(), overlayId); __ovDrawn = overlayId; }
+function drawSpectrumOn(c, w, h, res, th, ovId) {
   const xmax = Math.min(25, res.nyq), pad = { l: 8, r: 8, t: 14, b: 26 };
   const X = (f) => pad.l + f / xmax * (w - pad.l - pad.r), plotH = h - pad.t - pad.b;
-  paperGrid(c, w, h, 1e9, 1e9);
-  c.strokeStyle = cssVar('--grid'); c.lineWidth = 1; c.beginPath();
+  c.fillStyle = th.field; c.fillRect(0, 0, w, h);
+  c.strokeStyle = th.grid; c.lineWidth = 1; c.beginPath();
   for (let f = 0; f <= xmax; f += 1) { const x = Math.round(X(f)) + 0.5; c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); }
   c.stroke();
-  c.fillStyle = cssVar('--muted'); c.font = '12px ' + FONT; c.textAlign = 'center';
+  c.fillStyle = th.muted; c.font = '12px ' + FONT; c.textAlign = 'center';
   for (let f = 0; f <= xmax; f += 5) c.fillText(f + ' ' + t('hz'), Math.min(w - 22, Math.max(18, X(f))), h - 8);
   // outside the search band: shaded
-  c.fillStyle = cssVar('--bone'); c.globalAlpha = 0.06;
+  c.fillStyle = th.shade; c.globalAlpha = th.shadeA;
   c.fillRect(X(0), pad.t, X(res.band[0]) - X(0), plotH);
   if (res.band[1] < xmax) c.fillRect(X(res.band[1]), pad.t, X(xmax) - X(res.band[1]), plotH);
   c.globalAlpha = 1;
@@ -1163,16 +1867,15 @@ function drawSpectrum(res) {
   c.beginPath(); c.moveTo(X(0), h - pad.b);
   res.freqs.forEach((f, k) => { if (f <= xmax) c.lineTo(X(f), Y(res.psd[k])); });
   c.lineTo(X(Math.min(xmax, res.freqs[res.freqs.length - 1])), h - pad.b); c.closePath();
-  c.fillStyle = cssVar('--sky'); c.globalAlpha = 0.18; c.fill(); c.globalAlpha = 1;
+  c.fillStyle = th.sky; c.globalAlpha = 0.18; c.fill(); c.globalAlpha = 1;
   c.beginPath(); res.freqs.forEach((f, k) => { if (f <= xmax) (k ? c.lineTo(X(f), Y(res.psd[k])) : c.moveTo(X(f), Y(res.psd[k]))); });
-  c.strokeStyle = cssVar('--sky'); c.lineWidth = 1.8; c.stroke();
-  if (overlayId) { // illustrative example laid over the chart: same axes, same 0.9-of-height scaling, dashed
-    const ex = exampleSpectrum(overlayId), col = TREMOR_TYPES.find((x) => x.id === overlayId).color;
+  c.strokeStyle = th.sky; c.lineWidth = 1.8; c.stroke();
+  if (ovId) { // illustrative example laid over the chart: same axes, same 0.9-of-height scaling, dashed
+    const ex = exampleSpectrum(ovId), col = TREMOR_TYPES.find((x) => x.id === ovId).color;
     c.beginPath(); ex.freqs.forEach((f, k) => { if (f <= xmax) (k ? c.lineTo(X(f), Y(ex.psd[k] * top)) : c.moveTo(X(f), Y(ex.psd[k] * top))); });
     c.strokeStyle = col; c.globalAlpha = 0.75; c.lineWidth = 1.6; c.setLineDash([4, 3]); c.stroke(); c.setLineDash([]); c.globalAlpha = 1;
   }
-  __ovDrawn = overlayId;
-  const px = X(res.f0), pen = cssVar('--' + (res.strength === 'clear' ? 'coral' : res.strength === 'weak' ? 'saffron' : 'mint'));
+  const px = X(res.f0), pen = th[res.strength === 'clear' ? 'coral' : res.strength === 'weak' ? 'saffron' : 'mint'];
   c.strokeStyle = pen; c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, pad.t); c.lineTo(px, h - pad.b); c.stroke(); c.setLineDash([]);
   c.fillStyle = pen; c.textAlign = px > w - 70 ? 'right' : 'left'; c.font = '700 13px ' + FONT;
   c.fillText(res.f0.toFixed(1) + ' ' + t('hz'), px + (px > w - 70 ? -6 : 6), pad.t + 4);
@@ -1205,6 +1908,9 @@ const TREMOR_TYPES = [
   { id: 'phys',   band: [7, 12],    typ: [8, 12], color: '#43d9a3',  prior: 1,    pos: { rest: 0.4, hold: 1, stand: 0.7 },    leg: 0.8, sides: { one: 0.6, both: 1 },   size: { tiny: 1, small: 0.9, moderate: 0.35, large: 0.1 } },
   { id: 'ortho',  band: [12, 20],   typ: [13, 18], color: '#ffc24b', prior: 0.9,  pos: { rest: 0.05, hold: 0.1, stand: 1 },   leg: 1, hand: 0.05, sides: { one: 0.5, both: 1 }, size: { tiny: 0.9, small: 1, moderate: 0.6, large: 0.3 } },
 ];
+// "Moving" (finger to nose / action): intention and action tremors fit, rest tremor much less.
+const ACTION_FIT = { holmes: 1, cereb: 1, pd: 0.3, dyst: 0.8, func: 0.9, et: 1, drug: 0.9, phys: 0.8, ortho: 0.05 };
+TREMOR_TYPES.forEach((ty) => { ty.pos.action = ACTION_FIT[ty.id]; });
 const SCALE = [1, 20]; // Hz shown on the scale
 const iso = (s) => ltrIslands(s);
 const fill = (s, vars) => iso(s).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
@@ -1356,7 +2062,7 @@ function renderOverlayNote() {
 }
 function setOverlay(id) {
   overlayId = overlayId === id ? null : id; renderOverlayNote();
-  if (lastResult && !lastResult.error) drawSpectrum(lastResult);
+  if (lastResult && !lastResult.error && lastResult.psd) drawSpectrum(lastResult);
   if (overlayId) $('spectrum').scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 $('exGrid').addEventListener('click', (e) => { const b = e.target.closest('.ex'); if (b) setOverlay(b.dataset.id); });
@@ -1410,108 +2116,746 @@ $('ageInput').addEventListener('input', () => {
   if (lastResult && !lastResult.error && !$('result').hidden) renderInterp(lastResult);
 });
 
-/* ---------------- history ---------------- */
-const HKEY = 'tremor.history.v1';
-function loadHistory() { try { return JSON.parse(localStorage.getItem(HKEY) || '[]'); } catch { return []; } }
-function saveHistory(res) {
-  const h = loadHistory(), n = res.notes || {};
-  h.unshift({ ts: res.ts || Date.now(), sensor: res.sensor, limb: res.limb, posture: res.posture, f: +res.f0.toFixed(2), strength: res.strength, pp: +res.pp.toPrecision(3), fs: Math.round(res.fs),
-    side: res.side || '', med: n.med || '', medText: n.medText || '', note: n.note || '', tod: todOf(res.ts || Date.now()) });
-  try { localStorage.setItem(HKEY, JSON.stringify(h.slice(0, 50))); } catch {}
+/* ---------------- journal: every measurement, kept on this phone (localStorage; validated on load; capped) ---------------- */
+const JKEY = 'tremor.journal.v2', HKEY = 'tremor.history.v1'; // v1 = the old summary history, brought over once
+const TAGS = ['beforeMed', 'afterMed', 'coffee', 'tired', 'stress', 'exercise', 'goodDay'];
+const ENUM = { kind: ['tremor', 'spiral'], sensor: ['motion', 'camera', 'touch'], limb: ['hand', 'leg'], posture: ['rest', 'hold', 'action', 'stand', 'spiral'],
+  side: ['', 'left', 'right'], med: ['', 'yes', 'no'], sides: ['', 'one', 'both'], edge: ['', 'lo', 'hi'], drift: ['', 'skipped', 'only'], lv: ['good', 'fair', 'low'] };
+const STRENGTHS = ['clear', 'weak', 'none'];
+const num = (v, lo, hi, d) => (typeof v === 'number' && isFinite(v) && v >= lo && v <= hi ? v : d);
+const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+const en = (v, k) => (ENUM[k].includes(v) ? v : ENUM[k][0]);
+const ID_RE = /^[a-z0-9]{1,32}$/i;
+const IMG_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+function newId() { return 'm' + nowMs().toString(36) + Math.random().toString(36).slice(2, 7); }
+function validateEntry(e) { // -> a clean entry, or null when it can't be trusted
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return null;
+  const ts = num(e.ts, 1.5e12, nowMs() + 864e5, null), f = num(e.f, 0.1, 60, null), pp = num(e.pp, 0, 1000, null);
+  if (ts === null || f === null || pp === null || !STRENGTHS.includes(e.strength)) return null;
+  const kind = en(e.kind, 'kind');
+  const o = { id: ID_RE.test(e.id) ? e.id : newId(), ts, kind, sensor: en(e.sensor, 'sensor'), limb: en(e.limb, 'limb'), posture: en(e.posture, 'posture'),
+    f, pp, strength: e.strength, ratio: num(e.ratio, 0, 1e9, 0), rms: num(e.rms, 0, 1e6, 0), fs: num(e.fs, 1, 2000, 60), nyq: 0, dur: num(e.dur, 0, 600, 0),
+    n: Math.round(num(e.n, 0, 1e6, 0)), side: en(e.side, 'side'), sides: en(e.sides, 'sides'), med: en(e.med, 'med'), medText: str(e.medText, 60), note: str(e.note, 120),
+    tags: Array.isArray(e.tags) ? [...new Set(e.tags.filter((x) => TAGS.includes(x)))] : [],
+    edge: en(e.edge, 'edge'), edgeOut: e.edgeOut === true, drift: en(e.drift, 'drift'), unit: e.unit === 'mm' ? 'mm' : 'accel', moveRms: num(e.moveRms, 0, 1e6, 1), plannedS: num(e.plannedS, 0, 600, 0) };
+  o.nyq = num(e.nyq, 0.5, 1000, o.fs / 2);
+  o.band = Array.isArray(e.band) && e.band.length === 2 && e.band.every((x) => num(x, 0, 100, null) !== null) && e.band[0] < e.band[1] ? [e.band[0], e.band[1]] : [CONFIG.BAND_LO, Math.max(CONFIG.BAND_LO + 1, Math.min(CONFIG.BAND_HI, o.nyq - 0.5))];
+  if (e.q && typeof e.q === 'object' && ENUM.lv.includes(e.q.lv)) o.q = { s: Math.round(num(e.q.s, 0, 100, 0)), lv: e.q.lv, r: Array.isArray(e.q.r) ? e.q.r.filter((x) => typeof x === 'string' && /^[a-z]{1,8}$/.test(x)).slice(0, 4) : [] };
+  const sp = e.spec;
+  if (sp && typeof sp === 'object' && Array.isArray(sp.p) && sp.p.length >= 4 && sp.p.length <= 600 && sp.p.every((x) => Number.isInteger(x) && x >= 0 && x <= 1000)
+      && num(sp.d, 0.01, 2, null) !== null && num(sp.top, 1e-30, 1e30, null) !== null) o.spec = { d: sp.d, top: sp.top, p: sp.p };
+  if (typeof e.session === 'string' && ID_RE.test(e.session)) { o.session = e.session; o.step = Math.round(num(e.step, 0, 9, 0)); }
+  if (typeof e.pair === 'string' && ID_RE.test(e.pair)) o.pair = e.pair;
+  if (o.sensor === 'camera') { o.handPct = num(e.handPct, 0, 1, 1); o.delegate = str(e.delegate, 8); }
+  if (kind === 'spiral') {
+    const z = e.spiral && typeof e.spiral === 'object' ? e.spiral : {};
+    Object.assign(o, { sensor: 'touch', posture: 'spiral', limb: 'hand', unit: 'mm' });
+    o.spiral = { score: num(z.score, 0, 10, 0), rmsMm: num(z.rmsMm, 0, 1000, 0), turns: num(z.turns, 0, 50, 0) };
+    if (typeof z.img === 'string' && z.img.length < 150000 && IMG_RE.test(z.img)) o.spiral.img = z.img;
+  } else if (o.sensor === 'touch' || o.posture === 'spiral') return null;
+  return o;
 }
-const dateFmt = (o) => new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : undefined, o);
-function renderHistory() {
-  const h = loadHistory(), ol = $('histList'); ol.innerHTML = '';
-  $('historyWrap').hidden = !h.length || !$('record').hidden;
-  const fmt = dateFmt({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }), L = LABEL();
-  for (const e of h.slice(0, 20)) {
-    const li = document.createElement('li');
-    const when = document.createElement('div'); when.className = 'when'; when.textContent = fmt.format(new Date(e.ts)) + (e.tod ? ' · ' + I18N[lang].tod[e.tod] : '');
-    if (e.side) { const ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = sideName(e.side); when.append(ch); }
-    const what = document.createElement('div'); what.className = 'what ' + e.strength;
-    what.textContent = t('hWhat', { f: e.f.toFixed(1), s: t(e.strength === 'clear' ? 'hClear' : e.strength === 'weak' ? 'hWeak' : 'hNone') });
-    const how = document.createElement('div'); how.className = 'how';
-    how.textContent = t('hHow', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], mm: fmtMM(e.pp) });
-    li.append(when, what, how);
-    const memo = notesText(e); if (memo) { const m = document.createElement('div'); m.className = 'memo'; m.textContent = memo; li.append(m); }
-    ol.append(li);
+let jCache = null, jRaw = null;
+function jLoad() {
+  let raw = null; try { raw = localStorage.getItem(JKEY); } catch {}
+  if (jCache && raw === jRaw) return jCache;
+  let arr = [];
+  if (raw === null) { try { const old = JSON.parse(localStorage.getItem(HKEY) || '[]'); arr = Array.isArray(old) ? old : []; } catch {} }
+  else { try { const o = JSON.parse(raw); arr = Array.isArray(o) ? o : []; } catch {} }
+  const seen = new Set();
+  jCache = arr.map(validateEntry).filter((e) => e && !seen.has(e.id) && seen.add(e.id)).sort((a, b) => b.ts - a.ts);
+  jRaw = raw;
+  if (raw === null && jCache.length) jStore(jCache);
+  return jCache;
+}
+function jStore(list) { // newest first; cap by count, then by size: oldest spiral images go first, then oldest spectra, then oldest entries
+  list.sort((a, b) => b.ts - a.ts);
+  if (list.length > CONFIG.JOURNAL_MAX) list.length = CONFIG.JOURNAL_MAX;
+  const size = (e) => JSON.stringify(e).length + 1, sizes = list.map(size);
+  let total = sizes.reduce((x, y) => x + y, 2);
+  const shrink = (pred, fn) => { for (let i = list.length - 1; i >= 0 && total > CONFIG.JOURNAL_BYTES; i--) if (pred(list[i])) { fn(list[i]); const s2 = size(list[i]); total += s2 - sizes[i]; sizes[i] = s2; } };
+  shrink((e) => e.spiral && e.spiral.img, (e) => { delete e.spiral.img; });
+  shrink((e) => e.spec, (e) => { delete e.spec; });
+  while (total > CONFIG.JOURNAL_BYTES && list.length > 1) { total -= sizes.pop(); list.pop(); }
+  let json = JSON.stringify(list);
+  try { localStorage.setItem(JKEY, json); }
+  catch { // storage full (shared with the game): keep the newest 80% and try once more
+    list.length = Math.max(1, Math.floor(list.length * 0.8)); json = JSON.stringify(list);
+    try { localStorage.setItem(JKEY, json); } catch {}
   }
-  $('trendHint').textContent = t('trendHint', { setup: t('sub', { limb: L.limb[state.limb], posture: L.posture[state.posture], sensor: L.sensor[state.sensor] }) });
-  requestAnimationFrame(drawTrend);
+  jCache = list; jRaw = json;
+  return list;
+}
+function specOf(res) { // the spectrum for the journal: 0..min(25 Hz, Nyquist) at SPEC_STEP, max-pooled, scaled 0..1000 to the band's peak
+  if (!res.freqs || !res.psd) return undefined;
+  const d = CONFIG.SPEC_STEP, nb = Math.floor(Math.min(25, res.nyq) / d) + 1, p = new Array(nb).fill(0);
+  res.freqs.forEach((f, k) => { const i = Math.round(f / d); if (i < nb) p[i] = Math.max(p[i], res.psd[k]); });
+  let top = 0; p.forEach((v, i) => { if (i * d >= res.band[0] - 1e-9 && i * d <= res.band[1] + 1e-9) top = Math.max(top, v); });
+  top = top || Math.max(...p) || 1e-12;
+  return { d, top: +top.toPrecision(4), p: p.map((v) => Math.min(1000, Math.round(v / top * 1000))) };
+}
+function entryOf(res) {
+  const n = res.notes || {}, P = (x, k) => +(+x || 0).toPrecision(k);
+  return validateEntry({ id: res.id || newId(), ts: res.ts || nowMs(), kind: res.kind || 'tremor', sensor: res.sensor, limb: res.limb, posture: res.posture,
+    f: +res.f0.toFixed(2), pp: P(res.pp, 3), strength: res.strength, ratio: P(res.ratio, 3), rms: P(res.rms, 3), fs: +res.fs.toFixed(1), nyq: +res.nyq.toFixed(1),
+    dur: +res.dur.toFixed(1), n: res.n, side: res.side || '', sides: n.sides || '', med: n.med || '', medText: n.medText || '', note: n.note || '', tags: res.tags || [],
+    band: res.band.map((x) => +x.toFixed(2)), edge: res.edge || '', edgeOut: !!res.edgeOut, drift: res.drift || '', unit: res.unit, moveRms: P(res.moveRms, 3),
+    q: res.q ? { s: res.q.s, lv: res.q.lv, r: res.q.r } : undefined, spec: specOf(res), session: res.session, step: res.step, pair: res.pair,
+    handPct: res.handPct, delegate: res.delegate, plannedS: res.plannedS, spiral: res.spiral });
+}
+function saveResult(res) { const e = entryOf(res); if (!e) return null; res.id = e.id; const list = jLoad().filter((x) => x.id !== e.id); list.unshift(e); jStore(list); return e; }
+function jFind(id) { return jLoad().find((e) => e.id === id) || null; }
+function jUpdate(id, patch) { const list = jLoad(), e = list.find((x) => x.id === id); if (!e) return; Object.assign(e, patch); jStore(list); }
+function jDelete(id) { jStore(jLoad().filter((e) => e.id !== id)); }
+function resOf(e, noPair) { // a journal entry back into a result (to reopen it)
+  const r = { id: e.id, ts: e.ts, kind: e.kind, sensor: e.sensor, limb: e.limb, posture: e.posture, side: e.side, tags: e.tags.slice(),
+    notes: { side: e.side, sides: e.sides, med: e.med, medText: e.medText, note: e.note },
+    f0: e.f, pp: e.pp, strength: e.strength, ratio: e.ratio, rms: e.rms, fs: e.fs, nyq: e.nyq, dur: e.dur, n: e.n, band: e.band, edge: e.edge, edgeOut: e.edgeOut,
+    drift: e.drift, unit: e.unit, moveRms: e.moveRms, q: e.q || null, handPct: e.handPct, delegate: e.delegate, plannedS: e.plannedS || e.dur,
+    session: e.session, step: e.step, pair: e.pair, spiral: e.spiral ? { ...e.spiral } : undefined };
+  if (e.spec) { r.freqs = e.spec.p.map((_, i) => +(i * e.spec.d).toFixed(3)); r.psd = e.spec.p.map((v) => v / 1000 * e.spec.top); }
+  if (e.pair && !noPair) { const L = jFind(e.pair); if (L) r.compare = { left: resOf(L, true), right: resOf(e, true) }; }
+  return r;
+}
+let viewing = null; // { id, back } while a saved measurement is reopened
+function openEntry(id, back) {
+  const e = jFind(id); if (!e) return;
+  viewing = { id, back: back || view };
+  if (e.kind === 'spiral') spiralShowResult(resOf(e)); else renderResult(resOf(e));
+}
+function goBack() { const b = viewing ? viewing.back : 'setup'; viewing = null; show(b); }
+async function deleteEntry(id) {
+  if (!id || !(await askConfirm(t('delOneQ')))) return false;
+  jDelete(id); toast(t('deleted'));
+  if (viewing) goBack(); else show('setup');
+  return true;
+}
+function askConfirm(text, yesKey = 'del') {
+  return new Promise((resolve) => {
+    const m = $('confirm'); $('confirmTxt').textContent = text; $('confirmYes').textContent = t(yesKey); m.hidden = false; $('confirmNo').focus();
+    const done = (v) => { m.hidden = true; $('confirmYes').onclick = $('confirmNo').onclick = m.onclick = null; document.removeEventListener('keydown', esc); resolve(v); };
+    const esc = (e) => { if (e.key === 'Escape') done(false); };
+    $('confirmYes').onclick = () => done(true); $('confirmNo').onclick = () => done(false); m.onclick = (e) => { if (e.target === m) done(false); };
+    document.addEventListener('keydown', esc);
+  });
+}
+/* notes + tags of a saved measurement (the card moves between the tremor and the spiral result) */
+let tagFor = null, noteT = 0;
+function mountTags(slot, id) {
+  const card = $('tagCard'); if (card.parentElement !== slot) slot.append(card);
+  tagFor = id; card.hidden = !id; if (!id) return;
+  const e = jFind(id); if (!e) { card.hidden = true; return; }
+  const box = $('tagChips'); box.innerHTML = '';
+  TAGS.forEach((k) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.tag = k; b.textContent = tn('tags', k); b.setAttribute('aria-pressed', String(e.tags.includes(k))); box.append(b); });
+  if (document.activeElement !== $('entryNote')) $('entryNote').value = e.note || '';
+}
+$('tagChips').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'), e = tagFor && jFind(tagFor); if (!b || !e) return;
+  const k = b.dataset.tag, on = !e.tags.includes(k);
+  let tags = on ? [...e.tags, k] : e.tags.filter((x) => x !== k);
+  if (on && k === 'beforeMed') tags = tags.filter((x) => x !== 'afterMed');
+  if (on && k === 'afterMed') tags = tags.filter((x) => x !== 'beforeMed');
+  jUpdate(tagFor, { tags }); if (lastResult && lastResult.id === tagFor) lastResult.tags = tags;
+  mountTags($('tagCard').parentElement, tagFor);
+});
+$('entryNote').addEventListener('input', () => {
+  if (!tagFor) return; const id = tagFor, v = $('entryNote').value.trim().slice(0, 120);
+  if (lastResult && lastResult.id === id) { lastResult.notes = { ...(lastResult.notes || {}), note: v }; if (!$('result').hidden) $('resNotes').textContent = notesText(lastResult.notes); }
+  clearTimeout(noteT); noteT = setTimeout(() => jUpdate(id, { note: v }), 250);
+});
+
+/* ---------------- streak, calendar heatmap, today's check ---------------- */
+const dayKey = (ts) => { const d = new Date(ts); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };
+const startOfDay = (ts) => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const addDays = (ts, n) => { const d = new Date(ts); d.setDate(d.getDate() + n); return d.getTime(); };
+function streakInfo(list, now) { // consecutive days with a measurement, ending today (or yesterday: today is still open)
+  const days = new Set(list.map((e) => dayKey(e.ts))), t0 = startOfDay(now), today = days.has(dayKey(t0));
+  let d = today ? t0 : addDays(t0, -1), streak = 0;
+  while (days.has(dayKey(d))) { streak++; d = addDays(d, -1); }
+  let last14 = 0; for (let i = 0; i < 14; i++) if (days.has(dayKey(addDays(t0, -i)))) last14++;
+  return { streak, today, last14, total: list.length };
+}
+function renderStreak(numId, txtId, subId) {
+  const s = streakInfo(jLoad(), nowMs());
+  $(numId).textContent = s.streak; $(numId).hidden = !s.streak;
+  $(txtId).textContent = s.streak >= 2 ? t('streakN', { n: s.streak }) : s.streak === 1 ? t('streak1') : t('streak0');
+  $(subId).textContent = s.total ? t('daysOf', { n: s.last14 }) : t('daysOf0');
+  return s;
+}
+function heatCells(list, now) { // 12 weeks, Sunday first, the last column = this week
+  const t0 = startOfDay(now), start = addDays(t0, -(7 * 11 + new Date(t0).getDay())), counts = {};
+  list.forEach((e) => { const k = dayKey(e.ts); counts[k] = (counts[k] || 0) + 1; });
+  return Array.from({ length: 84 }, (_, i) => { const d = addDays(start, i), k = dayKey(d); return { day: k, n: counts[k] || 0, future: d > t0, today: d === t0 }; });
+}
+function renderHeat() {
+  const el = $('heat'); el.innerHTML = ''; let n = 0;
+  heatCells(jLoad(), nowMs()).forEach((c) => {
+    const i = document.createElement('i'); i.dataset.day = c.day; i.dataset.n = c.n;
+    if (c.future) i.className = 'future'; else { i.className = c.n >= 4 ? 'l3' : c.n >= 2 ? 'l2' : c.n ? 'l1' : ''; n += c.n; }
+    if (c.today) i.classList.add('today');
+    el.append(i);
+  });
+  el.setAttribute('aria-label', t('heatAria', { n }));
+}
+function remPassedToday() {
+  if (!settings.rem.on) return false;
+  const now = nowMs();
+  return settings.rem.times.some((tm) => { const [h, m] = tm.split(':').map(Number), d = new Date(now); d.setHours(h, m, 0, 0); return d.getTime() <= now; });
+}
+function renderToday() {
+  const s = renderStreak('streakNum', 'streakTxt', 'streakSub'), due = $('todayDue');
+  if (s.today) { due.hidden = false; due.className = 'today-due done'; due.textContent = t('todayDone'); }
+  else if (remPassedToday()) { due.hidden = false; due.className = 'today-due'; due.textContent = t('todayDue'); }
+  else due.hidden = true;
 }
 
-/* ---------------- trend chart ---------------- */
-const trend = { pts: [], sel: -1, xs: [] };
-function trendData() {
-  return loadHistory().filter((e) => e.sensor === state.sensor && e.limb === state.limb && e.posture === state.posture && (state.trendSide === 'both' || e.side === state.trendSide))
-    .sort((a, b) => a.ts - b.ts).slice(-50);
+/* ---------------- daily reminder: Notification API where allowed, plus the in-app "today's check" ---------------- */
+let remTimer = 0, remNextAt = null;
+const notifState = () => (typeof Notification === 'undefined' ? 'none' : Notification.permission);
+function nextReminder(now, times) { // the next reminder time strictly after now (ms), or null
+  let best = null;
+  for (const d of [0, 1]) for (const tm of times) {
+    if (!TIME_RE.test(tm)) continue;
+    const [h, m] = tm.split(':').map(Number), x = new Date(now); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0);
+    if (x.getTime() > now && (best === null || x.getTime() < best)) best = x.getTime();
+  }
+  return best;
 }
-function drawTrend() {
-  const cv = $('trend'), pts = trendData(); trend.pts = pts; trend.xs = [];
-  if (trend.sel >= pts.length) trend.sel = -1;
-  const empty = pts.length < 2; $('trendEmpty').hidden = !empty; cv.hidden = empty; $('trendLegend').hidden = empty;
-  if (empty || $('historyWrap').hidden) { $('trendInfo').textContent = ''; return; }
-  const { c, w, h } = sizeCanvas(cv); if (w < 40) return;
-  const pad = { l: 34, r: 12, t: 20, b: 24 }, gap = 18, ampH = Math.round((h - pad.t - pad.b - gap) * 0.3), freqH = h - pad.t - pad.b - gap - ampH;
+function scheduleReminder() {
+  clearTimeout(remTimer); remTimer = 0; remNextAt = null;
+  if (!settings.rem.on || !settings.rem.times.length) return null;
+  remNextAt = nextReminder(nowMs(), settings.rem.times);
+  if (remNextAt) remTimer = setTimeout(fireReminder, Math.min(2147483000, Math.max(1000, remNextAt - nowMs())));
+  return remNextAt;
+}
+async function notify(title, body) {
+  if (notifState() !== 'granted') return false;
+  const opts = { body, tag: 'tremorti-daily', lang: lang === 'he' ? 'he' : 'en', dir: lang === 'he' ? 'rtl' : 'ltr' };
+  try { new Notification(title, opts); return true; } catch {} // Android Chrome only allows notifications from a service worker
+  try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (reg) { await reg.showNotification(title, opts); return true; } } catch {}
+  return false;
+}
+async function fireReminder() { // no reminder once today's measurement is done (no nagging)
+  const done = streakInfo(jLoad(), nowMs()).today;
+  const shown = done ? false : await notify(t('notifTitle'), t('notifBody'));
+  settings.remLast = new Date(nowMs()).toISOString().slice(0, 16); saveSettings();
+  if (view === 'setup') renderToday();
+  scheduleReminder(); if (view === 'journal') renderReminders();
+  return shown;
+}
+function renderReminders() {
+  $('remToggle').setAttribute('aria-pressed', String(settings.rem.on));
+  const box = $('remTimes'); box.innerHTML = ''; box.hidden = !settings.rem.on;
+  $('remAdd').parentElement.hidden = !settings.rem.on || settings.rem.times.length >= 3;
+  settings.rem.times.forEach((tm, i) => {
+    const row = document.createElement('div'); row.className = 'rem-time';
+    const inp = document.createElement('input'); inp.type = 'time'; inp.className = 'input'; inp.value = tm; inp.dataset.i = i; inp.setAttribute('aria-label', t('remTimeAria'));
+    row.append(inp);
+    if (settings.rem.times.length > 1) { const x = document.createElement('button'); x.type = 'button'; x.className = 'chipbtn'; x.dataset.rm = i; x.textContent = t('remRemove'); row.append(x); }
+    box.append(row);
+  });
+  const st = notifState();
+  let note = !settings.rem.on ? t('remNoteOff') : st === 'none' ? t('remNoteNoApi') : st === 'denied' ? t('remNoteDenied') : t('remNoteOk');
+  if (settings.rem.on && remNextAt) note += ' ' + t('remNext', { when: dateFmt({ weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(remNextAt)) });
+  $('remNote').textContent = note;
+}
+$('remToggle').addEventListener('click', async () => {
+  settings.rem.on = !settings.rem.on; saveSettings();
+  if (settings.rem.on && typeof Notification !== 'undefined' && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
+  if (settings.rem.on && notifState() === 'granted') { try { navigator.serviceWorker && navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {} }
+  scheduleReminder(); renderReminders();
+});
+$('remAdd').addEventListener('click', () => { if (settings.rem.times.length >= 3) return; settings.rem.times.push('19:00'); saveSettings(); scheduleReminder(); renderReminders(); });
+$('remTimes').addEventListener('change', (e) => { const i = +e.target.dataset.i; if (e.target.type !== 'time' || !TIME_RE.test(e.target.value)) return; settings.rem.times[i] = e.target.value; saveSettings(); scheduleReminder(); renderReminders(); });
+$('remTimes').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (!b) return; settings.rem.times.splice(+b.dataset.rm, 1); saveSettings(); scheduleReminder(); renderReminders(); });
+
+/* ---------------- journal screen: list grouped by day; a full check is one row ---------------- */
+let jShown = 40;
+const strengthWord = (s) => t(s === 'clear' ? 'hClear' : s === 'weak' ? 'hWeak' : 'hNone');
+const fmtScore = (x) => String(+(+x).toFixed(1));
+function el(tag, cls, txt) { const d = document.createElement(tag); if (cls) d.className = cls; if (txt != null) d.textContent = txt; return d; }
+function chipEl(txt) { return el('span', 'chip', txt); }
+function goEl(q) { const g = el('span', 'go'); if (q) { const d = el('span', 'qdot q-' + q.lv); d.title = t('dQuality') + ': ' + t('qVal', { s: q.s, lvl: tn('qLv', q.lv) }); g.append(d); } g.insertAdjacentHTML('beforeend', '<svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-chev"/></svg>'); return g; }
+function entryRow(e, tfmt) {
+  const b = el('button', 'jitem'); b.type = 'button'; b.dataset.id = e.id; const L = LABEL();
+  const hz = el('span', 'hz ' + e.strength, e.kind === 'spiral' ? t('spiralItem', { s: fmtScore(e.spiral.score) }) : t('hWhat', { f: e.f.toFixed(1), s: strengthWord(e.strength) }));
+  const sub = el('span', 'sub');
+  if (e.side) sub.append(chipEl(sideName(e.side)));
+  e.tags.forEach((k) => sub.append(chipEl(tn('tags', k))));
+  if (e.q && e.q.lv === 'low') sub.append(chipEl(t('lowQ')));
+  sub.append(e.kind === 'spiral' ? t('kindSpiral') + (e.strength !== 'none' ? ', ' + e.f.toFixed(1) + ' Hz' : '') : t('hHow', { limb: L.limb[e.limb], posture: L.posture[e.posture], sensor: L.sensor[e.sensor], mm: fmtMM(e.pp) }));
+  const memo = notesText(e); if (memo) sub.append(' · ' + memo);
+  b.append(el('span', 'tm', tfmt.format(new Date(e.ts))), hz, goEl(e.q), sub);
+  return b;
+}
+function sessionRow(r, tfmt) {
+  const b = el('button', 'jitem'); b.type = 'button'; b.dataset.session = r.session;
+  const rh = r.items.filter((e) => e.strength !== 'none'), big = rh.length ? rh.reduce((a, x) => (x.pp > a.pp ? x : a)) : null;
+  const low = r.items.some((e) => e.q && e.q.lv === 'low');
+  b.append(el('span', 'tm', tfmt.format(new Date(r.items[r.items.length - 1].ts))), el('span', 'hz ' + (big ? big.strength : 'none'), t('sessionItem', { n: r.items.length })),
+    goEl(low ? { lv: 'low', s: Math.min(...r.items.map((e) => (e.q ? e.q.s : 100))) } : null),
+    el('span', 'sub', big ? t('sumLargest', { where: t('sumWhere', { hand: t(big.side === 'left' ? 'handL' : 'handR'), step: tn('stepLow', big.posture) }), f: big.f.toFixed(1), mm: fmtMM(big.pp) }) : t('sumNone')));
+  return b;
+}
+function renderJournal() {
+  renderStreak('jStreakNum', 'jStreakTxt', 'jStreakSub'); renderHeat(); renderReminders();
+  const list = jLoad(), box = $('jList'); box.innerHTML = '';
+  $('jEmpty').hidden = !!list.length; $('clearHist').hidden = !list.length; $('exportJson').disabled = !list.length; $('exportBtn').disabled = !list.length; $('reportBtn2').hidden = !list.length;
+  const rows = [], seenS = new Set();
+  for (const e of list) {
+    if (!e.session) { rows.push({ e, ts: e.ts }); continue; }
+    if (seenS.has(e.session)) continue; seenS.add(e.session);
+    rows.push({ session: e.session, ts: e.ts, items: list.filter((x) => x.session === e.session).sort((a, b) => a.step - b.step) });
+  }
+  const now = nowMs(), today = dayKey(now), yest = dayKey(addDays(startOfDay(now), -1));
+  const dfmt = dateFmt({ weekday: 'long', day: 'numeric', month: 'long' }), tfmt = dateFmt({ hour: '2-digit', minute: '2-digit' });
+  let lastDay = null;
+  rows.slice(0, jShown).forEach((r) => {
+    const k = dayKey(r.ts);
+    if (k !== lastDay) { lastDay = k; box.append(el('div', 'jday', k === today ? t('today') : k === yest ? t('yesterday') : dfmt.format(new Date(r.ts)))); }
+    box.append(r.session ? sessionRow(r, tfmt) : entryRow(r.e, tfmt));
+  });
+  $('jMoreWrap').hidden = rows.length <= jShown;
+  $('storageNote').textContent = t('storageNote', { max: CONFIG.JOURNAL_MAX });
+}
+$('jList').addEventListener('click', (e) => {
+  const b = e.target.closest('.jitem'); if (!b) return;
+  if (b.dataset.session) { sessionShown = b.dataset.session; viewing = null; sessBack = 'journal'; show('session'); } else openEntry(b.dataset.id, 'journal');
+});
+$('jMore').addEventListener('click', () => { jShown += 40; renderJournal(); });
+const renderHistory = () => refreshView(); // old name kept for tests / callers
+
+/* ---------------- full check summary ---------------- */
+let sessionShown = null, sessBack = 'setup';
+function sessionSummary(items) { // plain-language lines; patterns, not a diagnosis
+  const out = []; if (!items.length) return out;
+  const rh = items.filter((e) => e.strength !== 'none');
+  if (!rh.length) out.push(t('sumNone'));
+  else {
+    const big = rh.reduce((a, x) => (x.pp > a.pp ? x : a));
+    out.push(t('sumLargest', { where: t('sumWhere', { hand: t(big.side === 'left' ? 'handL' : 'handR'), step: tn('stepLow', big.posture) }), f: big.f.toFixed(1), mm: fmtMM(big.pp) }));
+    const sz = (pred) => { const v = items.filter(pred).map((e) => e.pp); return v.length ? median(v) : null; };
+    const r = sz((e) => e.posture === 'rest'), h = sz((e) => e.posture === 'hold'), a = sz((e) => e.posture === 'action');
+    if (r != null && h != null) out.push(t(r > 1.5 * h ? 'sumRestMore' : h > 1.5 * r ? 'sumHoldMore' : 'sumRestHoldSame'));
+    if (a != null && h != null && a > 1.5 * h) out.push(t('sumActMore'));
+    const L = sz((e) => e.side === 'left'), R = sz((e) => e.side === 'right');
+    if (L != null && R != null) { const x = Math.max(L, R) / Math.max(1e-6, Math.min(L, R)); out.push(x >= 1.5 ? t('sumLR', { side: t(R > L ? 'handR' : 'handL'), x: x.toFixed(1) }) : t('sumLRSame')); }
+    const rb = resOf(big, true), bothSides = ['left', 'right'].every((sd) => rh.some((e) => e.side === sd));
+    rb.notes = { ...rb.notes, sides: bothSides ? 'both' : 'one' };
+    const m = interpret(rb)[0], lvl = m.score >= 0.55 ? 'mClose' : m.score >= 0.25 ? 'mPart' : 'mWeak';
+    out.push(t('sumPattern', { name: TT(m.id)[0], lvl: lang === 'he' ? t(lvl) : t(lvl).toLowerCase() }));
+  }
+  const low = items.filter((e) => e.q && e.q.lv === 'low').length; if (low) out.push(t('sumLowQ', { n: low }));
+  return out;
+}
+function renderSession(sid) {
+  const items = jLoad().filter((e) => e.session === sid).sort((a, b) => a.step - b.step);
+  $('sessLead').textContent = items.length ? t('sessLead', { date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(items[0].ts)), n: items.length }) : '';
+  const g = $('sessGrid'); g.innerHTML = '';
+  g.append(el('div'), el('div', 'h', t('handL')), el('div', 'h', t('handR')));
+  for (const p of ['rest', 'hold', 'action']) {
+    g.append(el('div', 'k', tn('stepName', p)));
+    for (const sd of ['left', 'right']) {
+      const e = items.find((x) => x.posture === p && x.side === sd), b = el('button', 'cellbtn'); b.type = 'button';
+      if (e) { b.dataset.id = e.id; b.append(el('b', e.strength, e.f.toFixed(1) + ' Hz'), el('span', '', '≈ ' + fmtMM(e.pp) + ' mm'));
+        if (e.q) { const d = el('span', 'qdot q-' + e.q.lv); d.style.marginTop = '3px'; b.append(d); } }
+      else { b.disabled = true; b.append(el('b', '', '–')); }
+      g.append(b);
+    }
+  }
+  const ul = $('sessSum'); ul.innerHTML = ''; sessionSummary(items).forEach((x) => ul.append(el('li', '', x)));
+}
+$('sessGrid').addEventListener('click', (e) => { const b = e.target.closest('.cellbtn'); if (b && b.dataset.id) openEntry(b.dataset.id, 'session'); });
+$('sessDone').addEventListener('click', () => { viewing = null; show(sessBack === 'journal' ? 'journal' : 'setup'); sessBack = 'setup'; });
+
+/* ---------------- trends: rate and size over days / weeks (dots + rolling median), filters, L/R, before / after medication ---------------- */
+const tf = settings.tf;
+const trend = { pts: [], sel: -1, xs: [] };
+function trendFilter(list, o = {}) {
+  const range = o.range || tf.range, since = range === 'all' ? 0 : nowMs() - (+range) * 864e5;
+  return list.filter((e) => e.ts >= since && (tf.limb === 'all' || e.limb === tf.limb)
+    && (tf.cond === 'all' ? e.kind === 'tremor' : tf.cond === 'spiral' ? e.kind === 'spiral' : e.kind === 'tremor' && e.posture === tf.cond)
+    && (o.ignoreSide || tf.side === 'both' || e.side === tf.side));
+}
+function rollingMedian(pts, key, halfDays = 3.5) { return pts.map((p) => median(pts.filter((q) => Math.abs(q.ts - p.ts) <= halfDays * 864e5).map((q) => q[key]))); }
+function drawTrendChart(c, w, h, pts, th, sel) { // two panels: rate (Hz) on top, size (mm) below; returns the points' x positions
+  const xs = [];
+  c.fillStyle = th.field; c.fillRect(0, 0, w, h);
+  if (pts.length < 2) return xs;
+  const pad = { l: 36, r: 12, t: 20, b: 24 }, gap = 20, ampH = Math.round((h - pad.t - pad.b - gap) * 0.36), freqH = h - pad.t - pad.b - gap - ampH;
   const t0 = pts[0].ts, t1 = Math.max(pts[pts.length - 1].ts, t0 + 1), X = (ts) => pad.l + (ts - t0) / (t1 - t0) * (w - pad.l - pad.r);
   let fLo = Infinity, fHi = -Infinity, aHi = 0; pts.forEach((p) => { fLo = Math.min(fLo, p.f); fHi = Math.max(fHi, p.f); aHi = Math.max(aHi, p.pp); });
   fLo = Math.max(0, Math.floor(fLo - 1)); fHi = Math.ceil(fHi + 1); aHi = aHi * 1.15 || 1;
   const YF = (f) => pad.t + (1 - (f - fLo) / (fHi - fLo)) * freqH, a0 = pad.t + freqH + gap, YA = (a) => a0 + (1 - a / aHi) * ampH;
-  paperGrid(c, w, h, 1e9, 1e9);
-  c.font = '11px ' + FONT; c.fillStyle = cssVar('--muted'); c.strokeStyle = cssVar('--grid'); c.lineWidth = 1;
+  c.font = '11px ' + FONT; c.fillStyle = th.muted; c.strokeStyle = th.grid; c.lineWidth = 1;
   const stepF = fHi - fLo > 8 ? 4 : fHi - fLo > 4 ? 2 : 1;
   c.textAlign = 'right'; c.textBaseline = 'middle';
   for (let f = fLo; f <= fHi; f += stepF) { const y = Math.round(YF(f)) + 0.5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(w - pad.r, y); c.stroke(); c.fillText(String(f), pad.l - 6, y); }
   for (const a of [0, aHi / 1.15]) { const y = Math.round(YA(a)) + 0.5; c.beginPath(); c.moveTo(pad.l, y); c.lineTo(w - pad.r, y); c.stroke(); c.fillText(a ? fmtMM(a) : '0', pad.l - 6, y); }
-  c.textAlign = 'left'; c.textBaseline = 'alphabetic'; // unit labels: above each panel, in the gutter next to the ticks
-  c.fillStyle = cssVar('--sky'); c.fillText(t('hz'), pad.l + 4, pad.t - 7); c.fillStyle = cssVar('--lilac'); c.fillText('mm', pad.l + 4, a0 - 6);
-  // date ticks: first, last and up to two between; a tick that would overlap the previous label is skipped
+  c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+  c.fillStyle = th.sky; c.fillText(t('hz'), pad.l + 4, pad.t - 7); c.fillStyle = th.lilac; c.fillText('mm', pad.l + 4, a0 - 6);
   const dfmt = dateFmt(t1 - t0 < 2 * 864e5 ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' } : { month: 'short', day: 'numeric' }), nT = Math.min(pts.length, w < 420 ? 3 : 4), ticks = [];
   for (let i = 0; i < nT; i++) ticks.push(pts[Math.round(i * (pts.length - 1) / (nT - 1 || 1))].ts);
-  c.fillStyle = cssVar('--muted'); let lastR = -1e9;
+  c.fillStyle = th.muted; let lastR = -1e9;
   [...new Set(ticks)].forEach((ts, i, arr) => { const x = X(ts), s = dfmt.format(new Date(ts)), tw = c.measureText(s).width;
     const al = i === 0 ? 'left' : i === arr.length - 1 ? 'right' : 'center', x0 = al === 'left' ? x : al === 'right' ? x - tw : x - tw / 2;
     if (x0 < lastR + 10) return; c.textAlign = al; c.fillText(s, x, h - 7); lastR = x0 + tw; });
-  // amplitude (thin, lilac) then frequency (main, sky)
-  c.strokeStyle = cssVar('--lilac'); c.lineWidth = 1.4; c.lineJoin = 'round'; c.beginPath();
-  pts.forEach((p, i) => { const x = X(p.ts), y = YA(p.pp); i ? c.lineTo(x, y) : c.moveTo(x, y); });
-  c.stroke();
-  c.strokeStyle = cssVar('--sky'); c.lineWidth = 2.2; c.beginPath();
-  pts.forEach((p, i) => { const x = X(p.ts), y = YF(p.f); trend.xs.push(x); i ? c.lineTo(x, y) : c.moveTo(x, y); });
-  c.stroke();
-  const big = pts.length <= 30;
-  pts.forEach((p, i) => { const x = X(p.ts), y = YF(p.f);
-    c.fillStyle = cssVar('--field'); c.beginPath(); c.arc(x, y, big ? 5.5 : 3.5, 0, 7); c.fill();
-    c.fillStyle = cssVar('--' + (p.strength === 'clear' ? 'coral' : p.strength === 'weak' ? 'saffron' : 'mint')); c.beginPath(); c.arc(x, y, big ? 4 : 2.2, 0, 7); c.fill(); });
-  if (trend.sel >= 0) {
-    const p = pts[trend.sel], x = X(p.ts);
-    c.strokeStyle = cssVar('--bone'); c.lineWidth = 1; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); c.stroke(); c.setLineDash([]);
-    c.strokeStyle = cssVar('--bone'); c.lineWidth = 2; c.beginPath(); c.arc(x, YF(p.f), 8, 0, 7); c.stroke(); c.beginPath(); c.arc(x, YA(p.pp), 5, 0, 7); c.stroke();
-    $('trendInfo').textContent = t('trendPt', { date: dateFmt({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(p.ts)), f: p.f.toFixed(1), mm: fmtMM(p.pp),
-      s: t(p.strength === 'clear' ? 'hClear' : p.strength === 'weak' ? 'hWeak' : 'hNone'), side: p.side === 'left' ? t('trendSideL') : p.side === 'right' ? t('trendSideR') : '' });
-  } else $('trendInfo').textContent = '';
+  const mf = rollingMedian(pts, 'f'), ma = rollingMedian(pts, 'pp');
+  const line = (vals, Y, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = 'round'; c.beginPath(); pts.forEach((p, i) => { const x = X(p.ts), y = Y(vals[i]); i ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke(); };
+  line(ma, YA, th.lilac, 1.8); line(mf, YF, th.sky, 2.4);
+  const dot = (x, y, r, col, hollow) => { c.fillStyle = th.field; c.beginPath(); c.arc(x, y, r + 1.5, 0, 7); c.fill();
+    if (hollow) { c.strokeStyle = col; c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, r - 0.5, 0, 7); c.stroke(); } else { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); } };
+  const big = pts.length <= 40;
+  pts.forEach((p) => { const x = X(p.ts), low = !!(p.q && p.q.lv === 'low'); xs.push(x);
+    dot(x, YA(p.pp), big ? 3 : 2, th.lilac, low); dot(x, YF(p.f), big ? 4.2 : 2.6, th[p.strength === 'clear' ? 'coral' : p.strength === 'weak' ? 'saffron' : 'mint'], low); });
+  if (sel >= 0 && pts[sel]) {
+    const p = pts[sel], x = X(p.ts);
+    c.strokeStyle = th.text; c.lineWidth = 1; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(x, pad.t); c.lineTo(x, h - pad.b); c.stroke(); c.setLineDash([]);
+    c.lineWidth = 2; c.beginPath(); c.arc(x, YF(p.f), 8, 0, 7); c.stroke(); c.beginPath(); c.arc(x, YA(p.pp), 6, 0, 7); c.stroke();
+  }
+  return xs;
+}
+function drawTrend() {
+  const cv = $('trend'); if (cv.hidden || $('trends').hidden) return;
+  const { c, w, h } = sizeCanvas(cv); if (w < 40) return;
+  trend.xs = drawTrendChart(c, w, h, trend.pts, darkTheme(), trend.sel);
+}
+function renderChips() { document.querySelectorAll('.chips[data-f]').forEach((g) => g.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(tf[g.dataset.f] === b.dataset.v)))); }
+function renderTrends() {
+  renderChips();
+  const pts = trendFilter(jLoad()).sort((a, b) => a.ts - b.ts); trend.pts = pts; if (trend.sel >= pts.length) trend.sel = -1;
+  const empty = pts.length < 2; $('trendEmpty').hidden = !empty; $('trend').hidden = empty; $('trendLegend').hidden = empty;
+  if (!empty) requestAnimationFrame(drawTrend);
+  renderTrendInfo(); renderLR(); renderMed();
+}
+function renderTrendInfo() {
+  const box = $('trendInfo'); box.innerHTML = ''; const p = trend.pts[trend.sel]; if (!p || trend.sel < 0) return;
+  box.append(t('trendPt', { date: dateFmt({ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(p.ts)), f: p.f.toFixed(1), mm: fmtMM(p.pp),
+    s: strengthWord(p.strength), side: p.side === 'left' ? t('trendSideL') : p.side === 'right' ? t('trendSideR') : '' }) + ' ');
+  const b = el('button', 'link', t('open')); b.type = 'button'; b.id = 'trendOpen'; b.style.minHeight = '36px'; b.style.padding = '0 6px'; b.onclick = () => openEntry(p.id, 'trends'); box.append(b);
 }
 $('trend').addEventListener('click', (e) => {
   if (!trend.xs.length) return;
   const x = e.clientX - $('trend').getBoundingClientRect().left;
   let best = 0; trend.xs.forEach((px, i) => { if (Math.abs(px - x) < Math.abs(trend.xs[best] - x)) best = i; });
-  trend.sel = trend.sel === best ? -1 : best; drawTrend();
+  trend.sel = trend.sel === best ? -1 : best; drawTrend(); renderTrendInfo();
 });
+document.querySelectorAll('.chips[data-f]').forEach((g) => g.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  tf[g.dataset.f] = b.dataset.v; saveSettings(); trend.sel = -1;
+  if (g.dataset.f === 'rpRange') renderReport(); else renderTrends();
+}));
+function lrStats(list) {
+  const st = (s) => { const v = list.filter((e) => e.side === s); return v.length ? { n: v.length, f: median(v.map((e) => e.f)), pp: median(v.map((e) => e.pp)) } : null; };
+  return { L: st('left'), R: st('right') };
+}
+function lrText(st) {
+  if (!st.L || !st.R) return t('lrNone');
+  const x = Math.max(st.L.pp, st.R.pp) / Math.max(1e-6, Math.min(st.L.pp, st.R.pp));
+  return x >= 1.25 ? t('lrMore', { side: sideName(st.R.pp > st.L.pp ? 'right' : 'left'), x: x.toFixed(1), a: st.L.n, b: st.R.n }) : t('lrSame', { a: st.L.n, b: st.R.n });
+}
+function renderLR() {
+  const st = lrStats(trendFilter(jLoad(), { ignoreSide: true })), g = $('lrGrid'); g.innerHTML = '';
+  g.hidden = !st.L || !st.R;
+  if (!g.hidden) {
+    const cell = (txt, cls, unit) => { const d = el('div', cls || '', txt); if (unit) d.append(el('small', '', unit)); g.append(d); };
+    cell(''); cell(t('cmpLeft'), 'h'); cell(t('cmpRight'), 'h');
+    cell(t('cmpFreq'), 'k'); cell(st.L.f.toFixed(1), 'num', t('hz')); cell(st.R.f.toFixed(1), 'num', t('hz'));
+    cell(t('cmpSize'), 'k'); cell(fmtMM(st.L.pp), 'num', 'mm'); cell(fmtMM(st.R.pp), 'num', 'mm');
+    cell('', 'k'); cell(t('lrN', { n: st.L.n }), 'k'); cell(t('lrN', { n: st.R.n }), 'k');
+  }
+  $('lrTxt').textContent = lrText(st);
+}
+// Before / after medication: an "after" (tag, or Medication taken: yes) is paired with the latest unused "before"
+// (tag, or Medication taken: no) of the same kind, sensor, body part, position and side, up to PAIR_WINDOW_H earlier.
+const isBefore = (e) => e.tags.includes('beforeMed') || (e.med === 'no' && !e.tags.includes('afterMed'));
+const isAfter = (e) => e.tags.includes('afterMed') || (e.med === 'yes' && !e.tags.includes('beforeMed'));
+function medPairs(list) {
+  const win = CONFIG.PAIR_WINDOW_H * 36e5, used = new Set(), pairs = [], sorted = [...list].sort((a, b) => a.ts - b.ts);
+  for (const a of sorted) {
+    if (!isAfter(a)) continue;
+    let best = null;
+    for (const b of sorted) {
+      if (b.ts >= a.ts) break;
+      if (used.has(b.id) || !isBefore(b) || a.ts - b.ts > win) continue;
+      if (b.kind !== a.kind || b.sensor !== a.sensor || b.limb !== a.limb || b.posture !== a.posture || (a.side && b.side && a.side !== b.side)) continue;
+      best = b;
+    }
+    if (best) { used.add(best.id); pairs.push([best, a]); }
+  }
+  return pairs;
+}
+function medSummary(pairs) { // geometric mean of after / before size; average rates
+  if (!pairs.length) return null;
+  const lr = pairs.map(([b, a]) => Math.log(Math.max(a.pp, 1e-4) / Math.max(b.pp, 1e-4))), gm = Math.exp(lr.reduce((x, y) => x + y, 0) / lr.length);
+  const avg = (v) => v.reduce((x, y) => x + y, 0) / v.length;
+  return { n: pairs.length, ratio: gm, pct: Math.round(Math.abs(1 - gm) * 100), dir: gm < 0.9 ? 'smaller' : gm > 1.1 ? 'larger' : 'same', fb: avg(pairs.map((p) => p[0].f)), fa: avg(pairs.map((p) => p[1].f)) };
+}
+function medText(ms) { return !ms ? t('medNone', { h: CONFIG.PAIR_WINDOW_H }) : t(ms.dir === 'smaller' ? 'medSmaller' : ms.dir === 'larger' ? 'medLarger' : 'medSame', { p: ms.pct, n: ms.n }); }
+function medSub(ms) { return ms ? [t('medRate', { a: ms.fb.toFixed(1), b: ms.fa.toFixed(1) }), ms.n < 3 ? t('medFew') : '', t('medCaveat')].filter(Boolean).join(' ') : ''; }
+function renderMed() { const ms = medSummary(medPairs(trendFilter(jLoad()))); $('medTxt').textContent = medText(ms); $('medSub').textContent = medSub(ms); $('medSub').hidden = !ms; }
 
-/* ---------------- export / share ---------------- */
+/* ---------------- doctor report: one printable page (print -> PDF) and a PNG image for messaging apps ---------------- */
+let reportBack = 'trends', lastReportBlob = null;
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function openReport() { if (flow) return; reportBack = view === 'report' ? reportBack : view; show('report'); }
+function reportData() {
+  const r = tf.rpRange, now = nowMs(), from = r === 'all' ? 0 : startOfDay(now - (+r - 1) * 864e5);
+  const all = jLoad().filter((e) => e.ts >= from && e.ts <= now + 6e4), tremor = all.filter((e) => e.kind === 'tremor'), spirals = all.filter((e) => e.kind === 'spiral');
+  const groups = {}; tremor.forEach((e) => { const k = [e.limb, e.posture, e.side || '-'].join('|'); (groups[k] = groups[k] || []).push(e); });
+  const PO = ['rest', 'hold', 'action', 'stand'], SO = ['left', 'right', ''];
+  const rows = Object.entries(groups).map(([k, es]) => { const [limb, posture, side] = k.split('|');
+    return { limb, posture, side: side === '-' ? '' : side, n: es.length, f: median(es.map((e) => e.f)), pp: median(es.map((e) => e.pp)) }; })
+    .sort((a, b) => (a.limb === b.limb ? 0 : a.limb === 'hand' ? -1 : 1) || PO.indexOf(a.posture) - PO.indexOf(b.posture) || SO.indexOf(a.side) - SO.indexOf(b.side));
+  const cnt = {}; tremor.forEach((e) => { const k = e.limb + '|' + e.posture + '|' + e.sensor; cnt[k] = (cnt[k] || 0) + 1; });
+  const main = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+  const trendPts = main ? tremor.filter((e) => e.limb + '|' + e.posture + '|' + e.sensor === main).sort((a, b) => a.ts - b.ts) : [];
+  const latestRhythm = tremor.find((e) => e.strength !== 'none') || null, latestSpec = tremor.find((e) => e.spec) || null;
+  let matches = [];
+  if (latestRhythm) { const rr = resOf(latestRhythm); matches = interpret(rr).filter((m, i) => i === 0 || m.score >= 0.08).slice(0, 3); }
+  return { from: from || (all.length ? all[all.length - 1].ts : now), to: now, all, tremor, spirals, rows, trendPts, main, ms: medSummary(medPairs(tremor)), lr: lrStats(tremor),
+    latestRhythm, latestSpec, matches, low: all.filter((e) => e.q && e.q.lv === 'low').length };
+}
+function chartCanvas(w, h, draw) { const cv = document.createElement('canvas'), k = 2; cv.width = w * k; cv.height = h * k; const c = cv.getContext('2d'); c.setTransform(k, 0, 0, k, 0, 0); c.direction = 'ltr'; draw(c, w, h); return cv; }
+function setupLabel(e) { const L = LABEL(); return L.limb[e.limb] + ', ' + L.posture[e.posture]; }
+function reportLines(d) { // the report's text, shared by the HTML page and the PNG
+  const df = dateFmt({ dateStyle: 'medium' }), L = LABEL(), name = settings.name.trim(), age = ageOf();
+  return {
+    head: t('rpHead'),
+    meta: [name ? t('rpPatient', { v: name }) : '', age ? t('rpAgeV', { v: age }) : '', t('rpPeriod', { a: df.format(new Date(d.from)), b: df.format(new Date(d.to)) }),
+      d.spirals.length ? t('rpCountSp', { n: d.tremor.length, s: d.spirals.length }) : t('rpCount', { n: d.tremor.length })].filter(Boolean),
+    made: t('rpMade', { date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(nowMs())) }),
+    rows: d.rows.map((r) => [L.limb[r.limb] + ', ' + L.posture[r.posture], r.side ? sideName(r.side) : t('rpSideNone'), String(r.n), r.f.toFixed(1), fmtMM(r.pp)]),
+    trendTitle: d.main ? t('rpTrendFor', { setup: (() => { const [limb, posture, sensor] = d.main.split('|'); return L.limb[limb] + ', ' + L.posture[posture] + ', ' + L.sensor[sensor]; })() }) : t('rpTrend'),
+    med: medText(d.ms) + (d.ms ? ' ' + medSub(d.ms) : ''),
+    lr: lrText(d.lr),
+    specTitle: d.latestSpec ? t('rpSpec', { date: df.format(new Date(d.latestSpec.ts)), setup: setupText(d.latestSpec) }) : '',
+    pattern: d.latestRhythm ? t('rpResembles', { f: d.latestRhythm.f.toFixed(1), setup: setupText(d.latestRhythm),
+      list: d.matches.map((m) => TT(m.id)[0] + ' (' + (lang === 'he' ? t(m.score >= 0.55 ? 'mClose' : m.score >= 0.25 ? 'mPart' : 'mWeak') : t(m.score >= 0.55 ? 'mClose' : m.score >= 0.25 ? 'mPart' : 'mWeak').toLowerCase()) + ')').join(', ') }) : t('rpNoPattern'),
+    spiral: d.spirals.length ? t('rpSpiralV', { n: d.spirals.length, date: df.format(new Date(d.spirals[0].ts)), s: fmtScore(d.spirals[0].spiral.score),
+      f: d.spirals[0].strength === 'none' ? t('spNoRhythm') : d.spirals[0].f.toFixed(1) + ' Hz', mm: fmtMM(d.spirals[0].pp) }) : '',
+    low: d.low ? t('rpQuality', { n: d.low }) : '',
+    nd: t('rpNotDx'),
+  };
+}
+function reportHTML() {
+  const d = reportData(), x = reportLines(d), H = [];
+  H.push('<div class="bar"></div><h1>' + esc(x.head) + '</h1><div class="meta">' + x.meta.map((m) => '<span>' + esc(m) + '</span>').join('') + '</div><p class="muted">' + esc(x.made) + '</p>');
+  if (!d.all.length) { H.push('<p><b>' + esc(t('rpEmpty')) + '</b></p>'); }
+  else {
+    if (x.rows.length) H.push('<h2>' + esc(t('rpTable')) + '</h2><table><thead><tr><th>' + [t('rpCond'), t('rpSide'), t('rpN'), t('rpHz'), t('rpMM')].map(esc).join('</th><th>') + '</th></tr></thead><tbody>'
+      + x.rows.map((r) => '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td class="n">' + r.slice(2).map(esc).join('</td><td class="n">') + '</td></tr>').join('') + '</tbody></table>');
+    H.push('<h2>' + esc(x.trendTitle) + '</h2>' + (d.trendPts.length >= 2 ? '<img id="rpTrendImg" alt="' + esc(x.trendTitle) + '" src="' + chartCanvas(640, 230, (c, w, h) => drawTrendChart(c, w, h, d.trendPts, LIGHT, -1)).toDataURL('image/png') + '">' : '<p class="muted">' + esc(t('rpTrendNone')) + '</p>'));
+    H.push('<h2>' + esc(t('rpMed')) + '</h2><p id="rpMedTxt">' + esc(x.med) + '</p>');
+    H.push('<h2>' + esc(t('rpLR')) + '</h2><p>' + esc(x.lr) + '</p>');
+    if (d.latestSpec) H.push('<h2>' + esc(x.specTitle) + '</h2><img id="rpSpecImg" alt="' + esc(x.specTitle) + '" src="' + chartCanvas(640, 200, (c, w, h) => drawSpectrumOn(c, w, h, resOf(d.latestSpec, true), LIGHT, null)).toDataURL('image/png') + '">');
+    H.push('<h2>' + esc(t('rpPattern')) + '</h2><p id="rpPatternTxt">' + esc(x.pattern) + '</p>');
+    if (x.spiral) H.push('<h2>' + esc(t('rpSpiral')) + '</h2><p>' + esc(x.spiral) + '</p>');
+    if (x.low) H.push('<p class="muted">' + esc(x.low) + '</p>');
+  }
+  H.push('<div class="nd"><b>' + esc(t('safety1')) + '</b> ' + esc(x.nd) + '</div>');
+  return H.join('');
+}
+function renderReport() {
+  renderChips();
+  if (document.activeElement !== $('rpName')) $('rpName').value = settings.name;
+  if (document.activeElement !== $('rpAge')) $('rpAge').value = notes.age || '';
+  $('reportPaper').innerHTML = reportHTML();
+  $('reportPaper').setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+}
+let rpT = 0;
+$('rpName').addEventListener('input', () => { settings.name = $('rpName').value.slice(0, 60); saveSettings(); clearTimeout(rpT); rpT = setTimeout(renderReport, 250); });
+$('rpAge').addEventListener('input', () => { notes.age = $('rpAge').value.replace(/\D/g, '').slice(0, 3); saveNotes(); clearTimeout(rpT); rpT = setTimeout(renderReport, 250); });
+function wrapText(c, s, maxW) {
+  const words = String(s).split(' '), out = []; let line = '';
+  for (const w of words) { const tryL = line ? line + ' ' + w : w; if (c.measureText(tryL).width > maxW && line) { out.push(line); line = w; } else line = tryL; }
+  if (line) out.push(line); return out;
+}
+function reportCanvas() { // the same report drawn on a canvas (1080 px wide), for sharing as an image
+  const d = reportData(), x = reportLines(d), W = 1080, M = 60, CW = W - 2 * M, rtl = lang === 'he';
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = 4000; const c = cv.getContext('2d');
+  c.fillStyle = '#ffffff'; c.fillRect(0, 0, W, cv.height); c.fillStyle = '#ffc24b'; c.fillRect(M, M - 24, CW, 8);
+  let y = M; const X0 = rtl ? W - M : M;
+  const text = (s, size, weight, color, lh = 1.42) => { c.direction = rtl ? 'rtl' : 'ltr'; c.font = weight + ' ' + size + 'px ' + FONT; c.fillStyle = color; c.textAlign = 'start'; c.textBaseline = 'top';
+    for (const ln of wrapText(c, s, CW)) { c.fillText(ln, X0, y); y += size * lh; } };
+  const h2 = (s) => { y += 18; text(s, 30, 700, '#111111'); y += 4; };
+  const img = (cvs, h) => { c.drawImage(cvs, M, y, CW, h); c.strokeStyle = '#e6e6ea'; c.lineWidth = 2; c.strokeRect(M, y, CW, h); y += h + 8; };
+  text(x.head, 46, 700, '#111111'); y += 4;
+  x.meta.forEach((m) => text(m, 26, 400, '#3b3e4a', 1.35));
+  text(x.made, 22, 400, '#5d6070');
+  if (!d.all.length) { y += 10; text(t('rpEmpty'), 28, 700, '#111111'); }
+  else {
+    if (x.rows.length) {
+      h2(t('rpTable'));
+      const cols = [0, 0.42, 0.6, 0.72, 0.86], colX = (i, al) => (rtl ? W - M - cols[i] * CW : M + cols[i] * CW);
+      const row = (cells, weight, color) => { c.font = weight + ' 24px ' + FONT; c.fillStyle = color; c.textBaseline = 'top'; c.direction = rtl ? 'rtl' : 'ltr'; c.textAlign = 'start';
+        cells.forEach((v, i) => c.fillText(v, colX(i), y)); y += 36; c.fillStyle = '#e1e1e6'; c.fillRect(M, y - 6, CW, 2); };
+      row([t('rpCond'), t('rpSide'), t('rpN'), t('rpHz'), t('rpMM')], 500, '#5d6070');
+      x.rows.forEach((r) => row(r, 400, '#1b1d24'));
+    }
+    h2(x.trendTitle);
+    if (d.trendPts.length >= 2) img(chartCanvas(640, 230, (cc, w, h) => drawTrendChart(cc, w, h, d.trendPts, LIGHT, -1)), CW * 230 / 640); else text(t('rpTrendNone'), 24, 400, '#5d6070');
+    h2(t('rpMed')); text(x.med, 25, 400, '#1b1d24');
+    h2(t('rpLR')); text(x.lr, 25, 400, '#1b1d24');
+    if (d.latestSpec) { h2(x.specTitle); img(chartCanvas(640, 200, (cc, w, h) => drawSpectrumOn(cc, w, h, resOf(d.latestSpec, true), LIGHT, null)), CW * 200 / 640); }
+    h2(t('rpPattern')); text(x.pattern, 25, 400, '#1b1d24');
+    if (x.spiral) { h2(t('rpSpiral')); text(x.spiral, 25, 400, '#1b1d24'); }
+    if (x.low) { y += 6; text(x.low, 22, 400, '#5d6070'); }
+  }
+  y += 20; const boxTop = y; y += 16;
+  const save = y; c.font = '400 24px ' + FONT; const nlines = wrapText(c, t('safety1') + ' ' + x.nd, CW - 40).length;
+  c.fillStyle = '#fff3f0'; c.fillRect(M, boxTop, CW, nlines * 34 + 32); c.strokeStyle = '#c8402c'; c.lineWidth = 3; c.strokeRect(M, boxTop, CW, nlines * 34 + 32);
+  y = save; const X1 = rtl ? W - M - 20 : M + 20;
+  c.fillStyle = '#1b1d24'; c.textAlign = 'start'; c.direction = rtl ? 'rtl' : 'ltr'; c.textBaseline = 'top';
+  wrapText(c, t('safety1') + ' ' + x.nd, CW - 40).forEach((ln) => { c.fillText(ln, X1, y); y += 34; });
+  y = boxTop + nlines * 34 + 32 + M;
+  const out = document.createElement('canvas'); out.width = W; out.height = Math.min(cv.height, Math.ceil(y)); out.getContext('2d').drawImage(cv, 0, 0);
+  return out;
+}
+function reportPNG() { return new Promise((res) => reportCanvas().toBlob((b) => res(b), 'image/png')); }
+function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+async function shareReportImage() {
+  const blob = await reportPNG(); lastReportBlob = blob; if (!blob) return 'fail';
+  const name = 'tremorti-report-' + new Date(nowMs()).toISOString().slice(0, 10) + '.png';
+  let file = null; try { file = new File([blob], name, { type: 'image/png' }); } catch {}
+  if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: t('rpHead') }); toast(t('rpShared')); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'aborted'; }
+  }
+  downloadBlob(blob, name); toast(t('rpSaved')); return 'download';
+}
+$('rpPrint').addEventListener('click', () => { renderReport(); window.print(); });
+$('rpImage').addEventListener('click', shareReportImage);
+$('rpBack').addEventListener('click', () => show(SECTIONS.includes(reportBack) && reportBack !== 'report' && reportBack !== 'record' ? reportBack : 'trends'));
+['reportBtn', 'reportBtn2', 'sessReport'].forEach((id) => $(id).addEventListener('click', openReport));
+
+/* ---------------- spiral drawing test: radial deviation from a fitted Archimedes spiral -> rhythm, size, score ---------------- */
+const spiral = { pts: [], drawing: false, mode: 'draw', res: null, turns: 0, lastA: null, acc: 0, raf: 0, mmPerPx: matchMedia('(pointer: coarse)').matches ? 0.16 : 0.26 };
+function spiralGeom() { const r = $('spCanvas').getBoundingClientRect(), w = r.width || 300; return { w, cx: w / 2, cy: w / 2, rMax: w * 0.44, b: w * 0.44 / (CONFIG.SPIRAL_TURNS * 2 * Math.PI) }; }
+function spiralReset() { Object.assign(spiral, { pts: [], drawing: false, mode: 'draw', res: null, turns: 0, lastA: null, acc: 0 }); }
+function openSpiral() { if (flow) return; viewing = null; spiralReset(); if (notes.side) state.spSide = notes.side; renderSetup(); show('spiral'); }
+function renderSpiralView() {
+  $('spDraw').hidden = spiral.mode !== 'draw'; $('spResult').hidden = spiral.mode === 'draw';
+  if (spiral.mode === 'draw') { requestAnimationFrame(drawSpiralCanvas); spMsg(); } else if (spiral.res) fillSpiralResult(spiral.res);
+}
+function spMsg() { $('spMsg').textContent = spiral.pts.length ? t(spiral.turns >= CONFIG.SPIRAL_MIN_TURNS ? 'spReady' : 'spKeep') : ''; $('spDone').disabled = spiral.turns < CONFIG.SPIRAL_MIN_TURNS; }
+function drawSpiralPath(c, g, pts, th, scale = 1) {
+  c.fillStyle = th.field; c.fillRect(0, 0, g.w * scale, g.w * scale);
+  c.strokeStyle = th.grid; c.lineWidth = 10 * scale; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
+  for (let a = 0; a <= CONFIG.SPIRAL_TURNS * 2 * Math.PI; a += 0.05) { const r = g.b * a, x = (g.cx + r * Math.cos(a)) * scale, y = (g.cy + r * Math.sin(a)) * scale; a ? c.lineTo(x, y) : c.moveTo(x, y); }
+  c.stroke();
+  c.fillStyle = th.saffron; c.beginPath(); c.arc(g.cx * scale, g.cy * scale, 6 * scale, 0, 7); c.fill();
+  if (pts.length > 1) { c.strokeStyle = th.sky; c.lineWidth = 2.6 * scale; c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(p.x * scale, p.y * scale) : c.moveTo(p.x * scale, p.y * scale))); c.stroke(); }
+}
+function drawSpiralCanvas() { spiral.raf = 0; if ($('spiral').hidden || spiral.mode !== 'draw') return; const { c, w } = sizeCanvas($('spCanvas')); const g = spiralGeom(); g.w = w; drawSpiralPath(c, g, spiral.pts, darkTheme()); }
+function spAdd(e) {
+  const r = $('spCanvas').getBoundingClientRect(), g = spiralGeom(), p = { t: e.timeStamp || performance.now(), x: e.clientX - r.left, y: e.clientY - r.top };
+  const last = spiral.pts[spiral.pts.length - 1]; if (last && p.t <= last.t) return;
+  spiral.pts.push(p);
+  const a = Math.atan2(p.y - g.cy, p.x - g.cx);
+  if (spiral.lastA !== null) { let d = a - spiral.lastA; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; spiral.acc += d; }
+  spiral.lastA = a; spiral.turns = Math.abs(spiral.acc) / (2 * Math.PI);
+}
+const spc = $('spCanvas');
+spc.addEventListener('pointerdown', (e) => { if (spiral.mode !== 'draw') return; e.preventDefault(); try { spc.setPointerCapture(e.pointerId); } catch {} spiral.drawing = true; spAdd(e); });
+spc.addEventListener('pointermove', (e) => {
+  if (!spiral.drawing) return; e.preventDefault();
+  const list = e.getCoalescedEvents ? e.getCoalescedEvents() : []; (list.length ? list : [e]).forEach(spAdd);
+  if (!spiral.raf) spiral.raf = requestAnimationFrame(drawSpiralCanvas); spMsg();
+});
+['pointerup', 'pointercancel'].forEach((k) => spc.addEventListener(k, () => { spiral.drawing = false; spMsg(); }));
+function analyzeSpiral(pts, o) { // pts: [{t ms, x, y}] (CSS px); o: { cx, cy, mmPerPx }
+  if (!pts || pts.length < 40) return { error: 'short' };
+  const th = [], r = []; let prev = null, acc = 0;
+  for (const p of pts) { const a = Math.atan2(p.y - o.cy, p.x - o.cx); if (prev !== null) { let d = a - prev; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; acc += d; } prev = a; th.push(acc); r.push(Math.hypot(p.x - o.cx, p.y - o.cy)); }
+  const turns = Math.abs(acc) / (2 * Math.PI), dur = (pts[pts.length - 1].t - pts[0].t) / 1000, dir = acc < 0 ? -1 : 1;
+  if (turns < CONFIG.SPIRAL_MIN_TURNS || dur < 3) return { error: 'short', turns, dur };
+  // least-squares Archimedes spiral r = a + b * theta (points away from the very centre)
+  const rMax = Math.max(...r); let n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+  th.forEach((v, i) => { if (r[i] < 0.08 * rMax) return; const x = v * dir; n++; sx += x; sy += r[i]; sxx += x * x; sxy += x * r[i]; });
+  const b = (n * sxy - sx * sy) / ((n * sxx - sx * sx) || 1), a = (sy - b * sx) / (n || 1);
+  const samples = pts.map((p, i) => ({ t: p.t, v: [(r[i] - (a + b * th[i] * dir)) * o.mmPerPx] }));
+  const res = analyze(samples, { unit: 'mm', posture: 'action' });
+  if (res.error) return { error: 'short', turns, dur };
+  const rmsMm = res.moveRms, score = +(10 * (1 - Math.exp(-Math.max(0, rmsMm - 0.1) / 1.5))).toFixed(1);
+  Object.assign(res, { kind: 'spiral', sensor: 'touch', limb: 'hand', posture: 'spiral', spiral: { score, rmsMm: +rmsMm.toPrecision(3), turns: +turns.toFixed(2) }, fitB: b * o.mmPerPx });
+  res.q = scoreQuality(res);
+  return res;
+}
+const spiralLevel = (s) => (s < 1.5 ? 0 : s < 3.5 ? 1 : s < 6 ? 2 : 3);
+function spiralImage(pts, g) { const cv = document.createElement('canvas'), S = 240; cv.width = cv.height = S; const c = cv.getContext('2d'); drawSpiralPath(c, g, pts, darkTheme(), S / g.w); return cv.toDataURL('image/png'); }
+function spiralDone() {
+  const g = spiralGeom(), res = analyzeSpiral(spiral.pts, { cx: g.cx, cy: g.cy, mmPerPx: spiral.mmPerPx });
+  if (res.error) { $('spMsg').textContent = t('spTooShort'); return null; }
+  Object.assign(res, { side: state.spSide, notes: { ...notes, side: state.spSide }, ts: nowMs(), tags: [], plannedS: res.dur });
+  res.spiral.img = spiralImage(spiral.pts, g);
+  saveResult(res); viewing = null; spiralShowResult(res);
+  return res;
+}
+function spiralShowResult(res) { spiral.mode = 'result'; spiral.res = res; if (view !== 'spiral') show('spiral'); else renderSpiralView(); window.scrollTo(0, 0); }
+function fillSpiralResult(res) {
+  const sc = res.spiral || { score: 0 }, lv = spiralLevel(sc.score), saved = res.id && jFind(res.id);
+  $('spSub').textContent = t('spSub', { side: sideName(res.side) || '–' });
+  $('spSaved').hidden = !(saved && viewing); if (saved && viewing) $('spSaved').textContent = t('savedOn', { date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(res.ts)) });
+  $('spImg').hidden = !sc.img; if (sc.img) $('spImg').src = sc.img; $('spImg').alt = t('kindSpiral');
+  $('spScore').innerHTML = ''; $('spScore').append(fmtScore(sc.score), el('small', '', ' / 10'));
+  $('spScoreLv').textContent = I18N[lang].spLv[lv]; $('spScoreLv').style.color = cssVar('--' + ['mint', 'saffron', 'coral', 'coral'][lv]);
+  const dl = $('spDetails'); dl.innerHTML = '';
+  const row = (k, v) => dl.append(el('dt', '', k), el('dd', '', v));
+  row(t('spRate'), res.strength === 'none' ? t('spNoRhythm') : t('spRateV', { f: res.f0.toFixed(1), s: strengthWord(res.strength) }));
+  row(t('spSize'), t('spSizeV', { mm: fmtMM(res.pp) }));
+  row(t('spTurns'), (+sc.turns || 0).toFixed(1)); row(t('spTime'), t('spTimeV', { d: res.dur.toFixed(1) }));
+  renderQuality($('spQuality'), res.q);
+  $('spWarn').hidden = true;
+  mountTags($('spTagSlot'), saved ? res.id : null);
+  $('spDelete').hidden = !saved; $('spAgain').hidden = !!viewing;
+}
+$('spClear').addEventListener('click', () => { spiralReset(); renderSpiralView(); });
+$('spDone').addEventListener('click', spiralDone);
+$('spCancel').addEventListener('click', () => { spiralReset(); show('setup'); });
+$('spAgain').addEventListener('click', () => { viewing = null; spiralReset(); renderSpiralView(); window.scrollTo(0, 0); });
+$('spBack').addEventListener('click', () => { const v = viewing; spiralReset(); if (v) goBack(); else show('setup'); });
+$('spDelete').addEventListener('click', () => deleteEntry(spiral.res && spiral.res.id).then((ok) => { if (ok) spiralReset(); }));
+
+/* ---------------- backup (JSON), CSV export, share ---------------- */
 const csvCell = (v) => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 function exportCSV() {
-  const rows = [['date', 'sensor', 'limb', 'posture', 'side', 'freq_hz', 'amplitude', 'strength', 'medication', 'note']];
-  for (const e of loadHistory()) rows.push([new Date(e.ts).toISOString(), e.sensor, e.limb, e.posture, e.side || '', e.f, e.pp, e.strength, e.med === 'yes' ? (e.medText || 'yes') : e.med || '', e.note || '']);
-  const blob = new Blob(['﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tremorti-' + new Date().toISOString().slice(0, 10) + '.csv';
-  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  const rows = [['date', 'kind', 'sensor', 'limb', 'posture', 'side', 'freq_hz', 'size_mm', 'strength', 'quality', 'tags', 'medication', 'note']];
+  for (const e of jLoad()) rows.push([new Date(e.ts).toISOString(), e.kind, e.sensor, e.limb, e.posture, e.side || '', e.f, e.pp, e.strength, e.q ? e.q.s : '', e.tags.join(' '),
+    e.med === 'yes' ? (e.medText || 'yes') : e.med || '', e.note || '']);
+  downloadBlob(new Blob(['﻿' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' }), 'tremorti-' + new Date(nowMs()).toISOString().slice(0, 10) + '.csv');
 }
+function backupJSON() { return JSON.stringify({ app: 'tremorti', v: 2, exported: new Date(nowMs()).toISOString(), entries: jLoad(), settings: { rem: settings.rem, age: notes.age } }); }
+function exportBackup() { downloadBlob(new Blob([backupJSON()], { type: 'application/json' }), 'tremorti-backup-' + new Date(nowMs()).toISOString().slice(0, 10) + '.json'); }
+function importBackup(text) { // -> { added, dup } or null for a file that isn't a backup; every entry is validated, duplicates skipped
+  let o; try { o = JSON.parse(text); } catch { return null; }
+  const arr = Array.isArray(o) ? o : o && o.app === 'tremorti' && Array.isArray(o.entries) ? o.entries : null;
+  if (!arr) return null;
+  const list = jLoad().slice(), ids = new Set(list.map((e) => e.id)), keys = new Set(list.map((e) => e.ts + '|' + e.f)); let added = 0, dup = 0;
+  for (const raw of arr) {
+    const e = validateEntry(raw); if (!e) continue;
+    if (ids.has(e.id) || keys.has(e.ts + '|' + e.f)) { dup++; continue; }
+    ids.add(e.id); keys.add(e.ts + '|' + e.f); list.push(e); added++;
+  }
+  jStore(list);
+  if (o.settings && typeof o.settings.age === 'string' && !notes.age && /^\d{1,3}$/.test(o.settings.age)) { notes.age = o.settings.age; saveNotes(); }
+  return { added, dup };
+}
+$('exportJson').addEventListener('click', exportBackup);
+$('importJson').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', async () => {
+  const f = $('importFile').files[0]; $('importFile').value = ''; if (!f) return;
+  const r = importBackup(await f.text()); toast(r ? t('imported', { n: r.added, d: r.dup }) : t('importBad')); refreshView();
+});
+$('exportBtn').addEventListener('click', exportCSV);
+$('clearHist').addEventListener('click', async () => {
+  const n = jLoad().length; if (!n || !(await askConfirm(t('delAllQ', { n })))) return;
+  jStore([]); try { localStorage.removeItem(HKEY); } catch {} toast(t('deleted')); refreshView();
+});
 function shareText() {
-  const r = lastResult && !lastResult.error ? lastResult : null, e = r ? { ...r, f: r.f0, notes: r.notes } : loadHistory()[0];
+  const r = lastResult && !lastResult.error ? lastResult : null, e = r ? { ...r, f: r.f0, notes: r.notes } : jLoad()[0];
   if (!e) return '';
-  const sTxt = t(e.strength === 'clear' ? 'hClear' : e.strength === 'weak' ? 'hWeak' : 'hNone'), memo = notesText(r ? r.notes || {} : e);
-  return t('shareText', { f: (+e.f).toFixed(1), s: sTxt, mm: fmtMM(e.pp), setup: setupText(e), date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(e.ts)) }) + (memo ? ' ' + memo : '');
+  const memo = notesText(r ? r.notes || {} : e);
+  return t('shareText', { f: (+e.f).toFixed(1), s: strengthWord(e.strength), mm: fmtMM(e.pp), setup: setupText(e), date: dateFmt({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date(e.ts)) }) + (memo ? ' ' + memo : '');
 }
 async function share() {
   const text = shareText(); if (!text) return;
@@ -1523,20 +2867,36 @@ async function share() {
 
 /* ---------------- wiring ---------------- */
 let lastResult = null;
+const dateFmt = (o) => new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : undefined, o);
 $('startBtn').addEventListener('click', start);
 $('compareBtn').addEventListener('click', startCompare);
+$('routineBtn').addEventListener('click', startRoutine);
+$('spiralBtn').addEventListener('click', openSpiral);
 $('cancelBtn').addEventListener('click', cancel);
 $('againBtn').addEventListener('click', start);
-$('setupBtn').addEventListener('click', () => { show('setup'); renderHistory(); });
-$('clearHist').addEventListener('click', () => { try { localStorage.removeItem(HKEY); } catch {} renderHistory(); });
-$('exportBtn').addEventListener('click', exportCSV);
+$('setupBtn').addEventListener('click', () => { viewing = null; show('setup'); });
+$('resBack').addEventListener('click', goBack);
+$('resDelete').addEventListener('click', () => deleteEntry(lastResult && lastResult.id));
 $('shareBtn').addEventListener('click', share);
-window.addEventListener('resize', () => { if (!$('result').hidden && lastResult && !lastResult.error) { drawSpectrum(lastResult); renderExamples(lastResult, [...document.querySelectorAll('#fscale .fs-row.top')].map((r) => r.dataset.id)); } drawTrend(); });
+document.querySelectorAll('#tabs [data-tab]').forEach((b) => b.addEventListener('click', () => goTab(b.dataset.tab)));
+window.addEventListener('resize', () => {
+  if (!$('result').hidden && lastResult && !lastResult.error && lastResult.psd) { drawSpectrum(lastResult); renderExamples(lastResult, [...document.querySelectorAll('#fscale .fs-row.top')].map((r) => r.dataset.id)); }
+  if (view === 'trends') drawTrend(); if (view === 'spiral' && spiral.mode === 'draw') drawSpiralCanvas();
+});
+window.addEventListener('storage', (e) => { if (e.key === JKEY && !flow) refreshView(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { scheduleReminder(); if (view === 'setup') renderToday(); } });
 $('langBtn').addEventListener('click', () => setLang(lang === 'he' ? 'en' : 'he'));
 applyLang();
+scheduleReminder();
 
-// Test hook: lets automated tests feed samples and run the analysis without real sensors.
-window.__tremor = { CONFIG, state, notes, analyze, addMotion, shareText, get rec() { return rec; }, get last() { return lastResult; }, get lang() { return lang; }, get trend() { return trend; }, get compare() { return compare; }, setLang, interpret, normCompare, sidesOf, TREMOR_TYPES, exampleSpectrum, get overlay() { return overlayId; }, get ovDrawn() { return __ovDrawn; } };
+// Test hook: lets automated tests feed samples and drive the app without real sensors.
+window.__tremor = { CONFIG, state, notes, settings, analyze, addMotion, shareText, get rec() { return rec; }, get last() { return lastResult; }, get lang() { return lang; },
+  get trend() { return trend; }, get flow() { return flow; }, get view() { return view; }, get viewing() { return viewing; }, setLang, interpret, normCompare, sidesOf, TREMOR_TYPES, exampleSpectrum,
+  get overlay() { return overlayId; }, get ovDrawn() { return __ovDrawn; }, welchPSD, highpass, scoreQuality, guide, evalGuide, voice,
+  journal: { load: jLoad, store: jStore, validate: validateEntry, save: saveResult, find: jFind, update: jUpdate, remove: jDelete, entryOf, resOf, reload() { jCache = null; jRaw = null; return jLoad(); }, KEY: JKEY },
+  openEntry, goTab, streakInfo, heatCells, nextReminder, scheduleReminder, fireReminder, get remNextAt() { return remNextAt; }, sessionSummary, get session() { return sessionShown; },
+  trendFilter, medPairs, medSummary, lrStats, reportData, reportHTML, reportPNG, reportCanvas, shareReportImage, get reportBlob() { return lastReportBlob; },
+  backupJSON, importBackup, spiral, analyzeSpiral, spiralDone, spiralGeom, setNow(ms) { nowOverride = ms || 0; }, startRoutine };
 </script>
 </body>
 </html>

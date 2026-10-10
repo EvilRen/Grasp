@@ -942,14 +942,14 @@ html[dir="rtl"] .evBanner .evBar i{ margin-inline-start:auto; background:linear-
 .evBanner.fresh::after{ content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(105deg, rgba(255,255,255,0) 35%, rgba(255,255,255,.3) 50%, rgba(255,255,255,0) 65%); transform:translateX(-120%); animation:evShine 3.6s ease-in-out 1s infinite; }
 @keyframes evShine{ 0%{ transform:translateX(-120%); } 40%,100%{ transform:translateX(120%); } }
 #start .panel > .evBanner{ margin:0 0 10px; }
-@media (max-width:520px){ #start .panel{ gap:clamp(8px, 1.45vh, 22px); } #start .panel > .evBanner{ margin:0; } }
+@media (max-width:520px){ #start .panel{ gap:clamp(8px, 1.3vh, 22px); } #start .panel > .evBanner{ margin:0; height:50px; } }
 @media (min-width:1000px){ #start .panel > .evBanner{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 8px); left:0; right:0; width:min(440px, calc(100vw - 560px)); margin:0 auto; z-index:2; } }
 .evBanner{ transition:transform .32s cubic-bezier(.34,1.56,.64,1), filter .15s; }
 .evBanner:active{ transform:scale(.97); filter:brightness(.95); transition-duration:.08s; }
 @media (hover:hover){ .evBanner:hover{ filter:brightness(1.1); } }
 @media (prefers-reduced-motion: reduce){ .evBanner canvas, .evBanner.ready, .evBanner.fresh::after, .evTier.ready .tArt, .evTier.ready::after{ animation:none; } }
 body.gfx0 .evBanner.fresh::after{ animation:none; }
-.evSheet{ --ec:#ff8fc8; --ec2:#43d9a3; width:min(470px,100%); box-shadow:inset 0 4px 0 var(--ec), 0 20px 50px rgba(0,0,0,.5); }
+.evSheet{ width:min(470px,100%); box-shadow:inset 0 4px 0 var(--ec), 0 20px 50px rgba(0,0,0,.5); }
 .evSheet h3{ margin:14px 0 6px; font-size:14px; color:var(--muted); font-weight:700; }
 .evHead{ display:flex; align-items:center; gap:10px; margin:0 0 4px; }
 #evMascotBig{ flex:none; width:68px; height:68px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
@@ -13362,7 +13362,7 @@ function syncMeta() {
   if (!$('collection').hidden) renderCollection();
   if (!$('road').hidden) renderRoad();
   if (!$('worldMap').hidden) renderWorldMap();
-  syncDaily(); syncGrippyBtn(); syncHabit(); petSync();
+  syncDaily(); syncGrippyBtn(); syncHabit(); petSync(); if (EV_READY) evSync();
 }
 function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else if (id === 'road') renderRoad(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
 function closePanel(id) { $(id).hidden = true; $(id).classList.remove('overMap'); }
@@ -15229,7 +15229,7 @@ function evSync() { // the banner (and the page when it is open)
   b.querySelector('.dot').hidden = !ready; b.classList.toggle('ready', !!ready); b.classList.toggle('fresh', !S.seen);
   b.setAttribute('aria-label', t('evAria', { e: S.name, d: S.countdown, p: S.pts }) + (ready ? ', ' + t('evReadyLine', { n: ready }) : ''));
   evDrawMascot(b.querySelector('canvas'), S.id, 44, 0);
-  if (!$('evSheet').hidden) evRender();
+  if (!$('evSheet').hidden && !ev.anim) evRender(); // (not while a chest is opening: it re-renders when done)
 }
 function evPrizeArt(cv, p, px = 44) { // a tier's prize on a little canvas
   const k = Math.round(px * SS); cv.width = cv.height = k; const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, px, px); g.lineJoin = g.lineCap = 'round';
@@ -15303,8 +15303,8 @@ function evTierTap(i, b) { // a reached tier: the chest shakes, pops open, the p
   if (E.got.includes(i)) { sfx('blip'); b.classList.remove('wiggle'); void b.offsetWidth; b.classList.add('wiggle'); return null; }
   if (E.pts < T.at) { sfx('whiff'); toast('evNeedPts', { n: T.at - E.pts }, 'star'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return null; }
   if (b.classList.contains('opening')) return null;
-  const p = evClaim(i); if (!p) return null;
-  sfx('tick'); b.classList.add('opening'); ev.anim++;
+  ev.anim++; const p = evClaim(i); if (!p) { ev.anim--; return null; }
+  sfx('tick'); b.classList.add('opening');
   setTimeout(() => {
     ev.anim = Math.max(0, ev.anim - 1); b.classList.add('opened'); const r = b.getBoundingClientRect(), sh = $('evSheet').querySelector('.sheet');
     sfx('unlock'); sfx(T.final || T.chest ? 'fanfare' : 'chime'); domConfetti(sh, r); if (T.final || T.chest) setTimeout(() => domConfetti(sh, r), 180);
