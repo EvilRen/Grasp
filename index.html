@@ -920,6 +920,99 @@ body.gfx0 .ov{ backdrop-filter:none; -webkit-backdrop-filter:none; background-co
 .checks li[data-s="ok"] .dot{ box-shadow:0 0 8px rgba(67,217,163,.6); }
 .checks li[data-s="pending"] .dot{ box-shadow:0 0 8px rgba(255,194,75,.6); }
 @media (prefers-reduced-motion: reduce){ #start .checks:not([hidden])::after{ animation:none; } }
+/* the weekly event: the start screen's banner (between the icon row and the games; on a wide screen up in the top bar), the event page */
+.evBanner{ --ec:#ff8fc8; --ec2:#43d9a3; position:relative; display:grid; grid-template-columns:44px minmax(0,1fr) auto; align-items:center; gap:8px; width:100%; height:54px; margin:0 0 10px; padding:4px 10px; padding-inline-start:6px; border-radius:16px; color:var(--bone); text-align:start; overflow:hidden;
+  background:rgba(29,37,71,.7); background:linear-gradient(100deg, color-mix(in srgb, var(--ec) 36%, rgba(29,37,71,.7)), color-mix(in srgb, var(--ec2) 22%, rgba(29,37,71,.7)) 75%); box-shadow:inset 0 0 0 1.5px var(--ec), 0 6px 16px rgba(0,0,0,.25); }
+html[dir="rtl"] .evBanner{ background:linear-gradient(260deg, color-mix(in srgb, var(--ec) 36%, rgba(29,37,71,.7)), color-mix(in srgb, var(--ec2) 22%, rgba(29,37,71,.7)) 75%); }
+.evBanner canvas{ width:44px; height:44px; display:block; animation:evBob 2.4s ease-in-out infinite; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+@keyframes evBob{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-3px) rotate(3deg); } }
+.evBanner .evTx{ display:flex; flex-direction:column; min-width:0; line-height:1.2; }
+.evBanner .evName{ font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 2px rgba(0,0,0,.35); }
+.evBanner .evLine{ font-size:11.5px; color:rgba(241,233,218,.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.evBanner .evSide{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; min-width:62px; }
+.evBanner .evLeft{ font-size:11px; font-weight:800; padding:2px 7px; border-radius:999px; background:rgba(14,19,40,.75); color:var(--ec); white-space:nowrap; }
+.evBanner .evBar{ display:block; width:62px; height:6px; border-radius:3px; background:rgba(14,19,40,.6); overflow:hidden; }
+.evBanner .evBar i{ display:block; height:100%; border-radius:3px; background:linear-gradient(90deg, var(--ec), var(--ec2)); }
+html[dir="rtl"] .evBanner .evBar i{ margin-inline-start:auto; background:linear-gradient(270deg, var(--ec), var(--ec2)); }
+.evBanner .evPts{ font-size:10px; font-weight:700; color:var(--muted); direction:ltr; line-height:1; }
+.evBanner .dot{ position:absolute; top:5px; inset-inline-end:5px; width:11px; height:11px; border-radius:50%; background:#ff4d3d; box-shadow:0 0 0 2px rgba(14,19,40,.9); }
+.evBanner .dot[hidden]{ display:none; }
+.evBanner.ready{ animation:evGlow 1.6s ease-in-out infinite; }
+@keyframes evGlow{ 0%,100%{ box-shadow:inset 0 0 0 1.5px var(--ec), 0 6px 16px rgba(0,0,0,.25); } 50%{ box-shadow:inset 0 0 0 2.5px var(--ec), 0 0 18px var(--ec); } }
+.evBanner.fresh::after{ content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(105deg, rgba(255,255,255,0) 35%, rgba(255,255,255,.3) 50%, rgba(255,255,255,0) 65%); transform:translateX(-120%); animation:evShine 3.6s ease-in-out 1s infinite; }
+@keyframes evShine{ 0%{ transform:translateX(-120%); } 40%,100%{ transform:translateX(120%); } }
+#start .panel > .evBanner{ margin:0 0 10px; }
+@media (max-width:520px){ #start .panel{ gap:clamp(8px, 1.45vh, 22px); } #start .panel > .evBanner{ margin:0; } }
+@media (min-width:1000px){ #start .panel > .evBanner{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 8px); left:0; right:0; width:min(440px, calc(100vw - 560px)); margin:0 auto; z-index:2; } }
+.evBanner{ transition:transform .32s cubic-bezier(.34,1.56,.64,1), filter .15s; }
+.evBanner:active{ transform:scale(.97); filter:brightness(.95); transition-duration:.08s; }
+@media (hover:hover){ .evBanner:hover{ filter:brightness(1.1); } }
+@media (prefers-reduced-motion: reduce){ .evBanner canvas, .evBanner.ready, .evBanner.fresh::after, .evTier.ready .tArt, .evTier.ready::after{ animation:none; } }
+body.gfx0 .evBanner.fresh::after{ animation:none; }
+.evSheet{ --ec:#ff8fc8; --ec2:#43d9a3; width:min(470px,100%); box-shadow:inset 0 4px 0 var(--ec), 0 20px 50px rgba(0,0,0,.5); }
+.evSheet h3{ margin:14px 0 6px; font-size:14px; color:var(--muted); font-weight:700; }
+.evHead{ display:flex; align-items:center; gap:10px; margin:0 0 4px; }
+#evMascotBig{ flex:none; width:68px; height:68px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+.evHt{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.evHt h2{ margin:0; max-width:100%; font-size:clamp(18px, 5.4vw, 22px); line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ec); text-shadow:0 2px 0 rgba(0,0,0,.25); }
+.evLeftBig{ font-size:12px; font-weight:800; padding:3px 9px; border-radius:999px; background:rgba(14,19,40,.7); color:var(--bone); box-shadow:inset 0 0 0 1px var(--ec); }
+.evRule{ margin:4px 0 10px; }
+.evPtsRow{ display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:4px 10px; }
+.evPtsN{ display:inline-flex; align-items:center; gap:4px; font-size:22px; font-weight:800; color:var(--ec); direction:ltr; }
+.evPt{ width:1em; height:1em; flex:none; }
+.evPtsN .evPt{ width:22px; height:22px; filter:drop-shadow(0 0 6px var(--ec)); }
+.evPbar{ display:block; height:12px; border-radius:6px; background:rgba(14,19,40,.6); overflow:hidden; box-shadow:inset 0 0 0 1px var(--line); }
+.evPbar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--ec), var(--ec2)); transition:width .5s cubic-bezier(.2,.9,.3,1); }
+html[dir="rtl"] .evPbar i{ margin-inline-start:auto; background:linear-gradient(270deg, var(--ec), var(--ec2)); }
+#evPtsNext{ grid-column:1 / -1; color:var(--muted); font-size:12px; }
+.evPlay{ width:100%; margin:12px 0 2px; background:var(--ec); color:#1a1020; border-radius:14px; }
+.evTrack{ display:flex; gap:8px; overflow-x:auto; overflow-y:hidden; padding:10px 4px 12px; margin:0 -4px; scrollbar-width:thin; overscroll-behavior-x:contain; }
+.evTier{ --gc:var(--ec); --gc2:var(--ec2); position:relative; flex:0 0 78px; height:116px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:2px; padding:7px 3px 6px; border-radius:14px; background:rgba(29,37,71,.6); box-shadow:inset 0 0 0 1.5px var(--line); color:var(--bone); }
+.evTier .tAt{ display:inline-flex; align-items:center; gap:2px; font-size:11px; font-weight:800; color:var(--muted); direction:ltr; }
+.evTier .tAt .evPt{ width:11px; height:11px; color:var(--ec); }
+.evTier .tArt{ position:relative; width:50px; height:50px; display:grid; place-items:center; }
+.evTier .tArt canvas{ width:44px; height:44px; display:block; }
+.evTier.final .tArt canvas{ width:52px; height:52px; }
+.evTier .tArt svg{ width:46px; height:46px; overflow:visible; }
+.evTier .tPz{ font-size:10.5px; font-weight:700; line-height:1.15; text-align:center; max-width:100%; max-height:2.4em; overflow:hidden; }
+.evTier.locked .tArt{ opacity:.5; filter:saturate(.5); }
+.evTier.locked .tPz{ color:var(--muted); }
+.evTier.ready{ cursor:pointer; background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--ec) 40%, transparent), rgba(29,37,71,.7) 72%); box-shadow:inset 0 0 0 2.5px var(--ec), 0 0 16px color-mix(in srgb, var(--ec) 60%, transparent); }
+.evTier.ready .tAt{ color:var(--ec); }
+.evTier.ready .tArt{ animation:gbig 1.1s ease-in-out infinite; }
+.evTier.ready::after{ content:''; position:absolute; inset:-4px; border-radius:17px; border:2px solid var(--ec); animation:wpulse 1.1s ease-in-out infinite; pointer-events:none; }
+.evTier.got{ background:rgba(67,217,163,.12); box-shadow:inset 0 0 0 1.5px rgba(67,217,163,.5); }
+.evTier .ck{ position:absolute; top:22px; inset-inline-end:4px; z-index:1; width:20px; height:20px; border-radius:50%; background:var(--mint); color:#062b1c; display:inline-flex; align-items:center; justify-content:center; }
+.evTier .ck svg{ width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.evTier.final{ flex-basis:96px; background:linear-gradient(160deg, rgba(255,214,90,.28), rgba(29,37,71,.7) 60%); box-shadow:inset 0 0 0 2px #ffd23f; }
+.evTier.final.ready{ box-shadow:inset 0 0 0 2.5px #ffd23f, 0 0 20px rgba(255,214,90,.7); }
+.evTier .tOnly{ position:absolute; bottom:-1px; left:50%; transform:translate(-50%, 50%); white-space:nowrap; padding:1px 6px; border-radius:999px; background:#ffd23f; color:#3a2600; font-size:9px; font-weight:800; }
+.evTier.final{ margin-bottom:6px; }
+.evTier .lid{ transform-box:fill-box; transform-origin:50% 100%; transition:transform .45s cubic-bezier(.2,1.4,.4,1), opacity .45s; }
+.evTier.opening .tArt{ animation:shake .35s; }
+.evTier.opened .lid{ transform:translate(6px,-16px) rotate(28deg); opacity:0; }
+.evTier.pop .tArt{ animation:gpopin .5s cubic-bezier(.2,1.6,.4,1); }
+.evTier.shake, .evTier.wiggle{ animation:shake .35s; }
+.evMs{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.evM{ display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:4px 8px; padding:8px 8px 8px 10px; border-radius:12px; background:rgba(29,37,71,.6); box-shadow:inset 0 0 0 1px var(--line); }
+.evM .mTx{ grid-column:1; grid-row:1; font-size:13px; font-weight:600; min-width:0; }
+.evM .mBar{ grid-column:1; grid-row:2; display:block; height:6px; border-radius:3px; background:rgba(14,19,40,.6); overflow:hidden; }
+.evM .mBar i{ display:block; height:100%; background:linear-gradient(90deg, var(--ec), var(--ec2)); border-radius:3px; }
+html[dir="rtl"] .evM .mBar i{ margin-inline-start:auto; }
+.evM .mN{ grid-column:2; grid-row:1 / 3; font-size:12px; font-weight:700; color:var(--muted); direction:ltr; }
+.evM .mGo{ grid-column:3; grid-row:1 / 3; display:inline-flex; align-items:center; gap:3px; min-width:54px; justify-content:center; padding:7px 9px; border-radius:999px; background:rgba(241,233,218,.08); color:var(--muted); font-size:12px; font-weight:800; direction:ltr; }
+.evM .mGo .evPt{ width:13px; height:13px; }
+.evM .mGo svg:not(.evPt){ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.evM.done .mGo{ background:var(--ec); color:#1a1020; box-shadow:0 0 12px color-mix(in srgb, var(--ec) 60%, transparent); animation:cshake 1.4s ease-in-out infinite; cursor:pointer; }
+.evM.claimed{ opacity:.65; }
+.evM.claimed .mGo{ color:var(--mint); }
+.evShelf{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:4px; }
+.evStk{ display:flex; flex-direction:column; align-items:center; gap:2px; min-width:0; }
+.evStk canvas{ width:100%; max-width:52px; aspect-ratio:1; display:block; }
+.evStk small{ font-size:9.5px; color:var(--muted); max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.evStk.got small{ color:var(--bone); }
+.evNext{ display:flex; align-items:center; justify-content:center; gap:8px; margin:14px 0 0; padding:8px 10px; border-radius:12px; background:rgba(8,11,28,.35); color:var(--muted); font-size:13px; font-weight:700; }
+.evNext canvas{ width:34px; height:34px; flex:none; }
 </style>
 </head>
 <body class="home">
@@ -973,6 +1066,7 @@ body.gfx0 .ov{ backdrop-filter:none; -webkit-backdrop-filter:none; background-co
       <button class="metaBtn" id="roadBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21c0-5 10-6 10-11a4 4 0 0 0-8 0"/><circle cx="9" cy="10" r="1.2"/><path d="M15.5 3.5l1.8 1.8M19 2v3M21.5 6.5h-3"/></svg><span data-i18n="road">Road</span><span class="nb" hidden>!</span></button>
       <button class="metaBtn shopBtn" id="collectionBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></svg><span data-i18n="collection">Shop</span><span class="sc" aria-hidden="true"></span><span class="dot" hidden></span></button>
     </div>
+    <button class="evBanner" id="eventBtn" type="button" style="--i:5"><canvas class="evMascot" aria-hidden="true"></canvas><span class="evTx"><b class="evName"></b><small class="evLine"></small></span><span class="evSide"><span class="evLeft"></span><span class="evBar"><i></i></span><span class="evPts"></span></span><span class="dot" hidden></span></button>
     <div class="modes" role="group" data-i18n-aria="modesAria" aria-label="Game mode" style="--i:2">
       <button type="button" data-mode="sandbox" aria-pressed="true" style="--i:0"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeSandbox">Sandbox</span></button>
       <button type="button" data-mode="slice" aria-pressed="false" style="--i:1"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5 8 16"/><path d="M20.5 3.5c-1.5 5-5 9.5-10 12.5"/><path d="M9.5 14.5 6 18"/><path d="M7.2 15.8l1 1"/><path d="M6 18l-2.5 2.5"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeSlice">Slice</span></button>
@@ -1144,6 +1238,21 @@ body.gfx0 .ov{ backdrop-filter:none; -webkit-backdrop-filter:none; background-co
     <button class="primary" id="giftOk" type="button"></button>
   </div>
 </div>
+<div class="ov evOv" id="evSheet" hidden role="dialog" aria-modal="true" aria-labelledby="evTitle">
+  <div class="sheet evSheet">
+    <header class="evHead"><canvas id="evMascotBig" aria-hidden="true"></canvas><div class="evHt"><h2 id="evTitle"></h2><span class="evLeftBig" id="evLeftBig"></span></div><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="sub evRule" id="evRule"></p>
+    <div class="evPtsRow"><span class="evPtsN" id="evPtsN"></span><span class="evPbar" id="evPbar"><i></i></span><small id="evPtsNext"></small></div>
+    <button class="primary evPlay" id="evPlay" type="button"></button>
+    <h3 data-i18n="evRewards">Rewards</h3>
+    <div class="evTrack" id="evTrack"></div>
+    <h3 data-i18n="evMissions">Event missions</h3>
+    <ul class="evMs" id="evMs"></ul>
+    <h3 data-i18n="evStickers">Event stickers</h3>
+    <div class="evShelf" id="evShelf"></div>
+    <p class="evNext" id="evNext"></p>
+  </div>
+</div>
 <div id="metaToast" aria-live="polite"></div>
 
 <script>
@@ -1248,9 +1357,36 @@ const ECONOMY = {
 const PET = { taps: 5, perDay: 5, perRound: 3, pantryMax: 30, nameMax: 12,
   stages: [{ id: 'egg', at: -1 }, { id: 'baby', at: 0 }, { id: 'kid', at: 10 }, { id: 'teen', at: 25 }, { id: 'grown', at: 45 }, { id: 'legend', at: 75 }],
   colors: [{ id: 'mint', st: 1 }, { id: 'sky', st: 1 }, { id: 'pink', st: 2 }, { id: 'sun', st: 3 }, { id: 'lilac', st: 4 }, { id: 'gold', st: 5 }],
-  items: [{ id: 'bow', slot: 'head', st: 2 }, { id: 'scarf', slot: 'neck', st: 2 }, { id: 'glasses', slot: 'eyes', st: 3 }, { id: 'cap', slot: 'head', st: 3 }, { id: 'bowtie', slot: 'neck', st: 4 }, { id: 'crown', slot: 'head', st: 5 }],
+  items: [{ id: 'bow', slot: 'head', st: 2 }, { id: 'scarf', slot: 'neck', st: 2 }, { id: 'glasses', slot: 'eyes', st: 3 }, { id: 'cap', slot: 'head', st: 3 }, { id: 'bowtie', slot: 'neck', st: 4 }, { id: 'crown', slot: 'head', st: 5 },
+    { id: 'cowboy', slot: 'head', st: 1, ev: 'cows' }, { id: 'antenna', slot: 'head', st: 1, ev: 'space' }, { id: 'viking', slot: 'head', st: 1, ev: 'smash' }, { id: 'fruithat', slot: 'head', st: 1, ev: 'fruit' }, { id: 'bubcrown', slot: 'head', st: 1, ev: 'bubbles' }, { id: 'racer', slot: 'head', st: 1, ev: 'speed' }], // (ev: a weekly event's exclusive hat: worn once won, at any stage)
   slots: ['head', 'eyes', 'neck'] };
 const PET_PAL = { mint: ['#43d9a3', '#c2f8e3', '#178a63'], sky: ['#54c6eb', '#d2f2ff', '#1c78a3'], pink: ['#ff8fb8', '#ffdbe8', '#c44a7e'], sun: ['#ffc24b', '#fff2c6', '#bf780a'], lilac: ['#a98bff', '#e6ddff', '#6646cc'], gold: ['#ffd23f', '#fff8cc', '#b08200'] };
+// The weekly event (live-ops, offline): one event a week, Monday to Sunday local time, picked from the week number since EVENT.epoch (a Monday), so
+// everyone sees the same one. Points come from playing the featured game; a reward track of 12 tiers (coins, pet snacks, an exclusive sticker, an
+// exclusive pet hat, a big chest, and the event's edition ball that never comes back); 3 event missions pay points. Coins stay scarce: the track
+// pays 140 coins a week at most (EVENT.track), the missions pay points only.
+const EVENT = { epoch: '2026-01-05', msPts: [40, 60, 80], dupSnacks: 3, // (a sticker / hat already owned from an earlier edition: these snacks instead)
+  track: [{ at: 25, coins: 10 }, { at: 60, snacks: 2 }, { at: 100, coins: 15 }, { at: 150, sticker: 1 }, { at: 210, snacks: 3 }, { at: 280, coins: 20 },
+    { at: 360, hat: 1 }, { at: 450, coins: 25 }, { at: 550, snacks: 4 }, { at: 660, coins: 30 }, { at: 780, coins: 40, chest: 1 }, { at: 900, ball: 1, final: 1 }],
+  defs: [ // id, accent colours, the featured game (route), its hat, the points per action (round = a finished round of the featured game), the 3 missions (k: the action, n: the goal; max: the best value, not a sum)
+    { id: 'cows', col: '#ff8fc8', col2: '#43d9a3', ink: '#3b1630', game: 'strike', hat: 'cowboy', pts: { round: 10, cow: 8, wall: 1 }, ms: [{ k: 'cow', n: 8 }, { k: 'round', n: 4 }, { k: 'wall', n: 40 }] },
+    { id: 'space', col: '#a98bff', col2: '#54c6eb', ink: '#1d1640', game: 'strike', hat: 'antenna', pts: { round: 10, wall: 2, spacewall: 2, clear: 5, star: 5, sticker: 30 }, ms: [{ k: 'clear', n: 5 }, { k: 'spacewall', n: 15 }, { k: 'star3', n: 3 }] },
+    { id: 'smash', col: '#ff6f59', col2: '#ffc24b', ink: '#3b1408', game: 'smash', hat: 'viking', pts: { round: 10, smash: 0.3, pinata: 40 }, ms: [{ k: 'smash', n: 300 }, { k: 'pinata', n: 2 }, { k: 'round', n: 4 }] },
+    { id: 'fruit', col: '#ffd23f', col2: '#ff6f91', ink: '#3b2a04', game: 'slice', hat: 'fruithat', pts: { round: 10, fruit: 1, gold: 10 }, ms: [{ k: 'fruit', n: 150 }, { k: 'gold', n: 12 }, { k: 'round', n: 5 }] },
+    { id: 'bubbles', col: '#54c6eb', col2: '#ff8fd1', ink: '#0d2a3b', game: 'bubbles', hat: 'bubcrown', pts: { round: 10, pop: 0.5, evbub: 8 }, ms: [{ k: 'pop', n: 200 }, { k: 'evbub', n: 15 }, { k: 'round', n: 4 }] },
+    { id: 'speed', col: '#ffc24b', col2: '#ff4d6d', ink: '#3b2004', game: 'frenzy', hat: 'racer', pts: { round: 10, hit: 1, row10: 5 }, ms: [{ k: 'hit', n: 100 }, { k: 'best', n: 20, max: true }, { k: 'round', n: 5 }] },
+  ],
+  names: { en: { cows: 'Cow Stampede', space: 'Space Weekend', smash: 'Smash Mania', fruit: 'Fruit Frenzy', bubbles: 'Bubble Festival', speed: 'Speed Week' },
+    he: { cows: 'מנוסת הפרות', space: 'סוף שבוע בחלל', smash: 'שיגעון ניפוץ', fruit: 'טירוף פירות', bubbles: 'פסטיבל בועות', speed: 'שבוע המהירות' } } };
+EVENT.ids = EVENT.defs.map((d) => d.id); const EV_HAT_IDS = EVENT.defs.map((d) => d.hat); EVENT.by = Object.fromEntries(EVENT.defs.map((d) => [d.id, d]));
+let EV_READY = false; // (the event's UI is wired further down; syncMeta() runs before that)
+function evBallItem(ev, ed) { // an edition's ball as a Shop item (registered when it is won, or when a profile that owns it loads): 'evb_cows_3', skin 'ev_cows_3'
+  if (!EVENT.by[ev] || !(ed >= 1 && ed <= 9999)) return null; ed = ed | 0; const id = 'evb_' + ev + '_' + ed;
+  let it = ITEMS.find((q) => q.id === id); if (it) return it;
+  it = { id, type: 'ball', skin: 'ev_' + ev + '_' + ed, cost: 0, ev, ed }; ITEMS.push(it);
+  I18N.en['it_' + id] = EVENT.names.en[ev] + ' ball #' + ed; I18N.he['it_' + id] = 'כדור ' + EVENT.names.he[ev] + ' #' + ed;
+  return it;
+}
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_HP: 1 };
 function sd(key) { return (strike.diff === 'normal' || daily.on) && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
 
@@ -1673,6 +1809,53 @@ Object.assign(I18N.he, {
   st_lollipop: 'סוכרייה על מקל', st_cupcake: 'קאפקייק', st_donut: 'דונאט', st_gummybear: 'דובון גומי', st_icecream: 'גלידה', st_candy: 'סוכרייה', st_cake: 'עוגה', st_candyking: 'מלך הממתקים',
   fieldBlocked: 'השדה דלוק!', jellySoft: 'רך מדי!', tipField: 'שדה הכוח חוסם מכות כשהוא זוהר: פגעו בו כשהוא נכבה!', tipJelly: 'הג׳לי בולע מכות רכות: הכו חזק יותר!', tipChoco: 'השוקולד נשבר לשניים: שברו את שני החצאים!',
   bossAbduct: 'קרן משיכה!', bossInk: 'ענן דיו!', bossSugar: 'טירוף סוכר!',
+});
+Object.assign(I18N.en, { // the weekly event
+  evDaysLeft: '{n} days left', evLastDay: 'Last day!', evReadyLine: 'Rewards to claim: {n}', evNextLine: 'All done! Next week: {e}', evAria: '{e} event, {d}, {p} points',
+  evGo_cows: 'Slap cows in Strike', evGo_space: 'Space walls in Adventure', evGo_smash: 'Smash it all, beat the piñata', evGo_fruit: 'Golden fruit in Slice', evGo_bubbles: 'Festival bubbles in Bubble Pop', evGo_speed: 'Hits in a row in Frenzy',
+  evRule_cows: 'Cows everywhere in Strike! Slap them for 8 points each; every wall is 1 more.', evRule_space: 'Asteroids and force fields in every Adventure stage. Walls, stars and clears all score; stickers count double.',
+  evRule_smash: 'Smash anything for points, and beat the giant piñata at the end of each scene for 40.', evRule_fruit: 'Golden fruit flies in Slice: 10 points and +5 score each. Every fruit is a point.',
+  evRule_bubbles: 'Rainbow festival bubbles float up in Bubble Pop: 8 points each.', evRule_speed: 'Every Frenzy hit is a point, every 10 in a row is 5 more.',
+  evPlay_cows: 'Play Strike', evPlay_space: 'Play Adventure', evPlay_smash: 'Play Smash', evPlay_fruit: 'Play Slice', evPlay_bubbles: 'Play Bubble Pop', evPlay_speed: 'Play Frenzy',
+  evToNext: '{n} more points to the next reward', evAllTiers: 'Every reward reached!', evOnly: 'Only this week', evTierAria: '{n} points: {p}', evTapClaim: 'tap to claim',
+  evCoins: 'coins', evSnacks: '{n} snacks', evSnacksDup: '{n} snacks (owned)', evSticker: 'Sticker', evBall: 'Edition ball', evNeedPts: '{n} more points to open it',
+  evRewards: 'Rewards', evMissions: 'Event missions', evStickers: 'Event stickers', evStkNeed: 'Win it in {e}', evNextWeek: 'Next week: {e}', evPts: 'points',
+  evMsToast: 'Event mission done: {m}', evTierToast: '{e}: a reward is ready!', evRoundToast: '{e}: +{n} points', evPinataTag: 'Piñata time!',
+  evGotCoins: '+{c} coins!', evGotSnacks: '+{n} snacks for your pet!', evGotDup: 'Already yours: {n} snacks instead', evGotSticker: 'New sticker: {s}!', evGotHat: 'A new hat for your pet: {h}!', evGotBall: 'New ball: {b}!',
+  evst_cows: 'Stampede Cow', evst_space: 'Space Buddy', evst_smash: 'Piñata Star', evst_fruit: 'Golden Apple', evst_bubbles: 'Festival Bubble', evst_speed: 'Bolt',
+  pi_cowboy: 'Cowboy hat', pi_antenna: 'Alien antennae', pi_viking: 'Viking helmet', pi_fruithat: 'Fruit hat', pi_bubcrown: 'Bubble crown', pi_racer: 'Racing helmet',
+  evm_cows_cow: 'Slap {n} cows', evm_cows_round: 'Finish {n} Strike rounds', evm_cows_wall: 'Break {n} walls',
+  evm_space_clear: 'Clear {n} Adventure stages', evm_space_spacewall: 'Break {n} space walls', evm_space_star3: 'Get 3 stars on {n} stages',
+  evm_smash_smash: 'Smash {n} things', evm_smash_pinata: 'Beat the piñata {n} times', evm_smash_round: 'Finish {n} Smash rounds',
+  evm_fruit_fruit: 'Slice {n} fruit', evm_fruit_gold: 'Slice {n} golden fruit', evm_fruit_round: 'Finish {n} Slice rounds',
+  evm_bubbles_pop: 'Pop {n} bubbles', evm_bubbles_evbub: 'Pop {n} festival bubbles', evm_bubbles_round: 'Finish {n} Bubble Pop rounds',
+  evm_speed_hit: 'Hit {n} balls in Frenzy', evm_speed_best: 'Get {n} hits in a row', evm_speed_round: 'Play {n} Frenzy runs',
+  // the installable app
+  pwaInstall: 'Install app', pwaInstallAria: 'Install Grasp as an app', pwaIosTitle: 'Add Grasp to your Home Screen', pwaIos1: 'Tap the Share button', pwaIos2: 'Choose “Add to Home Screen”', pwaIos3: 'Tap Add: Grasp opens like an app, even offline',
+  pwaLater: 'Not now', pwaInstalled: 'Grasp is installed!', pwaUpdate: 'New version — tap to refresh', pwaOffline: 'Ready to play offline',
+});
+Object.assign(I18N.he, {
+  evDaysLeft: 'עוד {n} ימים', evLastDay: 'יום אחרון!', evReadyLine: 'פרסים לאסוף: {n}', evNextLine: 'סיימתם! בשבוע הבא: {e}', evAria: 'אירוע {e}, {d}, {p} נקודות',
+  evGo_cows: 'מכים פרות במכה', evGo_space: 'קירות חלל בהרפתקה', evGo_smash: 'מנפצים הכול ומנצחים את הפיניאטה', evGo_fruit: 'פירות זהב בחיתוך', evGo_bubbles: 'בועות פסטיבל בפיצוץ בועות', evGo_speed: 'מכות ברצף בטירוף',
+  evRule_cows: 'פרות בכל מקום במכה! כל פרה שמכים שווה 8 נקודות, וכל קיר עוד נקודה.', evRule_space: 'אסטרואידים ושדות כוח בכל שלב בהרפתקה. קירות, כוכבים ושלבים שווים נקודות, ומדבקות שוות כפול.',
+  evRule_smash: 'כל דבר שמנפצים שווה נקודות, והפיניאטה הענקית בסוף כל סצנה שווה 40.', evRule_fruit: 'פירות זהב עפים בחיתוך: 10 נקודות ועוד 5 לניקוד. כל פרי שווה נקודה.',
+  evRule_bubbles: 'בועות פסטיבל בצבעי הקשת עולות בפיצוץ בועות: 8 נקודות כל אחת.', evRule_speed: 'כל מכה בטירוף שווה נקודה, וכל 10 ברצף עוד 5.',
+  evPlay_cows: 'לשחק במכה', evPlay_space: 'לשחק בהרפתקה', evPlay_smash: 'לשחק בניפוץ', evPlay_fruit: 'לשחק בחיתוך', evPlay_bubbles: 'לשחק בפיצוץ בועות', evPlay_speed: 'לשחק בטירוף',
+  evToNext: 'עוד {n} נקודות לפרס הבא', evAllTiers: 'הגעתם לכל הפרסים!', evOnly: 'רק השבוע', evTierAria: '{n} נקודות: {p}', evTapClaim: 'הקישו לאסוף',
+  evCoins: 'מטבעות', evSnacks: '{n} חטיפים', evSnacksDup: '{n} חטיפים (כבר יש)', evSticker: 'מדבקה', evBall: 'כדור מהדורה', evNeedPts: 'עוד {n} נקודות כדי לפתוח',
+  evRewards: 'פרסים', evMissions: 'משימות האירוע', evStickers: 'מדבקות אירועים', evStkNeed: 'זוכים בה ב{e}', evNextWeek: 'בשבוע הבא: {e}', evPts: 'נקודות',
+  evMsToast: 'משימת אירוע הושלמה: {m}', evTierToast: '{e}: פרס מחכה לכם!', evRoundToast: '{e}: עוד {n} נקודות', evPinataTag: 'זמן פיניאטה!',
+  evGotCoins: '+{c} מטבעות!', evGotSnacks: '+{n} חטיפים לחיה שלכם!', evGotDup: 'כבר יש לכם: {n} חטיפים במקום', evGotSticker: 'מדבקה חדשה: {s}!', evGotHat: 'כובע חדש לחיה: {h}!', evGotBall: 'כדור חדש: {b}!',
+  evst_cows: 'פרת המנוסה', evst_space: 'חבר מהחלל', evst_smash: 'כוכב פיניאטה', evst_fruit: 'תפוח הזהב', evst_bubbles: 'בועת הפסטיבל', evst_speed: 'ברקי',
+  pi_cowboy: 'כובע בוקרים', pi_antenna: 'אנטנות חייזר', pi_viking: 'קסדת ויקינג', pi_fruithat: 'כובע פירות', pi_bubcrown: 'כתר בועות', pi_racer: 'קסדת מרוץ',
+  evm_cows_cow: 'להכות {n} פרות', evm_cows_round: 'לסיים {n} סיבובים במכה', evm_cows_wall: 'לשבור {n} קירות',
+  evm_space_clear: 'לעבור {n} שלבים בהרפתקה', evm_space_spacewall: 'לשבור {n} קירות חלל', evm_space_star3: '3 כוכבים ב־{n} שלבים',
+  evm_smash_smash: 'לנפץ {n} דברים', evm_smash_pinata: 'לנצח את הפיניאטה {n} פעמים', evm_smash_round: 'לסיים {n} סיבובי ניפוץ',
+  evm_fruit_fruit: 'לחתוך {n} פירות', evm_fruit_gold: 'לחתוך {n} פירות זהב', evm_fruit_round: 'לסיים {n} סיבובי חיתוך',
+  evm_bubbles_pop: 'לפוצץ {n} בועות', evm_bubbles_evbub: 'לפוצץ {n} בועות פסטיבל', evm_bubbles_round: 'לסיים {n} סיבובי פיצוץ בועות',
+  evm_speed_hit: 'להכות {n} כדורים בטירוף', evm_speed_best: '{n} מכות ברצף', evm_speed_round: 'לשחק {n} ריצות טירוף',
+  pwaInstall: 'התקנת האפליקציה', pwaInstallAria: 'להתקין את Grasp כאפליקציה', pwaIosTitle: 'הוספת Grasp למסך הבית', pwaIos1: 'הקישו על כפתור השיתוף', pwaIos2: 'בחרו "הוספה למסך הבית"', pwaIos3: 'הקישו "הוסף": Grasp ייפתח כמו אפליקציה, גם בלי אינטרנט',
+  pwaLater: 'לא עכשיו', pwaInstalled: 'Grasp הותקן!', pwaUpdate: 'גרסה חדשה — הקישו לרענון', pwaOffline: 'מוכן למשחק גם בלי אינטרנט',
 });
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 function t(key, vars) {
@@ -2579,7 +2762,7 @@ function spawnWave(now) {
     const bomb = ++slice.spawned - slice.lastBomb >= slice.bombEvery; // a bomb every 5-7 fruit
     if (bomb) { slice.lastBomb = slice.spawned; slice.bombEvery = 5 + Math.floor(Math.random() * 3); slice.bombs++; }
     slice.fruits.push({ x, y: H + rr, vx: (targetX - x) / tApex, vy, r: bomb ? r * 0.9 : rr, rot: Math.random() * TAU, vr: (Math.random() < 0.5 ? -1 : 1) * (0.0012 + Math.random() * 0.0016),
-      kind: bomb ? BOMB : FRUITS[Math.floor(Math.random() * FRUITS.length)], bomb, born: now + i * 160 });
+      kind: bomb ? BOMB : FRUITS[Math.floor(Math.random() * FRUITS.length)], bomb, born: now + i * 160, gold: !bomb && EV_READY && evGoldFruit() && Math.random() < 0.18 }); // (Fruit Frenzy: golden fruit)
   }
   const [a, b] = CONFIG.SPAWN_INTERVAL_MS;
   slice.nextSpawn = now + a + Math.random() * (b - a);
@@ -2632,7 +2815,7 @@ function cutFruit(f, ux, uy, now) {
     const a = ang + (Math.random() - 0.5) * 0.9, v = 0.3 + Math.random() * 0.4;
     particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.004 + Math.random() * 0.004, r: 1 + Math.random() * 1.5, color: Math.random() < 0.5 ? '#ffffff' : '#ffc24b' });
   }
-  slice.score++;
+  slice.score++; if (f.gold) { slice.score += 4; evAct('gold'); sfx('goldPop', f.r); fxSparkle(f.x, f.y, null, 10, f.r * 1.5); slice.floaters.push({ x: f.x, y: f.y - f.r * 1.6, text: '+5', big: true, life: 1.2 }); } // (Fruit Frenzy: a golden fruit is worth 5)
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now; slice.bestCombo = Math.max(slice.bestCombo, slice.combo.n);
   slice.coinFruit = (slice.coinFruit || 0) + 1; if (slice.coinFruit % ECONOMY.slice.fruitPerCoin === 0) addCoins(1); track('fruit', 1); if (slice.combo.n === 3) { track('combo', 1); grippySay('combo'); } else if (slice.score === 1) grippySay('firstHit'); // a coin per fruit; a ×3 combo counts once per chain
   if (slice.combo.n >= 3) fxSparkle(f.x, f.y, null, 4 + slice.combo.n, f.r * 1.4);
@@ -2875,7 +3058,13 @@ function drawBomb(f, now) {
   ctx.fillStyle = 'rgba(255,200,80,0.45)'; ctx.beginPath(); ctx.arc(sx, sy, r * 2.2, 0, TAU); ctx.fill();
   sparkle(sx, sy, r * 1.6, '#fff3c4', 0.95); sparkle(sx + r * 0.9, sy - r * 0.6, r * 0.7, '#ff9a3d', 0.85);
 }
-function drawFruit(f, now) { if (f.bomb) drawBomb(f, now); else blit(fruitSprite(f.kind, 0), f.x, f.y, f.rot, f.r / FR); }
+function drawFruit(f, now) { if (f.bomb) drawBomb(f, now); else if (f.gold) drawGoldFruit(f, now); else blit(fruitSprite(f.kind, 0), f.x, f.y, f.rot, f.r / FR); }
+function goldFruitSprite(kind) { // Fruit Frenzy: the fruit in gold leaf (its own shading kept under a gold wash)
+  const base = fruitSprite(kind, 0), S = FR + 14;
+  return makeSprite('gfruit|' + (kind.name || kind.rind), S * 2, S * 2, S, S, (g) => { g.drawImage(base.c, -S, -S, S * 2, S * 2); g.globalCompositeOperation = 'source-atop'; const q = g.createLinearGradient(-S, -S, S, S); q.addColorStop(0, 'rgba(255,246,170,0.75)'); q.addColorStop(0.5, 'rgba(255,200,40,0.7)'); q.addColorStop(1, 'rgba(190,120,10,0.75)'); g.fillStyle = q; g.fillRect(-S, -S, S * 2, S * 2); });
+}
+function drawGoldFruit(f, now) { resetView(); const gr = ctx.createRadialGradient(f.x, f.y, f.r * 0.5, f.x, f.y, f.r * 1.7); gr.addColorStop(0, 'rgba(255,214,90,0.45)'); gr.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.7, 0, TAU); ctx.fill();
+  blit(goldFruitSprite(f.kind), f.x, f.y, f.rot, f.r / FR); const a = now / 260; pvSparkle(ctx, f.x + Math.cos(a) * f.r * 0.9, f.y + Math.sin(a) * f.r * 0.9, 5 + 2 * Math.sin(now / 90), '#fffbe0', 0.9); }
 function drawHalf(h) { blit(fruitSprite(h.kind, h.side), h.x, h.y, h.ang + h.rot, h.r / FR); }
 function drawFloaters(list) {
   for (const f of list) {
@@ -3404,10 +3593,11 @@ function smBuildWave(w, now, off) { // wave w of the scene, built off to the rig
   smash.objs.sort((a, b) => b.layer - a.layer || a.z - b.z);
 }
 const SM_BOSS = { wall: 'safe', room: 'tv', city: 'robot', blocks: 'tower', food: 'melon' }; // each scene's boss
-const SM_BOSS_LOOK = { safe: [1.0, 0.95, '#5f7894'], tv: [1.25, 0.95, '#8a5a3c'], robot: [0.8, 1.35, '#8fa3c7'], tower: [0.85, 1.4, '#ff6f59'], melon: [1.15, 0.92, '#3f9b3a'] }; // w / h shape (x the unit box), colour
+const SM_BOSS_LOOK = { pinata: [1.0, 1.05, '#ff6fae'], safe: [1.0, 0.95, '#5f7894'], tv: [1.25, 0.95, '#8a5a3c'], robot: [0.8, 1.35, '#8fa3c7'], tower: [0.85, 1.4, '#ff6f59'], melon: [1.15, 0.92, '#3f9b3a'] }; // w / h shape (x the unit box), colour
 function smBuildBoss(now, off) {
   smash.seg = 'boss'; smash.wave = smash.waves; smash.total = smash.done = 0;
-  const kind = SM_BOSS[smash.scene], L = SM_BOSS_LOOK[kind], u = smU(), room = H - smTop() - u * 1.6, base = Math.min(W * 0.72, room * 0.85, u * 11);
+  const kind = EV_READY && evPinata() ? 'pinata' : SM_BOSS[smash.scene], L = SM_BOSS_LOOK[kind], // (Smash Mania: the event's piñata)
+    u = smU(), room = H - smTop() - u * 1.6, base = Math.min(W * 0.72, room * 0.85, u * 11);
   let w = base * L[0], h = base * L[1]; const k = Math.min(1, (W - 24) / w, room / h); w *= k; h *= k;
   const o = smAdd('boss', 'r', { x: W / 2 + off, y: H - h / 2, w, h, col: L[2], hp: smash.bossHp, layer: 1, extra: { kind, ph: 1, roarAt: 0 } });
   o.tremAt = now + CONFIG.SMASH_SCROLL_MS; smash.boss = o;
@@ -3432,7 +3622,7 @@ function smScrollEnd(now) {
   for (const o of smash.objs) if (!o.stat) M.Sleeping.set(o.body, false);
   if (smash.decalG) smash.decalG.clearRect(0, 0, W, H); smash.decalX = 0;
   smash.phase = 'play'; smash.phaseAt = now; smash.armAt = now + 500; smash.hairAt = now + 3500; smNewId();
-  if (smash.seg === 'boss') { smash.tag = { t: now, text: t('smBossTag') }; grippySay('smashBoss'); sfx('roar'); shakeScreen(4); dust(W / 2, H - 20, 12, 3); }
+  if (smash.seg === 'boss') { smash.tag = { t: now, text: t(smash.boss && smash.boss.extra.kind === 'pinata' ? 'evPinataTag' : 'smBossTag') }; grippySay('smashBoss'); sfx('roar'); shakeScreen(4); dust(W / 2, H - 20, 12, 3); }
   else { smash.tag = { t: now, text: t('smWave', { n: smash.wave + 1, m: smash.waves }) }; }
 }
 function smTensionTick(now) { // v3: as a wave goes on, things not yet hit start to crack and tremble by themselves (hairlines only: no damage)
@@ -3458,6 +3648,7 @@ function smBossHit(o, x, y, k, now) { // the boss: harder hits hurt more (a tap 
 }
 function smBossDown(o, now) { // the boss blows up: a big blast of its pieces, confetti, the boss-down sound; then 'Smashed!'
   o.alive = false; M.Composite.remove(world, o.body); smash.things++; smash.trk.smash++; smash.trk.wall++; smash.broke.boss = (smash.broke.boss || 0) + 1; rpMoment('boss', 110);
+  if (o.extra && o.extra.kind === 'pinata') { evAct('pinata'); for (let i = 0; i < 4; i++) burst(o.body.position.x + (i - 1.5) * o.w * 0.2, o.body.position.y, COLORS[i], 22); } // (Smash Mania: candy everywhere)
   const s = smashScale(), cx = o.body.position.x, cy = o.body.position.y;
   for (let i = 0; i < 18; i++) { const a = Math.random() * TAU, v = 5 + Math.random() * 9; smPiece(i % 3 ? 'r' : 'p5', (8 + Math.random() * 16) * s, (6 + Math.random() * 10) * s, [o.col, darken(o.col, 0.25), lighten(o.col, 0.25)][i % 3], 'boss', cx + Math.cos(a) * o.w * 0.25, cy + Math.sin(a) * o.h * 0.25, Math.cos(a) * v, Math.sin(a) * v - 5, now); }
   smSnd('bossdown', 1, 'boss', now); confetti(cx, cy - o.h * 0.2, 80, 1.6); confetti(W * 0.25, H * 0.3, 40, 1.2); confetti(W * 0.75, H * 0.3, 40, 1.2);
@@ -3777,6 +3968,14 @@ const SM_BOSS_ART = { // v3: the five bosses, drawn in a w x h box
     g.save(); g.scale(w / h, 1); SM_ART.watermelon(g, h, h, col); g.restore();
     smFace(g, 0, h * 0.04, Math.min(w, h) * 0.24, 'grr');
   },
+};
+SM_BOSS_ART.pinata = (g, w, h, col) => { // Smash Mania's boss: a giant star piñata with paper stripes, tassels and a cheeky face
+  const r0 = Math.min(w, h) * 0.5, r1 = r0 * 0.5, star = () => { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? r1 : r0; g.lineTo(Math.cos(a) * r, Math.sin(a) * r + h * 0.04); } g.closePath(); };
+  g.strokeStyle = '#4a2810'; g.lineWidth = Math.max(2, w * 0.012); g.beginPath(); g.moveTo(0, -h / 2 - r0 * 0.1); g.lineTo(0, -r0 * 0.9); g.stroke();
+  shadedFill(g, star, col, r0); g.save(); star(); g.clip(); ['#ffd23f', '#54c6eb', '#43d9a3', '#ff8a3d', '#a98bff'].forEach((c, i) => { g.fillStyle = c; g.fillRect(-w, -r0 + i * r0 * 0.42, w * 2, r0 * 0.16); }); g.restore();
+  rimLight(g, star, r0, 0.4); outline(g, star, col, 3);
+  for (const [x, c] of [[-0.18, '#ff4d6d'], [0, '#ffd23f'], [0.18, '#43d9a3']]) { g.strokeStyle = c; g.lineWidth = Math.max(3, w * 0.03); g.beginPath(); g.moveTo(x * w, r1 * 0.9); g.quadraticCurveTo(x * w + w * 0.04, r1 * 1.6, x * w - w * 0.02, r0 * 0.98); g.stroke(); }
+  smFace(g, 0, h * 0.06, r1 * 0.75, 'grr'); gloss(g, star, r0, 0.25);
 };
 SM_ART.boss = (g, w, h, col, seed, R, o) => SM_BOSS_ART[(o.extra && o.extra.kind) || 'safe'](g, w, h, col);
 function sparkleOn(g, x, y, r) { g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r * 0.25, y - r * 0.25); g.lineTo(x + r, y); g.lineTo(x + r * 0.25, y + r * 0.25); g.lineTo(x, y + r); g.lineTo(x - r * 0.25, y + r * 0.25); g.lineTo(x - r, y); g.lineTo(x - r * 0.25, y - r * 0.25); g.closePath(); g.fill(); }
@@ -7581,7 +7780,7 @@ function wallDown(w, now) { // a wall knocked out completely (from in front or b
   if (w.summon) { sfx('chime'); wallFlashFx(w, now); const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); strike.score += scorePts(10); rbWallDown(w, now); return; } // (a boss's mini-wall: no stage progress, no new wall)
   const { T, B } = corridor(), bonus = 10 * strike.level, c = proj(0, (T + B) / 2, w.z); strike.score += scorePts(bonus); strike.ui.scoreAt = now;
   addFloater({ x: c.x, y: c.y - 30 * c.s, text: 'WALL +' + bonus, big: true, life: 1 }); sfx('chime'); wallFlashFx(w, now);
-  const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1);
+  const i = strike.walls.indexOf(w); if (i >= 0) strike.walls.splice(i, 1); addCoins(adv.on ? 0 : ECONOMY.strike.wall); track('wall', 1); if (w.kind === 'asteroid' || w.kind === 'force') evAct('spacewall');
   wallCleared(now); spawnStrikeWall(nextWallZ());
 }
 function sweptDist(w, k, b) { // the closest the ball's centre came to brick k's cell over this frame's lateral path (b.lx/ly -> b.x/y)
@@ -8509,6 +8708,7 @@ function rallyCol(h) { // the ball's heat colour: white -> yellow -> orange -> b
 function rallyUp(now) { // a return: one step faster (a whoosh pitched by the speed; a pop at every +20% and at the cap)
   if (!rallyOn()) return false;
   const k0 = rallyK(); strike.rally++; const k1 = rallyK(), atCap = k1 >= 1 + rallyCap() - 1e-9;
+  if (frenzy.on) { evAct('hit'); if (strike.rally % 10 === 0) evAct('row10'); evAct('best', strike.rally); } // (the weekly event: Speed Week)
   strike.rallyBest = Math.max(strike.rallyBest, strike.rally); strike.rallyTop = Math.max(strike.rallyTop, k1);
   if (k1 > k0 + 1e-9) {
     sfx('rally', k1); strike.rallyLog.push(+k1.toFixed(3)); if (strike.rallyLog.length > 60) strike.rallyLog.shift();
@@ -8676,13 +8876,14 @@ function strikeMiss(b, now) { // a ball flew past: gone; with other balls still 
 }
 /* --- surprise guests: a flying cow or monkey instead of the ball every 4-6 serves --- */
 function guestPool() { return GUEST_KINDS.filter((k) => roadOpen(k)); } // the flying animals this player has unlocked on the road (both in the daily)
-function guestsOn() { const e = strike._guestEvery; return e === 0 ? false : e > 0 ? true : !strike.extrasOff && strike.level >= GUEST_FROM && guestPool().length > 0; } // from level 2, once one is unlocked (a test override n > 0 forces them)
+function guestsOn() { const e = strike._guestEvery; return e === 0 ? false : e > 0 ? true : (EV_READY && evCows()) || (!strike.extrasOff && strike.level >= GUEST_FROM && guestPool().length > 0); } // (Cow Stampede: from the first level / stage) // from level 2, once one is unlocked (a test override n > 0 forces them)
 function guestRoll() { // pre-roll the next guest: on which serve (4-6 from now, or the test override) and which animal (never three of a kind in a row)
   if (!guestsOn()) { strike.guestQ = null; return; }
-  const e = strike._guestEvery, n = e > 0 ? e : 4 + Math.floor(strikeRand('guest') * 3), h = strike.guestKinds; // every 4-6 serves
+  const e = strike._guestEvery, stampede = !(e > 0) && EV_READY && evCows(), n = e > 0 ? e : stampede ? 2 + Math.floor(strikeRand('guest') * 2) : 4 + Math.floor(strikeRand('guest') * 3), h = strike.guestKinds; // every 4-6 serves
   let kind = strikeRand('guest') < 0.5 ? 'cow' : 'monkey'; const gp = guestPool();
   if (gp.length === 1) kind = gp[0]; // only one unlocked: always that one
   else if (h.length >= 2 && h[h.length - 1] === kind && h[h.length - 2] === kind) kind = kind === 'cow' ? 'monkey' : 'cow';
+  if (stampede) kind = 'cow';
   strike.guestQ = { at: strike.pitches + n, kind };
 }
 function guestPitch(b, now) { // every launch from the far end is a serve for the guests; on the scheduled one this ball becomes the guest
@@ -8717,7 +8918,7 @@ function guestHit(b, sc, now) { // slapped: it flies back screaming, a speech bu
   b.guestHitAt = now; strike.guestHits++;
   const lk = guestLook(b.guest); sfx(THEME_GUEST_SFX[lk] || W2_GUEST_SFX[lk] || (b.guest === 'cow' ? 'moo' : 'monkey')); // (a theme's mascot: its own sound and line)
   addFloater({ x: sc.x + sc.r * (sc.x < W / 2 ? 0.9 : -0.9), y: sc.y - sc.r * 1.05, text: t('say_' + lk), big: true, life: 1.5, bubble: true });
-  addCoins(ECONOMY.strike.guest); track('guest', 1);
+  addCoins(ECONOMY.strike.guest); track('guest', 1); if (b.guest === 'cow') evAct('cow');
   burst(sc.x, sc.y, b.guest === 'cow' ? '#ffffff' : '#c08a4a', 10);
 }
 function guestMiss(b, now) { // a guest flew past: it splats on the 'screen' with a squashed face, boings and bounces off; no life lost, no streak broken
@@ -8759,7 +8960,7 @@ function tension() { const g = strike.goal; return strike.boss ? 0 : Math.max(0,
 function beatMs() { return strikeTuning().beatMs * (1 - 0.22 * tension()); } // each cleared wall nudges the heartbeat faster
 /* --- Strike Adventure: a stage's start, its clear (burst, whoosh or world travel, then the card) and its fail --- */
 function advBegin() { // resetStrike for a stage: its plan, its seeded channels afresh, nothing spawned or lost yet
-  const P = adv.plan = advPlan(adv.n); adv.world = P.world; adv.spawned = adv.lost = 0; adv.phase = 'play'; adv.travel = adv.result = null; adv.bossDone = false; adv.rngs = {}; adv.clearAt = adv.cardAt = 0; adv.sfxAt = {};
+  const P = adv.plan = EV_READY ? evPlan(advPlan(adv.n)) : advPlan(adv.n); adv.world = P.world; adv.spawned = adv.lost = 0; adv.phase = 'play'; adv.travel = adv.result = null; adv.bossDone = false; adv.rngs = {}; adv.clearAt = adv.cardAt = 0; adv.sfxAt = {};
   return P;
 }
 function advClear(now) { // the stage's last wall (or its boss) is down: stars (3 / 2 / 1 for 0 / 1 / more lives lost), coins (a first clear: a few + the stars; a replay: only the stars it adds), XP; then the card
@@ -8780,6 +8981,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   themeSfx('clear'); // (a theme: the buzzer / the organ's charge / the whistle, and the crowd)
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
+  evAct('clear'); evAct('star', stars); if (stars === 3) evAct('star3'); if (stk) evAct('sticker'); // (the weekly event: Space Weekend)
   if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true), { star: stars === 3, boss: !!P.boss, record: adv.result.record }); // (Coin Magnet never applies: no perks in a stage)
   if (adv.result.record) grippySay('record'); else if (!adv.travel) grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (a new record: that line first) // (a world's boss stage: 'New world!' during the trip instead; the loop stops: the clear's fanfare plays alone)
   return adv.result;
@@ -9074,6 +9276,7 @@ function strikeBallSprite(sup, stripe, skin = ballSkinNow()) { // stripe: a broa
 }
 function ballSkinArt(g, R, skin, tint) { // the face of each ball skin; tint: the SUPER ball's saffron wash over a non-classic skin
   const clipBall = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); };
+  if (typeof skin === 'string' && skin.startsWith('ev_')) { evBallArt(g, R, skin); return; } // a weekly event's edition ball
   if (skin === 'beach') { // six coloured gores meeting at the pole
     ball(g, R, '#f7f3ea'); g.save(); clipBall(); const cols = ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1'], px = -R * 0.18, py = -R * 0.3;
     for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(px, py); g.arc(px, py, R * 2.2, i * TAU / 6 + 0.3, (i + 1) * TAU / 6 + 0.3); g.closePath(); g.fillStyle = cols[i]; g.fill(); }
@@ -11175,6 +11378,7 @@ function g3BallTex(skin) { // the equipped ball skin wrapped round the sphere (e
   const w = 512, h = 256;
   const dir = (x, y) => { const u = (x + 0.5) / w * TAU, v = (y + 0.5) / h * Math.PI; return [Math.sin(v) * Math.cos(u), Math.cos(v), Math.sin(v) * Math.sin(u)]; };
   return g3Canvas(w, h, (g) => {
+    if (typeof skin === 'string' && skin.startsWith('ev_')) { evBallTex(g, w, h, skin); return; } // a weekly event's edition ball
     if (skin === 'beach') { const cols = ['#ff6f59', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1']; for (let i = 0; i < 6; i++) { g.fillStyle = cols[i]; g.fillRect(i * w / 6, 0, w / 6 + 1, h); }
       g.fillStyle = 'rgba(255,255,255,0.7)'; for (let i = 0; i < 6; i++) g.fillRect(i * w / 6 - 1.5, 0, 3, h); g.fillStyle = '#f7f3ea'; g.fillRect(0, 0, w, h * 0.07); g.fillRect(0, h * 0.93, w, h * 0.07); return; }
     if (skin === 'disco') { const r = rng(55), nx = 40, ny = 20; g.fillStyle = '#2a3046'; g.fillRect(0, 0, w, h);
@@ -12289,7 +12493,7 @@ function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
     upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
-    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' }, pet: petDefault() }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' }, pet: petDefault(), event: evDefault(), evx: { stickers: [], hats: [], balls: [] } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -12299,6 +12503,8 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (p.xpv !== XP_CURVE && d.xp > 0) { const L = Math.max(1, Math.floor(Math.sqrt(d.xp / 50)) + 1), a = (L - 1) * (L - 1) * 50, b = L * L * 50; d.xp = Math.round(xpForLevel(L) + (d.xp - a) / (b - a) * (xpForLevel(L + 1) - xpForLevel(L))); } // the old curve (level = sqrt(xp / 50) + 1): same level, same share of it
     if (p.road && typeof p.road === 'object') for (const k of ['got', 'fresh', 'cards']) if (Array.isArray(p.road[k])) d.road[k] = [...new Set(p.road[k].filter((id) => ROAD_BY[id]).concat(k === 'got' ? ['brick'] : []))];
     if (p.worlds && Number.isFinite(p.worlds.unlocked)) { d.worlds.unlocked = Math.max(1, Math.min(WORLD_N, p.worlds.unlocked | 0)); d.worlds.last = Math.max(1, Math.min(d.worlds.unlocked, (p.worlds.last | 0) || 1)); }
+    if (p.evx !== undefined) d.evx = evxValidate(p.evx); for (const b of d.evx.balls) { const [e, n] = b.split('_'); evBallItem(e, +n); } // the weekly events' prizes kept for good (their balls are Shop items)
+    if (p.event !== undefined) d.event = evValidate(p.event); // this week's event state (another week is replaced by evEnsure)
     if (Array.isArray(p.unlocked)) for (const id of p.unlocked) if (ITEMS.some((it) => it.id === id) && !d.unlocked.includes(id)) d.unlocked.push(id);
     if (p.equipped) for (const ty of ITEM_TYPES) { const it = ITEMS.find((q) => q.type === ty && q.skin === p.equipped[ty]); if (it && d.unlocked.includes(it.id)) d.equipped[ty] = it.skin; }
     if (p.missions && typeof p.missions.date === 'string' && Array.isArray(p.missions.list)) d.missions = { date: p.missions.date, list: p.missions.list.filter((m) => m && MISSION_POOL.some((q) => q.id === m.id)).map((m) => ({ id: m.id, progress: +m.progress || 0, goal: +m.goal || 1, reward: +m.reward || 0, done: !!m.done, claimed: !!m.claimed })) };
@@ -12333,7 +12539,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
       if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
       if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= ADV_WN))].sort((x, y) => x - y); }
-    if (p.pet !== undefined) d.pet = petValidate(p.pet); // the pet: every field checked (see petValidate)
+    if (p.pet !== undefined) d.pet = petValidate(p.pet, d.evx.hats); // the pet: every field checked (see petValidate)
     advSyncWorlds(d); albumSync(d);
     d.level = levelOf(d.xp);
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
@@ -12389,7 +12595,7 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
 }
 function roundStart() { rpReset(); petUi.earn = null; meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score, xp, pb) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission; pb: the pet's snack bonuses { star, boss, record }
-  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1); petEarn(pb);
+  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1); petEarn(pb); if (EV_READY) evRoundDone();
 }
 function coinSprite(r) {
   return makeSprite('coin|' + Math.round(r), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
@@ -12439,6 +12645,7 @@ function claimable() { return profile.missions.list.filter((m) => m.done && !m.c
 function track(event, n = 1) { // one call from the modes for every countable thing; stats, missions and their completion toast
   n = Math.max(0, +n || 0); if (!n) return;
   const sk = STAT_KEYS[event]; if (sk) profile.stats[sk] += n;
+  if (EV_READY && (event === 'wall' || event === 'smash' || event === 'fruit')) evAct(event, n); // (the weekly event: counts only in its featured game)
   meta.events.push([event, n]); if (meta.events.length > 60) meta.events.shift();
   ensureMissions();
   let changed = false;
@@ -14358,7 +14565,7 @@ function petSanitize(name) { // letters (any script), digits, spaces and . _ ' -
   s = s.replace(/[^\p{L}\p{M}\p{N} ._'-]/gu, '').replace(/\s+/g, ' ').trim(); return Array.from(s).slice(0, PET.nameMax).join('').trim();
 }
 function petStageOf(food, hatched = true) { if (!hatched) return 0; let i = 1; for (let k = 1; k < PET.stages.length; k++) if (food >= PET.stages[k].at) i = k; return i; }
-function petValidate(raw) { // the stored pet: every field checked; anything odd falls back to the default
+function petValidate(raw, hats) { // the stored pet: every field checked; anything odd falls back to the default (hats: the event hats owned)
   const d = petDefault(); if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return d;
   const iso = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x), int = (v, lo, hi) => Number.isFinite(v) ? Math.max(lo, Math.min(hi, Math.floor(v))) : lo;
   d.hatched = raw.hatched === true; d.name = petSanitize(raw.name);
@@ -14370,10 +14577,11 @@ function petValidate(raw) { // the stored pet: every field checked; anything odd
   }
   const st = petStageOf(d.food, d.hatched);
   const col = PET.colors.find((c) => c.id === raw.color); if (col && col.st <= Math.max(1, st)) d.color = col.id;
-  for (const sl of PET.slots) { const it = PET.items.find((q) => q.id === raw[sl] && q.slot === sl); if (it && it.st <= st) d[sl] = it.id; }
+  for (const sl of PET.slots) { const it = PET.items.find((q) => q.id === raw[sl] && q.slot === sl); if (it && (it.ev ? st >= 1 && (hats || []).includes(it.id) : it.st <= st)) d[sl] = it.id; }
   d.seen = Number.isInteger(raw.seen) ? Math.max(Math.min(1, st), Math.min(st, raw.seen)) : st;
   return d;
 }
+function petHasHat(id) { return !!(profile.evx && profile.evx.hats.includes(id)); } // an event's hat, once won
 function petP() { return profile.pet || (profile.pet = petDefault()); }
 function petToday() { return missionDay(); }
 function petStage() { const P = petP(); return petStageOf(P.food, P.hatched); }
@@ -14394,7 +14602,7 @@ function petProgress() { // within the stage: { frac, left (snacks to the next s
   const a = PET.stages[st].at, b = PET.stages[st + 1].at; return { frac: Math.max(0, Math.min(1, (P.food - a) / (b - a))), left: b - P.food, next: st + 1 };
 }
 function petCanFeed() { const P = petP(); return !P.hatched ? 'egg' : petAteToday() >= PET.perDay ? 'full' : P.pantry <= 0 ? 'empty' : ''; }
-function petUnlocksAt(st) { return [...PET.colors.filter((c) => c.st === st).map((c) => t('pc_' + c.id)), ...PET.items.filter((i) => i.st === st).map((i) => t('pi_' + i.id))]; }
+function petUnlocksAt(st) { return [...PET.colors.filter((c) => c.st === st).map((c) => t('pc_' + c.id)), ...PET.items.filter((i) => i.st === st && !i.ev).map((i) => t('pi_' + i.id))]; }
 /* --- snacks from play, feeding, hatching, growing --- */
 function petEarn(pb) { // a finished round: snacks into the box (the end card's line reads petUi.earn)
   pb = pb || {}; const P = petP(), n = Math.min(PET.perRound, 1 + (pb.star ? 1 : 0) + (pb.boss ? 1 : 0) + (pb.record ? 1 : 0)), before = P.pantry;
@@ -14417,7 +14625,7 @@ function petHatch() {
 function petEquip(kind, id) { // kind 'color' or a slot ('head' / 'eyes' / 'neck'); a slot's item again = off; only what the stage has unlocked
   const P = petP(), st = Math.max(1, petStage());
   if (kind === 'color') { const c = PET.colors.find((q) => q.id === id); if (!c || c.st > st) return false; P.color = id; }
-  else { if (!PET.slots.includes(kind)) return false; if (!id || P[kind] === id) P[kind] = ''; else { const it = PET.items.find((q) => q.id === id && q.slot === kind); if (!it || it.st > petStage()) return false; P[kind] = id; } }
+  else { if (!PET.slots.includes(kind)) return false; if (!id || P[kind] === id) P[kind] = ''; else { const it = PET.items.find((q) => q.id === id && q.slot === kind); if (!it || (it.ev ? !petHasHat(it.id) || petStage() < 1 : it.st > petStage())) return false; P[kind] = id; } }
   saveProfile(); return true;
 }
 function petSpeak(text) { // a short spoken line (the shared voice): only when the sound and the voice are on
@@ -14582,7 +14790,7 @@ function drawPetArt(g, R, o) {
   else if (mood === 'hungry' && !o.wig) { g.beginPath(); g.ellipse(0, my + R * 0.03, R * 0.06, R * 0.075, 0, 0, TAU); fill('#5a1830'); line(lw * 0.8); }
   else { petMouthPath(g, R, my); fill('#5a1830'); g.save(); petMouthPath(g, R, my); g.clip(); g.beginPath(); g.ellipse(0, my + R * 0.13, R * 0.08, R * 0.06, 0, 0, TAU); fill('#ff7a9a'); g.restore(); petMouthPath(g, R, my); line(lw * 0.8); }
   // the top: a sprout (Baby), two leaves (Kid), a tuft (Teen), little horns (Grown-up, Legend), unless a hat covers it
-  const hat = o.head === 'cap' || o.head === 'crown';
+  const hat = o.head === 'cap' || o.head === 'crown' || EV_HAT_IDS.includes(o.head);
   if (!hat) {
     if (st <= 2) {
       g.beginPath(); g.moveTo(0, -ry * 0.97); g.quadraticCurveTo(R * 0.04, -ry - R * 0.12, 0, -ry - R * 0.2); line(lw * 1.1, '#2f8a4c');
@@ -14625,6 +14833,7 @@ function drawPetArt(g, R, o) {
     [[-w / 4, '#ff4d6d'], [0, '#54c6eb'], [w / 4, '#43d9a3']].forEach(([x, c]) => { g.beginPath(); g.arc(x, -h * 0.2, R * 0.055, 0, TAU); fill(c); });
     g.restore();
   }
+  else if (o.head && EV_HAT_IDS.includes(o.head)) evHatArt(g, R, ry, rx, o.head, ink, lw, tt); // a weekly event's hat
   if (sleepy) { g.fillStyle = 'rgba(241,233,218,0.9)'; for (let i = 0; i < 3; i++) { const q = (tt / 1500 + i / 3) % 1, sz = R * 0.3 * (0.6 + q * 0.6); g.globalAlpha = Math.min(1, (1 - q) * 1.6); g.font = '800 ' + sz.toFixed(1) + 'px system-ui, sans-serif'; g.fillText('z', rx * 0.7 + q * R * 0.55, -ry * 0.85 - q * R * 0.9); } g.globalAlpha = 1; }
   g.restore();
 }
@@ -14724,7 +14933,7 @@ function petRenderRoom() {
     const lb = t('pc_' + c.id) + (lock ? ' · ' + t('petLocked', { s: t('ps_' + PET.stages[c.st].id) }) : ''); b.setAttribute('aria-label', lb); b.title = lb; if (lock) b.innerHTML = PET_LOCK_SVG;
     b.addEventListener('click', () => petWardrobeTap('color', c.id, b)); return b;
   }));
-  $('petItems').replaceChildren(...PET.items.map((it) => {
+  $('petItems').replaceChildren(...PET.items.filter((it) => !it.ev || petHasHat(it.id)).map((it) => { // (an event hat shows once it is won)
     const b = document.createElement('button'), lock = it.st > st; b.type = 'button'; b.className = 'pitem' + (lock ? ' locked' : ''); b.dataset.id = it.id; b.dataset.slot = it.slot; b.setAttribute('aria-pressed', String(P[it.slot] === it.id));
     const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); const S = 60; cv.width = cv.height = Math.round(S * SS); const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0);
     const o = { stage: Math.max(2, Math.min(4, st)), color: P.color, mood: 'happy', t: 0, head: it.slot === 'head' ? it.id : '', eyes: it.slot === 'eyes' ? it.id : '', neck: it.slot === 'neck' ? it.id : '' };
@@ -14779,6 +14988,359 @@ window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (
 for (const ev of ['pointermove', 'pointerdown']) document.addEventListener(ev, (e) => { petUi.look.x = e.clientX; petUi.look.y = e.clientY; petUi.look.at = performance.now(); }, { passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) petLoopStart(); });
 PET_READY = true; petSync();
+/* ---------------- The weekly event (live-ops, fully offline): one event a week (Monday to Sunday, local time), picked from the week number, so
+   everyone sees the same one; points from the featured game, a 12-tier reward track (coins, snacks, an exclusive sticker, an exclusive pet hat, a
+   chest, the edition's ball that never returns), 3 event missions, a mascot and a colour accent. Reached tiers wait to be claimed (by tapping) until
+   the week ends. Config in EVENT (by ECONOMY); state in profile.event (this week) and profile.evx (what was won, for good). The gameplay twists
+   (cows everywhere, space walls, the piñata, golden fruit, festival bubbles) and the in-game toasts only run for a real visitor (not under
+   automation: navigator.webdriver), unless __grasp.event.live(true); points and missions always count. ---------------- */
+const ev = { force: null, live: null, run: { pts: 0, acc: {} }, log: [], claims: [], opened: 0, anim: 0 };
+function evMonday(date) { const [y, m, d] = date.split('-').map(Number), dt = new Date(y, m - 1, d), dow = (dt.getDay() + 6) % 7; return localDate(new Date(y, m - 1, d - dow)); }
+function evWeekIdx(date) { return Math.floor(petDays(EVENT.epoch, evMonday(date)) / 7); }
+function isoWeek(date) { // the ISO 8601 week of a local date: { year, week, key '2026-W41' }
+  const [y, m, d] = date.split('-').map(Number), dt = new Date(Date.UTC(y, m - 1, d)), day = (dt.getUTCDay() + 6) % 7; dt.setUTCDate(dt.getUTCDate() - day + 3);
+  const fy = dt.getUTCFullYear(), j4 = new Date(Date.UTC(fy, 0, 4)), week = 1 + Math.round(((dt - j4) / 864e5 - 3 + (j4.getUTCDay() + 6) % 7) / 7);
+  return { year: fy, week, key: fy + '-W' + String(week).padStart(2, '0') };
+}
+function evAt(date = missionDay()) { // the event of date's week: { id, def, wk (its Monday), idx (weeks since the epoch), ed (its edition), left (days, today included), ends (Sunday), next (next week's id), iso }
+  const N = EVENT.defs.length, idx = evWeekIdx(date), i = ((idx % N) + N) % N, f = ev.force && EVENT.by[ev.force] ? ev.force : null, id = f || EVENT.defs[i].id, j = EVENT.ids.indexOf(id), wk = evMonday(date);
+  return { id, def: EVENT.by[id], wk, idx, ed: Math.max(1, Math.floor(idx / N) + 1), left: 7 - petDays(wk, date), ends: addDays(wk, 6), next: EVENT.defs[(j + 1) % N].id, iso: isoWeek(date).key };
+}
+function evName(id) { return (EVENT.names[lang] || EVENT.names.en)[id] || id; }
+function evDefault() { return { wk: '', id: '', pts: 0, got: [], ms: [0, 0, 0], mc: [false, false, false], seen: false }; }
+function evValidate(raw) { // this week's state as stored: every field checked (a different week is replaced by evEnsure)
+  const d = evDefault(); if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return d;
+  if (typeof raw.wk !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.wk) || !EVENT.by[raw.id]) return d;
+  d.wk = raw.wk; d.id = raw.id; d.pts = Number.isFinite(raw.pts) ? Math.max(0, Math.min(99999, Math.floor(raw.pts))) : 0;
+  if (Array.isArray(raw.got)) d.got = [...new Set(raw.got.filter((i) => Number.isInteger(i) && i >= 0 && i < EVENT.track.length && EVENT.track[i].at <= d.pts))].sort((a, b) => a - b);
+  const M = EVENT.by[d.id].ms;
+  if (Array.isArray(raw.ms)) d.ms = M.map((m, i) => { const v = raw.ms[i]; return Number.isFinite(v) && v > 0 ? Math.min(m.n, Math.floor(v)) : 0; });
+  if (Array.isArray(raw.mc)) d.mc = M.map((m, i) => raw.mc[i] === true && d.ms[i] >= m.n);
+  d.seen = raw.seen === true; return d;
+}
+function evxValidate(raw) { // what the events gave for good: their stickers, the pet's hats, the edition balls ('cows_3')
+  const d = { stickers: [], hats: [], balls: [] }; if (!raw || typeof raw !== 'object') return d;
+  const hats = EVENT.defs.map((q) => q.hat);
+  if (Array.isArray(raw.stickers)) d.stickers = [...new Set(raw.stickers.filter((x) => EVENT.by[x]))];
+  if (Array.isArray(raw.hats)) d.hats = [...new Set(raw.hats.filter((x) => hats.includes(x)))];
+  if (Array.isArray(raw.balls)) d.balls = [...new Set(raw.balls.filter((x) => typeof x === 'string' && /^[a-z]+_\d{1,4}$/.test(x) && EVENT.by[x.split('_')[0]] && +x.split('_')[1] >= 1))].slice(0, 300);
+  return d;
+}
+function evEnsure(date = missionDay()) { // a new week (or a forced event) brings a fresh state: last week's unclaimed rewards are gone
+  const A = evAt(date); let E = profile.event;
+  if (!E || E.wk !== A.wk || E.id !== A.id) { E = profile.event = evDefault(); E.wk = A.wk; E.id = A.id; ev.run = { pts: 0, acc: {} }; saveProfile(); }
+  return E;
+}
+function evLive() { if (ev.live !== null) return ev.live; try { return !navigator.webdriver; } catch { return true; } }
+function evIs(id) { return evLive() && evAt().id === id; } // a gameplay twist is on: this week's event, for a real visitor
+function evFeatured(id) { // is the game on screen this event's featured game?
+  const g = gameMode;
+  return id === 'cows' ? g === 'strike' && !frenzy.on : id === 'space' ? g === 'strike' && adv.on : id === 'smash' ? g === 'smash' : id === 'fruit' ? g === 'slice' : id === 'bubbles' ? g === 'bubbles' : id === 'speed' ? g === 'strike' && frenzy.on : false;
+}
+function evReached(pts) { let n = 0; for (const T of EVENT.track) if (pts >= T.at) n++; return n; }
+function evClaimable(E = evEnsure()) { const out = []; EVENT.track.forEach((T, i) => { if (E.pts >= T.at && !E.got.includes(i)) out.push(i); }); return out; }
+function evMsReady(E = evEnsure()) { return EVENT.by[E.id].ms.map((m, i) => E.ms[i] >= m.n && !E.mc[i] ? i : -1).filter((i) => i >= 0); }
+function evAct(kind, n = 1) { // a game's action: counts only in this week's featured game
+  if (!EV_READY) return 0; const A = evAt(); if (!evFeatured(A.id)) return 0; return evAdd(kind, n, A);
+}
+function evAdd(kind, n = 1, A = evAt()) { // points (fractions carried over: pop 0.5, smash 0.3) and the missions for an action
+  n = Math.max(0, +n || 0); if (!n) return 0;
+  const E = evEnsure(), D = A.def, per = D.pts[kind]; let got = 0;
+  if (per) { const acc = (ev.run.acc[kind] || 0) + per * n; got = Math.floor(acc + 1e-9); ev.run.acc[kind] = acc - got; }
+  D.ms.forEach((m, i) => {
+    if (m.k !== kind || E.mc[i] || E.ms[i] >= m.n) return;
+    E.ms[i] = Math.min(m.n, m.max ? Math.max(E.ms[i], Math.floor(n)) : E.ms[i] + n);
+    if (E.ms[i] >= m.n && evLive()) { toast('evMsToast', { m: evMsText(D, i) }, 'check'); sfx('mission'); }
+  });
+  if (got) { const b = evReached(E.pts); E.pts = Math.min(99999, E.pts + got); ev.run.pts += got; if (evReached(E.pts) > b && evLive()) { toast('evTierToast', { e: evName(A.id) }, 'star'); sfx('chime'); } }
+  ev.log.push([kind, n, got]); if (ev.log.length > 80) ev.log.shift();
+  saveProfile(); if (mode === 'none') evSync(); return got;
+}
+function evRoundDone() { // a finished round of any game: the featured one pays its round points; a short toast with the round's points
+  if (!EV_READY) return; const A = evAt(); if (evFeatured(A.id)) evAdd('round', 1, A);
+  if (ev.run.pts > 0 && evLive()) toast('evRoundToast', { e: evName(A.id), n: ev.run.pts }, 'star');
+  ev.run.pts = 0;
+}
+function evMsText(D, i) { const m = D.ms[i]; return t('evm_' + D.id + '_' + m.k, { n: m.n }); }
+function evPrize(i, A = evAt()) { // what tier i holds this week
+  const T = EVENT.track[i], X = profile.evx; if (!T) return null;
+  if (T.coins) return { coins: T.coins, chest: !!T.chest };
+  if (T.snacks) return { snacks: T.snacks };
+  if (T.sticker) return X.stickers.includes(A.id) && !evWonHere(i) ? { snacks: EVENT.dupSnacks, dup: 'sticker' } : { sticker: A.id };
+  if (T.hat) return X.hats.includes(A.def.hat) && !evWonHere(i) ? { snacks: EVENT.dupSnacks, dup: 'hat' } : { hat: A.def.hat };
+  if (T.ball) return { ball: A.id + '_' + A.ed, ed: A.ed, final: true };
+  return null;
+}
+function evWonHere(i) { const E = profile.event; return !!(E && E.got.includes(i)); } // (claimed this week: the tier keeps showing what it gave)
+function evClaim(i) { // tier i: its prize, once, while the event lasts
+  const E = evEnsure(), A = evAt(), T = EVENT.track[i]; if (!T || E.pts < T.at || E.got.includes(i)) return null;
+  const p = evPrize(i, A), X = profile.evx, P = petP(); E.got.push(i); E.got.sort((a, b) => a - b);
+  if (p.coins) { profile.coins += p.coins; toast('evGotCoins', { c: p.coins }, 'coin'); }
+  if (p.snacks) { const b = P.pantry; P.pantry = Math.min(PET.pantryMax, P.pantry + p.snacks); P.earned += P.pantry - b; toast(p.dup ? 'evGotDup' : 'evGotSnacks', { n: p.snacks }, 'star'); }
+  if (p.sticker && !X.stickers.includes(p.sticker)) { X.stickers.push(p.sticker); toast('evGotSticker', { s: t('evst_' + p.sticker) }, 'star'); }
+  if (p.hat && !X.hats.includes(p.hat)) { X.hats.push(p.hat); toast('evGotHat', { h: t('pi_' + p.hat) }, 'star'); }
+  if (p.ball) { const it = evBallItem(A.id, A.ed); if (!X.balls.includes(p.ball)) X.balls.push(p.ball); if (it && !profile.unlocked.includes(it.id)) profile.unlocked.push(it.id); toast('evGotBall', { b: t('it_' + it.id) }, 'star'); }
+  ev.claims.push({ i, ...p }); saveProfile(); syncMeta(); return p;
+}
+function evClaimMs(i) { // an event mission done: its points
+  const E = evEnsure(), A = evAt(), m = A.def.ms[i]; if (!m || E.mc[i] || E.ms[i] < m.n) return 0;
+  E.mc[i] = true; const pts = EVENT.msPts[i] || 40, b = evReached(E.pts); E.pts = Math.min(99999, E.pts + pts); saveProfile();
+  if (evReached(E.pts) > b) toast('evTierToast', { e: evName(A.id) }, 'star');
+  syncMeta(); return pts;
+}
+function evState(date) { // everything the page shows, for the tests too
+  const A = evAt(date), E = evEnsure(date), next = EVENT.track.find((T) => T.at > E.pts) || null;
+  return { id: A.id, name: evName(A.id), wk: A.wk, iso: A.iso, idx: A.idx, ed: A.ed, left: A.left, ends: A.ends, next: A.next, nextName: evName(A.next), pts: E.pts, got: E.got.slice(), reached: evReached(E.pts),
+    claimable: evClaimable(E), ms: E.ms.slice(), mc: E.mc.slice(), msReady: evMsReady(E), nextAt: next ? next.at : 0, done: E.got.length === EVENT.track.length, seen: E.seen, countdown: evLeftText(A.left), live: evLive() };
+}
+function evLeftText(left) { return left <= 1 ? t('evLastDay') : t('evDaysLeft', { n: left }); }
+/* --- the gameplay twists (a real visitor in the event's week) --- */
+function evCows() { return evIs('cows') && gameMode === 'strike' && !daily.on && !frenzy.on && !duel.on && !strike.extrasOff; } // Cow Stampede: a cow every 2-3 serves, from the first stage / level
+function evPlan(P) { // Space Weekend: space walls (asteroids, force fields) in every Adventure stage (a copy: advPlan stays pure)
+  if (!evIs('space') || !P || P.boss || P.world >= 6 || P.walls < 2) return P;
+  const r = mulberry32(strSeed('evspace|' + P.n)), kinds = P.kinds.slice(), n = Math.max(1, Math.round(P.walls * 0.4));
+  for (let k = 0; k < n; k++) { const j = 1 + Math.floor(r() * (kinds.length - 1)); kinds[j] = r() < 0.5 ? 'asteroid' : 'force'; }
+  return { ...P, kinds, evSpace: true };
+}
+function evPinata() { return evIs('smash') && gameMode === 'smash'; } // Smash Mania: the scene's boss is the event's piñata
+function evGoldFruit() { return evIs('fruit') && gameMode === 'slice'; } // Fruit Frenzy: golden fruit in Slice (+5 points, event points)
+function evFestival() { return evIs('bubbles') && gameMode === 'bubbles'; } // Bubble Festival: festival bubbles in Bubble Pop
+/* --- the art: the six mascots (also the events' exclusive stickers), the pet's event hats, the edition balls --- */
+function evMascotArt(g, id, t) { // in the stickers' 100-unit box centred on (0, 0); t: ms for a little life (blink, bob)
+  const blink = t && (t % 3200) < 140, eye = (x, y, r) => { if (blink) { g.lineWidth = 2.6; g.strokeStyle = ST_INK; g.beginPath(); g.moveTo(x - r, y); g.lineTo(x + r, y); g.stroke(); } else stEye(g, x, y, r); };
+  if (id === 'cows') {
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * 16, -24); g.quadraticCurveTo(s * 30, -40, s * 34, -30); g.quadraticCurveTo(s * 28, -26, s * 22, -18); g.closePath(); stFill(g, '#f3e2b8', 2.4); // horns
+      g.save(); g.translate(s * 34, -12); g.rotate(s * 0.5); g.beginPath(); g.ellipse(0, 0, 12, 7, 0, 0, TAU); stFill(g, '#f7d0d8', 2.4); g.restore(); } // ears
+    g.beginPath(); g.ellipse(0, -2, 30, 32, 0, 0, TAU); stFill(g, stGrad(g, -34, 30, '#ffffff', '#e4e0ea'));
+    g.save(); g.beginPath(); g.ellipse(0, -2, 30, 32, 0, 0, TAU); g.clip(); g.fillStyle = '#2a2230'; g.beginPath(); g.ellipse(-20, -22, 14, 11, 0.4, 0, TAU); g.fill(); g.beginPath(); g.ellipse(22, 4, 9, 12, -0.3, 0, TAU); g.fill(); g.restore();
+    g.beginPath(); g.ellipse(0, -2, 30, 32, 0, 0, TAU); g.lineWidth = 3; g.strokeStyle = ST_INK; g.stroke();
+    eye(-11, -10, 6.5); eye(11, -10, 6.5);
+    g.beginPath(); g.ellipse(0, 16, 21, 13, 0, 0, TAU); stFill(g, stGrad(g, 4, 28, '#ffb6c8', '#f2829f'));
+    g.fillStyle = '#7a2a44'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * 8, 15, 3, 4, 0, 0, TAU); g.fill(); }
+    g.beginPath(); g.moveTo(-26, 28); g.lineTo(26, 28); g.lineTo(0, 44); g.closePath(); stFill(g, '#ff4d6d', 2.4); g.fillStyle = '#fff'; for (const [x, y] of [[-12, 31], [0, 36], [12, 31]]) { g.beginPath(); g.arc(x, y, 1.8, 0, TAU); g.fill(); }
+    stGloss(g, -14, -24, 7, 3);
+  } else if (id === 'space') {
+    for (const s of [-1, 1]) { g.lineWidth = 3; g.strokeStyle = ST_INK; g.beginPath(); g.moveTo(s * 10, -26); g.quadraticCurveTo(s * 16, -38, s * 20, -42); g.stroke(); g.beginPath(); g.arc(s * 20, -42, 5, 0, TAU); stFill(g, '#ffd23f', 2.2); }
+    g.beginPath(); g.ellipse(0, 0, 30, 28, 0, 0, TAU); stFill(g, stGrad(g, -28, 28, '#9df58a', '#3fbf5a'));
+    eye(-12, -6, 7); eye(12, -6, 7); g.beginPath(); g.arc(0, -16, 4.5, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 2; g.strokeStyle = ST_INK; g.stroke(); g.fillStyle = '#16121c'; g.beginPath(); g.arc(0.5, -15.5, 2.4, 0, TAU); g.fill();
+    stSmile(g, 0, 18, 12); stGloss(g, -14, -16, 7, 3);
+    g.beginPath(); g.arc(0, 0, 38, 0, TAU); g.lineWidth = 3; g.strokeStyle = 'rgba(190,230,255,0.9)'; g.stroke(); g.fillStyle = 'rgba(190,230,255,0.12)'; g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.ellipse(-20, -24, 9, 4, -0.7, 0, TAU); g.fill();
+  } else if (id === 'smash') {
+    const star = (r0, r1) => { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? r1 : r0; g.lineTo(Math.cos(a) * r, Math.sin(a) * r + 2); } g.closePath(); };
+    star(40, 19); stFill(g, '#ff6fae'); g.save(); star(40, 19); g.clip(); ['#ffd23f', '#54c6eb', '#43d9a3', '#ff8a3d'].forEach((c, i) => { g.fillStyle = c; g.fillRect(-44, -30 + i * 16, 88, 7); }); g.restore(); star(40, 19); g.lineWidth = 3; g.strokeStyle = ST_INK; g.stroke();
+    for (const [x, c] of [[-10, '#ff4d6d'], [0, '#ffd23f'], [10, '#43d9a3']]) { g.lineWidth = 3; g.strokeStyle = c; g.beginPath(); g.moveTo(x, 20); g.quadraticCurveTo(x + 3, 32, x - 2, 42); g.stroke(); }
+    eye(-8, -2, 5.5); eye(8, -2, 5.5); stSmile(g, 0, 16, 9);
+  } else if (id === 'fruit') {
+    g.lineWidth = 4; g.strokeStyle = '#6b3e1f'; g.beginPath(); g.moveTo(0, -26); g.quadraticCurveTo(2, -36, 6, -40); g.stroke();
+    g.beginPath(); g.moveTo(4, -32); g.quadraticCurveTo(22, -46, 30, -30); g.quadraticCurveTo(16, -24, 4, -32); stFill(g, '#43c46a', 2.4);
+    g.beginPath(); g.moveTo(0, -24); g.bezierCurveTo(-18, -36, -40, -20, -36, 4); g.bezierCurveTo(-32, 30, -12, 40, 0, 32); g.bezierCurveTo(12, 40, 32, 30, 36, 4); g.bezierCurveTo(40, -20, 18, -36, 0, -24); g.closePath();
+    stFill(g, stGrad(g, -30, 38, '#fff19a', '#e0a020')); eye(-11, -2, 6); eye(11, -2, 6); stSmile(g, 0, 20, 11); stGloss(g, -18, -12, 7, 4, 0.6);
+    g.fillStyle = '#fff'; for (const [x, y, r] of [[-30, -30, 4], [32, -12, 3], [28, 26, 3.5]]) sparkleOn(g, x, y, r * 1.8);
+  } else if (id === 'bubbles') {
+    const q = g.createRadialGradient(-10, -12, 4, 0, 0, 34); q.addColorStop(0, 'rgba(255,255,255,0.95)'); q.addColorStop(0.5, 'rgba(160,225,255,0.55)'); q.addColorStop(0.8, 'rgba(255,150,220,0.55)'); q.addColorStop(1, 'rgba(120,120,255,0.7)');
+    g.beginPath(); g.arc(0, 2, 32, 0, TAU); g.fillStyle = q; g.fill(); g.lineWidth = 3; g.strokeStyle = '#3a6ad8'; g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.ellipse(-13, -14, 9, 5, -0.6, 0, TAU); g.fill();
+    eye(-10, 2, 6); eye(10, 2, 6); stSmile(g, 0, 22, 10);
+    for (const [x, y, r] of [[30, -28, 7], [38, -12, 4], [-34, 26, 5]]) { g.beginPath(); g.arc(x, y, r, 0, TAU); g.fillStyle = 'rgba(190,235,255,0.5)'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#3a6ad8'; g.stroke(); }
+  } else { // speed: a lightning bolt with a grin and speed lines
+    g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,0.75)'; for (const y of [-14, 0, 14]) { g.beginPath(); g.moveTo(-42, y + 6); g.lineTo(-28, y + 6); g.stroke(); }
+    g.beginPath(); g.moveTo(8, -42); g.lineTo(-22, 4); g.lineTo(-2, 4); g.lineTo(-12, 42); g.lineTo(24, -8); g.lineTo(4, -8); g.lineTo(16, -42); g.closePath(); stFill(g, stGrad(g, -42, 42, '#fff07a', '#ff9f1c'));
+    eye(-4, -12, 5); eye(9, -12, 5); g.lineWidth = 2.6; g.strokeStyle = ST_INK; g.beginPath(); g.arc(2, -2, 7, 0.2 * Math.PI, 0.8 * Math.PI); g.stroke(); stGloss(g, 2, -30, 5, 2.5);
+  }
+}
+function evStickerSprite(id, sil, R = 30) { // an event's sticker: its mascot on a die-cut disc in the event's colours (a silhouette until won)
+  const D = EVENT.by[id] || EVENT.defs[0];
+  return makeSprite('evstk|' + id + '|' + (sil ? 1 : 0) + '|' + R, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => {
+    if (sil) { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = 'rgba(8,11,28,0.55)'; g.fill(); g.setLineDash([R * 0.16, R * 0.12]); g.lineWidth = Math.max(1.5, R * 0.05); g.strokeStyle = 'rgba(241,233,218,0.35)'; g.stroke(); g.setLineDash([]); }
+    else { g.save(); g.shadowColor = 'rgba(0,0,0,0.45)'; g.shadowBlur = R * 0.18; g.shadowOffsetY = R * 0.06; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = '#fbf8f2'; g.fill(); g.restore();
+      const q = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R * 0.9); q.addColorStop(0, lighten(D.col, 0.45)); q.addColorStop(1, darken(D.col2, 0.2)); g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.fillStyle = q; g.fill(); }
+    const L = document.createElement('canvas'), px = Math.ceil(R * 2 * SS); L.width = L.height = px; const m = L.getContext('2d');
+    m.setTransform(px / 100, 0, 0, px / 100, px / 2, px / 2); m.scale(0.82, 0.82); m.lineJoin = m.lineCap = 'round'; try { evMascotArt(m, id, 0); } catch (e) {}
+    if (sil) { m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-in'; m.fillStyle = 'rgba(4,6,18,0.82)'; m.fillRect(0, 0, px, px); }
+    g.drawImage(L, -R, -R, R * 2, R * 2);
+    if (!sil) { g.save(); g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.clip(); g.fillStyle = 'rgba(255,255,255,0.2)'; g.beginPath(); g.ellipse(-R * 0.25, -R * 0.55, R * 0.7, R * 0.32, -0.25, 0, TAU); g.fill(); g.restore(); }
+  });
+}
+function evDrawMascot(cv, id, px, t) { // a canvas px wide: the mascot alone (no disc), bobbing a little
+  const k = Math.round(px * SS); if (cv.width !== k) { cv.width = cv.height = k; } const g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, k, k);
+  g.setTransform(k / 100, 0, 0, k / 100, k / 2, k / 2 + (t ? Math.sin(t / 380) * 2 : 0)); g.scale(0.92, 0.92); g.lineJoin = g.lineCap = 'round'; try { evMascotArt(g, id, t || 0); } catch (e) {}
+}
+function evHatArt(g, R, ry, rx, id, ink, lw, tt) { // the pet's event hats (drawn by drawPetArt over the head)
+  const fill = (c) => { g.fillStyle = c; g.fill(); }, line = (w = lw) => { g.lineWidth = w; g.strokeStyle = ink; g.stroke(); };
+  if (id === 'cowboy') {
+    g.beginPath(); g.ellipse(0, -ry * 0.72, rx * 0.95, R * 0.13, 0, 0, TAU); fill('#a8643a'); line();
+    g.beginPath(); g.moveTo(-rx * 0.5, -ry * 0.74); g.quadraticCurveTo(-rx * 0.55, -ry * 1.22, -rx * 0.15, -ry * 1.12); g.quadraticCurveTo(0, -ry * 1.02, rx * 0.15, -ry * 1.12); g.quadraticCurveTo(rx * 0.55, -ry * 1.22, rx * 0.5, -ry * 0.74); g.closePath(); fill('#c47a46'); line();
+    g.beginPath(); g.rect(-rx * 0.5, -ry * 0.86, rx, R * 0.08); fill('#ff4d6d');
+  } else if (id === 'antenna') {
+    g.beginPath(); g.ellipse(0, -ry * 0.8, rx * 0.62, R * 0.1, 0, Math.PI, TAU); line(R * 0.09); g.lineWidth = R * 0.05; g.strokeStyle = '#7a8298'; g.stroke();
+    for (const s of [-1, 1]) { const x = s * rx * 0.36 + Math.sin(tt / 300 + s) * R * 0.03, y = -ry - R * 0.32; g.beginPath(); g.moveTo(s * rx * 0.3, -ry * 0.86); g.quadraticCurveTo(s * rx * 0.5, -ry - R * 0.12, x, y); line(lw * 1.1);
+      g.beginPath(); g.arc(x, y, R * 0.1, 0, TAU); const q = g.createRadialGradient(x - R * 0.03, y - R * 0.03, 1, x, y, R * 0.1); q.addColorStop(0, '#fffbd0'); q.addColorStop(1, '#7cf06a'); fill(q); line(lw * 0.8); }
+  } else if (id === 'viking') {
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * rx * 0.52, -ry * 0.82); g.quadraticCurveTo(s * rx * 1.02, -ry * 0.92, s * rx * 0.98, -ry * 1.32); g.quadraticCurveTo(s * rx * 0.8, -ry * 1.02, s * rx * 0.42, -ry * 0.98); g.closePath(); fill('#fff3d6'); line(); }
+    g.beginPath(); g.ellipse(0, -ry * 0.7, rx * 0.66, ry * 0.42, 0, Math.PI, TAU); g.closePath(); const q = g.createLinearGradient(0, -ry * 1.1, 0, -ry * 0.7); q.addColorStop(0, '#dfe5f0'); q.addColorStop(1, '#8a93a8'); fill(q); line();
+    g.beginPath(); g.rect(-rx * 0.66, -ry * 0.78, rx * 1.32, R * 0.1); fill('#c99a3a'); line(lw * 0.8);
+  } else if (id === 'fruithat') {
+    g.beginPath(); g.ellipse(0, -ry * 0.78, rx * 0.5, R * 0.24, 0, Math.PI, TAU); g.closePath(); fill('#ff4d6d'); line();
+    g.fillStyle = '#ffe680'; for (const [x, y] of [[-0.2, -0.86], [0.05, -0.92], [0.25, -0.84], [-0.05, -0.8]]) { g.beginPath(); g.ellipse(x * rx, y * ry, R * 0.025, R * 0.04, 0, 0, TAU); g.fill(); }
+    for (let i = -2; i <= 2; i++) { g.save(); g.translate(i * R * 0.07, -ry * 0.78 - R * 0.22); g.rotate(i * 0.35); g.beginPath(); g.ellipse(0, -R * 0.1, R * 0.06, R * 0.14, 0, 0, TAU); fill('#43c46a'); line(lw * 0.7); g.restore(); }
+  } else if (id === 'bubcrown') {
+    [[-0.42, -0.86, 0.13], [-0.16, -1.02, 0.15], [0.14, -1.04, 0.14], [0.4, -0.88, 0.12], [0, -1.22, 0.1]].forEach(([x, y, r], i) => { const cx = x * rx, cy = y * ry + Math.sin(tt / 420 + i) * R * 0.02;
+      g.beginPath(); g.arc(cx, cy, r * R, 0, TAU); const q = g.createRadialGradient(cx - r * R * 0.4, cy - r * R * 0.4, 1, cx, cy, r * R); q.addColorStop(0, 'rgba(255,255,255,0.95)'); q.addColorStop(1, ['rgba(120,210,255,0.75)', 'rgba(255,150,220,0.75)', 'rgba(180,140,255,0.75)'][i % 3]); fill(q); line(lw * 0.7); });
+  } else if (id === 'racer') {
+    g.beginPath(); g.ellipse(0, -ry * 0.62, rx * 0.78, ry * 0.5, 0, Math.PI, TAU); g.closePath(); const q = g.createLinearGradient(0, -ry * 1.1, 0, -ry * 0.6); q.addColorStop(0, '#ff7a8a'); q.addColorStop(1, '#d81e3c'); fill(q); line();
+    g.beginPath(); g.moveTo(-R * 0.02, -ry * 1.08); g.lineTo(-R * 0.16, -ry * 0.82); g.lineTo(-R * 0.03, -ry * 0.82); g.lineTo(-R * 0.1, -ry * 0.64); g.lineTo(R * 0.12, -ry * 0.9); g.lineTo(R * 0.0, -ry * 0.9); g.lineTo(R * 0.08, -ry * 1.08); g.closePath(); fill('#ffd23f'); line(lw * 0.6);
+    g.beginPath(); g.ellipse(-rx * 0.34, -ry * 0.88, R * 0.12, R * 0.05, -0.5, 0, TAU); fill('rgba(255,255,255,0.4)');
+  }
+}
+function evBallArt(g, R, skin) { // an edition ball ('ev_cows_3'): the event's pattern; the edition shifts its colours, so no two editions look the same
+  const [, id, eds] = skin.split('_'), ed = +eds || 1, D = EVENT.by[id] || EVENT.defs[0], hue = (ed * 53) % 360, tint = hslHex(hue), r = rng(strSeed(skin));
+  const clip = () => { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.clip(); }, shade = () => { const sh = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R); sh.addColorStop(0, 'rgba(255,255,255,0.25)'); sh.addColorStop(0.6, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(10,14,30,0.5)'); g.fillStyle = sh; g.fillRect(-R, -R, R * 2, R * 2); };
+  if (id === 'cows') { ball(g, R, '#f7f3ea'); g.save(); clip(); g.fillStyle = ['#2a2230', '#6b3e1f', '#1d3a7a', '#5a1f6b', '#1f5a3a'][ed % 5]; for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse((r() - 0.5) * R * 1.8, (r() - 0.5) * R * 1.8, R * (0.2 + r() * 0.2), R * (0.14 + r() * 0.14), r() * 3, 0, TAU); g.fill(); } g.fillStyle = tint; g.fillRect(-R, R * 0.5, R * 2, R * 0.16); shade(); g.restore(); }
+  else if (id === 'space') { ball(g, R, '#3a2a7a'); g.save(); clip(); g.fillStyle = '#fff'; for (let i = 0; i < 18; i++) { g.globalAlpha = 0.5 + r() * 0.5; g.beginPath(); g.arc((r() - 0.5) * R * 2, (r() - 0.5) * R * 2, R * 0.03 + r() * R * 0.04, 0, TAU); g.fill(); } g.globalAlpha = 1; g.lineWidth = R * 0.16; g.strokeStyle = tint; g.beginPath(); g.ellipse(0, 0, R * 1.1, R * 0.32, -0.35, 0, TAU); g.stroke(); shade(); g.restore(); }
+  else if (id === 'smash') { ball(g, R, '#ff6fae'); g.save(); clip(); for (let i = 0; i < 10; i++) { g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R * 1.2, i * TAU / 10, (i + 1) * TAU / 10); g.closePath(); g.fillStyle = i % 2 ? tint : '#ffd23f'; g.fill(); } g.beginPath(); g.arc(0, 0, R * 0.22, 0, TAU); g.fillStyle = '#fff'; g.fill(); shade(); g.restore(); }
+  else if (id === 'fruit') { ball(g, R, '#7bd85a'); g.save(); clip(); g.strokeStyle = darken(tint, 0.25); g.lineWidth = R * 0.14; for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(i * R * 0.34, -R); g.quadraticCurveTo(i * R * 0.42 + R * 0.1, 0, i * R * 0.34, R); g.stroke(); } shade(); g.restore(); }
+  else if (id === 'bubbles') { const q = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.05, 0, 0, R); q.addColorStop(0, '#ffffff'); q.addColorStop(0.5, lighten(tint, 0.3)); q.addColorStop(1, '#5a6ad8'); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = q; g.fill();
+    g.save(); clip(); g.lineWidth = R * 0.06; g.strokeStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 5; i++) { g.beginPath(); g.arc((r() - 0.5) * R * 1.4, (r() - 0.5) * R * 1.4, R * (0.12 + r() * 0.16), 0, TAU); g.stroke(); } shade(); g.restore(); }
+  else { ball(g, R, '#ffd23f'); g.save(); clip(); g.beginPath(); g.moveTo(-R, -R * 0.1); for (let i = 0; i <= 6; i++) g.lineTo(-R + i * R / 3, i % 2 ? R * 0.22 : -R * 0.22); g.lineTo(R, R * 0.35); for (let i = 6; i >= 0; i--) g.lineTo(-R + i * R / 3, (i % 2 ? R * 0.22 : -R * 0.22) + R * 0.35); g.closePath(); g.fillStyle = tint; g.fill(); shade(); g.restore(); }
+  g.beginPath(); g.arc(0, 0, R, 0, TAU); g.lineWidth = Math.max(1, R * 0.05); g.strokeStyle = 'rgba(0,0,0,0.25)'; g.stroke();
+}
+function evBallTex(g, w, h, skin) { // the 3D renderer's wrap of an edition ball (equirectangular)
+  const [, id, eds] = skin.split('_'), ed = +eds || 1, tint = hslHex((ed * 53) % 360), r = rng(strSeed(skin));
+  const base = { cows: '#f7f3ea', space: '#3a2a7a', smash: '#ff6fae', fruit: '#7bd85a', bubbles: '#9fd4ff', speed: '#ffd23f' }[id] || '#ffd23f';
+  g.fillStyle = base; g.fillRect(0, 0, w, h);
+  if (id === 'cows') { g.fillStyle = ['#2a2230', '#6b3e1f', '#1d3a7a', '#5a1f6b', '#1f5a3a'][ed % 5]; for (let i = 0; i < 14; i++) { g.beginPath(); g.ellipse(r() * w, h * 0.15 + r() * h * 0.7, 20 + r() * 30, 14 + r() * 20, r() * 3, 0, TAU); g.fill(); } g.fillStyle = tint; g.fillRect(0, h * 0.72, w, h * 0.08); }
+  else if (id === 'space') { g.fillStyle = '#fff'; for (let i = 0; i < 90; i++) { g.globalAlpha = 0.4 + r() * 0.6; g.fillRect(r() * w, r() * h, 2 + r() * 2, 2 + r() * 2); } g.globalAlpha = 1; g.fillStyle = tint; g.fillRect(0, h * 0.46, w, h * 0.08); }
+  else if (id === 'smash') { for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? tint : '#ffd23f'; g.fillRect(i * w / 12, 0, w / 12 + 1, h); } }
+  else if (id === 'fruit') { g.fillStyle = darken(tint, 0.25); for (let i = 0; i < 10; i++) g.fillRect(i * w / 10, 0, w / 30, h); }
+  else if (id === 'bubbles') { g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,0.85)'; for (let i = 0; i < 16; i++) { g.beginPath(); g.arc(r() * w, h * 0.15 + r() * h * 0.7, 10 + r() * 22, 0, TAU); g.stroke(); } g.fillStyle = lighten(tint, 0.2); g.globalAlpha = 0.35; g.fillRect(0, 0, w, h); g.globalAlpha = 1; }
+  else { g.fillStyle = tint; g.beginPath(); g.moveTo(0, h * 0.4); for (let i = 0; i <= 16; i++) g.lineTo(i * w / 16, i % 2 ? h * 0.55 : h * 0.4); g.lineTo(w, h * 0.65); for (let i = 16; i >= 0; i--) g.lineTo(i * w / 16, i % 2 ? h * 0.7 : h * 0.55); g.closePath(); g.fill(); }
+}
+/* --- the start screen's banner and the event page --- */
+const EV_COIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#b8730f" stroke-width="1.3"/></svg>';
+const EV_PT = '<svg class="evPt" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" fill="currentColor"/></svg>';
+function evSync() { // the banner (and the page when it is open)
+  if (!EV_READY) return; const S = evState(), A = evAt(), D = A.def, b = $('eventBtn'); if (!b) return;
+  b.dataset.ev = S.id; b.style.setProperty('--ec', D.col); b.style.setProperty('--ec2', D.col2);
+  b.querySelector('.evName').textContent = S.name; b.querySelector('.evLeft').textContent = S.countdown;
+  const ready = S.claimable.length + S.msReady.length, cur = EVENT.track[S.reached - 1], nx = EVENT.track[S.reached], frac = nx ? (S.pts - (cur ? cur.at : 0)) / (nx.at - (cur ? cur.at : 0)) : 1;
+  b.querySelector('.evLine').textContent = ready ? t('evReadyLine', { n: ready }) : S.done ? t('evNextLine', { e: S.nextName }) : t('evGo_' + S.id);
+  b.querySelector('.evBar i').style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + '%'; b.querySelector('.evPts').textContent = nx ? S.pts + '/' + nx.at : String(S.pts);
+  b.querySelector('.dot').hidden = !ready; b.classList.toggle('ready', !!ready); b.classList.toggle('fresh', !S.seen);
+  b.setAttribute('aria-label', t('evAria', { e: S.name, d: S.countdown, p: S.pts }) + (ready ? ', ' + t('evReadyLine', { n: ready }) : ''));
+  evDrawMascot(b.querySelector('canvas'), S.id, 44, 0);
+  if (!$('evSheet').hidden) evRender();
+}
+function evPrizeArt(cv, p, px = 44) { // a tier's prize on a little canvas
+  const k = Math.round(px * SS); cv.width = cv.height = k; const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, px, px); g.lineJoin = g.lineCap = 'round';
+  const c = px / 2;
+  if (p.coins) { const n = p.chest ? 5 : Math.min(4, 1 + Math.floor(p.coins / 10)); for (let i = 0; i < n; i++) pvBlit(g, coinSprite(9), c - (n - 1) * 3 + i * 6, c + 6 - i * 4, 0, px / 44); }
+  else if (p.snacks) { for (let i = 0; i < Math.min(3, p.snacks); i++) petSnackArt(g, c - 8 + i * 8, c + 4 - (i % 2) * 6, px * 0.2); }
+  else if (p.sticker) pvBlit(g, evStickerSprite(p.sticker, false, 30), c, c, 0, px / 70);
+  else if (p.hat) { g.save(); g.translate(c, c + px * 0.14); const P = petP(); drawPetArt(g, px * 0.3, { stage: 2, color: P.color || 'mint', mood: 'happy', t: 0, head: p.hat }); g.restore(); }
+  else if (p.ball) pvBlit(g, strikeBallSprite(false, false, 'ev_' + p.ball), c, c, -0.3, px / 44 * 0.36);
+}
+function evOpen() { // the event page
+  if (!EV_READY) return false; const E = evEnsure(); E.seen = true; saveProfile(); ev.opened++;
+  audioInit(); sfx('click'); evRender(); $('evSheet').hidden = false; $('evSheet').querySelector('.sheet').scrollTop = 0; evLoop(); evTrackScroll();
+  try { $('evSheet').querySelector('.xBtn').focus({ preventScroll: true }); } catch {}
+  evSync(); return true;
+}
+function evTrackScroll() { // the reward strip opens on the first tier to claim (else the next one to reach)
+  const tr = $('evTrack'), S = evState(), i = S.claimable.length ? S.claimable[0] : Math.min(EVENT.track.length - 1, S.reached), el = tr.querySelector('.evTier[data-i="' + i + '"]'); if (!el) return;
+  const a = el.getBoundingClientRect(), b = tr.getBoundingClientRect(); tr.scrollLeft += (a.left + a.width / 2) - (b.left + b.width / 2);
+}
+function evClose() { const P = $('evSheet'); if (P.hidden) return false; P.hidden = true; cancelAnimationFrame(ev.loopId); ev.loopId = 0; evSync(); return true; }
+function evLoop() { // the big mascot bobs and blinks while the page is open (one small canvas, ~30 fps)
+  cancelAnimationFrame(ev.loopId); let last = 0;
+  const step = (now) => { if ($('evSheet').hidden) { ev.loopId = 0; return; } if (now - last > 33) { last = now; evDrawMascot($('evMascotBig'), evAt().id, 68, reducedMotion() ? 0 : now + 1); ev.frames = (ev.frames || 0) + 1; } ev.loopId = requestAnimationFrame(step); };
+  ev.loopId = requestAnimationFrame(step);
+}
+function evRender() {
+  const S = evState(), A = evAt(), D = A.def, P = $('evSheet'), E = profile.event;
+  P.style.setProperty('--ec', D.col); P.style.setProperty('--ec2', D.col2); P.dataset.ev = S.id;
+  $('evTitle').textContent = S.name; $('evLeftBig').textContent = S.countdown; $('evRule').textContent = t('evRule_' + S.id);
+  const cur = EVENT.track[S.reached - 1], nx = EVENT.track[S.reached], frac = nx ? (S.pts - (cur ? cur.at : 0)) / (nx.at - (cur ? cur.at : 0)) : 1;
+  $('evPtsN').innerHTML = EV_PT + '<b>' + S.pts + '</b>'; $('evPbar').querySelector('i').style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + '%';
+  $('evPtsNext').textContent = nx ? t('evToNext', { n: nx.at - S.pts }) : t('evAllTiers');
+  $('evPlay').textContent = t('evPlay_' + S.id);
+  $('evTrack').replaceChildren(...EVENT.track.map((T, i) => {
+    const got = S.got.includes(i), reached = S.pts >= T.at, p = evPrize(i, A), b = document.createElement('button'); b.type = 'button';
+    b.className = 'evTier ' + (got ? 'got' : reached ? 'ready' : 'locked') + (T.final ? ' final' : '') + (T.chest ? ' chest' : ''); b.dataset.i = String(i); b.dataset.st = got ? 'got' : reached ? 'ready' : 'locked';
+    const at = document.createElement('span'); at.className = 'tAt'; at.innerHTML = EV_PT + T.at;
+    const art = document.createElement('span'); art.className = 'tArt';
+    if (reached && !got) art.innerHTML = GIFT_SVG(T.final || T.chest ? 7 : 1);
+    else { const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); evPrizeArt(cv, p, T.final ? 52 : 44); art.appendChild(cv); }
+    const pz = document.createElement('span'); pz.className = 'tPz'; pz.textContent = evPrizeText(p);
+    b.append(at, art, pz);
+    if (T.final) { const rb = document.createElement('span'); rb.className = 'tOnly'; rb.textContent = t('evOnly'); b.appendChild(rb); }
+    if (got) { const ck = document.createElement('span'); ck.className = 'ck'; ck.innerHTML = TOAST_ICONS.check; b.appendChild(ck); }
+    b.setAttribute('aria-label', t('evTierAria', { n: T.at, p: evPrizeText(p) }) + (got ? ', ' + t('giftOpened') : reached ? ', ' + t('evTapClaim') : ''));
+    b.addEventListener('click', () => evTierTap(i, b)); return b;
+  }));
+  $('evMs').replaceChildren(...D.ms.map((m, i) => {
+    const li = document.createElement('li'), v = S.ms[i], done = v >= m.n, cl = S.mc[i]; li.className = 'evM' + (cl ? ' claimed' : done ? ' done' : ''); li.dataset.i = String(i);
+    const tx = document.createElement('span'); tx.className = 'mTx'; tx.textContent = evMsText(D, i);
+    const bar = document.createElement('span'); bar.className = 'mBar'; const fi = document.createElement('i'); fi.style.width = Math.round(Math.min(1, v / m.n) * 100) + '%'; bar.appendChild(fi);
+    const n = document.createElement('span'); n.className = 'mN'; n.textContent = Math.floor(v) + '/' + m.n;
+    const go = document.createElement('button'); go.type = 'button'; go.className = 'mGo'; go.innerHTML = cl ? TOAST_ICONS.check : EV_PT + '+' + (EVENT.msPts[i] || 40); go.disabled = !done || cl;
+    go.addEventListener('click', (e) => { e.stopPropagation(); evMsTap(i, go); });
+    li.append(tx, bar, n, go); return li;
+  }));
+  $('evShelf').replaceChildren(...EVENT.defs.map((q) => {
+    const has = profile.evx.stickers.includes(q.id), d = document.createElement('span'); d.className = 'evStk' + (has ? ' got' : ''); d.dataset.ev = q.id;
+    const c = document.createElement('canvas'), px = Math.round(52 * SS); c.width = c.height = px; c.setAttribute('aria-hidden', 'true'); c.getContext('2d').drawImage(evStickerSprite(q.id, !has, 30).c, 0, 0, px, px);
+    const lb = document.createElement('small'); lb.textContent = has ? t('evst_' + q.id) : evName(q.id); d.append(c, lb); d.title = has ? t('evst_' + q.id) : t('evStkNeed', { e: evName(q.id) }); return d;
+  }));
+  $('evNext').innerHTML = ''; { const nx2 = document.createElement('canvas'); nx2.setAttribute('aria-hidden', 'true'); evDrawMascot(nx2, S.next, 34, 0); const sp = document.createElement('span'); sp.textContent = t('evNextWeek', { e: S.nextName }); $('evNext').append(nx2, sp); }
+}
+function evPrizeText(p) {
+  if (!p) return ''; if (p.coins) return LRM + '+' + p.coins + ' ' + t('evCoins'); if (p.snacks) return t(p.dup ? 'evSnacksDup' : 'evSnacks', { n: p.snacks });
+  if (p.sticker) return t('evSticker'); if (p.hat) return t('pi_' + p.hat); if (p.ball) return t('evBall'); return '';
+}
+function evTierTap(i, b) { // a reached tier: the chest shakes, pops open, the prize jumps out and flies where it goes
+  const E = evEnsure(), T = EVENT.track[i]; audioInit();
+  if (E.got.includes(i)) { sfx('blip'); b.classList.remove('wiggle'); void b.offsetWidth; b.classList.add('wiggle'); return null; }
+  if (E.pts < T.at) { sfx('whiff'); toast('evNeedPts', { n: T.at - E.pts }, 'star'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return null; }
+  if (b.classList.contains('opening')) return null;
+  const p = evClaim(i); if (!p) return null;
+  sfx('tick'); b.classList.add('opening'); ev.anim++;
+  setTimeout(() => {
+    ev.anim = Math.max(0, ev.anim - 1); b.classList.add('opened'); const r = b.getBoundingClientRect(), sh = $('evSheet').querySelector('.sheet');
+    sfx('unlock'); sfx(T.final || T.chest ? 'fanfare' : 'chime'); domConfetti(sh, r); if (T.final || T.chest) setTimeout(() => domConfetti(sh, r), 180);
+    if (p.coins) domFly(r, $('metaPill'), TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"'), Math.min(8, 3 + Math.round(p.coins / 8)));
+    if (p.snacks) evFly(r, $('petCorner'), Math.min(5, p.snacks), (g) => petSnackArt(g, 13, 13, 10));
+    if (p.ball) domFly(r, $('collectionBtn'), null, 1, 'evb_' + p.ball);
+    if (p.sticker) { const s = $('evShelf').querySelector('.evStk[data-ev="' + p.sticker + '"]'); if (s) evFly(r, s, 1, (g) => pvBlit(g, evStickerSprite(p.sticker, false, 30), 13, 13, 0, 26 / 68)); }
+    setTimeout(() => { if (!$('evSheet').hidden) { evRender(); const nb = $('evTrack').querySelector('.evTier[data-i="' + i + '"]'); if (nb) nb.classList.add('pop'); } }, 380);
+    evSync(); // (the banner under the page)
+  }, 360);
+  return p;
+}
+function evMsTap(i, btn) { const pts = evClaimMs(i); if (!pts) { sfx('whiff'); return 0; } sfx('coin'); sfx('chime'); const r = btn.getBoundingClientRect(); domFly(r, $('evPtsN'), EV_PT.replace('class="evPt"', 'class="evPt" style="color:var(--ec)"'), 4); evRender(); return pts; }
+function evPlay() { // the page's Play: the featured game, as its tile (or the map's button) would start it
+  const id = evAt().id, g = EVENT.by[id].game; evClose(); audioInit();
+  if (g === 'bubbles') return cgStart('bubbles', inputPref());
+  return routeOpen(g);
+}
+function evFly(r, to, n, draw) { domFly(r, to, '<canvas></canvas>', n); for (const el of document.querySelectorAll('.gfly canvas:not([data-k])')) { el.dataset.k = '1'; const k = Math.round(26 * SS); el.width = el.height = k; const g = el.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); draw(g); } }
+/* --- wiring and hooks --- */
+$('eventBtn').addEventListener('click', () => evOpen());
+$('evSheet').querySelector('.xBtn').addEventListener('click', evClose);
+$('evSheet').addEventListener('pointerdown', (e) => { if (e.target === $('evSheet')) evClose(); });
+$('evPlay').addEventListener('click', () => evPlay());
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && evClose()) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && mode === 'none') evSync(); });
+setInterval(() => { if (mode === 'none' && !document.hidden) evSync(); }, 60000); // (the countdown, or a new week, while the start screen stays open)
+EV_READY = true; evEnsure(); evSync();
+window.__grasp.event = { cfg: EVENT, ev, get state() { return evState(); }, stateAt: (d) => evState(d), at: (d) => evAt(d), isoWeek, monday: evMonday, weekIdx: evWeekIdx,
+  force(id) { ev.force = id && EVENT.by[id] ? id : null; evEnsure(); evSync(); return evAt().id; }, // test-only: this week's event (the week itself follows __grasp.setDate)
+  live(on) { ev.live = on === undefined || on === null ? null : !!on; return evLive(); }, // test-only: the gameplay twists and toasts on / off (null: automatic)
+  add: (k, n) => evAdd(k, n), act: (k, n) => evAct(k, n), points(n) { const E = evEnsure(); E.pts = Math.max(0, Math.min(99999, n | 0)); saveProfile(); evSync(); return E.pts; },
+  claim: (i) => evClaim(i), tap(i) { const b = $('evTrack').querySelector('.evTier[data-i="' + i + '"]'); return b ? evTierTap(i, b) : null; }, claimMs: (i) => evClaimMs(i), prize: (i) => evPrize(i),
+  open: evOpen, close: evClose, play: evPlay, sync: evSync, validate: evValidate, validateX: evxValidate, featured: (id) => evFeatured(id || evAt().id), plan: (n) => evPlan(advPlan(n)), roundDone: evRoundDone,
+  get p() { return profile.event; }, get x() { return profile.evx; }, claims: ev.claims, log: ev.log, get opened() { return ev.opened; }, get frames() { return ev.frames || 0; }, get anim() { return ev.anim; },
+  ballItem: evBallItem, sticker: evStickerSprite, leftText: evLeftText, prizeText: evPrizeText, name: evName };
 /* ---------------- Graphics pass: the start screen's living background (CSS only: soft colour blobs, drifting outline shapes, twinkling motes,
    a pointer parallax), the screen transition (an iris), the hooks ---------------- */
 (function buildStartFx() {
@@ -15295,7 +15857,8 @@ function bubbleSpawn(now, o = {}) {
   const B = bubbles, sc = bubbleScale() * (B.calm ? 1.22 : 1), r = o.r || (22 + Math.random() * 36) * sc;
   let gold = o.gold; if (gold === undefined) { B.sinceGold++; gold = B.sinceGold >= B.goldAt; } if (gold) { B.sinceGold = 0; B.goldAt = BUB.gold[0] + Math.floor(Math.random() * (BUB.gold[1] - BUB.gold[0] + 1)); }
   const x = o.x ?? (W * 0.08 + Math.random() * W * 0.84), y = o.y ?? H + r + 4, ramp = B.calm ? 1 : 1 + (1 - B.left / BUB.roundMs) * 0.35;
-  const b = { id: ++B.seq, x, x0: x, y, r, vy: o.vy ?? -(0.045 + Math.random() * 0.04) * (H / 740) * (B.calm ? 0.6 : 1) * ramp, col: gold ? '#ffd23f' : BUB_COLS[Math.floor(Math.random() * BUB_COLS.length)], gold: !!gold, ph: Math.random() * TAU, amp: o.amp ?? 6 + Math.random() * 14, born: now };
+  const evb = !gold && (o.ev !== undefined ? !!o.ev : EV_READY && evFestival() && Math.random() < 0.14); // (Bubble Festival: festival bubbles, +3 and event points)
+  const b = { id: ++B.seq, x, x0: x, y, r: evb ? Math.max(r, 34 * sc) : r, vy: o.vy ?? -(0.045 + Math.random() * 0.04) * (H / 740) * (B.calm ? 0.6 : 1) * ramp, col: gold ? '#ffd23f' : evb ? '#ff8fd1' : BUB_COLS[Math.floor(Math.random() * BUB_COLS.length)], gold: !!gold, ev: evb, ph: Math.random() * TAU, amp: o.amp ?? 6 + Math.random() * 14, born: now };
   B.list.push(b); return b;
 }
 function bubblesTick(now, dt) {
@@ -15312,10 +15875,17 @@ function bubblesTick(now, dt) {
   if (!pts.length) return;
   for (let i = B.list.length - 1; i >= 0; i--) { const b = B.list[i]; for (const q of pts) if (Math.hypot(q.x - b.x, q.y - b.y) < b.r + CG.tip) { B.list.splice(i, 1); bubblePop(b, now); break; } }
 }
+function drawFestBubble(b, now) { // Bubble Festival: a rainbow rim and a star inside, turning
+  resetView(); ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(now / 900 + b.ph); const R = b.r * 1.04;
+  for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(0, 0, R, i * TAU / 6, (i + 1) * TAU / 6); ctx.lineWidth = Math.max(2.5, b.r * 0.09); ctx.strokeStyle = ['#ff6f91', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff8fd1'][i]; ctx.stroke(); }
+  ctx.rotate(-(now / 900 + b.ph) * 1.6); const r0 = b.r * 0.42, r1 = r0 * 0.45; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? r1 : r0; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath();
+  ctx.fillStyle = '#fff3a8'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#e09a12'; ctx.stroke(); ctx.restore();
+}
 function bubblePop(b, now) {
   const B = bubbles; B.popped++;
   B.combo.n = now - B.combo.t < BUB.comboMs ? B.combo.n + 1 : 1; B.combo.t = now; B.bestCombo = Math.max(B.bestCombo, B.combo.n);
-  const pts = (b.gold ? 5 : 1) + (B.combo.n >= 3 ? 1 : 0); B.score += pts; if (b.gold) B.golden++;
+  const pts = (b.gold ? 5 : b.ev ? 3 : 1) + (B.combo.n >= 3 ? 1 : 0); B.score += pts; if (b.gold) B.golden++;
+  evAct('pop'); if (b.ev) { evAct('evbub'); fxConfetti(b.x, b.y, 14); } // (the weekly event: Bubble Festival)
   B.log.push({ id: b.id, gold: b.gold, combo: B.combo.n, pts, r: Math.round(b.r), t: Math.round(now) }); if (B.log.length > 80) B.log.shift();
   sfx(b.gold ? 'goldPop' : 'bubble', b.r);
   ring(b.x, b.y, b.gold ? 'rgba(255,214,90,0.95)' : 'rgba(255,255,255,0.85)', b.r * 1.5, 320, 3);
@@ -15356,7 +15926,7 @@ function bubbleSprite(col, R) {
 function renderBubbles(now) {
   const B = bubbles, rtl = lang === 'he';
   beginFrame('bubbles', now);
-  for (const b of B.list) { const R = Math.max(8, Math.round(b.r / 3) * 3), k = b.r / R * (1 + 0.025 * Math.sin(now / 260 + b.ph)); if (b.gold) { resetView(); const gr = ctx.createRadialGradient(b.x, b.y, b.r * 0.6, b.x, b.y, b.r * 1.6); gr.addColorStop(0, 'rgba(255,214,90,0.35)'); gr.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 1.6, 0, TAU); ctx.fill(); } blit(bubbleSprite(b.col, R), b.x, b.y, 0, k); }
+  for (const b of B.list) { const R = Math.max(8, Math.round(b.r / 3) * 3), k = b.r / R * (1 + 0.025 * Math.sin(now / 260 + b.ph)); if (b.gold) { resetView(); const gr = ctx.createRadialGradient(b.x, b.y, b.r * 0.6, b.x, b.y, b.r * 1.6); gr.addColorStop(0, 'rgba(255,214,90,0.35)'); gr.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 1.6, 0, TAU); ctx.fill(); } blit(bubbleSprite(b.col, R), b.x, b.y, 0, k); if (b.ev) drawFestBubble(b, now); }
   drawParticles(); drawRings(now); drawFloaters(B.floaters);
   for (const p of camg.ptrs) { // the fingers: little glowing dots, so a child sees what pops
     if (p.hand) { for (const q of p.tips.slice(0, 5)) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, TAU); ctx.fill(); } cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 9); }
