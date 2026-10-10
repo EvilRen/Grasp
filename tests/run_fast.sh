@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 mkdir -p tests/out/logs
 JOBS=${JOBS:-3}
 tests/fix_browsers.sh || exit 1
-ALL="sandbox slice smash smash2 busy guitar strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album hudmin routes challenge addict frenzy menu themes boss duel replay"
+ALL="sandbox slice smash smash2 busy guitar strike strike2 strike3 strike3d strike_hits pacing chrome start meta daily grippy guests road serve shapes adventure habit album hudmin routes challenge addict frenzy menu themes boss duel replay pet"
 if [ $# -gt 0 ]; then LIST="$*"; else LIST="$ALL strike2:3d strike3:3d"; fi
 
 python3 tests/serve.py 8765 >/dev/null 2>&1 &  # http.server + vercel.json's rewrites (/strike etc.)
@@ -24,7 +24,7 @@ run_one() {
 export -f run_one
 T0=$SECONDS
 # slowest first so the long ones don't finish last
-printf '%s\n' $LIST | awk '{p=/strike|busy|guitar|road|meta|adventure|habit|album|challenge|addict|frenzy|themes|boss|duel|replay/?0:1; print p, $0}' | sort -s -k1,1 | cut -d' ' -f2 \
+printf '%s\n' $LIST | awk '{p=/strike|busy|guitar|road|meta|adventure|habit|album|challenge|addict|frenzy|themes|boss|duel|replay|pet/?0:1; print p, $0}' | sort -s -k1,1 | cut -d' ' -f2 \
   | xargs -P "$JOBS" -I{} bash -c 'run_one {}' | tee tests/out/logs/summary.txt
 echo "total $((SECONDS - T0))s with $JOBS jobs"
 if grep -q '^FAIL' tests/out/logs/summary.txt; then

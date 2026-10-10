@@ -521,7 +521,7 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .dnSheet input{ width:100%; box-sizing:border-box; font:inherit; font-size:18px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#0e1430; color:var(--bone); text-align:center; margin:0 0 12px; }
 .dnRow{ display:flex; gap:10px; }
 .dnRow button{ flex:1; min-height:48px; border-radius:14px; }
-#duelNameSkip{ background:rgba(241,233,218,.08); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
+#duelNameSkip, #petNameSkip{ background:rgba(241,233,218,.08); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
 #replay{ z-index:15; }
 .rpSheet{ width:min(420px,100%); text-align:center; }
 .rpView{ position:relative; margin:0 auto 12px; border-radius:14px; overflow:hidden; background:#05070f; box-shadow:inset 0 0 0 1px var(--line); width:fit-content; max-width:100%; }
@@ -622,6 +622,96 @@ html[dir="rtl"] .habitBar{ right:auto; left:84px; }
 .flameHint .tx{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .flameHint[hidden]{ display:none; }
 @media (max-width:520px){ #start .panel > .flameHint{ margin:0 auto; } }
+/* the pet: its corner on the start screen (under the Camera | Touch toggle), its room, the wardrobe, the name sheet */
+.petCorner{ position:relative; display:grid; grid-template-columns:92px minmax(0,1fr) auto; align-items:center; gap:8px; height:100px; padding:4px 10px 4px 4px; border-radius:18px; text-align:start;
+  background:radial-gradient(70px 60px at 50px 62%, rgba(67,217,163,.2), transparent 75%), rgba(29,37,71,.5); box-shadow:inset 0 0 0 1.5px var(--line); }
+html[dir="rtl"] .petCorner{ padding:4px 4px 4px 10px; background:radial-gradient(70px 60px at calc(100% - 50px) 62%, rgba(67,217,163,.2), transparent 75%), rgba(29,37,71,.5); }
+.petCorner[data-stage="egg"]{ background:radial-gradient(70px 60px at 50px 62%, rgba(255,214,120,.2), transparent 75%), rgba(29,37,71,.5); }
+html[dir="rtl"] .petCorner[data-stage="egg"]{ background:radial-gradient(70px 60px at calc(100% - 50px) 62%, rgba(255,214,120,.2), transparent 75%), rgba(29,37,71,.5); }
+.petPet{ position:relative; width:92px; height:92px; padding:0; background:transparent; border-radius:16px; touch-action:manipulation; }
+.petPet canvas{ width:92px; height:92px; display:block; }
+.petInfo{ min-width:0; height:100%; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:5px; padding:4px 0; background:transparent; color:var(--bone); text-align:start; border-radius:12px; }
+.petTop{ display:flex; align-items:center; gap:6px; max-width:100%; min-width:0; }
+.petNm{ min-width:0; font-size:16px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.petSt{ flex:none; font-size:11px; font-weight:700; line-height:1.3; padding:2px 7px; border-radius:999px; background:rgba(67,217,163,.18); color:#8ff0c9; }
+.petSt[hidden]{ display:none; }
+.petLine{ max-width:100%; font-size:12px; line-height:1.25; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.petBar{ position:relative; display:block; width:100%; height:8px; border-radius:4px; background:rgba(8,11,28,.6); box-shadow:inset 0 0 0 1px var(--line); overflow:hidden; }
+.petBar[hidden]{ display:none; }
+.petBar i{ display:block; height:100%; width:0; border-radius:4px; background:linear-gradient(90deg,#2fc58f,#a6f5d5); transition:width .6s cubic-bezier(.2,1.3,.4,1); }
+html[dir="rtl"] .petBar i{ background:linear-gradient(270deg,#2fc58f,#a6f5d5); margin-inline-start:0; }
+.petFeed{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; width:64px; height:76px; padding:4px; border-radius:16px; background:linear-gradient(160deg,#ffe08f,#ffb43c); color:#3a2200; box-shadow:0 4px 12px rgba(255,180,60,.28); }
+.petFeed[hidden]{ display:none; }
+.petFeed .ck svg, .petFeedBig .ck svg{ display:block; width:26px; height:26px; }
+.petFeed b{ font-size:15px; line-height:1.1; direction:ltr; }
+.petFeed small{ max-width:100%; font-size:10.5px; font-weight:700; line-height:1.05; text-align:center; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.petFeed:disabled, .petFeedBig:disabled{ background:rgba(29,37,71,.7); color:var(--muted); box-shadow:inset 0 0 0 1.5px var(--line); cursor:default; }
+.petFeed:disabled .ck, .petFeedBig:disabled .ck{ opacity:.55; filter:grayscale(.5); }
+.petFeed.ready{ animation:petPulse 1.8s ease-in-out infinite; }
+@keyframes petPulse{ 0%,100%{ box-shadow:0 4px 12px rgba(255,180,60,.28); } 50%{ box-shadow:0 0 0 3px rgba(255,224,143,.55), 0 4px 20px rgba(255,180,60,.6); } } /* (a glow only: no transform, so the button stays put under a finger) */
+.shake{ animation:petShake .4s ease-in-out; }
+@keyframes petShake{ 0%,100%{ transform:none; } 25%{ transform:translateX(-4px) rotate(-3deg); } 75%{ transform:translateX(4px) rotate(3deg); } }
+.petBub{ position:absolute; top:-12px; inset-inline-start:4px; z-index:2; max-width:220px; padding:4px 9px; border-radius:12px; background:#fff8ec; color:#241a00; font-size:12px; font-weight:700; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,.3); }
+.petBub[hidden]{ display:none; }
+.petBub.pop{ animation:petBub .35s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes petBub{ from{ transform:scale(.4); opacity:0; } }
+#start .panel > .petCorner{ margin:10px 0 0; }
+@media (max-width:520px){ #start .panel > .petCorner{ margin:0; } }
+@media (max-height:620px){ .petCorner{ height:80px; grid-template-columns:72px minmax(0,1fr) auto; } .petPet, .petPet canvas{ width:72px; height:72px; } .petFeed{ height:64px; } }
+#petRoom{ z-index:13; } #petName{ z-index:14; }
+.petSheet{ width:min(420px,100%); }
+.petSheet header h2{ display:flex; align-items:center; gap:8px; min-width:0; }
+.petSheet header h2 .nm{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.petRen{ flex:none; width:36px; height:36px; border-radius:50%; background:rgba(241,233,218,.08); color:var(--bone); display:inline-flex; align-items:center; justify-content:center; }
+.petRen[hidden]{ display:none; }
+.petRen svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.petScene{ position:relative; height:220px; border-radius:18px; overflow:hidden; box-shadow:inset 0 0 0 1.5px var(--line);
+  background:radial-gradient(60% 40% at 50% 92%, rgba(67,217,163,.28), transparent 70%), linear-gradient(180deg,#2c3874 0%,#222b5e 66%,#2a3468 66.5%,#1d2550 100%); }
+.petScene::before{ content:''; position:absolute; top:18px; inset-inline-end:22px; width:46px; height:52px; border-radius:10px 10px 4px 4px; background:linear-gradient(180deg,#5d7bd8,#97b4ff); box-shadow:inset 0 0 0 3px #f1e9da, 0 0 18px rgba(151,180,255,.35); opacity:.75; }
+.petScene canvas{ position:relative; width:100%; height:100%; display:block; touch-action:manipulation; cursor:pointer; }
+.petScene .petBub{ top:10px; inset-inline-start:50%; transform:translate(-50%,0); font-size:14px; max-width:80%; }
+html[dir="rtl"] .petScene .petBub{ transform:translate(50%,0); }
+.petScene .petBub.pop{ animation:petBub2 .35s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes petBub2{ from{ opacity:0; } }
+.petEvo{ position:absolute; left:10px; right:10px; top:12px; text-align:center; pointer-events:none; }
+.petEvo[hidden]{ display:none; }
+.petEvo.go{ animation:nupop .5s cubic-bezier(.2,1.4,.4,1) .9s both; }
+.petEvo b{ display:block; font-size:20px; font-weight:800; background:linear-gradient(135deg,#fff3c4,var(--saffron) 50%,var(--coral)); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:none; filter:drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
+.petEvo small{ display:block; margin-top:2px; font-size:13px; font-weight:700; color:#d9ffef; text-shadow:0 1px 3px rgba(0,0,0,.7); }
+.petGrow{ margin:12px 0 0; }
+.petSteps{ list-style:none; margin:0 0 6px; padding:0; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
+.petSteps li{ min-width:0; text-align:center; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.petSteps li i{ display:block; width:12px; height:12px; margin:0 auto 3px; border-radius:50%; background:rgba(241,233,218,.15); }
+.petSteps li.got{ color:#8ff0c9; } .petSteps li.got i{ background:var(--mint); }
+.petSteps li.now{ color:var(--bone); font-weight:800; } .petSteps li.now i{ background:var(--mint); box-shadow:0 0 0 3px rgba(67,217,163,.35); }
+.petBar.big{ height:12px; border-radius:6px; }
+.petGrowLine{ margin:6px 0 0; font-size:13px; color:var(--muted); text-align:center; }
+.petFeedRow{ display:flex; align-items:center; gap:10px; margin:12px 0 4px; }
+.petTummy{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); }
+.petTummy .slots{ display:flex; gap:4px; }
+.petTummy .slots i{ width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 1.5px rgba(241,233,218,.25); }
+.petTummy .slots i.on{ box-shadow:none; }
+.petTummy .slots i svg{ display:block; width:22px; height:22px; }
+.petTummy .bx{ color:#ffd77a; font-weight:700; }
+.petFeedBig{ flex:none; display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border-radius:16px; }
+.petFeedBig[hidden]{ display:none; }
+.petFeedBig b{ direction:ltr; min-width:1.2em; }
+.petWh{ margin:14px 0 8px; font-size:15px; }
+.petCols{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; margin:0 0 10px; }
+.pcol{ position:relative; aspect-ratio:1; width:100%; max-width:48px; justify-self:center; padding:0; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--c1), var(--c0) 55%, var(--c2)); box-shadow:inset 0 0 0 2px rgba(29,37,71,.6); color:#f1e9da; display:inline-flex; align-items:center; justify-content:center; }
+.pcol[aria-pressed="true"]{ box-shadow:inset 0 0 0 2px rgba(29,37,71,.6), 0 0 0 3px var(--saffron); }
+.pcol.locked{ background:radial-gradient(circle at 35% 30%, #4a5280, #2a3160 60%, #1d2547); color:#ffd77a; }
+.pcol svg{ width:18px; height:18px; }
+.petItems{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.pitem{ position:relative; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 4px 8px; border-radius:14px; background:rgba(29,37,71,.6); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); font-size:12px; }
+.pitem canvas{ width:60px; height:60px; display:block; }
+.pitem .nm{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.pitem[aria-pressed="true"]{ background:rgba(255,194,75,.16); box-shadow:inset 0 0 0 2px var(--saffron); }
+.pitem.locked canvas{ opacity:.3; filter:grayscale(1); }
+.pitem.locked .nm{ color:var(--muted); }
+.pitem .lk{ position:absolute; top:22px; left:50%; transform:translateX(-50%); display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; background:rgba(8,11,28,.8); color:#ffd77a; font-size:10px; font-weight:700; white-space:nowrap; }
+.pitem .lk svg{ width:11px; height:11px; }
+@media (prefers-reduced-motion: reduce){ .petFeed.ready, .petEvo.go, .petBub.pop{ animation:none; } }
 #gifts{ z-index:14; }
 .giftSheet{ width:min(400px,100%); text-align:center; background:radial-gradient(120% 70% at 50% 0%, rgba(255,111,89,.25), rgba(22,29,61,1) 62%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.6), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
 .giftSheet header h2{ text-align:start; font-size:21px; font-weight:800; }
@@ -799,7 +889,8 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <div class="camWrap"><button class="segBtn" id="camBtn" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span data-i18n="segCam">Camera</span></button><span class="camHint" id="camHint" hidden></span></div>
       <button class="segBtn" id="mouseBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="segTouch">Touch</span></button>
     </div>
-    <a class="link" href="/tremorti/" data-i18n="tremortiLink" style="--i:7">Tremorti · tremor meter</a>
+    <div class="petCorner" id="petCorner" style="--i:7" data-stage="egg" data-mood="egg"><button class="petPet" id="petPetBtn" type="button"><canvas id="petCv" aria-hidden="true"></canvas><span class="petBub" id="petBub" hidden></span></button><button class="petInfo" id="petInfoBtn" type="button"><span class="petTop"><b class="petNm" id="petNm"></b><span class="petSt" id="petSt"></span></span><span class="petLine" id="petLine"></span><span class="petBar" id="petBar"><i></i></span></button><button class="petFeed" id="petFeedBtn" type="button"><span class="ck"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#dc9d52" stroke="#7a4a1c" stroke-width="1.4"/><path d="M6.6 8.6a7 7 0 0 1 5.8-4" stroke="#f6cd92" stroke-width="1.7" fill="none" stroke-linecap="round"/><circle cx="9" cy="10.2" r="1.5" fill="#4a2a10"/><circle cx="14.6" cy="9" r="1.3" fill="#4a2a10"/><circle cx="13.2" cy="14.6" r="1.6" fill="#4a2a10"/><circle cx="8.4" cy="15.1" r="1.1" fill="#4a2a10"/><circle cx="16.8" cy="13.4" r="1" fill="#4a2a10"/></svg></span><b>0</b><small data-i18n="petFeed">Feed</small></button></div>
+    <a class="link" href="/tremorti/" data-i18n="tremortiLink" style="--i:8">Tremorti · tremor meter</a>
     <ul class="checks" id="checks" hidden style="--i:8">
       <li data-k="camera"><span class="dot"></span><span><span data-i18n="chk_camera">Camera</span><small></small></span></li>
       <li data-k="library"><span class="dot"></span><span><span data-i18n="chk_library">Hand tracker library</span><small></small></span></li>
@@ -907,6 +998,25 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
   </div>
 </div>
 <div id="rpDwell" hidden aria-hidden="true"></div>
+<div class="ov" id="petRoom" hidden role="dialog" aria-modal="true" aria-labelledby="petRoomT">
+  <div class="sheet petSheet">
+    <header><h2 id="petRoomT"><span class="nm"></span><span class="petSt"></span></h2><button class="petRen" id="petRenameBtn" type="button" data-i18n-aria="petRename" aria-label="Rename"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M13.5 7l3 3"/></svg></button><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="petScene" id="petScene"><canvas id="petRoomCv"></canvas><span class="petBub" id="petRoomBub" hidden></span><div class="petEvo" id="petEvo" hidden><b></b><small></small></div></div>
+    <div class="petGrow"><ol class="petSteps" id="petSteps"></ol><span class="petBar big" id="petRoomBar"><i></i></span><p class="petGrowLine" id="petGrowLine"></p></div>
+    <div class="petFeedRow"><span class="petTummy" id="petTummy"></span><button class="primary petFeedBig" id="petFeedBig" type="button"><span class="ck"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#dc9d52" stroke="#7a4a1c" stroke-width="1.4"/><path d="M6.6 8.6a7 7 0 0 1 5.8-4" stroke="#f6cd92" stroke-width="1.7" fill="none" stroke-linecap="round"/><circle cx="9" cy="10.2" r="1.5" fill="#4a2a10"/><circle cx="14.6" cy="9" r="1.3" fill="#4a2a10"/><circle cx="13.2" cy="14.6" r="1.6" fill="#4a2a10"/><circle cx="8.4" cy="15.1" r="1.1" fill="#4a2a10"/><circle cx="16.8" cy="13.4" r="1" fill="#4a2a10"/></svg></span><span class="lb" data-i18n="petFeed">Feed</span><b>0</b></button></div>
+    <h3 class="petWh" data-i18n="petWardrobe">Wardrobe</h3>
+    <div class="petCols" id="petCols" role="group" data-i18n-aria="petColours" aria-label="Colours"></div>
+    <div class="petItems" id="petItems" role="group" data-i18n-aria="petDress" aria-label="Dress up"></div>
+  </div>
+</div>
+<div class="ov" id="petName" hidden role="dialog" aria-modal="true" aria-labelledby="petNameT">
+  <div class="sheet dnSheet petNameSheet">
+    <h2 id="petNameT" data-i18n="petNameTitle">What should we call it?</h2>
+    <p data-i18n="petNameSub">You can change it any time.</p>
+    <input id="petNameIn" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" spellcheck="false">
+    <div class="dnRow"><button type="button" id="petNameSkip" data-i18n="petNameSkip">Skip</button><button type="button" class="primary" id="petNameGo" data-i18n="petNameGo">That's it!</button></div>
+  </div>
+</div>
 <div class="ov" id="gifts" hidden role="dialog" aria-modal="true" aria-labelledby="giftTitle">
   <div class="sheet giftSheet">
     <header><h2 id="giftTitle" data-i18n="giftTitle">Daily gift</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1012,6 +1122,16 @@ const ECONOMY = {
   themes: { gym: 300, court: 400, baseball: 500 }, // Strike themes (the Shop's Themes section): a whole arena + its ball, sounds and mascots, so priced above a single look (~10-20 runs + gifts)
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
+// The pet (parent chose: "a little creature you feed from all games; it grows, changes and cheers you on. A daily reason to visit"). Its food is
+// snacks, separate from the coins (the economy is untouched): every finished round of any game puts 1 snack in the snack box, +1 for a 3-star /
+// perfect round, +1 for a boss beaten, +1 for a record (at most perRound); the box holds pantryMax. It eats at most perDay a day, so growth takes
+// days: each snack eaten = 1 food; the stages begin at their food (Baby 0 .. Legend 75 = ~15 days of visits). Colours and accessories unlock by stage.
+const PET = { taps: 5, perDay: 5, perRound: 3, pantryMax: 30, nameMax: 12,
+  stages: [{ id: 'egg', at: -1 }, { id: 'baby', at: 0 }, { id: 'kid', at: 10 }, { id: 'teen', at: 25 }, { id: 'grown', at: 45 }, { id: 'legend', at: 75 }],
+  colors: [{ id: 'mint', st: 1 }, { id: 'sky', st: 1 }, { id: 'pink', st: 2 }, { id: 'sun', st: 3 }, { id: 'lilac', st: 4 }, { id: 'gold', st: 5 }],
+  items: [{ id: 'bow', slot: 'head', st: 2 }, { id: 'scarf', slot: 'neck', st: 2 }, { id: 'glasses', slot: 'eyes', st: 3 }, { id: 'cap', slot: 'head', st: 3 }, { id: 'bowtie', slot: 'neck', st: 4 }, { id: 'crown', slot: 'head', st: 5 }],
+  slots: ['head', 'eyes', 'neck'] };
+const PET_PAL = { mint: ['#43d9a3', '#c2f8e3', '#178a63'], sky: ['#54c6eb', '#d2f2ff', '#1c78a3'], pink: ['#ff8fb8', '#ffdbe8', '#c44a7e'], sun: ['#ffc24b', '#fff2c6', '#bf780a'], lilac: ['#a98bff', '#e6ddff', '#6646cc'], gold: ['#ffd23f', '#fff8cc', '#b08200'] };
 const STRIKE_NORMAL = { STRIKE_BASE_SPEED: 1.1, STRIKE_HIT_WINDOW: 1, STRIKE_LATE_Z: 0, STRIKE_HIT_RADIUS: 1.3, STRIKE_HIT_NEAR: 0, STRIKE_MAGNET: 0, STRIKE_HAND_SCALE: 1, STRIKE_MAX_SPEED: 2.8, STRIKE_PACE_GROW: 1.05, STRIKE_LIVES: 3, STRIKE_BOSS_HP: 1 };
 function sd(key) { return (strike.diff === 'normal' || daily.on) && key in STRIKE_NORMAL ? STRIKE_NORMAL[key] : CONFIG[key]; } // the active Strike difficulty value
 
@@ -1308,6 +1428,35 @@ const I18N = {
     st_flame: 'אש', st_ruby: 'אודם', st_volcano: 'הר געש', st_egg: 'ביצת דרקון', st_diamond: 'יהלום', st_crown: 'כתר', st_dragon: 'דרקון', st_dragonking: 'מלך הדרקונים',
   },
 };
+// the pet: its corner on the start screen, its room (feeding, growth, wardrobe), the name sheet, the end cards' snack line, its spoken lines
+Object.assign(I18N.en, {
+  petDefName: 'Bubu', ps_egg: 'Egg', ps_baby: 'Baby', ps_kid: 'Kid', ps_teen: 'Teen', ps_grown: 'Grown-up', ps_legend: 'Legend',
+  petEggName: 'Mystery egg', petEggLine: 'Tap the egg to hatch it!', petEggLeft: '{n} more taps!', petEggLeft1: 'One more tap!',
+  petFeed: 'Feed', petSnacksN: '{n} snacks', petSnacks1: '1 snack', petFullBtn: 'Full today', petNoSnacks: 'No snacks',
+  petM_happy: 'Yum, thank you!', petM_full: 'So full! See you tomorrow', petM_hungry: 'Snack time?', petM_hungryNo: 'Play a game for snacks!', petM_sleepy: 'Zzz… tap to wake me', petM_giggle: 'Hee hee!', petM_egg: 'Something is moving inside…',
+  petToGrow: '{n} more snacks to {s}', petToGrow1: '1 more snack to {s}', petMax: 'Fully grown: a Legend!', petTodayN: 'Ate today: {n}/{m}', petBox: 'Snack box: {n}',
+  petColours: 'Colours', petDress: 'Dress up', petWardrobe: 'Wardrobe', petLocked: 'Grows into a {s} first',
+  pc_mint: 'Mint', pc_sky: 'Sky', pc_pink: 'Pink', pc_sun: 'Sunny', pc_lilac: 'Lilac', pc_gold: 'Gold',
+  pi_bow: 'Bow', pi_scarf: 'Scarf', pi_glasses: 'Glasses', pi_cap: 'Cap', pi_bowtie: 'Bow tie', pi_crown: 'Crown',
+  petEvolved: '{name} is a {s} now!', petEvolveSay: 'Yay! I grew!', petHatched: 'Hello! I\'m {name}!', petHatchSay: 'Hello!',
+  petNameTitle: 'What should we call it?', petNameSub: 'You can change it any time.', petNameGo: 'That\'s it!', petNameSkip: 'Skip', petRename: 'Rename',
+  petYum: 'Yum! +{n} snacks', petYum1: 'Yum! +1 snack', petEggGot: '+{n} snacks for your egg', petEggGot1: '+1 snack for your egg', petBoxFull: 'Snack box full!',
+  petNew: 'New for {name}: {i}', petAria: 'Your pet {name}', petOpen: 'Open {name}\'s room', petFeedAria: 'Feed a snack ({n} left)', petTitle: 'Pet',
+});
+Object.assign(I18N.he, {
+  petDefName: 'בובו', ps_egg: 'ביצה', ps_baby: 'תינוק', ps_kid: 'ילד', ps_teen: 'נער', ps_grown: 'בוגר', ps_legend: 'אגדה',
+  petEggName: 'ביצת הפתעה', petEggLine: 'הקישו על הביצה כדי שתבקע!', petEggLeft: 'עוד {n} הקשות!', petEggLeft1: 'עוד הקשה אחת!',
+  petFeed: 'להאכיל', petSnacksN: '{n} חטיפים', petSnacks1: 'חטיף אחד', petFullBtn: 'שבע להיום', petNoSnacks: 'אין חטיפים',
+  petM_happy: 'יאמי, תודה!', petM_full: 'שבע! נתראה מחר', petM_hungry: 'זמן לחטיף?', petM_hungryNo: 'שחקו משחק בשביל חטיפים!', petM_sleepy: 'זזז… הקישו להעיר אותי', petM_giggle: 'הי הי!', petM_egg: 'משהו זז בפנים…',
+  petToGrow: 'עוד {n} חטיפים עד {s}', petToGrow1: 'עוד חטיף אחד עד {s}', petMax: 'גדל עד הסוף: אגדה!', petTodayN: 'אכל היום: {n}/{m}', petBox: 'קופסת חטיפים: {n}',
+  petColours: 'צבעים', petDress: 'הלבשה', petWardrobe: 'ארון בגדים', petLocked: 'קודם צריך לגדול: {s}',
+  pc_mint: 'מנטה', pc_sky: 'שמיים', pc_pink: 'ורוד', pc_sun: 'שמש', pc_lilac: 'סגול', pc_gold: 'זהב',
+  pi_bow: 'סרט', pi_scarf: 'צעיף', pi_glasses: 'משקפיים', pi_cap: 'כובע', pi_bowtie: 'פפיון', pi_crown: 'כתר',
+  petEvolved: '{name} גדל! עכשיו: {s}', petEvolveSay: 'יש! גדלתי!', petHatched: 'שלום! אני {name}!', petHatchSay: 'שלום!',
+  petNameTitle: 'איך נקרא לו?', petNameSub: 'אפשר לשנות מתי שרוצים.', petNameGo: 'זהו!', petNameSkip: 'דלג', petRename: 'שינוי שם',
+  petYum: 'יאמי! עוד {n} חטיפים', petYum1: 'יאמי! עוד חטיף', petEggGot: 'עוד {n} חטיפים לביצה', petEggGot1: 'עוד חטיף לביצה', petBoxFull: 'קופסת החטיפים מלאה!',
+  petNew: 'חדש ל{name}: {i}', petAria: 'חיית המחמד שלך, {name}', petOpen: 'לחדר של {name}', petFeedAria: 'להאכיל חטיף (נשארו {n})', petTitle: 'חיית מחמד',
+});
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
 Object.assign(I18N.en, {
   rpBtn: 'Replay', rpTitle: 'Your best moment', rpShare: 'Share', rpSave: 'Save', rpClose: 'Close', rpPrep: 'Making the video…', rpStillNote: 'No video on this device: a picture of the moment instead',
@@ -2099,7 +2248,7 @@ function sliceLoseLife(now) { // a missed fruit or a sliced bomb; the last life 
   const ui = slice.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = slice.score > slice.best;
   if (ui.newBest) { if (slice.best > 0) rpRecord(); slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
   else sfx('chime');
-  roundDone(slice.score);
+  roundDone(slice.score, undefined, { record: ui.newBest && slice.score > 0 });
 }
 function hitBomb(f, now) { // slicing a bomb: flash, boom, smoke, sparks, shake, one life gone
   slice.bombsHit++; slice.flash = now;
@@ -3520,6 +3669,7 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
   if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
@@ -3579,13 +3729,13 @@ function smClear(now) { // the meter is full: everything left goes up in a casca
   const alive = smash.objs.filter((o) => o.alive); for (const o of shuffled(alive, Math.random)) { o.boomAt = now + 150 + (i++) * Math.min(90, 900 / Math.max(1, alive.length)); smash.cascade.push(o); }
   for (const T of smash.tiles) if (T.alive) smTileCrumble(T, now);
   sfx('fanfare'); confetti(W * 0.3, H * 0.25, 50, 1.3); confetti(W * 0.7, H * 0.25, 50, 1.3); shakeScreen(3);
-  if (smash.run === 'free') { addCoins(ECONOMY.smash.scene); meta.roundXp = 0; roundDone(0, 15); grippySay('smashClear'); }
+  if (smash.run === 'free') { addCoins(ECONOMY.smash.scene); meta.roundXp = 0; roundDone(0, 15, { boss: true }); grippySay('smashClear'); }
   else {
     const P = smash.plan, A = profile.smash, left = Math.max(0, Math.ceil(smashLeft(now) / 1000)), stars = smashStarsFor(P, left), prev = A.stars[P.n] || 0, first = !prev, E = ECONOMY.smashStage;
     const coins = first ? E.first + stars : Math.max(0, stars - prev) * E.star;
     A.stars[P.n] = Math.max(prev, stars); if (P.n < SMASH_N) A.unlocked = Math.max(A.unlocked, P.n + 1); saveProfile();
     smash.result = { clear: true, n: P.n, scene: P.scene, stars, prev, best: A.stars[P.n], first, coins, left, time: P.time, star3: P.star3, star2: P.star2, pct: 1 };
-    smash.endAt = Infinity; if (coins) addCoins(coins); meta.roundXp = 0; roundDone(0, 15 + 5 * stars); grippySay(stars === 3 ? 'advPerfect' : 'advClear');
+    smash.endAt = Infinity; if (coins) addCoins(coins); meta.roundXp = 0; roundDone(0, 15 + 5 * stars, { star: stars === 3, boss: true }); grippySay(stars === 3 ? 'advPerfect' : 'advClear');
   }
   smFlushTrack(now, true);
 }
@@ -5501,7 +5651,7 @@ function shapesLevelDone(now) {
 function shapesFinish(now) { // Home during a round: the round-over card (levels done, stars, best level)
   shapes.held = null; shapes.over = true; shapes.overAt = now; const ui = shapes.ui; ui.buttons = ui.hover = ui.dwell = null;
   ui.newBest = shapes.best > shapes.prevBest; if (ui.newBest) { sfx('fanfare'); grippySay('newBest'); }
-  roundDone(0, shapes.levelsDone * 5);
+  roundDone(0, shapes.levelsDone * 5, { star: shapes.levelsDone > 0 && shapes.stars >= shapes.levelsDone * 3, record: ui.newBest });
 }
 function shapesHome() { // the toolbar's Home in a Shapes round: the card first, if anything was sorted
   if (gameMode !== 'shapes' || mode === 'none' || shapes.over || !shapes.placedTotal) return false;
@@ -7604,7 +7754,7 @@ function frenzyOver(now) { // Frenzy's one miss (the shield used up): the run is
   frenzy.result = { hits, top, prev, best: F.best, bestTop: F.top, record, score: Math.round(strike.score), walls: strike.cleared - strike.cleared0 };
   ui.newBest = record;
   if (record) { sfx('record'); themeSfx('big', 1); confetti(W / 2, H * 0.3, 60, 1); grippySay('record'); rpRecord(); } else sfx('chime');
-  roundDone(strike.score, strikeRunXp()); track('frenzy', 1);
+  roundDone(strike.score, strikeRunXp(), { record }); track('frenzy', 1);
 }
 function frenzyShareText() { const r = frenzy.result || { hits: profile.frenzy.best, top: profile.frenzy.top }; return t('frenzyShare', { n: r.hits, k: (+r.top || 1).toFixed(1) }); }
 async function shareFrenzy() { const text = frenzyShareText(); frenzy.lastShare = text; return shareText0(text); }
@@ -7825,7 +7975,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   strike.ui.newBest = strike.score > strike.best;
   if (strike.ui.newBest) { if (strike.best > 0) rpRecord(); strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
-  roundDone(strike.score, strikeRunXp());
+  roundDone(strike.score, strikeRunXp(), { boss: strike.bosses > 0, record: strike.ui.newBest });
   if (daily.on) dailyDone(strike.score, strike.level);
   if (strike.ui.newBest) grippySay('newBest'); // (a daily: a new best for today)
 }
@@ -7854,7 +8004,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   strike.balls.length = 0; strike.capsules.length = 0; strike.waiting = false; strike.cued = false; strike.beatAt = 0;
   themeSfx('clear'); // (a theme: the buzzer / the organ's charge / the whistle, and the crowd)
   if (!P.boss) { const y = H * 0.32; sfx('levelup'); ring(W / 2, y, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.45, 700, 6); burst(W / 2, y, '#ffc24b', 26); burst(W / 2, y, '#fff3c4', 16); confetti(W / 2, H * 0.25, 70, 1); shakeScreen(2); }
-  if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true)); // (Coin Magnet never applies: no perks in a stage)
+  if (coins) addCoins(coins); meta.roundXp = 0; roundDone(strike.score, advXp(true), { star: stars === 3, boss: !!P.boss, record: adv.result.record }); // (Coin Magnet never applies: no perks in a stage)
   if (adv.result.record) grippySay('record'); else if (!adv.travel) grippySay(stars === 3 ? 'advPerfect' : 'advClear'); musicSync(); // (a new record: that line first) // (a world's boss stage: 'New world!' during the trip instead; the loop stops: the clear's fanfare plays alone)
   return adv.result;
 }
@@ -8020,6 +8170,7 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : key === 'duel' ? '#ffd77a' : '#f1e9da', null, pri || key === 'duel' ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
   if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
@@ -9662,6 +9813,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' || key === 'duel' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' || key === 'duel' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
   if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (DUp) drawDuelPanel(now, x0, y0 - DUp, cw, rtl); else if (E === strike) strike.ui.duelCard = null;
@@ -11079,6 +11231,10 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       f.type = 'highpass'; f.frequency.value = 1800; env(f, 0.14, 40, t0); noise(t0, 40, f);
       tone('sine', 190, 60, 0.2, 110, t0 + 0.005);
     }
+    else if (kind === 'giggle') { const k = 0.92 + Math.random() * 0.16; [0, 0.11, 0.22].forEach((d, i) => { tone('sine', 880 * k * (1 + i * 0.12), 1250 * k * (1 + i * 0.12), 0.09, 90, t0 + d); tone('triangle', 1760 * k * (1 + i * 0.12), 0, 0.02, 70, t0 + d); }); } // the pet giggles: 'hee-hee-hee', three rising chirps
+    else if (kind === 'munch') { [0, 0.13, 0.26].forEach((d) => { const q = audio.createBiquadFilter(); q.type = 'lowpass'; q.frequency.value = 900 + Math.random() * 500; env(q, 0.16, 70, t0 + d); noise(t0 + d, 70, q); tone('sine', 210, 120, 0.08, 60, t0 + d); }); tone('sine', 660, 990, 0.06, 140, t0 + 0.42); } // the pet eats a snack: three crunchy chomps and a happy 'mm'
+    else if (kind === 'eggTap') { f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 1.5; env(f, 0.14, 50, t0); noise(t0, 50, f); tone('sine', 520 + 90 * (arg || 0), 380, 0.1, 110, t0); } // a tap on the egg: a little crack (higher each tap)
+    else if (kind === 'hatch') { f.type = 'bandpass'; f.frequency.value = 1600; f.Q.value = 0.8; env(f, 0.2, 90, t0); noise(t0, 90, f); [659.25, 783.99, 1046.5, 1318.5].forEach((q, i) => tone('triangle', q, 0, 0.08, 240, t0 + 0.1 + i * 0.08)); tone('sine', 1568, 2093, 0.05, 300, t0 + 0.45); } // the egg hatches: a pop and a bright arpeggio
     else if (kind === 'grippy') { tone('sine', 660, 990, 0.08, 90, t0); tone('sine', 990, 1320, 0.06, 110, t0 + 0.09); } // Grippy pops up: a soft two-note 'boop-beep'
     else if (kind === 'note') { tone('sine', arg || 440, 0, 0.18, 700, t0); tone('triangle', (arg || 440) * 2, 0, 0.05, 320, t0); } // soft musical note
     else if (kind === 'ratchet') { f.type = 'bandpass'; f.frequency.value = 2600; f.Q.value = 2; env(f, 0.1, 30, t0); noise(t0, 30, f); tone('square', 700, 350, 0.035, 30, t0); }
@@ -11280,7 +11436,7 @@ function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
     upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
-    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' }, pet: petDefault() }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -11323,6 +11479,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
       if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
       if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= WORLD_N))].sort((x, y) => x - y); }
+    if (p.pet !== undefined) d.pet = petValidate(p.pet); // the pet: every field checked (see petValidate)
     advSyncWorlds(d); albumSync(d);
     d.level = levelOf(d.xp);
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
@@ -11376,9 +11533,9 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
   for (const it of ITEMS) if (it.level && it.level <= n && !profile.unlocked.includes(it.id)) profile.unlocked.push(it.id);
   saveProfile(); syncMeta(); return n;
 }
-function roundStart() { rpReset(); meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
-function roundDone(score, xp) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission
-  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1);
+function roundStart() { rpReset(); petUi.earn = null; meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
+function roundDone(score, xp, pb) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission; pb: the pet's snack bonuses { star, boss, record }
+  meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1); petEarn(pb);
 }
 function coinSprite(r) {
   return makeSprite('coin|' + Math.round(r), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
@@ -12133,7 +12290,7 @@ function syncMeta() {
   if (!$('collection').hidden) renderCollection();
   if (!$('road').hidden) renderRoad();
   if (!$('worldMap').hidden) renderWorldMap();
-  syncDaily(); syncGrippyBtn(); syncHabit();
+  syncDaily(); syncGrippyBtn(); syncHabit(); petSync();
 }
 function openPanel(id) { ensureMissions(); if (id === 'missions') renderMissions(); else if (id === 'road') renderRoad(); else renderCollection(); $(id).hidden = false; $(id).querySelector('.sheet').scrollTop = 0; $(id).querySelector('.xBtn').focus({ preventScroll: true }); }
 function closePanel(id) { $(id).hidden = true; $(id).classList.remove('overMap'); }
@@ -13298,6 +13455,459 @@ window.__grasp = {
     setLevel(n) { buildShapesLevel(Math.max(1, n | 0), performance.now()); shapes.phase = 'play'; return shapes.level; }, finish() { return shapesHome(); },
     placeTest(i) { const s = shapes.shapes[i]; if (!s || s.placed || shapes.phase !== 'play') return false; const j = shapes.holes.findIndex((h) => !h.filled && h.kind === s.kind); if (j < 0) return false;
       const h = shapes.holes[j]; s.anim = null; s.x = h.x; s.y = h.y; s.angle = h.wa; shapes.held = { i, s, ox: 0, oy: 0, roll: hand.roll, tw: 0, two: false, t0: performance.now(), overSince: 0, overHole: -1 }; shapesRelease(performance.now()); return s.placed; } },
+};
+/* ---------------- The pet (parent chose: "a little creature you feed with what you win in all games; it grows, changes and cheers you on;
+   a daily reason to visit") ----------------
+   The start screen's pet corner (under the Camera | Touch toggle): the pet drawn in code (glossy, round, idle blinks / hops / breathing, eyes that
+   follow the finger, a giggle and a wiggle on a tap), its name and stage, a growth bar, a mood line and the Feed button (the snack count).
+   First an egg: PET.taps taps crack and hatch it (a burst, 'Hello!'), then an optional name (default per language: '' = t('petDefName')).
+   Snacks (profile.pet.pantry, never coins): every finished round of any game (roundDone -> petEarn): 1 + a 3-star round + a boss + a record
+   (at most PET.perRound; the box holds PET.pantryMax). It eats PET.perDay a day at most (profile.pet.ate), each snack = 1 food; the stages begin
+   at PET.stages[].at (Baby 0, Kid 10, Teen 25, Grown-up 45, Legend 75), each bigger and more detailed (ears, arms, belly, tail, horns, wings);
+   a new stage: a celebration in its room (rays, flash, size pulses, confetti, 'Yay! I grew!' spoken when the voice is on).
+   Mood by date (missionDay, so __grasp.setDate drives it): fed today = happy (full at the cap), not yet today but yesterday = hungry,
+   longer away = sleepy (a tap wakes it); never sad, never dies, never loses food.
+   The room (#petRoom): the big pet, the stage steps + bar, today's tummy (5 slots), Feed, the wardrobe (colours + bow / scarf / glasses / cap /
+   bow tie / crown, unlocked by stage, one per slot). The end cards: 'Yum! +2 snacks' with the pet's face on the card's top edge (petCardTag).
+   Hooks: __grasp.pet. */
+var PET_READY = false;
+const PET_INK = '#1d2547';
+const petUi = { earn: null, raf: 0, last: 0, frames: 0, look: { x: 0, y: 0, at: -1e9 }, blinkAt: 0, blinkNext: 0, hopAt: -1e9, hopNext: 0, wigAt: -1e9, eatAt: -1e9, hatchAt: -1e9, evo: null,
+  cracks: 0, crackAt: -1e9, awake: false, bubble: null, bubT: 0, said: [], skipped: [], log: [], tag: null, celebrations: 0, taps: 0, feeds: 0, refused: [], asked: 0, evoT: 0 };
+function petDefault() { return { hatched: false, name: '', food: 0, pantry: 0, ate: { date: '', n: 0 }, last: '', born: '', color: 'mint', head: '', eyes: '', neck: '', seen: 0, earned: 0 }; }
+function petSanitize(name) { // letters (any script), digits, spaces and . _ ' - only; one space between words; PET.nameMax characters at most
+  if (typeof name !== 'string') return ''; let s = name.normalize ? name.normalize('NFC') : name;
+  s = s.replace(/[^\p{L}\p{M}\p{N} ._'-]/gu, '').replace(/\s+/g, ' ').trim(); return Array.from(s).slice(0, PET.nameMax).join('').trim();
+}
+function petStageOf(food, hatched = true) { if (!hatched) return 0; let i = 1; for (let k = 1; k < PET.stages.length; k++) if (food >= PET.stages[k].at) i = k; return i; }
+function petValidate(raw) { // the stored pet: every field checked; anything odd falls back to the default
+  const d = petDefault(); if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return d;
+  const iso = (x) => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x), int = (v, lo, hi) => Number.isFinite(v) ? Math.max(lo, Math.min(hi, Math.floor(v))) : lo;
+  d.hatched = raw.hatched === true; d.name = petSanitize(raw.name);
+  d.pantry = int(raw.pantry, 0, PET.pantryMax); d.earned = int(raw.earned, 0, 1e7);
+  if (d.hatched) {
+    d.food = int(raw.food, 0, 99999);
+    if (raw.ate && typeof raw.ate === 'object' && iso(raw.ate.date)) d.ate = { date: raw.ate.date, n: int(raw.ate.n, 0, PET.perDay) };
+    if (iso(raw.last)) d.last = raw.last; if (iso(raw.born)) d.born = raw.born;
+  }
+  const st = petStageOf(d.food, d.hatched);
+  const col = PET.colors.find((c) => c.id === raw.color); if (col && col.st <= Math.max(1, st)) d.color = col.id;
+  for (const sl of PET.slots) { const it = PET.items.find((q) => q.id === raw[sl] && q.slot === sl); if (it && it.st <= st) d[sl] = it.id; }
+  d.seen = Number.isInteger(raw.seen) ? Math.max(Math.min(1, st), Math.min(st, raw.seen)) : st;
+  return d;
+}
+function petP() { return profile.pet || (profile.pet = petDefault()); }
+function petToday() { return missionDay(); }
+function petStage() { const P = petP(); return petStageOf(P.food, P.hatched); }
+function petStageId(i = petStage()) { return PET.stages[i].id; }
+function petName() { return petP().name || t('petDefName'); }
+function petDays(a, b) { const [y1, m1, d1] = a.split('-').map(Number), [y2, m2, d2] = b.split('-').map(Number); return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5); }
+function petAteToday(d = petToday()) { const A = petP().ate; return A.date === d ? A.n : 0; }
+function petMood(d = petToday()) { // happy / full (fed today), hungry (fed yesterday, or hatched and not fed yet), sleepy (away 2+ days); egg
+  const P = petP(); if (!P.hatched) return 'egg';
+  if (P.ate.date === d && P.ate.n > 0) return P.ate.n >= PET.perDay ? 'full' : 'happy';
+  const ref = P.last || P.born; if (!ref) return 'hungry';
+  return petDays(ref, d) <= 1 ? 'hungry' : 'sleepy';
+}
+function petShowMood() { const m = petMood(); return m === 'sleepy' && petUi.awake ? 'hungry' : m; } // (a tap wakes a sleepy pet until the page closes)
+function petProgress() { // within the stage: { frac, left (snacks to the next stage), next (stage index) }
+  const P = petP(), st = petStage(); if (!P.hatched) return { frac: 0, left: 0, next: 1 };
+  if (st >= PET.stages.length - 1) return { frac: 1, left: 0, next: 0 };
+  const a = PET.stages[st].at, b = PET.stages[st + 1].at; return { frac: Math.max(0, Math.min(1, (P.food - a) / (b - a))), left: b - P.food, next: st + 1 };
+}
+function petCanFeed() { const P = petP(); return !P.hatched ? 'egg' : petAteToday() >= PET.perDay ? 'full' : P.pantry <= 0 ? 'empty' : ''; }
+function petUnlocksAt(st) { return [...PET.colors.filter((c) => c.st === st).map((c) => t('pc_' + c.id)), ...PET.items.filter((i) => i.st === st).map((i) => t('pi_' + i.id))]; }
+/* --- snacks from play, feeding, hatching, growing --- */
+function petEarn(pb) { // a finished round: snacks into the box (the end card's line reads petUi.earn)
+  pb = pb || {}; const P = petP(), n = Math.min(PET.perRound, 1 + (pb.star ? 1 : 0) + (pb.boss ? 1 : 0) + (pb.record ? 1 : 0)), before = P.pantry;
+  P.pantry = Math.min(PET.pantryMax, P.pantry + n); P.earned += P.pantry - before; saveProfile();
+  const E = { n, got: P.pantry - before, egg: !P.hatched, at: performance.now(), why: { star: !!pb.star, boss: !!pb.boss, record: !!pb.record } };
+  if (PET_READY) { petUi.earn = E; petUi.log.push(E); if (petUi.log.length > 30) petUi.log.shift(); if (mode === 'none') petSync(); }
+  return E;
+}
+function petFeed() { // one snack from the box: food + 1, today's count + 1; returns { ok, why, food, stage, evolved (the new stage or 0), from }
+  const P = petP(), d = petToday(), why = petCanFeed(); if (why) return { ok: false, why };
+  const from = petStage(); P.pantry--; P.food++; P.ate = { date: d, n: petAteToday(d) + 1 }; P.last = d; petUi.awake = false;
+  const st = petStage(), evolved = st > P.seen ? st : 0; saveProfile();
+  return { ok: true, food: P.food, stage: st, evolved, from, ate: P.ate.n, pantry: P.pantry };
+}
+function petHatch() {
+  const P = petP(), d = petToday(); if (P.hatched) return null;
+  P.hatched = true; P.born = d; P.last = d; P.food = 0; P.seen = 1; P.ate = { date: '', n: 0 }; saveProfile();
+  petUi.cracks = 0; petUi.hatchAt = performance.now(); petUi.wigAt = -1e9; return { hatched: true, stage: 1 };
+}
+function petEquip(kind, id) { // kind 'color' or a slot ('head' / 'eyes' / 'neck'); a slot's item again = off; only what the stage has unlocked
+  const P = petP(), st = Math.max(1, petStage());
+  if (kind === 'color') { const c = PET.colors.find((q) => q.id === id); if (!c || c.st > st) return false; P.color = id; }
+  else { if (!PET.slots.includes(kind)) return false; if (!id || P[kind] === id) P[kind] = ''; else { const it = PET.items.find((q) => q.id === id && q.slot === kind); if (!it || it.st > petStage()) return false; P[kind] = id; } }
+  saveProfile(); return true;
+}
+function petSpeak(text) { // a short spoken line (the shared voice): only when the sound and the voice are on
+  if (muted || profile.grippy === false) { petUi.skipped.push({ text, why: muted ? 'muted' : 'off' }); return false; }
+  const ok = speakLine(text, { needVoice: true, rate: 1.05, pitch: 1.6 }); if (ok) petUi.said.push({ text, lang, t: performance.now() }); else petUi.skipped.push({ text, why: 'nospeech' });
+  return ok;
+}
+/* --- the UI's actions --- */
+function petBubble(text, ms = 1600) { petUi.bubble = { text, until: performance.now() + ms }; petBubSync(); clearTimeout(petUi.bubT); petUi.bubT = setTimeout(petBubSync, ms + 30); }
+function petBubSync() {
+  const B = petUi.bubble, on = B && performance.now() < B.until;
+  for (const id of ['petBub', 'petRoomBub']) { const el = $(id); if (!el) continue; if (on) { if (el.hidden || el.textContent !== B.text) { el.textContent = B.text; el.hidden = false; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } } else el.hidden = true; }
+}
+function petEggTap() {
+  const P = petP(); if (P.hatched) return null; audioInit();
+  petUi.cracks = Math.min(PET.taps, petUi.cracks + 1); petUi.crackAt = performance.now(); sfx('eggTap', petUi.cracks);
+  if (petUi.cracks >= PET.taps) return petHatchUi();
+  petSync(); return { cracks: petUi.cracks };
+}
+function petHatchUi() {
+  const r = petHatch(); if (!r) return null; sfx('hatch');
+  const host = !$('petRoom').hidden ? $('petRoom').querySelector('.sheet') : $('petCorner'), src = !$('petRoom').hidden ? $('petRoomCv') : $('petCv');
+  try { domConfetti(host, src.getBoundingClientRect()); } catch {}
+  petBubble(t('petHatched', { name: petName() }), 2600); petSpeak(t('petHatchSay'));
+  petSync(); clearTimeout(petUi.askT); petUi.askT = setTimeout(() => { if (petP().hatched && !petP().name) petAskName(); }, 1500);
+  return r;
+}
+function petTapPet() {
+  const P = petP(); if (!P.hatched) return petEggTap(); audioInit(); petUi.taps++;
+  const now = performance.now();
+  if (petMood() === 'sleepy' && !petUi.awake) { petUi.awake = true; petUi.hopAt = now; sfx('boop'); petBubble(t(P.pantry > 0 ? 'petM_hungry' : 'petM_hungryNo'), 1800); petSync(); return 'wake'; }
+  petUi.wigAt = now; sfx('giggle'); petBubble(t('petM_giggle'), 1100); return 'giggle';
+}
+function petFeedUi() {
+  const r = petFeed(), now = performance.now(); audioInit();
+  if (!r.ok) {
+    petUi.refused.push(r.why); sfx('whiff');
+    petBubble(t(r.why === 'full' ? 'petM_full' : r.why === 'empty' ? 'petM_hungryNo' : 'petEggLine'), 1800);
+    for (const id of ['petFeedBtn', 'petFeedBig']) { const b = $(id); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); }
+    return r;
+  }
+  petUi.feeds++; petUi.eatAt = now; setTimeout(() => sfx('munch'), 300); petBubble(t('petM_happy'), 1500);
+  petSync();
+  if (r.evolved) { clearTimeout(petUi.evoT); petUi.evoT = setTimeout(() => petEvolve(r.from, r.evolved), 900); }
+  return r;
+}
+function petEvolve(from, to) { // a new stage: the room opens (if it was not), the celebration plays
+  const P = petP(); to = Math.max(to, petStage()); P.seen = Math.max(P.seen, to); saveProfile();
+  if ($('petRoom').hidden) petOpenRoom(true);
+  petUi.evo = { from, to, at: performance.now() }; petUi.celebrations++; petUi.bubble = null; petBubSync();
+  sfx('fanfare'); setTimeout(() => sfx('levelup'), 420);
+  const ev = $('petEvo'), news = petUnlocksAt(to);
+  ev.querySelector('b').textContent = t('petEvolved', { name: petName(), s: t('ps_' + PET.stages[to].id) });
+  ev.querySelector('small').textContent = news.length ? t('petNew', { name: petName(), i: news.join(', ') }) : '';
+  ev.hidden = false; ev.classList.remove('go'); void ev.offsetWidth; ev.classList.add('go'); clearTimeout(petUi.evoHide); petUi.evoHide = setTimeout(() => { ev.hidden = true; }, 4600);
+  const sh = $('petRoom').querySelector('.sheet'), r = $('petRoomCv').getBoundingClientRect();
+  setTimeout(() => { try { domConfetti(sh, r); } catch {} }, 700); setTimeout(() => { try { domConfetti(sh, r); } catch {} }, 1000);
+  petSpeak(t('petEvolveSay')); petSync();
+  return petUi.evo;
+}
+function petOpenRoom(quiet) {
+  const R = $('petRoom'); if (!R.hidden) return false;
+  R.hidden = false; R.querySelector('.sheet').scrollTop = 0; if (!quiet) sfx('click');
+  petSync(); petLoopStart();
+  const P = petP(), st = petStage(); if (P.hatched && st > P.seen) { clearTimeout(petUi.evoT); petUi.evoT = setTimeout(() => petEvolve(P.seen, st), 500); } // (grown while away from the room, e.g. a test feed)
+  try { R.querySelector('.xBtn').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function petCloseRoom() { const R = $('petRoom'); if (R.hidden) return false; R.hidden = true; $('petEvo').hidden = true; petSync(); return true; }
+function petAskName() {
+  const S = $('petName'); if (!petP().hatched) return false; petUi.asked++;
+  const inp = $('petNameIn'); inp.value = petP().name; inp.placeholder = t('petDefName'); S.hidden = false;
+  try { inp.focus({ preventScroll: true }); } catch {} return true;
+}
+function petNameDone(save) {
+  const S = $('petName'); if (S.hidden) return false; S.hidden = true;
+  if (save) { let n = petSanitize($('petNameIn').value); if (n === I18N.en.petDefName || n === I18N.he.petDefName) n = ''; petP().name = n; saveProfile(); petBubble(t('petHatched', { name: petName() }), 2000); sfx('chime'); }
+  petSync(); return true;
+}
+/* --- drawing (glossy cartoon, all in code): drawPetArt(g, R, o) draws the pet with its body's centre at the origin and its feet at y = 0.9 R --- */
+function petEggPath(g, ex, ey) {
+  g.beginPath(); g.moveTo(0, -ey); g.bezierCurveTo(ex * 0.75, -ey, ex, -ey * 0.1, ex, ey * 0.25); g.bezierCurveTo(ex, ey * 0.8, ex * 0.55, ey, 0, ey);
+  g.bezierCurveTo(-ex * 0.55, ey, -ex, ey * 0.8, -ex, ey * 0.25); g.bezierCurveTo(-ex, -ey * 0.1, -ex * 0.75, -ey, 0, -ey); g.closePath();
+}
+const PET_CRACKS = [[[-0.1, -0.55], [0.05, -0.42], [-0.05, -0.3], [0.1, -0.2]], [[0.35, -0.35], [0.5, -0.22], [0.42, -0.08], [0.58, 0.02]], [[-0.45, -0.15], [-0.6, 0], [-0.48, 0.12], [-0.66, 0.24]], [[-0.2, 0.05], [-0.02, 0.18], [0.16, 0.06], [0.32, 0.2]], [[-0.7, -0.05], [-0.4, 0.05], [-0.15, -0.08], [0.15, 0.05], [0.45, -0.07], [0.72, 0.03]]];
+function drawPetEgg(g, R, o, pal) {
+  const ex = R * 0.78, ey = R * 0.98, lw = Math.max(1, R * 0.06);
+  g.translate(0, R * 0.9); g.rotate(o.rot || 0); g.translate(0, -ey);
+  if (o.glow) { g.save(); g.shadowColor = 'rgba(255,214,120,' + (0.35 + 0.35 * o.glow).toFixed(3) + ')'; g.shadowBlur = R * 0.5; petEggPath(g, ex, ey); g.fillStyle = '#f6ead2'; g.fill(); g.restore(); }
+  const gr = g.createRadialGradient(-ex * 0.35, -ey * 0.45, R * 0.06, 0, 0, ey * 1.05); gr.addColorStop(0, '#fffdf6'); gr.addColorStop(0.55, '#f4e6c8'); gr.addColorStop(1, '#c8ae80');
+  petEggPath(g, ex, ey); g.fillStyle = gr; g.fill();
+  g.save(); petEggPath(g, ex, ey); g.clip(); g.fillStyle = pal[0];
+  for (const [x, y, r] of [[-0.42, -0.3, 0.14], [0.3, -0.55, 0.1], [0.5, 0.15, 0.16], [-0.25, 0.45, 0.12], [0.05, 0.05, 0.08], [-0.6, 0.15, 0.08]]) { g.beginPath(); g.arc(x * ex, y * ey, r * R, 0, TAU); g.fill(); }
+  g.fillStyle = pal[2]; g.globalAlpha = 0.35; g.beginPath(); g.ellipse(0, ey * 0.85, ex, ey * 0.3, 0, 0, TAU); g.fill(); g.restore();
+  petEggPath(g, ex, ey); g.lineWidth = lw; g.strokeStyle = PET_INK; g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.ellipse(-ex * 0.4, -ey * 0.5, R * 0.14, R * 0.24, 0.4, 0, TAU); g.fill();
+  const n = Math.min(PET_CRACKS.length, o.cracks || 0); g.lineWidth = Math.max(1, lw * 0.8); g.strokeStyle = PET_INK;
+  for (let i = 0; i < n; i++) { const C = PET_CRACKS[i]; g.beginPath(); C.forEach(([x, y], j) => (j ? g.lineTo(x * ex, y * ey) : g.moveTo(x * ex, y * ey))); g.stroke(); }
+}
+function petMouthPath(g, R, my) { g.beginPath(); g.moveTo(-R * 0.16, my - R * 0.03); g.quadraticCurveTo(0, my + R * 0.22, R * 0.16, my - R * 0.03); g.quadraticCurveTo(0, my + R * 0.03, -R * 0.16, my - R * 0.03); g.closePath(); }
+function drawPetArt(g, R, o) {
+  const st = o.stage, pal = PET_PAL[o.color] || PET_PAL.mint, tt = o.t || 0, ink = PET_INK, lw = Math.max(1, R * 0.06);
+  g.save(); g.lineJoin = 'round'; g.lineCap = 'round';
+  if (st === 0) { drawPetEgg(g, R, o, pal); g.restore(); return; }
+  const rx = R, ry = R * (st === 1 ? 0.9 : st >= 4 ? 1 : 0.95), mood = o.mood || 'happy', fill = (c) => { g.fillStyle = c; g.fill(); }, line = (w = lw, c = ink) => { g.lineWidth = w; g.strokeStyle = c; g.stroke(); };
+  g.translate(0, R * 0.9 - ry * 0.9); // (the feet stay on the floor whatever the body's height)
+  if (st >= 5) for (const s of [-1, 1]) { // tiny wings, flapping slowly (Legend)
+    g.save(); g.translate(s * rx * 0.72, -ry * 0.18); g.rotate(s * (0.25 + 0.14 * Math.sin(tt / 230)));
+    g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(s * R * 0.45, -R * 0.62, s * R * 0.98, -R * 0.42, s * R * 0.88, R * 0.02); g.bezierCurveTo(s * R * 0.62, R * 0.12, s * R * 0.3, R * 0.16, 0, 0); g.closePath();
+    const wg = g.createLinearGradient(0, -R * 0.5, 0, R * 0.1); wg.addColorStop(0, '#ffffff'); wg.addColorStop(1, '#ffe9a8'); fill(wg); line();
+    g.beginPath(); g.moveTo(s * R * 0.3, -R * 0.12); g.lineTo(s * R * 0.62, -R * 0.24); g.moveTo(s * R * 0.32, R * 0.02); g.lineTo(s * R * 0.7, -R * 0.06); line(lw * 0.6, 'rgba(29,37,71,0.5)'); g.restore();
+  }
+  if (st >= 3) { // a curly tail with a fluffy tip, wagging
+    g.save(); g.translate(rx * 0.7, ry * 0.5); g.rotate(0.18 * Math.sin(tt / 260) + (o.wig || 0) * 2);
+    g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(R * 0.4, R * 0.08, R * 0.62, -R * 0.12, R * 0.5, -R * 0.42); line(R * 0.17); line(R * 0.1, pal[0]);
+    g.beginPath(); g.arc(R * 0.5, -R * 0.46, R * 0.13, 0, TAU); fill(pal[1]); line(); g.restore();
+  }
+  if (st >= 2) for (const s of [-1, 1]) { // ears: taller each stage
+    const eh = R * [0, 0, 0.34, 0.44, 0.5, 0.52][st], ew = R * 0.27;
+    g.save(); g.translate(s * rx * 0.56, -ry * 0.66); g.rotate(s * (0.38 + 0.05 * Math.sin(tt / 700)));
+    g.beginPath(); g.moveTo(-ew, 0); g.quadraticCurveTo(-ew * 0.9, -eh * 1.15, 0, -eh); g.quadraticCurveTo(ew * 0.9, -eh * 1.15, ew, 0); g.closePath(); fill(pal[0]); line();
+    g.beginPath(); g.moveTo(-ew * 0.5, -eh * 0.1); g.quadraticCurveTo(-ew * 0.45, -eh * 0.85, 0, -eh * 0.78); g.quadraticCurveTo(ew * 0.45, -eh * 0.85, ew * 0.5, -eh * 0.1); g.closePath(); fill('rgba(255,150,180,0.75)'); g.restore();
+  }
+  { // the body: a glossy round blob
+    const gr = g.createRadialGradient(-rx * 0.35, -ry * 0.45, R * 0.08, 0, 0, Math.max(rx, ry) * 1.05); gr.addColorStop(0, pal[1]); gr.addColorStop(0.45, pal[0]); gr.addColorStop(1, pal[2]);
+    g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); fill(gr);
+    g.save(); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.clip();
+    if (st >= 3) { g.beginPath(); g.ellipse(0, ry * 0.42, rx * 0.56, ry * 0.44, 0, 0, TAU); g.globalAlpha = 0.8; fill(pal[1]); g.globalAlpha = 1; } // a lighter belly
+    if (st >= 4) { g.globalAlpha = 0.4; g.fillStyle = pal[2]; for (const [x, y, r] of [[-0.55, -0.48, 0.11], [0.62, -0.34, 0.08], [0.72, 0.12, 0.07], [-0.7, 0.05, 0.06]]) { g.beginPath(); g.arc(x * rx, y * ry, r * R, 0, TAU); g.fill(); } g.globalAlpha = 1; } // spots
+    g.restore();
+    g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); line();
+    g.beginPath(); g.ellipse(-rx * 0.42, -ry * 0.55, R * 0.26, R * 0.12, -0.6, 0, TAU); fill('rgba(255,255,255,0.55)');
+    g.beginPath(); g.arc(-rx * 0.1, -ry * 0.76, R * 0.05, 0, TAU); fill('rgba(255,255,255,0.5)');
+  }
+  for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * rx * 0.4, ry * 0.9, R * (st >= 4 ? 0.26 : 0.22), R * 0.13, 0, 0, TAU); fill(pal[2]); line(); } // feet
+  if (st >= 2) for (const s of [-1, 1]) { // little arms (the end one waves on a giggle)
+    const wave = s === 1 && o.wig ? -1.1 - 0.4 * Math.sin(tt / 60) : 0;
+    g.save(); g.translate(s * rx * 0.9, ry * 0.18); g.rotate(s * (-0.45 + 0.08 * Math.sin(tt / 500)) + wave);
+    g.beginPath(); g.ellipse(0, R * 0.1, R * 0.12, R * 0.21, 0, 0, TAU); fill(pal[0]); line(); g.restore();
+  }
+  // the face
+  const ey = -ry * (st === 1 ? 0.04 : 0.12), ex = rx * 0.34, ew = R * (st === 1 ? 0.22 : 0.19), eh = ew * 1.18, lx = Math.max(-1, Math.min(1, o.lx || 0)), ly = Math.max(-1, Math.min(1, o.ly || 0));
+  for (const s of [-1, 1]) { g.beginPath(); g.ellipse(s * rx * 0.6, ry * 0.16, R * 0.13, R * 0.075, 0, 0, TAU); fill('rgba(255,110,150,0.42)'); } // cheeks
+  const closedHappy = mood === 'full' || o.wig > 0.02, sleepy = mood === 'sleepy';
+  for (const s of [-1, 1]) {
+    const x = s * ex;
+    if (closedHappy) { g.beginPath(); g.arc(x, ey + eh * 0.35, ew * 0.72, Math.PI * 1.15, Math.PI * 1.85); line(lw * 1.3); }
+    else if (sleepy) { g.beginPath(); g.arc(x, ey - eh * 0.15, ew * 0.7, Math.PI * 0.15, Math.PI * 0.85); line(lw * 1.3); }
+    else if ((o.blink || 0) > 0.5) { g.beginPath(); g.moveTo(x - ew * 0.75, ey); g.quadraticCurveTo(x, ey + eh * 0.25, x + ew * 0.75, ey); line(lw * 1.3); }
+    else {
+      g.beginPath(); g.ellipse(x, ey, ew, eh, 0, 0, TAU); fill('#ffffff'); line(lw * 0.9);
+      const px = x + lx * ew * 0.36, py = ey + ly * eh * 0.32 + (mood === 'hungry' ? -eh * 0.12 : 0);
+      g.beginPath(); g.arc(px, py, ew * 0.62, 0, TAU); fill(ink);
+      g.beginPath(); g.arc(px - ew * 0.22, py - ew * 0.24, ew * 0.22, 0, TAU); fill('#ffffff');
+      g.beginPath(); g.arc(px + ew * 0.2, py + ew * 0.22, ew * 0.1, 0, TAU); fill('#ffffff');
+    }
+    if (st >= 4 && !sleepy) { g.beginPath(); g.arc(x, ey - eh * 1.25, ew * 0.7, Math.PI * 1.3, Math.PI * 1.7); line(lw * 1.1); } // brows
+  }
+  const my = ry * 0.24;
+  if ((o.eat || 0) > 0) { const op = Math.abs(Math.sin(o.eat * Math.PI * 3)); g.beginPath(); g.ellipse(0, my + R * 0.03, R * 0.12, R * 0.035 + R * 0.1 * op, 0, 0, TAU); fill('#5a1830'); line(lw * 0.8); }
+  else if (sleepy) { g.beginPath(); g.arc(0, my - R * 0.02, R * 0.07, Math.PI * 0.2, Math.PI * 0.8); line(lw * 0.9); }
+  else if (mood === 'hungry' && !o.wig) { g.beginPath(); g.ellipse(0, my + R * 0.03, R * 0.06, R * 0.075, 0, 0, TAU); fill('#5a1830'); line(lw * 0.8); }
+  else { petMouthPath(g, R, my); fill('#5a1830'); g.save(); petMouthPath(g, R, my); g.clip(); g.beginPath(); g.ellipse(0, my + R * 0.13, R * 0.08, R * 0.06, 0, 0, TAU); fill('#ff7a9a'); g.restore(); petMouthPath(g, R, my); line(lw * 0.8); }
+  // the top: a sprout (Baby), two leaves (Kid), a tuft (Teen), little horns (Grown-up, Legend), unless a hat covers it
+  const hat = o.head === 'cap' || o.head === 'crown';
+  if (!hat) {
+    if (st <= 2) {
+      g.beginPath(); g.moveTo(0, -ry * 0.97); g.quadraticCurveTo(R * 0.04, -ry - R * 0.12, 0, -ry - R * 0.2); line(lw * 1.1, '#2f8a4c');
+      for (const s of st === 1 ? [1] : [-1, 1]) { g.save(); g.translate(0, -ry - R * 0.19); g.rotate(s * (0.6 + 0.08 * Math.sin(tt / 400))); g.beginPath(); g.ellipse(s * R * 0.13, 0, R * 0.14, R * 0.07, 0, 0, TAU); fill('#7be08a'); line(lw * 0.8); g.restore(); }
+    } else if (st === 3) {
+      g.beginPath(); g.moveTo(-R * 0.2, -ry * 0.94); g.quadraticCurveTo(-R * 0.22, -ry - R * 0.22, -R * 0.02, -ry - R * 0.12); g.quadraticCurveTo(R * 0.02, -ry - R * 0.3, R * 0.18, -ry - R * 0.14); g.quadraticCurveTo(R * 0.32, -ry - R * 0.12, R * 0.22, -ry * 0.93); g.closePath(); fill(pal[2]); line();
+    } else for (const s of [-1, 1]) {
+      g.save(); g.translate(s * rx * 0.3, -ry * 0.9); g.rotate(s * 0.25); g.beginPath(); g.moveTo(-R * 0.09, 0); g.quadraticCurveTo(-R * 0.05, -R * 0.24, 0, -R * 0.28); g.quadraticCurveTo(R * 0.05, -R * 0.24, R * 0.09, 0); g.closePath(); fill('#fff3d6'); line(); g.restore();
+    }
+  }
+  // the wardrobe: neck, eyes, head
+  if (o.neck === 'scarf') {
+    const y0 = ry * 0.4; g.save(); g.beginPath(); g.ellipse(0, 0, rx * 1.02, ry * 1.02, 0, 0, TAU); g.clip();
+    g.beginPath(); g.moveTo(-rx, y0 - R * 0.14); g.quadraticCurveTo(0, y0 + R * 0.06, rx, y0 - R * 0.14); g.lineTo(rx, y0 + R * 0.06); g.quadraticCurveTo(0, y0 + R * 0.26, -rx, y0 + R * 0.06); g.closePath(); fill('#ff6f59'); line();
+    g.globalAlpha = 0.85; for (let i = -3; i <= 3; i++) { const x = i * rx * 0.26; g.beginPath(); g.moveTo(x - R * 0.04, y0 - R * 0.06 + Math.abs(i) * -R * 0.02); g.lineTo(x + R * 0.04, y0 + R * 0.14 + Math.abs(i) * -R * 0.02); line(R * 0.05, '#fff3e6'); } g.restore();
+    g.save(); g.translate(rx * 0.38, y0 + R * 0.12); g.rotate(-0.12 + 0.06 * Math.sin(tt / 300)); g.beginPath(); g.roundRect(-R * 0.1, 0, R * 0.2, R * 0.42, R * 0.04); fill('#ff6f59'); line();
+    g.beginPath(); g.moveTo(-R * 0.1, R * 0.28); g.lineTo(R * 0.1, R * 0.28); line(R * 0.05, '#fff3e6'); g.restore();
+  } else if (o.neck === 'bowtie') {
+    const y = ry * 0.5; g.beginPath(); g.moveTo(0, y); g.lineTo(-R * 0.24, y - R * 0.13); g.lineTo(-R * 0.24, y + R * 0.13); g.closePath(); g.moveTo(0, y); g.lineTo(R * 0.24, y - R * 0.13); g.lineTo(R * 0.24, y + R * 0.13); g.closePath(); fill('#ff4d6d'); line();
+    g.beginPath(); g.arc(0, y, R * 0.07, 0, TAU); fill('#d8304f'); line(lw * 0.8);
+  }
+  if (o.eyes === 'glasses') {
+    for (const s of [-1, 1]) { g.beginPath(); g.arc(s * ex, ey, ew * 1.3, 0, TAU); fill('rgba(170,220,255,0.2)'); line(lw * 1.3); }
+    g.beginPath(); g.moveTo(-ex + ew * 1.3, ey - ew * 0.2); g.quadraticCurveTo(0, ey - ew * 0.6, ex - ew * 1.3, ey - ew * 0.2); line(lw * 1.2);
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(s * (ex + ew * 1.3), ey - ew * 0.3); g.lineTo(s * rx * 0.96, ey - ew * 0.6); line(lw * 1.1); }
+  }
+  if (o.head === 'bow') {
+    g.save(); g.translate(rx * 0.45, -ry * 0.8); g.rotate(0.35);
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(s * R * 0.32, -R * 0.24, s * R * 0.3, 0); g.quadraticCurveTo(s * R * 0.32, R * 0.24, 0, 0); g.closePath(); fill('#ff7ab0'); line(); }
+    g.beginPath(); g.arc(0, 0, R * 0.07, 0, TAU); fill('#e0468a'); line(lw * 0.8); g.restore();
+  } else if (o.head === 'cap') {
+    g.beginPath(); g.ellipse(0, -ry * 0.6, rx * 0.74, ry * 0.44, 0, Math.PI, TAU); g.closePath(); const cg = g.createLinearGradient(0, -ry * 1.05, 0, -ry * 0.6); cg.addColorStop(0, '#6f93ff'); cg.addColorStop(1, '#2f56d6'); fill(cg); line();
+    g.beginPath(); g.ellipse(rx * 0.45, -ry * 0.6, rx * 0.46, R * 0.09, 0.06, 0, TAU); fill('#2446b8'); line();
+    g.beginPath(); g.arc(0, -ry * 1.03, R * 0.055, 0, TAU); fill('#ffffff'); line(lw * 0.7);
+    g.beginPath(); g.ellipse(-rx * 0.3, -ry * 0.84, R * 0.14, R * 0.05, -0.4, 0, TAU); fill('rgba(255,255,255,0.35)');
+  } else if (o.head === 'crown') {
+    const w = R * 0.74, h = R * 0.4, y = -ry * 0.82; g.save(); g.translate(0, y); g.rotate(-0.06);
+    g.beginPath(); g.moveTo(-w / 2, 0); g.lineTo(-w / 2, -h); g.lineTo(-w / 4, -h * 0.5); g.lineTo(0, -h * 1.12); g.lineTo(w / 4, -h * 0.5); g.lineTo(w / 2, -h); g.lineTo(w / 2, 0); g.closePath();
+    const kg = g.createLinearGradient(0, -h, 0, 0); kg.addColorStop(0, '#fff3b0'); kg.addColorStop(0.5, '#ffcf3f'); kg.addColorStop(1, '#c99a06'); fill(kg); line();
+    [[-w / 4, '#ff4d6d'], [0, '#54c6eb'], [w / 4, '#43d9a3']].forEach(([x, c]) => { g.beginPath(); g.arc(x, -h * 0.2, R * 0.055, 0, TAU); fill(c); });
+    g.restore();
+  }
+  if (sleepy) { g.fillStyle = 'rgba(241,233,218,0.9)'; for (let i = 0; i < 3; i++) { const q = (tt / 1500 + i / 3) % 1, sz = R * 0.3 * (0.6 + q * 0.6); g.globalAlpha = Math.min(1, (1 - q) * 1.6); g.font = '800 ' + sz.toFixed(1) + 'px system-ui, sans-serif'; g.fillText('z', rx * 0.7 + q * R * 0.55, -ry * 0.85 - q * R * 0.9); } g.globalAlpha = 1; }
+  g.restore();
+}
+function petSnackArt(g, x, y, r) { // a cookie (the snack) on a canvas
+  g.save(); g.translate(x, y); g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fillStyle = '#dc9d52'; g.fill(); g.lineWidth = Math.max(1, r * 0.14); g.strokeStyle = '#7a4a1c'; g.stroke();
+  g.fillStyle = '#4a2a10'; for (const [a, b, c] of [[-0.3, -0.2, 0.16], [0.28, -0.3, 0.13], [0.12, 0.28, 0.17], [-0.32, 0.3, 0.11]]) { g.beginPath(); g.arc(a * r, b * r, c * r, 0, TAU); g.fill(); } g.restore();
+}
+/* --- the views: the start screen's corner and the room, one shared rAF (~30 fps) while either shows --- */
+const PET_SCALE = { corner: [0.86, 0.72, 0.8, 0.88, 0.95, 1], room: [0.66, 0.56, 0.68, 0.8, 0.9, 1] };
+function petAnim(now, R) { // the shared idle animation: blink, hop, breathing, wiggle, eating; returns { hop (px up), sq, rot, blink, wig, eat }
+  const mood = petShowMood(), P = petP();
+  if (now > petUi.blinkNext) { petUi.blinkAt = now; petUi.blinkNext = now + 2200 + Math.random() * 2800; }
+  const blink = now - petUi.blinkAt < 150 ? 1 : 0;
+  if (P.hatched && mood !== 'sleepy' && now > petUi.hopNext) { petUi.hopAt = now; petUi.hopNext = now + (mood === 'hungry' ? 2600 : 3400) + Math.random() * 1800; }
+  const reduce = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+  const hq = (now - petUi.hopAt) / 520, hop = !reduce && hq >= 0 && hq < 1 ? Math.sin(Math.PI * hq) * R * 0.32 : 0;
+  const sq = (mood === 'sleepy' ? 0.03 * Math.sin(now / 900) : 0.022 * Math.sin(now / 520)) + (hq >= 0 && hq < 0.15 ? -0.08 * Math.sin(Math.PI * hq / 0.15) : hq >= 0.9 && hq < 1.1 ? -0.06 * Math.sin(Math.PI * (hq - 0.9) / 0.2) : 0);
+  const wq = (now - petUi.wigAt) / 800, wig = wq >= 0 && wq < 1 ? (1 - wq) : 0, rot = wig ? 0.2 * Math.sin(wq * Math.PI * 7) * (1 - wq) : 0;
+  const eq = (now - petUi.eatAt) / 1100, eat = eq >= 0.3 && eq < 1 ? (eq - 0.3) / 0.7 : 0;
+  return { hop, sq, rot, blink, wig, eat, eq, mood };
+}
+function petLook(cv) { // where the eyes look: at the finger / mouse (for 2.5 s after it moved), else a slow wander
+  const L = petUi.look, now = performance.now();
+  if (now - L.at < 2500) { const r = cv.getBoundingClientRect(), dx = L.x - (r.left + r.width / 2), dy = L.y - (r.top + r.height * 0.45), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 120); return { x: dx / d * k, y: dy / d * k }; }
+  return { x: 0.5 * Math.sin(now / 1900), y: 0.25 * Math.sin(now / 2700) };
+}
+function petDrawView(cv, kind, now) {
+  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  const bw = Math.round(w * SS), bh = Math.round(h * SS); if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
+  const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, w, h);
+  const P = petP(), st = petStage(), room = kind === 'room', base = room ? Math.min(h * 0.33, w * 0.3) : h * 0.36;
+  let R = base * PET_SCALE[kind][st]; const A = petAnim(now, R), floor = h - (room ? h * 0.12 : h * 0.08), cx = w / 2;
+  let flash = 0, rays = 0;
+  if (room && petUi.evo) { // the evolve celebration: rays, three size pulses between the old and the new form, a flash, then the new one settles with a bounce
+    const e = now - petUi.evo.at, Rf = base * PET_SCALE.room[petUi.evo.from], Rt = base * PET_SCALE.room[petUi.evo.to];
+    if (e < 2600) { rays = Math.min(1, e / 300) * (e > 2000 ? (2600 - e) / 600 : 1); if (e < 1500) R = (Math.floor(e / 250) % 2 ? Rt : Rf); else { const q = Math.min(1, (e - 1500) / 600); R = Rt * (1 + 0.18 * Math.sin(Math.PI * q) * (1 - q)); } flash = e > 1300 && e < 1800 ? 1 - Math.abs(e - 1500) / 300 : 0; }
+    else petUi.evo = null;
+  }
+  if (rays > 0) { g.save(); g.translate(cx, floor - R * 0.9); g.rotate(now / 1800); g.globalAlpha = 0.5 * rays; for (let i = 0; i < 12; i++) { g.rotate(TAU / 12); g.beginPath(); g.moveTo(0, 0); g.lineTo(-R * 0.25, -Math.max(w, h)); g.lineTo(R * 0.25, -Math.max(w, h)); g.closePath(); g.fillStyle = i % 2 ? 'rgba(255,214,120,0.6)' : 'rgba(255,255,255,0.35)'; g.fill(); } g.restore(); }
+  const sh = Math.max(0.4, 1 - A.hop / (R * 0.9)); g.save(); g.translate(cx, floor); g.scale(sh, sh); g.beginPath(); g.ellipse(0, 0, R * 0.85, R * 0.16, 0, 0, TAU); g.fillStyle = 'rgba(8,11,28,0.35)'; g.fill(); g.restore(); // the shadow
+  const hk = (now - petUi.hatchAt) / 900, look = petLook(cv), o = { stage: st, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: A.mood, t: now, lx: look.x, ly: look.y, blink: A.blink, wig: A.wig, eat: A.eat, cracks: petUi.cracks };
+  g.save(); g.translate(cx, floor - R * 0.9 - A.hop);
+  if (st === 0) { const cq = (now - petUi.crackAt) / 500; o.rot = cq >= 0 && cq < 1 ? 0.22 * Math.sin(cq * Math.PI * 5) * (1 - cq) : 0.05 * Math.sin(now / 160) * (Math.sin(now / 1300) > 0.75 ? 1 : 0); o.glow = petUi.cracks / PET.taps; }
+  g.translate(0, R * 0.9); g.rotate(st ? A.rot : 0); g.scale(1 - A.sq * 0.6, 1 + A.sq); g.translate(0, -R * 0.9);
+  if (st && hk >= 0 && hk < 1) { const q = hk, s = q < 0.6 ? q / 0.6 * 1.15 : 1.15 - 0.15 * (q - 0.6) / 0.4; g.translate(0, R * 0.9); g.scale(s, s); g.translate(0, -R * 0.9); }
+  drawPetArt(g, R, o); g.restore();
+  if (st && hk >= 0 && hk < 1) { // the hatch: the shell's halves fly off, a ring and a flash
+    const q = hk; g.save(); g.globalAlpha = 1 - q;
+    for (const s of [-1, 1]) { g.save(); g.translate(cx + s * R * (0.3 + 1.6 * q), floor - R * (1.4 + 0.8 * Math.sin(Math.PI * q))); g.rotate(s * q * 3); g.beginPath(); g.moveTo(-R * 0.4, 0); g.quadraticCurveTo(-R * 0.4, -R * 0.55, 0, -R * 0.6); g.quadraticCurveTo(R * 0.4, -R * 0.55, R * 0.4, 0); g.lineTo(R * 0.2, -R * 0.1); g.lineTo(0, R * 0.05); g.lineTo(-R * 0.2, -R * 0.1); g.closePath(); g.fillStyle = '#f4e6c8'; g.fill(); g.lineWidth = Math.max(1, R * 0.05); g.strokeStyle = PET_INK; g.stroke(); g.restore(); }
+    g.beginPath(); g.arc(cx, floor - R * 0.9, R * (0.6 + 1.4 * q), 0, TAU); g.lineWidth = 4 * (1 - q) + 1; g.strokeStyle = 'rgba(255,214,120,0.9)'; g.stroke(); g.restore();
+    flash = Math.max(flash, q < 0.25 ? 1 - q / 0.25 : 0);
+  }
+  if (A.eq >= 0 && A.eq < 0.35) { const q = A.eq / 0.35, sx = cx + (lang === 'he' ? -1 : 1) * w * 0.42 * (1 - q), sy = floor - R * 0.7 - Math.sin(Math.PI * q) * R * 0.9 - A.hop; petSnackArt(g, sx, sy, Math.max(5, R * 0.2)); } // the snack flies into the mouth
+  if (A.eat > 0 && A.eat < 0.8) { g.fillStyle = '#c98a40'; for (let i = 0; i < 5; i++) { const a = i * 1.3 + 0.4, d = R * (0.2 + A.eat * 0.6); g.globalAlpha = 1 - A.eat; g.fillRect(cx + Math.cos(a) * d, floor - R * 0.6 + Math.sin(a) * d * 0.4 + A.eat * R * 0.3, Math.max(1.5, R * 0.05), Math.max(1.5, R * 0.05)); } g.globalAlpha = 1; } // crumbs
+  if (flash > 0) { g.fillStyle = 'rgba(255,255,255,' + (0.85 * flash).toFixed(3) + ')'; g.fillRect(0, 0, w, h); }
+}
+function petDraw(now) {
+  petUi.frames++;
+  if (!$('start').hidden) petDrawView($('petCv'), 'corner', now);
+  if (!$('petRoom').hidden) petDrawView($('petRoomCv'), 'room', now);
+}
+function petLoopOn() { return PET_READY && !document.hidden && ((!$('start').hidden && mode === 'none') || !$('petRoom').hidden); }
+function petLoopStart() { if (!petUi.raf && petLoopOn()) petUi.raf = requestAnimationFrame(petTick); }
+function petTick(now) { petUi.raf = 0; if (!petLoopOn()) return; if (now - petUi.last >= 30) { petUi.last = now; petDraw(now); } petUi.raf = requestAnimationFrame(petTick); }
+/* --- the DOM: the corner, the room, the wardrobe --- */
+const PET_LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.2" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+function petMoodText(m = petShowMood()) { if (m === 'egg') return petUi.cracks ? (PET.taps - petUi.cracks === 1 ? t('petEggLeft1') : t('petEggLeft', { n: PET.taps - petUi.cracks })) : t('petEggLine'); if (m === 'hungry') return t(petP().pantry > 0 ? 'petM_hungry' : 'petM_hungryNo'); return t('petM_' + m); }
+function petSync() {
+  if (!PET_READY) return;
+  const P = petP(), st = petStage(), m = petShowMood(), pr = petProgress(), why = petCanFeed(), name = petName(), C = $('petCorner');
+  C.dataset.stage = petStageId(st); C.dataset.mood = m;
+  $('petNm').textContent = P.hatched ? name : t('petEggName'); $('petSt').textContent = t('ps_' + petStageId(st)); $('petSt').hidden = !P.hatched;
+  $('petLine').textContent = petMoodText(m); $('petBar').hidden = !P.hatched; $('petBar').querySelector('i').style.width = Math.round(pr.frac * 100) + '%';
+  const fb = $('petFeedBtn'); fb.hidden = !P.hatched; fb.disabled = !!why; fb.classList.toggle('ready', !why); fb.querySelector('b').textContent = String(P.pantry);
+  fb.querySelector('small').textContent = t(why === 'full' ? 'petFullBtn' : why === 'empty' ? 'petNoSnacks' : 'petFeed'); fb.dataset.why = why;
+  fb.setAttribute('aria-label', t('petFeedAria', { n: P.pantry })); fb.title = fb.getAttribute('aria-label');
+  $('petPetBtn').setAttribute('aria-label', P.hatched ? t('petAria', { name }) : t('petEggLine')); $('petInfoBtn').setAttribute('aria-label', t('petOpen', { name: P.hatched ? name : t('petEggName') }));
+  petBubSync();
+  if (!$('petRoom').hidden) petRenderRoom();
+  petLoopStart();
+}
+function petRenderRoom() {
+  const P = petP(), st = petStage(), pr = petProgress(), why = petCanFeed(), R = $('petRoom'), ate = petAteToday();
+  R.querySelector('h2 .nm').textContent = P.hatched ? petName() : t('petEggName'); const sc = R.querySelector('h2 .petSt'); sc.textContent = t('ps_' + petStageId(st)); sc.hidden = !P.hatched;
+  $('petRenameBtn').hidden = !P.hatched;
+  $('petSteps').replaceChildren(...PET.stages.slice(1).map((s, i) => { const li = document.createElement('li'), k = i + 1; li.className = k < st ? 'got' : k === st ? 'now' : ''; li.dataset.st = s.id; const d = document.createElement('i'), n = document.createElement('span'); n.textContent = t('ps_' + s.id); li.append(d, n); return li; }));
+  $('petRoomBar').hidden = !P.hatched; $('petRoomBar').querySelector('i').style.width = Math.round(pr.frac * 100) + '%';
+  $('petGrowLine').textContent = !P.hatched ? petMoodText('egg') : pr.next ? (pr.left === 1 ? t('petToGrow1', { s: t('ps_' + PET.stages[pr.next].id) }) : t('petToGrow', { n: pr.left, s: t('ps_' + PET.stages[pr.next].id) })) : t('petMax');
+  const tm = $('petTummy'); tm.replaceChildren();
+  { const a = document.createElement('span'); a.className = 'tl'; a.textContent = t('petTodayN', { n: ate, m: PET.perDay }); const sl = document.createElement('span'); sl.className = 'slots';
+    for (let i = 0; i < PET.perDay; i++) { const c = document.createElement('i'); c.className = i < ate ? 'on' : ''; if (i < ate) c.innerHTML = $('petFeedBtn').querySelector('.ck').innerHTML; sl.appendChild(c); }
+    const bx = document.createElement('span'); bx.className = 'bx'; bx.textContent = t('petBox', { n: P.pantry }); tm.append(a, sl, bx); }
+  const fb = $('petFeedBig'); fb.disabled = !!why; fb.dataset.why = why; fb.querySelector('b').textContent = String(P.pantry); fb.querySelector('.lb').textContent = t(why === 'full' ? 'petFullBtn' : why === 'empty' ? 'petNoSnacks' : 'petFeed'); fb.hidden = !P.hatched;
+  $('petCols').replaceChildren(...PET.colors.map((c) => {
+    const b = document.createElement('button'), lock = c.st > Math.max(1, st), pal = PET_PAL[c.id]; b.type = 'button'; b.className = 'pcol' + (lock ? ' locked' : ''); b.dataset.id = c.id; b.setAttribute('aria-pressed', String(P.color === c.id));
+    b.style.setProperty('--c0', pal[0]); b.style.setProperty('--c1', pal[1]); b.style.setProperty('--c2', pal[2]);
+    const lb = t('pc_' + c.id) + (lock ? ' · ' + t('petLocked', { s: t('ps_' + PET.stages[c.st].id) }) : ''); b.setAttribute('aria-label', lb); b.title = lb; if (lock) b.innerHTML = PET_LOCK_SVG;
+    b.addEventListener('click', () => petWardrobeTap('color', c.id, b)); return b;
+  }));
+  $('petItems').replaceChildren(...PET.items.map((it) => {
+    const b = document.createElement('button'), lock = it.st > st; b.type = 'button'; b.className = 'pitem' + (lock ? ' locked' : ''); b.dataset.id = it.id; b.dataset.slot = it.slot; b.setAttribute('aria-pressed', String(P[it.slot] === it.id));
+    const cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); const S = 60; cv.width = cv.height = Math.round(S * SS); const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0);
+    const o = { stage: Math.max(2, Math.min(4, st)), color: P.color, mood: 'happy', t: 0, head: it.slot === 'head' ? it.id : '', eyes: it.slot === 'eyes' ? it.id : '', neck: it.slot === 'neck' ? it.id : '' };
+    g.save(); g.translate(S / 2, S * 0.56 - (it.slot === 'neck' ? -2 : it.slot === 'head' ? -4 : 0)); drawPetArt(g, S * 0.3, o); g.restore();
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t('pi_' + it.id); b.append(cv, nm);
+    if (lock) { const l = document.createElement('span'); l.className = 'lk'; l.innerHTML = PET_LOCK_SVG + '<b>' + t('ps_' + PET.stages[it.st].id) + '</b>'; b.appendChild(l); }
+    const lb = t('pi_' + it.id) + (lock ? ' · ' + t('petLocked', { s: t('ps_' + PET.stages[it.st].id) }) : ''); b.setAttribute('aria-label', lb); b.title = lb;
+    b.addEventListener('click', () => petWardrobeTap(it.slot, it.id, b)); return b;
+  }));
+}
+function petWardrobeTap(kind, id, b) {
+  audioInit();
+  if (!petP().hatched) { petBubble(t('petEggLine'), 1500); sfx('whiff'); return false; }
+  const def = kind === 'color' ? PET.colors.find((c) => c.id === id) : PET.items.find((i) => i.id === id);
+  if (!petEquip(kind, id)) { sfx('whiff'); petBubble(t('petLocked', { s: t('ps_' + PET.stages[def.st].id) }), 1600); if (b) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } return false; }
+  sfx('boop'); petUi.wigAt = performance.now(); petSync(); return true;
+}
+/* --- the end cards: 'Yum! +2 snacks' with the pet's face, a pill on the card's top edge (not on a duel's card: its WIN / LOSE panel sits there) --- */
+function petCardTag(now, E) {
+  const ui = E.ui, c = ui.card, Q = petUi.earn; ui.petTag = null;
+  if (!c || !Q || (E === strike && duel.on && duel.link)) return null;
+  const age = now - E.overAt; if (age < 450) return null;
+  const k = Math.min(1, (age - 450) / 380), pop = k < 1 ? 1 + 1.7 * Math.pow(k - 1, 3) + 0.7 * Math.pow(k - 1, 2) : 1; // (ease-out-back)
+  const rtl = lang === 'he', P = petP(), txt = Q.got <= 0 ? t('petBoxFull') : P.hatched ? (Q.got === 1 ? t('petYum1') : t('petYum', { n: Q.got })) : (Q.got === 1 ? t('petEggGot1') : t('petEggGot', { n: Q.got }));
+  const sp = textSprite(txt, 13, '#d9ffef', null, 700), h = 30, w = Math.min(c.w - 24, sp.tw + 60), x = c.x + c.w / 2 - w / 2, y = c.y - 20, my = y + h / 2;
+  resetView(); ctx.save(); ctx.translate(x + w / 2, my); ctx.scale(pop, pop); ctx.translate(-(x + w / 2), -my);
+  ctx.shadowColor = 'rgba(67,217,163,0.4)'; ctx.shadowBlur = 10; ctx.fillStyle = '#17304a'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(67,217,163,0.9)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.stroke();
+  const ax = rtl ? x + w - 18 : x + 18; // the pet's face pops out of the pill's start end
+  ctx.beginPath(); ctx.arc(ax, my - 3, 19, 0, TAU); const bg = ctx.createRadialGradient(ax, my - 6, 2, ax, my - 3, 19); bg.addColorStop(0, '#2f4f7a'); bg.addColorStop(1, '#17304a'); ctx.fillStyle = bg; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(67,217,163,0.9)'; ctx.stroke();
+  ctx.save(); ctx.beginPath(); ctx.arc(ax, my - 3, 18, 0, TAU); ctx.clip(); ctx.translate(ax, my + 10 - 12 * 0.9);
+  const ea = (age - 900) / 1100; drawPetArt(ctx, 12, { stage: petStage(), color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: 'happy', t: now, eat: ea > 0.3 && ea < 1 ? (ea - 0.3) / 0.7 : 0, cracks: 0 }); ctx.restore();
+  const tx = rtl ? (x + x + w - 40) / 2 : (x + 40 + x + w) / 2; blit(sp, tx, my, 0, Math.min(1, (w - 50) / sp.tw));
+  ctx.restore();
+  ui.petTag = { x, y, w, h, text: txt, n: Q.got, egg: !P.hatched, k };
+  return ui.petTag;
+}
+/* --- wiring --- */
+$('petPetBtn').addEventListener('click', () => { if (petP().hatched) petTapPet(); else petEggTap(); });
+$('petInfoBtn').addEventListener('click', () => { audioInit(); petOpenRoom(); });
+$('petFeedBtn').addEventListener('click', () => petFeedUi());
+$('petFeedBig').addEventListener('click', () => petFeedUi());
+$('petRoomCv').addEventListener('click', () => { if (petP().hatched) petTapPet(); else petEggTap(); });
+$('petRenameBtn').addEventListener('click', () => { sfx('click'); petAskName(); });
+$('petRoom').querySelector('.xBtn').addEventListener('click', () => petCloseRoom());
+$('petRoom').addEventListener('pointerdown', (e) => { if (e.target === $('petRoom')) petCloseRoom(); });
+$('petName').addEventListener('pointerdown', (e) => { if (e.target === $('petName')) petNameDone(false); });
+$('petNameGo').addEventListener('click', () => petNameDone(true));
+$('petNameSkip').addEventListener('click', () => petNameDone(false));
+$('petNameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); petNameDone(true); } });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (petNameDone(false) || petCloseRoom()) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+for (const ev of ['pointermove', 'pointerdown']) document.addEventListener(ev, (e) => { petUi.look.x = e.clientX; petUi.look.y = e.clientY; petUi.look.at = performance.now(); }, { passive: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) petLoopStart(); });
+PET_READY = true; petSync();
+window.__grasp.pet = {
+  cfg: PET, pal: PET_PAL, get p() { return petP(); }, get ui() { return petUi; },
+  get state() { const P = petP(), pr = petProgress(); return { hatched: P.hatched, name: P.name, shownName: petName(), food: P.food, pantry: P.pantry, stage: petStage(), stageId: petStageId(), seen: P.seen, mood: petMood(), shown: petShowMood(), ate: petAteToday(), canFeed: petCanFeed() || 'ok', frac: pr.frac, left: pr.left, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, cracks: petUi.cracks, roomOpen: !$('petRoom').hidden, nameOpen: !$('petName').hidden, earned: P.earned }; },
+  earn: petEarn, feed: petFeed, feedUi: petFeedUi, eggTap: petEggTap, hatch: petHatch, hatchUi: petHatchUi, tap: petTapPet, equip: petEquip, wardrobe: petWardrobeTap, evolve: petEvolve,
+  open: petOpenRoom, close: petCloseRoom, askName: petAskName, nameDone: petNameDone, mood: petMood, stageOf: petStageOf, validate: petValidate, sanitize: petSanitize, unlocks: petUnlocksAt, sync: petSync,
+  get earnLast() { return petUi.earn; }, get said() { return petUi.said; }, get skipped() { return petUi.skipped; }, get frames() { return petUi.frames; }, get running() { return !!petUi.raf; },
+  set(o) { Object.assign(petP(), o); saveProfile(); petSync(); return petP(); }, // test-only: set fields directly
 };
 /* --- direct links: /strike (the Adventure map), /smash, /slice, /busy, /shapes, /sandbox open that game at once with the remembered input (touch
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to

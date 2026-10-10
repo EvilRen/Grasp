@@ -663,9 +663,9 @@ async def main():
 
         # ---- start screen: 6 tiles (3 x 2) fit 360 x 740 with no scroll and no big gap under the top bar, EN / HE; desktop too ----
         LAY = """(() => { const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode, in: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, top: Math.round(r.top), w: r.width, name: b.querySelector('[data-i18n]').textContent }; });
-          const st = $('start'), h1 = document.querySelector('.panel h1').getBoundingClientRect(), lb = $('startLang').getBoundingClientRect(), pill = $('metaPill').getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(), md = document.querySelector('.modes').getBoundingClientRect(), seg = document.querySelector('#start .seg').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect();
+          const st = $('start'), h1 = document.querySelector('.panel h1').getBoundingClientRect(), lb = $('startLang').getBoundingClientRect(), pill = $('metaPill').getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(), md = document.querySelector('.modes').getBoundingClientRect(), seg = document.querySelector('#start .seg').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(), pc = $('petCorner').getBoundingClientRect(); // (the pet's corner sits between the toggle and the link)
           return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, rows: new Set(tiles.map(t => Math.round(t.top / 20))).size, barBottom: Math.max(h1.bottom, lb.bottom), pillTop: pill.top,
-            gaps: [row.top - pill.bottom, md.top - row.bottom, seg.top - md.bottom, a.top - seg.bottom].map(Math.round), link: a.bottom <= innerHeight }; })()"""
+            gaps: [row.top - pill.bottom, md.top - row.bottom, seg.top - md.bottom, pc.top - seg.bottom, a.top - pc.bottom].map(Math.round), link: a.bottom <= innerHeight }; })()"""
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
