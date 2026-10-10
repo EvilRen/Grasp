@@ -522,6 +522,22 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .dnRow{ display:flex; gap:10px; }
 .dnRow button{ flex:1; min-height:48px; border-radius:14px; }
 #duelNameSkip{ background:rgba(241,233,218,.08); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
+#replay{ z-index:15; }
+.rpSheet{ width:min(420px,100%); text-align:center; }
+.rpView{ position:relative; margin:0 auto 12px; border-radius:14px; overflow:hidden; background:#05070f; box-shadow:inset 0 0 0 1px var(--line); width:fit-content; max-width:100%; }
+.rpView canvas{ display:block; max-width:100%; max-height:min(60vh,560px); width:auto; height:auto; margin:0 auto; }
+.rpBarW{ position:absolute; left:0; right:0; bottom:0; height:4px; background:rgba(241,233,218,.15); }
+#rpBar{ display:block; height:100%; width:0; background:var(--saffron); }
+html[dir="rtl"] #rpBar{ margin-inline-start:auto; }
+.rpRow{ display:flex; gap:10px; }
+.rpRow button{ flex:1; min-height:48px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.rpRow button svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.rpRow button:disabled{ opacity:.5; }
+#rpSave{ background:rgba(241,233,218,.08); color:var(--bone); box-shadow:inset 0 0 0 1px var(--line); }
+.rpNote{ margin:8px 0 0; font-size:12px; opacity:.75; min-height:1.2em; }
+#rpDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none; z-index:16;
+  background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
+#rpDwell[hidden]{ display:none; }
 .nuSheet{ text-align:center; width:min(340px,100%); overflow:hidden; background:radial-gradient(120% 80% at 50% 0%, rgba(255,194,75,.28), rgba(22,29,61,1) 60%); box-shadow:inset 0 0 0 2px rgba(255,194,75,.7), 0 20px 50px rgba(0,0,0,.55); animation:nupop .45s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes nupop{ from{ transform:scale(.6); opacity:0; } }
 .nuKick{ margin:4px 0 6px; font-size:22px; font-weight:800; letter-spacing:.04em; background:linear-gradient(135deg,#fff3c4,var(--saffron) 50%,var(--coral)); -webkit-background-clip:text; background-clip:text; color:transparent; }
@@ -882,6 +898,15 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <div class="dnRow"><button type="button" id="duelNameSkip" data-i18n="duelNameSkip">Skip</button><button type="button" class="primary" id="duelNameGo" data-i18n="duelNameGo">Share</button></div>
   </div>
 </div>
+<div class="ov" id="replay" hidden role="dialog" aria-modal="true" aria-labelledby="rpTitle">
+  <div class="sheet rpSheet">
+    <header><h2 id="rpTitle" data-i18n="rpTitle">Your best moment</h2><button class="xBtn" id="rpClose" type="button" data-i18n-aria="rpClose" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="rpView"><canvas id="rpCanvas" width="2" height="2" aria-hidden="true"></canvas><div class="rpBarW"><i id="rpBar"></i></div></div>
+    <div class="rpRow"><button type="button" id="rpSave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i18n="rpSave">Save</span></button><button type="button" class="primary" id="rpShare"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 8l5-5 5 5M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg><span data-i18n="rpShare">Share</span></button></div>
+    <p class="rpNote" id="rpNote" role="status"></p>
+  </div>
+</div>
+<div id="rpDwell" hidden aria-hidden="true"></div>
 <div class="ov" id="gifts" hidden role="dialog" aria-modal="true" aria-labelledby="giftTitle">
   <div class="sheet giftSheet">
     <header><h2 id="giftTitle" data-i18n="giftTitle">Daily gift</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1285,6 +1310,10 @@ const I18N = {
 };
 // Shapes mode (the shape sorter): its texts, the shape names (spoken when a shape drops in), the levels / stars / end card words
 Object.assign(I18N.en, {
+  rpBtn: 'Replay', rpTitle: 'Your best moment', rpShare: 'Share', rpSave: 'Save', rpClose: 'Close', rpPrep: 'Making the video…', rpStillNote: 'No video on this device: a picture of the moment instead',
+  rpSaved: 'Replay saved!', rpShareText: 'My best moment in Grasp! 💥', rpSlow: 'SLOW-MO', rpInRow: '{n} in a row',
+  rpk_super: 'SUPER hit!', rpk_blast: 'Mega hit!', rpk_wall: 'Wall smashed!', rpk_perfect: 'PERFECT ×{n}!', rpk_boss: 'Boss down!', rpk_clear: 'Stage clear!', rpk_record: 'New record!',
+  rpk_frenzy: '{n} in a row!', rpk_collapse: 'Mega smash! ×{n}', rpk_combo: 'Combo ×{n}!',
   modeShapes: 'Shapes', gm_shapes: 'shapes',
   descShapes: 'A shape sorter: bright shapes on a mat, a toy box with holes. Tap a shape, then tap the hole with the same outline (or drag it there): it clunks in and says its name. Later holes turn, the box rocks and the holes slide. No lives, no clock.',
   hintShapesCam: 'Pinch a shape, move it over the hole with the same outline and open your hand. Twist your pinched hand to turn it. Keep your hand inside the yellow box.',
@@ -1297,6 +1326,10 @@ Object.assign(I18N.en, {
   shp_rectangle: 'Rectangle', shp_oval: 'Oval', shp_crescent: 'Crescent', shp_diamond: 'Diamond', shp_cross: 'Cross', shp_pentagon: 'Pentagon',
 });
 Object.assign(I18N.he, {
+  rpBtn: 'הילוך חוזר', rpTitle: 'הרגע הכי טוב שלכם', rpShare: 'שיתוף', rpSave: 'שמירה', rpClose: 'סגירה', rpPrep: 'מכינים את הסרטון…', rpStillNote: 'אין וידאו במכשיר הזה: תמונה של הרגע במקום',
+  rpSaved: 'ההילוך החוזר נשמר!', rpShareText: 'הרגע הכי טוב שלי ב-Grasp! 💥', rpSlow: 'הילוך איטי', rpInRow: '{n} ברצף',
+  rpk_super: 'מכת סופר!', rpk_blast: 'מכה ענקית!', rpk_wall: 'הקיר התנפץ!', rpk_perfect: 'מושלם ×{n}!', rpk_boss: 'הבוס הובס!', rpk_clear: 'השלב הושלם!', rpk_record: 'שיא חדש!',
+  rpk_frenzy: '{n} ברצף!', rpk_collapse: 'ריסוק ענק! ×{n}', rpk_combo: 'קומבו ×{n}!',
   modeShapes: 'צורות', gm_shapes: 'צורות',
   descShapes: 'משחק התאמת צורות: צורות צבעוניות על שטיח וקופסת צעצוע עם חורים. הקישו על צורה ואז על החור עם אותו קו מתאר (או גררו אותה לשם): היא נופלת פנימה ואומרת את השם שלה. בהמשך החורים מסתובבים, הקופסה מתנדנדת והחורים זזים. בלי חיים, בלי שעון.',
   hintShapesCam: 'צבטו צורה, הזיזו אותה מעל החור עם אותו קו מתאר ופתחו את היד. סובבו את היד הצובטת כדי לסובב את הצורה. שמרו על היד בתוך המסגרת הצהובה.',
@@ -1667,7 +1700,7 @@ function inputTick(now) {
     if (g === 'pinch' && gameMode === 'sandbox' && !menu.open) tryGrab(now);
     if (g === 'none') { cursor.history.length = 0; if (mode === 'camera') { hand.fx.reset(); hand.fy.reset(); resetHandCursor(); hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; } }
     const E = endState(); // round over: a pinch / point / fist / tap away from the card buttons restarts; over a button the dwell ring decides instead
-    if (E && E.over && !menu.open && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !anyMapOpen()) endCardAction('again', now);
+    if (E && E.over && !menu.open && g !== 'none' && g !== 'open' && now - E.overAt > 1000 && !endCardAt(cursor.x, cursor.y) && $('newCard').hidden && !anyMapOpen() && !rp.open) endCardAction('again', now);
     gesture = g;
   }
   if (held) held.constraint.pointA = { x: cursor.x, y: cursor.y };
@@ -1722,6 +1755,7 @@ let fps = 0, trackFps = 0, trackCount = 0, lastRateAt = performance.now(), frame
 
 function frame(now) {
   if (!engine) { requestAnimationFrame(frame); return; }
+  if (rp.capNext) { rp.capNext = false; if (!rpBlock()) rpCapture(); } // the replay's capture of the last frame (2D)
   const dt = Math.min(100, now - lastFrame); lastFrame = now;
   trackTick(now);
   inputTick(now);
@@ -1757,6 +1791,7 @@ function frame(now) {
   updateNoHand(now);
   maybeAutoSwap(now);
   drawPreview();
+  rpTick(now, dt); // the replay clip: the rolling capture, the best moment, the replay sheet
 
   frameCount++;
   if (now - lastRateAt >= 500) {
@@ -2062,7 +2097,7 @@ function sliceLoseLife(now) { // a missed fruit or a sliced bomb; the last life 
   if (slice.lives > 0) { grippySay(slice.lives === 1 ? 'lastLife' : 'miss'); return; }
   slice.lives = 0; slice.over = true; slice.overAt = now; hideHint(); slice.last = null; slice.blade.length = 0;
   const ui = slice.ui; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = slice.score > slice.best;
-  if (ui.newBest) { slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
+  if (ui.newBest) { if (slice.best > 0) rpRecord(); slice.best = slice.score; try { localStorage.setItem('sliceBest', String(slice.best)); } catch {} sfx('fanfare'); grippySay('newBest'); }
   else sfx('chime');
   roundDone(slice.score);
 }
@@ -2924,7 +2959,7 @@ function smBossHit(o, x, y, k, now) { // the boss: harder hits hurt more (a tap 
     for (let i = 0; i < 5; i++) smPiece('r', (10 + Math.random() * 12) * s, (8 + Math.random() * 8) * s, i % 2 ? o.col : darken(o.col, 0.25), 'boss', o.body.position.x + (Math.random() - 0.5) * o.w * 0.8, o.body.position.y - o.h * 0.3, (Math.random() - 0.5) * 9, -5 - Math.random() * 5, now); }
 }
 function smBossDown(o, now) { // the boss blows up: a big blast of its pieces, confetti, the boss-down sound; then 'Smashed!'
-  o.alive = false; M.Composite.remove(world, o.body); smash.things++; smash.trk.smash++; smash.trk.wall++; smash.broke.boss = (smash.broke.boss || 0) + 1;
+  o.alive = false; M.Composite.remove(world, o.body); smash.things++; smash.trk.smash++; smash.trk.wall++; smash.broke.boss = (smash.broke.boss || 0) + 1; rpMoment('boss', 110);
   const s = smashScale(), cx = o.body.position.x, cy = o.body.position.y;
   for (let i = 0; i < 18; i++) { const a = Math.random() * TAU, v = 5 + Math.random() * 9; smPiece(i % 3 ? 'r' : 'p5', (8 + Math.random() * 16) * s, (6 + Math.random() * 10) * s, [o.col, darken(o.col, 0.25), lighten(o.col, 0.25)][i % 3], 'boss', cx + Math.cos(a) * o.w * 0.25, cy + Math.sin(a) * o.h * 0.25, Math.cos(a) * v, Math.sin(a) * v - 5, now); }
   smSnd('bossdown', 1, 'boss', now); confetti(cx, cy - o.h * 0.2, 80, 1.6); confetti(W * 0.25, H * 0.3, 40, 1.2); confetti(W * 0.75, H * 0.3, 40, 1.2);
@@ -3484,7 +3519,8 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 14); ctx.fill(); }
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : '#f1e9da', null, pri ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
-  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
 }
@@ -6564,6 +6600,7 @@ function timingFx(tm, sc, now, serve) { // the feedback for a judged hit or serv
   if (!tm) return; strike.timings[tm.grade] = (strike.timings[tm.grade] || 0) + 1; strike.lastTiming = { ...tm, at: now, serve: !!serve };
   if (tm.grade === 'perfect') {
     strike.perfStreak++; strike.bestPerf = Math.max(strike.bestPerf, strike.perfStreak); strike.perfects++; strike.perfectAt = now;
+    if (strike.perfStreak >= 3) rpMoment('perfect', 30 + 6 * strike.perfStreak, { n: strike.perfStreak }); // (the replay: a PERFECT streak)
     strike.stopUntil = Math.max(strike.stopUntil, now + TIMING.perfStop);
     ring(sc.x, sc.y, 'rgba(255,236,150,0.98)', sc.r * 3.2, 440, 7); ring(sc.x, sc.y, 'rgba(255,255,255,0.95)', sc.r * 1.8, 260, 4); burst(sc.x, sc.y, '#ffe07a', 22); burst(sc.x, sc.y, '#ffffff', 10);
     sfx('perfect', Math.min(5, strike.perfStreak)); themeSfx('big', 0.7); track('perfect', 1);
@@ -6936,6 +6973,7 @@ function smashWall(w, b, now) {
   if (destroyed) track('brick', destroyed); // (no small '+n' pop per brick: clutter; the score shows on the card, WALL +n / PERFECT / combo stay)
   pts = scorePts(pts); strike.score += pts; strike.ui.scoreAt = now; // x the combo
   maybeCollapse(w, now); strike.lastSmash.pts = strike.score - s0;
+  rpStrikeHit(tier, fire, destroyed, w.left <= 0); // (the replay: a big hit is a moment)
   if (w.left <= 0) wallDown(w, now); // wall down: bonus, chime; a fresh wall spawns beyond the far end (or behind the boss) and the queue slides forward
   return 'bounce';
 }
@@ -7116,7 +7154,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
   if (b.real) return rbDefeated(b, now);
   const { T, B } = corridor(), p = proj(0, (T + B) / 2, b.z), bonus = 200 * b.n; g3Fx('bossdown', { z: b.z });
-  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1);
+  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; addCoins(adv.on ? 0 : ECONOMY.strike.boss); track('boss', 1); rpMoment('boss', 90);
   strike.ui.bossBanner = { t: now + 250, n: b.n, bonus }; addFloater({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
   sfx('bossdown'); shakeScreen(4); strike.tntAt = now; if (!adv.on) grippySay('bossDown'); // (Adventure: the stage clear / the new world speaks next)
   ring(p.x, p.y, 'rgba(255,120,40,0.95)', Math.min(W, H) * 0.5, 620, 9); ring(p.x, p.y, 'rgba(255,230,150,0.9)', Math.min(W, H) * 0.3, 420, 5); ring(p.x, p.y, 'rgba(192,92,230,0.9)', Math.min(W, H) * 0.65, 800, 4);
@@ -7313,7 +7351,7 @@ function rbBall(b, bl, z0, now) { // an outgoing ball at the boss: its spinning 
 }
 function rbDefeated(b, now) { // the big one: an explosion of its colours and pieces, slow motion, confetti, 'Victory!' and the stage clear (then the trip to the next world)
   const G = b.g || rbGeom(b), p = proj(G.x, G.y, b.z), bonus = 200 * b.n, col = b.def.col; g3Fx('bossdown', { z: b.z, col });
-  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; track('boss', 1); strike.shots.length = 0;
+  strike.boss = null; strike.bosses++; strike.bossDownAt = now; strike.score += bonus; strike.ui.scoreAt = now; track('boss', 1); strike.shots.length = 0; rpMoment('boss', 120);
   strike.ui.rbDown = { t: now, kind: b.kind, n: b.n, col, x: p.x, y: p.y }; strike.lastBoss = { kind: b.kind, n: b.n, t: b.clock, weakHits: b.weakHits, fired: { ...b.fired }, countered: { ...b.countered } };
   addFloater({ x: p.x, y: p.y - 40 * p.s, text: 'BOSS +' + bonus, big: true, life: 1.4 });
   sfx('bossdown'); sfx('boom'); themeSfx('big', 1); shakeScreen(5); strike.tntAt = now; if (!reducedMotion()) strike.stopUntil = Math.max(strike.stopUntil, now + 140);
@@ -7549,7 +7587,7 @@ function rallyUp(now) { // a return: one step faster (a whoosh pitched by the sp
   if (k1 > k0 + 1e-9) {
     sfx('rally', k1); strike.rallyLog.push(+k1.toFixed(3)); if (strike.rallyLog.length > 60) strike.rallyLog.shift();
     const st = (x) => Math.floor((x - 1) / RALLY.pop + 1e-6);
-    if (st(k1) > st(k0) || atCap) strike.ui.speedPop = { t: now, k: k1, max: atCap };
+    if (st(k1) > st(k0) || atCap) { strike.ui.speedPop = { t: now, k: k1, max: atCap }; if (frenzy.on) rpMoment('frenzy', 25 + Math.min(60, strike.hits), { n: strike.hits }); } // (the replay: a Frenzy speed step)
   }
   return true;
 }
@@ -7565,7 +7603,7 @@ function frenzyOver(now) { // Frenzy's one miss (the shield used up): the run is
   F.runs++; F.best = Math.max(prev, hits); F.top = Math.max(F.top, top); saveProfile();
   frenzy.result = { hits, top, prev, best: F.best, bestTop: F.top, record, score: Math.round(strike.score), walls: strike.cleared - strike.cleared0 };
   ui.newBest = record;
-  if (record) { sfx('record'); themeSfx('big', 1); confetti(W / 2, H * 0.3, 60, 1); grippySay('record'); } else sfx('chime');
+  if (record) { sfx('record'); themeSfx('big', 1); confetti(W / 2, H * 0.3, 60, 1); grippySay('record'); rpRecord(); } else sfx('chime');
   roundDone(strike.score, strikeRunXp()); track('frenzy', 1);
 }
 function frenzyShareText() { const r = frenzy.result || { hits: profile.frenzy.best, top: profile.frenzy.top }; return t('frenzyShare', { n: r.hits, k: (+r.top || 1).toFixed(1) }); }
@@ -7785,7 +7823,7 @@ function loseLife(now) { // a life gone (a missed ball, or the boss reaching the
   if (frenzy.on) return frenzyOver(now);
   strike.over = true; strike.overAt = now; hideHint(); strike.ui.dwell = strike.ui.hover = null; strike.ui.buttons = null; saveLevelBest();
   strike.ui.newBest = strike.score > strike.best;
-  if (strike.ui.newBest) { strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
+  if (strike.ui.newBest) { if (strike.best > 0) rpRecord(); strike.best = strike.score; try { localStorage.setItem('strikeBest', String(strike.best)); } catch {} sfx('fanfare'); }
   else sfx('chime');
   roundDone(strike.score, strikeRunXp());
   if (daily.on) dailyDone(strike.score, strike.level);
@@ -7807,6 +7845,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const score = Math.round(strike.score), prevScore = A.best[n] || 0, record = score > prevScore && prevScore > 0; A.best[n] = Math.max(prevScore, score); saveProfile(); // v4: the stage's best score (a record: beaten, not just set)
   adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null,
     score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score), rb: P.boss ? adv.rbResult || { kind: rbDef(P.world).id, n: P.world } : null, bestRank: rankFor(n, A.best[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
+  rpMoment('clear', 50 + (record ? 40 : 0)); if (record) rp.record = true; // (the replay: the stage's last wall; a record says so)
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < WORLD_N ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
   adv.cardAt = now + burstMs + (adv.travel ? ADV_TRAVEL_MS : ADV_WHOOSH_MS);
@@ -7980,7 +8019,8 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 14); ctx.fill(); }
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : key === 'duel' ? '#ffd77a' : '#f1e9da', null, pri || key === 'duel' ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
-  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
@@ -9500,10 +9540,12 @@ function endState() { return gameMode === 'strike' ? strike : gameMode === 'smas
 function endCardAt(px, py) { // which card button (if any) is under a screen point
   const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
   for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
+  const r = E.ui.rpBtn; if (r && px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return 'replay'; // (the replay pill, beside the card's own buttons)
   return null;
 }
 function endCardAction(key, now) {
   if (key === 'duel') return duelShare(); // Challenge a friend / Send back
+  if (key === 'replay') return rpOpen(); // the round's best moment, replayed
   if (gameMode === 'strike' && adv.on && adv.result) { // an Adventure stage's card: Next / Try again / Map (a wave: the next stage after a clear, a retry after a fail)
     if (key === 'again') key = adv.result.clear ? 'next' : 'retry';
     if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap({});
@@ -9519,7 +9561,7 @@ function endCardAction(key, now) {
   if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
-  if (!$('newCard').hidden || !$('duelName').hidden || anyMapOpen() || menu.open) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
+  if (!$('newCard').hidden || !$('duelName').hidden || anyMapOpen() || menu.open || rp.open || now - (rp.closedAt || -1e9) < 600) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
   const E = endState(), ui = E.ui, armed = now - E.overAt > 500, btn = cursor.present && armed ? endCardAt(cursor.x, cursor.y) : null;
   ui.hover = btn;
   if (btn && (gesture === 'point' || gesture === 'pinch' || gesture === 'fist')) {
@@ -9619,7 +9661,8 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     if (hot) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 14); ctx.fill(); }
     blit(textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, key === 'again' ? '#2a1a00' : on || key === 'share' || key === 'shop' || key === 'duel' ? '#ffd77a' : '#f1e9da', null, key === 'again' || on || key === 'share' || key === 'shop' || key === 'duel' ? 700 : 500), mx, my, 0, Math.min(1, (r.w - 10) / Math.max(1, textSprite(label[key], key === 'again' ? 18 : key === 'home' ? 15 : 14, '#fff', null, 700).tw)));
   }
-  if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
+  if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
   ctx.restore();
   if (DUp) drawDuelPanel(now, x0, y0 - DUp, cw, rtl); else if (E === strike) strike.ui.duelCard = null;
   if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
@@ -9628,6 +9671,336 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke();
   }
 }
+/* ---------------- Replay clip: the round's best moment as a slow-motion replay to watch, save or send ----------------
+   (parent: "an automatic ~5-second slow-mo replay of your best moment you can save or send on WhatsApp")
+   Rolling capture: while Strike / Smash / Slice is played, every ~50 ms (every 3rd frame at 60 Hz) the screen (the WebGL corridor under the 2D
+   overlay in 3D) is drawn, downscaled (<= 360 px wide, <= 72k px), into a fixed ring of small canvases covering the last 6 s (~35 MB at most). Nothing
+   is captured while the tab is hidden, a menu / sheet / map / card / the replay itself is up, or when frames are slow (a phone struggling). The ring
+   has its own clock (it only runs while capturing), so a pause leaves no gap in a clip.
+   Moments: the games call rpMoment(kind, score) (a SUPER blast, a PERFECT streak, a boss down, a wall cleared with many bricks, a stage clear / record,
+   a Frenzy speed step; Smash: the boss, a big collapse; Slice: a combo). The best of the round wins; 1.5 s after it (or when the round ends) the ring's
+   window around it (3 s before, 1.5 s after) is encoded to small JPEGs a few a frame (rp.clip, ~1-2 MB).
+   The cards: 'Replay ▶' (a pill on the card's bottom edge) opens #replay: the clip plays in a loop with a slow-motion ramp around the moment (x0.35),
+   a zoom punch, the 'Grasp' mark and the caption (what happened, the stage / score). The first loop is recorded (MediaRecorder from the canvas
+   stream: mp4 or webm, ~2 Mbit/s) so Share / Save have a short video at once: navigator.share({ files }) when canShare says yes (with the
+   Challenge-a-friend line + link on a Strike card), else a download. No MediaRecorder: a still PNG of the peak frame. Missing APIs: silently off. */
+const RP = { fps: 20, ringMs: 6000, pre: 3000, post: 1500, area: 72000, maxW: 360, maxH: 400, slow: 0.35, slowA: -200, slowB: 350, ramp: 250, minFrames: 24, encPerFrame: 6,
+  gateDt: 50, costHi: 3, jpegQ: 0.8, vbps: 2200000, hold: 500, vMax: 720, step: 5 };
+const rp = { on: true, ok: false, recOk: false, ring: [], head: 0, count: 0, seq: 0, fw: 0, fh: 0, key: '', clock: 0, lastCap: -1e9, dtEma: 16.7, costEma: 0, costMax: 0, costSum: 0, costN: 0,
+  caps: 0, skipped: 0, slowSkips: 0, paused: '', pend: null, enc: null, clip: null, gen: 0, round: 0, record: false, log: [], open: false, play: null, bmp: null, video: null, still: null, rec: null,
+  noGate: false, smLast: -1, smWin: [], slT: -1, lastShare: null, lastText: '', dwell: null, block: false, cv3: null };
+try {
+  const c = document.createElement('canvas');
+  rp.ok = !!(c.getContext && c.getContext('2d') && c.toBlob && typeof createImageBitmap === 'function' && typeof Blob === 'function');
+  rp.recOk = rp.ok && typeof MediaRecorder === 'function' && typeof c.captureStream === 'function';
+} catch { rp.ok = rp.recOk = false; }
+function rpN() { return Math.ceil(RP.ringMs * RP.fps / 1000); }
+function rpSize(w = W, h = H) { // the ring's frame size: <= 360 px wide, <= 400 tall, <= 72k px, even
+  const s = Math.min(1, RP.maxW / w, RP.maxH / h, Math.sqrt(RP.area / Math.max(1, w * h)));
+  return [Math.max(2, Math.round(w * s / 2) * 2), Math.max(2, Math.round(h * s / 2) * 2)];
+}
+function rpBytes() { let n = 0; for (const s of rp.ring) if (s) n += s.c.width * s.c.height * 4; return n; }
+function rpDropRing() { for (const s of rp.ring) if (s) { s.c.width = s.c.height = 0; s.seq = -1; } rp.ring = []; rp.head = 0; rp.count = 0; }
+function rpReset() { // a new round (roundStart): a fresh best moment; the ring's canvases are kept
+  rp.gen++; rp.round++; rp.pend = rp.enc = rp.clip = null; rp.record = false; rp.count = 0; rp.head = 0; rp.lastCap = -1e9; rp.smLast = -1; rp.smWin.length = 0; rp.slT = -1;
+  for (const s of rp.ring) if (s) s.seq = -1;
+  rpUncache();
+}
+function rpUncache() { // the decoded bitmaps, the video and the still belong to one clip
+  if (rp.bmp) { for (const b of rp.bmp.list) if (b && b.close) b.close(); rp.bmp = null; }
+  rp.video = rp.still = null;
+}
+function rpBlock() { // why capture waits ('' = capture)
+  if (!rp.ok || !rp.on) return 'off';
+  if (mode === 'none' || (gameMode !== 'strike' && gameMode !== 'smash' && gameMode !== 'slice')) return 'mode';
+  if (document.hidden) return 'hidden';
+  if (rp.open) return 'replay';
+  const E = endState(); if (E && E.over) return 'card';
+  if (menu.open) return 'menu';
+  if (pause.on || pause.resumeT) return 'pause';
+  if (anyMapOpen()) return 'map';
+  if (gameMode === 'strike' && strike.perkOffer) return 'perk';
+  if (!$('newCard').hidden || !$('duelName').hidden || !$('gifts').hidden) return 'sheet';
+  return '';
+}
+function rpTick(now, dt) { // from frame(), after the frame is drawn
+  if (!rp.ok) return;
+  if (rp.open) rpModalTick(now);
+  const why = rpBlock(); rp.paused = why;
+  if (!why) {
+    const d = Math.min(100, Math.max(0, dt)); rp.clock += d; rp.dtEma += (d - rp.dtEma) * 0.1;
+    rpWatch();
+    if (rp.clock - rp.lastCap >= 1000 / RP.fps - 4) {
+      if (!rp.noGate && rp.dtEma > RP.gateDt) { rp.skipped++; rp.lastCap = rp.clock; } // slow frames: no capture at all (the game comes first)
+      else if (!rp.noGate && rp.costEma > RP.costHi && rp.clock - rp.lastCap < 2000 / RP.fps - 4) rp.slowSkips++; // capture itself costly: half the rate
+      else if (gameMode === 'strike' && gfx3dActive()) rpCapture(); // (WebGL: read in this task, before the buffer is presented and cleared)
+      else rp.capNext = true; // (2D: at the start of the next frame, once this frame is rasterized anyway: no forced flush now)
+    }
+  }
+  rpFinalizeTick(why);
+  rpEncodeTick();
+}
+function rpCapture() {
+  const t0 = performance.now(), [fw, fh] = rpSize(), key = fw + 'x' + fh, N = rpN();
+  if (key !== rp.key) { rpDropRing(); rp.key = key; rp.fw = fw; rp.fh = fh; } // a resize: the ring starts afresh
+  let s = rp.ring[rp.head];
+  if (!s) { const c = document.createElement('canvas'); c.width = fw; c.height = fh; s = rp.ring[rp.head] = { c, g: c.getContext('2d', { alpha: false }), t: 0, seq: -1 }; }
+  const g = s.g;
+  if (gameMode === 'strike' && gfx3dActive()) { if (!rp.cv3) rp.cv3 = $('stage3d'); g.drawImage(rp.cv3, 0, 0, fw, fh); } // (Strike in 3D: the WebGL corridor first, still valid in this task)
+  else { g.fillStyle = '#0c1026'; g.fillRect(0, 0, fw, fh); }
+  g.drawImage(canvas, 0, 0, fw, fh);
+  s.t = rp.clock; s.seq = ++rp.seq; rp.head = (rp.head + 1) % N; rp.count = Math.min(N, rp.count + 1); rp.caps++; rp.lastCap = rp.clock;
+  const c = performance.now() - t0; rp.costEma += (c - rp.costEma) * 0.1; rp.costMax = Math.max(rp.costMax, c); rp.costSum += c; rp.costN++;
+}
+function rpFrames(a, b) { // the ring's frames with a <= t <= b, oldest first
+  const N = rpN(), out = [];
+  for (let i = 0; i < rp.count; i++) { const s = rp.ring[(rp.head - rp.count + i + N * 2) % N]; if (s && s.seq >= 0 && s.t >= a && s.t <= b) out.push(s); }
+  return out;
+}
+function rpMoment(kind, score, o = {}) { // a candidate for the round's best moment (the best one wins)
+  if (!rp.ok || !rp.on || mode === 'none') return null;
+  const m = { kind, score: Math.round(score), n: o.n || 0, t: rp.clock, mode: gameMode, round: rp.round };
+  rp.log.push(m); if (rp.log.length > 60) rp.log.shift();
+  const best = Math.max(rp.pend ? rp.pend.score : -1, rp.enc ? rp.enc.m.score : -1, rp.clip ? rp.clip.score : -1);
+  if (m.score <= best) return null;
+  rp.pend = m; return m;
+}
+function rpRecord() { rp.record = true; if (!rp.pend && !rp.enc && !rp.clip) rpMoment('record', 30); } // a new record: the caption says so (and the round's end is the clip if nothing better)
+function rpStrikeHit(tier, fire, n, wallGone) { // a ball met a wall: n bricks broke
+  const big = tier === 'super' || fire; let sc = big ? 40 + 3 * n : n >= 5 ? 15 + 3 * n : 0;
+  if (wallGone && n >= 4) sc += 15;
+  if (sc > 0) rpMoment(big ? 'super' : wallGone ? 'wall' : 'blast', sc, { n });
+}
+function rpWatch() { // polled moments: a big Smash collapse (things broken within 0.9 s), a Slice combo
+  if (gameMode === 'smash') {
+    const n = smash.things | 0; if (rp.smLast < 0 || n < rp.smLast) rp.smLast = n;
+    const d = n - rp.smLast; rp.smLast = n; if (d > 0) rp.smWin.push([rp.clock, d]);
+    while (rp.smWin.length && rp.clock - rp.smWin[0][0] > 900) rp.smWin.shift();
+    if (d > 0) { const tot = rp.smWin.reduce((a, q) => a + q[1], 0); if (tot >= 6) rpMoment('collapse', Math.min(100, 20 + 3 * tot), { n: tot }); }
+  } else if (gameMode === 'slice') { const c = slice.combo; if (c.n >= 3 && c.t !== rp.slT) { rp.slT = c.t; rpMoment('combo', 15 + 8 * c.n, { n: c.n }); } }
+}
+function rpFinalizeTick(why) { // 1.5 s after the moment (or the round's end): the window is cut from the ring and queued for encoding
+  const m = rp.pend; if (!m) return;
+  if (rp.clock < m.t + RP.post && why !== 'card' && why !== 'mode') return;
+  rp.pend = null;
+  const fr = rpFrames(m.t - RP.pre, m.t + RP.post);
+  if (fr.length < RP.minFrames) { rp.log.push({ kind: 'short', n: fr.length, of: m.kind }); return; }
+  rp.enc = { gen: ++rp.gen, m, fw: rp.fw, fh: rp.fh, todo: fr.map((s) => ({ s, seq: s.seq, t: s.t - m.t })), out: [], pending: 0, lost: 0 };
+}
+function rpEncodeTick() { // a few frames a frame: toBlob takes its copy at once and encodes off the main thread
+  const e = rp.enc; if (!e) return;
+  let k = 0;
+  while (e.todo.length && k < RP.encPerFrame) {
+    const q = e.todo.shift(); if (q.s.seq !== q.seq) { e.lost++; continue; } // (overwritten meanwhile: skipped)
+    k++; e.pending++; const slot = { t: q.t, blob: null }; e.out.push(slot);
+    try { q.s.c.toBlob((b) => { slot.blob = b; e.pending--; rpEncDone(e); }, 'image/jpeg', RP.jpegQ); } catch { e.pending--; }
+  }
+  rpEncDone(e);
+}
+function rpEncDone(e) {
+  if (e.todo.length || e.pending > 0 || rp.enc !== e || rp.gen !== e.gen) return;
+  rp.enc = null; const frames = e.out.filter((f) => f.blob && f.blob.size > 0);
+  if (frames.length < RP.minFrames) { rp.log.push({ kind: 'short', n: frames.length, of: e.m.kind }); return; }
+  let peak = 0; frames.forEach((f, i) => { if (Math.abs(f.t) < Math.abs(frames[peak].t)) peak = i; });
+  rpUncache();
+  const C = rp.clip = { kind: e.m.kind, score: e.m.score, n: e.m.n, m: e.m, frames, peak, fw: e.fw, fh: e.fh, t0: frames[0].t, t1: frames[frames.length - 1].t, lost: e.lost,
+    bytes: frames.reduce((a, f) => a + f.blob.size, 0), round: rp.round, thumb: null };
+  createImageBitmap(frames[peak].blob).then((b) => { if (rp.clip === C) C.thumb = b; else if (b.close) b.close(); }).catch(() => {});
+}
+function rpReady() { return !!(rp.ok && rp.clip && rp.clip.round === rp.round); }
+
+/* the card button: a pill on the card's bottom edge (no room there: the screen's top start corner); returns how far the 'wave' line moves down */
+function rpCardBtn(now, E) {
+  const ui = E.ui, c = ui.card; ui.rpBtn = null;
+  if (!c || !ui.buttons || !rpReady()) return 0;
+  const rtl = lang === 'he', C = rp.clip, sp = textSprite(t('rpBtn'), 15, '#ffd77a', null, 800), h = 38, w = Math.min(c.w - 40, Math.max(140, sp.tw + 74));
+  let bb = 0; for (const k in ui.buttons) bb = Math.max(bb, ui.buttons[k].y + ui.buttons[k].h); // (clear of the card's lowest button)
+  let x = c.x + c.w / 2 - w / 2, y = Math.max(c.y + c.h - 12, bb + 5), gap = Math.round(y + h - (c.y + c.h)) + 2, corner = false;
+  if (y + h > H - 4) { corner = true; x = 12; y = 12; gap = 0; }
+  const hot = ui.hover === 'replay', ph = 0.5 + 0.5 * Math.sin(now / 420);
+  resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.25 + 0.3 * ph).toFixed(3) + ')'; ctx.shadowBlur = 8 + 8 * ph;
+  ctx.fillStyle = '#1b2348'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.restore();
+  resetView(); ctx.lineWidth = 2; ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.stroke();
+  if (hot) { ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); }
+  const tx = rtl ? x + w - 21 : x + 21, ty = y + h / 2, tr = 14; // the peak frame in a little circle at the start side
+  ctx.save(); ctx.beginPath(); ctx.arc(tx, ty, tr, 0, TAU); ctx.clip();
+  if (C.thumb) { const s = Math.max(2 * tr / C.fw, 2 * tr / C.fh); ctx.drawImage(C.thumb, tx - C.fw * s / 2, ty - C.fh * s / 2, C.fw * s, C.fh * s); } else { ctx.fillStyle = '#2a3366'; ctx.fill(); }
+  ctx.restore(); resetView(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,215,122,0.9)'; ctx.beginPath(); ctx.arc(tx, ty, tr, 0, TAU); ctx.stroke();
+  const px = rtl ? x + 18 : x + w - 18; ctx.fillStyle = '#ffc24b'; ctx.beginPath(); ctx.moveTo(px - 5, ty - 7); ctx.lineTo(px + 7, ty); ctx.lineTo(px - 5, ty + 7); ctx.closePath(); ctx.fill(); // ▶
+  const mid = x + w / 2 + (rtl ? 4 : -4); blit(sp, mid, ty, 0, Math.min(1, (w - 74) / sp.tw));
+  ui.rpBtn = { x, y, w, h, corner, label: t('rpBtn') };
+  return gap;
+}
+
+/* the replay sheet: playback with a slow-motion ramp, the mark and the caption; the first loop recorded for Share / Save */
+function rpSpeed(tc) { // playback speed at clip time tc (ms from the moment): 1, ramping down to 0.35 around the moment, back up after
+  const a = RP.slowA, b = RP.slowB, r = RP.ramp, s = RP.slow;
+  if (tc <= a - r || tc >= b + r) return 1; if (tc >= a && tc <= b) return s;
+  const q = tc < a ? (a - tc) / r : (tc - b) / r; return s + (1 - s) * q;
+}
+function rpTimeline(t0, t1) { // [out ms, clip ms] pairs: the slow part takes longer to play
+  const pts = [[0, t0]]; let out = 0;
+  for (let tc = t0; tc < t1; tc += RP.step) { const d = Math.min(RP.step, t1 - tc); out += d / rpSpeed(tc + d / 2); pts.push([out, tc + d]); }
+  return { pts, dur: out };
+}
+function rpClipAt(TL, e) { // clip time at play time e
+  const p = TL.pts; if (e <= 0) return p[0][1]; if (e >= TL.dur) return p[p.length - 1][1];
+  let lo = 0, hi = p.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (p[m][0] <= e) lo = m; else hi = m; }
+  const a = p[lo], b = p[hi]; return a[1] + (b[1] - a[1]) * ((e - a[0]) / Math.max(1e-6, b[0] - a[0]));
+}
+function rpCaption() { // what the clip shows (its kind) and the round (stage / score) under it
+  const C = rp.clip; if (!C) return null; let line = '';
+  const num = (v) => LRM + Math.round(v).toLocaleString('en-US');
+  if (C.round !== rp.round) return null;
+  if (gameMode === 'strike') {
+    if (adv.on && adv.result) line = t('stageN', { n: adv.result.n }) + ' · ' + num(adv.result.score !== undefined ? adv.result.score : strike.score);
+    else if (frenzy.on && frenzy.result) line = t('frenzy') + ' · ' + t('rpInRow', { n: frenzy.result.hits });
+    else line = (daily.on ? t('dailyTitle') : t('endless')) + ' · ' + num(strike.score);
+  } else if (gameMode === 'smash') line = t('modeSmash') + (smash.run === 'stage' && smash.n ? ' · ' + t('stageN', { n: smash.n }) : '');
+  else if (gameMode === 'slice') line = t('modeSlice') + ' · ' + num(slice.score);
+  return { kind: t('rpk_' + C.kind, { n: C.n }), line, record: rp.record ? t('newRecord') : '' };
+}
+function rpMime() {
+  const L = ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  try { for (const m of L) if (MediaRecorder.isTypeSupported(m)) return m; } catch {}
+  return '';
+}
+async function rpOpen() { // the card's Replay: the sheet, the clip decoded, playing
+  if (!rpReady() || rp.open) return null;
+  const C = rp.clip, E = endState(); if (E) { E.ui.dwell = E.ui.hover = null; }
+  rp.open = true; rp.block = true; rp.dwell = null; rp.lastShare = null;
+  if (!rp.pend && !rp.enc) rpDropRing(); // (the ring's frames are of no more use this round: their memory goes while the clip plays)
+  const ov = $('replay'); ov.hidden = false; rpButtons();
+  if (!rp.bmp || rp.bmp.clip !== C) {
+    const list = await Promise.all(C.frames.map((f) => createImageBitmap(f.blob).catch(() => null)));
+    if (!rp.open || rp.clip !== C) { for (const b of list) if (b && b.close) b.close(); return null; }
+    rp.bmp = { clip: C, list };
+  }
+  const k = Math.min(2, RP.vMax / Math.max(C.fw, C.fh)), vw = Math.max(2, Math.round(C.fw * k / 2) * 2), vh = Math.max(2, Math.round(C.fh * k / 2) * 2), cv = $('rpCanvas');
+  cv.width = vw; cv.height = vh; const g = cv.getContext('2d');
+  const TL = rpTimeline(C.t0, C.t1);
+  rp.play = { start: performance.now(), TL, vw, vh, g, cv, cap: rpCaption(), loops: 0, loop: 0, drawn: 0, idx: [], minSpeed: 1, slowFrames: 0, last: -1, tc: 0 };
+  rpDraw(performance.now());
+  if (!rp.video && !rp.still) { if (rp.recOk && rpMime()) rpRecStart(); else rpStill(); }
+  rpButtons(); return 'open';
+}
+function rpClose() {
+  if (!rp.open) return false;
+  rp.open = false; $('replay').hidden = true; $('rpDwell').hidden = true; rp.dwell = null;
+  if (rp.rec) { const r = rp.rec; rp.rec = null; try { r.r.stop(); } catch {} } // (an unfinished video is dropped; the next open records again)
+  rp.play = null; if (rp.bmp) { for (const b of rp.bmp.list) if (b && b.close) b.close(); rp.bmp = null; }
+  const E = endState(); if (E && E.over) { E.ui.dwell = E.ui.hover = null; } rp.closedAt = performance.now();
+  return true;
+}
+function rpDraw(now, at) { // one frame of the replay (at: a fixed play time, for the still)
+  const P = rp.play, B = rp.bmp, C = rp.clip; if (!P || !B || !C) return;
+  const L = P.TL.dur + RP.hold, e = Math.max(0, at !== undefined ? at : now - P.start), lp = Math.floor(e / L), ee = e - lp * L; // (a frame's time can be a hair before the start)
+  if (at === undefined && lp > P.loop) { P.loop = lp; P.loops++; }
+  const tc = rpClipAt(P.TL, Math.min(ee, P.TL.dur)), sp = rpSpeed(tc), F = C.frames; P.tc = tc;
+  let lo = 0, hi = F.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (F[m].t <= tc) lo = m; else hi = m - 1; }
+  const i = lo, A = B.list[i], Bn = B.list[i + 1], f = Bn ? Math.max(0, Math.min(1, (tc - F[i].t) / Math.max(1, F[i + 1].t - F[i].t))) : 0;
+  const g = P.g, vw = P.vw, vh = P.vh, rtl = lang === 'he', u = Math.min(vw, vh) / 100;
+  const z = 1 + 0.07 * Math.max(0, 1 - Math.abs(tc) / 450), dw = vw * z, dh = vh * z, dx = (vw - dw) / 2, dy = (vh - dh) / 2; // a zoom punch on the moment
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.fillStyle = '#05070f'; g.fillRect(0, 0, vw, vh);
+  if (A) g.drawImage(A, dx, dy, dw, dh);
+  if (Bn && sp < 0.999 && f > 0.02) { g.globalAlpha = f; g.drawImage(Bn, dx, dy, dw, dh); g.globalAlpha = 1; } // slow motion: the next frame fades in (smoother than holding)
+  if (sp < 0.9) { // slow-mo: a cool vignette and the badge
+    const vg = g.createRadialGradient(vw / 2, vh / 2, Math.min(vw, vh) * 0.35, vw / 2, vh / 2, Math.hypot(vw, vh) * 0.6); vg.addColorStop(0, 'rgba(10,20,60,0)'); vg.addColorStop(1, 'rgba(10,20,60,' + (0.45 * (1 - sp) / (1 - RP.slow)).toFixed(3) + ')');
+    g.fillStyle = vg; g.fillRect(0, 0, vw, vh);
+    const fs = Math.round(Math.max(11, 4.2 * u)), txt = t('rpSlow') + ' ' + LRM + '×' + RP.slow; g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = rtl ? 'rtl' : 'ltr';
+    const tw = g.measureText(txt).width, bw = tw + fs * 1.4, bh = fs * 1.8, bx = rtl ? vw - 3 * u - bw : 3 * u, by = 3 * u;
+    g.fillStyle = 'rgba(8,11,28,0.72)'; g.beginPath(); g.roundRect(bx, by, bw, bh, bh / 2); g.fill(); g.fillStyle = '#9fdcff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, bx + bw / 2, by + bh / 2);
+    P.slowFrames++;
+  }
+  { // the mark: 'Grasp' in the top end corner
+    const fs = Math.round(Math.max(12, 4.6 * u)); g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = 'ltr'; g.textBaseline = 'middle';
+    const tw = g.measureText('Grasp').width, bw = tw + fs * 1.6, bh = fs * 1.7, bx = rtl ? 3 * u : vw - 3 * u - bw, by = 3 * u;
+    g.globalAlpha = 0.82; g.fillStyle = 'rgba(8,11,28,0.6)'; g.beginPath(); g.roundRect(bx, by, bw, bh, bh / 2); g.fill();
+    g.fillStyle = '#ffc24b'; g.beginPath(); g.arc(bx + fs * 0.62, by + bh / 2, fs * 0.22, 0, TAU); g.fill();
+    g.fillStyle = '#f1e9da'; g.textAlign = 'left'; g.fillText('Grasp', bx + fs * 1.0, by + bh / 2); g.globalAlpha = 1;
+  }
+  const cap = P.cap; if (cap) { // the caption band at the bottom
+    const k1 = Math.round(Math.max(16, 8 * u)), k2 = Math.round(Math.max(11, 4.4 * u)), bandH = k1 * 1.3 + k2 * 1.6 + (cap.record ? k2 * 1.6 : 0) + 4 * u;
+    const gr = g.createLinearGradient(0, vh - bandH * 1.4, 0, vh); gr.addColorStop(0, 'rgba(5,7,15,0)'); gr.addColorStop(1, 'rgba(5,7,15,0.82)'); g.fillStyle = gr; g.fillRect(0, vh - bandH * 1.4, vw, bandH * 1.4);
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = rtl ? 'rtl' : 'ltr';
+    let y = vh - bandH + 2 * u + k1 * 0.6; const pop = 1 + 0.12 * Math.max(0, 1 - Math.abs(tc) / 300);
+    g.save(); g.translate(vw / 2, y); g.scale(pop, pop); g.font = '900 ' + k1 + 'px Rubik, system-ui, sans-serif'; g.lineWidth = Math.max(3, k1 * 0.16); g.strokeStyle = 'rgba(42,26,0,0.95)'; g.lineJoin = 'round';
+    const mw = vw * 0.92 / pop, kw = g.measureText(cap.kind).width, ks = Math.min(1, mw / Math.max(1, kw)); g.scale(ks, ks); g.strokeText(cap.kind, 0, 0); g.fillStyle = '#ffd36b'; g.fillText(cap.kind, 0, 0); g.restore();
+    y += k1 * 0.7 + k2 * 0.9;
+    if (cap.record) { g.font = '800 ' + k2 + 'px Rubik, system-ui, sans-serif'; g.fillStyle = '#ffc24b'; g.fillText(cap.record, vw / 2, y); y += k2 * 1.6; }
+    g.font = '700 ' + k2 + 'px Rubik, system-ui, sans-serif'; g.fillStyle = '#f1e9da'; g.fillText(cap.line, vw / 2, y, vw * 0.92);
+  }
+  P.drawn++; if (i !== P.last) { P.idx.push(i); if (P.idx.length > 400) P.idx.shift(); P.last = i; } P.minSpeed = Math.min(P.minSpeed, sp);
+  const bar = $('rpBar'); if (bar) bar.style.width = (100 * Math.min(1, ee / P.TL.dur)).toFixed(1) + '%';
+  if (rp.rec && rp.rec.r.state === 'recording' && P.loops >= 1) { try { rp.rec.r.stop(); } catch {} } // the first loop is the video
+}
+function rpRecStart() { // record the first loop from the canvas (the sheet shows 'Making the video…' meanwhile)
+  const P = rp.play, mt = rpMime(); if (!P || !mt) return rpStill();
+  try {
+    const st = P.cv.captureStream(30), r = new MediaRecorder(st, { mimeType: mt, videoBitsPerSecond: RP.vbps }), parts = [], R = { r, mt, st, at: performance.now(), clip: rp.clip };
+    r.ondataavailable = (e) => { if (e.data && e.data.size) parts.push(e.data); };
+    r.onstop = () => { try { st.getTracks().forEach((q) => q.stop()); } catch {}
+      if (rp.rec !== R) return; rp.rec = null;
+      const type = mt.split(';')[0], blob = new Blob(parts, { type });
+      if (blob.size > 0 && rp.clip === R.clip) rp.video = { blob, type, ext: type === 'video/mp4' ? 'mp4' : 'webm', ms: Math.round(performance.now() - R.at), size: blob.size };
+      else { rp.recErr = rp.recErr || 'empty ' + blob.size + ' ' + parts.length; rpStill(); }
+      rpButtons(); };
+    r.onerror = (e) => { rp.recErr = String(e && e.error && e.error.message || 'error'); if (rp.rec === R) { rp.rec = null; rpStill(); rpButtons(); } };
+    rp.rec = R; P.start = performance.now(); P.loops = 0; P.loop = 0; r.start(500); // (from the top of the clip)
+  } catch (e) { rp.rec = null; rp.recErr = String(e && e.message || e); rpStill(); }
+}
+function rpStill() { // no video here: the peak frame (with the mark and caption) as a PNG
+  const P = rp.play, C = rp.clip; if (!P || !C) return;
+  rpDraw(performance.now(), rpTimeOf(0));
+  const R = { clip: C };
+  try { P.cv.toBlob((b) => { if (b && b.size && rp.clip === R.clip) { rp.still = { blob: b, type: 'image/png', ext: 'png', size: b.size }; rpButtons(); } }, 'image/png'); } catch {}
+}
+function rpTimeOf(tc) { const P = rp.play, p = P.TL.pts; for (const q of p) if (q[1] >= tc) return q[0]; return P.TL.dur; } // play time of clip time tc
+function rpFile() { // what Share / Save hand over: the video, else the still
+  const v = rp.video || rp.still; if (!v) return null;
+  try { return new File([v.blob], 'grasp-replay.' + v.ext, { type: v.type }); } catch { const b = new Blob([v.blob], { type: v.type }); b.name = 'grasp-replay.' + v.ext; return b; }
+}
+function rpShareText() { // a Strike card with a challenge: its line + link; else a short line
+  if (gameMode === 'strike' && !daily.on) { const c = duelCtx(); if (c) return duelText(c) + ' ' + duelLink({ ...c, by: profile.duelName || '' }); }
+  return t('rpShareText');
+}
+async function rpShare(save) { // Share: the share sheet with the file (canShare), else a download; Save: always the download
+  const f = rpFile(); if (!f) return 'wait';
+  const text = rpShareText(); rp.lastText = text;
+  if (!save && navigator.share && navigator.canShare) {
+    let can = false; try { can = navigator.canShare({ files: [f] }); } catch {}
+    if (can) { try { await navigator.share({ files: [f], title: 'Grasp', text }); rp.lastShare = 'shared'; return 'shared'; } catch (e) { if (e && e.name === 'AbortError') { rp.lastShare = 'aborted'; return 'aborted'; } } }
+  }
+  try {
+    const url = URL.createObjectURL(f), a = document.createElement('a'); a.href = url; a.download = f.name || 'grasp-replay'; a.rel = 'noopener'; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch {} }, 60000);
+  } catch { toast('shareFail', null, 'star'); rp.lastShare = 'failed'; return 'failed'; }
+  if (!save && text) { try { await navigator.clipboard.writeText(text); } catch {} } // (the challenge line goes to the clipboard to paste beside the file)
+  toast('rpSaved', null, 'check'); rp.lastShare = 'downloaded'; return 'downloaded';
+}
+function rpButtons() { // the sheet's buttons: waiting for the video, or ready
+  const ready = !!(rp.video || rp.still), sh = $('rpShare'), sv = $('rpSave'), note = $('rpNote'); if (!sh) return;
+  sh.disabled = sv.disabled = !ready;
+  note.textContent = ready ? (rp.still && !rp.video ? t('rpStillNote') : '') : t('rpPrep');
+}
+function rpModalTick(now) { // the replay plays; camera: a point / pinch / fist held 600 ms on a button presses it
+  rpDraw(now);
+  const ring = $('rpDwell'), g = gesture === 'point' || gesture === 'pinch' || gesture === 'fist';
+  if (mode !== 'camera') { ring.hidden = true; return; }
+  const el = cursor.present ? document.elementFromPoint(cursor.x, cursor.y) : null, btn = el && el.closest ? el.closest('#replay button:not(:disabled)') : null, on = !!btn && g;
+  if (rp.block) { if (!on) rp.block = false; }
+  ring.hidden = !cursor.present; if (!ring.hidden) ring.style.transform = 'translate(' + Math.round(cursor.x) + 'px,' + Math.round(cursor.y) + 'px)';
+  if (!on || rp.block) { rp.dwell = null; ring.style.setProperty('--q', '0'); return; }
+  if (!rp.dwell || rp.dwell.el !== btn) rp.dwell = { el: btn, t: now };
+  const q = Math.min(1, (now - rp.dwell.t) / 600); ring.style.setProperty('--q', q.toFixed(3));
+  if (q >= 1) { rp.dwell = null; rp.block = true; ring.style.setProperty('--q', '0'); btn.click(); }
+}
+$('rpClose').addEventListener('click', () => rpClose());
+$('rpShare').addEventListener('click', () => rpShare(false));
+$('rpSave').addEventListener('click', () => rpShare(true));
+$('replay').addEventListener('pointerdown', (e) => { if (e.target === $('replay')) rpClose(); }); // a tap beside the sheet closes it
+window.addEventListener('keydown', (e) => { if (rp.open && e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); rpClose(); } }, true);
+document.addEventListener('visibilitychange', () => { if (document.hidden) rp.dtEma = 16.7; }); // (back from a hidden tab: no stale slow-frame gate)
 function renderStrike(now) {
   beginFrame('strike', now); strike.ui.blocks.length = 0; // (v5: this frame's text boxes on the overlay, for the floaters to keep clear of)
   const { L, R, T, B } = corridor(), Z = CONFIG.STRIKE_Z_FAR, balls = strike.balls, sup = balls.some((b) => b.super || b.fire);
@@ -11003,7 +11376,7 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
   for (const it of ITEMS) if (it.level && it.level <= n && !profile.unlocked.includes(it.id)) profile.unlocked.push(it.id);
   saveProfile(); syncMeta(); return n;
 }
-function roundStart() { meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
+function roundStart() { rpReset(); meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score, xp) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission
   meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1);
 }
@@ -12815,6 +13188,13 @@ ensureMatter().then(initPhysics).catch((e) => {
 
 // Test hook: lets automated tests drive the same input pipeline without a camera.
 window.__grasp = {
+  replay: { rp, cfg: RP, size: rpSize, n: rpN, bytes: rpBytes, block: rpBlock, frames: (a, b) => rpFrames(a, b).map((s) => ({ t: s.t, seq: s.seq })), moment: rpMoment, record: rpRecord, strikeHit: rpStrikeHit,
+    reset: rpReset, ready: rpReady, open: rpOpen, close: rpClose, share: rpShare, file: rpFile, text: rpShareText, speed: rpSpeed, timeline: rpTimeline, clipAt: rpClipAt, caption: rpCaption, mime: rpMime, still: rpStill,
+    get state() { const C = rp.clip, P = rp.play; return { ok: rp.ok, recOk: rp.recOk, count: rp.count, ring: rp.ring.length, fw: rp.fw, fh: rp.fh, clock: rp.clock, caps: rp.caps, skipped: rp.skipped, slowSkips: rp.slowSkips, paused: rp.paused,
+      cost: { ema: rp.costEma, max: rp.costMax, avg: rp.costN ? rp.costSum / rp.costN : 0, n: rp.costN }, dtEma: rp.dtEma, pend: rp.pend, enc: rp.enc ? { m: rp.enc.m, todo: rp.enc.todo.length, pending: rp.enc.pending } : null, record: rp.record, round: rp.round,
+      clip: C ? { kind: C.kind, score: C.score, n: C.n, frames: C.frames.length, ts: C.frames.map((f) => Math.round(f.t)), peak: C.peak, fw: C.fw, fh: C.fh, t0: C.t0, t1: C.t1, bytes: C.bytes, lost: C.lost, thumb: !!C.thumb } : null,
+      open: rp.open, play: P ? { loops: P.loops, drawn: P.drawn, idx: P.idx.slice(), minSpeed: P.minSpeed, slowFrames: P.slowFrames, tc: P.tc, dur: P.TL.dur, vw: P.vw, vh: P.vh, cap: P.cap } : null,
+      video: rp.video ? { type: rp.video.type, size: rp.video.size, ext: rp.video.ext, ms: rp.video.ms } : null, still: rp.still ? { type: rp.still.type, size: rp.still.size } : null, recording: !!rp.rec, recErr: rp.recErr || null, lastShare: rp.lastShare, lastText: rp.lastText, log: rp.log.slice() }; } },
   processHand, CONFIG,
   simulateCamera() { mode = 'camera'; startGame('camera'); preview.hidden = true; syncLiveDot(); },
   get muted() { return muted; }, set muted(v) { setMuted(v); }, chromeRow, chromeRowBottom, scoreY, hintBottom,
