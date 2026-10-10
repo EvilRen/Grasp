@@ -6,7 +6,7 @@
 <title>Grasp: hand physics sandbox</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
 <style>
 :root{
@@ -846,6 +846,76 @@ html[dir="rtl"] .petScene .petBub{ transform:translate(50%,0); }
 .achest.shake{ animation:shake .4s; }
 @media (prefers-reduced-motion: reduce){ .hbGift.ready, .gbox.today .art, .gbox.today::after, .amDay.ready, .achest.reached .cbox, .giftSheet{ animation:none !important; } }
 video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; pointer-events:none; z-index:-1; }
+/* graphics pass: the start screen's living background, tile spring + shine, spring sheets, button press states, the screen transition (iris), the loading card */
+#startFx{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:-1; contain:strict; }
+#startFx .lay{ position:absolute; inset:-6%; transition:transform .6s cubic-bezier(.2,.8,.2,1); will-change:transform; }
+#startFx .l1{ transform:translate3d(calc(var(--px,0) * -10px), calc(var(--py,0) * -10px), 0); }
+#startFx .l2{ transform:translate3d(calc(var(--px,0) * -22px), calc(var(--py,0) * -18px), 0); }
+#startFx .l3{ transform:translate3d(calc(var(--px,0) * -36px), calc(var(--py,0) * -30px), 0); }
+#startFx .blob{ position:absolute; width:62vmax; height:62vmax; margin:-31vmax 0 0 -31vmax; border-radius:50%; animation:sfDrift 26s ease-in-out infinite alternate; will-change:transform; }
+#startFx .b1{ left:14%; top:12%; background:radial-gradient(circle, rgba(255,194,75,.13), rgba(255,194,75,0) 62%); }
+#startFx .b2{ left:88%; top:30%; background:radial-gradient(circle, rgba(169,139,255,.15), rgba(169,139,255,0) 62%); animation-duration:31s; animation-delay:-9s; }
+#startFx .b3{ left:30%; top:92%; background:radial-gradient(circle, rgba(84,198,235,.11), rgba(84,198,235,0) 62%); animation-duration:23s; animation-delay:-14s; }
+#startFx .b4{ left:80%; top:85%; background:radial-gradient(circle, rgba(255,111,89,.10), rgba(255,111,89,0) 62%); animation-duration:35s; animation-delay:-4s; }
+@keyframes sfDrift{ 0%{ transform:translate3d(-4vmax,-3vmax,0) scale(1); } 50%{ transform:translate3d(3vmax,2vmax,0) scale(1.08); } 100%{ transform:translate3d(5vmax,-2vmax,0) scale(.96); } }
+#startFx .sh{ position:absolute; left:var(--x); top:110%; width:var(--s); height:var(--s); opacity:0; animation:sfRise var(--d,24s) linear infinite; animation-delay:var(--dl,0s); will-change:transform,opacity; }
+#startFx .sh svg{ display:block; width:100%; height:100%; fill:none; stroke:var(--c); stroke-width:2.2; stroke-linejoin:round; }
+@keyframes sfRise{ 0%{ transform:translate3d(0,0,0) rotate(0deg); opacity:0; } 8%{ opacity:var(--o,.22); } 85%{ opacity:var(--o,.22); } 100%{ transform:translate3d(var(--dx,20px),-125vh,0) rotate(var(--r,200deg)); opacity:0; } }
+#startFx .m{ position:absolute; left:var(--x); top:var(--y); width:3px; height:3px; border-radius:50%; background:#fff3d6; box-shadow:0 0 6px 1px rgba(255,214,140,.55); animation:sfTw var(--d,3.6s) ease-in-out infinite; animation-delay:var(--dl,0s); }
+@keyframes sfTw{ 0%,100%{ opacity:.08; transform:scale(.6); } 50%{ opacity:.75; transform:scale(1.15); } }
+body.gfx0 #startFx .sh, body.gfx0 #startFx .m{ display:none; }
+body:has(#advMap:not([hidden])) #startFx, body:has(#smashMap:not([hidden])) #startFx{ display:none; } /* (a map covers the start screen: no animating layers under it) */
+body.gfx0 #startFx .blob{ animation:none; }
+@media (prefers-reduced-motion: reduce){ #startFx .blob, #startFx .m{ animation:none; } #startFx .sh{ display:none; } #startFx .lay{ transition:none; transform:none; } }
+body.gfxCalm #startFx .blob, body.gfxCalm #startFx .m{ animation:none; } body.gfxCalm #startFx .sh{ display:none; } body.gfxCalm #startFx .lay{ transition:none; transform:none; }
+
+/* the tiles: a springy lift on hover, a quick press, a shine sweeping across the preview; the selected tile breathes a soft glow */
+#start .modes > button{ transition:transform .42s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, background .2s, color .2s; -webkit-tap-highlight-color:transparent; }
+#start .modes > button .pv{ box-shadow:inset 0 0 0 1px rgba(241,233,218,.08), 0 6px 14px rgba(0,0,0,.28); }
+#start .modes > button .pv::after{ content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(105deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.26) 48%, rgba(255,255,255,.06) 54%, rgba(255,255,255,0) 66%); transform:translateX(-130%); }
+#start .modes > button .pv::before{ content:''; position:absolute; inset:0; pointer-events:none; z-index:1; border-radius:inherit; background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 38%, rgba(0,0,0,0) 70%, rgba(0,0,0,.16)); }
+@media (hover:hover){
+  #start .modes > button:hover{ transform:translateY(-3px) scale(1.025); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.5), 0 12px 26px rgba(0,0,0,.36); color:var(--bone); }
+  #start .modes > button:hover .pv::after{ transform:translateX(130%); transition:transform .75s cubic-bezier(.3,.7,.3,1); }
+}
+#start .modes > button:active{ transform:scale(.95); transition-duration:.09s; }
+#start .modes > button:active .pv::after{ transform:translateX(130%); transition:transform .45s ease-out; }
+#start .modes > button[aria-pressed="true"]::after{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 0 24px rgba(255,194,75,.38); opacity:0; animation:tileGlow 3.2s ease-in-out infinite; } /* (opacity only: the compositor animates it, no repaint a frame) */
+#start .modes > button[aria-pressed="true"] .pv::after{ animation:tileShine 5.5s ease-in-out 1.4s infinite; }
+@keyframes tileGlow{ 0%,100%{ opacity:0; } 50%{ opacity:1; } }
+@keyframes tileShine{ 0%,70%{ transform:translateX(-130%); } 88%,100%{ transform:translateX(130%); } }
+#start .modes > button.camTile{ transition:transform .42s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .2s; }
+@media (hover:hover){ #start .modes > button.camTile:hover{ transform:translateY(-2px) scale(1.01); filter:brightness(1.08); } }
+#start .modes > button.camTile:active{ transform:scale(.97); transition-duration:.09s; }
+body.gfx0 #start .modes > button[aria-pressed="true"]::after, body.gfx0 #start .modes > button[aria-pressed="true"] .pv::after{ animation:none; }
+@media (prefers-reduced-motion: reduce){ #start .modes > button, #start .modes > button .pv::after{ transition:none; } #start .modes > button[aria-pressed="true"]::after, #start .modes > button[aria-pressed="true"] .pv::after{ animation:none; } }
+
+/* buttons: one press state everywhere (a quick dip, a springy release) */
+.primary, .secondary, .segBtn, #start .metaRow > button, .sheet .xBtn, .metaPill, .cgCard{ transition:transform .32s cubic-bezier(.34,1.56,.64,1), filter .15s, background .15s, color .15s, box-shadow .2s; }
+.primary:active, .secondary:active, .segBtn:active, #start .metaRow > button:active, .sheet .xBtn:active, .metaPill:active, .cgCard:active{ transform:scale(.95); filter:brightness(.94); transition-duration:.08s; }
+@media (hover:hover){ .primary:hover{ filter:brightness(1.07); } #start .metaRow > button:hover, .sheet .xBtn:hover{ filter:brightness(1.15); } }
+.primary{ box-shadow:0 3px 0 rgba(120,70,0,.35), 0 8px 18px rgba(255,170,40,.18); }
+
+/* sheets: a spring in (a little overshoot), the veil fades */
+.ov{ animation:veilIn .22s ease-out both; }
+@keyframes veilIn{ from{ background-color:rgba(8,11,28,0); } }
+.sheet{ animation:sheetIn .42s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes sheetIn{ 0%{ opacity:0; transform:translateY(22px) scale(.94); } 55%{ opacity:1; transform:translateY(-2px) scale(1.008); } 100%{ opacity:1; transform:none; } }
+body.gfx0 .ov{ backdrop-filter:none; -webkit-backdrop-filter:none; background-color:rgba(8,11,28,.74); } /* (a slow phone: no blur behind the veils) */
+@media (prefers-reduced-motion: reduce){ .ov, .sheet{ animation:none; } }
+
+/* the screen transition: an iris opens on the new screen from the tile (or the screen's centre); a saffron rim at its edge */
+.gfly{ filter:drop-shadow(0 0 5px rgba(255,194,75,.75)) drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+#xfade{ position:fixed; inset:0; z-index:40; pointer-events:none; contain:strict; }
+#xfade[hidden]{ display:none; }
+
+/* loading: the camera's start-up checks as a card with a moving bar */
+#start .checks:not([hidden]){ position:relative; margin-top:14px; padding:12px 14px 14px; border-radius:16px; background:rgba(22,29,61,.92); box-shadow:inset 0 0 0 1px var(--line), 0 14px 30px rgba(0,0,0,.35); animation:sheetIn .4s cubic-bezier(.2,.9,.3,1) both; overflow:hidden; text-align:start; }
+#start .checks:not([hidden])::after{ content:''; position:absolute; left:0; right:0; bottom:0; height:3px; background:linear-gradient(90deg, rgba(255,194,75,0), var(--saffron), rgba(255,194,75,0)); background-size:40% 100%; background-repeat:no-repeat; animation:loadBar 1.2s ease-in-out infinite; }
+@keyframes loadBar{ from{ background-position:-40% 0; } to{ background-position:140% 0; } }
+.checks li[data-s="ok"] .dot{ box-shadow:0 0 8px rgba(67,217,163,.6); }
+.checks li[data-s="pending"] .dot{ box-shadow:0 0 8px rgba(255,194,75,.6); }
+@media (prefers-reduced-motion: reduce){ #start .checks:not([hidden])::after{ animation:none; } }
 </style>
 </head>
 <body class="home">
@@ -885,6 +955,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
 </div>
 
 <section id="start" class="intro">
+  <div id="startFx" aria-hidden="true"></div>
   <button class="chip icon langBtn" id="startLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button>
   <div class="habitBar" id="habitBar"><button class="hbFlame zero" id="flameBtn" type="button"><span class="fl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.2 4.8 5.3 4.8 10.4A4.8 4.8 0 0 1 12 21.5a4.8 4.8 0 0 1-4.8-4.8c0-2.4 1.3-3.6 2.2-5 .3 1.4.9 2.2 1.8 2.6-.6-3.6.8-6.4.8-11.8z" fill="#ff8a3d"/><path d="M12 13.5c1.6 1.4 2.4 2.6 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1.3.9-2.3 2.4-4z" fill="#ffd23f"/></svg></span><b>0</b></button><button class="hbGift" id="giftBtn" type="button" data-i18n-aria="giftTitle" aria-label="Daily gift"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="1.6" fill="#ff6f59"/><rect x="3" y="7" width="18" height="4.4" rx="1.3" fill="#ff8a76"/><rect x="10.6" y="7" width="2.8" height="13.5" fill="#ffd23f"/><path d="M12 7c-1.4-3-5.4-3.6-5.4-1.1 0 1.5 3 1.5 5.4 1.1zM12 7c1.4-3 5.4-3.6 5.4-1.1 0 1.5-3 1.5-5.4 1.1z" fill="none" stroke="#ffd23f" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="dot" hidden></span></button></div>
   <div class="panel">
@@ -934,6 +1005,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <svg data-g="fist" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11M10 11V7.5a1.5 1.5 0 0 1 3 0V11M13 11V8.5a1.5 1.5 0 0 1 3 0V11M16 11a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 12.5 21h-1A6.5 6.5 0 0 1 5 14.5V13a1.5 1.5 0 0 1 3 0"/><path d="M7 13v-2M4.5 10.5 7 11"/></svg>
   </div>
 </section>
+<div id="xfade" hidden aria-hidden="true"></div>
 <div class="ov" id="missions" hidden role="dialog" aria-modal="true" aria-labelledby="missionsTitle">
   <div class="sheet">
     <header><h2 id="missionsTitle" data-i18n="missionsTitle">Today's missions</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1623,6 +1695,9 @@ let W = 0, H = 0, DPR = 1;
 const particles = [];
 let gridCanvas = null;
 
+function watchDpr() { // the pixel ratio can change under a running page (zoom, another screen): resize again, re-armed for the new ratio
+  try { const q = matchMedia('(resolution: ' + (window.devicePixelRatio || 1) + 'dppx)'); q.addEventListener('change', () => { resize(); watchDpr(); }, { once: true }); } catch {}
+}
 function resize() {
   DPR = Math.min(2, window.devicePixelRatio || 1);
   W = window.innerWidth; H = window.innerHeight;
@@ -1635,9 +1710,9 @@ function resize() {
 }
 
 function buildGrid() {
-  const g = document.createElement('canvas'); const s = 32;
-  g.width = g.height = s;
-  const c = g.getContext('2d');
+  const g = document.createElement('canvas'); const s = 32, k = Math.max(1, Math.round(DPR)); // (drawn at the screen's pixel ratio: crisp dots on a phone; the pattern is scaled back to CSS px)
+  g.width = g.height = s * k;
+  const c = g.getContext('2d'); c.scale(k, k); g.k = k;
   c.fillStyle = 'rgba(241,233,218,0.09)';
   c.beginPath(); c.arc(s / 2, s / 2, 1.3, 0, Math.PI * 2); c.fill();
   gridCanvas = g;
@@ -1729,7 +1804,12 @@ function onCollisions(e) {
     dyn.plugin.lastBurst = now;
     const sp = (c.supportCount > 0 && c.supports[0]) ? c.supports[0] : dyn.position;
     burst(sp.x, sp.y, dyn.plugin.color, rv);
-    if (gameMode === 'sandbox') ring(sp.x, sp.y, 'rgba(255,255,255,0.85)', 12 + rv * 1.5, 180, 2.5); // white flash at the contact point
+    if (gameMode === 'sandbox') {
+      ring(sp.x, sp.y, 'rgba(255,255,255,0.85)', 12 + rv * 1.5, 180, 2.5); // white flash at the contact point
+      const k = Math.min(1, (rv - CONFIG.IMPACT_SPEED) / 14);
+      dyn.plugin.sq = { t: now, k: (dyn.plugin.kind === 'circle' ? 0.2 : 0.09) * (0.35 + 0.65 * k), ang: Math.atan2(n.y, n.x) }; // squash along the contact normal, a hit flash
+      fxImpact(sp.x, sp.y, dyn.plugin.color, k); if (k > 0.5) fxDust(sp.x, sp.y, 2 + Math.round(2 * k));
+    }
   }
 }
 function burst(x, y, color, speed) {
@@ -1982,13 +2062,14 @@ let lastThrow = 0;
 
 /* ---------------- Main loop ---------------- */
 const STEP = 1000 / 60;
-let acc = 0, lastFrame = performance.now();
+let acc = 0, lastFrame = performance.now(), lastRaf = 0;
 let fps = 0, trackFps = 0, trackCount = 0, lastRateAt = performance.now(), frameCount = 0;
 
 function frame(now) {
   if (!engine) { requestAnimationFrame(frame); return; }
   if (rp.capNext) { rp.capNext = false; if (!rpBlock()) rpCapture(); } // the replay's capture of the last frame (2D)
   const dt = Math.min(100, now - lastFrame); lastFrame = now;
+  gfxTick(now - lastRaf); lastRaf = now; fxp.frame++; // the quality watch (the real interval, not the clamped one)
   trackTick(now);
   inputTick(now);
   pauseTick(now);
@@ -2015,8 +2096,9 @@ function frame(now) {
   }
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
-  updateParticles(dt);
+  updateParticles(dt); fxTick(dt);
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else render(now);
+  if (fxp.n) fxDraw(); // (a mode that drew no particles this frame: the pool on top)
   gfx3dSync();
   if (pause.resumeT) drawResume(now);
   syncToastLayout();
@@ -2145,13 +2227,18 @@ function dust(x, y, n, spread = 1) { // soft grey clouds that expand and fade
 function drawParticles() {
   resetView();
   let puffs = 0;
+  let beads = gfxLevel() === 2 && gfxq.ema < 20 ? 90 : 0; // (the beads cost ~4x a flat dot on a software rasterizer: only the bigger ones, at most 90 a frame, full quality only)
   for (const p of particles) {
     if (p.puff) { puffs++; continue; }
-    ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
+    const a = Math.max(0, p.life); if (a <= 0) continue;
+    if (p.r < 2.4 || beads-- <= 0) { resetView(); ctx.globalAlpha = a; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill(); continue; }
+    const v = Math.hypot(p.vx, p.vy), st = 1 + Math.min(1.6, v * 2.4), k = p.r / 11 * (0.75 + 0.25 * a), ang = Math.atan2(p.vy, p.vx), c = Math.cos(ang), s = Math.sin(ang); // a glossy bead, stretched along its motion
+    ctx.setTransform(c * k * st * DPR, s * k * st * DPR, -s * k * DPR, c * k * DPR, (p.x + view.x) * DPR, (p.y + view.y) * DPR);
+    ctx.globalAlpha = a; ctx.drawImage(fxSprite('dot', p.color).c, -16, -16, 32, 32);
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1; resetView();
   if (puffs) { const sp = puffSprite(); for (const p of particles) if (p.puff) blit(sp, p.x, p.y, 0, p.r / 32, Math.max(0, p.life) * 0.7); }
+  fxDraw();
 }
 function textSprite(text, size, color, glow, weight = 700) {
   const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang;
@@ -2174,7 +2261,7 @@ function bgSprite(kind, wo) {
     const top = g.createRadialGradient(W * 0.5, -H * 0.25, 10, W * 0.5, 0, Math.max(W, H));
     top.addColorStop(0, 'rgba(96,122,196,0.26)'); top.addColorStop(1, 'rgba(96,122,196,0)'); g.fillStyle = top; g.fillRect(0, 0, W, H);
     if (kind === 'drums' || kind === 'bubbles' || kind === 'paint' || kind === 'stars') cgBackdrop(g, kind);
-    if (gridCanvas && kind !== 'paint' && kind !== 'stars') { g.fillStyle = g.createPattern(gridCanvas, 'repeat'); g.fillRect(0, 0, W, H); }
+    if (gridCanvas && kind !== 'paint' && kind !== 'stars') { const pat = g.createPattern(gridCanvas, 'repeat'); try { if (gridCanvas.k > 1) pat.setTransform(new DOMMatrix().scale(1 / gridCanvas.k)); } catch {} g.fillStyle = pat; g.fillRect(0, 0, W, H); }
     if (kind === 'smash') { // faint warm horizon glow over the ground
       const hz = g.createRadialGradient(W / 2, H + 40, 10, W / 2, H + 40, Math.max(W * 0.75, 320));
       hz.addColorStop(0, 'rgba(255,170,95,0.22)'); hz.addColorStop(0.5, 'rgba(255,150,90,0.08)'); hz.addColorStop(1, 'rgba(255,150,90,0)');
@@ -2184,6 +2271,13 @@ function bgSprite(kind, wo) {
       g.strokeStyle = 'rgba(241,233,218,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, H - 1); g.lineTo(W, H - 1); g.stroke();
     }
     if (kind === 'strike') drawCorridor(g, wi);
+    if (kind === 'sandbox' || kind === 'slice' || kind === 'busy' || kind === 'shapes') { // depth (graphics pass): a soft key light from the top-left, out-of-focus shapes far behind, a floor for the sandbox
+      const key = g.createRadialGradient(W * 0.16, H * 0.06, 10, W * 0.16, H * 0.06, Math.max(W, H) * 0.85);
+      key.addColorStop(0, 'rgba(160,180,255,0.13)'); key.addColorStop(0.5, 'rgba(160,180,255,0.04)'); key.addColorStop(1, 'rgba(160,180,255,0)'); g.fillStyle = key; g.fillRect(0, 0, W, H);
+      const r = rng(kind.length * 31 + 5), cols = kind === 'slice' ? ['255,95,102', '255,166,43', '166,223,90', '255,232,154'] : ['255,194,75', '84,198,235', '169,139,255', '67,217,163'];
+      for (let i = 0; i < 9; i++) { const x = r() * W, y = r() * H * 0.8, rr = Math.min(W, H) * (0.05 + r() * 0.12), c = cols[i % cols.length], bk = g.createRadialGradient(x, y, 0, x, y, rr); bk.addColorStop(0, 'rgba(' + c + ',0.07)'); bk.addColorStop(0.7, 'rgba(' + c + ',0.035)'); bk.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = bk; g.fillRect(x - rr, y - rr, rr * 2, rr * 2); } // bokeh
+      if (kind === 'sandbox') { const fl = g.createLinearGradient(0, H - 110, 0, H); fl.addColorStop(0, 'rgba(120,140,230,0)'); fl.addColorStop(1, 'rgba(120,140,230,0.12)'); g.fillStyle = fl; g.fillRect(0, H - 110, W, 110); }
+    }
     if (kind === 'shapes') { const fl = g.createLinearGradient(0, H * 0.55, 0, H); fl.addColorStop(0, 'rgba(255,190,120,0)'); fl.addColorStop(1, 'rgba(255,190,120,0.12)'); g.fillStyle = fl; g.fillRect(0, H * 0.55, W, H * 0.45); } // a warm play-room floor under the box
     const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.hypot(W, H) * 0.62);
     v.addColorStop(0, 'rgba(6,8,22,0)'); v.addColorStop(1, 'rgba(6,8,22,0.6)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
@@ -2198,6 +2292,136 @@ function beginFrame(kind, now) {
   if (view.x || view.y) { ctx.fillStyle = '#0c1026'; ctx.fillRect(0, 0, W, H); }
   const bg = bgSprite(kind);
   ctx.setTransform(DPR, 0, 0, DPR, view.x * DPR, view.y * DPR); ctx.drawImage(bg.c, 0, 0, W, H);
+}
+
+/* ---------------- Graphics pass: quality level, the shared particle pool, squash & stretch + hit flash, screen transitions ----------------
+   gfxq.level 2 (full) / 1 / 0: frame time watched in frame(): an average over ~20 ms for 2 s drops a level, a steady ~60 fps for 6 s (then
+   9, 13.5 ... 30 s: hysteresis) brings one back. The level only touches the extras of this pass (the pool's cap, glows, the start screen's
+   living background, the veils' blur): never game rules, sizes or the older effects the suites count. prefers-reduced-motion (or
+   gfxq.reducedTest): no screen transitions, no ambient motion, half the particles, a tiny shake (shakeScreen). */
+const GFXQ = { slowFt: 20, slowMs: 2000, fastFt: 18, recover0: 6000, recoverMax: 30000, caps: [70, 170, 320], phoneK: 0.65 };
+const gfxq = { level: 2, max: 2, ema: 16.7, slow: 0, fast: 0, recover: GFXQ.recover0, drops: 0, raises: 0, log: [], burn: 0, auto: true, forced: null, reducedTest: null, frames: 0 };
+function gfxReduced() { if (typeof gfxq.reducedTest === 'boolean') return gfxq.reducedTest; try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch { return false; } }
+function gfxLevel() { return gfxq.forced != null ? gfxq.forced : gfxq.level; }
+function gfxSync() { const l = gfxLevel(), c = document.body.classList; c.toggle('gfx0', l === 0); c.toggle('gfx1', l === 1); c.toggle('gfxCalm', gfxReduced()); }
+function gfxSetLevel(l, why) {
+  l = Math.max(0, Math.min(gfxq.max, l | 0)); if (l === gfxq.level) return;
+  gfxq.level = l; gfxq.log.push({ t: Math.round(performance.now()), l, why }); if (gfxq.log.length > 24) gfxq.log.shift(); gfxSync();
+}
+function gfxTick(dt) { // once a frame, dt = the frame interval (ms)
+  gfxq.frames++;
+  if (gfxq.burn > 0) { const e = performance.now() + gfxq.burn; while (performance.now() < e); } // test-only: a slow phone
+  if (!gfxq.auto || document.hidden) return;
+  gfxStep(dt);
+}
+function gfxStep(dt) { // the watch's rule (pure but for the level it sets): tests feed it frame times directly
+  if (!(dt > 0) || dt >= 250) return; // (a stalled or hidden tab says nothing about the device)
+  gfxq.ema += (dt - gfxq.ema) * 0.1;
+  if (gfxq.ema > GFXQ.slowFt) { gfxq.slow += dt; gfxq.fast = 0; } else { gfxq.slow = 0; gfxq.fast = gfxq.ema < GFXQ.fastFt ? gfxq.fast + dt : Math.max(0, gfxq.fast - 2 * dt); } // (a smooth spell counts up; a jittery frame takes back twice its time, so a device hovering near 55-60 fps still recovers, slowly)
+  if (gfxq.slow >= GFXQ.slowMs && gfxq.level > 0) { gfxSetLevel(gfxq.level - 1, 'slow'); gfxq.drops++; gfxq.slow = 0; gfxq.ema = 16.7; }
+  else if (gfxq.fast >= gfxq.recover && gfxq.level < gfxq.max) { gfxSetLevel(gfxq.level + 1, 'fast'); gfxq.raises++; gfxq.fast = 0; gfxq.recover = Math.min(GFXQ.recoverMax, gfxq.recover * 1.5); }
+}
+try { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', gfxSync); } catch {}
+
+// The particle pool: a fixed set of objects (no allocation per frame), the live ones packed at the front; full = the next one in turn is
+// recycled. Kinds: spark (additive, stretched along its motion), star (pops in, spins, shrinks), shard (tumbling triangle under gravity),
+// dot (a glossy bead), confetti (a flipping ribbon), drop (a juice / water drop, stretched by its fall), dust (a soft puff that grows),
+// glow (a big additive flash). Sprites are cached per kind + colour (makeSprite), so a frame is only drawImage calls.
+const FX_KINDS = ['spark', 'star', 'shard', 'dot', 'confetti', 'drop', 'dust', 'glow'];
+const fxp = { pool: [], n: 0, rr: 0, made: 0, recycled: 0, peak: 0, drawnFrame: -1, frame: 0, size: 320 };
+for (let i = 0; i < fxp.size; i++) fxp.pool.push({ k: 'dot', x: 0, y: 0, vx: 0, vy: 0, g: 0, drag: 0, age: 0, ms: 1, s: 1, rot: 0, vr: 0, col: '#fff', add: false });
+function fxLoad() { const e = gfxq.ema; return e > 30 ? 0.25 : e > 22 ? 0.5 : 1; } // (between the level steps: a frame running slow right now spawns and draws fewer extras at once)
+function fxCap() { const phone = Math.min(W, H) < 600; return Math.max(16, Math.round(GFXQ.caps[gfxLevel()] * (phone ? GFXQ.phoneK : 1) * (gfxReduced() ? 0.5 : 1) * fxLoad())); }
+function fxSpawn(k, x, y, vx, vy, o) { // o: { ms, s (size px), g (px/ms²), drag (per 16.7 ms), col, vr, rot, add }
+  const cap = Math.min(fxp.size, fxCap()); let p;
+  if (fxp.n < cap) p = fxp.pool[fxp.n++];
+  else { p = fxp.pool[fxp.rr++ % fxp.n]; fxp.recycled++; }
+  p.k = k; p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.age = 0;
+  p.ms = o.ms || 600; p.s = o.s || 6; p.g = o.g || 0; p.drag = o.drag || 0; p.col = o.col || '#ffffff'; p.vr = o.vr || 0; p.rot = o.rot != null ? o.rot : Math.random() * TAU;
+  p.add = o.add != null ? o.add : (k === 'spark' || k === 'glow' || k === 'star');
+  fxp.made++; if (fxp.n > fxp.peak) fxp.peak = fxp.n; return p;
+}
+function fxPick(col, i) { return Array.isArray(col) ? col[i % col.length] : col; }
+function fxBurst(x, y, k, o = {}) { // n particles of a kind flying out of (x, y): o { n, col (one or a list), sp (px/ms), spread (rad), ang, g, ms, s, drag }
+  const n = Math.max(1, Math.round((o.n || 8) * (gfxLevel() === 0 ? 0.5 : 1) * fxLoad())), spread = o.spread != null ? o.spread : TAU, a0 = (o.ang || 0) - spread / 2, sp = o.sp || 0.25;
+  for (let i = 0; i < n; i++) {
+    const a = a0 + spread * (spread >= TAU - 1e-3 ? (i + Math.random() * 0.8) / n : Math.random()), v = sp * (0.45 + Math.random() * 0.75);
+    fxSpawn(k, x + (Math.random() - 0.5) * (o.jit || 4), y + (Math.random() - 0.5) * (o.jit || 4), Math.cos(a) * v, Math.sin(a) * v - (o.up || 0),
+      { ms: (o.ms || 600) * (0.7 + Math.random() * 0.6), s: (o.s || 6) * (0.65 + Math.random() * 0.7), g: o.g != null ? o.g : 0.0008, drag: o.drag != null ? o.drag : 0.02, col: fxPick(o.col || '#ffffff', i), vr: (Math.random() - 0.5) * (o.spin != null ? o.spin : 0.02) });
+  }
+}
+// presets, shared by every mode (k: 0..1 strength)
+function fxImpact(x, y, col, k = 0.5) { // a hit: a flash, sparks, a few stars on a strong one
+  if (gfxLevel() > 0) fxSpawn('glow', x, y, 0, 0, { ms: 220 + 120 * k, s: 26 + 46 * k, col: '#fff3d6' });
+  fxBurst(x, y, 'spark', { n: 5 + 9 * k, col: ['#ffffff', col || '#ffd36b'], sp: 0.22 + 0.4 * k, ms: 300 + 200 * k, s: 3 + 2 * k, g: 0.0006, drag: 0.05 });
+  if (k > 0.55) fxBurst(x, y, 'star', { n: 2 + 3 * k, col: ['#ffe07a', '#ffffff'], sp: 0.12 + 0.12 * k, ms: 620, s: 6 + 5 * k, g: 0.0002, drag: 0.04, spin: 0.012 });
+}
+function fxSparkle(x, y, col, n = 6, r = 30) { // twinkling stars round a point (a catch, a placed shape, a golden pop)
+  for (let i = 0; i < Math.round(n * (gfxLevel() === 0 ? 0.5 : 1)); i++) { const a = Math.random() * TAU, d = r * (0.3 + Math.random() * 0.7); fxSpawn('star', x + Math.cos(a) * d, y + Math.sin(a) * d, Math.cos(a) * 0.03, Math.sin(a) * 0.03 - 0.04, { ms: 520 + Math.random() * 400, s: 5 + Math.random() * 6, col: fxPick(col || ['#ffe07a', '#ffffff'], i), vr: (Math.random() - 0.5) * 0.01, drag: 0.03 }); }
+}
+function fxConfetti(x, y, n = 24, sp = 0.35) { fxBurst(x, y, 'confetti', { n, col: ['#ffc24b', '#ff6f59', '#43d9a3', '#54c6eb', '#a98bff', '#ffffff'], sp, ms: 1300, s: 9, g: 0.0007, drag: 0.035, up: 0.12, spin: 0.03, jit: 10 }); }
+function fxShards(x, y, col, n = 8, dx = 0, dy = -1, sp = 0.3) { fxBurst(x, y, 'shard', { n, col, sp, ang: Math.atan2(dy, dx), spread: dx || dy !== -1 ? 2.2 : TAU, ms: 700, s: 9, g: 0.0011, drag: 0.012, spin: 0.03, jit: 8 }); }
+function fxSplash(x, y, col, n = 10, sp = 0.3) { fxBurst(x, y, 'drop', { n, col, sp, ms: 650, s: 4.5, g: 0.0012, drag: 0.01, up: 0.12, jit: 6 }); }
+function fxDust(x, y, n = 5, col = 'rgba(236,228,214,1)') { fxBurst(x, y, 'dust', { n, col, sp: 0.05, ms: 700, s: 12, g: -0.00004, drag: 0.04, jit: 14, spin: 0.004 }); }
+function fxTick(dt) {
+  if (!fxp.n) return;
+  const f = dt / 16.7;
+  for (let i = fxp.n - 1; i >= 0; i--) {
+    const p = fxp.pool[i]; p.age += dt;
+    if (p.age >= p.ms) { const last = fxp.pool[fxp.n - 1]; fxp.pool[fxp.n - 1] = p; fxp.pool[i] = last; fxp.n--; continue; } // (swap-remove: the dead one parks past the live end)
+    if (p.drag) { const d = Math.pow(1 - p.drag, f); p.vx *= d; p.vy *= d; }
+    p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+  }
+}
+function fxSprite(k, col) {
+  if (typeof col !== 'string' || !col) col = '#ffffff'; // (some older particles carry no colour: the old arc fill ignored it, a gradient stop would throw)
+  return makeSprite('fx|' + k + '|' + col, 32, 32, 16, 16, (g) => {
+    if (k === 'spark' || k === 'glow' || k === 'dust') { const gr = g.createRadialGradient(0, 0, 0, 0, 0, 16); if (k === 'dust') { gr.addColorStop(0, col.replace(/,\s*1\)$/, ',0.55)')); gr.addColorStop(1, 'rgba(200,190,176,0)'); } else { gr.addColorStop(0, '#ffffff'); gr.addColorStop(k === 'glow' ? 0.18 : 0.28, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); } g.fillStyle = gr; g.fillRect(-16, -16, 32, 32); return; }
+    if (k === 'star') { g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 5.2 : 13; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fillStyle = col; g.shadowColor = col; g.shadowBlur = 5; g.fill(); g.shadowBlur = 0; g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.arc(-1.5, -2, 3, 0, TAU); g.fill(); return; }
+    if (k === 'shard') { g.beginPath(); g.moveTo(-11, -7); g.lineTo(12, -3); g.lineTo(-3, 10); g.closePath(); g.fillStyle = col; g.fill(); g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.moveTo(-11, -7); g.lineTo(12, -3); g.lineTo(-2, -1); g.closePath(); g.fill(); g.lineWidth = 1.2; g.strokeStyle = 'rgba(10,14,32,0.45)'; g.beginPath(); g.moveTo(-11, -7); g.lineTo(12, -3); g.lineTo(-3, 10); g.closePath(); g.stroke(); return; }
+    if (k === 'confetti') { g.fillStyle = col; g.fillRect(-10, -5, 20, 10); g.fillStyle = 'rgba(255,255,255,0.3)'; g.fillRect(-10, -5, 20, 3.5); return; }
+    // dot / drop: a glossy bead
+    const gr = g.createRadialGradient(-4, -4, 1, 0, 0, 12); gr.addColorStop(0, lighten(col.startsWith('#') ? col : '#ffffff', 0.55)); gr.addColorStop(0.45, col); gr.addColorStop(1, col.startsWith('#') ? darken(col, 0.35) : col);
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 11, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.ellipse(-4, -4.5, 3.4, 2.2, -0.6, 0, TAU); g.fill();
+  });
+}
+function fxDraw() { // drawn with the older particles (drawParticles), so it sits in each mode's own layer order; once a frame
+  if (fxp.drawnFrame === fxp.frame) return; fxp.drawnFrame = fxp.frame;
+  if (!fxp.n) return;
+  let add = false;
+  for (let i = 0; i < fxp.n; i++) {
+    const p = fxp.pool[i], q = p.age / p.ms, sp = fxSprite(p.k, p.col);
+    let a = 1 - q * q, sx = p.s / 16, sy = sx, ang = p.rot;
+    if (p.k === 'spark' || p.k === 'drop') { const v = Math.hypot(p.vx, p.vy); ang = Math.atan2(p.vy, p.vx); sx *= 1 + Math.min(p.k === 'spark' ? 3 : 1.2, v * (p.k === 'spark' ? 9 : 3)); sy *= p.k === 'spark' ? 0.55 : 0.9; }
+    else if (p.k === 'star') { const pop = q < 0.18 ? q / 0.18 : 1; sx = sy = p.s / 16 * (pop < 1 ? 1.25 * Math.sin(pop * Math.PI / 2) : 1 - 0.6 * (q - 0.18) / 0.82); a = q < 0.6 ? 1 : 1 - (q - 0.6) / 0.4; }
+    else if (p.k === 'glow') { sx = sy = p.s / 16 * (0.6 + 0.6 * Math.sqrt(q)); a = (1 - q) * (1 - q) * 0.8; }
+    else if (p.k === 'dust') { sx = sy = p.s / 16 * (0.7 + 1.1 * q); a = 0.55 * (1 - q); }
+    else if (p.k === 'confetti') { sy *= Math.abs(Math.cos(p.age * 0.012 + p.rot * 3)) * 0.9 + 0.1; a = q < 0.75 ? 1 : (1 - q) / 0.25; sx *= 0.75; }
+    if (a <= 0.01) continue;
+    if (p.add !== add) { add = p.add; ctx.globalCompositeOperation = add ? 'lighter' : 'source-over'; }
+    const c = Math.cos(ang), s = Math.sin(ang);
+    ctx.setTransform(c * sx * DPR, s * sx * DPR, -s * sy * DPR, c * sy * DPR, (p.x + view.x) * DPR, (p.y + view.y) * DPR);
+    ctx.globalAlpha = a; ctx.drawImage(sp.c, -16, -16, 32, 32);
+  }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; resetView();
+}
+function fxClear() { fxp.n = 0; }
+
+// Squash & stretch + a hit flash for bouncy things: sq = { t, k, ang } on the thing; gfxSquash(sq, now) -> [sx, sy, ang] (a damped spring)
+function gfxSquash(sq, now) {
+  if (!sq || gfxLevel() === 0) return null; const e = now - sq.t; if (e > 420 || e < 0) return null;
+  const k = sq.k * Math.exp(-e / 110) * Math.cos(e / 52); return [1 - k, 1 + k * 0.85, sq.ang]; // (squashed along sq.ang first, then a springy stretch)
+}
+function gfxFlash(sq, now, ms = 110) { if (!sq || gfxReduced()) return 0; const e = now - sq.t; return e >= 0 && e < ms ? 1 - e / ms : 0; }
+function blitSquash(sp, x, y, ang, k, q, alpha = 1, add = false) { // blit with a squash along q[2]: T(x, y) R(qa) S(q0, q1) R(-qa) R(ang) S(k)
+  if (!q) { if (add) ctx.globalCompositeOperation = 'lighter'; blit(sp, x, y, ang, k, alpha); if (add) ctx.globalCompositeOperation = 'source-over'; return; }
+  const ca = Math.cos(q[2]), sa = Math.sin(q[2]), a = q[0], d = q[1];
+  const m00 = ca * ca * a + sa * sa * d, m01 = ca * sa * (a - d), m11 = sa * sa * a + ca * ca * d; // R S R^-1 (symmetric)
+  const cb = Math.cos(ang) * k, sb = Math.sin(ang) * k;
+  ctx.setTransform((m00 * cb + m01 * sb) * DPR, (m01 * cb + m11 * sb) * DPR, (-m00 * sb + m01 * cb) * DPR, (-m01 * sb + m11 * cb) * DPR, (x + view.x) * DPR, (y + view.y) * DPR);
+  if (add) ctx.globalCompositeOperation = 'lighter'; if (alpha !== 1) ctx.globalAlpha = alpha;
+  ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
+  if (alpha !== 1) ctx.globalAlpha = 1; if (add) ctx.globalCompositeOperation = 'source-over';
 }
 
 /* ---------------- Sandbox rendering: toy blocks ---------------- */
@@ -2226,7 +2450,10 @@ function render(now) {
     if (isHeld) { const t = (now - b.plugin.popAt) / 180; s = t < 1 ? 1 + 0.14 * Math.sin(Math.PI * t) + 0.04 * t : 1.04; }
     const fly = isHeld ? 1 : Math.min(1, Math.max(0, (b.speed - 3) / 6)); // airborne objects cast a soft shadow
     if (fly > 0) drawShadow(x + 6, y + 12 + (isHeld ? 6 : 0), b.plugin.r * 2.4, b.plugin.r * 1.1, 0.55 * fly);
-    blit(sp, x, y, b.angle, s);
+    else { const gap = H - (y + b.plugin.r); if (gap < b.plugin.r * 1.5) drawShadow(x + 3, H - 2, b.plugin.r * 2.1, b.plugin.r * 0.45, 0.42 * (1 - Math.max(0, gap) / (b.plugin.r * 1.5))); } // resting: a contact shadow on the floor
+    const sq = gfxSquash(b.plugin.sq, now), fl = gfxFlash(b.plugin.sq, now);
+    blitSquash(sp, x, y, b.angle, s, sq);
+    if (fl > 0) blitSquash(sp, x, y, b.angle, s, sq, 0.55 * fl, true); // the hit flash: the same sprite added on top
     if (isHeld) { // saffron rim glow
       resetView(); ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.translate(-x, -y);
       bodyPath(ctx, b); ctx.lineWidth = 9; ctx.strokeStyle = 'rgba(255,194,75,0.28)'; ctx.stroke();
@@ -2340,6 +2567,7 @@ function hitBomb(f, now) { // slicing a bomb: flash, boom, smoke, sparks, shake,
   slice.bombsHit++; slice.flash = now;
   sfx('boom'); shakeScreen(4); ring(f.x, f.y, 'rgba(255,230,150,0.95)', f.r * 4, 420, 6); ring(f.x, f.y, 'rgba(255,111,89,0.8)', f.r * 2.2, 300, 4);
   dust(f.x, f.y, 14, 1.4); burst(f.x, f.y, '#ffc24b', 22); burst(f.x, f.y, '#ff6f59', 14);
+  fxImpact(f.x, f.y, '#ff8a3d', 1); fxShards(f.x, f.y, ['#2a2f42', '#3a3f50', '#ffb347'], 10, 0, -1, 0.45);
   sliceLoseLife(now);
 }
 // Blade segment a -> b (with timestamps). Cuts every fruit the segment passes through, if the finger moved fast enough.
@@ -2369,6 +2597,7 @@ function cutFruit(f, ux, uy, now) {
   }
   slice.stains.push({ x: f.x, y: f.y, r: f.r, ang, life: 1, color: f.kind.juice || f.kind.flesh });
   slice.cuts.push({ x: f.x, y: f.y, r: f.r, ang, t: now });
+  fxSplash(f.x, f.y, f.kind.juice || f.kind.flesh, 9, 0.32); fxImpact(f.x, f.y, f.kind.juice || '#ffffff', 0.35); // juice drops + a cut flash
   for (let k = 0; k < 3 + Math.floor(Math.random() * 4) && particles.length < 320; k++) { // sparks off the blade
     const a = ang + (Math.random() - 0.5) * 0.9, v = 0.3 + Math.random() * 0.4;
     particles.push({ x: f.x, y: f.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.004 + Math.random() * 0.004, r: 1 + Math.random() * 1.5, color: Math.random() < 0.5 ? '#ffffff' : '#ffc24b' });
@@ -2376,6 +2605,7 @@ function cutFruit(f, ux, uy, now) {
   slice.score++;
   slice.combo.n = now - slice.combo.t < 280 ? slice.combo.n + 1 : 1; slice.combo.t = now; slice.bestCombo = Math.max(slice.bestCombo, slice.combo.n);
   slice.coinFruit = (slice.coinFruit || 0) + 1; if (slice.coinFruit % ECONOMY.slice.fruitPerCoin === 0) addCoins(1); track('fruit', 1); if (slice.combo.n === 3) { track('combo', 1); grippySay('combo'); } else if (slice.score === 1) grippySay('firstHit'); // a coin per fruit; a ×3 combo counts once per chain
+  if (slice.combo.n >= 3) fxSparkle(f.x, f.y, null, 4 + slice.combo.n, f.r * 1.4);
   slice.floaters.push({ x: f.x, y: f.y - f.r, text: slice.combo.n >= 3 ? t('combo', { n: slice.combo.n }) : '+1', big: slice.combo.n >= 3, life: 1 });
 }
 function sliceTick(now, dt) {
@@ -2632,6 +2862,8 @@ function drawScore(text, y, sub, subColor) {
 function renderSlice(now) {
   beginFrame('slice', now);
   for (const s2 of slice.stains) blit(splatSprite(s2.color), s2.x, s2.y, s2.ang, s2.r / 40, Math.min(1, Math.max(0, s2.life) * 1.1));
+  for (const h of slice.halves) drawShadow(h.x + h.r * 0.3, h.y + h.r * 0.5, h.r * 2.1, h.r * 1.5, 0.28); // soft drop shadows on the back wall (light from the top-left)
+  for (const f of slice.fruits) if (now >= f.born) drawShadow(f.x + f.r * 0.3, f.y + f.r * 0.5, f.r * 2.3, f.r * 1.7, 0.32);
   for (const h of slice.halves) drawHalf(h);
   for (const f of slice.fruits) if (now >= f.born) drawFruit(f, now);
   drawParticles(); drawRings(now);
@@ -2949,6 +3181,7 @@ function smBreak(o, x, y, dirx, diry, k, now) { // the thing breaks its own way:
   if (o.kind === 'car') smCrumpleCar(o, x, y, dirx, diry, k, now);
   else for (let i = 0; i < n; i++) { const col = cols[i % cols.length]; if (Mt.sh === 'r') piece('r', sz * (1.2 + Math.random()), sz * 0.6, col); else piece(Mt.sh, sz * (0.6 + Math.random() * 0.5), 0, col); }
   smSnd(Mt.snd, k, o.kind, now);
+  fxImpact(x, y, cols[0], Math.min(1, 0.3 + k * 0.6)); if (o.mat === 'glass' || o.mat === 'gem' || o.mat === 'gold') fxSparkle(cx, cy, o.mat === 'gold' ? ['#ffe07a', '#ffffff'] : ['#e8f8ff', '#ffffff'], 6, Math.max(20, o.w * 0.5)); // the shared juice on top of the thing's own
   const J = SM_JUICE[o.mat];
   if (J) { smJuice(cx, cy, J[0], 18 + Math.round(o.w / u * 6)); smJuice(cx, cy, J[1], 8, 0.7); smSplat(cx, Math.min(H - 8, cy + o.h * 0.2), o.w * 0.55, J[0]); }
   switch (o.mat) {
@@ -3602,6 +3835,7 @@ function smDrawObj(o, now) {
   else if (o.kind === 'balloon') { resetView(); ctx.strokeStyle = 'rgba(60,60,80,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, y + o.h * 0.42); ctx.quadraticCurveTo(x + Math.sin(now * 0.002 + o.ph) * o.w * 0.5, y + o.h, x, y + o.h * 1.7); ctx.stroke(); }
   if (o.kind === 'car') { const e = o.extra; blit(sp, x, y, 0, k, 1, e.dir); const ws = wheelSprite(e.wr), wy = e.yb + e.bh / 2; blit(ws, x - o.w * 0.3, wy, e.dir * e.dist / e.wr); blit(ws, x + o.w * 0.3, wy, e.dir * e.dist / e.wr); if (o.hits || o.hair) blit(smCrackSprite(o, smCrackLv(o)), x, y - e.cab * 0.2, 0, k); return; }
   blit(sp, x, y, ang, k);
+  if (hk >= 0 && hk < 0.35 && gfxLevel() > 0 && !gfxReduced()) { ctx.globalCompositeOperation = 'lighter'; blit(sp, x, y, ang, k, 0.45 * (1 - hk / 0.35)); ctx.globalCompositeOperation = 'source-over'; } // the hit flash
   if (o.hits || o.hair) blit(smCrackSprite(o, smCrackLv(o)), x, y, ang, k);
 }
 function smDrawBoss(o, now, x, y, k) { // the boss: its art, cracks that grow, holes where pieces fell off, a shake and a glow at the end; its health bar is in the HUD (drawSmashBossBar)
@@ -3610,6 +3844,7 @@ function smDrawBoss(o, now, x, y, k) { // the boss: its art, cracks that grow, h
   const hk = (now - o.hitAt) / 200, sq = hk < 1 ? 1 - 0.05 * Math.sin(hk * Math.PI) : 1, bob = Math.sin(now * 0.003) * 3 * s; // squash on a hit, a slow idle bob (breathing)
   if (ph === 3) { const a = 0.25 + 0.2 * Math.sin(now / 120); blit(smBossGlowSprite(o), x, y + bob, 0, 1, a); }
   blit(o.sp, x, y + bob, 0, k * sq);
+  if (hk >= 0 && hk < 0.6 && gfxLevel() > 0 && !gfxReduced()) { ctx.globalCompositeOperation = 'lighter'; blit(o.sp, x, y + bob, 0, k * sq, 0.35 * (1 - hk / 0.6)); ctx.globalCompositeOperation = 'source-over'; } // the hit flash
   if (ph >= 2) blit(smBossHoleSprite(o, ph), x, y + bob, 0, k * sq);
   const lv = o.hits ? 1 + Math.min(3, Math.floor((1 - f) * 4)) : 0;
   if (lv) blit(smCrackSprite(o, lv), x, y + bob, 0, k * sq);
@@ -3995,7 +4230,7 @@ function smashNodeTap(n, b) {
 }
 function openSmashMap(o = {}) { // o.how: how a choice starts from the start screen (camera / touch)
   smap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : smap.how; smap.dwell = null;
-  const el = $('smashMap'); el.hidden = false; $('smDwell').hidden = true; renderSmashMap();
+  const el = $('smashMap'); if (el.hidden) xfadeStart('in'); el.hidden = false; $('smDwell').hidden = true; renderSmashMap();
   const c = $('smList').querySelector('.smNode.cur'); if (c && profile.smash.unlocked > 4) try { c.scrollIntoView({ block: 'center' }); } catch {}
   try { $('smashFree').focus({ preventScroll: true }); } catch {}
   routeEnter('smash'); // (/smash: the map is Smash's front door)
@@ -5719,6 +5954,7 @@ function placeShape(s, j, d, now) {
   shapesSound('clunk'); shapesSound('rise');
   const bg = shapes.big || 1; burst(hl.x, hl.y, s.color, Math.min(30, 22 * bg)); burst(hl.x, hl.y, '#fff3c4', 14 * bg); burst(hl.x, hl.y, COLORS[(j + 2) % COLORS.length], 12 * bg); // (bigger shapes: a wider burst)
   ring(hl.x, hl.y, hexA(s.color, 0.95), shapes.S * 1.9, 460, 6 * bg); ring(hl.x, hl.y, 'rgba(255,255,255,0.85)', shapes.S * 1.1, 300, 3 * bg);
+  fxSparkle(hl.x, hl.y, [s.color, '#ffe07a', '#ffffff'], 8, shapes.S * 1.4); fxConfetti(hl.x, hl.y, 10, 0.28); // (graphics pass)
   speakShape(s.kind); shapes.placedTotal++; track('shape', 1); grippySay('shapesMatch');
 }
 function speakShape(kind) { // the shape's name, spoken in the current language (silently skipped when speech is unavailable or muted)
@@ -6363,6 +6599,12 @@ function drawCorridor(g, wi = strike.world, th = themeNow()) { // static part of
   quad([P(R, T, 0), P(R, T, Z), P(R, B, Z), P(R, B, 0)], lin(W, 0, far.x1, 0, WP.wall[0], WP.wall[1]));      // right wall
   g.fillStyle = WP.far; g.fillRect(far.x0, far.y0, far.x1 - far.x0, far.y1 - far.y0);                     // far wall
   corridorMotif(g, WP.motif, P, { L, R, T, B, Z });                                                           // the world's texture: mortar, greenhouse panes, plate seams, vines, lava cracks
+  { // depth (graphics pass): the side walls fall darker toward the camera, a sheen of the far light runs down the middle of the floor
+    const gc0 = WP.glow.join(','), clipQ = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.clip(); };
+    for (const [x, x0, x1] of [[L, 0, far.x0], [R, W, far.x1]]) { g.save(); clipQ([P(x, T, 0), P(x, T, Z), P(x, B, Z), P(x, B, 0)]); const sh = g.createLinearGradient(x0, 0, x1, 0); sh.addColorStop(0, 'rgba(4,6,18,0.26)'); sh.addColorStop(0.6, 'rgba(4,6,18,0.06)'); sh.addColorStop(1, 'rgba(4,6,18,0)'); g.fillStyle = sh; g.fillRect(0, 0, W, H); g.restore(); }
+    g.save(); clipQ([P(L, B, 0), P(R, B, 0), P(R, B, Z), P(L, B, Z)]); g.translate(v.x, far.y1); g.scale(1, 3.2); const fw = Math.max(20, far.x1 - far.x0);
+    const sn = g.createRadialGradient(0, 0, 0, 0, 0, fw * 0.9); sn.addColorStop(0, 'rgba(' + gc0 + ',0.13)'); sn.addColorStop(0.5, 'rgba(' + gc0 + ',0.05)'); sn.addColorStop(1, 'rgba(' + gc0 + ',0)'); g.fillStyle = sn; g.fillRect(-fw, 0, fw * 2, H); g.restore();
+  }
   const pool = g.createRadialGradient(W / 2, H + 20, 10, W / 2, H + 20, Math.max(W * 0.55, H * 0.5));       // warm light pool on the floor by the player
   pool.addColorStop(0, 'rgba(255,176,96,0.13)'); pool.addColorStop(0.55, 'rgba(255,160,90,0.05)'); pool.addColorStop(1, 'rgba(255,160,90,0)');
   g.fillStyle = pool; g.fillRect(0, 0, W, H);
@@ -6881,6 +7123,7 @@ function juiceImpact(w, b, n, tier, now, gone) { // a ball met a wall and n bric
   const nc = n >= 3 || (big && n) ? Math.min(JUICE.chunkMax, 1 + Math.floor(n / 3) + (big ? 1 : 0), gone.length) : 0;
   for (let i = 0; i < nc; i++) spawnChunk(w, gone[Math.floor(i * gone.length / nc)], b, tier);
   if (big) { sfx('thump', 1); themeSfx('big', 0.9); } // (a theme: the crowd cheers a SUPER impact)
+  { const sc = ballScreen(b); fxImpact(sc.x, sc.y, w.kind === 'glass' ? '#bfefff' : w.kind === 'steel' ? '#dfe8f5' : '#ffb070', Math.min(1, 0.25 + 0.12 * n + (big ? 0.45 : 0))); if (n && w.kind !== 'steel') fxShards(sc.x, sc.y, w.kind === 'glass' ? ['#bfefff', '#e8fbff'] : ['#c4553a', '#e07a52', '#8f3a2a'], Math.min(10, 2 + 2 * n), 0, -1, 0.18 + 0.05 * Math.min(4, n)); } // (graphics pass: sparks, a flash, brick shards)
   const J = { stop, shake: rm ? Math.min(0.6, raw * 0.2) : raw, raw, n, tier, chunks: nc, rm, at: now }; strike.juice = J; strike.juiceLog.push(J); if (strike.juiceLog.length > 30) strike.juiceLog.shift();
   return J;
 }
@@ -7386,6 +7629,7 @@ function confetti(x, y, n, spread = 1) { // a shower of bright paper: slow, big,
     const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9, v = (0.15 + Math.random() * 0.5) * spread;
     particles.push({ x: x + (Math.random() - 0.5) * 40, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, decay: 0.0005 + Math.random() * 0.0005, r: 3 + Math.random() * 4, color: COLORS[i % COLORS.length] });
   }
+  fxConfetti(x, y, Math.min(36, Math.round(n * 0.5)), 0.32 * spread); // (graphics pass: tumbling ribbons among the dots)
 }
 function bossDefeated(b, now) { // a big explosion, confetti, 'Boss down!', 200 x n bonus; every other wall in view crumbles and the queue starts afresh
   if (b.real) return rbDefeated(b, now);
@@ -8655,10 +8899,14 @@ function drawStrikeBall(bl, now) {
   }
   const pop = Math.max(0, 1 - (now - strike.hitAt) / 160);
   if (fire) { resetView(); const gr = ctx.createRadialGradient(sc.x, sc.y, sc.r * 0.6, sc.x, sc.y, sc.r * 1.9); gr.addColorStop(0, 'rgba(255,150,50,0.55)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); ctx.fillStyle = gr; ctx.fillRect(sc.x - sc.r * 2, sc.y - sc.r * 2, sc.r * 4, sc.r * 4); } // the fireball's glow
-  blit(strikeBallSprite(bl.super || fire, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop));
+  const lv = gfxLevel(), sx = lv > 0 ? 1 + 0.16 * pop : 1, sy = lv > 0 ? 1 - 0.13 * pop : 1; // (graphics pass: a squash on the hit, a soft glow behind, a specular glint)
+  if (lv > 1 && gfxq.ema < 22 && (bl.super || bl === strike.balls[0])) { ctx.globalCompositeOperation = 'lighter'; blit(fxSprite('glow', bl.super ? '#ffcf6b' : '#ffb894'), sc.x, sc.y, 0, sc.r / 16 * (bl.super ? 2.4 : 1.7), bl.super ? 0.42 : 0.22); ctx.globalCompositeOperation = 'source-over'; } // (a halo ~3.4-4.8 r wide: kept small, it is fill-rate)
+  blitSquash(strikeBallSprite(bl.super || fire, curving), sc.x, sc.y, bl.rot ?? (now - bl.born) * 0.002 * bl.dir, sc.r / 64 * (1 + 0.12 * pop), sx !== 1 ? [sx, sy, 0] : null);
   resetView();
-  if (powerOn('slow')) { ctx.globalAlpha = 0.28; ctx.fillStyle = '#5b8def'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } // Slow-mo: a blue tint on the ball
-  ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.arc(sc.x, sc.y, sc.r * (1 + 0.12 * pop), 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
+  const rx = sc.r * (1 + 0.12 * pop) * sx, ry = sc.r * (1 + 0.12 * pop) * sy;
+  if (powerOn('slow')) { ctx.globalAlpha = 0.28; ctx.fillStyle = '#5b8def'; ctx.beginPath(); ctx.ellipse(sc.x, sc.y, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; } // Slow-mo: a blue tint on the ball
+  ctx.lineWidth = Math.max(1.5, sc.r * 0.09); ctx.strokeStyle = 'rgba(10,6,14,0.55)'; ctx.beginPath(); ctx.ellipse(sc.x, sc.y, rx, ry, 0, 0, TAU); ctx.stroke(); // dark outline: the ball stands off the bricks behind it
+  if (lv > 0 && sc.r > 5) { const gs = fxSprite('glow', '#ffffff'); ctx.globalCompositeOperation = 'lighter'; blit(gs, sc.x - rx * 0.36, sc.y - ry * 0.42, 0, sc.r / 16 * 0.32, 0.55); ctx.globalCompositeOperation = 'source-over'; } // the specular glint (the key light, top-left)
 }
 /* --- surprise guests: cartoon cow / monkey heads (front-facing, cached per face), the bubble floaters, the missed ones boinging off --- */
 const GUEST_INK = '#2a2230';
@@ -9812,7 +10060,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
   const du = !!o.duel && E === strike, DUp = du && duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button; a duel: the WIN / LOSE panel above the card)
   const top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), TZ = 30, OY = 14, ch = (dly ? 456 : (pill || o.share || du ? 372 : 316) + 34) + TZ + OY + (du && pill ? 54 : 0), cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84) + DUp, (H - ch - DUp) / 2 + DUp) + (1 - e) * 26;
-  view.x = view.y = 0; resetView();
+  view.x = 0; view.y = gfxReduced() || k >= 1 ? 0 : 26 * (1 - (1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2))); resetView(); // (graphics pass: the card springs up into place, a little overshoot; its hit boxes stay where it lands)
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   // the title sits under the coin / XP / streak pills (y0 + 14 .. 38), never across them
@@ -11660,6 +11908,7 @@ function drawCoinPill(now) {
   coinUi.box = { x: left, y: p.y - h / 2, w, h };
   resetView(); blit(glassSprite(w, h, 14), left - 1, p.y - h / 2 - 1);
   const cx = rtl ? left + w - 15 : left + 15; blit(coinSprite(9), cx, p.y, 0, k);
+  if (pop > 0.9 && coinUi.popFx !== coinUi.pop) { coinUi.popFx = coinUi.pop; fxSparkle(cx, p.y, ['#ffe07a', '#ffc24b', '#ffffff'], 5, 14); } // (graphics pass: a coin landing sparkles)
   edgeText(sp, rtl ? left + w - 30 : left + 30, p.y, rtl, k);
   tickFloaters(coinUi.floaters, dt); drawFloaters(coinUi.floaters);
 }
@@ -12512,7 +12761,7 @@ function advNodeTap(n, b) {
 }
 function openAdvMap(o = {}) { // o.how: the way a stop starts from the start screen; o.from / o.pop: after a world's boss, the map rises from stop `from` to the new world's first stop, which pops open
   amap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : amap.how; amap.fromGame = mode !== 'none'; adv.dwell = null; duelEnd();
-  advSyncWorlds(profile); const M = $('advMap'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim);
+  advSyncWorlds(profile); const M = $('advMap'); if (M.hidden) xfadeStart('in'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim);
   if (o.pop && advPlayable(o.pop)) {
     advScrollTo(o.from || o.pop - 1, false); amap.popped = o.pop;
     amap.anim = setTimeout(() => { advScrollTo(o.pop, true); amap.anim = setTimeout(() => { const b = $('advPath').querySelector('.anode[data-n="' + o.pop + '"]'); if (!b) return; b.classList.add('pop'); sfx('unlock'); sfx('levelup'); try { domConfetti($('advPath'), b.getBoundingClientRect()); } catch {} setTimeout(() => b.classList.remove('pop'), 900); }, 750); }, 450);
@@ -12563,7 +12812,7 @@ function renderMissions() {
     const pr = document.createElement('span'); pr.className = 'pr'; pr.textContent = m.progress + ' / ' + m.goal;
     li.append(nm, bar, pr);
     if (m.claimed) { const ok = document.createElement('span'); ok.className = 'ok'; ok.innerHTML = TOAST_ICONS.check; ok.title = t('claimed'); li.appendChild(ok); }
-    else if (m.done) { const b = document.createElement('button'); b.type = 'button'; b.className = 'claim'; b.textContent = t('claim'); b.addEventListener('click', () => claimMission(m.id)); li.appendChild(b); }
+    else if (m.done) { const b = document.createElement('button'); b.type = 'button'; b.className = 'claim'; b.textContent = t('claim'); b.addEventListener('click', () => { const r = b.getBoundingClientRect(), n = Math.min(8, 3 + Math.round(m.reward / 8)); if (claimMission(m.id)) domFly(r, $('metaPill'), TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"'), n); }); li.appendChild(b); }
     else { const rw = document.createElement('span'); rw.className = 'rw'; rw.innerHTML = TOAST_ICONS.coin; rw.append(LRM + '+' + m.reward); li.appendChild(rw); }
     return li;
   }));
@@ -13172,6 +13421,7 @@ function goHome() {
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
   hideHint(); grippyHide(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
+  if ($('start').hidden) xfadeStart('home'); fxClear(); // (graphics pass: an iris back onto the start screen)
   $('start').hidden = false; document.body.classList.add('home');
   syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); if (!maybeNewCard()) maybeGift();
   routeHome(); // the address bar back to '/'
@@ -13180,6 +13430,8 @@ $('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); else
 
 let running = false;
 function startGame(m) {
+  if (!$('start').hidden || !$('advMap').hidden || !$('smashMap').hidden) xfadeStart('in'); // (graphics pass: an iris onto the game from the start screen or a map)
+  fxClear();
   mode = m;
   $('start').hidden = true; document.body.classList.remove('home'); $('start').classList.remove('intro'); stopPreviews();
   if (m === 'camera') { try { localStorage.setItem('camOk', '1'); } catch {} } // remembered: the start screen offers the camera as 'Play with camera' next time
@@ -13434,7 +13686,7 @@ $('camBtn').addEventListener('click', () => setInputPref('camera')); // the Came
 $('mouseBtn').addEventListener('click', () => setInputPref('mouse'));
 syncInputSeg();
 window.addEventListener('resize', resize);
-resize();
+resize(); watchDpr();
 initPreviews(); startPreviews();
 setTimeout(() => $('start').classList.remove('intro'), 1800); // the entrance plays once
 ensureMatter().then(initPhysics).catch((e) => {
@@ -14001,6 +14253,61 @@ window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (
 for (const ev of ['pointermove', 'pointerdown']) document.addEventListener(ev, (e) => { petUi.look.x = e.clientX; petUi.look.y = e.clientY; petUi.look.at = performance.now(); }, { passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) petLoopStart(); });
 PET_READY = true; petSync();
+/* ---------------- Graphics pass: the start screen's living background (CSS only: soft colour blobs, drifting outline shapes, twinkling motes,
+   a pointer parallax), the screen transition (an iris), the hooks ---------------- */
+(function buildStartFx() {
+  const fx = $('startFx'); if (!fx) return;
+  const SH = { circle: '<circle cx="12" cy="12" r="9"/>', tri: '<path d="M12 3.5 21 19.5H3z"/>', sq: '<rect x="4" y="4" width="16" height="16" rx="3"/>', star: '<path d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/>', hex: '<path d="M12 2.5 20.5 7.3v9.4L12 21.5 3.5 16.7V7.3z"/>' };
+  const cols = ['#ffc24b', '#54c6eb', '#a98bff', '#43d9a3', '#ff6f59'], kinds = Object.keys(SH), r = rng(41);
+  let h = '<div class="lay l1"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="blob b4"></i></div><div class="lay l2">';
+  for (let i = 0; i < 10; i++) h += '<i class="m" style="--x:' + (4 + r() * 92).toFixed(1) + '%;--y:' + (3 + r() * 94).toFixed(1) + '%;--d:' + (2.6 + r() * 3).toFixed(1) + 's;--dl:-' + (r() * 5).toFixed(1) + 's"></i>';
+  for (let i = 0; i < 5; i++) h += '<i class="sh" style="--x:' + (6 + i * 19 + r() * 8).toFixed(1) + '%;--s:' + (14 + r() * 12 | 0) + 'px;--c:' + cols[i % 5] + ';--d:' + (22 + r() * 12).toFixed(1) + 's;--dl:-' + (r() * 30).toFixed(1) + 's;--dx:' + ((r() - 0.5) * 80 | 0) + 'px;--r:' + ((r() < 0.5 ? -1 : 1) * (120 + r() * 200) | 0) + 'deg;--o:.18"><svg viewBox="0 0 24 24">' + SH[kinds[i % kinds.length]] + '</svg></i>';
+  h += '</div><div class="lay l3">';
+  for (let i = 0; i < 3; i++) h += '<i class="sh" style="--x:' + (14 + i * 30 + r() * 10).toFixed(1) + '%;--s:' + (26 + r() * 16 | 0) + 'px;--c:' + cols[(i + 2) % 5] + ';--d:' + (17 + r() * 8).toFixed(1) + 's;--dl:-' + (r() * 24).toFixed(1) + 's;--dx:' + ((r() - 0.5) * 120 | 0) + 'px;--r:' + ((r() < 0.5 ? -1 : 1) * (90 + r() * 160) | 0) + 'deg;--o:.13"><svg viewBox="0 0 24 24">' + SH[kinds[(i + 2) % kinds.length]] + '</svg></i>';
+  fx.innerHTML = h + '</div>';
+  let raf = 0, px = 0, py = 0; // the parallax: the layers lean away from the pointer (desktop) a few px, once a frame at most
+  window.addEventListener('pointermove', (e) => {
+    if ($('start').hidden || gfxReduced() || e.pointerType === 'touch') return;
+    px = e.clientX / innerWidth - 0.5; py = e.clientY / innerHeight - 0.5;
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; fx.style.setProperty('--px', px.toFixed(3)); fx.style.setProperty('--py', py.toFixed(3)); });
+  }, { passive: true });
+})();
+
+// The iris: a navy cover with a growing round hole (and a saffron rim) over the new screen, from the tapped tile or the screen's centre.
+// Only a picture over the page (pointer-events: none): the game's state changes at once underneath, so nothing waits for it.
+const XF = { ms: 340, rim: 'rgba(255,194,75,' };
+const xf = { on: false, t0: 0, x: 0, y: 0, r0: 0, R: 0, kind: '', raf: 0, runs: 0, done: 0, skipped: 0, log: [] };
+const lastTap = { x: 0, y: 0, t: -1e9 };
+document.addEventListener('pointerdown', (e) => { lastTap.x = e.clientX; lastTap.y = e.clientY; lastTap.t = performance.now(); }, true);
+function xfadeStart(kind) {
+  const el = $('xfade'); if (!el) return false;
+  if (gfxReduced() || document.hidden) { xf.skipped++; xf.log.push({ kind, skipped: gfxReduced() ? 'reduced' : 'hidden' }); if (xf.log.length > 20) xf.log.shift(); return false; }
+  const W0 = innerWidth, H0 = innerHeight, recent = performance.now() - lastTap.t < 900 && kind === 'in';
+  xf.x = recent ? lastTap.x : W0 / 2; xf.y = recent ? lastTap.y : H0 / 2; xf.r0 = recent ? 28 : 0; xf.kind = kind;
+  xf.R = Math.hypot(Math.max(xf.x, W0 - xf.x), Math.max(xf.y, H0 - xf.y)) + 24;
+  xf.on = true; xf.t0 = performance.now(); xf.runs++; xf.log.push({ kind, x: Math.round(xf.x), y: Math.round(xf.y) }); if (xf.log.length > 20) xf.log.shift();
+  el.hidden = false; xfDraw(0);
+  if (!xf.raf) xf.raf = requestAnimationFrame(xfTick);
+  return true;
+}
+function xfDraw(k) {
+  const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2, r = xf.r0 + (xf.R - xf.r0) * e, rim = (0.6 * (1 - k)).toFixed(3);
+  const el = $('xfade');
+  el.style.background = 'radial-gradient(circle at ' + xf.x.toFixed(1) + 'px ' + xf.y.toFixed(1) + 'px, rgba(11,16,40,0) ' + r.toFixed(1) + 'px, ' + XF.rim + rim + ') ' + (r + 2).toFixed(1) + 'px, rgba(11,16,40,0.98) ' + (r + 16).toFixed(1) + 'px)';
+  el.style.opacity = k > 0.82 ? ((1 - k) / 0.18).toFixed(3) : '1';
+}
+function xfTick() {
+  xf.raf = 0; if (!xf.on) return;
+  const k = Math.min(1, (performance.now() - xf.t0) / XF.ms);
+  if (k >= 1 || document.hidden) { xfEnd(); return; }
+  xfDraw(k); xf.raf = requestAnimationFrame(xfTick);
+}
+function xfEnd() { xf.on = false; xf.done++; xf.dur = Math.round(performance.now() - xf.t0); const el = $('xfade'); el.hidden = true; el.style.background = ''; el.style.opacity = ''; if (xf.raf) cancelAnimationFrame(xf.raf); xf.raf = 0; }
+document.addEventListener('visibilitychange', () => { if (document.hidden && xf.on) xfEnd(); });
+
+window.__grasp.gfx = { q: gfxq, cfg: GFXQ, level: gfxLevel, set: gfxSetLevel, sync: gfxSync, reduced: gfxReduced, tick: gfxTick, step: gfxStep, fxp, cap: fxCap, spawn: fxSpawn, burst: fxBurst, impact: fxImpact, sparkle: fxSparkle, confetti: fxConfetti, clear: fxClear,
+  squash: gfxSquash, xf, XF, xfadeStart, lastTap, dpr: () => DPR, canvas: () => ({ w: canvas.width, h: canvas.height, cw: canvas.clientWidth, ch: canvas.clientHeight }) };
+gfxSync();
 window.__grasp.pet = {
   cfg: PET, pal: PET_PAL, get p() { return petP(); }, get ui() { return petUi; },
   get state() { const P = petP(), pr = petProgress(); return { hatched: P.hatched, name: P.name, shownName: petName(), food: P.food, pantry: P.pantry, stage: petStage(), stageId: petStageId(), seen: P.seen, mood: petMood(), shown: petShowMood(), ate: petAteToday(), canFeed: petCanFeed() || 'ok', frac: pr.frac, left: pr.left, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, cracks: petUi.cracks, roomOpen: !$('petRoom').hidden, nameOpen: !$('petName').hidden, earned: P.earned }; },
@@ -14257,6 +14564,7 @@ function drumHit(i, vel, src, now) {
   drumSound(P.k, vel);
   drums.log.push({ pad: P.k, i, vel: Math.round(vel * 100) / 100, src, t: Math.round(now) }); if (drums.log.length > 60) drums.log.shift();
   ring(P.x, P.y, P.col, P.r * 1.55, 420, 7); ring(P.x, P.y, 'rgba(255,255,255,0.9)', P.r * 1.12, 240, 3);
+  fxImpact(P.x, P.y, P.col, Math.min(1, 0.3 + 0.6 * vel)); // (graphics pass: a flash and sparks on every hit)
   for (let k = 0; k < 12 && particles.length < 320; k++) { const a = Math.random() * TAU, v = 0.1 + Math.random() * 0.26 * vel; particles.push({ x: P.x + Math.cos(a) * P.r * 0.85, y: P.y + Math.sin(a) * P.r * 0.85, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.003 + Math.random() * 0.002, r: 2 + Math.random() * 3, color: Math.random() < 0.4 ? '#ffffff' : P.col }); }
   if (P.k === 'kick') shakeScreen(1.6 * vel); else if (P.k === 'crash') shakeScreen(0.7);
   if (drums.simon.on) simonInput(i, now);
@@ -14487,6 +14795,7 @@ function bubblePop(b, now) {
   ring(b.x, b.y, b.gold ? 'rgba(255,214,90,0.95)' : 'rgba(255,255,255,0.85)', b.r * 1.5, 320, 3);
   for (let k = 0; k < 16 && particles.length < 320; k++) { const a = Math.random() * TAU, v = 0.08 + Math.random() * 0.22; particles.push({ x: b.x + Math.cos(a) * b.r * 0.8, y: b.y + Math.sin(a) * b.r * 0.8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.08, life: 1, decay: 0.0026 + Math.random() * 0.002, r: 1.5 + Math.random() * 3, color: k % 3 ? b.col : '#ffffff' }); }
   if (b.gold) { burst(b.x, b.y, '#fff3c4', 18); burst(b.x, b.y, '#ffd23f', 18); }
+  fxSplash(b.x, b.y, b.gold ? '#ffe07a' : '#bfeaff', 6, 0.16); if (b.gold) fxSparkle(b.x, b.y, null, 8, b.r * 1.2); else fxBurst(b.x, b.y, 'spark', { n: 5, col: ['#ffffff', '#cdefff'], sp: 0.2, ms: 260, s: 2.5, g: 0 }); // (graphics pass)
   if (b.gold || B.combo.n >= 3 || !B.calm) B.floaters.push({ x: b.x, y: b.y - b.r * 0.4, text: B.combo.n >= 3 ? t('combo', { n: B.combo.n }) : '+' + pts, big: b.gold || B.combo.n >= 3, life: 1 });
   if (B.calm && ++B.calmPops % BUB.calmEvery === 0) bubblesTreat(now);
 }
@@ -14789,6 +15098,7 @@ function catcherCatch(it, now) {
     C.log.push({ kind: it.kind, pts: it.kind === 'bomb' ? -CATCH.bomb : -CATCH.cloud, t: Math.round(now) }); return;
   }
   C.caught++; C.streak++; C.bestStreak = Math.max(C.bestStreak, C.streak);
+  fxSparkle(it.x, b.y - b.h * 0.5, it.kind === 'coin' || it.kind === 'gold' ? ['#ffe07a', '#ffc24b', '#ffffff'] : null, 5 + Math.min(6, C.streak), b.w * 0.35); // (graphics pass)
   const pts = K.p + (C.streak >= 5 ? 1 : 0); C.score += pts; b.pop = now; b.pile.push(it.kind); if (b.pile.length > 7) b.pile.shift();
   C.log.push({ kind: it.kind, pts, streak: C.streak, t: Math.round(now) }); if (C.log.length > 80) C.log.shift();
   sfx('catch', C.streak);

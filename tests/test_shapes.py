@@ -381,9 +381,11 @@ async def big_play(b, he):
         if lv == 1: await page.wait_for_timeout(200); await page.screenshot(path=f'tests/out/shapes_big_tap_selected_{tag}.png')
         await page.evaluate("rings.length = 0")
         # (on its rim, 1.2 S out, on the side away from the other holes: the whole-screen layout packs the holes closer)
-        ra = max([math.radians(d) for d in range(0, 360, 15)], key=lambda a: min([math.hypot(hl['x'] + 1.2 * S_ * math.cos(a) - h['x'], hl['y'] + 1.2 * S_ * math.sin(a) - h['y']) for h in st['holes'] if h is not hl] or [1e9]))
+        hi = st['holes'].index(hl); live = await page.evaluate(f"{S}.holes")  # (the holes' live positions: a rocking / sliding box moves on while a loaded machine catches up)
+        hl = live[hi]; others = [h for i, h in enumerate(live) if i != hi]
+        ra = max([math.radians(d) for d in range(0, 360, 15)], key=lambda a: min([math.hypot(hl['x'] + 1.2 * S_ * math.cos(a) - h['x'], hl['y'] + 1.2 * S_ * math.sin(a) - h['y']) for h in others] or [1e9]))
         await tap(page, hl['x'] + 1.2 * S_ * math.cos(ra), hl['y'] + 1.2 * S_ * math.sin(ra))
-        ok2 = await wait(page, f"{S}.shapes[0].placed", 3000)
+        ok2 = await wait(page, f"{S}.shapes[0].placed", 8000)  # (the flight + drop: longer on a loaded machine)
         rw = await page.evaluate("Math.max(0, ...rings.map(r => r.width))")
         check(f'{tag} big L{lv}: tap the shape (at its edge, a {st["slop"] - 4:.0f} px wobble), then the hole (at its rim): it flies in; a wider ring', ok and ok2 and rw > 6.5, [ok, ok2, rw])
         if lv == 1: await page.wait_for_timeout(250); await page.screenshot(path=f'tests/out/shapes_big_placed_{tag}.png')

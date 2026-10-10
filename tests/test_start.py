@@ -1,6 +1,6 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Start screen: live mode previews on the cards, best-score badges, the gesture hint row, the phone snap row, camera memory, entrance.
-PV = "(() => { const cs = [...document.querySelectorAll('.modes button canvas.pvc')]; return { n: cs.length, sized: cs.every(c => c.width > 0 && c.height > 0 && c.getBoundingClientRect().width > 40), shots: cs.map(c => c.toDataURL()), frames: __grasp.previews.frames, running: __grasp.previews.running }; })()"
+PV = "(() => { const cs = [...document.querySelectorAll('.modes button canvas.pvc')]; return { n: cs.length, sized: cs.every(c => c.width > 0 && c.height > 0 && c.getBoundingClientRect().width > 40), shots: cs.map(c => c.toDataURL()), frames: __grasp.previews.frames, t: performance.now(), running: __grasp.previews.running }; })()"
 FIT = """(() => { const st = $('start'), a = document.querySelector('#start a.link').getBoundingClientRect(), cam = $('camBtn').getBoundingClientRect(), mo = $('mouseBtn').getBoundingClientRect(), d = $('modeCard').getBoundingClientRect(), h1 = document.querySelector('.panel h1').getBoundingClientRect();
   return { H: innerHeight, W: innerWidth, bodyScroll: document.documentElement.scrollHeight <= innerHeight && scrollY === 0, startScroll: st.scrollHeight <= st.clientHeight + 1, top: h1.top, link: a.bottom, cam: [cam.top, cam.bottom], mouse: [mo.top, mo.bottom], desc: [d.top, d.bottom], dl: d.left, dr: d.right }; })()"""
 ROW = """(() => { const m = document.querySelector('.modes'), r = m.getBoundingClientRect(), cs = getComputedStyle(m), bs = [...m.querySelectorAll('button')], sel = m.querySelector('[aria-pressed=true]').getBoundingClientRect();
@@ -28,7 +28,7 @@ async def main():
         a = await page.evaluate(PV); await page.wait_for_timeout(400); c = await page.evaluate(PV)
         check('6 preview canvases, sized, one shared loop running', a['n'] == 6 and a['sized'] and a['running'], a['n'])
         check('previews animate: every canvas changes between frames', c['frames'] > a['frames'] and all(x != y for x, y in zip(a['shots'], c['shots'])), [a['frames'], c['frames']])
-        fps = (c['frames'] - a['frames']) / 0.4
+        fps = (c['frames'] - a['frames']) / ((c['t'] - a['t']) / 1000)  # (the page's own clock between the two reads: under load the 400 ms wait stretches)
         check('previews throttled to about 12 fps', 6 <= fps <= 14, fps)
         await page.evaluate("Object.defineProperty(document, 'hidden', { get: () => true, configurable: true }); document.dispatchEvent(new Event('visibilitychange'))"); await page.wait_for_timeout(50)
         d = await page.evaluate(PV); await page.wait_for_timeout(300); e = await page.evaluate(PV)

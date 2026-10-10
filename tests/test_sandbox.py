@@ -174,7 +174,10 @@ async def main():
             await page.evaluate(KICK); await page.wait_for_timeout(550); fpss.append(await page.evaluate("__grasp.state.fps"))
         moving = await page.evaluate("bodies.filter(b => b.speed > 1).length")
         check('phone perf: objects in motion, >= 30 fps over 2 s', min(fpss[1:]) >= 30 and moving >= 1, {'fps': [round(f) for f in fpss], 'moving': moving})
-        check('sprites cached, not rebuilt per frame', await page.evaluate("SPRITES.size") <= 16, await page.evaluate("[...SPRITES.keys()]"))
+        sk = await page.evaluate("(() => { const k = [...SPRITES.keys()]; return { game: k.filter(x => !x.startsWith('fx|')).length, fx: k.filter(x => x.startsWith('fx|')).length, keys: k }; })()")  # (the graphics pass's particles: one small sprite per kind + colour, made once)
+        await page.evaluate(KICK); await page.wait_for_timeout(500)
+        sk2 = await page.evaluate("SPRITES.size")
+        check('sprites cached, not rebuilt per frame (the game\'s <= 16, the particles\' per kind + colour <= 40, no growth while it plays on)', sk['game'] <= 16 and sk['fx'] <= 40 and sk2 <= 16 + 40, [sk, sk2])
         check('perf: no page errors', not errs, errs); await ctx.close()
 
         # ---- Hebrew: language button, RTL, persistence, phone layout ----

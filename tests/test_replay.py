@@ -119,6 +119,8 @@ async def main():
         ts = c['ts']; inwin = all(-3000 <= x <= 1500 for x in ts)
         check(f'the clip: the ring\'s window around the moment, 3 s before and 1.5 s after ({c["frames"]} frames, {c["t0"]:.0f} .. {c["t1"]:.0f} ms), oldest first, the peak frame at the moment',
               inwin and c['t0'] <= -2850 and 1350 <= c['t1'] <= 1500 and c['frames'] >= 70 and ts == sorted(ts) and abs(ts[c['peak']]) <= 30 and c['lost'] == 0, {k: c[k] for k in ('frames', 't0', 't1', 'peak', 'lost')})
+        await page.wait_for_function(f"{ST}.clip && !!{ST}.clip.thumb", timeout=8000, polling=50)  # (the peak frame decodes asynchronously: later under load)
+        c['thumb'] = await page.evaluate(f"!!{ST}.clip.thumb")
         check(f'the clip is small: JPEGs, {c["bytes"] // 1024} KB (< 3 MB), and its peak thumbnail decoded', 20_000 < c['bytes'] < 3_000_000 and c['thumb'], c['bytes'])
         lo = await page.evaluate(f"{R}.moment('super', 60)")
         check('a later, weaker moment keeps the clip', lo is None and (await page.evaluate(f"{ST}.clip.kind")) == 'boss')
