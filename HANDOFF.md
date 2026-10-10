@@ -21,7 +21,7 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
 
 **Strike** is the main game: a 3D corridor where you slap a ball into walls of bricks.
 - **The Strike tile:** opens the **Adventure** saga map.
-  - 40 stages: 5 worlds × 8, the 8th stage of each world a real boss fight (see Real bosses).
+  - 64 stages: 8 worlds × 8, the 8th stage of each world a real boss fight (see Real bosses; worlds 6-8 Space, Under the Sea, Candy Land: see Worlds 6-8).
   - Break **all** walls to clear a stage; 3 hearts; stars: 3 = no heart lost, 2 = one lost, 1 = more.
   - The stage start banner has a small line "★★★ = don't lose a heart"; the clear card has a line under the stars ("Lost 1 heart — clear without losing a heart for ★★★", or "Perfect — no hearts lost!").
   - Clear card: Next / **Play again** / Map. Fail card ("So close!"): **Try again** / Map. Success cards say "Play again" (HE "לשחק שוב"), only a fail says "Try again" (HE "שוב").
@@ -82,6 +82,24 @@ Sandbox, Slice (katana), Smash (five scenes to smash, free play + stages), Busy 
 - **Measured** (`__grasp.boss.sim`, phone, Easy, rally on; a careful child returns 94%, slaps back 75% of shots, mostly medium; a good player 97% / 92%, SUPER on shields, aims at the weak point and around the arm): W1 child ~47-67 s (median ~57), good ~31-40; W2-W4 good ~65-90 s; W5 good ~115-130 s, child ~170-190 s. Hearts lost per phase (child, W1): mostly 0-2, so a careful child usually survives it.
 - Hooks: `__grasp.boss` { defs, cfg, b, state(), screen(), enter(), calm(on), attack(kind), fire(kind), hit(tier, o), ball(tier, x, y, perfect), weak(on), weakPos(), arm(), sim(o), aimAt, last }. Tests: `tests/test_boss.py` (screenshots `tests/out/boss_w{1..5}_{2d,2d_phase3,3d}.png`, `boss_intro.png`, `boss_w1_he.png`, `boss_victory.png`, `boss_victory_card.png`, `boss_fail.png`, `boss_wall.png`, `boss_charge.png`).
 - Not yet checked on a real phone: whether the fights feel long enough / too long with a real hand, the art's readability at phone size, the 3D billboard's per-frame texture upload cost.
+
+**Worlds 6-8 (the Adventure's Space, Under the Sea, Candy Land; parent chose: "more Strike worlds: worlds 6-8 with new walls, music, stickers and a boss each")** — see DESIGN.md "Worlds 6-8". Code: the block `Worlds 6-8` before `strikeTarget` (kinds, ambient life, attacks, art, guests, stickers `ST_ART2`), the 3D block `worlds 6-8 in 3D` before `g3Mat`; `WORLDS[5..7]`, `MUSIC[5..7]`, `BOSS_DEFS[6..8]`.
+- **64 stages:** `ADV_WN` 8 (the Adventure's worlds) × `ADV_WORLD` 8; Endless keeps `WORLD_N` 5 (its levels, world map and checkpoints unchanged). `advWorldOf`, the map (`advLayout`: 8 bands, CSS `.aband.m6..m8`: stars + planets, bubbles, sprinkles), the album, `rbDef`, the trip (`P.world < ADV_WN`) and the duel link (`s` 1..64) use `ADV_WN` / `ADV_N`. Header ★ n / 192, album n / 64.
+- **Old profiles:** validation opens 41 when stage 40 (`ADV_N_OLD`) has stars (`advOpenNode`); nothing else changes. A new player: 41 opens when the Lava Dragon falls (`advClear` opens n + 1 as before).
+- **Plans** (`advPlan`): the per-world arrays run to 8 (walls `[.., 6, 7, 7]`, armor .4 / .42 / .44, turrets 2 / 2 / 2.2 at 3300-3100 ms, creep .057-.061, paceK 1.32 / 1.34 / 1.36 (+ .01 a stage; boss stages 1.2-1.24), reachK .81 / .8 / .8, gapK .74-.72, two balls on even stages like world 5); the world's own kinds weigh 6 (others 2) so a place feels like itself; `ADV_NEW` brings asteroid (41) + force (43), coral (49) + jelly (51), gummy (57) + choco (59), each as its stage's second wall with the usual spotlight (`advSpot`, `rd_<kind>`, `nk_` / `wk_`). Tuning levels run to 48 (only the pace creep moves past 8). 3★ still = no heart lost.
+- **New wall kinds** (`W2_KINDS` in `STRIKE_KINDS`, never in Endless: no `KIND_AT`): `w2Setup` (from `spawnStrikeWall`), `w2Tick` (from `wallsTick`), `w2Smash` (in `smashWall`), `w2Hurt` (in `hurtBrick`), `w2Break` (in `breakBrick`). **asteroid**: a moving-style wall (one brick short, `w.ox` on a slow sine), a fifth of the cells empty, each rock turns (`k.rot`, drawn ±`W2.asteroid.turn`). **force**: `w.fieldT` cycles `W2.force` (2 s on / 2 s off, flickering 0.5 s before on); a hit while on bounces with no damage ("Field on!", `fieldBlocks`). **coral**: every break pushes the piece and restarts `w.regrowAt` (`W2.coral.regrowMs` 3.2 s, a wall-local clock paused while the serve waits); then it regrows (`w2Regrow`, the next 0.6x sooner) unless the wall collapses first. **jelly**: a soft (non-fire) hit is absorbed ("Too soft!", `jellyAbsorbs`, a wobble); no armor. **gummy**: hp 2 each, a hit takes at most 1 off each (fire excepted; a weak spot still breaks its line); wobbles. **choco**: the first time a block reaches 0 it splits (`k.split`, hp 2 = two halves, `chocoSplits`; a weak spot / collapse takes it whole), then each point of damage removes a half. Tips `tipField`, `tipJelly`, `tipChoco` (profile.tips now keeps 40).
+- **Drawing:** 2D `w2DrawBrick` / `w2BrickSprite` / `w2WallOverlay` (the field's hex barrier) inside `drawStrikeWall`; debris in the brick's colour (`d.col`); NEXT / spotlight icons `w2IconArt`. 3D `g3W2Mat` / `g3W2Tex` (`w2:<kind>`, `w2:chocoH` halves, up to 96 a wall), `g3W2Put` (turn / wobble / halves / regrow pop), `g3Field` (an additive plane), `w2Sig` added to the wall's rebuild signature, chunks in the brick's colour.
+- **Worlds' life:** `WORLDS[i].amb` → `w2Ambient` on the overlay (2D + 3D; half alpha under a theme): stars round the edges + a shooting star; kelp swaying at the bottom corners, rising bubbles, caustics; sprinkles. Corridor motifs `space` (starfield, deck grid, planets + nebula on the far wall), `sea` (caustics, shells, light shafts, kelp), `candy` (stripes, frosting drips, gumdrops, lollipops) in 2D, and in the 3D slab texture. World 6: the serve floats up in an arc (`plan.float`, `b.float` = `W2.floatK` x the height, zero at both ends; reset wherever `curve` is). World 7: a bubble trail (`w2TrailTick`). World 8: a sparkle burst on every brick (`w2Break`).
+- **Bosses** (same framework; hp Easy, Normal x1.2): 48 **Alien Mothership** (600, flies; shot `plasma`; `abduct`: `rbAbduct` beams broken bricks back into its mini-walls, else beams one down; `laser`: `b.laser` 3 (phase 3: 4) shots 470 ms apart across the lanes, past `SHOT_MAX` via `rbShot(b, now, { kind, tx, ty, k, force })`), 56 **Giant Octopus** (620; shot `inkball`; `ink`: `rbInk` → `w2.ink` 3.8 s, the aim reticle and the timing ring are not drawn, `w2DrawInk`; `tentacle`: `b.tent` two of four lanes for 5 s, `rbTentSegs` join `rbArmSegs`, so `rbBall` blocks them like an arm; `rbTentArt`), 64 **Candy King** (740; shot `lolly`; `def.sugar`: phase 3 = the sugar rush, `rbW2Phase`: `b.sugar`, `sugarK()` 1.2 in `speedMul`, attack gaps x0.8, faster sway, a rainbow edge `w2DrawSugar`). Art `RB_ART2` (+ beam, tentacles), shot sprites in `rbShotSprite`. `rbState` adds tent / beam / laser / sugar / abducted / inks.
+- **Measured** (`__grasp.boss.sim`, phone, Easy, rally on): good player W6 ~114-126 s, W7 ~118-125 s, W8 ~117-125 s (the Lava Dragon ~112-122 s); careful child W6 ~176-180 s, W7 ~250-270 s, W8 ~210-240 s (Dragon ~187-195 s).
+- **Guests:** `W2.guests` per world in the cow / monkey slots (`guestLook`, a theme's mascots first): alien + space monkey, fish + turtle, gummy bear + donut, drawn by `w2GuestHead`, lines `say_<look>`, sounds `W2_GUEST_SFX`.
+- **Music:** `MUSIC` 'space' (92 bpm, detuned `synth`), 'sea' (78, `bubbly`), 'candy' (132, `chip`); new sfx fieldOn / fieldOff / jelly / regrow / split / beam / ink / blub / sugar / alien / gummy.
+- **Stickers 41-64** (`STICKERS`, art `ST_ART2`): planet, astronaut, comet, alien, satellite, moon, shooting star, mothership; fish, shell, crab, jellyfish, seahorse, pearl, whale, octopus; lollipop, cupcake, donut, gummy bear, ice cream, candy, cake, Candy King. Album tabs 1-8 (two rows of 4 on a phone); a full page's "next sticker" points at the first one missing anywhere.
+- **Star chests:** `ECONOMY.starChests` 10 / 25 / 45 / 70 / 100 / 130 / 160 / 192 → 15 / 25 / 35 / 50 / 80 / 60 / 70 / 100 coins; `looks` [100, 192] also give a look (else `lastFallback` more).
+- **Themes:** the arena stays the theme's; `THEME_TOD` / `BB_SKY` run to 8; the world tint and the (fainter) ambient life still show.
+- Hooks `__grasp.worlds2` { kinds, cfg, state, amb, trail, inkOn, sugar, guestLook, world, field(w, on), phase, regrow, tick, tracks, stickers, sprite, sig }.
+- Tests: `tests/test_worlds2.py` (map 64 / 8 bands / 192 EN / HE phone + desktop, the old-profile unlock, plans, each kind's rule, the spotlights + life, the float, the bubble trail, sparkles, guests, a theme, I18N, the three bosses' attacks / phases / victory / trips, the boss time sim, 3D materials / field / billboards, stickers + album pages + star chests, music leads via a stubbed `mLead`, the trip 5 → 6). Screenshots `tests/out/world{6,7,8}_*.png`, `boss_w{6,7,8}_{2d,2d_phase3,3d}.png`, `boss_w6_beam.png`, `boss_w7_{ink,tentacles}.png`, `boss_w8_sugar.png`.
+- Not yet checked on a real phone: whether the force field's 2 s rhythm is readable with a real hand, the coral's 3.2 s, the octopus' ink / tentacles for a younger child (the sim's child takes ~4 min), the new music's balance, the ambient layers' cost, the 3D look of the sea / candy corridors (still slab-textured).
 
 **Challenge a friend** — see DESIGN.md "Challenge a friend". Code: the block `Challenge a friend` before `PACE_UP_EVERY`.
 - **The button** "Challenge a friend" (`ui.buttons.duel`, `endCardAction('duel')` -> `duelShare`) on the Adventure clear and fail cards, the Frenzy card (beside Share) and the Endless round-over card (not the daily). The first time a small sheet asks for a name (`#duelName`, optional, `duelSanitize`: letters / digits / spaces / . _ ' -, 16 at most; kept in `profile.duelName`, `profile.duelAsked`; the camera skips it). Then `navigator.share({ title, text, url })`, else the clipboard + "Challenge link copied!" (`duelSend`). Message `duelMsgAdv / Frz / End` EN / HE ("I scored 1234 on Grasp stage 12 — can you beat me? 💥").
@@ -213,7 +231,7 @@ Around the games:
   - a 7-day gift calendar that pops up on the first open of the day;
   - a play-streak flame;
   - a "3 stages today" chest;
-  - star chests on the map at 10, 25, 45, 70 and 100 stars.
+  - star chests on the map at 10, 25, 45, 70, 100, 130, 160 and 192 stars.
   - The "Tomorrow: day N gift" line on end cards was **removed** (player feedback: noise). The calendar stays on the start screen; the end cards keep "Wave for the next stage".
 - **Grippy = voice only** (player feedback: the hand + speech bubbles did not help). Nothing is drawn: no `#grippy`, no hand in the gift / NEW UNLOCKED sheets, the Collection toggle is a speaker icon "Voice / קול" (still `profile.grippy`).
   - `grippySay(ev)` keeps its API; it speaks a 1–3 word line (`GRIPPY.en/he`) with `speechSynthesis` via `speakLine()` (shared with Shapes' names), HE voice when the UI is Hebrew.
@@ -222,8 +240,8 @@ Around the games:
   - Onboarding tips (gold brick, perk, guest) show once as the hint toast (`tipOnce` → `showHint(text)`); the serve is the start hint itself.
   - Hooks: `__grasp.grippy` { said, skipped (why), tips, ducking, say, cool }. Tests stub speechSynthesis (`test_grippy`, `test_shapes`); screenshots `tests/out/voice_*.png`.
 - **Pet** (`profile.pet`): a creature in a corner of the start screen, fed with snacks from every finished round; see The pet.
-- **Sticker album** (`profile.album`): a sticker for each stage's first 3-star clear, 40 in total, all drawn in code. A full page of 8 pays 30 coins once.
-- **Music:** one loop per Adventure world, only while a stage is being played.
+- **Sticker album** (`profile.album`): a sticker for each stage's first 3-star clear, 64 in total (8 a world), all drawn in code. A full page of 8 pays 30 coins once.
+- **Music:** one loop per Adventure world (8), only while a stage is being played.
 - **Economy:** coins are deliberately scarce, about 15–35 per run; shop items cost 120–1000. The numbers are in the `ECONOMY` table. The pet's snacks are separate (`PET`), never coins.
 
 ## Direct links (per game URL)
@@ -247,7 +265,8 @@ Around the games:
   git push --force-with-lease origin ccr-61aa39be-e8m1zx && git push origin ccr-61aa39be-e8m1zx:main
   ```
 - **Tests:**
-  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 15-20 minutes for 39 runs (37 suites incl. `gfx`, `camgames`, `pet`, `replay`, `boss`, `duel`, `themes`, `menu`, `guitar`, `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
+  - `tests/run_fast.sh` runs every suite in parallel: 3 jobs, one shared server, about 15-20 minutes for 40 runs (38 suites incl. `worlds2`, `gfx`, `camgames`, `pet`, `replay`, `boss`, `duel`, `themes`, `menu`, `guitar`, `adventure`, `habit`, `album`, `hudmin`, `challenge`, `frenzy`, plus `strike2` and `strike3` again in 3D).
+  - `worlds2` covers worlds 6-8 (see Worlds 6-8).
   - `camgames` covers the camera games (see Camera games).
   - `gfx` covers the graphics pass (see Graphics pass).
   - `replay` covers the replay clip (see Replay clip); `pet` the pet (see The pet).
@@ -289,7 +308,6 @@ Around the games:
 - **Rally / Frenzy not yet checked on a real phone:** whether +70% (world 1: +45%) is still returnable with a real hand / the camera, the speed lines' and glow's CPU cost on a phone, whether Frenzy's +4% steps give runs of a fun length (and if the shield is enough for a small child), the whoosh's loudness.
 - **v4 not yet checked on a real phone:** the difficulty curve with a real hand (world 2's pace / reach, turret shots, closing walls), whether the overheat feels fair, the rank thresholds (`RANK_K`) against real scores, the reticle's readability.
 - **Possible next steps:**
-  - more worlds after world 5;
   - a level ladder for Shapes too;
   - a stage-select difficulty tune after phone feedback;
   - a share card for stars;
@@ -297,7 +315,7 @@ Around the games:
 
 ## Parked backlog (the user said: "keep everything not built aside, we'll come back to it")
 Not started. Ask the user before picking one up.
-1. **More worlds after world 5:** new themes, music and stickers.
+1. ~~More worlds after world 5~~: done (worlds 6-8, see Worlds 6-8).
 2. **A level ladder for Shapes:** a map and stars like Adventure.
 3. **Monkey art:** process `monkey_{in,happy,dizzy,squash}` like the cow's (the pipeline is in Art) once the user sends the images.
 4. **Smaller items:**

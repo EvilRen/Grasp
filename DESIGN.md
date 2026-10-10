@@ -240,3 +240,25 @@ the same challenge, the rival's number visible while you play, a clear verdict a
 - *While playing:* "Beat 1234 (from Dana)" with a bar and the friend's ghost; passing it: "You passed Dana!" and a cheer.
 - *The verdict:* WIN / LOSE / TIE with both scores above the card, and "Send back" (the same challenge with your score).
 - *Safe links:* every parameter is checked and clamped, a name keeps only letters, digits and a few marks, anything broken is ignored.
+
+## Worlds 6-8 (Space, Under the Sea, Candy Land)
+
+**Ask (parent):** "More Strike worlds: worlds 6-8 (space, underwater, candy) with new walls, music, stickers and a boss each."
+
+**What keeps a saga fresh past its first finale** (*Candy Crush* episodes, *Angry Birds* chapters, *Super Mario* worlds): each new chapter is a *place* you
+recognise at a glance (its colours, things moving in the background, its music), it brings one or two *new rules* taught one at a time, the difficulty
+picks up where the last chapter ended rather than resetting, and it ends with a new character to beat. Old players must keep everything they earned.
+
+**Applied:**
+- *Places:* Space (a starfield corridor, planets far away, shooting stars; the serve floats in a low-gravity arc), Under the Sea (caustics, swaying kelp,
+  bubbles, the ball trailing bubbles), Candy Land (candy stripes, frosting drips, falling sprinkles, sparkles on every break). Each has its own music loop and
+  flying guests (an alien and a space monkey, a fish and a turtle, a gummy bear and a donut). A theme keeps its arena; the world's life still shows, fainter.
+- *Rules you read in a second, each a different skill:* asteroid rocks drift (aim at a moving target); a force field switches on and off (timing: hit it
+  while it is off); coral grows back (keep up the pressure: finish it quickly); jelly absorbs soft hits (power control: hit medium or harder); gummies take
+  two hits (patience); chocolate splits in two (follow-up shots). Two per world, introduced on stages 1 and 3 of the world with the 'New!' spotlight.
+- *Difficulty continues the curve* (pace, reach, gaps, turrets, closing walls a small step above world 5), and 3 stars still means no heart lost.
+- *Bosses* that each test one idea: the Alien Mothership rebuilds its cover with a tractor beam and sweeps lasers across the lanes (slap them away); the Giant
+  Octopus hides the aim ring under ink (read the ball itself) and blocks lanes with tentacles (aim around them); the Candy King throws lollipops and
+  ends in a sugar rush (everything faster). Measured with the simulated good player at ~2 minutes each, a little longer than the Lava Dragon.
+- *Rewards:* 24 new stickers (album pages 6-8 with their bonus) and three more star chests (130 / 160 / 192 stars, the last also a look) on the scarce economy.
+- *Old profiles:* a player who already beat the Lava Dragon finds world 6 open; nothing else changes.

@@ -51,7 +51,7 @@ async def main():
 
         # ---- the award rules: only a 3-star clear, only the first time; the peel onto the card with its sound ----
         ctx, page, errs = await fresh(b)
-        check('a new player: no stickers, 40 in the list (8 a world), ECONOMY.album.page = 30', await page.evaluate(AL + ".got") == [] and len(await page.evaluate(AL + ".list")) == 40 and len(set(await page.evaluate(AL + ".list"))) == 40 and await page.evaluate(AL + ".economy.page") == 30)
+        check('a new player: no stickers, 64 in the list (8 a world, 8 worlds), ECONOMY.album.page = 30', await page.evaluate(AL + ".got") == [] and len(await page.evaluate(AL + ".list")) == 64 and len(set(await page.evaluate(AL + ".list"))) == 64 and await page.evaluate(AL + ".economy.page") == 30)
         r = await stage_clear(page, 1, lost=1)
         check('stage 1 cleared with 2 stars: no sticker', r['stars'] == 2 and not r['sticker'] and await page.evaluate(AL + ".got") == [] and await page.evaluate(f"{S}.ui.advSticker") is None, r)
         c0 = await page.evaluate(P + ".coins")
@@ -66,7 +66,7 @@ async def main():
         await page.screenshot(path=OUT + 'card_desktop_en.png')
         r = await stage_clear(page, 1, lost=0)
         check('3 stars again: no second sticker, no peel on the card', not r['sticker'] and await page.evaluate(AL + ".got") == [1] and await page.evaluate(f"{S}.ui.advSticker") is None, r)
-        check('albumAward refuses a sticker already got / a bad stage', await page.evaluate(AL + ".award(1)") is None and await page.evaluate(AL + ".award(0)") is None and await page.evaluate(AL + ".award(41)") is None)
+        check('albumAward refuses a sticker already got / a bad stage', await page.evaluate(AL + ".award(1)") is None and await page.evaluate(AL + ".award(0)") is None and await page.evaluate(AL + ".award(65)") is None)
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.album", timeout=8000)
         check('the sticker survives a reload (still new)', await page.evaluate(AL + ".got") == [1] and await page.evaluate(AL + ".fresh") == [1])
         check('no page errors (award)', not errs, errs); await ctx.close()
@@ -96,8 +96,8 @@ async def main():
                 hd = await page.evaluate("""(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }, h2 = $('advTitle'), ab = $('advAlbumBtn');
                   return { back: r($('advBack')), h2: r(h2), album: r(ab), day: r($('advDayChest')), stars: r($('advStarTotal')), full: h2.scrollWidth <= h2.clientWidth + 1, pr: ab.querySelector('.pr').textContent, dot: !ab.querySelector('.dot').hidden, W: innerWidth, noX: document.documentElement.scrollWidth <= innerWidth + 1 }; })()""")
                 parts = [hd[k] for k in ('back', 'h2', 'album', 'day', 'stars')]
-                check(tag + ': the map header holds back, title, Album (12/40, a dot for the new ones), the day chest and the stars: all inside, none overlapping, 40+ px targets, the title not cut',
-                      all(x['l'] >= 0 and x['r'] <= hd['W'] + 0.5 for x in parts) and not any(rects_overlap(parts[i], parts[j], 1) for i in range(5) for j in range(i + 1, 5)) and all(hd[k]['h'] >= 40 and hd[k]['w'] >= 40 for k in ('back', 'album', 'day')) and hd['full'] and hd['pr'] == '12/40' and hd['dot'] and hd['noX'], hd)
+                check(tag + ': the map header holds back, title, Album (12/64, a dot for the new ones), the day chest and the stars: all inside, none overlapping, 40+ px targets, the title not cut',
+                      all(x['l'] >= 0 and x['r'] <= hd['W'] + 0.5 for x in parts) and not any(rects_overlap(parts[i], parts[j], 1) for i in range(5) for j in range(i + 1, 5)) and all(hd[k]['h'] >= 40 and hd[k]['w'] >= 40 for k in ('back', 'album', 'day')) and hd['full'] and hd['pr'] == '12/64' and hd['dot'] and hd['noX'], hd)
                 check(tag + ': ' + ('header runs right to left' if he else 'header runs left to right'), (hd['back']['l'] > hd['album']['l'] > hd['day']['l']) if he else (hd['back']['l'] < hd['album']['l'] < hd['day']['l']), hd)
                 if mobile: await page.screenshot(path=OUT + 'map_header_phone_' + lt + '.png', clip={'x': 0, 'y': 0, 'width': 360, 'height': 120})
                 c0 = await page.evaluate(P + ".coins")
@@ -118,8 +118,8 @@ async def main():
                       [s['n'] for s in a['slots']] == list(range(1, 9)) and all(s['got'] and s['lb'] for s in a['slots']) and a['count'] == '8 / 8' and a['done'] and a['reward'].startswith(await page.evaluate("t('albumDone')"))
                       and a['sheet']['l'] >= 0 and a['sheet']['r'] <= a['W'] + 0.5 and a['sheet']['t'] >= 0 and a['sheet']['b'] <= a['H'] + 0.5 and a['noX'] and a['fits'], a)
                 check(tag + ': names in the language (Brick / לבנה); the page title "World 1 · ..."', a['slots'][0]['lb'] == ('לבנה' if he else 'Brick') and a['title'] == await page.evaluate("t('albumPage', { n: 1, w: t('wn_1') })"), a['slots'][0])
-                check(tag + ': 5 world tabs (1 on), 40+ px targets; world 2 has a dot (new stickers there); big sticker slots (>= 52 px), no slot overlapping',
-                      [t_['wd'] for t_ in a['tabs']] == [1, 2, 3, 4, 5] and a['tabs'][0]['on'] and all(t_['h'] >= 40 and t_['w'] >= 40 for t_ in a['tabs']) and a['tabs'][1]['dot'] and all(s['c']['w'] >= 52 for s in a['slots'])
+                check(tag + ': 8 world tabs (1 on), 40+ px targets; world 2 has a dot (new stickers there); big sticker slots (>= 52 px), no slot overlapping',
+                      [t_['wd'] for t_ in a['tabs']] == [1, 2, 3, 4, 5, 6, 7, 8] and a['tabs'][0]['on'] and all(t_['h'] >= 40 and t_['w'] >= 40 for t_ in a['tabs']) and a['tabs'][1]['dot'] and all(s['c']['w'] >= 52 for s in a['slots'])
                       and not any(rects_overlap(a['slots'][i], a['slots'][j], 1) for i in range(8) for j in range(i + 1, 8)), a['tabs'])
                 check(tag + ': ' + ('tabs and slots run right to left' if he else 'tabs and slots run left to right'), (a['tabs'][0]['l'] > a['tabs'][1]['l'] and a['slots'][0]['l'] > a['slots'][1]['l']) if he else (a['tabs'][0]['l'] < a['tabs'][1]['l'] and a['slots'][0]['l'] < a['slots'][1]['l']))
                 if not he or mobile: await page.screenshot(path=OUT + 'page1_' + dev + '_' + lt + '.png')
@@ -149,12 +149,12 @@ async def main():
                     await page.screenshot(path=OUT + 'page4_desktop_en.png')
                     await page.evaluate(AL + ".setPage(5)"); await page.wait_for_function(AL + ".pages.includes(5)", timeout=4000); await page.wait_for_timeout(500)
                     await page.screenshot(path=OUT + 'page5_desktop_en.png')
-                    check('every page shown pays once: 1, 4, 5 so far; "Every sticker found!"', await page.evaluate(AL + ".pages") == [1, 4, 5] and await page.evaluate("$('albumNext').textContent") == await page.evaluate("t('albumAllDone')"), await page.evaluate(AL + ".pages"))
+                    check('every page shown pays once: 1, 4, 5 so far; this page full: the next sticker to get is on stage 41 (world 6)', await page.evaluate(AL + ".pages") == [1, 4, 5] and await page.evaluate("$('albumNext').textContent") == await page.evaluate("t('albumNext', { n: 41 })"), await page.evaluate(AL + ".pages"))
                 check(tag + ': no page errors (album)', not errs, errs); await ctx.close()
 
         # ---- the profile: bad album fields dropped ----
-        ctx, page, errs = await fresh(b, init=prof(adv={'stars': {'3': 3}}, album={'got': [5, 5, 'x', 0, 41, 2.5, 9], 'fresh': [9, 7, 'a'], 'pages': [1, 2, 9, 'z']}))
-        check('validation: stickers 1..40 unique and sorted (+ the 3-star stage 3 added, new), new ones only among those got, a page paid only when full',
+        ctx, page, errs = await fresh(b, init=prof(adv={'stars': {'3': 3}}, album={'got': [5, 5, 'x', 0, 65, 2.5, 9], 'fresh': [9, 7, 'a'], 'pages': [1, 2, 9, 'z']}))
+        check('validation: stickers 1..64 unique and sorted (+ the 3-star stage 3 added, new), new ones only among those got, a page paid only when full',
               await page.evaluate(AL + ".got") == [3, 5, 9] and await page.evaluate(AL + ".fresh") == [9, 3] and await page.evaluate(AL + ".pages") == [], [await page.evaluate(AL + ".got"), await page.evaluate(AL + ".fresh"), await page.evaluate(AL + ".pages")])
         await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(album='junk'))
@@ -167,7 +167,7 @@ async def main():
         # ---- world music: starts in a stage, ducks under the banner, stops on pause / hand lost / mute / the end / the map; a track per world; never in Endless ----
         ctx, page, errs = await fresh(b, init=prof(adv={'stars': stars(16), 'unlocked': 40}))
         tr = await page.evaluate(MU + ".tracks")
-        check('5 tracks, each its own tempo / key / lead voice (playful square, bells, mechanical saw, marimba, dramatic)', len(tr) == 5 and len({(t_['bpm'], t_['root']) for t_ in tr}) == 5 and [t_['lead'] for t_ in tr] == ['square', 'bell', 'saw', 'marimba', 'drama'], tr)
+        check('8 tracks, each its own tempo / key / lead voice (playful square, bells, mechanical saw, marimba, dramatic; worlds 6-8: space synth, bubbly sea, candy chiptune)', len(tr) == 8 and len({(t_['bpm'], t_['root']) for t_ in tr}) == 8 and [t_['lead'] for t_ in tr] == ['square', 'bell', 'saw', 'marimba', 'drama', 'synth', 'bubbly', 'chip'], tr)
         check('on the start screen: no music', not await page.evaluate(MU + ".on"))
         await stage_play(page, 1)
         await page.wait_for_function(MU + ".audio === 'running'", timeout=5000)

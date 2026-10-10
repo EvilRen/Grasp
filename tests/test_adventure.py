@@ -1,5 +1,5 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Strike Adventure: 40 fixed stages (5 worlds x 8, the 8th of each a boss stage) on a saga map. A stage's plan comes from its number alone; the goal is
+# Strike Adventure: 64 fixed stages (8 worlds x 8, the 8th of each a boss stage) on a saga map. A stage's plan comes from its number alone; the goal is
 # to break every wall (no more come once the plan's are out); 3 lives, 1-3 stars; coins on a first clear and for stars added on a replay; the fail
 # card's Try again; the map (phone / desktop, EN / HE: nodes, stars, locks, the pulsing current stop, the star total, no sideways scroll); the Strike
 # tile opens it, Endless plays the old run; the trip to the next world after a boss stage (state and pixels, 2D and 3D); the profile and the old-profile
@@ -43,31 +43,32 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'])
 
-        # ---- the plans: 40 stages, deterministic, ramping; each world brings its kinds in; boss stages ----
+        # ---- the plans: 64 stages, deterministic, ramping; each world brings its kinds in; boss stages ----
         ctx, page, errs = await fresh(b)
         plans = await page.evaluate(f"Array.from({{ length: {A}.count }}, (_, i) => {A}.plan(i + 1))")
-        again = await page.evaluate(f"(() => {{ Math.random = () => 0.5; return Array.from({{ length: 40 }}, (_, i) => {A}.plan(i + 1)); }})()")
-        check('40 stages (5 worlds x 8), 3 lives a stage', len(plans) == 40 and await page.evaluate(A + ".perWorld") == 8 and await page.evaluate(A + ".lives") == 3)
+        again = await page.evaluate(f"(() => {{ Math.random = () => 0.5; return Array.from({{ length: 64 }}, (_, i) => {A}.plan(i + 1)); }})()")
+        check('64 stages (8 worlds x 8: worlds 6-8 came later), 3 lives a stage', len(plans) == 64 and await page.evaluate(A + ".perWorld") == 8 and await page.evaluate(A + ".lives") == 3)
         check('plan(n) is deterministic (the same with Math.random poisoned)', plans == again)
         walls = [q['walls'] for q in plans]
         check('stage 1: 4 walls, all brick, 1 hp', plans[0]['walls'] == 4 and plans[0]['kinds'] == ['brick'] * 4 and plans[0]['hp'] == 1, plans[0])
-        check('walls ramp: never fewer within a world (boss stages aside), 8 at most (v4: a wall takes several aimed hits), 6-8 in world 5', all(walls[i] <= walls[i + 1] for w in range(5) for i in range(w * 8, w * 8 + 6)) and max(walls) == 8 and min(walls[32:39]) >= 6 and walls[0] == 4, walls)
+        check('walls ramp: never fewer within a world (boss stages aside), 8 at most (v4: a wall takes several aimed hits), 6-8 in world 5', all(walls[i] <= walls[i + 1] for w in range(8) for i in range(w * 8, w * 8 + 6)) and max(walls) == 8 and min(walls[32:39]) >= 6 and walls[0] == 4, walls)
         bosses = [q['n'] for q in plans if q['boss']]
-        check('the 8th stage of each world is its boss stage (the boss alone: no walls)', bosses == [8, 16, 24, 32, 40] and all(plans[n - 1]['walls'] < plans[n - 2]['walls'] for n in bosses), bosses)
+        check('the 8th stage of each world is its boss stage (the boss alone: no walls)', bosses == [8, 16, 24, 32, 40, 48, 56, 64] and all(plans[n - 1]['walls'] < plans[n - 2]['walls'] for n in bosses), bosses)
         intro = {}
         for q in plans:
             for i, k in enumerate(q['kinds']):
                 if k not in intro: intro[k] = (q['n'], i)
-        check('kinds by world: brick from 1; glass at stage 9, steel 17, holed 25, moving 27, TNT 33, each as its stage\'s second wall', intro == {'brick': (1, 0), 'glass': (9, 1), 'steel': (17, 1), 'holed': (25, 1), 'moving': (27, 1), 'tnt': (33, 1)}, intro)
+        check('kinds by world: brick from 1; glass at stage 9, steel 17, holed 25, moving 27, TNT 33, each as its stage\'s second wall', intro == {'brick': (1, 0), 'glass': (9, 1), 'steel': (17, 1), 'holed': (25, 1), 'moving': (27, 1), 'tnt': (33, 1), 'asteroid': (41, 1), 'force': (43, 1), 'coral': (49, 1), 'jelly': (51, 1), 'gummy': (57, 1), 'choco': (59, 1)}, intro)
         allowed = {1: {'brick'}, 2: {'brick', 'glass'}, 3: {'brick', 'glass', 'steel'}, 4: {'brick', 'glass', 'steel', 'holed', 'moving'}, 5: {'brick', 'glass', 'steel', 'holed', 'moving', 'tnt'}}
+        for w_, ks in ((6, ('asteroid', 'force')), (7, ('coral', 'jelly')), (8, ('gummy', 'choco'))): allowed[w_] = allowed[w_ - 1] | set(ks)
         check('a stage only uses what its world has', all(set(q['kinds']) <= allowed[q['world']] and len(q['kinds']) == q['walls'] for q in plans))
         lv = [q['level'] for q in plans]; hp = [q['hp'] for q in plans]
-        check('difficulty ramps: the tuning level climbs (world 1: 1..6, the boss stage at 6; world 5 up to 30), armored bricks\' hp 1 (none) -> 2 (stage 5) -> 3 (world 3)', lv == sorted(lv) and lv[0] == 1 and lv[7] == 6 and lv[39] == 30 and hp == sorted(hp) and hp[0] == 1 and hp[4] == 2 and hp[16] == 3 and hp[39] == 3, [lv, hp])
+        check('difficulty ramps: the tuning level climbs (world 1: 1..6, the boss stage at 6; world 5 up to 30), armored bricks\' hp 1 (none) -> 2 (stage 5) -> 3 (world 3)', lv == sorted(lv) and lv[0] == 1 and lv[7] == 6 and lv[39] == 30 and lv[63] == 48 and hp == sorted(hp) and hp[0] == 1 and hp[4] == 2 and hp[16] == 3 and hp[39] == 3, [lv, hp])
         check('power-up bricks from stage 3 (rare), the cow from stage 2, the monkey and bending serves from world 2, S-wobbles from world 4',
               [q['pu'] > 0 for q in plans[:3]] == [False, False, True] and all(0 < q['pu'] <= 0.4 for q in plans[2:]) and [q['guests'] for q in plans[:2]] == [False, True]
               and [q['monkey'] for q in plans[7:9]] == [False, True] and plans[8]['curve'] and not plans[7]['curve'] and plans[24]['wobble'] and not plans[23]['wobble'])
         await page.reload(); await page.wait_for_timeout(500)
-        check('...and the same after a reload', await page.evaluate(f"Array.from({{ length: 40 }}, (_, i) => {A}.plan(i + 1))") == plans)
+        check('...and the same after a reload', await page.evaluate(f"Array.from({{ length: 64 }}, (_, i) => {A}.plan(i + 1))") == plans)
         check('plans: no page errors', not errs, errs); await ctx.close()
 
         # ---- a stage plays its plan: seeded (a retry is the same), the daily's sequence untouched; the road does not gate it; no perks ----
@@ -179,11 +180,11 @@ async def main():
             await page.wait_for_function(A + ".mapOpen"); await page.wait_for_timeout(500)
             m = await page.evaluate(MAP)
             nd = {n['n']: n for n in m['nodes']}
-            check(name + ': the Strike tile opens the map (40 stops, 5 world bands named, the game not started)', m['shown'] and len(m['nodes']) == 40 and [x['w'] for x in m['bands']] == [1, 2, 3, 4, 5] and await page.evaluate("mode") == 'none', len(m['nodes']))
-            check(name + ': stars under each stop as saved, numbers on the open ones, locks on the rest', [nd[n]['on'] for n in range(1, 13)] == [3, 3, 2, 1, 3, 2, 3, 3, 2, 1, 3, 0] and nd[5]['text'] == '5' and all(nd[n]['locked'] and nd[n]['lock'] for n in range(13, 41)) and not any(nd[n]['locked'] for n in range(1, 13)))
+            check(name + ': the Strike tile opens the map (64 stops, 8 world bands named, the game not started)', m['shown'] and len(m['nodes']) == 64 and [x['w'] for x in m['bands']] == [1, 2, 3, 4, 5, 6, 7, 8] and await page.evaluate("mode") == 'none', len(m['nodes']))
+            check(name + ': stars under each stop as saved, numbers on the open ones, locks on the rest', [nd[n]['on'] for n in range(1, 13)] == [3, 3, 2, 1, 3, 2, 3, 3, 2, 1, 3, 0] and nd[5]['text'] == '5' and all(nd[n]['locked'] and nd[n]['lock'] for n in range(13, 65)) and not any(nd[n]['locked'] for n in range(1, 13)))
             check(name + ': the current stop (12) pulses, with the hand on it, scrolled into view', m['cur'] == 12 and nd[12]['hand'] and nd[12]['anim'] == 'apulse' and m['curIn'], [m['cur'], nd[12]['anim'], m['curIn']])
-            check(name + ': boss stops (8, 16 ...) are bigger, with a crown', all(nd[n]['boss'] and nd[n]['crown'] for n in (8, 16, 24, 32, 40)) and nd[8]['dw'] > nd[7]['dw'] * 1.15, [nd[8]['dw'], nd[7]['dw']])
-            check(name + ': the star total in the header (26 / 120)', m['total'].replace(' ', '') == '26/120', m['total'])
+            check(name + ': boss stops (8, 16 ...) are bigger, with a crown', all(nd[n]['boss'] and nd[n]['crown'] for n in (8, 16, 24, 32, 40, 48, 56, 64)) and nd[8]['dw'] > nd[7]['dw'] * 1.15, [nd[8]['dw'], nd[7]['dw']])
+            check(name + ': the star total in the header (26 / 192)', m['total'].replace(' ', '') == '26/192', m['total'])
             check(name + ': no sideways scroll, every stop inside the screen, Back and Endless reachable', m['noX'] and m['back']['w'] >= 44 and m['endBtn'], m['noX'])
             check(name + ': the path winds (stops left and right of the middle) and climbs (stage 2 above stage 1)', nd[2]['y'] < nd[1]['y'] and max(n['x'] for n in m['nodes']) - min(n['x'] for n in m['nodes']) > (120 if mobile else 300))
             if he: check(name + ': RTL, Hebrew title / names / Endless; the path mirrored', m['dir'] == 'rtl' and m['title'] == 'הרפתקה' and m['bands'][1]['name'] == 'גן הזכוכית' and 'אינסופי' in m['endless'] and nd[2]['x'] < 180, [m['title'], nd[2]['x']])
@@ -287,7 +288,7 @@ async def main():
         await page.evaluate(f"{A}.finishTest(0)")
         check('clearing an open stop past the gap opens the one after it', await page.evaluate(f"{A}.playable(10) && !{A}.playable(11)"))
         check('old profile: no page errors', not errs, errs); await ctx.close()
-        ctx, page, errs = await fresh(b, init="if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', '1'); localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, adv: { stars: { 1: 3, 2: 9, abc: 2, 50: 1, 3: 1.5, 4: '2' }, unlocked: 'x', open: [5, 'q', 99], seen: ['glass', 'lava'] } })); }")
+        ctx, page, errs = await fresh(b, init="if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', '1'); localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, adv: { stars: { 1: 3, 2: 9, abc: 2, 70: 1, 3: 1.5, 4: '2' }, unlocked: 'x', open: [5, 'q', 99], seen: ['glass', 'lava'] } })); }")
         bad = await page.evaluate(f"({{ stars: {A}.stars, unl: {A}.unlocked, open: {A}.open, seen: {A}.seen }})")
         check('broken Adventure data is cleaned on load (bad stars, stage numbers and kinds dropped)', bad == {'stars': {'1': 3}, 'unl': 1, 'open': [5], 'seen': ['glass']}, bad)
         check('broken profile: no page errors', not errs, errs); await ctx.close()
