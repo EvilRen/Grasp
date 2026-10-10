@@ -262,3 +262,27 @@ picks up where the last chapter ended rather than resetting, and it ends with a 
   ends in a sugar rush (everything faster). Measured with the simulated good player at ~2 minutes each, a little longer than the Lava Dragon.
 - *Rewards:* 24 new stickers (album pages 6-8 with their bonus) and three more star chests (130 / 160 / 192 stars, the last also a look) on the scarce economy.
 - *Old profiles:* a player who already beat the Lava Dragon finds world 6 open; nothing else changes.
+
+## The weekly event and the installable app
+
+**Ask (parent):** make the games feel like something "hundreds of millions would love"; they chose a weekly live event first, and an app you install.
+
+**What the biggest casual games do** (*Pokémon GO* community days, *Clash Royale* / *Brawl Stars* events, *Candy Crush* weekly challenges,
+*Fortnite* passes): one clear event a week that everyone shares, a theme you see at a glance (a name, a mascot, a colour), a countdown, a reward
+track you climb with ordinary play and claim with a satisfying chest, a few event missions, one exclusive prize that never comes back (so a week
+missed is felt but nothing breaks), and next week's teaser. All of it must be fair and cheap: no grinding, no paywall, no FOMO on the main game.
+
+**Applied:**
+- *One event a week, the same for everyone, offline:* Monday to Sunday local time, picked from the week number (no server). Six designs cycle:
+  Cow Stampede (Strike), Space Weekend (Adventure), Smash Mania (Smash), Fruit Frenzy (Slice), Bubble Festival (Bubble Pop), Speed Week (Frenzy).
+  Each brings a small twist to its game (cows everywhere, space walls in early worlds, a piñata boss, golden fruit, festival bubbles) and a mascot.
+- *Points from normal play* of the featured game only (a round 10, its special action 5-40), so the event steers which game you pick this week
+  without changing how the others play.
+- *A 12-tier track:* coins (140 a week at most: the scarce economy stays, about one premium look a month from events), pet snacks (feeding the pet
+  links the two habits), the event's sticker, the pet's event hat, and the final edition ball whose colours belong to that edition only.
+  A sticker or hat won before turns into snacks, never a duplicate. Tiers wait to be tapped (the chest moment) and can be caught up until Sunday.
+- *Not nagging:* the banner sits in the start screen's flow, shines once a week until opened and shows a dot only with something to claim; no
+  pop-up. Twists and toasts never run under the test harness (the suites' timings stay exact).
+- *Installable:* a manifest with a proper icon and shortcuts, a service worker that keeps the whole game playable offline (the shell precached,
+  the CDN files cached as they are used), a quiet update toast, and an Install chip only when the browser can install (or on iOS a 3-step how-to),
+  snoozed for two weeks after "Not now".

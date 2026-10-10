@@ -18,6 +18,7 @@ async def routes(page):
         return await route.continue_()
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
+INIT += "window.__graspGfx = { mode: '2d' };"  # Strike on the 2D canvas as in every other suite (three.js is self-hosted now, so it would load here and run on the slow software WebGL)
 HAND_JS = """
 window.mkHand = (ax, ay, pd) => {
   const L = Array.from({length:21}, () => ({x: ax, y: ay + 0.12, z: 0}));

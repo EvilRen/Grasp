@@ -150,7 +150,7 @@ async def main():
             await frames(page, 2); fl = await page.evaluate(PIX2D + "(640, 796)")
             check('no WebGL: strike.gfx stays 2d, the 2D corridor is drawn (opaque floor pixel)', await page.evaluate(f"{S}.gfx") == '2d' and fl[3] == 255 and fl[2] > fl[0], [info, fl])
         else:
-            check('Strike starts: three.js r128 loads once (cdnjs URL), strike.gfx = 3d, the WebGL layer shown', await page.evaluate(f"{S}.gfx") == '3d' and await page.evaluate("THREE.REVISION") == '128' and len(reqs) == 1 and 'cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js' in reqs[0] and not await page.evaluate("$('stage3d').hidden"), [reqs, info])
+            check('Strike starts: three.js r128 loads once (the self-hosted /vendor/ copy first: offline too), strike.gfx = 3d, the WebGL layer shown', await page.evaluate(f"{S}.gfx") == '3d' and await page.evaluate("THREE.REVISION") == '128' and len(reqs) == 1 and reqs[0].endswith('/vendor/three.min.js') and not await page.evaluate("$('stage3d').hidden"), [reqs, info])
             lay = await page.evaluate("(() => { const a = $('stage3d'), c = $('stage'), sa = getComputedStyle(a); return { under: !!(a.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING), pe: sa.pointerEvents, pos: sa.position, w: a.getBoundingClientRect().width, h: a.getBoundingClientRect().height }; })()")
             check('#stage3d sits under the 2D canvas (earlier in the DOM, both fixed full-screen), never takes pointer events', lay['under'] and lay['pe'] == 'none' and lay['pos'] == 'fixed' and lay['w'] == 1280 and lay['h'] == 800, lay)
             await page.mouse.move(1180, 700); await page.evaluate(FREEZE)
@@ -244,7 +244,7 @@ async def main():
         ctx, page, errs = await open_page(b, block_three=True)
         await start(page); await page.wait_for_function(f"{S}.gfxInfo.state === 'failed'", timeout=20000); await frames(page, 2)
         st = await page.evaluate(f"({{ gfx: {S}.gfx, info: {S}.gfxInfo, hidden: $('stage3d').hidden, floor: {PIX2D}(640, 796), ball: !!{S}.ball }})")
-        check('three.js failed to load (cdnjs and jsDelivr aborted): gfx 2d, the error kept, the 2D corridor drawn, the ball in play', st['gfx'] == '2d' and 'three.js failed to load' in st['info']['err'] and st['hidden'] and st['floor'][3] == 255 and st['ball'], st)
+        check('three.js failed to load (this site, cdnjs and jsDelivr aborted): gfx 2d, the error kept, the 2D corridor drawn, the ball in play', st['gfx'] == '2d' and 'three.js failed to load' in st['info']['err'] and st['hidden'] and st['floor'][3] == 255 and st['ball'], st)
         await page.evaluate(f"{S}.setBallZ(900, 640, 380)"); await frames(page, 2)
         bp = await page.evaluate(PIX2D + "(640, 380)")
         check('fallback: the 2D ball is drawn', coral(bp), bp)

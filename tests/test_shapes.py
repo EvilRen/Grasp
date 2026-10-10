@@ -123,7 +123,7 @@ async def tap_tests(b, he):
     fl = await page.evaluate(f"{S}.shapes[0]")
     check(tag + ' phone: the picked shape, a tap on another hole: it flies there on an arc (above the straight line)', ok and fl['anim'] == 'fly' and fl['y'] < s0['y'] + (st['holes'][wj]['y'] - s0['y']) * 0.6, fl)
     await page.screenshot(path=f'tests/out/shapes_tap_flight_wrong_{tag}.png')
-    ok = await wait(page, f"{S}.shapes[0].anim === 'back'", 3000)
+    ok = await wait(page, f"{S}.shapes[0].anim === 'back' || ({S}.shapes[0].anim !== 'fly' && !{S}.shapes[0].placed && __sfx.includes('boing'))", 3000)  # (on a slow machine the short flight home can be over between two polls)
     r = await page.evaluate(f"({{ sfx: __sfx.slice(), m: {S}.mistakes, placed: {S}.shapes[0].placed, filled: {S}.holes.filter(h => h.filled).length }})")
     check(tag + ' phone: ...the wrong hole: a boing, it bounces off and flies home (no mistake counted)', ok and 'boing' in r['sfx'] and 'clunk' not in r['sfx'] and r['m'] == 0 and not r['placed'] and r['filled'] == 0, r)
     ok = await wait(page, f"!{S}.shapes[0].anim", 3000); bk = await page.evaluate(f"{S}.shapes[0]")
@@ -665,9 +665,9 @@ async def main():
 
         # ---- start screen: 6 tiles (3 x 2) fit 360 x 740 with no scroll and no big gap under the top bar, EN / HE; desktop too ----
         LAY = """(() => { const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode, in: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, top: Math.round(r.top), w: r.width, name: b.querySelector('[data-i18n]').textContent }; });
-          const st = $('start'), h1 = document.querySelector('.panel h1').getBoundingClientRect(), lb = $('startLang').getBoundingClientRect(), pill = $('metaPill').getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(), md = document.querySelector('.modes').getBoundingClientRect(), seg = document.querySelector('#start .seg').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(), pc = $('petCorner').getBoundingClientRect(); // (the pet's corner sits between the toggle and the link)
+          const st = $('start'), h1 = document.querySelector('.panel h1').getBoundingClientRect(), lb = $('startLang').getBoundingClientRect(), pill = $('metaPill').getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(), ev = $('eventBtn').getBoundingClientRect(), md = document.querySelector('.modes').getBoundingClientRect(), seg = document.querySelector('#start .seg').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(), pc = $('petCorner').getBoundingClientRect(); // (the pet's corner sits between the toggle and the link)
           return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, rows: new Set(tiles.map(t => Math.round(t.top / 20))).size, barBottom: Math.max(h1.bottom, lb.bottom), pillTop: pill.top,
-            gaps: [row.top - pill.bottom, md.top - row.bottom, seg.top - md.bottom, pc.top - seg.bottom, a.top - pc.bottom].map(Math.round), link: a.bottom <= innerHeight }; })()"""
+            gaps: [row.top - pill.bottom, ev.top - row.bottom, md.top - ev.bottom, seg.top - md.bottom, pc.top - seg.bottom, a.top - pc.bottom].map(Math.round), link: a.bottom <= innerHeight }; })()"""
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
