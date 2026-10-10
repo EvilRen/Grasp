@@ -1,4 +1,4 @@
-"""Test-only static server: python3 -m http.server plus vercel.json's rewrites (the game paths /strike, /smash, ... serve /index.html).
+"""Test-only static server: python3 -m http.server plus vercel.json's rewrites (the game paths /strike, /smash, ..., the camera games /drums, /bubbles, /paint, /stars serve /index.html).
    python3 tests/serve.py [port]   (default 8765, bound to 127.0.0.1, serves the repo root)"""
 import functools, http.server, json, os, re, sys
 

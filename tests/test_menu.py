@@ -124,12 +124,42 @@ async def main():
         await menu_click(page, '#homeBtn'); await page.wait_for_function("mode === 'none'", timeout=5000)
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
+        # ---- the camera games (Air Drums, Bubble Pop, Air Painting, Catch the Stars): the same corner menu; it freezes the game; Restart; Home ----
+        CGM = ['drums', 'bubbles', 'paint', 'stars']
+        CPROBE = {'drums': "JSON.stringify(__grasp.cg.drums.beat.n)", 'bubbles': "JSON.stringify([Math.round(__grasp.cg.bubbles.left / 100), __grasp.cg.bubbles.list.map(q => Math.round(q.y))])",
+                  'paint': "JSON.stringify(__grasp.cg.paint.ink)", 'stars': "JSON.stringify([Math.round(__grasp.cg.catcher.left / 100), __grasp.cg.catcher.items.map(q => Math.round(q.y))])"}
+        for mobile, he in ((True, False), (True, True), (False, False)):
+            tag = ('phone ' if mobile else 'desktop ') + ('HE' if he else 'EN')
+            ctx, page, errs = await fresh(b, mobile=mobile, he=he, init="sessionStorage.setItem('cgTouchOk', '1');")
+            for m in CGM:
+                await page.evaluate(f"__grasp.cg.start('{m}', 'mouse')"); await page.wait_for_function(f"mode === 'mouse' && gameMode === '{m}' && $('start').hidden", timeout=8000)
+                await page.evaluate(FRAMES)
+                if m == 'drums': await page.evaluate("__grasp.cg.beat(true)")
+                vis = await page.evaluate(VIS); bt = await page.evaluate(BTN)
+                check(f'{tag} {m}: the toolbar is the one round pause button in the top-right corner', vis == ['pauseBtn'] and bt['W'] - 24 <= bt['r'] <= bt['W'] - 4 and bt['b'] <= 70, [vis, bt])
+                cb = await page.evaluate("__grasp.cg.btns()")
+                check(f'{tag} {m}: the game\'s own buttons stay clear of it', not [q for q in cb if q['x'] < bt['r'] and q['x'] + q['w'] > bt['l'] and q['y'] < bt['b'] and q['y'] + q['h'] > bt['t']], [cb, bt])
+                await page.wait_for_timeout(250)
+                await press(page, mobile, '#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
+                sh = await page.evaluate(SHEET)
+                check(f'{tag} {m}: the sheet: Resume, Restart, Sound, Language, Stats, Home', sh['ids'] == ['resumeBtn', 'resetBtn', 'muteBtn', 'lang', 'hudBtn', 'homeBtn'] and sh['labels'][0] == ('המשך' if he else 'Resume'), sh)
+                f0 = await page.evaluate(CPROBE[m]); await page.wait_for_timeout(500); f1 = await page.evaluate(CPROBE[m])
+                check(f'{tag} {m}: the sheet freezes the game', f0 == f1, [f0, f1])
+                if mobile: await page.screenshot(path=f"tests/out/menu_{m}_{'he' if he else 'en'}.png")
+                await press(page, mobile, '#resumeBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
+                if m == 'bubbles':
+                    await page.evaluate("__grasp.cg.bubbles.score = 9"); await menu_click(page, '#resetBtn', tap=mobile); await page.wait_for_function("!menu.open && __grasp.cg.bubbles.score === 0", timeout=4000)
+                    check(f'{tag} bubbles: Restart: a fresh round', True)
+                await menu_click(page, '#homeBtn', tap=mobile); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=5000)
+                if m == 'drums': check(f'{tag} drums: Home stops the backing beat', not await page.evaluate("__grasp.cg.drums.beat.on"))
+            check(f'{tag} camera games: no page errors', not errs, errs); await ctx.close()
+
         # ---- camera (phone): a pinch held on the pause button opens the sheet in every mode; one held on Resume closes it (3-2-1) ----
         ctx, page, errs = await fresh(b, mobile=True, init=HAND_JS)
         await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
         await page.tap('#camBtn'); await page.tap('.modes button[data-mode=sandbox]')
         await page.wait_for_function("mode === 'camera' && gameMode === 'sandbox' && cursor.present", timeout=15000)
-        for m in MODES:
+        for m in MODES + ['drums', 'bubbles', 'paint', 'stars']:  # (the camera games too)
             await page.evaluate(f"__grasp.setGameMode('{m}')"); await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
             await page.wait_for_function("cursor.present && !pause.on", timeout=8000); await page.wait_for_timeout(300)
             bt = await page.evaluate(BTN); pv = await page.evaluate("preview.getBoundingClientRect().right")

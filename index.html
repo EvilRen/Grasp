@@ -595,6 +595,33 @@ html[dir="rtl"] #metaPill{ left:auto; right:auto; }
   #start .panel > #metaPill{ align-self:center; margin:0; }
   #start .panel > .metaRow, #start .panel > .modes, #start .panel > .link{ margin:0; }
 }
+/* the camera games: the start screen's tile (a full-width row under the six games), its picker sheet, the in-game camera prompt */
+#start .modes > button.camTile{ grid-column:1 / -1; grid-row:3; flex-direction:row; align-items:center; justify-content:flex-start; gap:10px; height:52px; padding:6px 10px; color:var(--bone); text-align:start;
+  background:linear-gradient(100deg, rgba(169,139,255,.3), rgba(84,198,235,.16) 55%, rgba(67,217,163,.2)); box-shadow:inset 0 0 0 1.5px rgba(169,139,255,.6); }
+.camTile .ctIcons{ display:flex; gap:1px; flex:none; }
+.camTile .ctIcons svg{ display:block; width:24px; height:24px; }
+.camTile .ctTx{ display:flex; flex-direction:column; min-width:0; flex:1; line-height:1.2; }
+.camTile .ctTx b{ font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.camTile .ctTx small{ font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.camTile .ctGo{ flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:rgba(14,19,40,.6); color:#c9b8ff; }
+.camTile .ctGo svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+@media (max-width:380px){ .camTile .ctIcons svg{ width:21px; height:21px; } }
+.cgSheet{ width:min(420px,100%); }
+.cgCamLine{ display:flex; align-items:center; gap:8px; margin:0 0 12px; padding:8px 8px 8px 10px; border-radius:14px; background:rgba(169,139,255,.14); box-shadow:inset 0 0 0 1px rgba(169,139,255,.45); font-size:13px; font-weight:600; color:#e6dcff; }
+.cgCamLine[hidden]{ display:none; }
+.cgCamLine > svg{ flex:none; width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.cgCamLine span{ flex:1; min-width:0; }
+.cgCamLine button{ flex:none; padding:8px 11px; border-radius:999px; background:var(--saffron); color:#241a00; font-weight:700; font-size:12px; }
+.cgGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cgGrid button{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 8px 11px; border-radius:16px; background:rgba(29,37,71,.75); box-shadow:inset 0 0 0 1.5px var(--line); color:var(--bone); text-align:center; transition:transform .1s; }
+.cgGrid button:active{ transform:scale(.97); }
+.cgGrid .cgArt{ width:66px; height:66px; border-radius:18px; display:grid; place-items:center; background:radial-gradient(circle at 40% 35%, rgba(255,255,255,.14), rgba(14,19,40,.85) 70%); }
+.cgGrid .cgArt svg{ width:48px; height:48px; }
+.cgGrid b{ font-size:15px; }
+.cgGrid small{ font-size:11.5px; color:var(--muted); line-height:1.25; }
+.cgCamSheet .cgCamArt svg{ width:76px; height:76px; }
+.cgCamSheet .dnRow button:not(.primary){ background:rgba(241,233,218,.1); color:var(--bone); font-weight:600; }
+.cgCamSheet .dnRow .primary{ padding:12px 10px; font-size:16px; }
 /* the daily habit: the play-streak flame and the gift chip beside the language button, the 'play today' hint, the 7-day gift calendar,
    the '3 stages today' chest in the Adventure map's header and the star chests beside its path */
 .habitBar{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); right:84px; display:flex; gap:6px; z-index:1; }
@@ -878,6 +905,7 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
       <button type="button" data-mode="busy" aria-pressed="false" style="--i:3"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><rect x="6" y="7.5" width="12" height="5" rx="2.5"/><circle cx="15" cy="10" r="1.6"/><circle cx="8" cy="16.5" r="1.4"/><circle cx="12" cy="16.5" r="1.4"/><circle cx="16" cy="16.5" r="1.4"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeBusy">Busy Board</span></button>
       <button type="button" data-mode="strike" aria-pressed="false" style="--i:4"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.5" cy="12" r="5"/><path d="M13.2 9.2a3 3 0 0 1 3.6 1.2"/><path d="M2.5 8.5h5.5M1.5 12h6M2.5 15.5h5.5"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeStrike">Strike</span></button>
       <button type="button" data-mode="shapes" aria-pressed="false" style="--i:5"><span class="pv"><canvas class="pvc" aria-hidden="true"></canvas><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5l1.2 2.5 2.7.4-2 1.9.5 2.7L7 9.7 4.6 11l.5-2.7-2-1.9 2.7-.4z"/><circle cx="17" cy="7" r="3.2"/><rect x="3" y="14" width="18" height="7" rx="1.8"/><path d="M8 16.2l1.8 2.8H6.2z"/><rect x="14.2" y="16.2" width="3" height="3" rx=".5"/></svg><span class="best" hidden></span><span class="newDot" hidden></span></span><span data-i18n="modeShapes">Shapes</span></button>
+<button type="button" class="camTile" id="camGamesBtn" style="--i:6" data-i18n-aria="camGamesAria" aria-label="Camera games"><span class="ctIcons" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V9" fill="#ff6f59"/><path d="M4 12.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2" fill="none" stroke="#ffd77a" stroke-width="1"/><ellipse cx="12" cy="9" rx="8" ry="3.2" fill="#f1ebdc" stroke="#c9bea5" stroke-width="1"/><path d="M5.5 3.5l5.5 5M18.5 3.5L13 8.5" stroke="#ffd77a" stroke-width="1.7" stroke-linecap="round"/><circle cx="5.5" cy="3.5" r="1.3" fill="#fff3c4"/><circle cx="18.5" cy="3.5" r="1.3" fill="#fff3c4"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="13.5" r="6.5" fill="rgba(84,198,235,.28)" stroke="#54c6eb" stroke-width="1.5"/><circle cx="17.5" cy="7" r="3.8" fill="rgba(255,111,145,.28)" stroke="#ff6f91" stroke-width="1.4"/><circle cx="18.5" cy="17.5" r="2.5" fill="rgba(255,210,63,.35)" stroke="#ffd23f" stroke-width="1.2"/><path d="M5.8 11a3.6 3.6 0 0 1 2.6-2" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M15.6 5.6a1.8 1.8 0 0 1 1.3-.9" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 20.5c2.5-6.5 6.5-9.5 10.5-11" stroke="#c06bff" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M3 21c3-1 7-2.2 9.2-5.3" stroke="#3ec1ff" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M14 10.2l6.3-7 1.4 1.3-6.4 7z" fill="#ffd23f" stroke="#b8780a" stroke-width=".8"/><circle cx="13.7" cy="10.8" r="1.9" fill="#ff4d6d"/><path d="M19 15l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" fill="#fff3c4"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill="#ffd23f" stroke="#b8780a" stroke-width="1" stroke-linejoin="round"/><circle cx="10.2" cy="11.4" r=".95" fill="#3a2400"/><circle cx="13.8" cy="11.4" r=".95" fill="#3a2400"/><path d="M10.6 13.5a1.9 1.9 0 0 0 2.8 0" stroke="#3a2400" stroke-width=".9" fill="none" stroke-linecap="round"/></svg></span><span class="ctTx"><b data-i18n="camGames">Camera games</b><small data-i18n="camGamesSub">Drums · Bubbles · Paint · Stars</small></span><span class="ctGo" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></button>
       <div class="diff" id="strikeDiff" role="group" data-i18n-aria="diffAria" aria-label="Strike difficulty"><button type="button" data-diff="easy" aria-pressed="true" data-i18n="diffEasy">Easy</button><button type="button" data-diff="normal" aria-pressed="false" data-i18n="diffNormal">Normal</button></div>
     </div>
     <div class="dots" id="modeDots" aria-hidden="true" style="--i:3"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -971,6 +999,21 @@ video{ position:fixed; left:0; top:0; width:2px; height:2px; opacity:0.01; point
     <div id="smList"></div>
   </div>
   <div id="smDwell" hidden></div>
+</div>
+<div class="ov" id="cgPick" hidden role="dialog" aria-modal="true" aria-labelledby="cgPickT">
+  <div class="sheet cgSheet">
+    <header><h2 id="cgPickT" data-i18n="camGames">Camera games</h2><button class="xBtn" id="cgPickX" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="cgCamLine" id="cgPickCam"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span data-i18n="cgCamShort">Best with the camera!</span><button type="button" id="cgPickCamOn" data-i18n="cgCamOn">Turn on camera</button></p>
+    <div class="cgGrid"><button type="button" data-cg="drums"><span class="cgArt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V9" fill="#ff6f59"/><path d="M4 12.5c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2" fill="none" stroke="#ffd77a" stroke-width="1"/><ellipse cx="12" cy="9" rx="8" ry="3.2" fill="#f1ebdc" stroke="#c9bea5" stroke-width="1"/><path d="M5.5 3.5l5.5 5M18.5 3.5L13 8.5" stroke="#ffd77a" stroke-width="1.7" stroke-linecap="round"/><circle cx="5.5" cy="3.5" r="1.3" fill="#fff3c4"/><circle cx="18.5" cy="3.5" r="1.3" fill="#fff3c4"/></svg></span><b data-i18n="modeDrums"></b><small data-i18n="cgSubDrums"></small></button><button type="button" data-cg="bubbles"><span class="cgArt"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="13.5" r="6.5" fill="rgba(84,198,235,.28)" stroke="#54c6eb" stroke-width="1.5"/><circle cx="17.5" cy="7" r="3.8" fill="rgba(255,111,145,.28)" stroke="#ff6f91" stroke-width="1.4"/><circle cx="18.5" cy="17.5" r="2.5" fill="rgba(255,210,63,.35)" stroke="#ffd23f" stroke-width="1.2"/><path d="M5.8 11a3.6 3.6 0 0 1 2.6-2" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M15.6 5.6a1.8 1.8 0 0 1 1.3-.9" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg></span><b data-i18n="modeBubbles"></b><small data-i18n="cgSubBubbles"></small></button><button type="button" data-cg="paint"><span class="cgArt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 20.5c2.5-6.5 6.5-9.5 10.5-11" stroke="#c06bff" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M3 21c3-1 7-2.2 9.2-5.3" stroke="#3ec1ff" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M14 10.2l6.3-7 1.4 1.3-6.4 7z" fill="#ffd23f" stroke="#b8780a" stroke-width=".8"/><circle cx="13.7" cy="10.8" r="1.9" fill="#ff4d6d"/><path d="M19 15l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" fill="#fff3c4"/></svg></span><b data-i18n="modePaint"></b><small data-i18n="cgSubPaint"></small></button><button type="button" data-cg="stars"><span class="cgArt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" fill="#ffd23f" stroke="#b8780a" stroke-width="1" stroke-linejoin="round"/><circle cx="10.2" cy="11.4" r=".95" fill="#3a2400"/><circle cx="13.8" cy="11.4" r=".95" fill="#3a2400"/><path d="M10.6 13.5a1.9 1.9 0 0 0 2.8 0" stroke="#3a2400" stroke-width=".9" fill="none" stroke-linecap="round"/></svg></span><b data-i18n="modeStars"></b><small data-i18n="cgSubStars"></small></button></div>
+  </div>
+</div>
+<div class="ov" id="cgCam" hidden role="dialog" aria-modal="true" aria-labelledby="cgCamT">
+  <div class="sheet dnSheet cgCamSheet">
+    <div class="cgCamArt"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="18" width="40" height="30" rx="7" fill="#2b3566" stroke="#a98bff" stroke-width="2.5"/><path d="M20 18l4-6h12l4 6" fill="#2b3566" stroke="#a98bff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="28" cy="33" r="9" fill="#141a3a" stroke="#54c6eb" stroke-width="3"/><circle cx="25" cy="30" r="2.5" fill="#fff"/><path d="M50 28c3-4 4-9 2-13M55 31c5-6 6-14 2-20" stroke="#ffd23f" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M44 58V43a2.5 2.5 0 0 1 5 0v8M49 47v-6a2.5 2.5 0 0 1 5 0v6M54 47v-4a2.5 2.5 0 0 1 5 0v8a8 8 0 0 1-8 8h-2a8 8 0 0 1-7-4l-4-7a2.4 2.4 0 0 1 4-2.6l2 2.6" fill="#ffc24b" stroke="#7a4a05" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+    <h2 id="cgCamT" data-i18n="cgCamTitle">These games are best with the camera!</h2>
+    <p data-i18n="cgCamSub">Wave your hands in the air to play. Touch works too.</p>
+    <div class="dnRow"><button type="button" id="cgCamTouch" data-i18n="cgCamTouch">Play with touch</button><button type="button" class="primary" id="cgCamOn" data-i18n="cgCamOn">Turn on camera</button></div>
+  </div>
 </div>
 <div class="ov" id="newCard" hidden role="dialog" aria-modal="true" aria-labelledby="nuName">
   <div class="sheet nuSheet">
@@ -1490,6 +1533,45 @@ Object.assign(I18N.he, {
   shp_circle: 'עיגול', shp_square: 'ריבוע', shp_triangle: 'משולש', shp_star: 'כוכב', shp_heart: 'לב', shp_hexagon: 'משושה',
   shp_rectangle: 'מלבן', shp_oval: 'אליפסה', shp_crescent: 'סהר', shp_diamond: 'מעוין', shp_cross: 'צלב', shp_pentagon: 'מחומש',
 });
+// the camera games (Air Drums, Bubble Pop, Air Painting, Catch the Stars)
+Object.assign(I18N.en, {
+  camGames: 'Camera games', camGamesSub: 'Drums · Bubbles · Paint · Stars', camGamesAria: 'Camera games: Air Drums, Bubble Pop, Air Painting, Catch the Stars',
+  modeDrums: 'Air Drums', modeBubbles: 'Bubble Pop', modePaint: 'Air Painting', modeStars: 'Catch the Stars',
+  cgSubDrums: 'Strike down to drum', cgSubBubbles: 'Pop them with your fingers', cgSubPaint: 'Pinch to paint glowing lines', cgSubStars: 'Catch them in your basket',
+  cgCamTitle: 'These games are best with the camera!', cgCamSub: 'Wave your hands in the air to play. Touch works too.', cgCamOn: 'Turn on camera', cgCamTouch: 'Play with touch', cgCamShort: 'Best with the camera!',
+  gm_drums: 'air drums', gm_bubbles: 'bubble pop', gm_paint: 'air painting', gm_stars: 'catch the stars',
+  descDrums: 'A drum kit round the screen: strike down onto a drum with your hand (or tap it).', descBubbles: 'Bubbles float up: touch them with any finger to pop them.',
+  descPaint: 'Pinch in the air to paint glowing lines; open your hand to stop.', descStars: 'Move the basket with your hand to catch falling stars. Dodge the bombs!',
+  hintDrumsCam: 'Strike down onto a drum with your hand. Both hands play!', hintDrumsTouch: 'Tap the drums! Many fingers work.', hintDrumsMouse: 'Click the drums.',
+  hintBubblesCam: 'Touch the bubbles with your fingers to pop them!', hintBubblesTouch: 'Tap the bubbles to pop them!', hintBubblesMouse: 'Click the bubbles to pop them.',
+  hintPaintCam: 'Pinch to paint, open your hand to stop. Hold your hand over a colour to pick it.', hintPaintTouch: 'Draw with your finger. Tap a colour to pick it.', hintPaintMouse: 'Drag to draw. Click a colour to pick it.',
+  hintStarsCam: 'Move your open hand to move the basket. Catch the stars, dodge the bombs!', hintStarsTouch: 'Slide your finger to move the basket.', hintStarsMouse: 'Move the mouse to move the basket.',
+  dr_hihat: 'Hi-hat', dr_crash: 'Cymbal', dr_snare: 'Snare', dr_tom: 'Tom', dr_cowbell: 'Cowbell', dr_kick: 'Kick',
+  drBeat: 'Beat', onLbl: 'on', offLbl: 'off', drSimon: 'Follow the light', drStop: 'Stop', drWatch: 'Watch the lights…', drYourTurn: 'Your turn! {i}/{n}', drNice: 'Nice!', drGreat: 'Amazing!',
+  drLevel: 'Level {n}', drSimonOver: 'Good drumming!', drLongest: 'Longest', drCorrect: 'Right hits',
+  bbCalm: 'Calm', bbTimeUp: "Time's up!", bbPopped: 'Popped', bbPoppedN: 'Popped {n}', bbGolden: 'Golden', bbHooray: 'Hooray!', cgSnack: 'Yum! A snack for your pet',
+  pnSaved: 'Drawing saved!', pnSavedSnack: 'Drawing saved! A snack for your pet', pnShareTitle: 'My Grasp drawing', pnShake: 'Shake your fist to erase', pnAgain: 'Again?',
+  stCaught: 'Caught', stStreak: 'Best streak', stStreakN: 'Streak ×{n}!',
+});
+Object.assign(I18N.he, {
+  camGames: 'משחקי מצלמה', camGamesSub: 'תופים · בועות · ציור · כוכבים', camGamesAria: 'משחקי מצלמה: תופי אוויר, פיצוץ בועות, ציור באוויר, תופסים כוכבים',
+  modeDrums: 'תופי אוויר', modeBubbles: 'פיצוץ בועות', modePaint: 'ציור באוויר', modeStars: 'תופסים כוכבים',
+  cgSubDrums: 'מכים למטה ומתופפים', cgSubBubbles: 'מפוצצים עם האצבעות', cgSubPaint: 'צובטים ומציירים קווים זוהרים', cgSubStars: 'תופסים אותם בסל',
+  cgCamTitle: 'המשחקים האלה הכי כיפיים עם המצלמה!', cgCamSub: 'נופפו בידיים באוויר כדי לשחק. אפשר גם במגע.', cgCamOn: 'להפעיל מצלמה', cgCamTouch: 'לשחק במגע', cgCamShort: 'הכי כיף עם המצלמה!',
+  gm_drums: 'תופי אוויר', gm_bubbles: 'פיצוץ בועות', gm_paint: 'ציור באוויר', gm_stars: 'תופסים כוכבים',
+  descDrums: 'מערכת תופים מסביב למסך: הכו למטה על תוף עם היד (או הקישו עליו).', descBubbles: 'בועות עולות למעלה: געו בהן עם אצבע כדי לפוצץ אותן.',
+  descPaint: 'צבטו באוויר כדי לצייר קווים זוהרים; פתחו את היד כדי לעצור.', descStars: 'הזיזו את הסל עם היד כדי לתפוס כוכבים נופלים. התחמקו מהפצצות!',
+  hintDrumsCam: 'הכו למטה על תוף עם היד. שתי הידיים מתופפות!', hintDrumsTouch: 'הקישו על התופים! אפשר עם כמה אצבעות.', hintDrumsMouse: 'לחצו על התופים.',
+  hintBubblesCam: 'געו בבועות עם האצבעות כדי לפוצץ אותן!', hintBubblesTouch: 'הקישו על הבועות כדי לפוצץ אותן!', hintBubblesMouse: 'לחצו על הבועות כדי לפוצץ אותן.',
+  hintPaintCam: 'צבטו כדי לצייר, פתחו את היד כדי לעצור. החזיקו את היד מעל צבע כדי לבחור אותו.', hintPaintTouch: 'ציירו עם האצבע. הקישו על צבע כדי לבחור אותו.', hintPaintMouse: 'גררו כדי לצייר. לחצו על צבע כדי לבחור אותו.',
+  hintStarsCam: 'הזיזו את היד הפתוחה כדי להזיז את הסל. תפסו כוכבים, התחמקו מפצצות!', hintStarsTouch: 'החליקו את האצבע כדי להזיז את הסל.', hintStarsMouse: 'הזיזו את העכבר כדי להזיז את הסל.',
+  dr_hihat: 'היי-האט', dr_crash: 'מצילה', dr_snare: 'סנר', dr_tom: 'טום', dr_cowbell: 'פעמון', dr_kick: 'בס',
+  drBeat: 'קצב', onLbl: 'פועל', offLbl: 'כבוי', drSimon: 'עקבו אחרי האור', drStop: 'עצירה', drWatch: 'הסתכלו על האורות…', drYourTurn: 'תורכם! {i}/{n}', drNice: 'יפה!', drGreat: 'מדהים!',
+  drLevel: 'שלב {n}', drSimonOver: 'תופפתם יפה!', drLongest: 'הרצף הארוך', drCorrect: 'מכות נכונות',
+  bbCalm: 'רגוע', bbTimeUp: 'נגמר הזמן!', bbPopped: 'פוצצו', bbPoppedN: 'פוצצו {n}', bbGolden: 'זהובות', bbHooray: 'הידד!', cgSnack: 'יאמי! חטיף לחיית המחמד',
+  pnSaved: 'הציור נשמר!', pnSavedSnack: 'הציור נשמר! חטיף לחיית המחמד', pnShareTitle: 'הציור שלי ב-Grasp', pnShake: 'נערו את האגרוף כדי למחוק', pnAgain: 'שוב?',
+  stCaught: 'נתפסו', stStreak: 'רצף שיא', stStreakN: 'רצף ‎×{n}!',
+});
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 function t(key, vars) {
   let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
@@ -1786,6 +1868,7 @@ canvas.addEventListener('pointerdown', (e) => {
   // (the waiting serve ball is not served by a tap: pull it back, then flick: see waitTick)
   if (mode !== 'none' && gameMode === 'strike' && strike.chest && !strike.over && (e.button === 0 || e.pointerType === 'touch') && chestAt(e.clientX, e.clientY)) { e.preventDefault(); openChest(strike.chest, performance.now()); return; } // a tap on the boss chest opens it
   if (mode === 'mouse' && gameMode === 'smash' && !smash.over && smash.phase === 'play' && !pause.on && !menu.open && (e.button === 0 || e.pointerType === 'touch') && smash.taps.length < 6) smash.taps.push({ x: e.clientX, y: e.clientY }); // Smash: a tap is a punch right there
+  if (mode !== 'none' && cgOn() && cgPtrDown(e)) { e.preventDefault(); return; } // the camera games: a canvas button, else a tap queued for the game
   if (mode !== 'mouse') return;
   e.preventDefault();
   ptr.type = e.pointerType === 'touch' ? 'touch' : 'mouse';
@@ -1918,7 +2001,7 @@ function frame(now) {
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
-  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || pause.on; // the world freezes while the hand is missing
+  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -1933,7 +2016,7 @@ function frame(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else render(now);
   gfx3dSync();
   if (pause.resumeT) drawResume(now);
   syncToastLayout();
@@ -2090,7 +2173,8 @@ function bgSprite(kind, wo) {
     g.fillStyle = '#141b34'; g.fillRect(0, 0, W, H);
     const top = g.createRadialGradient(W * 0.5, -H * 0.25, 10, W * 0.5, 0, Math.max(W, H));
     top.addColorStop(0, 'rgba(96,122,196,0.26)'); top.addColorStop(1, 'rgba(96,122,196,0)'); g.fillStyle = top; g.fillRect(0, 0, W, H);
-    if (gridCanvas) { g.fillStyle = g.createPattern(gridCanvas, 'repeat'); g.fillRect(0, 0, W, H); }
+    if (kind === 'drums' || kind === 'bubbles' || kind === 'paint' || kind === 'stars') cgBackdrop(g, kind);
+    if (gridCanvas && kind !== 'paint' && kind !== 'stars') { g.fillStyle = g.createPattern(gridCanvas, 'repeat'); g.fillRect(0, 0, W, H); }
     if (kind === 'smash') { // faint warm horizon glow over the ground
       const hz = g.createRadialGradient(W / 2, H + 40, 10, W / 2, H + 40, Math.max(W * 0.75, 320));
       hz.addColorStop(0, 'rgba(255,170,95,0.22)'); hz.addColorStop(0.5, 'rgba(255,150,90,0.08)'); hz.addColorStop(1, 'rgba(255,150,90,0)');
@@ -2197,6 +2281,8 @@ function drawPreview() {
   pctx.strokeStyle = gesture === 'pinch' ? '#ffc24b' : gesture === 'point' ? '#54c6eb' : '#43d9a3'; pctx.lineWidth = 1.5;
   pctx.beginPath(); for (const [a, b] of HAND_LINKS) { const pa = P(a), pb = P(b); pctx.moveTo(pa[0], pa[1]); pctx.lineTo(pb[0], pb[1]); } pctx.stroke();
   pctx.fillStyle = '#f1e9da'; for (let i = 0; i < 21; i++) { const p = P(i); pctx.fillRect(p[0] - 1.5, p[1] - 1.5, 3, 3); }
+  const L2 = lastLandmarks2; if (!L2 || !cgOn()) return; // the camera games' second hand, in blue
+  pctx.strokeStyle = '#54c6eb'; pctx.beginPath(); for (const [a, b] of HAND_LINKS) { pctx.moveTo((1 - L2[a].x) * w, L2[a].y * h); pctx.lineTo((1 - L2[b].x) * w, L2[b].y * h); } pctx.stroke();
 }
 
 /* ---------------- Slice mode ---------------- */
@@ -9687,7 +9773,7 @@ function overButtonSprite(kind, w, h) {
    (with a NEW BEST ribbon), up to three stats, a saffron Play again button and an outline Home button, and, for Strike, the Easy / Normal pill.
    A tap on a button presses it (canvas pointerdown); in camera mode a point / pinch / fist held on a button for 400 ms presses it (a filling
    ring shows the dwell); a wave, a punch or a tap elsewhere after a second restarts. */
-function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : null; } // the mode that owns a round-over card
+function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : cgOn() ? cgState() : null; } // the mode that owns a round-over card
 function endCardAt(px, py) { // which card button (if any) is under a screen point
   const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
   for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
@@ -9709,7 +9795,7 @@ function endCardAction(key, now) {
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
   if (key === 'share') { strike.ui.dwell = null; return gameMode === 'strike' && frenzy.on ? shareFrenzy() : shareDaily(); }
-  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes();
+  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes(); else if (cgOn()) cgRestart(now);
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
   if (!$('newCard').hidden || !$('duelName').hidden || anyMapOpen() || menu.open || rp.open || now - (rp.closedAt || -1e9) < 600) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; return; }
@@ -9731,6 +9817,10 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   // the title sits under the coin / XP / streak pills (y0 + 14 .. 38), never across them
   if (dly) { const ts = textSprite(t('dailyTitle'), 22, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 40 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 40 + OY - 22 * k * 0.6, w: ts.tw * k, h: 22 * k * 1.2 }; blit(textSprite(dly.date + ' · ' + t('mod_' + dly.mod), 12, '#ffd77a', null, 500), cx, y0 + 64 + OY); }
+  else if (o.stars !== undefined) { // (the camera games' timed rounds: 0-3 stars instead of the title, popping in one by one)
+    for (let i = 0; i < 3; i++) { const q = Math.max(0, Math.min(1, (now - E.overAt - 250 - i * 170) / 260)), sc = q < 1 ? q * (1 + 0.6 * Math.sin(q * Math.PI)) : 1; if (sc > 0.01) blit(shapeStarSprite(18, i < o.stars), cx + (i - 1) * 46 * (rtl ? -1 : 1), y0 + 44 + OY - (i === 1 ? 5 : 0), 0, sc); }
+    ui.titleBox = { x: cx - 70, y: y0 + 44 + OY - 26, w: 140, h: 48 }; ui.starsRow = o.stars;
+  }
   else { const ts = textSprite(o.title || t('roundOver'), 26, '#f1e9da', null), k = Math.min(1, (cw - 40) / ts.tw); blit(ts, cx, y0 + 44 + OY, 0, k); ui.titleBox = { x: cx - ts.tw * k / 2, y: y0 + 44 + OY - 26 * k * 0.6, w: ts.tw * k, h: 26 * k * 1.2 }; }
   blit(textSprite(String(o.score), 56, '#fff8ec', 'rgba(255,194,75,0.9)'), cx, y0 + 108 + OY);
   { const rec = !dly && ui.newBest && o.share, bt = dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best }); // (Frenzy's NEW RECORD! in gold, pulsing)
@@ -11244,6 +11334,11 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
     }
     else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'bubble') { const f0 = Math.max(380, 1400 - (arg || 30) * 14); tone('sine', f0 * 0.7, f0 * 1.6, 0.16, 70, t0); tone('sine', f0 * 2, f0 * 2.5, 0.04, 60, t0 + 0.03); f.type = 'bandpass'; f.frequency.value = f0 * 2; f.Q.value = 2; env(f, 0.07, 30, t0); noise(t0, 30, f); } // Bubble Pop: a wet 'plip', higher for a small bubble
+    else if (kind === 'goldPop') { tone('sine', 700, 1500, 0.14, 70, t0); [1318.5, 1760, 2637].forEach((q, i) => tone('sine', q, 0, 0.08, 240, t0 + 0.05 + i * 0.05)); tone('triangle', 3520, 0, 0.025, 260, t0 + 0.2); } // a golden bubble: the plip and a sparkling run
+    else if (kind === 'catch') { const k = Math.pow(1.06, Math.min(12, Math.max(0, (arg || 1) - 1))); tone('triangle', 660 * k, 990 * k, 0.12, 110, t0); tone('sine', 1320 * k, 0, 0.05, 170, t0 + 0.05); } // Catch the Stars: a bright 'ding', climbing with the streak
+    else if (kind === 'drizzle') { f.type = 'highpass'; f.frequency.value = 2500; env(f, 0.09, 520, t0); noise(t0, 520, f); [0, 0.08, 0.17, 0.27].forEach((d) => tone('sine', 1700 + Math.random() * 900, 900, 0.03, 60, t0 + d)); tone('triangle', 330, 210, 0.08, 320, t0); } // a rain cloud in the basket
+    else if (kind === 'shutter') { f.type = 'bandpass'; f.frequency.value = 3200; f.Q.value = 1; env(f, 0.16, 40, t0); noise(t0, 40, f); const f2 = audio.createBiquadFilter(); f2.type = 'bandpass'; f2.frequency.value = 2000; env(f2, 0.12, 55, t0 + 0.09); noise(t0 + 0.09, 55, f2); } // a drawing saved: a camera's click-clack
     else if (kind === 'boop') { tone('sine', 420, 780, 0.15, 120, t0); tone('sine', 780, 1040, 0.07, 110, t0 + 0.07); } // Shapes: a shape picked by a tap: a cute rising 'boop'
     else if (kind === 'clink') { [1900, 2650, 3500].forEach((q, i) => tone('sine', q * (0.96 + Math.random() * 0.08), 0, [0.11, 0.06, 0.04][i], 220 - i * 40, t0 + i * 0.02)); f.type = 'highpass'; f.frequency.value = 2400; env(f, 0.08, 70, t0); noise(t0, 70, f); } // Smash: china breaking (plates, cups, vases)
     else if (kind === 'spark') { f.type = 'highpass'; f.frequency.value = 2600; env(f, 0.13, 260, t0); noise(t0, 260, f); tone('sawtooth', 2400, 500, 0.05, 180, t0); tone('square', 1200, 300, 0.035, 90, t0 + 0.12); tone('sine', 150, 55, 0.18, 160, t0); } // a TV going bzzt-pop
@@ -12230,7 +12325,7 @@ const GRIPPY = { // short lines only (1-3 words), a few per event
 };
 const GRIPPY_ALIAS = { daily: 'start' }; // the daily's start: the same 'Let's go!'
 const grippy = { last: null, lastAt: -1e9, closeAt: -1e9, prev: {}, said: [], skipped: [], tips: [], duckUntil: -1e9 };
-function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike' || gameMode === 'shapes'); }
+function grippyActive() { return mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash' || gameMode === 'strike' || gameMode === 'shapes' || cgOn()); }
 function speechVoice(l = lang) { // the first installed voice for the language, or null
   try { const ss = window.speechSynthesis, want = l === 'he' ? /^(he|iw)/i : /^en/i; return (ss && ss.getVoices ? ss.getVoices() : []).find((q) => want.test(q.lang || '')) || null; } catch { return null; }
 }
@@ -12653,7 +12748,7 @@ $('advFrenzy').addEventListener('click', () => { audioInit(); strikeFrenzy(amap.
 $('smBack').addEventListener('click', () => closeSmashMap());
 $('smashFree').addEventListener('click', () => { audioInit(); sfx('click'); smashFreeStart(smap.how); });
 window.addEventListener('resize', () => { if (advMapOpen() && amap.layout && Math.abs(($('advScroll').clientWidth || innerWidth) - amap.layout.w) > 1) { const sc = $('advScroll'), f = sc.scrollTop / Math.max(1, amap.layout.total); renderAdvMap(); sc.scrollTop = f * amap.layout.total; } });
-window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (!$('collection').hidden && $('collection').classList.contains('overMap')) { closePanel('collection'); return; } if (closeGifts()) return; if (closeAlbum()) return; if (closeNewCard()) return; if (closeAdvMap()) return; if (closeSmashMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (cgClosePick()) return; if (!$('collection').hidden && $('collection').classList.contains('overMap')) { closePanel('collection'); return; } if (closeGifts()) return; if (closeAlbum()) return; if (closeNewCard()) return; if (closeAdvMap()) return; if (closeSmashMap()) return; for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) if (!$(id).hidden) closePanel(id); });
 window.addEventListener('resize', () => { if (!$('collection').hidden) renderCollection(); });
 
 /* ---------------- Game mode ---------------- */
@@ -12668,6 +12763,7 @@ function setGameMode(m) {
   if (m === 'busy') resetBusy(); else if (was === 'busy') busyQuiet();
   if (m === 'strike') resetStrike(performance.now());
   if (m === 'shapes') resetShapes(); else if (was === 'shapes') { shapes.held = null; shapes.over = false; }
+  if (cgOn(was) && was !== m) cgLeave(); if (cgOn(m)) cgReset(m); cgSyncHands(); // the camera games (one hand or two)
   if (engine) {
     if (was === 'smash' && m !== 'smash') { clearSmash(); closeSmashMap(true); }
     if (m === 'sandbox' && !bodies.length) spawnObjects();
@@ -12686,16 +12782,17 @@ function renderModeText() {
 }
 function hintText() {
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
-  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike', shapes: 'hintShapes' }[gameMode] + how);
+  return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike', shapes: 'hintShapes', drums: 'hintDrums', bubbles: 'hintBubbles', paint: 'hintPaint', stars: 'hintStars' }[gameMode] + how);
 }
 function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, above Shapes' toy box, else a small margin
+  if (cgOn()) return cgHintBottom();
   if (gameMode === 'shapes' && shapes.box && !(shapes.grid && shapes.grid.side)) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
-  const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg');
+  const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg') || (cgOn() ? document.querySelector('#camGamesBtn .ctGo svg') : null);
   hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
   hintEl.style.setProperty('--hint-bottom', hintBottom() + 'px');
   hintEl.style.opacity = 1; hintEl.classList.add('show');
@@ -12737,13 +12834,13 @@ function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHu
 function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (engine) spawnObjects(); });
 
 /* ---------------- Strike: the toolbar folds into one pause button (body.minChrome). A tap (or a camera dwell) pauses the game and opens
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes']; // every game: the toolbar is the one pause button in play
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); if (!on) closeMenu(false); }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
@@ -12797,10 +12894,11 @@ function trackTick(now) {
     fctx.drawImage(video, 0, 0, cw, ch);
     const res = landmarker.detectForVideo(frameCanvas, now);
     trackCount++; trackErrors = 0; lastTrackError = '';
-    const lm = res.landmarks && res.landmarks[0];
-    lastLandmarks = lm || null;
-    hand.handedness = res.handednesses && res.handednesses[0] && res.handednesses[0][0] ? res.handednesses[0][0].categoryName : '';
-    processHand(lm || null, cw, ch, now);
+    const all = res.landmarks || [], pi = cgPickPrimary(all), lm = all[pi]; // (two hands in the camera games: the one nearest the last cursor stays the cursor)
+    lastLandmarks = lm || null; lastLandmarks2 = all.length > 1 ? all[pi ? 0 : 1] : null;
+    hand.handedness = res.handednesses && res.handednesses[pi] && res.handednesses[pi][0] ? res.handednesses[pi][0].categoryName : '';
+    processHand(lm || null, cw, ch, now); hand.lm = lm || null; if (lm) hand.lm9 = { x: lm[9].x, y: lm[9].y };
+    processHand2(lastLandmarks2, now);
   } catch (err) {
     console.error('[grasp] detectForVideo failed', err); lastTrackError = String(err && err.message || err).slice(0, 80);
     if (++trackErrors > 30) { const m = err.message || err; fallbackToMouse([{ stage: () => t('st_runtime'), why: () => t('crashed', { e: m }) }]); }
@@ -12899,14 +12997,14 @@ async function loadTracker() {
     const modelBytes = new Uint8Array(modelRes.value);
     makeLandmarker = (delegate) => vision.HandLandmarker.createFromOptions(fileset, {
       baseOptions: { modelAssetBuffer: modelBytes.slice(), delegate },
-      runningMode: 'VIDEO', numHands: 1,
+      runningMode: 'VIDEO', numHands: cgWantTwo() ? 2 : 1, // (2 in Drums / Bubble Pop: both hands play)
       minHandDetectionConfidence: CONFIG.DETECT_CONFIDENCE, minHandPresenceConfidence: CONFIG.DETECT_CONFIDENCE, minTrackingConfidence: CONFIG.TRACK_CONFIDENCE,
     });
-    try { landmarker = await withTimeout(makeLandmarker(first), CONFIG.STAGE_TIMEOUT_MS, first + ' start'); delegateUsed = first; }
+    try { camg.numHands = cgWantTwo() ? 2 : 1; landmarker = await withTimeout(makeLandmarker(first), CONFIG.STAGE_TIMEOUT_MS, first + ' start'); delegateUsed = first; }
     catch (err1) {
       console.warn('[grasp] ' + first + ' delegate failed, trying ' + second, err1);
       setRow('runtime', 'pending', () => t('r_fallback', { a: first, b: second }));
-      landmarker = await withTimeout(makeLandmarker(second), CONFIG.STAGE_TIMEOUT_MS, second + ' start'); delegateUsed = second;
+      camg.numHands = cgWantTwo() ? 2 : 1; landmarker = await withTimeout(makeLandmarker(second), CONFIG.STAGE_TIMEOUT_MS, second + ' start'); delegateUsed = second;
     }
     { const d = delegateUsed; setRow('runtime', 'ok', () => t('r_running', { d })); }
     return true;
@@ -12968,7 +13066,7 @@ async function swapTracker(next) {
   swapping = true; statusLive.textContent = t('switching');
   let ok = false;
   try {
-    const fresh = await withTimeout(makeLandmarker(next), CONFIG.STAGE_TIMEOUT_MS, next + ' start');
+    camg.numHands = cgWantTwo() ? 2 : 1; const fresh = await withTimeout(makeLandmarker(next), CONFIG.STAGE_TIMEOUT_MS, next + ' start');
     const old = landmarker; landmarker = fresh; delegateUsed = next; lastVideoTime = -1; lastTrackError = '';
     try { old && old.close(); } catch {}
     ok = true;
@@ -13061,12 +13159,14 @@ function goHome() {
   if (held) dropHeld();
   shapes.held = null; if (gameMode === 'shapes') shapes.over = false; // (the next start deals a fresh Shapes round)
   if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
+  if (cgOn()) cgLeave(); // (the camera games: the backing beat stops, the camera prompt closes)
   if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; smash.taps.length = 0; smFlushTrack(performance.now(), true); } // the clock stops; the next start deals a fresh run
   closeMenu(false); unpauseGame();
   stopCamera();
   try { landmarker && landmarker.close(); } catch {}
   landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; duelEnd(); $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
+  hand2.seen = false; hand2.lm = null; hand2.samples.length = 0; lastLandmarks2 = null; camg.numHands = 1; hand.lm = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
   noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
@@ -13092,7 +13192,7 @@ function startGame(m) {
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
-  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now());
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
@@ -13283,7 +13383,7 @@ function startPreviews() { if (previews.running || $('start').hidden || document
 function stopPreviews() { previews.running = false; if (previews.raf) cancelAnimationFrame(previews.raf); previews.raf = 0; for (const k of previews.keys) SPRITES.delete(k); previews.keys.clear(); } // the game's own sprites are rebuilt at game size anyway
 const MODE_HINTS = { sandbox: [['pinch', 'hGrab'], ['open', 'hThrow'], ['point', 'hPoke']], slice: [['point', 'hSwipe']], smash: [['fist', 'hPunch'], ['open', 'hWave']], busy: [['point', 'hPoke'], ['pinch', 'hTurn'], ['open', 'hSweep']], strike: [['open', 'hSlap']], shapes: [['pinch', 'hSort'], ['pinch', 'hTwist']] };
 function renderHints() { // the selected mode's gestures as an icon row under its description
-  $('modeHints').replaceChildren(...MODE_HINTS[gameMode].map(([gk, key]) => {
+  $('modeHints').replaceChildren(...(MODE_HINTS[gameMode] || []).map(([gk, key]) => {
     const li = document.createElement('li'), svg = document.querySelector('#gestureIcons [data-g="' + gk + '"]').cloneNode(true), s = document.createElement('span');
     li.dataset.g = gk; svg.removeAttribute('data-g'); s.textContent = t(key); li.append(svg, s); return li;
   }));
@@ -13909,11 +14009,922 @@ window.__grasp.pet = {
   get earnLast() { return petUi.earn; }, get said() { return petUi.said; }, get skipped() { return petUi.skipped; }, get frames() { return petUi.frames; }, get running() { return !!petUi.raf; },
   set(o) { Object.assign(petP(), o); saveProfile(); petSync(); return petP(); }, // test-only: set fields directly
 };
+/* ---------------- Camera games: Air Drums, Bubble Pop, Air Painting, Catch the Stars ----------------
+   (parent chose: "new camera games: air drums, bubble pop, finger-paint in the air, catch falling stars, all played by waving your hands at the camera")
+   Four small modes behind the start screen's "Camera games" tile (a picker sheet, #cgPick) and their own links (/drums, /bubbles, /paint, /stars). All of
+   them also work by touch / mouse. Shared here: the hands (cgPointers: the smoothed / predicted cursor, its fingertips from the landmarks, and a second
+   hand when MediaPipe tracks two: numHands 2 in Drums and Bubble Pop, back to 1 for the session if the tracker drops under CG.twoMinFps), canvas buttons
+   (a tap, or a camera hover held CG.dwellMs), the camera prompt (#cgCam) when one starts without the camera, the corner pause menu (MENU_MODES), end cards
+   (Drums' Follow the light, Bubble Pop, Catch the Stars) and the pet's snacks via roundDone (Air Painting: on a saved drawing). Hooks: __grasp.cg. */
+const CG_MODES = ['drums', 'bubbles', 'paint', 'stars'], CG_TWO = ['drums', 'bubbles'], CG_TIPS = [4, 8, 12, 16, 20, 9];
+const CG = { dwellMs: 700, twoMinFps: 5, twoSlowMs: 3000, h2LostMs: 260, tip: 14 };
+const camg = { numHands: 1, twoOff: false, slowSince: 0, handsLog: [], taps: [], btns: [], dwell: null, block: null, ptrs: [], touchOk: false, asked: 0, trail: {} };
+const hand2 = { seen: false, lastSeen: -1e9, misses: 99, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), samples: [], lm: null, sm: null };
+let lastLandmarks2 = null;
+try { camg.touchOk = sessionStorage.getItem('cgTouchOk') === '1'; } catch {}
+function cgOn(m = gameMode) { return CG_MODES.includes(m); }
+function cgState(m = gameMode) { return m === 'drums' ? drums : m === 'bubbles' ? bubbles : m === 'paint' ? paint : m === 'stars' ? catcher : null; }
+function cgBlocked() { return pause.on || menu.open || !$('cgCam').hidden; }
+function cgWantTwo() { return CG_TWO.includes(gameMode) && !camg.twoOff; }
+function cgSyncHands() { // numHands follows the game: 2 where both hands play (if the phone keeps up), else 1
+  const want = cgWantTwo() ? 2 : 1;
+  if (!landmarker || camg.numHands === want) return;
+  if (typeof landmarker.setOptions !== 'function') return;
+  camg.numHands = want; camg.handsLog.push(want);
+  try { const p = landmarker.setOptions({ numHands: want }); if (p && p.catch) p.catch(() => {}); } catch {}
+}
+function cgHandsTick(now) { // two hands cost a palm scan every frame while only one is in view: a slow tracker goes back to one hand (for the session)
+  if (mode !== 'camera' || camg.numHands !== 2 || trackFps <= 0) { camg.slowSince = 0; return; }
+  if (trackFps >= CG.twoMinFps) { camg.slowSince = 0; return; }
+  if (!camg.slowSince) camg.slowSince = now;
+  else if (now - camg.slowSince > CG.twoSlowMs) { camg.twoOff = true; camg.slowSince = 0; cgSyncHands(); }
+}
+function cgPickPrimary(all) { // with two hands in view, the one nearest the last primary hand stays the cursor
+  if (all.length < 2 || !hand.lm9 || performance.now() - hand.lastSeen > 400) return 0;
+  let bi = 0, bd = Infinity; all.forEach((L, i) => { if (!L || !L[9]) return; const d = Math.hypot(L[9].x - hand.lm9.x, L[9].y - hand.lm9.y); if (d < bd) { bd = d; bi = i; } });
+  return bi;
+}
+function lmScreen(L, i) { // a landmark mapped to the screen like the cursor (mirrored, through the MAP_BOX)
+  const B = CONFIG.MAP_BOX, m = (1 - B) / 2;
+  return { x: Math.min(1.02, Math.max(-0.02, ((1 - L[i].x) - m) / B)) * W, y: Math.min(1.02, Math.max(-0.02, (L[i].y - m) / B)) * H };
+}
+function processHand2(lm, t) { // the second hand: its anchor (thumb / index midpoint) filtered like the first, its samples for speed, its landmarks for the fingertips
+  if (!lm || lm.length < 21) { hand2.seen = false; if (++hand2.misses > 3) { hand2.samples.length = 0; hand2.sm = null; hand2.fx.reset(); hand2.fy.reset(); hand2.lm = null; } return; }
+  hand2.seen = true; hand2.misses = 0; hand2.lastSeen = t; hand2.lm = lm;
+  const a = lmScreen(lm, 4), b = lmScreen(lm, 8), e = CONFIG.EDGE_MARGIN;
+  hand2.x = Math.min(W - e, Math.max(e, hand2.fx.filter((a.x + b.x) / 2, t))); hand2.y = Math.min(H - e, Math.max(e, hand2.fy.filter((a.y + b.y) / 2, t)));
+  const S = hand2.samples, prev = S[S.length - 1];
+  if (!prev || t > prev.t) S.push({ t, x: hand2.x, y: hand2.y }); else { prev.x = hand2.x; prev.y = hand2.y; }
+  while (S.length > 4) S.shift();
+}
+function cgEase2(now) { // the second hand's drawn position: eased toward its latest sample (60 fps between ~9 scans/s)
+  const S = hand2.samples, s = S[S.length - 1]; if (!s) return { x: hand2.x, y: hand2.y };
+  let sm = hand2.sm; if (!sm) sm = hand2.sm = { x: s.x, y: s.y, t: now };
+  const k = 1 - Math.exp(-Math.min(100, Math.max(0, now - sm.t)) / 45); sm.t = now; sm.x += (s.x - sm.x) * k; sm.y += (s.y - sm.y) * k;
+  return sm;
+}
+function cgPointers(now) { // every hand / finger on the screen this frame: { id, x, y, hand, g (gesture), down (touch / mouse pressed), samples (tracker samples), tips (fingertips + palm) }
+  const out = [];
+  if (mode === 'camera') {
+    if (cursor.present) {
+      const L = hand.lm, ox = cursor.x - hand.x, oy = cursor.y - hand.y;
+      out.push({ id: 'h0', x: cursor.x, y: cursor.y, hand: true, g: gesture, samples: hand.samples, tips: L ? CG_TIPS.map((i) => { const p = lmScreen(L, i); return { x: p.x + ox, y: p.y + oy }; }) : [] });
+    }
+    if (hand2.lm && (hand2.seen || now - hand2.lastSeen < CG.h2LostMs)) {
+      const sm = cgEase2(now), ox = sm.x - hand2.x, oy = sm.y - hand2.y;
+      out.push({ id: 'h1', x: sm.x, y: sm.y, hand: true, g: 'open', samples: hand2.samples, tips: CG_TIPS.map((i) => { const p = lmScreen(hand2.lm, i); return { x: p.x + ox, y: p.y + oy }; }) });
+    }
+  } else if (mode === 'mouse') {
+    for (const [id, p] of ptr.touches) out.push({ id: 't' + id, x: p.x, y: p.y, down: true, touch: true, tips: [] });
+    if (ptr.type !== 'touch' && ptr.present) out.push({ id: 'm', x: ptr.x, y: ptr.y, down: ptr.pinch, tips: [] });
+  }
+  return out;
+}
+/* canvas buttons: drawn by each mode's render (cgChip / the palette), pressed by a tap (cgPtrDown) or a camera hover held CG.dwellMs (cgDwellTick) */
+function cgBtnAt(x, y) { for (let i = camg.btns.length - 1; i >= 0; i--) { const b = camg.btns[i]; if (x >= b.x - 6 && x <= b.x + b.w + 6 && y >= b.y - 6 && y <= b.y + b.h + 6) return b; } return null; }
+function cgPtrDown(e) { // canvas pointerdown in a camera game: a button press, else a tap queued for the mode (a drum hit, a pop, the basket)
+  const E = cgState(); if (!E || E.over || menu.open || !(e.button === 0 || e.pointerType === 'touch')) return false;
+  const now = performance.now(), b = cgBtnAt(e.clientX, e.clientY);
+  if (b) { cgPress(b.key, now, 'tap'); return true; }
+  camg.taps.push({ x: e.clientX, y: e.clientY, t: now, id: e.pointerId }); if (camg.taps.length > 12) camg.taps.shift();
+  return false;
+}
+function cgDwellTick(now) { // camera: the hand held over a button for CG.dwellMs presses it (then it waits until the hand moves off)
+  if (mode !== 'camera' || !cursor.present) { camg.dwell = null; camg.block = null; return; }
+  const b = cgBtnAt(cursor.x, cursor.y);
+  if (camg.block && (!b || b.key !== camg.block)) camg.block = null;
+  if (!b || b.key === camg.block) { camg.dwell = null; return; }
+  if (!camg.dwell || camg.dwell.key !== b.key) camg.dwell = { key: b.key, t: now };
+  else if (now - camg.dwell.t >= CG.dwellMs) { camg.dwell = null; camg.block = b.key; cgPress(b.key, now, 'dwell'); }
+}
+function cgPress(key, now, how) {
+  camg.lastPress = { key, how, t: now };
+  if (gameMode === 'drums') { if (key === 'beat') drumsBeatSet(!drums.beat.on); else if (key === 'simon') simonStart(now); else if (key === 'stop') simonStop(); }
+  else if (gameMode === 'bubbles') { if (key === 'calm') bubblesSetCalm(!bubbles.calm, now); }
+  else if (gameMode === 'paint') paintPress(key, now);
+  sfx('click');
+}
+function cgChip(key, x, y, w, h, label, o = {}) { // a pill button on the canvas; o: { on, col (when on), icon(g, cx, cy) }
+  const on = !!o.on; resetView(); ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 8; ctx.fillStyle = on ? (o.col || '#ffc24b') : 'rgba(22,29,61,0.86)';
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.5; ctx.strokeStyle = on ? 'rgba(255,255,255,0.55)' : 'rgba(241,233,218,0.28)'; ctx.stroke(); ctx.restore();
+  const iw = o.icon ? 22 : 0, sp = textSprite(label, 14, on ? '#241a00' : '#f1e9da', null, 700), k = Math.min(1, (w - 18 - iw) / sp.tw), rtl = lang === 'he';
+  const tw = sp.tw * k, cx = x + w / 2, tx = cx + (rtl ? -iw / 2 : iw / 2);
+  if (o.icon) { resetView(); o.icon(ctx, rtl ? tx + tw / 2 + 12 : tx - tw / 2 - 12, y + h / 2, on); }
+  blit(sp, tx, y + h / 2, 0, k);
+  camg.btns.push({ key, x, y, w, h });
+}
+function cgPill(text, cx, y, o = {}) { // a status pill (not a button), centred at cx
+  const sp = textSprite(text, o.size || 15, o.color || '#fff8ec', null, 700), w = sp.tw + 28, h = o.h || 34; resetView();
+  ctx.fillStyle = o.bg || 'rgba(14,19,40,0.78)'; ctx.beginPath(); ctx.roundRect(cx - w / 2, y, w, h, h / 2); ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = o.rim || 'rgba(241,233,218,0.22)'; ctx.stroke();
+  blit(sp, cx, y + h / 2, 0, o.k || 1); return { x: cx - w / 2, y, w, h };
+}
+function cgDwellDraw(now) { // the dwell ring at the hand while it is held on a button
+  if (!camg.dwell || !cursor.present || mode !== 'camera') return;
+  const q = Math.min(1, (now - camg.dwell.t) / CG.dwellMs); resetView(); ctx.lineCap = 'round';
+  ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 24, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 24, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke();
+}
+function cgTopY() { return Math.max(64, Math.round(chromeRowBottom()) + 8); } // the games' top row starts under the pause button / the camera preview
+function cgReset(m = gameMode, now = performance.now()) { // a fresh round of camera game m (entering it, Restart)
+  camg.taps.length = 0; camg.dwell = null; camg.block = null; camg.btns.length = 0;
+  if (m === 'drums') drumsReset(now); else if (m === 'bubbles') bubblesReset(now); else if (m === 'paint') paintReset(now); else if (m === 'stars') catcherReset(now);
+}
+function cgRestart(now = performance.now()) { // the menu's Restart / the end card's Play again
+  if (gameMode === 'drums' && (drums.simon.on || drums.over)) { simonStart(now); return; }
+  cgReset(gameMode, now);
+}
+function cgLeave() { drumsBeatSet(false, true); drums.simon.on = false; drums.over = false; camg.taps.length = 0; cgAskClose(); paintEnd(); }
+function cgTick(now, dt) {
+  camg.ptrs = cgPointers(now); cgHandsTick(now);
+  if (gameMode === 'drums') drumsTick(now, dt); else if (gameMode === 'bubbles') bubblesTick(now, dt); else if (gameMode === 'paint') paintTick(now, dt); else if (gameMode === 'stars') catcherTick(now, dt);
+}
+function cgRender(now) {
+  camg.btns.length = 0;
+  if (gameMode === 'drums') renderDrums(now); else if (gameMode === 'bubbles') renderBubbles(now); else if (gameMode === 'paint') renderPaint(now); else if (gameMode === 'stars') renderCatcher(now);
+}
+function cgHintBottom() {
+  if (gameMode === 'paint' && paint.panel) return Math.max(16, Math.round(H - paint.panel.y) + 10);
+  if (gameMode === 'stars' && catcher.basket.y) return Math.max(16, Math.round(H - catcher.basket.y + catcher.basket.h + 12));
+  return 16;
+}
+function cgSecs(ms) { const s = Math.ceil(Math.max(0, ms) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function cgStarsFor(score, th) { return score >= th[2] ? 3 : score >= th[1] ? 2 : score >= th[0] ? 1 : 0; }
+function cgHandMark(p, col, now, r = 16) { // a glowing ball at a hand / a finger
+  resetView(); const g = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, r * 2.2); g.addColorStop(0, col); g.addColorStop(0.35, col.replace(/[\d.]+\)$/, '0.35)')); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.2, 0, TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.42, 0, TAU); ctx.fill();
+}
+const CG_HAND_COL = { h0: 'rgba(255,194,75,0.95)', h1: 'rgba(84,198,235,0.95)' };
+
+/* ---- the picker sheet (start screen tile) and the camera prompt ---- */
+function cgOpenPick() {
+  if (mode !== 'none' || physicsError) return false;
+  audioInit(); cgPickSync(); $('cgPick').hidden = false; try { $('cgPick').querySelector('[data-cg]').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function cgClosePick() { if ($('cgPick').hidden) return false; $('cgPick').hidden = true; return true; }
+function cgPickSync() { $('cgPickCam').hidden = inputPref() === 'camera'; }
+function cgStart(m, how) { // a game from the picker (or a direct link): the remembered input (touch until the camera is picked)
+  if (!cgOn(m) || mode !== 'none' || physicsError) return false;
+  cgClosePick(); setGameMode(m); audioInit(); strikeStart(how || inputPref()); return true;
+}
+function cgAskMaybe() { // started without the camera: a friendly prompt to turn it on (once a session after 'Play with touch')
+  if (mode !== 'mouse' || !cgOn() || camg.touchOk) return false;
+  camg.asked++; $('cgCam').hidden = false; try { $('cgCamOn').focus({ preventScroll: true }); } catch {}
+  return true;
+}
+function cgAskClose() { if ($('cgCam').hidden) return false; $('cgCam').hidden = true; return true; }
+$('camGamesBtn').addEventListener('click', () => { sfx('click'); cgOpenPick(); });
+$('cgPickX').addEventListener('click', () => cgClosePick());
+$('cgPick').addEventListener('pointerdown', (e) => { if (e.target === $('cgPick')) cgClosePick(); });
+$('cgPick').querySelectorAll('[data-cg]').forEach((b) => b.addEventListener('click', () => cgStart(b.dataset.cg)));
+$('cgPickCamOn').addEventListener('click', () => { setInputPref('camera'); cgPickSync(); sfx('click'); });
+$('cgCamTouch').addEventListener('click', () => { camg.touchOk = true; try { sessionStorage.setItem('cgTouchOk', '1'); } catch {} cgAskClose(); });
+$('cgCamOn').addEventListener('click', () => { cgAskClose(); setInputPref('camera'); audioInit(); enableCamera(); });
+window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (cgClosePick() || (cgAskClose() && (camg.touchOk = true))) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+
+/* ---------------- Air Drums ----------------
+   Six pads round the screen (portrait: two columns of three; landscape: cymbals up top, the kick at the bottom centre). A fast downward hand strike
+   (tracker samples, DRUM.hitV x H / 800 px/ms) over a pad hits it, both hands when two are tracked; a tap / click hits the pad under it (several
+   fingers at once). The hit: a big ring flash, the pad bounces, sparks, a synthesized drum (drumSound: kick, snare, hi-hat, tom, crash, cowbell through
+   a compressor). Chips: Beat (a backing groove on the audio clock, the pads glow on its notes) and Follow the light (Simon says: the pads light up in a
+   sequence one longer each time, copy it; a wrong pad ends the run: its card, the best, a pet snack). */
+const DRUM_KINDS = ['hihat', 'crash', 'snare', 'tom', 'cowbell', 'kick'];
+const DRUM_COL = { hihat: '#ffd166', crash: '#ffb547', snare: '#54c6eb', tom: '#a98bff', cowbell: '#43d9a3', kick: '#ff6f59' };
+const DRUM = { hitV: 0.42, reV: 0.4, tapVel: 0.85, bpm: 100, beatVel: 0.42, simonGap: [640, 380], simonIdleMs: 7000 };
+const DRUM_BEAT = [['kick', 'hihat'], ['hihat'], ['snare', 'hihat'], ['hihat'], ['kick', 'hihat'], ['kick', 'hihat'], ['snare', 'hihat'], ['hihat']]; // eighths at DRUM.bpm
+const drums = { pads: [], lw: 0, lh: 0, lt: 0, log: [], snd: [], hs: {}, hits: 0, bus: null,
+  beat: { on: false, step: 0, nextAt: 0, nextAudio: 0, n: 0, flashAt: -1e9 },
+  simon: { on: false, phase: 'idle', seq: [], i: 0, at: 0, showI: -1, level: 0, ok: 0, lastIn: 0, msg: '', msgAt: 0 },
+  best: 0, over: false, overAt: 0, ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+function drumsLayout() {
+  const top = cgTopY() + 50, bot = H - 26; // (room for the bottom row's names)
+  if (drums.lw === W && drums.lh === H && drums.lt === top && drums.pads.length) return;
+  drums.lw = W; drums.lh = H; drums.lt = top;
+  const band = Math.max(160, bot - top), P = [];
+  if (W < H * 1.05) { // portrait: two columns of three
+    const r = Math.min(W * 0.22, band / 3 * 0.41), rows = [['hihat', 'crash'], ['snare', 'tom'], ['cowbell', 'kick']];
+    rows.forEach((row, ri) => row.forEach((k, ci) => P.push({ k, x: W * (ci ? 0.73 : 0.27), y: top + band * (ri + 0.5) / 3, r: r * (k === 'kick' ? 1.1 : k === 'cowbell' ? 0.86 : 1) })));
+  } else { // landscape: a kit
+    const r = Math.min(band * 0.2, W * 0.1), L = { hihat: [0.11, 0.3, 1], crash: [0.89, 0.3, 1], snare: [0.28, 0.72, 1], tom: [0.72, 0.72, 1], cowbell: [0.5, 0.27, 0.82], kick: [0.5, 0.74, 1.08] };
+    for (const k of DRUM_KINDS) { const q = L[k]; P.push({ k, x: W * q[0], y: top + band * q[1], r: r * q[2] }); }
+  }
+  const old = drums.pads;
+  drums.pads = DRUM_KINDS.map((k) => { const p = P.find((q) => q.k === k), o = old.find((q) => q.k === k) || {}; return { ...p, col: DRUM_COL[k], hitAt: o.hitAt ?? -1e9, vel: o.vel || 0, litAt: o.litAt ?? -1e9, litMs: o.litMs || 0, beatAt: o.beatAt ?? -1e9, okAt: o.okAt ?? -1e9, badAt: o.badAt ?? -1e9 }; });
+}
+function drumsPadAt(x, y, k = 1.15) { let bi = -1, bd = Infinity; drums.pads.forEach((p, i) => { const d = Math.hypot(x - p.x, y - p.y); if (d < p.r * k && d < bd) { bd = d; bi = i; } }); return bi; }
+function drumsSegPad(a, b) { // the pad a fast hand passed through between two tracker samples
+  let bi = -1, bd = Infinity; const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy || 1;
+  drums.pads.forEach((p, i) => { const u = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2)), d = Math.hypot(p.x - (a.x + dx * u), p.y - (a.y + dy * u)); if (d < p.r * 1.1 && d < bd) { bd = d; bi = i; } });
+  return bi;
+}
+function drumsReset(now) {
+  const D = drums; D.lw = 0; drumsLayout(); D.hs = {}; D.over = false; D.simon.on = false; D.simon.phase = 'idle'; D.hits = 0;
+  try { D.best = Math.max(D.best, +localStorage.getItem('drumsBest') || 0); } catch {}
+  const ui = D.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  for (const p of D.pads) { p.litAt = p.okAt = p.badAt = -1e9; }
+  roundStart();
+}
+function drumsTick(now, dt) {
+  const D = drums; drumsLayout();
+  if (D.over) { camg.taps.length = 0; endCardTick(now); return; }
+  cgDwellTick(now);
+  if (cgBlocked()) { camg.taps.length = 0; D.beat.nextAudio = 0; D.beat.nextAt = 0; return; }
+  for (const tp of camg.taps) { const i = drumsPadAt(tp.x, tp.y, 1.15); if (i >= 0) drumHit(i, DRUM.tapVel, 'tap', now); }
+  camg.taps.length = 0;
+  if (mode === 'camera') for (const p of camg.ptrs) drumsStrike(p, now);
+  drumsBeatTick(now); simonTick(now);
+}
+function drumsStrike(p, now) { // a hand's downward strike, judged on each new tracker sample
+  const S = p.samples, n = S.length; if (n < 2) return;
+  const s1 = S[n - 1], s0 = S[n - 2], st = drums.hs[p.id] || (drums.hs[p.id] = { t: 0, armed: true, hitAt: -1e9 });
+  if (s1.t === st.t) return; st.t = s1.t;
+  const dt = s1.t - s0.t; if (dt <= 0 || dt > 260) return; // (a gap: the hand was lost)
+  const vy = (s1.y - s0.y) / dt, V = DRUM.hitV * H / 800;
+  if (!st.armed) { if (vy < V * DRUM.reV) st.armed = true; return; } // after a hit: slow down / lift before the next
+  if (vy < V) return;
+  let i = drumsPadAt(s1.x, s1.y, 1.3); if (i < 0) i = drumsSegPad(s0, s1);
+  if (i < 0) return;
+  st.armed = false; st.hitAt = now;
+  drumHit(i, Math.min(1, 0.55 + (vy - V) / (V * 2.5)), p.id, now);
+}
+function drumHit(i, vel, src, now) {
+  const P = drums.pads[i]; if (!P) return false;
+  P.hitAt = now; P.vel = vel; drums.hits++;
+  drumSound(P.k, vel);
+  drums.log.push({ pad: P.k, i, vel: Math.round(vel * 100) / 100, src, t: Math.round(now) }); if (drums.log.length > 60) drums.log.shift();
+  ring(P.x, P.y, P.col, P.r * 1.55, 420, 7); ring(P.x, P.y, 'rgba(255,255,255,0.9)', P.r * 1.12, 240, 3);
+  for (let k = 0; k < 12 && particles.length < 320; k++) { const a = Math.random() * TAU, v = 0.1 + Math.random() * 0.26 * vel; particles.push({ x: P.x + Math.cos(a) * P.r * 0.85, y: P.y + Math.sin(a) * P.r * 0.85, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.05, life: 1, decay: 0.003 + Math.random() * 0.002, r: 2 + Math.random() * 3, color: Math.random() < 0.4 ? '#ffffff' : P.col }); }
+  if (P.k === 'kick') shakeScreen(1.6 * vel); else if (P.k === 'crash') shakeScreen(0.7);
+  if (drums.simon.on) simonInput(i, now);
+  return true;
+}
+/* drum sounds: synthesized (no samples), through a gentle compressor; logged in drums.snd (as asked, muted or not) */
+function drumBus() {
+  if (drums.bus && drums.bus.ac === audio) return drums.bus.in;
+  const inp = audio.createGain(), comp = audio.createDynamicsCompressor(), out = audio.createGain();
+  comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.12; out.gain.value = 0.62;
+  inp.connect(comp); comp.connect(out); out.connect(audio.destination); drums.bus = { ac: audio, in: inp, out }; return inp;
+}
+function drumEnv(src, peak, t0, att, dec, dest) { const g = audio.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t0 + att); g.gain.exponentialRampToValueAtTime(0.0001, t0 + att + dec); src.connect(g); g.connect(dest); return g; }
+function drumNoise(t0, dur, dest) {
+  if (!noiseBuf) { noiseBuf = audio.createBuffer(1, audio.sampleRate, audio.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = audio.createBufferSource(); s.buffer = noiseBuf; s.connect(dest); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.05);
+}
+function drumOsc(type, f0, f1, t0, dur, dest, glide = dur) { const o = audio.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t0); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + glide); o.connect(dest); o.start(t0); o.stop(t0 + dur + 0.05); return o; }
+function drumFilter(type, f, q = 0.7) { const b = audio.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+function drumMetal(t0, dur, peak, hp, bus) { // the classic six-square metallic cluster (cymbals, hats)
+  const bp = drumFilter('bandpass', 10000, 0.8), hpf = drumFilter('highpass', hp);
+  for (const f of [205.3, 304.4, 369.6, 522.7, 540, 800]) drumOsc('square', f, 0, t0, dur, bp);
+  bp.connect(hpf); drumEnv(hpf, peak, t0, 0.002, dur, bus);
+}
+function drumSound(k, vel = 0.8, at, beat) {
+  drums.snd.push({ k, vel: Math.round(vel * 100) / 100, beat: !!beat, t: Math.round(performance.now()) }); if (drums.snd.length > 80) drums.snd.shift();
+  if (muted || !audio || audio.state !== 'running') return false;
+  try {
+    const v = Math.max(0.15, Math.min(1, vel)), t0 = Math.max(audio.currentTime, at || 0), bus = drumBus();
+    if (k === 'kick') { // a pitch-dropping sine thump and a beater click
+      const g = audio.createGain(); g.connect(bus); drumEnv(drumOsc('sine', 150 + 30 * v, 46, t0, 0.5, g, 0.12), 0.95 * v, t0, 0.003, 0.42, bus);
+      const c = drumFilter('highpass', 1600); drumEnv(c, 0.25 * v, t0, 0.001, 0.025, bus); drumNoise(t0, 0.03, c);
+    } else if (k === 'snare') { // a noise burst (the wires) over a short tuned body
+      const n = drumFilter('highpass', 1200); drumEnv(n, 0.5 * v, t0, 0.002, 0.17, bus); drumNoise(t0, 0.2, n);
+      const b1 = audio.createGain(), b2 = audio.createGain(); drumOsc('triangle', 210, 150, t0, 0.12, b1, 0.08); drumOsc('sine', 330, 0, t0, 0.07, b2); drumEnv(b1, 0.42 * v, t0, 0.002, 0.09, bus); drumEnv(b2, 0.18 * v, t0, 0.002, 0.05, bus);
+    } else if (k === 'tom') { const b = audio.createGain(); drumOsc('sine', 220, 112, t0, 0.5, b, 0.3); drumEnv(b, 0.75 * v, t0, 0.003, 0.45, bus); const n = drumFilter('lowpass', 900); drumEnv(n, 0.14 * v, t0, 0.001, 0.045, bus); drumNoise(t0, 0.05, n); }
+    else if (k === 'hihat') { drumMetal(t0, 0.07, 0.2 * v, 7000, bus); const n = drumFilter('highpass', 8000); drumEnv(n, 0.09 * v, t0, 0.001, 0.045, bus); drumNoise(t0, 0.06, n); }
+    else if (k === 'crash') { drumMetal(t0, 1.6, 0.13 * v, 5000, bus); const n = drumFilter('highpass', 5500); drumEnv(n, 0.24 * v, t0, 0.003, 1.35, bus); drumNoise(t0, 1.4, n); }
+    else if (k === 'cowbell') { const bp = drumFilter('bandpass', 800, 0.9); drumOsc('square', 540, 0, t0, 0.4, bp); drumOsc('square', 800, 0, t0, 0.4, bp); drumEnv(bp, 0.3 * v, t0, 0.002, 0.34, bus); }
+    return true;
+  } catch { return false; }
+}
+function drumsBeatSet(on, quiet) { const B = drums.beat; B.on = !!on && !drums.simon.on; B.nextAudio = 0; B.nextAt = 0; B.step = 0; if (!quiet) camg.beatToggled = (camg.beatToggled || 0) + 1; }
+function drumsBeatTick(now) { // the backing groove: scheduled ahead on the audio clock (tight), or on the frame clock when silent (the pads still glow)
+  const B = drums.beat; if (!B.on || drums.simon.on) return;
+  const stepMs = 60000 / DRUM.bpm / 2;
+  if (!muted && audio && audio.state === 'running') {
+    const ac = audio.currentTime; if (!B.nextAudio || B.nextAudio < ac - 0.2) B.nextAudio = ac + 0.06;
+    while (B.nextAudio < ac + 0.12) { drumsBeatStep(B.step, now + (B.nextAudio - ac) * 1000, B.nextAudio); B.step = (B.step + 1) % DRUM_BEAT.length; B.nextAudio += stepMs / 1000; }
+  } else {
+    if (!B.nextAt || B.nextAt < now - 300) B.nextAt = now;
+    while (B.nextAt <= now) { drumsBeatStep(B.step, B.nextAt, null); B.step = (B.step + 1) % DRUM_BEAT.length; B.nextAt += stepMs; }
+  }
+}
+function drumsBeatStep(step, at, audioT) {
+  const B = drums.beat; B.n++; if (step % 2 === 0) B.flashAt = at;
+  for (const k of DRUM_BEAT[step]) { if (audioT !== null) drumSound(k, DRUM.beatVel * (k === 'hihat' ? 0.7 : 1), audioT, true); else drums.snd.push({ k, vel: 0, beat: true, t: Math.round(at) }); const P = drums.pads[DRUM_KINDS.indexOf(k)]; if (P) P.beatAt = at; }
+  if (drums.snd.length > 80) drums.snd.splice(0, drums.snd.length - 80);
+}
+/* Follow the light (Simon says) */
+function simonStart(now) {
+  const S = drums.simon, D = drums; drumsBeatSet(false, true); D.over = false;
+  S.on = true; S.seq = [simonNext([])]; S.phase = 'show'; S.at = now + 900; S.showI = -1; S.i = 0; S.level = 0; S.ok = 0; S.lastIn = now;
+  const ui = D.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  try { D.best = Math.max(D.best, +localStorage.getItem('drumsBest') || 0); } catch {}
+  roundStart(); grippySay('start'); simonMsg('drWatch', now);
+}
+function simonStop() { const S = drums.simon; S.on = false; S.phase = 'idle'; for (const p of drums.pads) p.litAt = -1e9; }
+function simonNext(seq) { let k; do { k = Math.floor(Math.random() * DRUM_KINDS.length); } while (seq.length >= 2 && seq[seq.length - 1] === k && seq[seq.length - 2] === k); return k; }
+function simonGap() { return Math.max(DRUM.simonGap[1], DRUM.simonGap[0] - 22 * drums.simon.seq.length); }
+function simonMsg(key, now) { drums.simon.msg = key; drums.simon.msgAt = now; }
+function simonTick(now) {
+  const S = drums.simon; if (!S.on || drums.over) return;
+  if (S.phase === 'show') {
+    if (now < S.at) return;
+    const g = simonGap(), k = Math.floor((now - S.at) / g);
+    if (k > S.showI && k < S.seq.length) { S.showI = k; const P = drums.pads[S.seq[k]]; P.litAt = now; P.litMs = g * 0.78; drumSound(P.k, 0.75); }
+    else if (k >= S.seq.length && now - S.at >= g * S.seq.length + 120) { S.phase = 'play'; S.i = 0; S.lastIn = now; simonMsg('drYourTurn', now); }
+  } else if (S.phase === 'play') { if (now - S.lastIn > DRUM.simonIdleMs) { S.phase = 'show'; S.at = now + 400; S.showI = -1; S.i = 0; simonMsg('drWatch', now); } } // waited a long time: show it again (no fail)
+  else if (S.phase === 'good' && now - S.at > 950) { S.seq.push(simonNext(S.seq)); S.phase = 'show'; S.at = now + 200; S.showI = -1; simonMsg('drWatch', now); }
+}
+function simonInput(i, now) {
+  const S = drums.simon; if (S.phase !== 'play') return;
+  S.lastIn = now; const P = drums.pads[i];
+  if (i === S.seq[S.i]) {
+    S.i++; S.ok++; P.okAt = now;
+    if (S.i >= S.seq.length) { S.level = S.seq.length; S.phase = 'good'; S.at = now; sfx('chime'); simonMsg(S.level % 3 === 0 ? 'drGreat' : 'drNice', now); }
+  } else { P.badAt = now; const want = drums.pads[S.seq[S.i]]; if (want) { want.litAt = now; want.litMs = 1100; } simonOver(now); }
+}
+function simonOver(now) {
+  const S = drums.simon, D = drums; S.phase = 'fail'; D.over = true; D.overAt = now; hideHint();
+  const ui = D.ui, had = D.best > 0; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = S.level > D.best;
+  if (ui.newBest) { D.best = S.level; try { localStorage.setItem('drumsBest', String(D.best)); } catch {} sfx('fanfare'); grippySay('newBest'); } else sfx('whiff');
+  if (S.level >= 3) addCoins(Math.min(3, Math.floor(S.level / 3)));
+  roundDone(S.level * 10, undefined, { star: S.level >= 8, record: ui.newBest && had });
+}
+/* drawing */
+function drumPadSprite(k, R) {
+  const pad = 12;
+  return makeSprite('drm|' + k + '|' + R, (R + pad) * 2, (R + pad) * 2, R + pad, R + pad, (g) => {
+    const col = DRUM_COL[k];
+    g.save(); g.shadowColor = 'rgba(0,0,0,0.55)'; g.shadowBlur = 14; g.shadowOffsetY = 6; g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = '#0c1026'; g.fill(); g.restore();
+    if (k === 'hihat' || k === 'crash') { // cymbals: golden discs with grooves and a bell
+      const disc = (rr, dy) => {
+        const gr = g.createRadialGradient(-rr * 0.3, dy - rr * 0.35, rr * 0.05, 0, dy, rr); gr.addColorStop(0, '#fff6cf'); gr.addColorStop(0.35, '#f4c54f'); gr.addColorStop(0.8, '#c98a1b'); gr.addColorStop(1, '#7d5208');
+        g.beginPath(); g.arc(0, dy, rr, 0, TAU); g.fillStyle = gr; g.fill();
+        g.lineWidth = Math.max(0.8, rr * 0.012); for (let i = 1; i < 10; i++) { g.beginPath(); g.arc(0, dy, rr * (0.22 + i * 0.08), 0, TAU); g.strokeStyle = i % 2 ? 'rgba(110,62,0,0.3)' : 'rgba(255,244,200,0.32)'; g.stroke(); }
+        g.save(); g.beginPath(); g.moveTo(0, dy); g.arc(0, dy, rr, -2.5, -1.7); g.closePath(); g.fillStyle = 'rgba(255,255,255,0.25)'; g.fill(); g.beginPath(); g.moveTo(0, dy); g.arc(0, dy, rr, 0.65, 1.3); g.closePath(); g.fillStyle = 'rgba(255,255,255,0.12)'; g.fill(); g.restore();
+        const bg = g.createRadialGradient(-rr * 0.06, dy - rr * 0.07, 1, 0, dy, rr * 0.24); bg.addColorStop(0, '#fff2b8'); bg.addColorStop(1, '#b07812');
+        g.beginPath(); g.arc(0, dy, rr * 0.24, 0, TAU); g.fillStyle = bg; g.fill(); g.lineWidth = 1.2; g.strokeStyle = 'rgba(90,50,0,0.6)'; g.stroke();
+        g.beginPath(); g.arc(0, dy, rr * 0.06, 0, TAU); g.fillStyle = '#2b2f45'; g.fill();
+      };
+      if (k === 'hihat') { g.globalAlpha = 0.85; disc(R * 0.96, R * 0.06); g.globalAlpha = 1; disc(R * 0.92, -R * 0.04); } else disc(R, 0);
+    } else if (k === 'cowbell') { // a black rubber pad holding a steel bell
+      const gr = g.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.1, 0, 0, R); gr.addColorStop(0, '#3b4466'); gr.addColorStop(1, '#151a33'); g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = gr; g.fill();
+      g.lineWidth = R * 0.07; g.strokeStyle = col; g.globalAlpha = 0.8; g.beginPath(); g.arc(0, 0, R * 0.93, 0, TAU); g.stroke(); g.globalAlpha = 1;
+      const bw = R * 0.5, bt = R * 0.3, bh = R * 1.05, path = () => { g.beginPath(); g.moveTo(-bt, -bh / 2); g.lineTo(bt, -bh / 2); g.lineTo(bw, bh / 2 - R * 0.08); g.quadraticCurveTo(bw, bh / 2, bw - R * 0.1, bh / 2); g.lineTo(-bw + R * 0.1, bh / 2); g.quadraticCurveTo(-bw, bh / 2, -bw, bh / 2 - R * 0.08); g.closePath(); };
+      g.save(); g.rotate(-0.25); const mg = g.createLinearGradient(-bw, 0, bw, 0); mg.addColorStop(0, '#6d7486'); mg.addColorStop(0.35, '#eef2f8'); mg.addColorStop(0.55, '#aab2c2'); mg.addColorStop(1, '#4c5263');
+      path(); g.fillStyle = mg; g.fill(); g.lineWidth = 2; g.strokeStyle = '#2a2f3d'; g.stroke();
+      g.beginPath(); g.ellipse(0, bh / 2 - 1, bw - R * 0.06, R * 0.1, 0, 0, TAU); g.fillStyle = '#1b1f2c'; g.fill();
+      g.fillStyle = '#3a3f50'; g.fillRect(-R * 0.08, -bh / 2 - R * 0.2, R * 0.16, R * 0.2); g.restore();
+    } else { // drums: a chrome hoop with lugs, the shell's colour, the head
+      const hoop = g.createLinearGradient(-R, -R, R, R); hoop.addColorStop(0, '#f4f6fb'); hoop.addColorStop(0.45, '#8f97ab'); hoop.addColorStop(0.55, '#e6e9f1'); hoop.addColorStop(1, '#5a6276');
+      g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = hoop; g.fill();
+      g.beginPath(); g.arc(0, 0, R * 0.94, 0, TAU); g.fillStyle = darken(col, 0.25); g.fill();
+      const nl = k === 'kick' ? 10 : 8; for (let i = 0; i < nl; i++) { const a = i / nl * TAU + 0.2; g.save(); g.rotate(a); g.fillStyle = '#d9dde8'; g.beginPath(); g.roundRect(R * 0.86, -R * 0.045, R * 0.13, R * 0.09, R * 0.03); g.fill(); g.restore(); }
+      const hr = R * 0.84, hg = g.createRadialGradient(-hr * 0.3, -hr * 0.35, hr * 0.05, 0, 0, hr);
+      if (k === 'kick') { hg.addColorStop(0, lighten(col, 0.4)); hg.addColorStop(0.6, col); hg.addColorStop(1, darken(col, 0.35)); }
+      else if (k === 'tom') { hg.addColorStop(0, '#efe9ff'); hg.addColorStop(0.55, '#cfc4f2'); hg.addColorStop(1, '#8e80c4'); }
+      else { hg.addColorStop(0, '#ffffff'); hg.addColorStop(0.6, '#f1ebdc'); hg.addColorStop(1, '#c9bea5'); }
+      g.beginPath(); g.arc(0, 0, hr, 0, TAU); g.fillStyle = hg; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(40,30,20,0.25)'; g.stroke();
+      if (k === 'kick') { // the front head: a port hole and a star logo
+        g.beginPath(); g.arc(hr * 0.42, hr * 0.42, hr * 0.17, 0, TAU); g.fillStyle = 'rgba(20,10,10,0.55)'; g.fill();
+        g.beginPath(); for (let i = 0; i < 10; i++) { const q = i % 2 ? hr * 0.18 : hr * 0.42, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * q, Math.sin(a) * q - hr * 0.05); } g.closePath(); g.fillStyle = '#fff3c4'; g.fill(); g.lineWidth = 2; g.strokeStyle = darken(col, 0.4); g.stroke();
+      } else if (k === 'snare') { g.beginPath(); g.arc(0, 0, hr * 0.62, 0, TAU); g.lineWidth = 1; g.strokeStyle = 'rgba(80,70,50,0.18)'; g.stroke(); g.beginPath(); g.arc(-hr * 0.1, -hr * 0.05, hr * 0.12, 0, TAU); g.fillStyle = 'rgba(70,60,40,0.12)'; g.fill(); }
+      g.beginPath(); g.ellipse(-hr * 0.32, -hr * 0.42, hr * 0.42, hr * 0.15, -0.6, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.28)'; g.fill();
+    }
+  });
+}
+function renderDrums(now) {
+  const D = drums, S = D.simon, rtl = lang === 'he';
+  beginFrame('drums', now); drumsLayout();
+  const bk = Math.max(0, 1 - (now - D.beat.flashAt) / 260); // the beat's pulse: a faint floor glow
+  if (D.beat.on && bk > 0) { resetView(); const gr = ctx.createRadialGradient(W / 2, H, 10, W / 2, H, Math.max(W, H) * 0.7); gr.addColorStop(0, 'rgba(255,111,89,' + (0.16 * bk).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,111,89,0)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); }
+  for (const P of D.pads) {
+    const hk = (now - P.hitAt) / 380, lit = now - P.litAt < (P.litMs || 600), bt = Math.max(0, 1 - (now - P.beatAt) / 220);
+    let s = 1; if (hk >= 0 && hk < 1) s = 1 - 0.13 * Math.sin(hk * Math.PI * 2.4) * (1 - hk);
+    if (bt > 0) s *= 1 + 0.025 * bt;
+    const glow = Math.max(hk >= 0 && hk < 1 ? (1 - hk) * (0.5 + 0.5 * P.vel) : 0, lit ? 0.85 + 0.15 * Math.sin(now / 70) : 0, bt * 0.3);
+    if (glow > 0.01) { resetView(); const gr = ctx.createRadialGradient(P.x, P.y, P.r * 0.6, P.x, P.y, P.r * 1.7); const c = hexRgb(lit ? '#fff3c4' : P.col).join(','); gr.addColorStop(0, 'rgba(' + c + ',' + (0.75 * glow).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(' + c + ',0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(P.x, P.y, P.r * 1.7, 0, TAU); ctx.fill(); }
+    blit(drumPadSprite(P.k, Math.round(P.r)), P.x, P.y, 0, s);
+    if (lit) { resetView(); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,246,200,0.95)'; ctx.beginPath(); ctx.arc(P.x, P.y, P.r * s + 6, 0, TAU); ctx.stroke(); }
+    const ok = Math.max(0, 1 - (now - P.okAt) / 450), bad = Math.max(0, 1 - (now - P.badAt) / 700);
+    if (ok > 0) { resetView(); ctx.lineWidth = 6 * ok + 1; ctx.strokeStyle = 'rgba(67,217,163,' + ok.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(P.x, P.y, P.r * s + 10, 0, TAU); ctx.stroke(); }
+    if (bad > 0) { resetView(); ctx.fillStyle = 'rgba(255,77,61,' + (0.45 * bad).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(P.x, P.y, P.r * s, 0, TAU); ctx.fill(); }
+    blit(textSprite(t('dr_' + P.k), 13, 'rgba(241,233,218,0.72)', null, 600), P.x, P.y + P.r * s + 14);
+  }
+  drawParticles(); drawRings(now);
+  // the hands: a glowing ball each (both hands when two are tracked)
+  for (const p of camg.ptrs) if (p.hand) cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 15);
+  // the top row: Beat + Follow the light, or (Simon) Stop + the status pill
+  const ty = cgTopY(), h = 40;
+  if (!D.over) {
+    if (S.on) {
+      const sw = 96; const msg = S.msg === 'drYourTurn' ? t('drYourTurn', { i: S.i, n: S.seq.length }) : t(S.msg || 'drWatch');
+      const st = t('drLevel', { n: S.seq.length }) + ' · ' + msg, sp = textSprite(st, 14, '#fff8ec', null, 700), pw = Math.min(W - 40 - sw, sp.tw + 28), tot = sw + 10 + pw, x0 = (W - tot) / 2;
+      cgChip('stop', rtl ? x0 + pw + 10 : x0, ty, sw, h, t('drStop'), { icon: (g, cx, cy) => { g.fillStyle = '#ff6f59'; g.beginPath(); g.roundRect(cx - 6, cy - 6, 12, 12, 2); g.fill(); } });
+      const pop = Math.max(0, 1 - (now - S.msgAt) / 300), px = rtl ? x0 + pw / 2 : x0 + sw + 10 + pw / 2;
+      cgPill(st, px, ty + 3, { h: h - 6, k: Math.min(1, (pw - 20) / sp.tw) * (1 + 0.12 * pop), bg: S.phase === 'play' ? 'rgba(67,217,163,0.28)' : 'rgba(14,19,40,0.8)', rim: S.phase === 'play' ? 'rgba(67,217,163,0.8)' : 'rgba(255,214,120,0.6)' });
+    } else {
+      const bw = Math.min(150, (W - 50) / 2), sw2 = Math.min(190, W - 50 - bw), tot = bw + 10 + sw2, x0 = (W - tot) / 2;
+      cgChip('beat', rtl ? x0 + sw2 + 10 : x0, ty, bw, h, t('drBeat') + ' · ' + t(D.beat.on ? 'onLbl' : 'offLbl'), { on: D.beat.on, icon: (g, cx, cy, on) => { g.fillStyle = on ? '#241a00' : '#ffd77a'; g.beginPath(); g.ellipse(cx - 2, cy + 4, 4, 3, -0.4, 0, TAU); g.fill(); g.fillRect(cx + 1, cy - 7, 1.8, 11); g.fillRect(cx + 1, cy - 7, 5, 1.8); } });
+      cgChip('simon', rtl ? x0 : x0 + bw + 10, ty, sw2, h, t('drSimon') + (D.best ? ' ★' + D.best : ''), { icon: (g, cx, cy) => { const gr = g.createRadialGradient(cx, cy, 1, cx, cy, 8); gr.addColorStop(0, '#fffbe0'); gr.addColorStop(1, 'rgba(255,214,90,0)'); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, 8, 0, TAU); g.fill(); g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(cx, cy, 3.5, 0, TAU); g.fill(); } });
+    }
+  }
+  if (D.over) drawEndCard(now, D, { title: t('drSimonOver'), score: S.level, best: D.best, stats: [[S.level, 'drLongest'], [S.ok, 'drCorrect']], again: 'playAgainWave' });
+  else cgDwellDraw(now);
+  if (mode === 'mouse' && cursor.present && ptr.type !== 'touch' && !D.over) { resetView(); ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 10, 0, TAU); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.7)'; ctx.stroke(); }
+}
+
+/* ---------------- Bubble Pop ----------------
+   Bubbles of many sizes and colours float up, swaying; any fingertip or palm (camera, both hands), a touching finger, a tap or a pressed mouse pops one
+   (a pop, a splash of droplets, a ring). Golden bubbles (every 8-14) are +5 with sparkles; pops within BUB.comboMs chain into a combo (x3 and up: +1 each).
+   A 60 s round, 0-3 stars by the score, the best, the card, a pet snack. Calm (a toggle, kept): no timer, slower and bigger, nothing to lose; every
+   BUB.calmEvery pops a little party and a snack for the pet. */
+const BUB = { roundMs: 60000, comboMs: 700, stars: [20, 40, 65], calmEvery: 30, gold: [8, 14], max: 13, maxCalm: 8, spawn: [480, 860], spawnCalm: [900, 1500] };
+const BUB_COLS = ['#ff6f91', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff9f43', '#7bed9f', '#70a1ff'];
+const bubbles = { list: [], seq: 0, score: 0, popped: 0, golden: 0, combo: { n: 0, t: -1e9 }, bestCombo: 0, left: BUB.roundMs, calm: false, nextAt: 0, sinceGold: 0, goldAt: 10,
+  best: 0, floaters: [], log: [], calmPops: 0, treats: 0, starsN: 0, over: false, overAt: 0, ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+try { bubbles.calm = localStorage.getItem('bubblesCalm') === '1'; } catch {}
+function bubbleScale() { return Math.max(0.85, Math.min(1.5, Math.min(W, H) / 420)); }
+function bubblesReset(now) {
+  const B = bubbles; B.list.length = 0; B.floaters.length = 0; B.score = B.popped = B.golden = B.bestCombo = B.calmPops = 0; B.combo.n = 0; B.combo.t = -1e9;
+  B.left = BUB.roundMs; B.over = false; B.nextAt = now + 250; B.sinceGold = 0; B.goldAt = 6 + Math.floor(Math.random() * 4); B.starsN = 0;
+  try { B.best = Math.max(B.best, +localStorage.getItem('bubblesBest') || 0); } catch {}
+  const ui = B.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  roundStart(); grippySay('start');
+  for (let i = 0; i < 3; i++) bubbleSpawn(now, { y: H * (0.55 + i * 0.15) });
+}
+function bubblesSetCalm(on, now = performance.now()) { bubbles.calm = !!on; try { localStorage.setItem('bubblesCalm', on ? '1' : '0'); } catch {} bubblesReset(now); }
+function bubbleSpawn(now, o = {}) {
+  const B = bubbles, sc = bubbleScale() * (B.calm ? 1.22 : 1), r = o.r || (22 + Math.random() * 36) * sc;
+  let gold = o.gold; if (gold === undefined) { B.sinceGold++; gold = B.sinceGold >= B.goldAt; } if (gold) { B.sinceGold = 0; B.goldAt = BUB.gold[0] + Math.floor(Math.random() * (BUB.gold[1] - BUB.gold[0] + 1)); }
+  const x = o.x ?? (W * 0.08 + Math.random() * W * 0.84), y = o.y ?? H + r + 4, ramp = B.calm ? 1 : 1 + (1 - B.left / BUB.roundMs) * 0.35;
+  const b = { id: ++B.seq, x, x0: x, y, r, vy: o.vy ?? -(0.045 + Math.random() * 0.04) * (H / 740) * (B.calm ? 0.6 : 1) * ramp, col: gold ? '#ffd23f' : BUB_COLS[Math.floor(Math.random() * BUB_COLS.length)], gold: !!gold, ph: Math.random() * TAU, amp: o.amp ?? 6 + Math.random() * 14, born: now };
+  B.list.push(b); return b;
+}
+function bubblesTick(now, dt) {
+  const B = bubbles; tickFloaters(B.floaters, dt);
+  if (B.over) { camg.taps.length = 0; endCardTick(now); return; }
+  cgDwellTick(now);
+  if (cgBlocked()) { camg.taps.length = 0; return; }
+  if (!B.calm) { B.left -= dt; if (B.left <= 0) { B.left = 0; bubblesOver(now); return; } if (B.left < 5000 && Math.ceil(B.left / 1000) !== Math.ceil((B.left + dt) / 1000)) sfx('tick'); }
+  if (now >= B.nextAt) { if (B.list.length < (B.calm ? BUB.maxCalm : BUB.max)) bubbleSpawn(now); const [a, b] = B.calm ? BUB.spawnCalm : BUB.spawn; B.nextAt = now + a + Math.random() * (b - a); }
+  for (let i = B.list.length - 1; i >= 0; i--) { const b = B.list[i]; b.y += b.vy * dt; b.x = b.x0 + Math.sin(now / 900 + b.ph) * b.amp; if (b.y + b.r < -12) B.list.splice(i, 1); } // (one that floats away is just gone: nothing lost)
+  const pts = [];
+  for (const p of camg.ptrs) { if (p.hand) { pts.push(p); for (const q of p.tips) pts.push(q); } else if (p.down) pts.push(p); }
+  for (const tp of camg.taps) pts.push(tp); camg.taps.length = 0;
+  if (!pts.length) return;
+  for (let i = B.list.length - 1; i >= 0; i--) { const b = B.list[i]; for (const q of pts) if (Math.hypot(q.x - b.x, q.y - b.y) < b.r + CG.tip) { B.list.splice(i, 1); bubblePop(b, now); break; } }
+}
+function bubblePop(b, now) {
+  const B = bubbles; B.popped++;
+  B.combo.n = now - B.combo.t < BUB.comboMs ? B.combo.n + 1 : 1; B.combo.t = now; B.bestCombo = Math.max(B.bestCombo, B.combo.n);
+  const pts = (b.gold ? 5 : 1) + (B.combo.n >= 3 ? 1 : 0); B.score += pts; if (b.gold) B.golden++;
+  B.log.push({ id: b.id, gold: b.gold, combo: B.combo.n, pts, r: Math.round(b.r), t: Math.round(now) }); if (B.log.length > 80) B.log.shift();
+  sfx(b.gold ? 'goldPop' : 'bubble', b.r);
+  ring(b.x, b.y, b.gold ? 'rgba(255,214,90,0.95)' : 'rgba(255,255,255,0.85)', b.r * 1.5, 320, 3);
+  for (let k = 0; k < 16 && particles.length < 320; k++) { const a = Math.random() * TAU, v = 0.08 + Math.random() * 0.22; particles.push({ x: b.x + Math.cos(a) * b.r * 0.8, y: b.y + Math.sin(a) * b.r * 0.8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.08, life: 1, decay: 0.0026 + Math.random() * 0.002, r: 1.5 + Math.random() * 3, color: k % 3 ? b.col : '#ffffff' }); }
+  if (b.gold) { burst(b.x, b.y, '#fff3c4', 18); burst(b.x, b.y, '#ffd23f', 18); }
+  if (b.gold || B.combo.n >= 3 || !B.calm) B.floaters.push({ x: b.x, y: b.y - b.r * 0.4, text: B.combo.n >= 3 ? t('combo', { n: B.combo.n }) : '+' + pts, big: b.gold || B.combo.n >= 3, life: 1 });
+  if (B.calm && ++B.calmPops % BUB.calmEvery === 0) bubblesTreat(now);
+}
+function bubblesTreat(now) { // calm: a little party and a snack for the pet every BUB.calmEvery pops
+  const B = bubbles; B.treats++;
+  for (let i = 0; i < 4; i++) burst(W * (0.2 + i * 0.2), H * 0.45, COLORS[i % COLORS.length], 24);
+  ring(W / 2, H * 0.45, 'rgba(255,214,120,0.9)', Math.min(W, H) * 0.4, 600, 6); sfx('chime');
+  B.floaters.push({ x: W / 2, y: H * 0.42, text: t('bbHooray'), big: true, life: 1.6 });
+  roundDone(BUB.calmEvery, 2, {}); const Q = petUi.earn; toast(Q && Q.got > 0 ? 'cgSnack' : 'bbHooray');
+}
+function bubblesOver(now) {
+  const B = bubbles; B.over = true; B.overAt = now; hideHint(); B.list.length = 0;
+  B.starsN = cgStarsFor(B.score, BUB.stars);
+  const ui = B.ui, had = B.best > 0; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = B.score > B.best;
+  if (ui.newBest) { B.best = B.score; try { localStorage.setItem('bubblesBest', String(B.best)); } catch {} sfx('fanfare'); grippySay('newBest'); } else sfx('chime');
+  if (B.starsN) addCoins(B.starsN);
+  roundDone(B.score, undefined, { star: B.starsN === 3, record: ui.newBest && had });
+}
+function bubbleSprite(col, R) {
+  return makeSprite('bub|' + col + '|' + R, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => {
+    const c = hexRgb(col).join(','), gold = col === '#ffd23f';
+    const gr = g.createRadialGradient(-R * 0.2, -R * 0.25, R * 0.1, 0, 0, R); gr.addColorStop(0, 'rgba(' + c + ',' + (gold ? 0.22 : 0.06) + ')'); gr.addColorStop(0.7, 'rgba(' + c + ',' + (gold ? 0.35 : 0.16) + ')'); gr.addColorStop(0.93, 'rgba(' + c + ',0.6)'); gr.addColorStop(1, 'rgba(' + c + ',0.9)');
+    g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = gr; g.fill();
+    g.lineWidth = Math.max(1, R * 0.04); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.stroke();
+    const sh = g.createLinearGradient(-R, R, R, -R); ['rgba(255,90,140,0.4)', 'rgba(255,220,90,0.4)', 'rgba(90,255,180,0.4)', 'rgba(90,170,255,0.4)'].forEach((s, i) => sh.addColorStop(i / 3, s));
+    g.beginPath(); g.arc(0, 0, R * 0.86, 0.15 * Math.PI, 0.65 * Math.PI); g.lineWidth = R * 0.09; g.strokeStyle = sh; g.stroke();
+    g.beginPath(); g.ellipse(-R * 0.36, -R * 0.42, R * 0.3, R * 0.15, -0.7, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.8)'; g.fill();
+    g.beginPath(); g.arc(-R * 0.08, -R * 0.62, R * 0.06, 0, TAU); g.fill();
+    if (gold) { g.fillStyle = '#fffbe0'; for (const [x, y, s] of [[0.32, -0.2, 0.16], [-0.25, 0.35, 0.11], [0.15, 0.42, 0.08]]) { g.beginPath(); for (let i = 0; i < 8; i++) { const q = i % 2 ? R * s * 0.3 : R * s, a = i * Math.PI / 4; g.lineTo(R * x + Math.cos(a) * q, R * y + Math.sin(a) * q); } g.closePath(); g.fill(); } }
+  });
+}
+function renderBubbles(now) {
+  const B = bubbles, rtl = lang === 'he';
+  beginFrame('bubbles', now);
+  for (const b of B.list) { const R = Math.max(8, Math.round(b.r / 3) * 3), k = b.r / R * (1 + 0.025 * Math.sin(now / 260 + b.ph)); if (b.gold) { resetView(); const gr = ctx.createRadialGradient(b.x, b.y, b.r * 0.6, b.x, b.y, b.r * 1.6); gr.addColorStop(0, 'rgba(255,214,90,0.35)'); gr.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 1.6, 0, TAU); ctx.fill(); } blit(bubbleSprite(b.col, R), b.x, b.y, 0, k); }
+  drawParticles(); drawRings(now); drawFloaters(B.floaters);
+  for (const p of camg.ptrs) { // the fingers: little glowing dots, so a child sees what pops
+    if (p.hand) { for (const q of p.tips.slice(0, 5)) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, TAU); ctx.fill(); } cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 9); }
+    else if (p.down) cgHandMark(p, 'rgba(255,255,255,0.8)', now, 10);
+  }
+  const ty = cgTopY(), h = 40;
+  if (!B.over) {
+    const cw = Math.min(124, W * 0.34), info = B.calm ? t('bbPoppedN', { n: B.popped }) : LRM + cgSecs(B.left) + '  ·  ★ ' + B.score, sp = textSprite(info, 16, '#fff8ec', null, 700), pw = sp.tw + 30, tot = cw + 10 + pw, x0 = (W - tot) / 2;
+    cgChip('calm', rtl ? x0 + pw + 10 : x0, ty, cw, h, t('bbCalm'), { on: B.calm, col: '#7bed9f', icon: (g, cx, cy, on) => { g.fillStyle = on ? '#123d24' : '#7bed9f'; g.beginPath(); g.ellipse(cx, cy + 1, 7, 5, 0, Math.PI, 0); g.fill(); g.beginPath(); g.arc(cx + 7, cy - 1, 2.6, 0, TAU); g.fill(); g.fillRect(cx - 6, cy + 1, 3, 3); g.fillRect(cx + 3, cy + 1, 3, 3); } });
+    const low = !B.calm && B.left < 10000;
+    cgPill(info, rtl ? x0 + pw / 2 : x0 + cw + 10 + pw / 2, ty + 2, { h: h - 4, size: 16, bg: low ? 'rgba(255,77,61,' + (0.3 + 0.2 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(14,19,40,0.8)' });
+    const ck = B.combo.n >= 3 ? Math.max(0, 1 - (now - B.combo.t) / 900) : 0;
+    if (ck > 0) blit(textSprite(t('comboBig', { n: B.combo.n }), 22, '#ffd36b', 'rgba(255,170,40,0.85)'), W / 2, ty + h + 26, 0, 1 + 0.2 * ck, Math.min(1, ck * 2));
+  }
+  if (B.over) drawEndCard(now, B, { stars: B.starsN, title: t('bbTimeUp'), score: B.score, best: B.best, stats: [[B.popped, 'bbPopped'], [LRM + '×' + B.bestCombo, 'bestCombo'], [B.golden, 'bbGolden']], again: 'playAgainWave' });
+  else cgDwellDraw(now);
+}
+
+/* ---------------- Air Painting ----------------
+   A pinch (or a pointing finger) paints glowing strokes at the hand; an open hand stops. Touch: a finger draws; mouse: drag. The palette at the bottom
+   (picked by a tap, or the hand held over a swatch CG.dwellMs): 8 colours, 3 brush sizes, the magic brushes (Rainbow, Sparkles) and Mirror (left-right
+   symmetry), Erase (camera: a fist, then shake it to confirm; a tap: tap again to confirm) and Save (a PNG: the share sheet, else a download; the first
+   save of a drawing with enough ink gives the pet a snack). */
+const PAINT_COLS = ['#ff4d6d', '#ff9f1c', '#ffd23f', '#43d9a3', '#3ec1ff', '#6c7bff', '#c06bff', '#ffffff'];
+const PAINT_SIZES = [5, 11, 20];
+const PAINT = { minInk: 400, shakeN: 3, shakeMs: 1600, shakeMin: 22, confirmMs: 2600 };
+const paint = { cv: null, g: null, live: null, lg: null, seg: [], pr: 1, color: 4, size: 1, brush: 'plain', mirror: false, strokes: 0, ink: 0, drawId: 1, snackFor: 0, drawing: false, pts: [], hue: 0,
+  fist: { on: false, dir: 0, ext: 0, piv: 0, times: [], done: false }, trashAt: -1e9, cleared: 0, fade: null, saved: null, saving: false, panel: null, log: [], twinkles: [], over: false, overAt: 0, ui: { buttons: null, hover: null, dwell: null } };
+function paintCanvas() { // the drawing layer (kept across a resize, scaled) and the live layer (the stroke being drawn, redrawn whole each move so its glow never covers its own core)
+  const P = paint, pr = Math.min(2, DPR || 1), w = Math.max(1, Math.round(W * pr)), h = Math.max(1, Math.round(H * pr));
+  if (P.cv && P.cv.width === w && P.cv.height === h) return P.g;
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+  if (P.cv) { paintCommit(); g.drawImage(P.cv, 0, 0, w, h); }
+  g.setTransform(pr, 0, 0, pr, 0, 0); P.cv = c; P.g = g; P.pr = pr;
+  const l = document.createElement('canvas'); l.width = w; l.height = h; P.live = l; P.lg = l.getContext('2d'); P.lg.setTransform(pr, 0, 0, pr, 0, 0);
+  return g;
+}
+function paintReset(now) {
+  const P = paint; paintCanvas(); P.g.save(); P.g.setTransform(1, 0, 0, 1, 0, 0); P.g.clearRect(0, 0, P.cv.width, P.cv.height); P.g.restore();
+  P.strokes = 0; P.ink = 0; P.drawId++; P.drawing = false; P.seg = []; P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore(); P.twinkles.length = 0; P.fade = null; P.trashAt = -1e9; P.fist.on = false; P.fist.times = []; P.fist.done = false;
+  P.panel = paintPanelLayout(); roundStart();
+}
+function paintPanelLayout() {
+  const gap = 5, s = Math.max(34, Math.min(52, (W - 24 - gap * 7) / 8)), pw = s * 8 + gap * 7, ph = s * 2 + gap, x0 = (W - pw) / 2, y0 = H - ph - 12, rtl = lang === 'he';
+  const cell = (row, i) => ({ x: x0 + (rtl ? 7 - i : i) * (s + gap), y: y0 + row * (s + gap), w: s, h: s });
+  return { x: x0 - 8, y: y0 - 8, w: pw + 16, h: ph + 16, s, cell };
+}
+const PAINT_TOOLS = ['s0', 's1', 's2', 'rainbow', 'sparkle', 'mirror', 'trash', 'save'];
+function paintInPanel(x, y) { const L = paint.panel; return !!L && y >= L.y - 8 && x >= L.x - 8 && x <= L.x + L.w + 8; }
+function paintPress(key, now) {
+  const P = paint;
+  if (/^c\d$/.test(key)) { P.color = +key[1]; if (P.brush === 'rainbow') P.brush = 'plain'; }
+  else if (/^s\d$/.test(key)) P.size = +key[1];
+  else if (key === 'rainbow' || key === 'sparkle') P.brush = P.brush === key ? 'plain' : key;
+  else if (key === 'mirror') P.mirror = !P.mirror;
+  else if (key === 'trash') { if (now - P.trashAt < PAINT.confirmMs) { P.trashAt = -1e9; paintClear(now, 'trash'); } else P.trashAt = now; }
+  else if (key === 'save') paintSave();
+  P.log.push({ ev: 'press', key, t: Math.round(now) }); if (P.log.length > 80) P.log.shift();
+}
+function paintTick(now, dt) {
+  const P = paint; paintCanvas(); P.panel = paintPanelLayout();
+  for (let i = P.twinkles.length - 1; i >= 0; i--) if (now - P.twinkles[i].t > 1400) P.twinkles.splice(i, 1);
+  if (cgBlocked()) { paintEnd(); camg.taps.length = 0; return; }
+  cgDwellTick(now);
+  let pen = null;
+  if (mode === 'camera') { if (cursor.present && (gesture === 'pinch' || gesture === 'point')) pen = { x: cursor.x, y: cursor.y }; paintFistTick(now); }
+  else if (ptr.type === 'touch' ? ptr.touches.size === 1 : ptr.pinch) pen = { x: ptr.x, y: ptr.y };
+  for (const tp of camg.taps) if (!P.drawing && !paintInPanel(tp.x, tp.y) && !pen) paintDotAt(tp.x, tp.y, now); // (a tap shorter than a frame: a dot)
+  camg.taps.length = 0;
+  if (pen && paintInPanel(pen.x, pen.y)) pen = null; // over the palette: picking, not painting
+  if (pen) paintMove(pen.x, pen.y, now); else paintEnd();
+}
+function paintColor(d) { const P = paint; if (P.brush === 'rainbow') { P.hue = (P.hue + d * 0.9) % 360; return 'hsl(' + Math.round(P.hue) + ',100%,62%)'; } return PAINT_COLS[P.color]; }
+function paintRuns(pts) { // the stroke cut in runs of one colour (a rainbow stroke: a run every few points), each starting at the previous run's last point
+  const out = []; let a = 0;
+  for (let i = 1; i <= pts.length; i++) if (i === pts.length || pts[i].col !== pts[a].col || i - a >= 6) { out.push({ col: pts[a].col, pts: pts.slice(Math.max(0, a - 1), i) }); a = i; }
+  return out;
+}
+function paintTrace(g, q) { // a smooth path through the points (quadratic curves via the midpoints)
+  g.beginPath(); g.moveTo(q[0].x, q[0].y);
+  if (q.length === 1) { g.lineTo(q[0].x + 0.1, q[0].y); return; }
+  for (let i = 1; i < q.length - 1; i++) g.quadraticCurveTo(q[i].x, q[i].y, (q[i].x + q[i + 1].x) / 2, (q[i].y + q[i + 1].y) / 2);
+  g.lineTo(q[q.length - 1].x, q[q.length - 1].y);
+}
+function paintDraw(g, pts, w, mirror) { // the glow of every run first, then the bright cores on top
+  const runs = paintRuns(pts), sets = mirror ? [runs, runs.map((r) => ({ col: r.col, pts: r.pts.map((p) => ({ x: W - p.x, y: p.y })) }))] : [runs];
+  g.save(); g.lineCap = g.lineJoin = 'round';
+  for (const R of sets) for (const r of R) { paintTrace(g, r.pts); g.shadowColor = r.col; g.shadowBlur = w * 1.5; g.strokeStyle = r.col; g.lineWidth = w; g.stroke(); }
+  g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,0.72)'; g.lineWidth = Math.max(1.5, w * 0.36);
+  for (const R of sets) for (const r of R) { paintTrace(g, r.pts); g.stroke(); }
+  g.restore();
+}
+function paintLive() { const P = paint; P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore(); if (P.seg.length) paintDraw(P.lg, P.seg, PAINT_SIZES[P.size], P.mirror); }
+function paintCommit() { // the live stroke onto the drawing
+  const P = paint; if (!P.live || !P.g) return;
+  P.g.save(); P.g.setTransform(1, 0, 0, 1, 0, 0); P.g.drawImage(P.live, 0, 0); P.g.restore();
+  P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore();
+}
+function paintSparkles(a, b, d, now) { // the sparkle brush: little stars stamped along the way, a few twinkling for a moment
+  const P = paint, w = PAINT_SIZES[P.size], n = Math.floor(d / 12 + Math.random());
+  for (let i = 0; i < n; i++) {
+    const u = Math.random(), x = a.x + (b.x - a.x) * u + (Math.random() - 0.5) * w * 3, y = a.y + (b.y - a.y) * u + (Math.random() - 0.5) * w * 3, s = 2 + Math.random() * w * 0.35, col = Math.random() < 0.5 ? '#fff8d0' : PAINT_COLS[P.color];
+    for (const m of P.mirror ? [0, 1] : [0]) { const X = m ? W - x : x; paintStar(P.g, X, y, s, col); if (P.twinkles.length < 90) P.twinkles.push({ x: X, y, s: s * 1.8, t: now, col }); }
+  }
+}
+function paintStar(g, x, y, s, col) { g.save(); g.fillStyle = col; g.shadowColor = col; g.shadowBlur = s * 2; g.beginPath(); for (let i = 0; i < 8; i++) { const q = i % 2 ? s * 0.32 : s, a = i * Math.PI / 4; g.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } g.closePath(); g.fill(); g.restore(); }
+function paintMove(x, y, now) {
+  const P = paint;
+  if (!P.drawing) { P.drawing = true; P.strokes++; P.seg = [{ x, y, col: paintColor(0) }]; P.log.push({ ev: 'start', x: Math.round(x), y: Math.round(y), t: Math.round(now) }); paintLive(); return; }
+  const last = P.seg[P.seg.length - 1], d = Math.hypot(x - last.x, y - last.y); if (d < 1.5) return;
+  P.seg.push({ x, y, col: paintColor(d) }); P.ink += d;
+  if (P.brush === 'sparkle') paintSparkles(last, { x, y }, d, now);
+  if (P.seg.length >= 48) { paintLive(); paintCommit(); P.seg = P.seg.slice(-2); } // (a long stroke goes down in pieces: each redraw stays short)
+  paintLive();
+}
+function paintEnd() {
+  const P = paint; if (!P.drawing) return;
+  paintLive(); paintCommit(); P.drawing = false; P.seg = []; P.log.push({ ev: 'end', t: Math.round(performance.now()) }); if (P.log.length > 80) P.log.shift();
+}
+function paintDotAt(x, y, now) { paintMove(x, y, now); paint.ink += 4; paintEnd(); }
+function paintFistTick(now) { // camera: a fist shows 'Shake to erase'; three quick shakes (sideways reversals) clear the drawing
+  const F = paint.fist;
+  if (gesture !== 'fist' || !cursor.present) { F.on = false; F.done = false; F.times = []; return; }
+  const x = cursor.x, S = PAINT.shakeMin * Math.max(0.8, W / 400);
+  if (!F.on) { F.on = true; F.dir = 0; F.ext = x; F.piv = x; F.times = []; F.at = now; return; }
+  if (F.done) return;
+  if (F.dir === 0) { if (Math.abs(x - F.piv) > S) { F.dir = Math.sign(x - F.piv); F.ext = x; } }
+  else if (F.dir > 0) { if (x > F.ext) F.ext = x; else if (F.ext - x > S) { F.dir = -1; F.piv = F.ext; F.ext = x; F.times.push(now); } }
+  else { if (x < F.ext) F.ext = x; else if (x - F.ext > S) { F.dir = 1; F.piv = F.ext; F.ext = x; F.times.push(now); } }
+  F.times = F.times.filter((q) => now - q < PAINT.shakeMs);
+  if (F.times.length >= PAINT.shakeN) { F.done = true; F.times = []; paintClear(now, 'shake'); }
+}
+function paintClear(now, how) { // the drawing flies away (a snapshot shrinks and fades), a whoosh
+  const P = paint; paintEnd();
+  if (P.cv) { const c = document.createElement('canvas'); c.width = P.cv.width; c.height = P.cv.height; c.getContext('2d').drawImage(P.cv, 0, 0); P.fade = { c, t: now }; } // (paintEnd committed the live stroke)
+  P.g.save(); P.g.setTransform(1, 0, 0, 1, 0, 0); P.g.clearRect(0, 0, P.cv.width, P.cv.height); P.g.restore();
+  P.cleared++; P.strokes = 0; P.ink = 0; P.drawId++; P.twinkles.length = 0;
+  P.log.push({ ev: 'clear', how, t: Math.round(now) }); sfx('faster'); for (let i = 0; i < 5; i++) burst(W * (0.15 + i * 0.175), H * 0.5, PAINT_COLS[i], 16);
+}
+function paintBg(g, w, h) { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#141a3a'); gr.addColorStop(1, '#0b0f26'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }
+function paintImage() { // the drawing on its night background, with a small mark: a canvas for the PNG
+  const P = paint; paintCanvas(); const c = document.createElement('canvas'); c.width = P.cv.width; c.height = P.cv.height; const g = c.getContext('2d');
+  paintBg(g, c.width, c.height); g.drawImage(P.cv, 0, 0); g.drawImage(P.live, 0, 0);
+  g.font = '700 ' + Math.round(14 * P.pr) + 'px Rubik, system-ui, sans-serif'; g.fillStyle = 'rgba(241,233,218,0.5)'; g.textAlign = 'right'; g.fillText('Grasp', c.width - 12 * P.pr, c.height - 12 * P.pr);
+  return c;
+}
+function paintDownload(blob) {
+  try { const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = 'grasp-drawing.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); } catch {}
+  return 'download';
+}
+async function paintSave() {
+  const P = paint; if (P.saving) return P.saved; P.saving = true; paintEnd();
+  try {
+    const c = paintImage(), blob = await new Promise((res) => c.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('no image');
+    let how = 'download', file = null;
+    try { file = new File([blob], 'grasp-drawing.png', { type: 'image/png' }); } catch {}
+    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: t('pnShareTitle') }); how = 'share'; } catch (e) { how = e && e.name === 'AbortError' ? 'abort' : paintDownload(blob); }
+    } else paintDownload(blob);
+    P.saved = { how, size: blob.size, type: blob.type, w: c.width, h: c.height, at: Math.round(performance.now()) };
+    if (how !== 'abort') { sfx('shutter'); paintSnack(); }
+  } catch (e) { P.saved = { how: 'error', err: String(e && e.message || e) }; }
+  finally { P.saving = false; }
+  return P.saved;
+}
+function paintSnack() { // the first save of a drawing with enough ink: a finished 'round' (a snack for the pet)
+  const P = paint; if (P.ink < PAINT.minInk || P.snackFor === P.drawId) { toast('pnSaved'); return false; }
+  P.snackFor = P.drawId; roundStart(); roundDone(Math.min(60, Math.round(P.ink / 60)), undefined, {});
+  const Q = petUi.earn; toast(Q && Q.got > 0 ? 'pnSavedSnack' : 'pnSaved'); return true;
+}
+function paintToolIcon(key, cx, cy, s, on) {
+  const g = ctx, P = paint, col = PAINT_COLS[P.color]; resetView(); g.save(); g.lineCap = g.lineJoin = 'round';
+  if (/^s\d$/.test(key)) { const r = [3.5, 6.5, 10][+key[1]] * s / 46; g.fillStyle = P.brush === 'rainbow' ? '#ffffff' : col; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.fill(); }
+  else if (key === 'rainbow') { ['#ff4d6d', '#ffd23f', '#43d9a3', '#3ec1ff', '#c06bff'].forEach((c, i) => { g.strokeStyle = c; g.lineWidth = s * 0.05; g.beginPath(); g.arc(cx, cy + s * 0.14, s * (0.3 - i * 0.05), Math.PI, 0); g.stroke(); }); }
+  else if (key === 'sparkle') { paintStarCtx(g, cx - s * 0.08, cy - s * 0.04, s * 0.2, '#fff3c4'); paintStarCtx(g, cx + s * 0.16, cy + s * 0.14, s * 0.11, '#ffd23f'); paintStarCtx(g, cx + s * 0.14, cy - s * 0.18, s * 0.07, '#ffffff'); }
+  else if (key === 'mirror') { g.strokeStyle = 'rgba(241,233,218,0.6)'; g.setLineDash([3, 3]); g.lineWidth = 1.5; g.beginPath(); g.moveTo(cx, cy - s * 0.3); g.lineTo(cx, cy + s * 0.3); g.stroke(); g.setLineDash([]); g.fillStyle = '#c06bff'; for (const m of [-1, 1]) { g.beginPath(); g.ellipse(cx + m * s * 0.16, cy - s * 0.07, s * 0.13, s * 0.1, m * 0.5, 0, TAU); g.fill(); g.beginPath(); g.ellipse(cx + m * s * 0.12, cy + s * 0.12, s * 0.08, s * 0.07, -m * 0.4, 0, TAU); g.fill(); } }
+  else if (key === 'trash') { const armed = performance.now() - P.trashAt < PAINT.confirmMs; g.strokeStyle = armed ? '#fff' : '#f1e9da'; g.lineWidth = 2; g.beginPath(); g.moveTo(cx - s * 0.2, cy - s * 0.15); g.lineTo(cx + s * 0.2, cy - s * 0.15); g.moveTo(cx - s * 0.07, cy - s * 0.2); g.lineTo(cx + s * 0.07, cy - s * 0.2); g.stroke(); g.beginPath(); g.moveTo(cx - s * 0.15, cy - s * 0.1); g.lineTo(cx - s * 0.11, cy + s * 0.22); g.lineTo(cx + s * 0.11, cy + s * 0.22); g.lineTo(cx + s * 0.15, cy - s * 0.1); g.stroke(); }
+  else if (key === 'save') { g.strokeStyle = '#43d9a3'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(cx, cy - s * 0.22); g.lineTo(cx, cy + s * 0.08); g.moveTo(cx - s * 0.12, cy - s * 0.04); g.lineTo(cx, cy + s * 0.09); g.lineTo(cx + s * 0.12, cy - s * 0.04); g.moveTo(cx - s * 0.2, cy + s * 0.2); g.lineTo(cx + s * 0.2, cy + s * 0.2); g.stroke(); }
+  g.restore();
+}
+function paintStarCtx(g, x, y, s, col) { g.fillStyle = col; g.beginPath(); for (let i = 0; i < 8; i++) { const q = i % 2 ? s * 0.35 : s, a = i * Math.PI / 4; g.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } g.closePath(); g.fill(); }
+function renderPaint(now) {
+  const P = paint; paintCanvas(); P.panel = paintPanelLayout();
+  beginFrame('paint', now);
+  if (P.mirror) { resetView(); ctx.strokeStyle = 'rgba(241,233,218,0.16)'; ctx.setLineDash([6, 8]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W / 2, cgTopY()); ctx.lineTo(W / 2, P.panel.y - 6); ctx.stroke(); ctx.setLineDash([]); }
+  if (P.fade) { const k = (now - P.fade.t) / 520; if (k >= 1) P.fade = null; else { resetView(); ctx.save(); ctx.globalAlpha = 1 - k; ctx.translate(W / 2, H / 2); ctx.scale(1 - 0.6 * k, 1 - 0.6 * k); ctx.rotate(0.3 * k); ctx.drawImage(P.fade.c, -W / 2, -H / 2, W, H); ctx.restore(); } }
+  resetView(); ctx.drawImage(P.cv, 0, 0, W, H); if (P.drawing) ctx.drawImage(P.live, 0, 0, W, H);
+  for (const q of P.twinkles) { const k = (now - q.t) / 1400, a = Math.max(0, 1 - k) * (0.6 + 0.4 * Math.sin(now / 60 + q.x)); resetView(); ctx.globalAlpha = a; paintStarCtx(ctx, q.x, q.y, q.s * (1 + 0.4 * Math.sin(now / 90 + q.y)), q.col); ctx.globalAlpha = 1; }
+  drawParticles(); drawRings(now);
+  // the palette
+  const L = P.panel, s = L.s; blit(glassSprite(L.w, L.h, 18, true), L.x - 1, L.y - 1);
+  PAINT_COLS.forEach((c, i) => { const r = L.cell(0, i), cx = r.x + s / 2, cy = r.y + s / 2, on = i === P.color && P.brush !== 'rainbow';
+    resetView(); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, s * (on ? 0.38 : 0.33), 0, TAU); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.stroke();
+    if (on) { ctx.lineWidth = 3; ctx.strokeStyle = '#ffffff'; ctx.beginPath(); ctx.arc(cx, cy, s * 0.46, 0, TAU); ctx.stroke(); }
+    camg.btns.push({ key: 'c' + i, x: r.x, y: r.y, w: s, h: s }); });
+  PAINT_TOOLS.forEach((key, i) => { const r = L.cell(1, i), cx = r.x + s / 2, cy = r.y + s / 2, armed = key === 'trash' && now - P.trashAt < PAINT.confirmMs;
+    const on = (/^s\d$/.test(key) && +key[1] === P.size) || key === P.brush || (key === 'mirror' && P.mirror);
+    resetView(); ctx.fillStyle = armed ? 'rgba(255,77,61,0.85)' : on ? 'rgba(255,194,75,0.28)' : 'rgba(241,233,218,0.07)'; ctx.beginPath(); ctx.roundRect(r.x + 2, r.y + 2, s - 4, s - 4, 12); ctx.fill();
+    if (on) { ctx.lineWidth = 2; ctx.strokeStyle = '#ffc24b'; ctx.stroke(); }
+    paintToolIcon(key, cx, armed ? cy - s * 0.08 : cy, s, on);
+    if (armed) blit(textSprite(t('pnAgain'), 10, '#ffffff', null, 700), cx, r.y + s - 9, 0, Math.min(1, (s - 6) / textSprite(t('pnAgain'), 10, '#ffffff', null, 700).tw));
+    camg.btns.push({ key, x: r.x, y: r.y, w: s, h: s }); });
+  // the fist: 'Shake to erase' with three dots
+  if (mode === 'camera' && P.fist.on && !P.fist.done) { const n = P.fist.times.length, y = Math.max(cgTopY() + 30, H * 0.3); cgPill(t('pnShake') + '  ' + '●'.repeat(n) + '○'.repeat(Math.max(0, PAINT.shakeN - n)), W / 2, y, { bg: 'rgba(255,77,61,0.3)', rim: 'rgba(255,120,100,0.8)' }); }
+  // the brush at the hand / the mouse
+  if (cursor.present && !(mode === 'mouse' && ptr.type === 'touch' && !ptr.touches.size)) {
+    const w = PAINT_SIZES[P.size], col = P.brush === 'rainbow' ? 'hsl(' + Math.round(P.hue) + ',100%,62%)' : PAINT_COLS[P.color]; resetView();
+    if (P.drawing) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, w / 2 + 2, 0, TAU); ctx.fill(); }
+    else if (!paintInPanel(cursor.x, cursor.y)) { ctx.lineWidth = 2; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, w / 2 + 6, 0, TAU); ctx.stroke(); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(241,233,218,0.12)'; ctx.stroke(); }
+    if (mode === 'camera' && gesture === 'fist') { ctx.fillStyle = 'rgba(255,111,89,0.5)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 22, 0, TAU); ctx.fill(); }
+  }
+  cgDwellDraw(now);
+}
+
+/* ---------------- Catch the Stars ----------------
+   Stars, coins and treats fall; a basket at the bottom follows the hand (camera: any pose, an open hand reads best; touch: the finger; mouse: the
+   pointer). Catch them for points (star 1, coin 2, cookie / candy 3, a golden star 5; a streak of 5+ adds 1). The occasional bomb (-3, the basket
+   reels for a moment) and rain cloud (-1, a soggy basket) are to dodge. It speeds up over the 60 s round; 0-3 stars, the best, the card, a pet snack. */
+const CATCH = { roundMs: 60000, stars: [25, 50, 80], spawn: [950, 430], fall: [1 / 2700, 1 / 1450], badAfter: 5000, stunMs: 750, wetMs: 1300, bomb: 3, cloud: 1 };
+const CATCH_KINDS = { star: { p: 1, w: 42, r: 22 }, coin: { p: 2, w: 20, r: 17 }, cookie: { p: 3, w: 11, r: 19 }, candy: { p: 3, w: 9, r: 18 }, gold: { p: 5, w: 4, r: 24 }, bomb: { bad: true, w: 8, r: 21 }, cloud: { bad: true, w: 6, r: 28 } };
+const catcher = { items: [], seq: 0, basket: { x: 0, tx: 0, y: 0, w: 0, h: 0, vx: 0, tilt: 0, stunUntil: -1e9, wetUntil: -1e9, pop: -1e9, pile: [] }, score: 0, caught: 0, streak: 0, bestStreak: 0, dodged: 0, bad: 0, missed: 0,
+  left: CATCH.roundMs, el: 0, nextAt: 0, best: 0, floaters: [], log: [], starsN: 0, flash: -1e9, over: false, overAt: 0, ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
+function catcherScale() { return Math.max(0.9, Math.min(1.45, Math.min(W, H) / 400)); }
+function catcherLayout() { const b = catcher.basket; b.w = Math.max(110, Math.min(200, W * 0.3)); b.h = b.w * 0.42; b.y = H - Math.max(46, H * 0.08) - b.h * 0.5; if (!b.x) b.x = b.tx = W / 2; }
+function catcherReset(now) {
+  const C = catcher; C.items.length = 0; C.floaters.length = 0; C.score = C.caught = C.streak = C.bestStreak = C.dodged = C.bad = C.missed = 0; C.left = CATCH.roundMs; C.el = 0; C.nextAt = now + 600; C.over = false; C.starsN = 0; C.flash = -1e9;
+  catcherLayout(); const b = C.basket; b.x = b.tx = W / 2; b.vx = b.tilt = 0; b.stunUntil = b.wetUntil = b.pop = -1e9; b.pile = [];
+  try { C.best = Math.max(C.best, +localStorage.getItem('starsBest') || 0); } catch {}
+  const ui = C.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
+  roundStart(); grippySay('start');
+}
+function catcherSpawn(now, o = {}) {
+  const C = catcher, k = Math.min(1, C.el / CATCH.roundMs); let kind = o.kind;
+  if (!kind) { const pool = Object.keys(CATCH_KINDS).filter((q) => C.el >= CATCH.badAfter || !CATCH_KINDS[q].bad), tot = pool.reduce((s, q) => s + CATCH_KINDS[q].w, 0); let u = Math.random() * tot; kind = pool.find((q) => (u -= CATCH_KINDS[q].w) < 0) || 'star'; }
+  const K = CATCH_KINDS[kind], r = K.r * catcherScale(), x = o.x ?? (r + 12 + Math.random() * (W - 2 * r - 24));
+  const it = { id: ++C.seq, kind, x, y: o.y ?? -r - 4, r, vy: o.vy ?? H * (CATCH.fall[0] + (CATCH.fall[1] - CATCH.fall[0]) * k) * (0.9 + Math.random() * 0.25) * (kind === 'cloud' ? 0.7 : 1), vx: kind === 'cloud' ? (Math.random() - 0.5) * 0.04 : 0, rot: Math.random() * TAU, vr: kind === 'star' || kind === 'gold' ? (Math.random() - 0.5) * 0.004 : (Math.random() - 0.5) * 0.002, born: now };
+  C.items.push(it); return it;
+}
+function catcherTick(now, dt) {
+  const C = catcher, b = C.basket; tickFloaters(C.floaters, dt); catcherLayout();
+  if (C.over) { camg.taps.length = 0; endCardTick(now); return; }
+  if (cgBlocked()) { camg.taps.length = 0; return; }
+  C.left -= dt; C.el += dt; if (C.left <= 0) { C.left = 0; catcherOver(now); return; }
+  if (C.left < 5000 && Math.ceil(C.left / 1000) !== Math.ceil((C.left + dt) / 1000)) sfx('tick');
+  let tx = null;
+  if (mode === 'camera') { if (cursor.present) tx = cursor.x; } else if (ptr.type === 'touch' ? ptr.touches.size > 0 : ptr.present) tx = ptr.x;
+  for (const tp of camg.taps) tx = tp.x; camg.taps.length = 0;
+  if (tx !== null) b.tx = Math.max(b.w / 2 + 4, Math.min(W - b.w / 2 - 4, tx));
+  const nx = b.x + (b.tx - b.x) * Math.min(1, dt / 55); b.vx = (nx - b.x) / Math.max(1, dt); b.x = nx; b.tilt += (Math.max(-0.3, Math.min(0.3, b.vx * 0.3)) - b.tilt) * Math.min(1, dt / 90);
+  if (now >= C.nextAt) { catcherSpawn(now); const k = Math.min(1, C.el / CATCH.roundMs); C.nextAt = now + (CATCH.spawn[0] + (CATCH.spawn[1] - CATCH.spawn[0]) * k) * (0.8 + Math.random() * 0.4); }
+  const rim = b.y - b.h * 0.42, stunned = now < b.stunUntil;
+  for (let i = C.items.length - 1; i >= 0; i--) {
+    const it = C.items[i], py = it.y; it.y += it.vy * dt; it.x += it.vx * dt; it.rot += it.vr * dt;
+    if (!stunned && it.vy > 0 && it.y + it.r * 0.4 >= rim && py - it.r * 0.4 <= rim + 16 && Math.abs(it.x - b.x) <= b.w / 2 + it.r * 0.25) { C.items.splice(i, 1); catcherCatch(it, now); continue; }
+    if (it.y - it.r > H) { C.items.splice(i, 1); if (CATCH_KINDS[it.kind].bad) C.dodged++; else { C.missed++; C.streak = 0; } }
+  }
+}
+function catcherCatch(it, now) {
+  const C = catcher, b = C.basket, K = CATCH_KINDS[it.kind];
+  if (K.bad) {
+    C.bad++; C.streak = 0;
+    if (it.kind === 'bomb') { C.score = Math.max(0, C.score - CATCH.bomb); b.stunUntil = now + CATCH.stunMs; C.flash = now; sfx('boom'); shakeScreen(3); dust(it.x, b.y - b.h * 0.4, 10, 1.2); burst(it.x, b.y - b.h * 0.4, '#ffc24b', 18); burst(it.x, b.y - b.h * 0.4, '#ff6f59', 12); C.floaters.push({ x: it.x, y: b.y - b.h, text: '-' + CATCH.bomb, big: true, life: 1.2 }); }
+    else { C.score = Math.max(0, C.score - CATCH.cloud); b.wetUntil = now + CATCH.wetMs; sfx('drizzle'); C.floaters.push({ x: it.x, y: b.y - b.h, text: '-' + CATCH.cloud, big: false, life: 1 }); }
+    C.log.push({ kind: it.kind, pts: it.kind === 'bomb' ? -CATCH.bomb : -CATCH.cloud, t: Math.round(now) }); return;
+  }
+  C.caught++; C.streak++; C.bestStreak = Math.max(C.bestStreak, C.streak);
+  const pts = K.p + (C.streak >= 5 ? 1 : 0); C.score += pts; b.pop = now; b.pile.push(it.kind); if (b.pile.length > 7) b.pile.shift();
+  C.log.push({ kind: it.kind, pts, streak: C.streak, t: Math.round(now) }); if (C.log.length > 80) C.log.shift();
+  sfx('catch', C.streak);
+  const col = it.kind === 'coin' || it.kind === 'gold' || it.kind === 'star' ? '#ffd23f' : it.kind === 'candy' ? '#ff6f91' : '#dc9d52';
+  burst(it.x, b.y - b.h * 0.45, col, 14); burst(it.x, b.y - b.h * 0.45, '#ffffff', 8); ring(it.x, b.y - b.h * 0.45, 'rgba(255,230,150,0.9)', it.r * 1.8, 300, 3);
+  C.floaters.push({ x: it.x, y: b.y - b.h * 0.9, text: C.streak >= 5 && C.streak % 5 === 0 ? t('stStreakN', { n: C.streak }) : '+' + pts, big: it.kind === 'gold' || (C.streak >= 5 && C.streak % 5 === 0), life: 1 });
+}
+function catcherOver(now) {
+  const C = catcher; C.over = true; C.overAt = now; hideHint(); C.items.length = 0;
+  C.starsN = cgStarsFor(C.score, CATCH.stars);
+  const ui = C.ui, had = C.best > 0; ui.buttons = ui.hover = ui.dwell = null; ui.newBest = C.score > C.best;
+  if (ui.newBest) { C.best = C.score; try { localStorage.setItem('starsBest', String(C.best)); } catch {} sfx('fanfare'); grippySay('newBest'); } else sfx('chime');
+  if (C.starsN) addCoins(C.starsN);
+  roundDone(C.score, undefined, { star: C.starsN === 3, record: ui.newBest && had });
+}
+function catchSprite(kind, r) {
+  const R = Math.round(r);
+  return makeSprite('cst|' + kind + '|' + R, R * 3, R * 3, R * 1.5, R * 1.5, (g) => {
+    const starPath = (rr, inner) => { g.beginPath(); for (let i = 0; i < 10; i++) { const q = i % 2 ? rr * inner : rr, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * q, Math.sin(a) * q); } g.closePath(); };
+    if (kind === 'star' || kind === 'gold') {
+      const gold = kind === 'gold'; g.save(); g.shadowColor = gold ? 'rgba(255,255,255,0.9)' : 'rgba(255,214,90,0.8)'; g.shadowBlur = R * (gold ? 0.9 : 0.6);
+      const gr = g.createRadialGradient(-R * 0.25, -R * 0.3, R * 0.1, 0, 0, R); gr.addColorStop(0, gold ? '#ffffff' : '#fff6c8'); gr.addColorStop(0.5, gold ? '#ffe36b' : '#ffd23f'); gr.addColorStop(1, gold ? '#ff9f1c' : '#e8a10f');
+      starPath(R, 0.5); g.fillStyle = gr; g.fill(); g.restore(); g.lineWidth = Math.max(1.5, R * 0.08); g.strokeStyle = gold ? '#c96a00' : '#b8780a'; starPath(R, 0.5); g.stroke();
+      g.fillStyle = '#3a2400'; g.beginPath(); g.ellipse(-R * 0.17, -R * 0.05, R * 0.07, R * 0.1, 0, 0, TAU); g.ellipse(R * 0.17, -R * 0.05, R * 0.07, R * 0.1, 0, 0, TAU); g.fill();
+      g.lineWidth = Math.max(1.2, R * 0.06); g.strokeStyle = '#3a2400'; g.beginPath(); g.arc(0, R * 0.08, R * 0.13, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+      g.fillStyle = 'rgba(255,120,120,0.55)'; g.beginPath(); g.arc(-R * 0.3, R * 0.1, R * 0.07, 0, TAU); g.arc(R * 0.3, R * 0.1, R * 0.07, 0, TAU); g.fill();
+      if (gold) { g.fillStyle = '#ffffff'; for (const [x, y] of [[-0.9, -0.7], [0.85, -0.5], [0.7, 0.85]]) { g.beginPath(); for (let i = 0; i < 8; i++) { const q = i % 2 ? R * 0.05 : R * 0.16, a = i * Math.PI / 4; g.lineTo(R * x + Math.cos(a) * q, R * y + Math.sin(a) * q); } g.closePath(); g.fill(); } }
+    } else if (kind === 'coin') { const sp = coinSprite(R); g.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); }
+    else if (kind === 'cookie') {
+      const gr = g.createRadialGradient(-R * 0.3, -R * 0.3, R * 0.1, 0, 0, R); gr.addColorStop(0, '#f2bf7a'); gr.addColorStop(1, '#b8742e');
+      g.beginPath(); for (let i = 0; i < 14; i++) { const a = i / 14 * TAU, q = R * (0.94 + 0.06 * Math.sin(i * 2.7)); g.lineTo(Math.cos(a) * q, Math.sin(a) * q); } g.closePath(); g.fillStyle = gr; g.fill(); g.lineWidth = 1.5; g.strokeStyle = '#7a4a1c'; g.stroke();
+      g.fillStyle = '#4a2a10'; for (const [x, y, s] of [[-0.35, -0.3, 0.14], [0.3, -0.35, 0.12], [0.05, 0.05, 0.15], [-0.4, 0.3, 0.11], [0.38, 0.32, 0.13]]) { g.beginPath(); g.arc(R * x, R * y, R * s, 0, TAU); g.fill(); }
+    } else if (kind === 'candy') {
+      g.fillStyle = '#ff9fbf'; for (const m of [-1, 1]) { g.beginPath(); g.moveTo(m * R * 0.55, 0); g.lineTo(m * R * 1.15, -R * 0.42); g.lineTo(m * R * 1.05, 0); g.lineTo(m * R * 1.15, R * 0.42); g.closePath(); g.fill(); }
+      const gr = g.createRadialGradient(-R * 0.2, -R * 0.25, R * 0.05, 0, 0, R * 0.65); gr.addColorStop(0, '#ffd0e0'); gr.addColorStop(1, '#ff4d8d');
+      g.beginPath(); g.arc(0, 0, R * 0.62, 0, TAU); g.fillStyle = gr; g.fill();
+      g.save(); g.clip(); g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = R * 0.14; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * R * 0.35 - R, -R); g.lineTo(i * R * 0.35 + R, R); g.stroke(); } g.restore();
+      g.beginPath(); g.arc(0, 0, R * 0.62, 0, TAU); g.lineWidth = 1.5; g.strokeStyle = '#c2185b'; g.stroke();
+    } else if (kind === 'bomb') {
+      const gr = g.createRadialGradient(-R * 0.3, -R * 0.3, R * 0.1, 0, 0, R); gr.addColorStop(0, '#5b6175'); gr.addColorStop(0.5, '#262a38'); gr.addColorStop(1, '#0c0d14');
+      g.beginPath(); g.arc(0, R * 0.08, R * 0.9, 0, TAU); g.fillStyle = gr; g.fill();
+      g.fillStyle = '#3d4152'; g.fillRect(-R * 0.22, -R * 0.95, R * 0.44, R * 0.25);
+      g.strokeStyle = '#b07a3a'; g.lineWidth = R * 0.1; g.beginPath(); g.moveTo(0, -R * 0.95); g.quadraticCurveTo(R * 0.25, -R * 1.25, R * 0.45, -R * 1.15); g.stroke();
+      g.beginPath(); g.ellipse(-R * 0.32, -R * 0.2, R * 0.22, R * 0.12, -0.7, 0, TAU); g.fillStyle = 'rgba(255,255,255,0.35)'; g.fill();
+    } else if (kind === 'cloud') {
+      g.strokeStyle = 'rgba(120,180,255,0.85)'; g.lineWidth = 2; for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * R * 0.32, R * 0.45); g.lineTo(i * R * 0.32 - R * 0.1, R * 0.95); g.stroke(); }
+      const gr = g.createLinearGradient(0, -R * 0.8, 0, R * 0.5); gr.addColorStop(0, '#c7cfdf'); gr.addColorStop(1, '#6b7489');
+      g.beginPath(); g.arc(-R * 0.45, R * 0.05, R * 0.42, 0, TAU); g.arc(0, -R * 0.25, R * 0.55, 0, TAU); g.arc(R * 0.5, R * 0.05, R * 0.4, 0, TAU); g.rect(-R * 0.45, R * 0.05, R * 0.95, R * 0.42); g.fillStyle = gr; g.fill();
+      g.fillStyle = '#3a4152'; g.beginPath(); g.arc(-R * 0.18, -R * 0.08, R * 0.06, 0, TAU); g.arc(R * 0.18, -R * 0.08, R * 0.06, 0, TAU); g.fill();
+      g.strokeStyle = '#3a4152'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, R * 0.18, R * 0.12, 1.15 * Math.PI, 1.85 * Math.PI); g.stroke();
+    }
+  });
+}
+function basketSprite(w, part) { // the woven basket: its back (inside) and its front (the weave, the rim), drawn around the pile
+  const h = w * 0.42, W2 = Math.round(w);
+  return makeSprite('bsk|' + part + '|' + W2, w + 20, h * 2 + 20, w / 2 + 10, h + 10, (g) => {
+    if (part === 'back') { g.beginPath(); g.ellipse(0, -h * 0.42, w / 2, h * 0.2, 0, 0, TAU); g.fillStyle = '#4a2c12'; g.fill(); return; }
+    const body = () => { g.beginPath(); g.moveTo(-w / 2, -h * 0.42); g.quadraticCurveTo(-w * 0.46, h * 0.5, -w * 0.3, h * 0.55); g.lineTo(w * 0.3, h * 0.55); g.quadraticCurveTo(w * 0.46, h * 0.5, w / 2, -h * 0.42); g.ellipse(0, -h * 0.42, w / 2, h * 0.2, 0, 0, Math.PI, false); g.closePath(); };
+    const gr = g.createLinearGradient(0, -h * 0.5, 0, h * 0.6); gr.addColorStop(0, '#d99a52'); gr.addColorStop(1, '#8a5320'); body(); g.fillStyle = gr; g.fill();
+    g.save(); body(); g.clip(); g.strokeStyle = 'rgba(90,50,15,0.55)'; g.lineWidth = 2;
+    for (let y = -h * 0.3; y < h * 0.6; y += h * 0.2) { g.beginPath(); g.moveTo(-w / 2, y); g.lineTo(w / 2, y); g.stroke(); }
+    for (let x = -w / 2; x < w / 2; x += w / 10) { g.beginPath(); g.moveTo(x, -h); g.lineTo(x + w * 0.03, h); g.stroke(); } g.restore();
+    g.lineWidth = 2; g.strokeStyle = '#5a3210'; body(); g.stroke();
+    g.beginPath(); g.ellipse(0, -h * 0.42, w / 2, h * 0.2, 0, 0, Math.PI); g.lineWidth = h * 0.16; g.strokeStyle = '#e8b06a'; g.stroke(); g.lineWidth = 1.5; g.strokeStyle = '#7a4a1c'; g.stroke();
+  });
+}
+function renderCatcher(now) {
+  const C = catcher, b = C.basket;
+  beginFrame('stars', now); catcherLayout();
+  for (const it of C.items) {
+    if (it.kind === 'gold' || it.kind === 'star') { resetView(); const gr = ctx.createRadialGradient(it.x, it.y, it.r * 0.3, it.x, it.y, it.r * 1.8); gr.addColorStop(0, it.kind === 'gold' ? 'rgba(255,255,220,0.4)' : 'rgba(255,214,90,0.22)'); gr.addColorStop(1, 'rgba(255,214,90,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(it.x, it.y, it.r * 1.8, 0, TAU); ctx.fill(); }
+    blit(catchSprite(it.kind, it.r), it.x, it.y, it.rot);
+    if (it.kind === 'bomb') { const sx = it.x + Math.cos(it.rot - 1.0) * it.r * 1.25, sy = it.y + Math.sin(it.rot - 1.0) * it.r * 1.25; resetView(); ctx.fillStyle = Math.sin(now / 40) > 0 ? '#ffe36b' : '#ff6f59'; ctx.beginPath(); ctx.arc(sx, sy, 3 + Math.random() * 2, 0, TAU); ctx.fill(); }
+  }
+  // the basket: back, the pile of what was caught, front; reels after a bomb, drips after a cloud
+  const stun = now < b.stunUntil, wob = stun ? Math.sin(now / 40) * 0.25 : 0, pk = Math.max(0, 1 - (now - b.pop) / 260), sq = 1 + 0.08 * pk;
+  blit(basketSprite(b.w, 'back'), b.x, b.y, b.tilt + wob, sq);
+  b.pile.forEach((k, i) => { const n = b.pile.length, u = n > 1 ? i / (n - 1) - 0.5 : 0; blit(catchSprite(k, CATCH_KINDS[k].r * catcherScale() * 0.6), b.x + u * b.w * 0.55, b.y - b.h * 0.48 - Math.abs(Math.sin(i * 1.7)) * 4, i * 0.7, 1); });
+  blit(basketSprite(b.w, 'front'), b.x, b.y, b.tilt + wob, sq);
+  if (stun) { for (let i = 0; i < 3; i++) { const a = now / 200 + i * TAU / 3; blit(catchSprite('star', 7), b.x + Math.cos(a) * b.w * 0.3, b.y - b.h * 1.1 + Math.sin(a) * 6, a); } }
+  if (now < b.wetUntil) { resetView(); ctx.strokeStyle = 'rgba(140,190,255,0.7)'; ctx.lineWidth = 2; for (let i = 0; i < 9; i++) { const x = b.x - b.w * 0.45 + (i / 8) * b.w * 0.9, y = b.y - b.h * 2.2 + ((now / 3 + i * 37) % (b.h * 1.6)); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 2, y + 9); ctx.stroke(); } }
+  drawParticles(); drawRings(now); drawFloaters(C.floaters);
+  if (mode === 'camera' && cursor.present && !C.over) { resetView(); ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 12, 0, TAU); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(241,233,218,0.55)'; ctx.stroke(); }
+  if (!C.over) {
+    const ty = cgTopY(), low = C.left < 10000;
+    cgPill(LRM + cgSecs(C.left) + '  ·  ★ ' + C.score, W / 2, ty, { size: 17, h: 38, bg: low ? 'rgba(255,77,61,' + (0.3 + 0.2 * Math.sin(now / 120)).toFixed(3) + ')' : 'rgba(14,19,40,0.8)' });
+    if (C.streak >= 3) cgPill(t('stStreakN', { n: C.streak }), W / 2, ty + 44, { size: 13, h: 28, color: '#ffd36b', rim: 'rgba(255,194,75,0.6)' });
+  }
+  const fk = Math.max(0, 1 - (now - C.flash) / 380);
+  if (fk > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,230,190,' + (0.5 * fk * fk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+  if (C.over) drawEndCard(now, C, { stars: C.starsN, title: t('bbTimeUp'), score: C.score, best: C.best, stats: [[C.caught, 'stCaught'], [C.bestStreak, 'stStreak'], [C.dodged, 'bombsAvoided']], again: 'playAgainWave' });
+}
+function cgBackdrop(g, kind) { // the camera games' scenery, drawn once into the cached background (bgSprite)
+  const lin = (a, b) => { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.fillRect(0, 0, W, H); };
+  if (kind === 'drums') { // a little stage: three coloured spotlights, a warm floor
+    lin('#1e1742', '#0d0f24');
+    for (const [x, c] of [[0.18, '255,111,89'], [0.5, '169,139,255'], [0.82, '84,198,235']]) { const sx = W * x, lg = g.createLinearGradient(0, 0, 0, H * 0.92); lg.addColorStop(0, 'rgba(' + c + ',0.2)'); lg.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = lg; g.beginPath(); g.moveTo(sx - 16, 0); g.lineTo(sx + 16, 0); g.lineTo(sx + W * 0.2, H * 0.92); g.lineTo(sx - W * 0.2, H * 0.92); g.closePath(); g.fill(); }
+    const fl = g.createLinearGradient(0, H * 0.8, 0, H); fl.addColorStop(0, 'rgba(255,194,75,0)'); fl.addColorStop(1, 'rgba(255,194,75,0.12)'); g.fillStyle = fl; g.fillRect(0, H * 0.8, W, H * 0.2);
+  } else if (kind === 'bubbles') { // under the sea: light rays and tiny far bubbles
+    lin('#14507e', '#0a1a3d'); const R = rng(11);
+    g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 5; i++) { const x = W * (0.05 + i * 0.22), lg = g.createLinearGradient(0, 0, 0, H * 0.8); lg.addColorStop(0, 'rgba(180,230,255,0.1)'); lg.addColorStop(1, 'rgba(180,230,255,0)'); g.fillStyle = lg; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + W * 0.08, 0); g.lineTo(x + W * 0.2, H * 0.8); g.lineTo(x + W * 0.05, H * 0.8); g.closePath(); g.fill(); } g.restore();
+    g.strokeStyle = 'rgba(200,235,255,0.18)'; g.lineWidth = 1; for (let i = 0; i < 40; i++) { g.beginPath(); g.arc(R() * W, R() * H, 1.5 + R() * 3.5, 0, TAU); g.stroke(); }
+    const sd = g.createLinearGradient(0, H * 0.85, 0, H); sd.addColorStop(0, 'rgba(230,200,140,0)'); sd.addColorStop(1, 'rgba(230,200,140,0.14)'); g.fillStyle = sd; g.fillRect(0, H * 0.85, W, H * 0.15);
+  } else if (kind === 'paint') lin('#161c40', '#0b0f26'); // a dark canvas: the glowing strokes stand out
+  else if (kind === 'stars') { // the night sky: tiny stars, a moon, hills
+    lin('#0a0f2e', '#27255a'); const R = rng(7);
+    for (let i = 0; i < 110; i++) { g.fillStyle = 'rgba(255,255,240,' + (0.25 + R() * 0.6).toFixed(2) + ')'; g.beginPath(); g.arc(R() * W, R() * H * 0.85, 0.5 + R() * 1.3, 0, TAU); g.fill(); }
+    const mx = W * (lang === 'he' ? 0.16 : 0.84), my = Math.max(120, H * 0.2), mr = Math.min(W, H) * 0.06; const mg = g.createRadialGradient(mx, my, mr * 0.5, mx, my, mr * 3); mg.addColorStop(0, 'rgba(255,243,196,0.25)'); mg.addColorStop(1, 'rgba(255,243,196,0)'); g.fillStyle = mg; g.fillRect(mx - mr * 3, my - mr * 3, mr * 6, mr * 6);
+    g.fillStyle = '#fff3c4'; g.beginPath(); g.arc(mx, my, mr, 0, TAU); g.fill(); g.fillStyle = 'rgba(200,180,120,0.35)'; g.beginPath(); g.arc(mx - mr * 0.3, my - mr * 0.2, mr * 0.2, 0, TAU); g.arc(mx + mr * 0.25, my + mr * 0.3, mr * 0.14, 0, TAU); g.fill();
+    g.fillStyle = '#151a3f'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 8) g.lineTo(x, H - H * 0.07 - Math.sin(x / W * 5 + 1) * H * 0.025); g.lineTo(W, H); g.closePath(); g.fill();
+  }
+}
+function paintLayers(x0, y0, x1, y1) { // test-only: the drawing + the live stroke's pixels in a box (CSS px)
+  paintCanvas(); const P = paint, pr = P.pr, c = document.createElement('canvas'), w = Math.max(1, Math.round((x1 - x0) * pr)), h = Math.max(1, Math.round((y1 - y0) * pr)); c.width = w; c.height = h; const g = c.getContext('2d');
+  g.drawImage(P.cv, -Math.round(x0 * pr), -Math.round(y0 * pr)); g.drawImage(P.live, -Math.round(x0 * pr), -Math.round(y0 * pr)); return [...g.getImageData(0, 0, w, h).data];
+}
+/* hooks */
+window.__grasp.cg = { modes: CG_MODES, drums, bubbles, paint, catcher, hand2, camg, CG, DRUM, BUB, PAINT, CATCH, kinds: DRUM_KINDS,
+  get numHands() { return camg.numHands; }, get ptrs() { return camg.ptrs.map((p) => ({ id: p.id, x: Math.round(p.x), y: Math.round(p.y), hand: !!p.hand, down: !!p.down, tips: p.tips.length })); },
+  open: cgOpenPick, close: cgClosePick, start: cgStart, get asking() { return !$('cgCam').hidden; }, set touchOk(v) { camg.touchOk = !!v; },
+  pads: () => drums.pads.map((p) => ({ k: p.k, x: Math.round(p.x), y: Math.round(p.y), r: Math.round(p.r) })), hit: (i, vel = 0.8) => drumHit(i, vel, 'test', performance.now()),
+  beat: (on) => drumsBeatSet(on), simonStart: () => simonStart(performance.now()), simonStop, get simon() { const S = drums.simon; return { on: S.on, phase: S.phase, seq: S.seq.slice(), i: S.i, level: S.level, ok: S.ok }; },
+  sound: (k, vel) => drumSound(k, vel), press: (key) => cgPress(key, performance.now(), 'test'), btns: () => camg.btns.map((b) => ({ key: b.key, x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.w), h: Math.round(b.h) })),
+  spawnBubble: (o) => { const b = bubbleSpawn(performance.now(), o || {}); return { id: b.id, x: b.x, y: b.y, r: b.r, gold: b.gold }; }, calm: (on) => bubblesSetCalm(on),
+  bubbleAt(id) { const b = bubbles.list.find((q) => q.id === id); return b ? { x: b.x, y: b.y, r: b.r } : null; },
+  paintSave, paintClear: () => paintClear(performance.now(), 'test'), paintPixel(x, y) { return paintLayers(x, y, x + 1 / paint.pr, y + 1 / paint.pr).slice(0, 4); },
+  paintInk(x0, y0, x1, y1) { const d = paintLayers(x0, y0, x1, y1); let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++; return n; },
+  drop: (kind, x, y, vy) => { const it = catcherSpawn(performance.now(), { kind, x, y, vy }); return { id: it.id, x: it.x, y: it.y }; }, get basket() { const b = catcher.basket; return { x: b.x, y: b.y, w: b.w, h: b.h, tx: b.tx, stun: performance.now() < b.stunUntil, wet: performance.now() < b.wetUntil }; },
+  end() { const s = cgState(); if (s && 'left' in s) s.left = 1; return !!s; },
+};
+
 /* --- direct links: /strike (the Adventure map), /smash, /slice, /busy, /shapes, /sandbox open that game at once with the remembered input (touch
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel']; // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars']; // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
 const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
 function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
@@ -13932,7 +14943,7 @@ function routeHome() {
 }
 function routeOpen(m) { // the start screen's tile for m, as if tapped
   if (mode !== 'none' || physicsError) return false;
-  if (!$('gifts').hidden) closeGifts(); if (m === 'frenzy') { setGameMode('strike'); return strikeFrenzy(inputPref()); } if (m === 'duel') { route.duelQ = location.search; return duelOpen(location.search, inputPref()); } setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
+  if (!$('gifts').hidden) closeGifts(); cgClosePick(); if (m === 'frenzy') { setGameMode('strike'); return strikeFrenzy(inputPref()); } if (m === 'duel') { route.duelQ = location.search; return duelOpen(location.search, inputPref()); } setGameMode(m); audioInit(); strikeStart(inputPref()); return true;
 }
 window.addEventListener('popstate', () => {
   const want = routeOf(location.pathname), cur = routeNow(); route.log.push('pop:' + (want || '/'));

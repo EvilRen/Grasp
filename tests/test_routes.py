@@ -1,11 +1,11 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Direct links: /strike (the Adventure map), /smash, /slice, /busy, /shapes, /sandbox open that game at once with the remembered input (touch until the
+# Direct links: /strike (the Adventure map), /smash, /slice, /busy, /shapes, /sandbox (and the camera games /drums, /bubbles, /paint, /stars) open that game at once with the remembered input (touch until the
 # camera is picked; the camera too); a trailing slash works; served through tests/serve.py, which applies vercel.json's rewrites. Entering a game from
 # the start screen pushes its path, Home goes back to '/', the browser's Back from a game returns to the start screen (the round ended as Home ends it),
 # Forward re-enters; any other path is the start screen. At a sub-path the page's own files still load (guest art, the Tremorti link). EN / HE.
 # Hooks: __grasp.route { modes, of(path), now, log }.
 URL = 'http://localhost:8765'
-GAMES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox']
+GAMES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'drums', 'bubbles', 'paint', 'stars']  # (the camera games: /drums, /bubbles, /paint, /stars)
 STATE = """({ path: location.pathname, mode, game: gameMode, start: !$('start').hidden, map: advMapOpen(), now: __grasp.route.now, pause: pause.on, menu: menu.open, hl: history.length })"""
 
 async def fresh(b, he=False, init='', mobile=True):
@@ -108,7 +108,7 @@ async def main():
         await page.evaluate("history.pushState(null, '', '/nope'); history.pushState(null, '', '/strikes'); history.back()"); await page.wait_for_timeout(400)
         u = await st(page)
         check('a popstate onto an unknown path (/nope): the start screen stays', u['start'] and u['mode'] == 'none' and not u['map'], u)
-        check('route.of: only the six games (with or without a trailing slash)', await page.evaluate("['/strike', '/smash/', '/slice', '/busy', '/shapes', '/sandbox', '/', '/nope', '/index.html', '/strike/x', '/tremorti/'].map(__grasp.route.of)") == ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', None, None, None, None, None])
+        check('route.of: only the games (the six, the camera games; with or without a trailing slash)', await page.evaluate("['/strike', '/smash/', '/slice', '/busy', '/shapes', '/sandbox', '/drums', '/bubbles/', '/paint', '/stars', '/', '/nope', '/index.html', '/strike/x', '/tremorti/', '/drum'].map(__grasp.route.of)") == ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'drums', 'bubbles', 'paint', 'stars', None, None, None, None, None, None])
         check('deep link + unknown path: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs, bad = await fresh(b)
         await page.goto(f'{URL}/index.html'); await page.wait_for_timeout(700)
