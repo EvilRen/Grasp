@@ -33,7 +33,10 @@ MOVE = {
     'shapes': "__grasp.shapes.setLevel(9)",
 }
 async def start_mode(page, m, mobile):
-    await press(page, mobile, f'.modes button[data-mode={m}]')
+    if m in ('sandbox', 'busy', 'shapes'):  # (home2: the toddler games are in the Little ones picker)
+        await press(page, mobile, '#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=4000)
+        await press(page, mobile, f'#littlePick button[data-mode={m}]')
+    else: await press(page, mobile, f'.modes button[data-mode={m}]')
     await page.wait_for_function(f"mode === 'mouse' && gameMode === '{m}' && $('start').hidden", timeout=8000)
     if m == 'shapes': await page.wait_for_function("shapes.mat && shapes.box", timeout=5000)
     await page.evaluate(FRAMES)
@@ -157,7 +160,7 @@ async def main():
         # ---- camera (phone): a pinch held on the pause button opens the sheet in every mode; one held on Resume closes it (3-2-1) ----
         ctx, page, errs = await fresh(b, mobile=True, init=HAND_JS)
         await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
-        await page.tap('#camBtn'); await page.tap('.modes button[data-mode=sandbox]')
+        await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('#littlePick [data-mode=sandbox]').click()")
         await page.wait_for_function("mode === 'camera' && gameMode === 'sandbox' && cursor.present", timeout=15000)
         for m in MODES + ['drums', 'bubbles', 'paint', 'stars']:  # (the camera games too)
             await page.evaluate(f"__grasp.setGameMode('{m}')"); await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")

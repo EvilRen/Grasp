@@ -68,7 +68,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        await page.click('.modes button[data-mode=busy]')
+        await page.evaluate("document.querySelector('#littlePick [data-mode=busy]').click()")
         check('menu shows busy board selected + description', await page.evaluate("document.querySelector('[data-mode=busy]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('busy board')"))
         check('mode cycle includes busy', await page.evaluate("MODE_NEXT.smash === 'busy' && MODE_NEXT.busy === 'strike'"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
@@ -282,7 +282,7 @@ async def main():
         ctx = await b.new_context(permissions=['camera'], viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS + POINT_JS + ARC_JS + LINE_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=busy]')
+        await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('#littlePick [data-mode=busy]').click()")
         await page.wait_for_function("mode === 'camera'", timeout=15000)
         k0 = await page.evaluate(wjs(9)); r = k0['w'] * 0.32
         await page.evaluate(f"window.__handFor = () => handAt({k0['x'] + r}, {k0['y']}, 0.8)"); await page.wait_for_timeout(700)
@@ -355,11 +355,12 @@ async def main():
             ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            fits = await page.evaluate("(() => { const bs = [...document.querySelectorAll('.modes > button[data-mode]')], a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 6 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && b.scrollWidth <= b.clientWidth + 1; }) && a.bottom <= innerHeight; })()")
-            check(tag + ' phone: 6 mode cards and link fit', fits)
-            await page.tap('.modes button[data-mode=busy]')
-            check(tag + ' phone: busy card label', await page.inner_text('.modes button[data-mode=busy]') == ('לוח עסוק' if he else 'Busy Board'))
+            if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
+            await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(450)  # (home2: Busy Board is in the Little ones picker)
+            fits = await page.evaluate("(() => { const bs = [...document.querySelectorAll('#littlePick .pickGrid > button')]; return bs.length === 4 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && r.height >= 44 && b.scrollWidth <= b.clientWidth + 1; }); })()")
+            check(tag + ' phone: the Little ones picker: 4 cards fit (Busy Board, Shapes, Sandbox, Calm bubbles)', fits)
+            check(tag + ' phone: busy card label', (await page.inner_text('#littlePick button[data-mode=busy]')).strip() == ('לוח עסוק' if he else 'Busy Board'))
+            await page.tap('#littlePick button[data-mode=busy]')
             await page.screenshot(path='tests/out/busy_start' + ('_he' if he else '') + '.png')
             await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
             hint = await page.inner_text('#hint')

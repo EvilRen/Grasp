@@ -47,9 +47,9 @@ async def boot(b, mobile, he=False):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + HAND_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-    if he: await page.click('#startLang'); await page.wait_for_timeout(100)
+    if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
     await page.evaluate(HAND_ON)  # a hand is in view from the start, so the game (not the no-hand card) shows
-    await page.click('#camBtn'); await page.click('.modes > button[aria-pressed=true]')
+    await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('button[data-mode][aria-pressed=true]').click()")
     await page.wait_for_function("mode === 'camera'", timeout=15000); await page.wait_for_timeout(700)
     return ctx, page, errs
 
@@ -93,6 +93,7 @@ async def main():
             check(tag + ' phone: in play the toolbar is the one round pause button (>= 40 px)', tb['n'] == 1 and tb['minW'] >= 40 and tb['minH'] >= 40 and tb['height'] < 60 and await page.evaluate("document.body.classList.contains('minChrome')"), tb)
             check(tag + ' phone: the pause button sits in the top corner, clear of the 96 px preview at 360 px', tb['prevRight'] - tb['prevLeft'] == 96 and tb['left'] >= tb['prevRight'] + 4 and tb['right'] <= tb['W'] - 4 and tb['right'] >= tb['W'] - 24 and abs(tb['top'] - 12) < 1, tb)
             check(tag + ' phone: live dot on the small preview', await page.evaluate("!$('liveDot').hidden && getComputedStyle($('liveDot')).display !== 'none'"))
+            await page.wait_for_function("getComputedStyle($('hint')).opacity === '1'", timeout=4000)  # (the toast fades in: polled, not a fixed wait)
             h = await page.evaluate(HINT)
             check(tag + ' phone: the Sandbox\'s hint toast at the top (panel fix: clear of the things on the floor), inside the screen, with the mode icon at the start edge',
                   h['show'] and h['op'] == '1' and h['icon'] and h['top'] >= 64 and h['bottom'] < h['H'] * 0.45 and h['left'] >= 0 and h['right'] <= h['W'] and ((h['icLeft'] > h['txLeft']) if he else (h['icLeft'] < h['txLeft'])) and len(h['text']) > 10, h)
@@ -191,13 +192,15 @@ async def main():
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        d = await page.evaluate("(() => { const r = $('strikeDiff').getBoundingClientRect(), t = document.querySelector('.modes button[data-mode=strike]').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(); return { hidden: $('strikeDiff').hidden, diff: __grasp.strike.diff, pressed: $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff, onTile: r.left >= t.left - 1 && r.right <= t.right + 1 && r.top >= t.top && r.bottom <= t.bottom, fits: a.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth }; })()")
-        check('the Easy / Normal toggle sits on the Strike tile, Easy by default, the start screen fits', not d['hidden'] and d['diff'] == 'easy' and d['pressed'] == 'easy' and d['onTile'] and d['fits'], d)
+        await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.wait_for_timeout(300)  # (home2: Easy / Normal moved to the Adventure map's header)
+        d = await page.evaluate("(() => { const r = $('strikeDiff').getBoundingClientRect(), h = document.querySelector('#advMap .amHead').getBoundingClientRect(), bs = [...$('strikeDiff').querySelectorAll('button')].map(b => b.getBoundingClientRect()); return { hidden: $('strikeDiff').hidden, diff: __grasp.strike.diff, pressed: $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff, inHead: r.top >= h.top - 1 && r.bottom <= h.bottom + 1, big: bs.every(q => q.height >= 44 && q.width >= 44), fits: r.left >= 0 && r.right <= innerWidth, onStart: !!document.querySelector('#start #strikeDiff') }; })()")
+        check('home2: the Easy / Normal toggle sits in the Adventure map header (>= 44 px), Easy by default; not on the start screen', not d['hidden'] and d['diff'] == 'easy' and d['pressed'] == 'easy' and d['inHead'] and d['big'] and d['fits'] and not d['onStart'], d)
         await page.tap('#strikeDiff button[data-diff=normal]'); await page.wait_for_timeout(100)
-        check('tap Normal: selected and saved (the game does not start)', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal' && localStorage.getItem('strikeDiff') === 'normal' && mode === 'none'"))
+        check('tap Normal: selected and saved (the game does not start, the map stays)', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal' && localStorage.getItem('strikeDiff') === 'normal' && mode === 'none' && !$('advMap').hidden"))
+        await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(200)  # (back to the start screen: the address back to /)
         await page.reload(); await page.wait_for_timeout(600)
         check('difficulty persists across a reload', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal'"))
-        await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless'); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         check('Normal round starts with 3 lives', await page.evaluate("__grasp.strike.lives === 3 && __grasp.strikeParams().speed === 1.1"))
         await page.screenshot(path='tests/out/chrome_phone_strike_normal.png')
         check('difficulty: no page errors', not errs, errs); await ctx.close()

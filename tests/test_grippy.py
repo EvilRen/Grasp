@@ -119,7 +119,9 @@ async def main():
         ctx, page, errs = await fresh(b)
         await play(page, 'strike'); await page.wait_for_function("__grasp.strike.waiting && __grasp.profile.tips.includes('flick')", timeout=8000)  # (the first serve's flick tip: recorded, not toasted since the panel fix)
         tp = await page.evaluate("(() => { const a = tipOnce('pu'), txt = $('hint').querySelector('.tx').textContent, show = $('hint').classList.contains('show'), b = tipOnce('pu'); return { a, b, txt, show, want: t('tipPu'), shown: __grasp.grippy.tips.map(x => x.id), seen: __grasp.profile.tips.slice() }; })()")
-        check('onboarding tip (gold brick): shown once as the hint toast, never again; marked in profile.tips', tp['a'] and not tp['b'] and tp['show'] and tp['txt'] == tp['want'] and tp['shown'] == ['pu'] and 'pu' in tp['seen'], tp)
+        check('onboarding tip (gold brick) before the first serve: recorded once, marked in profile.tips, but held back (home2: tips only after the first serve / touch)', tp['a'] and not tp['b'] and not tp['show'] and tp['shown'] == ['pu'] and 'pu' in tp['seen'], tp)
+        await page.evaluate("__grasp.strike.playerServe('medium')"); await page.wait_for_function("$('hint').classList.contains('show') && $('hint').querySelector('.tx').textContent === t('tipPu')", timeout=3000)
+        check('...the first serve: the held tip shows as the hint toast', True)
         check('no page errors (tips)', not errs, errs); await ctx.close()
 
         # ---- no voice for the language / no speechSynthesis: silently skipped ----
@@ -143,13 +145,14 @@ async def main():
         check('HE phone in play: no Grippy hand / bubble on screen', not await page.evaluate("!!document.querySelector('#grippy, .nuGrip, .bub')"))
         await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300)
         await page.tap('#collectionBtn'); await page.wait_for_timeout(400)
-        tb = await page.evaluate("(() => { const b = $('grippyBtn'), r = b.getBoundingClientRect(), h = b.closest('header').getBoundingClientRect(), x = b.closest('header').querySelector('.xBtn').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), canvas: !!b.querySelector('canvas'), svg: !!b.querySelector('svg'), inHeader: r.top >= h.top - 1 && r.bottom <= h.bottom + 1 && r.left >= 0 && r.right <= innerWidth, noOverlap: r.right <= x.left || r.left >= x.right, w: r.width }; })()")
-        check('Collection header: the Voice toggle (a speaker icon, no hand), on by default, labelled, fits beside the close button', tb['pressed'] == 'true' and 'קול' in tb['label'] and tb['svg'] and not tb['canvas'] and tb['inHeader'] and tb['noOverlap'], tb)
+        await page.keyboard.press('Escape'); await page.wait_for_timeout(150); await page.tap('#moreBtn'); await page.wait_for_timeout(400)  # (home2: the voice toggle lives in the More sheet)
+        tb = await page.evaluate("(() => { const b = $('moreVoice'), r = b.getBoundingClientRect(), h = $('moreSheet').querySelector('.sheet').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), canvas: !!b.querySelector('canvas'), svg: !!b.querySelector('svg'), inSheet: r.top >= h.top && r.bottom <= h.bottom && r.left >= h.left && r.right <= h.right, h: r.height, shopToggle: !!$('grippyBtn').offsetParent }; })()")
+        check('the More sheet: the Voice toggle (an icon, no hand), on by default, labelled, a big target; not in the Shop any more', tb['pressed'] == 'true' and 'קול' in tb['label'] and tb['svg'] and not tb['canvas'] and tb['inSheet'] and tb['h'] >= 44 and not tb['shopToggle'], tb)
         await page.screenshot(path='tests/out/voice_toggle_he.png')
-        await page.tap('#grippyBtn'); await page.wait_for_timeout(150)
-        check('tap: off (aria-pressed false), saved in the profile', await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false' and await page.evaluate("JSON.parse(localStorage.getItem('grasp.profile')).grippy") is False)
+        await page.tap('#moreVoice'); await page.wait_for_timeout(150)
+        check('tap: off (aria-pressed false), saved in the profile', await page.evaluate("$('moreVoice').getAttribute('aria-pressed')") == 'false' and await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false' and await page.evaluate("JSON.parse(localStorage.getItem('grasp.profile')).grippy") is False)
         await page.reload(); await page.wait_for_timeout(700)
-        check('off survives a reload', await page.evaluate(G + ".on") is False and await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false')
+        check('off survives a reload', await page.evaluate(G + ".on") is False and await page.evaluate("$('grippyBtn').getAttribute('aria-pressed')") == 'false' and await page.evaluate("$('moreVoice').getAttribute('aria-pressed')") == 'false')
         await play(page, 'strike', True)
         await page.wait_for_timeout(600)
         off = await page.evaluate("(() => { __grasp.grippy.cool(); return { say: __grasp.grippy.say('boss'), n: __spoken.length }; })()")
@@ -187,14 +190,13 @@ async def main():
                 await end_strike(page, 0)
                 tz = await page.evaluate(S + ".ui.teaser")
                 exp = hetext if he else en
-                check('teaser (' + tag + '): "' + exp + '"', tz and tz['text'] == exp and tz['kind'] == kind and (tz['item'] == 'ball_disco') == (kind in ('coins', 'buy')), tz)
+                check('home2: no "One more?" teaser on the card (' + tag + ': it would say "' + exp + '"): no coin upsell / nudges outside the Shop', tz is None, tz)
                 c = await page.evaluate(S + ".ui.card"); bt = await page.evaluate(S + ".ui.buttons")
-                check('teaser (' + tag + '): inside the card, under the stats, above the buttons', tz and tz['x'] >= c['x'] and tz['x'] + tz['w'] <= c['x'] + c['w'] and tz['y'] > c['y'] + 200 and tz['y'] + tz['h'] < bt['again']['y'], [tz, c])
                 if kind == 'coins':
                     await page.wait_for_timeout(300); await page.screenshot(path='tests/out/grippy_teaser_' + ('he' if he else 'en') + '.png')
                     p1 = await page.evaluate(S + ".ui.againPulse")
                     await page.wait_for_function(f"Math.abs({S}.ui.againPulse - {p1}) > 0.01", timeout=4000)
-                    check('Play again pulses (scale changes over time, within a few %), and is wider than Home', 1 <= p1 <= 1.04 and bt['again']['w'] > bt['home']['w'] * 1.2, [p1, bt])
+                    check('Play again pulses (scale changes over time, within a few %), and is the big one (taller than Home)', 1 <= p1 <= 1.04 and bt['again']['h'] > bt['home']['h'], [p1, bt])
                 if kind == 'mission' and not he:  # the same profile from the API, and a Slice card shows it too
                     q = await page.evaluate("__grasp.teaser()")
                     check('__grasp.teaser(): the same pick (walls 4/6 beats fruit 10/40)', q['kind'] == 'mission' and q['id'] == 'walls' and q['n'] == 2, q)
@@ -206,7 +208,7 @@ async def main():
                 tag = 'phone ' + ('he' if he else 'en') + ' ' + m
                 ctx, page, errs = await fresh(b, True, he, prof(coins=10, xp=175, missions=[('rounds', 2, 3), ('fruit', 0, 40), ('boss', 0, 1)]))
                 if m == 'daily':
-                    await page.evaluate("__grasp.setGameMode('strike')"); await page.tap('#dailyBtn'); await page.wait_for_timeout(300); await page.tap('#dailyMouse')
+                    await page.evaluate("__grasp.setGameMode('strike')"); await page.tap('#arcadeBtn'); await page.wait_for_timeout(450); await page.tap('#dailyBtn'); await page.wait_for_timeout(300); await page.tap('#dailyMouse')
                     await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
                 else: await play(page, m, True)
                 await page.wait_for_timeout(300)

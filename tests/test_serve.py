@@ -41,7 +41,7 @@ async def new_page(b, gfx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+    await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })(); __grasp.grippy.on = false; __grasp.CONFIG.STRIKE_PU_RATE = 0")
     await page.mouse.move(640, 200)
@@ -146,7 +146,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e)))
             await page.add_init_script(INIT + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate("__grasp.setPlayerLevel(20)")
-            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+            await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
             await page.evaluate(f"(() => {{ const s = {S}; s.setLevel(4); s.serve(); s.setBallZ(2300, 30, 30); s.ball.speed = 0; s.lives = 6; s.streak = 7; s.catchTest('big'); s.perks = {{ wide: 1, lucky: 2 }}; __grasp.addCoins(4); __grasp.grippy.cool(); __grasp.grippy.say('start'); toast('copied', null, 'check'); }})()")
             await frames(page, 3); await page.wait_for_timeout(300)
@@ -178,7 +178,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e)))
             await page.add_init_script(INIT + GEST_JS + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate("__grasp.setPlayerLevel(20)")
-            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+            await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             await page.wait_for_function(f"gameMode === 'strike' && {S}.waiting && !{S}.ui.levelBanner", timeout=10000)
             await page.evaluate("__grasp.grippy.on = false; hideHint()")
             tip = await page.evaluate("({ seen: __grasp.profile.tips.slice(), shown: __grasp.grippy.tips.map(x => x.text), line: __grasp.strike.ui.serve && __grasp.strike.ui.serve.shown && __grasp.strike.ui.serve.text, want: t('hitToStart') })")
@@ -211,7 +211,7 @@ async def main():
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS + GEST_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate("__grasp.setPlayerLevel(20)")
         await page.evaluate("window.__hy = () => 420; window.__handFor = () => handAt(640, __hy(), 0.8)")
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+        await page.evaluate("$('camBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"mode === 'camera' && gameMode === 'strike' && {S}.waiting", timeout=20000)
         await page.evaluate("__grasp.grippy.on = false; __grasp.CONFIG.STRIKE_PU_RATE = 0")
         await armed_wait(page); await page.wait_for_timeout(1700); n0 = await page.evaluate(f"{S}.serves")

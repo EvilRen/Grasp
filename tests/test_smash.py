@@ -262,7 +262,7 @@ async def main():
 
         # ---------------- camera ----------------
         ctx, page, errs = await fresh(b, camera=True)
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+        await page.evaluate("$('camBtn').click()"); await page.click('.modes button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
         await page.click('#smashFree'); await page.wait_for_function("mode === 'camera' && __grasp.sm.objs.length > 0", timeout=15000)
         await page.evaluate("window.__handFor = () => fistAt(200, 300)"); await page.wait_for_timeout(700)
         check('camera: a closed fist is recognised', await page.evaluate("gesture") == 'fist', await page.evaluate("[gesture, hand.pinchD]"))

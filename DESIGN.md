@@ -286,3 +286,31 @@ missed is felt but nothing breaks), and next week's teaser. All of it must be fa
 - *Installable:* a manifest with a proper icon and shortcuts, a service worker that keeps the whole game playable offline (the shell precached,
   the CDN files cached as they are used), a quiet update toast, and an Install chip only when the browser can install (or on iOS a 3-step how-to),
   snoozed for two weeks after "Not now".
+
+## Home v2: one clear thing to do, simpler cards, gentler for parents (6-persona playtest)
+
+**Ask (parent, after a panel of six testers: a game designer, a parent, kids of 2.5, 7, 9 and 13):** the start screen had grown a meta row, two
+chips, a banner, six tiles, a toggle, a pet corner and a link at about the same weight, and the end cards stacked stars, a rank, XP, missions, an
+upsell, a replay pill and a challenge button. The panel found it hard to see what to tap first; the parent found the streak messages and the
+"only N coins" lines to be pressure on a child. The parent approved the three changes below.
+
+**The pattern in well-liked kids' and casual games:** one big "play" that continues where you were, a short row of other games, the meta behind a
+small tab bar, features that appear once they mean something, one celebration at a time, cards that say how you did and what's next at a glance,
+and no guilt mechanics for children.
+
+**Applied:**
+- *One hero:* "▶ Play Strike — Stage N" in the current world's colours, straight into the stage (a new player: just "▶ Play"); a small Map
+  beside it for choosing another stage. Under it: Smash · Slice · Arcade (Frenzy, the daily, Endless), and Camera games · Little ones (Busy
+  Board, Shapes, Sandbox, Calm bubbles: the toddler games together, one tap away from a parent).
+- *A tab bar* (Play · Shop · Pet · Events) for everything that is not a game; Events is one "Today" panel (the weekly event, the daily gift, the
+  day's missions, the streak shown quietly). The coins pill stays at the top; the level part (and the Road) only after the first level-up.
+- *Settings out of the way:* the ⋯ sheet holds language, camera or touch (touch by default; the camera games still ask), sound, voice,
+  install and the Tremorti link; Easy / Normal moved to the Adventure map's header.
+- *Earned, not shown:* the album after the first sticker, the pet after the first finished round (its tab gets a "!"), the Road after the
+  first level-up, run powers and Endless from world 2.
+- *One popup per session:* the gift calendar if due, else the pet's hatch, else the name sheet; tips wait for the first serve.
+- *Simple cards:* stars (where the mode has them) + the score with a small best chip; one big Next / Play again, Retry / Home / Map smaller;
+  Replay and Challenge merged into one Share sheet (replay clip, challenge a friend, copy link); only "+coins" and the pet's "+snack" pill.
+  Ranks stay on the map's stops. Toddler modes get big stars, confetti, Play again and Home only.
+- *Gentler:* a missed gift day pauses the calendar (never back to day 1); no "keep your streak" messages; no coin upsell outside the Shop; red
+  dots only for new rewards to claim, gone once seen.

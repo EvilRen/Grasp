@@ -23,13 +23,16 @@ async def fresh(b, mobile=False, he=False, date='2026-10-10', init='', live=None
     if live is not None: await page.evaluate(f"{EV}.live({'true' if live else 'false'})")
     return ctx, page, errs
 
+async def today(page):  # home2: the event's banner lives in the Today panel (the Events tab)
+    if await page.evaluate("$('today').hidden"): await page.evaluate("__grasp.home2.tab('today')"); await page.wait_for_timeout(350)
+
+async def ev_open(page, tap=False):
+    await today(page); await (page.tap('#eventBtn') if tap else page.click('#eventBtn')); await page.wait_for_function("!$('evSheet').hidden", timeout=3000)
+
 R = "(e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }"
-LAYOUT = f"""(() => {{ const r = {R}, st = $('start'), vis = (e) => e && !e.hidden && getComputedStyle(e).display !== 'none';
-  const tiles = [...document.querySelectorAll('.modes > button')].map(r);
-  return {{ ban: r($('eventBtn')), tiles, row: r(document.querySelector('#start .metaRow')), pill: r($('metaPill')), habit: r($('habitBar')), lang: r($('startLang')), h1: r(document.querySelector('#start h1')),
-    seg: r(document.querySelector('#start .seg')), pet: r($('petCorner')), link: r(document.querySelector('#start a.link')), hint: vis($('flameHint')) ? r($('flameHint')) : null,
-    noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1, noX: document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollWidth <= st.clientWidth + 1,
-    W: innerWidth, H: innerHeight, name: document.querySelector('#eventBtn .evName').textContent, left: document.querySelector('#eventBtn .evLeft').textContent, line: document.querySelector('#eventBtn .evLine').textContent,
+LAYOUT = f"""(() => {{ const r = {R}, st = $('start'), sh = $('today').querySelector('.sheet');  // home2: the banner at the top of the Today panel
+  return {{ ban: r($('eventBtn')), sheet: r(sh), onStart: !!$('eventBtn').closest('#start'), noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1, noX: document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollWidth <= st.clientWidth + 1,
+    W: innerWidth, H: innerHeight, name: document.querySelector('#eventBtn .evName').textContent, left: document.querySelector('#eventBtn .evLeft').textContent, line: document.querySelector('#eventBtn .evLine').textContent, gift: r($('todayGift')),
     fit: [...$('eventBtn').querySelectorAll('.evName, .evLine, .evLeft')].every((e) => e.getBoundingClientRect().right <= $('eventBtn').getBoundingClientRect().right + 1 && e.getBoundingClientRect().left >= $('eventBtn').getBoundingClientRect().left - 1) }}; }})()"""
 
 async def main():
@@ -60,21 +63,18 @@ async def main():
         await page.evaluate("setLang('en'); __grasp.setDate('2026-10-10')")
         check('calendar: no page errors', not errs, errs); await ctx.close()
 
-        # ---- the start-screen banner: on one screen with everything else (phone + desktop, EN / HE, the flame hint showing), overlapping nothing ----
+        # ---- home2: the banner sits at the top of the Today panel (Events tab), not on the start screen (phone + desktop, EN / HE) ----
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en')
                 ctx, page, errs = await fresh(b, mobile, he, init="localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, habit: { play: ['2026-10-08', '2026-10-09'] } }));")
                 await page.wait_for_timeout(1500)  # (the entrance)
+                await (page.tap('#todayBtn') if mobile else page.click('#todayBtn')); await page.wait_for_function("!$('today').hidden", timeout=3000); await page.wait_for_timeout(450)
                 L = await page.evaluate(LAYOUT)
-                others = L['tiles'] + [L['row'], L['pill'], L['habit'], L['lang'], L['h1'], L['seg'], L['pet'], L['link']] + ([L['hint']] if L['hint'] else [])
                 bn = L['ban']
-                check(tag + ': still one screen (no scroll either way), with the flame hint showing', L['noScroll'] and L['noX'] and L['hint'] is not None, L)
-                check(tag + ': the banner fully on screen, a big tile (>= 48 px tall, >= 300 px wide)', bn['l'] >= 0 and bn['r'] <= L['W'] + 0.5 and bn['t'] >= 0 and bn['b'] <= L['H'] and bn['h'] >= 48 and bn['w'] >= 300, bn)
-                check(tag + ': the banner overlaps nothing (tiles, icon row, pill, top bar, wordmark, toggle, pet, link, hint)', not any(rects_overlap(bn, x, 1) for x in others), [bn, others])
+                check(tag + ': the start screen: no banner (it is in the Today panel); still one screen', not L['onStart'] and L['noScroll'] and L['noX'], L)
+                check(tag + ': the banner first in the Today panel, inside the sheet, a big tile (>= 48 px tall, >= 280 px wide), above the gift row', bn['l'] >= L['sheet']['l'] and bn['r'] <= L['sheet']['r'] + 0.5 and bn['t'] >= L['sheet']['t'] and bn['b'] <= L['gift']['t'] and bn['h'] >= 48 and bn['w'] >= 280 and bn['b'] <= L['H'], bn)
                 check(tag + ': its name, countdown and line fit inside it', L['fit'] and L['name'] and L['left'], L)
-                if mobile: check(tag + ': between the icon row and the games', L['row']['b'] <= bn['t'] and bn['b'] <= min(t['t'] for t in L['tiles']), [L['row'], bn])
-                else: check(tag + ': up in the top bar, between the wordmark and the buttons', bn['b'] <= L['pill']['t'] and bn['t'] < 20, bn)
                 await page.screenshot(path=OUT + 'event_banner_%s_%s.png' % ('phone' if mobile else 'desktop', 'he' if he else 'en'))
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
 
@@ -85,7 +85,7 @@ async def main():
             ms0 = await page.evaluate(f"{EV}.cfg.by['{eid}'].ms[0]")
             await page.evaluate(f"{EV}.add('{'cow' if eid == 'cows' else 'round'}', 2); {EV}.add(__grasp.event.cfg.by['{eid}'].ms[0].k, {ms0['n']})")  # (the first mission done: its claim button lights up)
             S = await page.evaluate(f"{EV}.state")
-            await page.click('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000); await page.wait_for_timeout(400)
+            await ev_open(page); await page.wait_for_timeout(400)
             P = await page.evaluate("""(() => { const P = $('evSheet'); return { title: $('evTitle').textContent, rule: $('evRule').textContent, left: $('evLeftBig').textContent, play: $('evPlay').textContent, tiers: [...P.querySelectorAll('.evTier')].map((t) => t.dataset.st),
               ms: [...P.querySelectorAll('.evM')].map((m) => [m.querySelector('.mTx').textContent, m.className, m.querySelector('.mGo').disabled]), stk: P.querySelectorAll('.evStk').length, next: $('evNext').textContent, ec: getComputedStyle(P.querySelector('.sheet')).getPropertyValue('--ec').trim(),
               mascot: (() => { const c = $('evMascotBig'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let k = 3; k < d.length; k += 4) if (d[k] > 0) n++; return n / (c.width * c.height); })() }; })()""")
@@ -195,7 +195,7 @@ async def main():
         await page.evaluate(f"{EV}.force('cows')")
         q = await page.evaluate(f"(() => {{ {EV}.points(24); const a = {EV}.claim(0); {EV}.points(25); const b = {EV}.claim(0), c = {EV}.claim(0); return [a, b, c, {EV}.state.got]; }})()")
         check('a tier below its points cannot be claimed; at 25 the first pays 10 coins once', q[0] is None and q[1] == {'coins': 10, 'chest': False} and q[2] is None and q[3] == [0], q)
-        await page.evaluate(f"{EV}.points(300)"); await page.click('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000); await page.wait_for_timeout(300)
+        await page.evaluate(f"{EV}.points(300)"); await ev_open(page); await page.wait_for_timeout(300)
         vis = await page.evaluate("(() => { const t = $('evTrack'), r = t.getBoundingClientRect(), e = t.querySelector('.evTier[data-i=\"1\"]').getBoundingClientRect(); return e.left >= r.left - 1 && e.right <= r.right + 1; })()")
         check('the strip opens on the first tier to claim', vis)
         c0 = await page.evaluate("[__grasp.profile.coins, __grasp.pet.p.pantry]")
@@ -237,7 +237,7 @@ async def main():
         check('exclusives once: the sticker and the hat already owned turn into 3 snacks; the new edition ball is new', q['p3'] == {'snacks': 3, 'dup': 'sticker'} and q['p6'] == {'snacks': 3, 'dup': 'hat'} and q['p11']['ball'] == 'cows_%d' % q['ed'] and len(q['balls']) == 2 and q['x']['stickers'] == ['cows'] and q['x']['hats'] == ['cowboy'], q)
         # the hat in the wardrobe, the ball in the Shop
         await page.evaluate(f"{EV}.close(); __grasp.setDate('2026-10-10'); {EV}.force('cows')")
-        await page.click('#petInfoBtn'); await page.wait_for_function("!$('petRoom').hidden", timeout=3000)
+        await page.evaluate("__grasp.home2.tab('pet')"); await page.wait_for_function("!$('petRoom').hidden", timeout=3000); await page.wait_for_timeout(400)
         await page.click('#petItems .pitem[data-id=cowboy]'); hat = await page.evaluate("__grasp.pet.p.head")
         check('the cowboy hat shows in the wardrobe and the pet wears it', hat == 'cowboy', hat)
         await page.wait_for_timeout(300); await page.screenshot(path=OUT + 'event_pet_hat.png')
@@ -277,7 +277,7 @@ async def main():
         await page.evaluate(f"{EV}.force('fruit'); {EV}.points(0)")
         q = await page.evaluate("[$('eventBtn').classList.contains('fresh'), document.querySelector('#eventBtn .dot').hidden]")
         check('a new week: the banner shines (not seen yet), no dot with nothing to claim', q == [True, True], q)
-        await page.tap('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000)
+        await ev_open(page, True)
         q = await page.evaluate(f"[{EV}.state.seen, $('eventBtn').classList.contains('fresh'), document.documentElement.dir, $('evTitle').textContent, $('evPlay').textContent]")
         check('tapped: the page opens (RTL, Hebrew), the shine stops', q[0] and not q[1] and q[2] == 'rtl' and q[3] == 'טירוף פירות' and q[4] == 'לשחק בחיתוך', q)
         f0 = await page.evaluate(f"{EV}.frames"); await page.wait_for_timeout(400); f1 = await page.evaluate(f"{EV}.frames")
@@ -286,21 +286,21 @@ async def main():
         await page.tap('#evSheet .xBtn'); await page.wait_for_function("$('evSheet').hidden", timeout=3000)
         f2 = await page.evaluate(f"{EV}.frames"); await page.wait_for_timeout(300)
         check('X closes it; the mascot loop stops', await page.evaluate(f"{EV}.frames") == f2)
-        await page.tap('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000)
+        await ev_open(page, True)
         await page.mouse.click(5, 735); await page.wait_for_function("$('evSheet').hidden", timeout=3000)
         check('a tap on the backdrop closes it', True)
         await page.evaluate(f"{EV}.points(130)")
         q = await page.evaluate("[document.querySelector('#eventBtn .dot').hidden, $('eventBtn').classList.contains('ready'), document.querySelector('#eventBtn .evLine').textContent, document.querySelector('#eventBtn .evPts').textContent]")
         check('rewards waiting: the red dot, the glow, "Rewards to claim: 3" (HE), points to the next tier', q[0] is False and q[1] and q[2] == 'פרסים לאסוף: 3' and q[3] == '130/150', q)
-        await page.tap('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000); await page.tap('#evPlay')
+        await ev_open(page, True); await page.tap('#evPlay')
         await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=10000)
         check('Play: the page closes and Slice starts', await page.evaluate("$('evSheet').hidden && $('start').hidden"))
         await page.evaluate("goHome()"); await page.wait_for_function("mode === 'none'", timeout=5000)
-        await page.evaluate(f"{EV}.force('speed')"); await page.tap('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000); await page.tap('#evPlay')
+        await page.evaluate(f"{EV}.force('speed')"); await ev_open(page, True); await page.tap('#evPlay')
         await page.wait_for_function("mode === 'mouse' && frenzy.on", timeout=10000)
         check('Speed Week\'s Play starts Frenzy', True)
         await page.evaluate("goHome()"); await page.wait_for_function("mode === 'none'", timeout=5000)
-        await page.evaluate(f"{EV}.force('bubbles')"); await page.tap('#eventBtn'); await page.wait_for_function("!$('evSheet').hidden", timeout=3000); await page.tap('#evPlay')
+        await page.evaluate(f"{EV}.force('bubbles')"); await ev_open(page, True); await page.tap('#evPlay')
         await page.wait_for_function("gameMode === 'bubbles' && mode !== 'none'", timeout=10000)
         check('Bubble Festival\'s Play starts Bubble Pop', True)
         # all done: the banner teases next week

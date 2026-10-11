@@ -1,16 +1,16 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# The daily habit: the 7-day gift calendar (day progression across mocked dates, the restart after a missed day, the cycle after day 7, each prize
+# The daily habit: the 7-day gift calendar (day progression across mocked dates, home2: a missed day pauses it (never back to day 1), the cycle after day 7, each prize
 # credited once, the look prizes and their coin fallbacks, the once-a-day pop-up for a real visitor, never under automation unless asked), the
-# play-streak flame (counting, the pulse when it grows today, the 'play today' hint), the '3 stages today' chest on the Adventure map, the star chests
+# play streak (home2: shown quietly in the Today panel only: no flame chip, no 'play today' hint, no nag toasts), the '3 stages today' chest on the Adventure map, the star chests
 # beside its path (thresholds, one claim each, the 100-star look), no 'Tomorrow: day N gift' line on the stage / fail / round-over cards (removed),
 # the profile's validation, EN / HE, phone / desktop. Hooks: __grasp.gifts, __grasp.habit (+ __grasp.setDate). Timing-independent: state is polled.
 G = "__grasp.gifts"; HB = "__grasp.habit"; A = "__grasp.adventure"; S = "__grasp.strike"; P = "__grasp.profile"
 TOASTS = "__grasp.toasts.map(t => t.text)"
 CHEAP = {'ball_beach', 'hand_mint', 'hand_sky', 'hand_lilac'}  # the looks at <= 150 coins
 ALL_COIN_ITEMS = "__grasp.collection.items.filter(it => !it.level && it.cost > 0).map(it => it.id)"
-START = """(() => { const st = $('start'), r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }, f = $('flameBtn'), g = $('giftBtn'), h = $('flameHint');
-  return { flame: r(f), gift: r(g), h1: r(document.querySelector('#start .panel h1')), lang: r($('startLang')), pill: r($('metaPill')), hint: h.hidden ? null : r(h), hintText: h.hidden ? '' : h.textContent.trim(),
-    n: f.querySelector('b').textContent, zero: f.classList.contains('zero'), today: f.classList.contains('today'), grow: f.classList.contains('grow'), giftDot: !g.querySelector('.dot').hidden, giftReady: g.classList.contains('ready'),
+START = """(() => { const st = $('start'), g = $('todayGift'), sk = $('todayStreak'), tb = $('todayBtn');  // (home2: the gift and the streak live in the Today panel; the Events tab's dot)
+  return { flameChip: !!document.getElementById('flameBtn'), giftChip: !!document.getElementById('giftBtn'), hintEl: !!document.getElementById('flameHint'), startText: st.innerText,
+    n: sk.hidden ? '0' : sk.querySelector('b').textContent.replace(/[^0-9]/g, ''), streakShown: !sk.hidden, giftDot: !tb.querySelector('.dot').hidden, giftReady: g.classList.contains('ready'), giftLine: $('todayGiftLine').textContent,
     W: innerWidth, noX: document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollWidth <= st.clientWidth + 1, fits: st.scrollHeight <= st.clientHeight + 1, dir: document.documentElement.dir }; })()"""
 BOXES = """(() => { const ov = $('gifts'), sh = ov.querySelector('.sheet').getBoundingClientRect(), bs = [...ov.querySelectorAll('.gbox')].map(b => { const q = b.getBoundingClientRect(); return { day: +b.dataset.day, st: b.dataset.st, opened: b.classList.contains('opened'), x: q.left + q.width / 2, y: q.top, w: q.width, h: q.height, pz: b.querySelector('.pz').textContent.trim(), dn: b.querySelector('.dn').textContent, ck: !!b.querySelector('.ck') }; });
   const ok = $('giftOk').getBoundingClientRect();
@@ -74,12 +74,14 @@ async def main():
         await page.evaluate("__grasp.setDate('2026-10-10')"); await page.evaluate(G + ".claim()")  # day 2
         await page.evaluate("__grasp.setDate('2026-10-12')")  # 10-11 skipped
         st = await page.evaluate(G + ".state")
-        check('a missed day: the calendar restarts at day 1 (missed flag for the gentle line)', st['day'] == 1 and st['missed'] and not st['opened'], st)
+        check('home2: a missed day pauses the calendar: the next box (day 3), not day 1 (missed flag for the gentle line)', st['day'] == 3 and st['missed'] and not st['opened'], st)
+        c0 = await page.evaluate(P + ".coins"); await page.evaluate(G + ".claim()")
+        check('...and day 3 pays its 10 coins; tomorrow is day 4', await page.evaluate(P + ".coins") - c0 == 10 and (await page.evaluate(G + ".state"))['tomorrow'] == 4)
         await page.evaluate("__grasp.setDate('2026-10-05')")
         st = await page.evaluate(G + ".state"); c0 = await page.evaluate(P + ".coins")
         check('a clock that went back: no second gift', st['opened'] and await page.evaluate(G + ".claim()") is None and await page.evaluate(P + ".coins") == c0, st)
         await page.reload(); await page.wait_for_timeout(500); await page.evaluate("__grasp.setDate('2026-10-12')")  # (the init script sets the test date again on a reload)
-        check('the calendar survives a reload (stored in the profile)', await page.evaluate(P + ".habit.gift") == {'day': 2, 'date': '2026-10-10'} and (await page.evaluate(G + ".state"))['missed'], await page.evaluate(P + ".habit.gift"))
+        check('the calendar survives a reload (stored in the profile)', await page.evaluate(P + ".habit.gift") == {'day': 3, 'date': '2026-10-12'} and (await page.evaluate(G + ".state"))['opened'], await page.evaluate(P + ".habit.gift"))
         check('no page errors (calendar)', not errs, errs); await ctx.close()
 
         # ---- look prizes when every look is owned: coins instead ----
@@ -106,7 +108,7 @@ async def main():
                 d1, d2 = bx['boxes'][0], bx['boxes'][1]
                 check(tag + ': no Grippy hand / speech bubble in the gift sheet', not bx['grip'], bx['grip'])
                 check(tag + ': boxes run ' + ('right to left' if he else 'left to right'), (d1['x'] > d2['x']) if he else (d1['x'] < d2['x']), [d1['x'], d2['x']])
-                check(tag + ': the start screen behind: the gift chip has its dot; once-a-day mark stored', (await page.evaluate(START))['giftDot'] and await page.evaluate(P + ".habit.seen") == '2026-10-02')
+                check(tag + ': the start screen behind: the Events tab has its dot (no gift chip on the start screen); once-a-day mark stored', (await page.evaluate(START))['giftDot'] and not (await page.evaluate(START))['giftChip'] and await page.evaluate(P + ".habit.seen") == '2026-10-02')
                 if mobile: await page.screenshot(path='tests/out/habit_gift_phone_' + lt + '.png')
                 elif not he: await page.screenshot(path='tests/out/habit_gift_desktop_en.png')
                 c0 = await page.evaluate(P + ".coins")
@@ -125,7 +127,7 @@ async def main():
                 check(tag + ': another tap does not pay again', await page.evaluate(P + ".coins") == c0 + 5)
                 await tap(page, mobile, '#giftOk'); await page.wait_for_function("!" + G + ".shown", timeout=3000)
                 s = await page.evaluate(START)
-                check(tag + ': Yay closes it; the gift chip: no dot, no bounce', not s['giftDot'] and not s['giftReady'], s)
+                check(tag + ': Yay closes it; the Events tab: no dot; the Today gift row: opened', not s['giftDot'] and not s['giftReady'], s)
                 await page.reload(); await page.wait_for_timeout(1200)
                 check(tag + ': a reload the same day: no pop-up', not await page.evaluate(G + ".shown"))
                 if not mobile and not he:
@@ -133,9 +135,12 @@ async def main():
                     await page.wait_for_function(G + ".shown", timeout=3000)
                     check(tag + ': the next day (back on the start screen): it pops up again, day 2 today, day 1 done', [x['st'] for x in (await page.evaluate(BOXES))['boxes']][:3] == ['past', 'today', 'future'])
                     await page.keyboard.press('Escape'); await page.wait_for_timeout(100)
-                    check(tag + ': Escape closes it unopened; the chip keeps its dot; no second pop-up today', not await page.evaluate(G + ".shown") and (await page.evaluate(START))['giftDot'] and not await page.evaluate(G + ".maybe()"))
-                    await page.click('#giftBtn'); await page.wait_for_function(G + ".shown", timeout=3000)
-                    check(tag + ': the gift chip opens it any time', (await page.evaluate(G + ".state"))['day'] == 2)
+                    check(tag + ': Escape closes it unopened; the Events tab keeps its dot; no second pop-up today', not await page.evaluate(G + ".shown") and (await page.evaluate(START))['giftDot'] and not await page.evaluate(G + ".maybe()"))
+                    await page.click('#todayBtn'); await page.wait_for_function("!$('today').hidden", timeout=3000)
+                    s = await page.evaluate(START)
+                    check(tag + ': the Today panel: the gift row ready ("Day 2 gift is waiting"); seen: the tab dot cleared', s['giftReady'] and s['giftLine'] == await page.evaluate("t('todayGiftDay', { n: 2 })") and not s['giftDot'], s)
+                    await page.click('#todayGift'); await page.wait_for_function(G + ".shown", timeout=3000)
+                    check(tag + ': the Today gift row opens it any time', (await page.evaluate(G + ".state"))['day'] == 2)
                     await page.click('#giftOk'); await page.wait_for_function("document.querySelector('.gbox.today.opened')", timeout=3000)
                     check(tag + ': ...and day 2 pays 8', await page.evaluate(P + ".coins") == c0 + 13)
                     await page.click('#gifts', position={'x': 5, 'y': 5}); await page.wait_for_timeout(100)
@@ -143,7 +148,7 @@ async def main():
                     await page.evaluate("__grasp.setDate('2026-10-06'); goHome()")
                     await page.wait_for_function(G + ".shown", timeout=3000)
                     bx = await page.evaluate(BOXES)
-                    check(tag + ': back after missed days: day 1 again with the gentle line', bx['missed'] and bx['boxes'][0]['st'] == 'today' and 'new week' in bx['sub'].lower(), bx['sub'])
+                    check(tag + ': back after missed days: paused, not reset: day 3 today (days 1-2 done), the gentle line', [x['st'] for x in bx['boxes']][:4] == ['past', 'past', 'today', 'future'] and bx['sub'] == await page.evaluate("t('giftPaused', { n: 3 })"), bx['sub'])
                     await page.keyboard.press('Escape')
                 check(tag + ': no page errors (pop-up)', not errs, errs); await ctx.close()
 
@@ -159,41 +164,37 @@ async def main():
         check('in a game: no pop-up (maybe() refuses)', await page.evaluate("mode") != 'none' and not await page.evaluate(G + ".maybe()") and not await page.evaluate(G + ".shown"))
         check('no page errors (order)', not errs, errs); await ctx.close()
 
-        # ---- the play-streak flame: counting, the pulse when it grows today, the 'play today' hint (phone + desktop, EN / HE) ----
+        # ---- the play streak (home2): counted as before, shown quietly in the Today panel only; no flame chip, no 'play today' hint, no nag toasts ----
+        NAGS = "(() => { const ks = ['keepFlame', 'flameZero', 'flameToast']; return __grasp.toasts.map(q => q.text).filter(x => ks.some(k => x === t(k, { n: 3 }) || x === t(k, { n: 4 }) || x === t(k, { n: 0 }))); })()"
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en'); lt = 'he' if he else 'en'
                 ctx, page, errs = await fresh(b, mobile, he, prof(habit={'play': ['2026-09-29', '2026-09-30', '2026-10-01']}))
                 await page.wait_for_timeout(1300)
                 s = await page.evaluate(START)
-                check(tag + ': 3 days in a row up to yesterday: the flame shows 3 (not lit for today); the hint "play today to keep your 3-day streak"',
-                      s['n'] == '3' and not s['zero'] and not s['today'] and s['hint'] and '3' in s['hintText'] and s['hintText'] == await page.evaluate("t('keepFlame', { n: 3 })"), s)
-                check(tag + ': the flame and the gift chip sit in the top bar: inside the screen, clear of the wordmark, the language button and the pill; 40+ px targets; no sideways scroll; the start screen still fits',
-                      all(r['l'] >= 0 and r['r'] <= s['W'] and r['h'] >= 40 for r in (s['flame'], s['gift'])) and not any(rects_overlap(a, x, 3) for a in (s['flame'], s['gift']) for x in (s['h1'], s['lang'], s['pill'])) and not rects_overlap(s['flame'], s['gift'])
-                      and s['noX'] and s['fits'], s)
-                if mobile: await page.screenshot(path='tests/out/habit_start_hint_phone_' + lt + '.png')
+                nag3 = await page.evaluate("t('keepFlame', { n: 3 })")
+                check(tag + ': 3 days in a row up to yesterday: no flame chip, no gift chip, no "play today" hint on the start screen (no streak nag)', not s['flameChip'] and not s['giftChip'] and not s['hintEl'] and nag3 not in s['startText'] and s['noX'], s)
+                await page.click('#todayBtn') if not mobile else await page.tap('#todayBtn')
+                await page.wait_for_function("!$('today').hidden", timeout=3000); await page.wait_for_timeout(300)
+                s = await page.evaluate(START)
+                check(tag + ': the Today panel shows the streak quietly: 3', s['streakShown'] and s['n'] == '3', s)
+                if mobile: await page.screenshot(path='tests/out/habit_today_streak_phone_' + lt + '.png')
+                await page.evaluate("__grasp.home2.tab('play')")
                 await stage_clear(page, 1)
                 check(tag + ': a finished round (an Adventure stage) counts today', await page.evaluate(HB + ".playedToday") and await page.evaluate(HB + ".streak") == 4)
                 await page.evaluate("goHome()"); await page.wait_for_timeout(150)
                 s = await page.evaluate(START)
-                check(tag + ': home: the flame grows to 4 with a pulse, lit; the hint gone', s['n'] == '4' and s['today'] and s['grow'] and not s['hint'] and await page.evaluate(HB + ".pulses") == 1, s)
-                if mobile:
-                    await page.wait_for_timeout(1100); await page.screenshot(path='tests/out/habit_start_streak_phone_' + lt + '.png')
-                await page.evaluate("goHome()"); await page.wait_for_timeout(50)
-                check(tag + ': home again: no second pulse today', await page.evaluate(HB + ".pulses") == 1)
+                check(tag + ': home: no pulse, no sound-and-light show for the streak; the Today panel says 4', s['n'] == '4' and await page.evaluate(HB + ".pulses") == 0, s)
+                check(tag + ': no streak nag toasts', not await page.evaluate(NAGS), await page.evaluate(NAGS))
                 if not mobile and not he:
-                    await page.reload(); await page.wait_for_timeout(500)
-                    check('a reload: still 4, no pulse again', await page.evaluate(HB + ".pulses") == 0 and (await page.evaluate(START))['n'] == '4')
                     await page.evaluate("__grasp.setDate('2026-10-03')")
                     s = await page.evaluate(START)
-                    check('the next day: 4 still alive, the hint back', s['n'] == '4' and s['hint'] and not s['today'], s)
+                    check('the next day: 4 still alive (Today panel), still no nag anywhere', s['n'] == '4' and not s['hintEl'] and not await page.evaluate(NAGS), s)
                     await page.evaluate("__grasp.setDate('2026-10-04')")
                     s = await page.evaluate(START)
-                    check('a day skipped: the flame goes out (0, dim, no hint)', s['n'] == '0' and s['zero'] and not s['hint'], s)
-                    await page.click('#flameBtn'); await page.wait_for_timeout(100)
-                    check('the flame tapped: a toast that tells what it is', any('flame' in x.lower() for x in await page.evaluate(TOASTS)))
+                    check('a day skipped: the streak line simply goes away (no guilt)', s['n'] == '0' and not s['streakShown'], s)
                     check('the daily challenge streak is its own (untouched)', await page.evaluate("__grasp.daily.streak") == 0)
-                check(tag + ': no page errors (flame)', not errs, errs); await ctx.close()
+                check(tag + ': no page errors (streak)', not errs, errs); await ctx.close()
 
         # ---- the '3 stages today' chest on the map; no 'Tomorrow' line on the stage card or the round-over card (even once the gift is open) ----
         for mobile, he in ((True, False), (True, True), (False, False)):
@@ -302,7 +303,7 @@ async def main():
         await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(habit={'gift': {'day': 7, 'date': '2026-10-01'}, 'stages': {'date': '2026-10-02', 'n': 2, 'claimed': False}}))
         check('good values kept: after a stored day 7 yesterday, today is day 1; 2 stages today', await page.evaluate(G + ".state.day") == 1 and not await page.evaluate(G + ".state.missed") and await page.evaluate(HB + ".stages.n") == 2)
-        keys = ['giftTitle', 'giftDayN', 'giftSub', 'giftMissed', 'giftOpen', 'giftYay', 'giftTomorrow', 'giftToast', 'giftMystery', 'giftChest', 'giftOpened', 'flameN', 'flameZero', 'keepFlame', 'flameToast',
+        keys = ['giftTitle', 'giftDayN', 'giftSub', 'giftMissed', 'giftPaused', 'todayGiftDay', 'todayTitle', 'giftOpen', 'giftYay', 'giftTomorrow', 'giftToast', 'giftMystery', 'giftChest', 'giftOpened', 'flameN', 'flameZero', 'keepFlame', 'flameToast',
                 'dayChest', 'dayChestToast', 'dayChestNeed', 'dayChestDone', 'starChest', 'starChestToast', 'starChestNeed', 'starChestDone']
         miss = await page.evaluate("(ks => ['en', 'he'].flatMap(l => ks.filter(k => !I18N[l][k] || (l === 'he' && I18N.he[k] === I18N.en[k])).map(k => l + ':' + k)))(" + json.dumps(keys) + ")")
         check('I18N: every habit string in EN and HE (HE translated)', not miss, miss)

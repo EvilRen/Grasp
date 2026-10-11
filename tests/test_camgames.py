@@ -67,9 +67,9 @@ async def home(page):
     await page.evaluate("goHome()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=5000)
 
 START = """(() => { const st = $('start'), r = (el) => { const q = el.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; };
-  const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => r(b)), cam = r($('camGamesBtn')), pet = r($('petCorner')), seg = r($('camBtn')), link = r(document.querySelector('#start a.link'));
+  const tiles = [...document.querySelectorAll('#start .modes button:not(.camTile)')].map(b => r(b)), cam = r($('camGamesBtn')), tab = r($('tabBar')), lit = r($('littleBtn'));  // (home2: the hero + Smash · Slice · Arcade, then Camera games · Little ones, the tab bar)
   const tx = $('camGamesBtn').querySelector('.ctTx b');
-  return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, W: innerWidth, H: innerHeight, tiles, cam, pet, seg, link,
+  return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, W: innerWidth, H: innerHeight, tiles, cam, tab, lit,
     label: tx.textContent, labelFits: tx.scrollWidth <= tx.clientWidth + 1, icons: $('camGamesBtn').querySelectorAll('.ctIcons svg').length }; })()"""
 
 async def main():
@@ -85,8 +85,8 @@ async def main():
                 L = await page.evaluate(START)
                 inside = lambda q: q['l'] >= 0 and q['t'] >= 0 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5 and q['w'] > 0
                 chk(f'{tag}: the start screen has no scroll with the Camera games tile', L['noScroll'], L)
-                chk(f'{tag}: the six game tiles, the Camera games tile, the toggle, the pet corner and the link all on screen', len(L['tiles']) == 6 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['seg']) and inside(L['pet']) and inside(L['link']), L)
-                chk(f'{tag}: the tile is a full-width row under the grid, above the Camera | Touch toggle, named, 4 icons', L['cam']['t'] >= max(q['b'] for q in L['tiles']) and L['cam']['b'] <= L['seg']['t'] and L['cam']['w'] >= max(q['r'] for q in L['tiles']) - min(q['l'] for q in L['tiles']) - 1 and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 4, L)
+                chk(f'{tag}: the hero, the tiles, the Camera games tile and the tab bar all on screen', len(L['tiles']) == 6 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
+                chk(f'{tag}: home2: the Camera games tile in the grid\'s second row beside Little ones (>= 44 px), above the tab bar, named, 4 icons', abs(L['cam']['t'] - L['lit']['t']) < 2 and L['cam']['h'] >= 44 and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 4, L)
                 await page.screenshot(path=OUT + f'cam_start_{sfx}.png')
                 await press(page, mobile, '#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=4000); await page.wait_for_timeout(350)
                 pk = await page.evaluate("""(() => { const s = $('cgPick').querySelector('.sheet').getBoundingClientRect(), cards = [...$('cgPick').querySelectorAll('[data-cg]')];

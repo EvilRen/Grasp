@@ -21,24 +21,26 @@ async def clip_of(page, kind, timeout=12000):
     await page.wait_for_function(f"{ST}.clip && {ST}.clip.kind === '{kind}' && !{ST}.pend && !{ST}.enc", timeout=timeout)
     return await page.evaluate(f"{ST}.clip")
 
-async def pill(page, E, timeout=15000):  # the card's Replay pill is up (the card fully in)
-    await page.wait_for_function(f"{E}.over && {E}.ui.rpBtn && performance.now() - {E}.overAt > 900", timeout=timeout)
-    return await page.evaluate(f"({{ p: {E}.ui.rpBtn, card: {E}.ui.card, btn: {E}.ui.buttons, H: innerHeight, W: innerWidth }})")
+async def pill(page, E, timeout=15000):  # home2: the card's Share button is up (the card fully in) and the clip is ready (the replay is in the Share sheet)
+    await page.wait_for_function(f"{E}.over && {E}.ui.buttons && {E}.ui.buttons.share && {R}.ready() && performance.now() - {E}.overAt > 900", timeout=timeout)
+    return await page.evaluate(f"({{ p: {E}.ui.buttons.share, card: {E}.ui.card, btn: Object.fromEntries(Object.entries({E}.ui.buttons).filter(([k]) => k !== 'share')), H: innerHeight, W: innerWidth, rp: {E}.ui.rpBtn }})")
 
 def overlaps(a, b): return a['x'] < b['x'] + b['w'] and b['x'] < a['x'] + a['w'] and a['y'] < b['y'] + b['h'] and b['y'] < a['y'] + a['h']
 
 def pill_ok(tag, q):
     p, c = q['p'], q['card']
-    inside = p['x'] >= 0 and p['y'] >= 0 and p['x'] + p['w'] <= q['W'] and p['y'] + p['h'] <= q['H']
+    inside = p['x'] >= 0 and p['y'] >= 0 and p['x'] + p['w'] <= q['W'] and p['y'] + p['h'] <= q['H'] and p['x'] >= c['x'] and p['y'] + p['h'] <= c['y'] + c['h'] + 1
     clear = not any(overlaps(p, r) for r in q['btn'].values())
-    check(f'{tag}: the "Replay" pill on the card ({"its bottom edge" if not p["corner"] else "the top corner"}), on screen, clear of the card\'s buttons',
-          inside and clear and (p['corner'] or (p['y'] <= c['y'] + c['h'] and p['y'] + p['h'] > c['y'] + c['h'])), q)
+    check(f'{tag}: home2: one "Share" button inside the card (Replay + Challenge merged; no Replay pill), on screen, clear of the card\'s other buttons', inside and clear and q['rp'] is None and p['h'] >= 44, q)
 
-async def tap_pill(page, E, mobile):
-    p = await page.evaluate(f"{E}.ui.rpBtn"); x, y = p['x'] + p['w'] / 2, p['y'] + p['h'] / 2
+async def tap_pill(page, E, mobile):  # Share -> the Share sheet -> Replay clip
+    p = await page.evaluate(f"{E}.ui.buttons.share"); x, y = p['x'] + p['w'] / 2, p['y'] + p['h'] / 2
     if mobile: await page.tap('#stage', position={'x': x, 'y': y})
     else: await page.mouse.click(x, y)
-    await page.wait_for_function(f"{ST}.open && {ST}.play && {ST}.play.drawn > 3", timeout=8000)
+    await page.wait_for_function("!$('shareSheet').hidden && !$('shReplay').hidden && !$('shReplay').disabled", timeout=5000); await page.wait_for_timeout(550)  # (the sheet pops in; the tap's own click is swallowed)
+    if mobile: await page.tap('#shReplay')
+    else: await page.click('#shReplay')
+    await page.wait_for_function(f"{ST}.open && {ST}.play && {ST}.play.drawn > 3 && $('shareSheet').hidden", timeout=8000)
 
 async def play_checks(page, tag, shot=None):  # frames advance, the slow-motion part shows up, the caption
     a = await page.evaluate(f"{ST}.play"); await page.wait_for_timeout(700); b2 = await page.evaluate(f"{ST}.play")
@@ -235,7 +237,7 @@ async def main():
         await page.wait_for_timeout(1700)
         await page.evaluate(f"(() => {{ const s = {S}; s.hits = 20; s.shield = 0; s.lives = 1; s.setBallZ(100, 180, 420); strikeMiss(s.ball, performance.now()); }})()")
         q = await pill(page, S); pill_ok('Frenzy card (phone HE)', q)
-        check('Hebrew: the pill says "הילוך חוזר"', q['p']['label'] == 'הילוך חוזר', q['p'])
+        check('Hebrew: the card says "שיתוף ⤴" and its sheet\'s row "הילוך חוזר"', await page.evaluate(f"{S}.ui.labels.share === 'שיתוף ⤴' && t('shReplay') === 'הילוך חוזר'"), q['p'])
         await page.screenshot(path='tests/out/replay_frenzy_card_he.png')
         await tap_pill(page, S, True)
         he = await page.evaluate(f"({{ title: $('rpTitle').textContent, share: $('rpShare').innerText.trim(), save: $('rpSave').innerText.trim(), cap: {ST}.play.cap, dir: document.documentElement.dir }})")
@@ -314,7 +316,7 @@ async def main():
         await page.evaluate(f"(() => {{ const s = {S}; s.lives = 1; s.setBallZ(100, 640, 420); strikeMiss(s.ball, performance.now()); }})()")
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons", timeout=6000); await page.wait_for_timeout(1200)
         off = await page.evaluate(f"({{ ok: {ST}.ok, caps: {ST}.caps, clip: {ST}.clip, pill: {S}.ui.rpBtn, btn: Object.keys({S}.ui.buttons) }})")
-        check('no createImageBitmap: the feature is silently off (nothing captured, no pill), the card as before', not off['ok'] and off['caps'] == 0 and off['clip'] is None and off['pill'] is None and 'again' in off['btn'], off)
+        check('no createImageBitmap: the feature is silently off (nothing captured, no pill; the Share sheet has no Replay row), the card as before', not off['ok'] and off['caps'] == 0 and off['clip'] is None and off['pill'] is None and 'again' in off['btn'] and await page.evaluate("(__grasp.home2.share.open(), $('shReplay').hidden)"), off)
         check('R9b: no page errors', not errs, errs); await ctx.close()
 
         # ===== R10: the 3D renderer: the capture reads the WebGL corridor under the overlay =====

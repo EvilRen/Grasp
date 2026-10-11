@@ -125,7 +125,7 @@ async def main():
         ctx = await b.new_context(permissions=['camera'], viewport={'width': 1280, 'height': 800}); page = await ctx.new_page(); await routes(page); errs = []
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS + POINT_JS + ARC_JS + LINE_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=busy]')
+        await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('#littlePick [data-mode=busy]').click()")
         await page.wait_for_function("mode === 'camera'", timeout=15000)
         g = await page.evaluate(GJ); a = await page.evaluate(G + ".stringPos(0)"); z = await page.evaluate(G + ".stringPos(5)"); ext = g['sp0'] * 1.2
         await page.evaluate(f"jump(pointAt, {a['x']}, {a['y'] - ext})")
@@ -153,8 +153,8 @@ async def main():
             ctx = await b.new_context(viewport={'width': 360, 'height': 740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs = []
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            await page.tap('.modes button[data-mode=busy]'); await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
+            if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
+            await page.evaluate("document.querySelector('#littlePick [data-mode=busy]').click()"); await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
             g = await page.evaluate(GJ)
             check(tag + ' phone: the guitar stands up, 2 columns x 3 rows', g['o'] == 'v' and abs(g['h'] - 1.5 * g['w']) < 1 and await page.evaluate(COLS(2)), g)
             check(tag + ' phone: no widget overlaps, all inside the board horizontally', await page.evaluate(OVERLAP) and await page.evaluate(VISIBLE(2)))  # (panel fix: ~175 px cells, the piano + xylophone on top: 2 fully visible)

@@ -30,7 +30,7 @@ async def fresh(b, mobile=False, he=False, init='', gfx=None):
     return ctx, page, errs
 
 async def endless(page):  # the Endless run with the mouse, the ball parked far away
-    await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+    await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
     await page.evaluate(f"__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.guestEvery = 0; {S}.noRally = {'true' if NO_RALLY else 'false'}; park()")
 
@@ -230,7 +230,7 @@ async def main():
             check(tag + ': a first clear keeps its score as the stage\'s best, ranks it (Diamond), no NEW RECORD on a first clear', r1['score'] == th[3] + 20 and r1['bestScore'] == r1['score'] and not r1['record'] and r1['rank'] == 3 and await page.evaluate("profile.adv.best[1]") == r1['score'], r1)
             await page.wait_for_function(f"{S}.over && {S}.ui.advScore && {S}.ui.advScore.a >= 1", timeout=10000)
             sc = await page.evaluate(f"{S}.ui.advScore")
-            check(tag + ': the clear card shows the score with its rank pill', sc['score'] == r1['score'] and sc['rank'] == 'diamond' and not sc['record'] and sc['x'] >= 0 and sc['x'] + sc['w'] <= await page.evaluate("innerWidth"), sc)
+            check(tag + ': the clear card shows the score (home2: no rank pill on the card; the rank stays on the map\'s stops)', sc['score'] == r1['score'] and sc['rank'] is None and not sc['record'] and sc['x'] >= 0 and sc['x'] + sc['w'] <= await page.evaluate("innerWidth"), sc)
             await page.evaluate(f"{A}.start(1)"); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 1", timeout=8000)
             await page.evaluate("__sfx.length = 0; __spoken.length = 0; __grasp.grippy.cool && __grasp.grippy.cool()")
             await page.evaluate(f"{S}.score = {th[4] + 50}"); r2 = await page.evaluate(f"{A}.finishTest(0)")

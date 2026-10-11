@@ -105,7 +105,7 @@ async def main():
 
         # ---- prefers-reduced-motion: no iris, no ambient motion, half the particles, a tiny shake ----
         ctx, page, errs = await fresh(b, False, rm='reduce')
-        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle(document.querySelector('.modes button[aria-pressed=true]'), '::after').animationName, cap: {G}.cap() }})")
+        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle($('heroPlay'), '::after').animationName, cap: {G}.cap() }})")
         await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000)
         x = await page.evaluate(f"({{ on: {G}.xf.on, shown: !$('xfade').hidden, skipped: {G}.xf.skipped, log: {G}.xf.log.slice(-1)[0] }})")
         await page.evaluate("shakeScreen(4)"); sh = await page.evaluate("shake.amp")

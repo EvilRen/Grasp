@@ -62,7 +62,7 @@ def empty_spot(st, r):
 async def tap_tests(b, he):
     tag = 'he' if he else 'en'
     ctx, page, errs = await ctx_page(b, True, he, init=FING_W)
-    await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(700)
+    await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(700)
     await page.evaluate(SFX_JS)
     tip = 'הקישו על צורה ואז על החור שלה!' if he else 'Tap a shape, then tap its hole!'
     ok = await wait(page, f"!!{S}.demo && {S}.ui.demo && {S}.ui.demo.on", 4000)
@@ -264,7 +264,7 @@ async def tap_tests(b, he):
 
 async def click_click(b):
     ctx, page, errs = await ctx_page(b)
-    await page.click('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(600)
+    await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(600)
     st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes }})")
     s0 = st['shapes'][1]; hl = next(h for h in st['holes'] if h['kind'] == s0['kind'])
     await page.mouse.click(s0['x'] + 3, s0['y'] + 3); await page.wait_for_timeout(150)
@@ -330,7 +330,7 @@ async def big_layout(b, w, h, mobile, he=False, shots=()):
     page = await ctx.new_page(); await routes(page); errs = []; page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + SPEECH + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');"))
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("typeof engine !== 'undefined' && !!engine", timeout=15000)
-    await (page.tap if mobile else page.click)('.modes button[data-mode=shapes]'); await wait(page, "gameMode === 'shapes' && !!shapes.box", 15000); await page.wait_for_timeout(300)
+    await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "gameMode === 'shapes' && !!shapes.box", 15000); await page.wait_for_timeout(300)
     sizes, bad, fills = [], [], []
     for n in range(1, 11):
         worst = None
@@ -362,7 +362,7 @@ async def big_layout(b, w, h, mobile, he=False, shots=()):
 async def big_play(b, he):
     tag = 'he' if he else 'en'
     ctx, page, errs = await ctx_page(b, True, he, init=FING_W)
-    await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(700)
+    await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(700)
     ok = await wait(page, f"!!{S}.ui.demo && {S}.ui.demo.on", 4000)
     d = await page.evaluate(f"{S}.ui.demo")
     check(tag + ' big: the finger demo grows with the shapes', ok and d and d.get('scale', 0) > 1.2, d)
@@ -408,7 +408,7 @@ SPY_JS = """(async (k) => { const seen = []; let coins = 0; const o = textSprite
 async def hud_tests(b, he):
     tag = 'he' if he else 'en'
     ctx, page, errs = await ctx_page(b, True, he, init=FING_W)
-    await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes' && shapes.phase === 'play'"); await page.wait_for_timeout(500)
+    await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "mode === 'mouse' && gameMode === 'shapes' && shapes.phase === 'play'"); await page.wait_for_timeout(500)
     await page.evaluate("shapes.demo = null")
     for lv in (1, 4):
         await page.evaluate(f"{S}.setLevel({lv})"); await page.wait_for_timeout(300)
@@ -443,7 +443,7 @@ async def main():
         # ---- desktop, mouse: the tile starts the game; level 1 ----
         ctx, page, errs = await ctx_page(b)
         check('speechSynthesis stub installed', await page.evaluate("!window.__speechStubFailed && typeof speechSynthesis.speak === 'function'"), await page.evaluate("window.__speechStubFailed || ''"))
-        await page.click('.modes button[data-mode=shapes]')
+        await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()")
         ok = await wait(page, "mode === 'mouse' && gameMode === 'shapes' && $('start').hidden")
         check('the Shapes tile starts the game at once (mouse)', ok, await page.evaluate("[mode, gameMode]"))
         await page.evaluate(SFX_JS); await page.wait_for_timeout(500)
@@ -591,15 +591,17 @@ async def main():
 
         # Home: the round-over card (levels done, stars, best level), then home; the tile shows the best level
         await menu_click(page, '#homeBtn'); await page.wait_for_timeout(700)
-        ec = await page.evaluate(f"({{ over: {S}.over, mode, b: {S}.ui.buttons, done: {S}.levelsDone, stars: {S}.stars, best: localStorage.getItem('shapesBest'), nb: {S}.ui.newBest }})")
+        await page.wait_for_function(f"{S}.ui.toddlerStars && {S}.ui.toddlerStars.filter(q => q.on).length === {S}.ui.starsRow", timeout=5000)
+        ec = await page.evaluate(f"({{ over: {S}.over, mode, b: {S}.ui.buttons, done: {S}.levelsDone, stars: {S}.stars, best: localStorage.getItem('shapesBest'), nb: {S}.ui.newBest, row: {S}.ui.starsRow, coin: {S}.ui.coinBox, best2: {S}.ui.bestLine, labels: {S}.ui.labels }})")
         check('Home in a Shapes round: the round-over card first (levels done 2, stars 5, best level 2 saved, new best)', ec['over'] and ec['mode'] == 'mouse' and ec['b'] and 'home' in ec['b'] and ec['done'] == 2 and ec['stars'] == 5 and ec['best'] == '2' and ec['nb'], ec)
+        check('home2: the toddler card: big stars (3: the levels\' average 2.5, rounded), confetti, only Play again (big) + Home; no score, best line or coins', ec['row'] == 3 and set(ec['b']) == {'again', 'home'} and ec['b']['again']['h'] > ec['b']['home']['h'] and ec['coin'] is None and ec['best2'] is None and ec['labels'] == {'again': 'Play again', 'home': 'Home'}, ec)
         await page.screenshot(path='tests/out/shapes_endcard.png')
         hb = ec['b']['home']; await page.mouse.click(hb['x'] + hb['w'] / 2, hb['y'] + hb['h'] / 2); await page.wait_for_timeout(400)
-        check("the card's Home goes to the start screen; the tile shows the best level", await page.evaluate("mode === 'none' && !$('start').hidden") and await page.evaluate("document.querySelector('.modes button[data-mode=shapes] .best').textContent") == '★ L2')
+        check("the card's Home goes to the start screen; the tile shows the best level", await page.evaluate("mode === 'none' && !$('start').hidden") and await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] .best').textContent") == '★ L2')
         check('mission pool: "Sort 15 shapes"', await page.evaluate("(() => { const m = __grasp.missionPool.find(q => q.id === 'shapes'); return !!m && m.ev === 'shape' && m.goals[0] === 15 && t('ms_shapes', { n: 15 }) === 'Sort 15 shapes'; })()"))
         gl = await page.evaluate("({ en: __grasp.grippy.lines.en, he: __grasp.grippy.lines.he })")
         check('Grippy (voice): >= 3 short (1-3 words) distinct lines EN / HE for a level done; a match is quiet (the shape name is spoken instead)', all(len(gl[l]['shapesLevel']) >= 3 and len(set(gl[l]['shapesLevel'])) == len(gl[l]['shapesLevel']) and all(1 <= len(x.split()) <= 3 for x in gl[l]['shapesLevel']) for l in ('en', 'he')) and 'shapesMatch' not in gl['en'] and 'shapesMatch' not in gl['he'])
-        await page.click('.modes button[data-mode=shapes]'); await page.wait_for_timeout(300)
+        await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await page.wait_for_timeout(300)
         check('a new round starts at level 1 with nothing sorted', await page.evaluate(f"{S}.level === 1 && !{S}.over && {S}.levelsDone === 0 && {S}.shapes.every(s => !s.placed)"))
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
@@ -607,7 +609,7 @@ async def main():
         for he in (False, True):
             tag = 'he' if he else 'en'
             ctx, page, errs = await ctx_page(b, True, he)
-            await page.tap('.modes button[data-mode=shapes]'); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(600)
+            await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await wait(page, "mode === 'mouse' && gameMode === 'shapes'"); await page.wait_for_timeout(600)
             st = await page.evaluate(f"({{ shapes: {S}.shapes, holes: {S}.holes, box: {S}.box, mat: {S}.mat }})")
             check(tag + ' phone: level 1 fits the screen (mat over the box, all shapes and holes inside)', all(12 <= s['x'] <= 348 and st['mat']['y'] <= s['y'] <= st['mat']['y'] + st['mat']['h'] for s in st['shapes']) and all(0 < h['x'] < 360 and h['y'] < 740 for h in st['holes']) and st['box']['y'] + st['box']['h'] / 2 + st['box']['depth'] <= 740, st)
             await page.screenshot(path='tests/out/shapes_phone_' + tag + '.png')
@@ -642,7 +644,7 @@ async def main():
 
         # ---- camera stub: an open hand hovers, a pinch grabs, the pinched hand carries it to its hole, opening the hand drops it in ----
         ctx, page, errs = await ctx_page(b, camera=True)
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=shapes]')
+        await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()")
         ok = await wait(page, "mode === 'camera' && gameMode === 'shapes'", 15000)
         check('camera: the Shapes tile starts the camera game', ok)
         await page.wait_for_timeout(500)
@@ -663,23 +665,19 @@ async def main():
         check('camera: opening the hand drops it in; its name is spoken', ok and await page.evaluate(f"{S}.spoken") == {'circle': 'Circle', 'square': 'Square', 'triangle': 'Triangle'}[s0['kind']])
         check('camera: no page errors', not errs, errs); await ctx.close()
 
-        # ---- start screen: 6 tiles (3 x 2) fit 360 x 740 with no scroll and no big gap under the top bar, EN / HE; desktop too ----
-        LAY = """(() => { const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode, in: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, top: Math.round(r.top), w: r.width, name: b.querySelector('[data-i18n]').textContent }; });
-          const st = $('start'), h1 = document.querySelector('.panel h1').getBoundingClientRect(), lb = $('startLang').getBoundingClientRect(), pill = $('metaPill').getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(), ev = $('eventBtn').getBoundingClientRect(), md = document.querySelector('.modes').getBoundingClientRect(), seg = document.querySelector('#start .seg').getBoundingClientRect(), a = document.querySelector('#start a.link').getBoundingClientRect(), pc = $('petCorner').getBoundingClientRect(); // (the pet's corner sits between the toggle and the link)
-          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, rows: new Set(tiles.map(t => Math.round(t.top / 20))).size, barBottom: Math.max(h1.bottom, lb.bottom), pillTop: pill.top,
-            gaps: [row.top - pill.bottom, ev.top - row.bottom, md.top - ev.bottom, seg.top - md.bottom, pc.top - seg.bottom, a.top - pc.bottom].map(Math.round), link: a.bottom <= innerHeight }; })()"""
+        # ---- home2: Shapes lives in the Little ones picker (a tile on the start screen); the picker fits 360 x 740 EN / HE, desktop too; a live preview ----
+        LAY = """(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(), tiles = [...P.querySelectorAll('.pickGrid > button')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode || b.id, in: r.left >= sh.left && r.top >= sh.top && r.right <= sh.right && r.bottom <= sh.bottom && r.bottom <= innerHeight, h: r.height, name: b.querySelector('[data-i18n]').textContent, fs: parseFloat(getComputedStyle(b).fontSize) }; });
+          const st = $('start'), lt = $('littleBtn').getBoundingClientRect(); return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, little: lt.bottom <= innerHeight && lt.height >= 44, open: !P.hidden }; })()"""
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
-                ctx, page, errs = await ctx_page(b, mobile, he); await page.wait_for_timeout(1900)
+                ctx, page, errs = await ctx_page(b, mobile, he); await page.wait_for_timeout(1500)
+                await (page.tap('#littleBtn') if mobile else page.click('#littleBtn')); await page.wait_for_function("!$('littlePick').hidden", timeout=4000); await page.wait_for_timeout(500)
                 L = await page.evaluate(LAY)
-                check(tag + ': 6 game tiles in 3 x 2, all on screen, named; no scroll', len(L['tiles']) == 6 and L['rows'] == 2 and all(t['in'] and t['w'] > 80 and t['name'] for t in L['tiles']) and L['noScroll'] and L['link'] and [t['m'] for t in L['tiles']] == ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes'], L)
-                check(tag + ': the Shapes tile is named ' + ('צורות' if he else 'Shapes'), L['tiles'][5]['name'] == ('צורות' if he else 'Shapes'))
-                if mobile:
-                    gap = L['pillTop'] - L['barBottom']
-                    check(tag + f': no big gap under the top bar ({gap:.0f} px), the blocks evenly spaced', 0 <= gap <= 30 and max(L['gaps']) - min(L['gaps']) <= 12 and min(L['gaps']) >= 6, L)
-                pv0 = await page.evaluate("document.querySelector('.modes button[data-mode=shapes] canvas').toDataURL()"); await page.wait_for_timeout(400)
-                pv1 = await page.evaluate("document.querySelector('.modes button[data-mode=shapes] canvas').toDataURL()")
+                check(tag + ': the Little ones picker: Busy Board, Shapes, Sandbox, Calm bubbles, all inside, big targets, text >= 14 px; no scroll', L['open'] and L['little'] and [t['m'] for t in L['tiles']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and all(t['in'] and t['h'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and L['noScroll'], L)
+                check(tag + ': the Shapes tile is named ' + ('צורות' if he else 'Shapes'), L['tiles'][1]['name'] == ('צורות' if he else 'Shapes'))
+                pv0 = await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] canvas').toDataURL()"); await page.wait_for_timeout(400)
+                pv1 = await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] canvas').toDataURL()")
                 check(tag + ': the Shapes tile has a live preview', pv0 != pv1 and await page.evaluate("__grasp.previews.running"))
                 await page.screenshot(path='tests/out/shapes_start_' + tag + '.png')
                 check(tag + ': no page errors', not errs, errs); await ctx.close()

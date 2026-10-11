@@ -27,7 +27,7 @@ async def camera_page(b, mobile):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + HAND_JS + POINT_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-    await page.click('#camBtn') if not mobile else await page.tap('#camBtn')
+    await page.evaluate("$('camBtn').click()") if not mobile else await page.evaluate("$('camBtn').click()")
     if mobile: await page.tap('.modes button[data-mode=slice]')
     else: await page.click('.modes button[data-mode=slice]')
     await page.wait_for_function("mode === 'camera'", timeout=15000)
@@ -81,7 +81,7 @@ async def main():
         rbp = await page.evaluate(PIX + f"({st['rb']['x']}, {st['rb']['y']})") if st['rb'] else None
         check('NEW BEST ribbon drawn on the card corner', rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, rbp)
         bt = st['buttons']
-        check('card: Play again + Home side by side, no difficulty pill', bt and set(bt) == {'again', 'home'} and bt['again']['y'] == bt['home']['y'] and bt['again']['x'] + bt['again']['w'] < bt['home']['x'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
+        check('card (home2): Play again big on top, Home under it, Share (replay / link) under that; no difficulty pill', bt and set(bt) == {'again', 'home', 'share'} and bt['again']['y'] + bt['again']['h'] <= bt['home']['y'] and bt['home']['y'] + bt['home']['h'] <= bt['share']['y'] and bt['again']['h'] > bt['home']['h'] and all(q['h'] >= 44 and q['x'] + q['w'] <= 1280 for q in bt.values()), bt)
         ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
         check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
         await page.screenshot(path='tests/out/slice_over.png')
@@ -157,8 +157,8 @@ async def main():
             ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + POINT_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
-            await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=slice]'); await page.wait_for_timeout(300)
+            if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
+            await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=slice]'); await page.wait_for_timeout(300)
             await page.evaluate("parkBomb(180, 400); __grasp.slice.fruits[0].vy = -0.001"); await page.wait_for_timeout(120)
             await page.screenshot(path='tests/out/slice_bomb_phone_' + tag + '.png')
             await page.evaluate("__grasp.slice.fruits.length = 0; __grasp.slice.score = 7"); await end_round(page)
@@ -166,7 +166,7 @@ async def main():
             check(tag + ' phone: round over after 3 misses, best 7 saved', st['over'] and st['best'] == 7 and st['ls'] == '7' and st['nb'], st)
             await page.screenshot(path='tests/out/endcard_slice_' + tag + '.png')
             bt = st['buttons']
-            check(tag + ' phone: card buttons fit the screen' + (', Play again on the right' if he else ''), bt and set(bt) == {'again', 'home'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and ((bt['again']['x'] > bt['home']['x']) == he), bt)
+            check(tag + ' phone: card buttons fit the screen (home2: Play again on top, Home, Share)', bt and set(bt) == {'again', 'home', 'share'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and bt['again']['y'] < bt['home']['y'] < bt['share']['y'], bt)
             await page.tap('#stage', position={'x': bt['again']['x'] + bt['again']['w'] / 2, 'y': bt['again']['y'] + bt['again']['h'] / 2}); await page.wait_for_timeout(200)
             check(tag + ' phone: tap Play again -> fresh round', await page.evaluate("!__grasp.slice.over && __grasp.slice.lives === 3 && __grasp.slice.score === 0 && __grasp.slice.best === 7"))
             check(tag + ' phone: no page errors', not errs, errs); await ctx.close()

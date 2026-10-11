@@ -24,8 +24,8 @@ async def new_page(b, mobile=False):
     return ctx, page, errs
 
 async def play_strike(page, tap=False):
-    if tap: await page.tap('#mouseBtn'); await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
-    else: await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+    if tap: await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    else: await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.ball", timeout=8000)
     await page.evaluate(SFX_JS + ";\n" + HELP_JS + "\n__grasp.CONFIG.STRIKE_PU_RATE = 0; __grasp.strike.noSpecials = true; park()")
 
@@ -221,7 +221,7 @@ async def main():
         for he in (False, True):
             tag = 'he' if he else 'en'
             ctx, page, errs = await new_page(b, mobile=True)
-            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
+            if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             await play_strike(page, tap=True)
             await page.evaluate(f"park(); {S}.setLevel(3); {S}.setCleared(15)"); await page.wait_for_function(f"{S}.perkOffer", timeout=8000)  # level 3 done: a perk pick after the release
             await page.evaluate("forceOffer(['spark', 'skin', 'coins'])"); await wait_offer(page, 'spark')

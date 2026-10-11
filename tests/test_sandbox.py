@@ -20,7 +20,7 @@ async def routes(page):
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
 INIT += "try { if (!localStorage.getItem('inputPref')) localStorage.setItem('inputPref', 'mouse'); } catch (e) {}"  # the start screen's tiles start a game at once with the remembered input: the suites play with the mouse unless they pick the camera
 INIT += "window.__graspSlice3 = true;"  # (the session's first Slice round has 5 hearts; the suites' Slice checks count 3: test_panelfix covers the 5)
-START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('.modes > button[aria-pressed=\"true\"]').click(); if (!$('advMap').hidden) $('advEndless').click(); if (!$('smashMap').hidden) $('smashFree').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button; Strike: the Adventure map's Endless, the old run)
+START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('button[data-mode][aria-pressed=\"true\"]').click(); if (!$('advMap').hidden) $('advEndless').click(); if (!$('smashMap').hidden) $('smashFree').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button; Strike: the Adventure map's Endless, the old run)
 # Strike's renderer in the suites: by default (GRASP_GFX=2d) the 2D canvas; GRASP_GFX=3d runs the WebGL renderer at a low fixed pixel ratio, no
 # shadows and no low-fps fallback (headless Chromium's WebGL is SwiftShader, a CPU rasterizer: full resolution runs at ~2-5 fps and falls back
 # to 2D; even this light setup runs ~30 fps, so the frame-timing checks of test_strike.py flake in 3D here; test_strike3d.py sets its own)
@@ -54,7 +54,7 @@ async def boot(b, mobile):
     page.on('pageerror', lambda e: errs.append(str(e)))
     await page.add_init_script(INIT + HAND_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-    await page.click('#camBtn'); await page.click('.modes > button[aria-pressed=true]')
+    await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('button[data-mode][aria-pressed=true]').click()")
     await page.wait_for_function("mode === 'camera'", timeout=15000)
     return ctx, page, errs
 
@@ -188,7 +188,7 @@ async def main():
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
         check('defaults to English', await page.evaluate("document.documentElement.dir") == 'ltr')
-        await page.tap('#startLang'); await page.wait_for_timeout(100)
+        await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
         st = await page.evaluate("({dir: document.documentElement.dir, lang: document.documentElement.lang, cam: $('camBtn').textContent, desc: $('modeDesc').textContent})")
         check('language button switches to Hebrew RTL', st['dir'] == 'rtl' and st['lang'] == 'he' and st['cam'] == 'מצלמה' and 'המצלמה' in st['desc'], st)
         await page.screenshot(path='tests/out/he_start.png')

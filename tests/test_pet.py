@@ -39,12 +39,22 @@ def hatched(food=0, pantry=0, **kw):
     if d['seen'] is None: del d['seen']
     return d
 
-LAYOUT = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }, st = $('start');
-  const tiles = [...document.querySelectorAll('.modes > button[data-mode]')].map(r), pc = r($('petCorner'));
-  return { pet: pc, cv: r($('petCv')), feed: $('petFeedBtn').hidden ? null : r($('petFeedBtn')), tiles, seg: r(document.querySelector('#start .seg')), link: r(document.querySelector('#start a.link')), row: r(document.querySelector('#start .metaRow')),
-    pill: r($('metaPill')), habit: r($('habitBar')), hint: $('flameHint').hidden ? null : r($('flameHint')), W: innerWidth, H: innerHeight,
+LAYOUT = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }, st = $('start'), tb = $('petTab');  // home2: the pet lives in its tab (the room); the corner's texts are kept in sync (hidden)
+  return { tab: tb.hidden ? null : r(tb), bang: !tb.querySelector('.bang').hidden, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(r), bar: r($('tabBar')), corner: !!$('petCorner').offsetParent, W: innerWidth, H: innerHeight,
+    tabCv: (() => { const c = $('petTabCv'); if (!c.width) return 0; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 200) n++; return n; })(),
+    room: $('petRoom').hidden ? null : r($('petRoom').querySelector('.sheet')), tabbed: $('petRoom').classList.contains('tabbed'),
     noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1, noX: document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollWidth <= st.clientWidth + 1,
-    name: $('petNm').textContent, line: $('petLine').textContent, st: $('petSt').hidden ? '' : $('petSt').textContent, feedTx: $('petFeedBtn').textContent.trim(), dir: document.documentElement.dir }; })()"""
+    name: $('petNm').textContent, line: $('petLine').textContent, st: $('petSt').hidden ? '' : $('petSt').textContent, feed: $('petFeedBig').hidden ? null : r($('petFeedBig')), feedTx: $('petFeedBtn').textContent.trim(), dir: document.documentElement.dir }; })()"""
+
+async def room(page):  # home2: the Pet tab opens the room (where the egg is tapped, the pet giggles and eats)
+    if await page.evaluate("$('petRoom').hidden"):
+        await page.tap('#petTab'); await page.wait_for_function("!$('petRoom').hidden", timeout=3000); await page.wait_for_timeout(450)
+
+async def pet_tap(page):
+    await room(page); await page.tap('#petRoomCv')
+
+async def pet_feed(page):
+    await room(page); await page.tap('#petFeedBig')
 
 def card_tag_ok(tag, q, he):
     T = q['tag']; c = q['card']
@@ -67,15 +77,21 @@ async def main():
         st = await page.evaluate(P + ".state")
         check('a new player: an egg (stage 0), nothing in the snack box, nothing eaten', not st['hatched'] and st['stage'] == 0 and st['pantry'] == 0 and st['mood'] == 'egg' and st['canFeed'] == 'egg', st)
         L = await page.evaluate(LAYOUT)
-        check('the corner: "Mystery egg", "Tap the egg to hatch it!", no Feed button / stage chip', L['name'] == 'Mystery egg' and L['line'] == 'Tap the egg to hatch it!' and L['feed'] is None and L['st'] == '', L)
+        check('home2: hidden until earned: no Pet tab (and no pet corner) before the first round is finished', L['tab'] is None and not L['corner'] and len(L['tabs']) == 3, L)
+        await page.evaluate("profile.pet.egg = true; saveProfile(); syncMeta()"); await page.wait_for_timeout(100)  # (what the first finished round does: test_home2 plays it)
+        L = await page.evaluate(LAYOUT)
+        check('the egg earned: the Pet tab shows up with a "!" and the egg as its icon (>= 44 px)', L['tab'] and L['bang'] and L['tab']['h'] >= 44 and L['tabCv'] > 50 and len(L['tabs']) == 4, L)
+        await room(page)
+        L = await page.evaluate(LAYOUT)
+        check('the tab opens the room above the bar: "Mystery egg", "Tap the egg to hatch it!", no Feed button / stage chip; the "!" seen', L['name'] == 'Mystery egg' and L['line'] == 'Tap the egg to hatch it!' and L['feed'] is None and L['st'] == '' and not L['bang'] and L['tabbed'] and L['room']['b'] <= L['bar']['t'] + 1, L)
         await page.wait_for_function(P + ".frames > 5 && " + P + ".running", timeout=5000)
         await page.screenshot(path=OUT + 'pet_egg_phone_en.png')
-        for i in range(4): await tap(page, True, '#petPetBtn'); await page.wait_for_timeout(80)
+        for i in range(4): await pet_tap(page); await page.wait_for_timeout(80)
         st = await page.evaluate(P + ".state"); L = await page.evaluate(LAYOUT)
         check('4 taps: 4 cracks, still an egg; "One more tap!"', st['cracks'] == 4 and not st['hatched'] and L['line'] == 'One more tap!', [st['cracks'], L['line']])
         check('each tap: the egg crack sound', (await page.evaluate("__sfx.filter(k => k === 'eggTap').length")) == 4)
         await page.screenshot(path=OUT + 'pet_egg_cracked.png')
-        await tap(page, True, '#petPetBtn')
+        await pet_tap(page)
         st = await page.evaluate(P + ".state")
         check('the 5th tap hatches it: a Baby, born today, its default name (Bubu)', st['hatched'] and st['stage'] == 1 and st['stageId'] == 'baby' and st['food'] == 0 and st['shownName'] == 'Bubu' and await page.evaluate(P + ".p.born") == '2026-10-02', st)
         check('the hatch: its sound, the bubble "Hello! I\'m Bubu!", the spoken "Hello!"', 'hatch' in await page.evaluate("__sfx") and await page.evaluate("$('petBub').textContent") == "Hello! I'm Bubu!" and any(s['text'] == 'Hello!' for s in await page.evaluate("__spoken")), await page.evaluate("__spoken"))
@@ -86,7 +102,7 @@ async def main():
         await page.fill('#petNameIn', '  Pip<3!! ')
         await tap(page, True, '#petNameGo')
         st = await page.evaluate(P + ".state")
-        check('a name typed (cleaned: letters / digits only): "Pip3"; shown in the corner', st['name'] == 'Pip3' and (await page.evaluate(LAYOUT))['name'] == 'Pip3' and not st['nameOpen'], st)
+        check('a name typed (cleaned: letters / digits only): "Pip3"; shown in the room', st['name'] == 'Pip3' and (await page.evaluate(LAYOUT))['name'] == 'Pip3' and not st['nameOpen'], st)
         L = await page.evaluate(LAYOUT)
         check('after the hatch: the stage chip "Baby", hungry ("Snack time?"), and a starter snack in the box so the first Feed works (panel fix)', L['st'] == 'Baby' and L['line'] == 'Snack time?' and L['feed'] and not await page.evaluate("$('petFeedBtn').disabled") and await page.evaluate(P + ".p.pantry") == 1, L)
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.pet", timeout=8000)
@@ -94,7 +110,7 @@ async def main():
         check('it survives a reload (hatched, its name)', st['hatched'] and st['name'] == 'Pip3', st)
         await page.evaluate("__grasp.pet.askName()"); await page.fill('#petNameIn', 'Bubu'); await page.press('#petNameIn', 'Enter')
         check('renamed to the default word: stored as "" (so it follows the language)', await page.evaluate(P + ".p.name") == '' and await page.evaluate(P + ".state.shownName") == 'Bubu')
-        await page.evaluate(SFX_JS); await tap(page, True, '#petPetBtn')
+        await page.evaluate(SFX_JS); await pet_tap(page)
         check('a tap on the pet: a giggle, a wiggle, "Hee hee!"', 'giggle' in await page.evaluate("__sfx") and await page.evaluate("$('petBub').textContent") == 'Hee hee!' and await page.evaluate("performance.now() - __grasp.pet.ui.wigAt < 1000"))
         check('no page errors (hatch)', not errs, errs); await ctx.close()
 
@@ -199,16 +215,16 @@ async def main():
         st = await page.evaluate(P + ".state")
         check('food 7 (Baby): the bar 70%, 3 more snacks to Kid', st['stage'] == 1 and abs(st['frac'] - 0.7) < 1e-9 and st['left'] == 3, st)
         w0 = await page.evaluate("$('petBar').querySelector('i').style.width")
-        await tap(page, True, '#petFeedBtn')
+        await pet_feed(page)
         st = await page.evaluate(P + ".state")
         check('Feed: one snack eaten (box 9 -> 8, food 7 -> 8, today 1/5), happy now', st['pantry'] == 8 and st['food'] == 8 and st['ate'] == 1 and st['mood'] == 'happy', st)
         check('the bar grows (70% -> 80%); the munch sound; "Yum, thank you!"', w0 == '70%' and await page.evaluate("$('petBar').querySelector('i').style.width") == '80%' and await page.evaluate("$('petBub').textContent") == 'Yum, thank you!', w0)
         await page.wait_for_function("__sfx.includes('munch')", timeout=3000)
         await page.wait_for_timeout(1200)
-        await tap(page, True, '#petFeedBtn'); await page.wait_for_timeout(200)
+        await pet_feed(page); await page.wait_for_timeout(200)
         check('food 9: still a Baby', await page.evaluate(P + ".state.stage") == 1)
         await page.wait_for_timeout(1000)
-        await tap(page, True, '#petFeedBtn')
+        await pet_feed(page)
         st = await page.evaluate(P + ".state")
         check('food 10: a Kid', st['stage'] == 2 and st['food'] == 10, st)
         await page.wait_for_function(P + ".state.roomOpen && " + P + ".ui.evo", timeout=4000)
@@ -229,7 +245,8 @@ async def main():
         check('Escape closes the room', not await page.evaluate(P + ".state.roomOpen"))
         await page.evaluate("__grasp.setDate('2026-10-03')"); st = await page.evaluate(P + ".state")
         check('the next day: hungry again, 0/5 eaten, it can eat', st['mood'] == 'hungry' and st['ate'] == 0 and st['canFeed'] == 'ok', st)
-        check('...and the corner says so ("Snack time?"), Feed ready', (await page.evaluate(LAYOUT))['line'] == 'Snack time?' and await page.evaluate("$('petFeedBtn').classList.contains('ready')"))
+        await room(page)
+        check('...and the room says so ("Snack time?"), Feed ready', (await page.evaluate(LAYOUT))['line'] == 'Snack time?' and not await page.evaluate("$('petFeedBig').disabled"))
         await page.evaluate(f"{P}.set({{ pantry: 0 }})"); r = await page.evaluate(P + ".feed()")
         check('an empty box: nothing to eat ("empty")', not r['ok'] and r['why'] == 'empty', r)
         # muted: the celebration is silent
@@ -258,7 +275,7 @@ async def main():
         L = await page.evaluate(LAYOUT); st = await page.evaluate(P + ".state")
         check('a week away: sleepy ("Zzz… tap to wake me"), never lost a thing (food, box, stage kept)', st['mood'] == 'sleepy' and L['line'] == 'Zzz… tap to wake me' and st['food'] == 8 and st['pantry'] == 5 and st['stage'] == 1, [st, L['line']])
         await page.screenshot(path=OUT + 'pet_sleepy.png')
-        await tap(page, True, '#petPetBtn'); st = await page.evaluate(P + ".state")
+        await pet_tap(page); st = await page.evaluate(P + ".state")
         check('a tap wakes it (shown hungry: "Snack time?"; the date mood stays sleepy until it eats)', st['shown'] == 'hungry' and st['mood'] == 'sleepy' and (await page.evaluate(LAYOUT))['line'] == 'Snack time?', st)
         await page.evaluate(P + ".feedUi()"); check('fed: happy', await page.evaluate(P + ".state.mood") == 'happy')
         allm = await page.evaluate("Object.keys(I18N.en).filter(k => k.startsWith('petM_'))")
@@ -301,11 +318,11 @@ async def main():
         sizes = {}
         ctx, page, errs = await fresh(b, mobile=True, pet=hatched(food=0))
         for f in (0, 10, 25, 45, 75):
-            await page.evaluate(f"{P}.set({{ food: {f}, seen: 5 }})"); sizes[f] = await page.evaluate("(() => { const c = $('petCv'); const g = c.getContext('2d'); __grasp.pet.ui.hopAt = -1e9; __grasp.pet.ui.hopNext = 1e12; return 0; })()")
-            await page.wait_for_timeout(250)
-            sizes[f] = await page.evaluate("(() => { const c = $('petCv'), g = c.getContext('2d'), d = g.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 200) n++; return n; })()")
+            await page.evaluate(f"{P}.set({{ food: {f}, seen: 5 }}); {P}.open(true)"); sizes[f] = await page.evaluate("(() => { __grasp.pet.ui.hopAt = -1e9; __grasp.pet.ui.hopNext = 1e12; __grasp.pet.ui.evo = null; return 0; })()")
+            await page.wait_for_timeout(300)
+            sizes[f] = await page.evaluate("(() => { const c = $('petTabCv'), g = c.getContext('2d'), d = g.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 200) n++; return n; })()")
         v = [sizes[f] for f in (0, 10, 25, 45, 75)]
-        check('each stage is visibly bigger in the corner (painted pixels grow)', all(v[i] < v[i + 1] for i in range(4)), v)
+        check('each stage is visibly bigger on the Pet tab\'s icon (painted pixels grow)', all(v[i] < v[i + 1] for i in range(4)), v)
         check('no page errors (sizes)', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, mobile=True, he=True, pet=hatched(food=30, pantry=6, color='sky', eyes='glasses', neck='scarf', seen=3))
         await page.evaluate(P + ".open(true)"); await page.wait_for_timeout(600)
@@ -330,37 +347,40 @@ async def main():
         check('a Kid: Sunny (a Teen colour) back to mint, items in the wrong slot dropped, a negative count = 0', h['color'] == 'mint' and h['head'] == '' and h['neck'] == '' and h['ate']['n'] == 0 and h['seen'] == 2, h)
         check('no page errors (validation)', not errs, errs); await ctx.close()
 
-        # ---- the start screen: phone + desktop, EN / HE, the egg and a hatched pet with the flame hint: no scroll, no overlap ----
+        # ---- home2: the start screen with the Pet tab: phone + desktop, EN / HE, the egg and a hatched pet: no scroll, the tab bar fits, the room above it ----
         for mobile in (True, False):
             for he in (False, True):
                 for kind in ('egg', 'pet'):
                     tag = ('phone ' if mobile else 'desktop ') + ('he ' if he else 'en ') + kind
-                    pet = None if kind == 'egg' else hatched(food=30, pantry=4, color='pink', neck='scarf', seen=3)
-                    init = '' if kind == 'egg' else "localStorage.setItem('grasp.profile', JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('grasp.profile')), { habit: { play: ['2026-09-30', '2026-10-01'] } })));"
-                    ctx, page, errs = await fresh(b, mobile, he, pet=pet if pet else ({} if kind == 'egg' else None), init=init)
+                    pet = {'egg': True} if kind == 'egg' else hatched(food=30, pantry=4, color='pink', neck='scarf', seen=3)
+                    ctx, page, errs = await fresh(b, mobile, he, pet=pet)
                     await page.wait_for_timeout(1300)
                     L = await page.evaluate(LAYOUT)
-                    blocks = L['tiles'] + [L['seg'], L['link'], L['row'], L['pill'], L['habit']] + ([L['hint']] if L['hint'] else [])
-                    check(tag + ': no scrolling (either way); the pet corner fully on screen', L['noScroll'] and L['noX'] and L['pet']['l'] >= 0 and L['pet']['r'] <= L['W'] + 0.5 and L['pet']['t'] >= 0 and L['pet']['b'] <= L['H'], L)
-                    check(tag + ': the corner overlaps nothing (tiles, toggle, link, icon row, pill, top bar' + (', flame hint' if L['hint'] else '') + ')', not any(rects_overlap(L['pet'], x, 1) for x in blocks), [L['pet'], blocks])
-                    check(tag + ': under the Camera | Touch toggle, above the Tremorti link; as wide as the tiles\' grid', L['pet']['t'] >= L['seg']['b'] and L['pet']['b'] <= L['link']['t'] and abs(L['pet']['w'] - L['seg']['w']) < 2, [L['pet'], L['seg']])
-                    pet_end = L['cv']['l'] > L['pet']['l'] + L['pet']['w'] / 2
-                    check(tag + ': the pet at the start side (' + ('right' if he else 'left') + ')', pet_end == he, L['cv'])
+                    check(tag + ': no scrolling (either way); 4 tabs (Play, Shop, Pet, Events) inside the bar, >= 44 px, none overlapping', L['noScroll'] and L['noX'] and len(L['tabs']) == 4 and all(q['h'] >= 44 and q['l'] >= L['bar']['l'] - 0.5 and q['r'] <= L['bar']['r'] + 0.5 for q in L['tabs']) and not any(rects_overlap(L['tabs'][i], L['tabs'][j], 1) for i in range(4) for j in range(i + 1, 4)), L)
+                    check(tag + ': the Pet tab in its place (3rd from the ' + ('right' if he else 'left') + '); its icon is the ' + kind + ('; a "!" until the egg is seen' if kind == 'egg' else ''), L['tabs'][2]['l'] == L['tab']['l'] and (L['tab']['l'] < L['tabs'][1]['l']) == he and L['tabCv'] > 50 and L['bang'] == (kind == 'egg'), L)
+                    await (page.tap('#petTab') if mobile else page.click('#petTab')); await page.wait_for_function("!$('petRoom').hidden", timeout=3000); await page.wait_for_timeout(500)
+                    L = await page.evaluate(LAYOUT)
+                    check(tag + ': the tab opens the room above the bar, inside the screen; the Pet tab lit', L['room'] and L['room']['b'] <= L['bar']['t'] + 1 and L['room']['t'] >= 0 and L['room']['l'] >= 0 and L['room']['r'] <= L['W'] + 0.5 and await page.evaluate("__grasp.home2.h2.tab") == 'pet', L)
                     if kind == 'pet':
-                        check(tag + ': name, stage, mood line, Feed (4) shown in ' + ('HE' if he else 'EN'), L['name'] == ('בובו' if he else 'Bubu') and L['st'] == ('נער' if he else 'Teen') and L['line'] == ('זמן לחטיף?' if he else 'Snack time?') and '4' in L['feedTx'] and L['hint'] is not None, L)
-                        check(tag + ': Feed inside the corner, a big target (>= 60 x 70)', L['feed']['w'] >= 60 and L['feed']['h'] >= 70 and L['feed']['l'] >= L['pet']['l'] and L['feed']['r'] <= L['pet']['r'], L['feed'])
+                        check(tag + ': name, stage, mood line, Feed (4) in ' + ('HE' if he else 'EN'), L['name'] == ('בובו' if he else 'Bubu') and L['st'] == ('נער' if he else 'Teen') and L['line'] == ('זמן לחטיף?' if he else 'Snack time?') and '4' in L['feedTx'] and L['feed'] and L['feed']['h'] >= 44, L)
                     await page.screenshot(path=OUT + 'pet_start_%s_%s_%s.png' % ('phone' if mobile else 'desktop', 'he' if he else 'en', kind))
+                    await (page.tap('#tabPlay') if mobile else page.click('#tabPlay')); await page.wait_for_timeout(200)
+                    check(tag + ': Play closes it', await page.evaluate("$('petRoom').hidden && __grasp.home2.h2.tab === 'play'"))
                     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
-        # ---- the loop: runs on the start screen, stops in a game and in a hidden tab ----
+        # ---- the loop: home2: only while the room is open (no corner on the start screen); stops in a game and in a hidden tab ----
         ctx, page, errs = await fresh(b, mobile=False, pet=hatched(food=3))
-        await page.wait_for_function(P + ".running", timeout=3000); f0 = await page.evaluate(P + ".frames"); await page.wait_for_timeout(400); f1 = await page.evaluate(P + ".frames")
-        check('the start screen: the pet animates (~30 fps, not more)', 6 <= f1 - f0 <= 16, f1 - f0)
+        await page.wait_for_timeout(300)
+        check('the start screen: no pet loop (the pet lives in its tab)', not await page.evaluate(P + ".running"))
+        await page.click('#petTab'); await page.wait_for_function(P + ".running", timeout=3000); await page.wait_for_timeout(300)
+        f0 = await page.evaluate(f"[{P}.frames, performance.now()]"); await page.wait_for_timeout(600); f1 = await page.evaluate(f"[{P}.frames, performance.now()]")
+        fps = (f1[0] - f0[0]) / ((f1[1] - f0[1]) / 1000)  # (the page's own clock: under load the wait stretches)
+        check('the room: the pet animates (~30 fps, not more)', 6 <= fps <= 36, fps)
         await page.evaluate("__grasp.setGameMode('slice')"); await page.evaluate(START_MOUSE); await page.wait_for_function("mode === 'mouse'", timeout=5000); await page.wait_for_timeout(150)
         f2 = await page.evaluate(P + ".frames"); await page.wait_for_timeout(300)
-        check('in a game: the pet loop stops', not await page.evaluate(P + ".running") and await page.evaluate(P + ".frames") == f2)
-        await page.evaluate("goHome()"); await page.wait_for_timeout(300)
-        check('home: it runs again', await page.evaluate(P + ".running"))
+        check('in a game: the pet loop stops (the room closed)', not await page.evaluate(P + ".running") and await page.evaluate(P + ".frames") == f2 and await page.evaluate("$('petRoom').hidden"))
+        await page.evaluate("goHome()"); await page.wait_for_timeout(300); await page.click('#petTab'); await page.wait_for_timeout(300)
+        check('the room again: it runs again', await page.evaluate(P + ".running"))
         await page.evaluate("Object.defineProperty(document, 'hidden', { get: () => true, configurable: true }); document.dispatchEvent(new Event('visibilitychange'))"); await page.wait_for_timeout(200)
         f3 = await page.evaluate(P + ".frames"); await page.wait_for_timeout(300)
         check('a hidden tab: it stops', await page.evaluate(P + ".frames") == f3 and not await page.evaluate(P + ".running"))

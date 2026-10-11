@@ -87,6 +87,15 @@ async def main():
             check(tag + ': claimPage again: nothing', await page.evaluate(AL + ".claimPage(1)") == 0 and await page.evaluate(P + ".coins") == r['coins'] + 30)
             check(tag + ': no page errors (page bonus)', not errs, errs); await ctx.close()
 
+        # ---- home2: hidden until earned: no album button on the map before the first sticker ----
+        ctx, page, errs = await fresh(b, True, False, prof(adv={'stars': {'1': 2}, 'unlocked': 2}))
+        await page.evaluate(f"{A}.openMap()"); await page.wait_for_timeout(250)
+        h0 = await page.evaluate("({ hidden: $('advAlbumBtn').hidden, disp: getComputedStyle($('advAlbumBtn')).display, got: profile.album.got.length })")
+        check('home2: no sticker yet: the album button is hidden on the map', h0['hidden'] and h0['disp'] == 'none' and h0['got'] == 0, h0)
+        await page.evaluate("profile.album.got.push(1); saveProfile(); renderAdvMap()"); await page.wait_for_timeout(100)
+        check('...the first sticker: it shows', await page.evaluate("!$('advAlbumBtn').hidden && $('advAlbumBtn').getBoundingClientRect().width >= 40"))
+        check('album hidden-until-earned: no page errors', not errs, errs); await ctx.close()
+
         # ---- the album: header button, tabs, slots, the unpaid page's bonus with confetti (phone + desktop, EN / HE) ----
         for mobile in (True, False):
             for he in (False, True):
@@ -94,10 +103,10 @@ async def main():
                 ctx, page, errs = await fresh(b, mobile, he, prof(adv={'stars': stars(12, extra={13: 2}), 'unlocked': 14}))
                 await page.evaluate(f"{A}.openMap()"); await page.wait_for_timeout(250)
                 hd = await page.evaluate("""(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; }, h2 = $('advTitle'), ab = $('advAlbumBtn');
-                  return { back: r($('advBack')), h2: r(h2), album: r(ab), day: r($('advDayChest')), stars: r($('advStarTotal')), full: h2.scrollWidth <= h2.clientWidth + 1, pr: ab.querySelector('.pr').textContent, dot: !ab.querySelector('.dot').hidden, W: innerWidth, noX: document.documentElement.scrollWidth <= innerWidth + 1 }; })()""")
-                parts = [hd[k] for k in ('back', 'h2', 'album', 'day', 'stars')]
-                check(tag + ': the map header holds back, title, Album (12/64, a dot for the new ones), the day chest and the stars: all inside, none overlapping, 40+ px targets, the title not cut',
-                      all(x['l'] >= 0 and x['r'] <= hd['W'] + 0.5 for x in parts) and not any(rects_overlap(parts[i], parts[j], 1) for i in range(5) for j in range(i + 1, 5)) and all(hd[k]['h'] >= 40 and hd[k]['w'] >= 40 for k in ('back', 'album', 'day')) and hd['full'] and hd['pr'] == '12/64' and hd['dot'] and hd['noX'], hd)
+                  return { back: r($('advBack')), h2: r(h2), album: r(ab), day: r($('advDayChest')), stars: r($('advStarTotal')), diff: r($('strikeDiff')), full: h2.scrollWidth <= h2.clientWidth + 1, pr: ab.querySelector('.pr').textContent, dot: !ab.querySelector('.dot').hidden, W: innerWidth, noX: document.documentElement.scrollWidth <= innerWidth + 1 }; })()""")
+                parts = [hd[k] for k in ('back', 'h2', 'album', 'day', 'stars', 'diff')]
+                check(tag + ': the map header holds back, title, Album (12/64, a dot for the new ones), the day chest, the stars and Easy / Normal (home2; a phone: its own row): all inside, none overlapping, 40+ px targets, the title not cut',
+                      all(x['l'] >= 0 and x['r'] <= hd['W'] + 0.5 for x in parts) and not any(rects_overlap(parts[i], parts[j], 1) for i in range(6) for j in range(i + 1, 6)) and all(hd[k]['h'] >= 40 and hd[k]['w'] >= 40 for k in ('back', 'album', 'day', 'diff')) and hd['full'] and hd['pr'] == '12/64' and hd['dot'] and hd['noX'], hd)
                 check(tag + ': ' + ('header runs right to left' if he else 'header runs left to right'), (hd['back']['l'] > hd['album']['l'] > hd['day']['l']) if he else (hd['back']['l'] < hd['album']['l'] < hd['day']['l']), hd)
                 if mobile: await page.screenshot(path=OUT + 'map_header_phone_' + lt + '.png', clip={'x': 0, 'y': 0, 'width': 360, 'height': 120})
                 c0 = await page.evaluate(P + ".coins")
@@ -228,8 +237,8 @@ async def main():
                     u = await page.evaluate(f"(() => {{ const u = {S}.ui; return {{ title: u.titleBox, coin: u.coinBox, xp: u.xpBox, streak: u.streakChip, card: u.card, btn: u.buttons, W: innerWidth, H: innerHeight }}; }})()")
                     T = box(u['title']); pills = [box(u[k]) for k in ('coin', 'xp', 'streak') if u.get(k)]
                     tg = tag + (' daily' if daily else '')
-                    check(tg + ': the round-over title (' + ('daily' if daily else '"Round over"') + ') overlaps none of the pills (coins, +XP' + (', streak' if daily else '') + '); all inside the card; the buttons too',
-                          u['xp'] and not any(rects_overlap(T, q) for q in pills) and T['l'] >= u['card']['x'] and T['r'] <= u['card']['x'] + u['card']['w'] and all(q['t'] >= u['card']['y'] for q in pills)
+                    check(tg + ': the round-over title (' + ('daily' if daily else '"Round over"') + ') overlaps none of the pills (coins' + (', streak' if daily else '') + '; home2: no +XP pill); all inside the card; the buttons too',
+                          not u['xp'] and not any(rects_overlap(T, q) for q in pills) and T['l'] >= u['card']['x'] and T['r'] <= u['card']['x'] + u['card']['w'] and all(q['t'] >= u['card']['y'] for q in pills)
                           and all(box(q)['b'] <= u['card']['y'] + u['card']['h'] + 1 for q in u['btn'].values()), u)
                     check(tg + ': the title sits under the pills', all(T['t'] >= q['b'] for q in pills), [T, pills])
                     if not daily: await page.screenshot(path=OUT + 'roundover_' + ('phone' if mobile else 'desktop') + '_' + lt + '.png')

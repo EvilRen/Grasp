@@ -8,8 +8,8 @@ PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 GFX_READY = "['ready', 'failed'].includes(__grasp.strike.gfxInfo.state) || __grasp.strike.gfxInfo.want === '2d'"
 TO2D = "(async () => { await __grasp.setGfx('2d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"
 TO3D = "(async () => { if (!(window.__graspGfx && window.__graspGfx.mode === '2d')) await __grasp.setGfx('3d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
-ROWS = "new Set([...document.querySelectorAll('.modes > button[data-mode]')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # the start screen's tiles: 3 + 3
-FITS = "(() => { const bs = [...document.querySelectorAll('.modes > button[data-mode]')], a = document.querySelector('#start a.link').getBoundingClientRect(); return bs.length === 6 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && b.scrollWidth <= b.clientWidth + 1; }) && a.bottom <= innerHeight && document.documentElement.scrollHeight <= innerHeight; })()"
+ROWS = "new Set([...document.querySelectorAll('#start .modes > *')].map(b => Math.round(b.getBoundingClientRect().top / 20))).size"  # home2: the hero, then Smash · Slice · Arcade, then Camera games · Little ones
+FITS = "(() => { const bs = [...document.querySelectorAll('#start .modes button')], tb = $('tabBar').getBoundingClientRect(), st = $('start'); return bs.length === 7 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= tb.top + 1 && r.height >= 44; }) && tb.bottom <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1; })()"  # home2: the hero (play + map), 5 tiles, the tab bar: one screen, no scroll
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
@@ -29,8 +29,8 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        check('desktop: the 6 game tiles (3 + 3) fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 2)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+        check('desktop: the hero + the 5 tiles (3 + 2) and the tab bar fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
+        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
         check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'shapes' && MODE_NEXT.shapes === 'sandbox'"))
         cfg = await page.evaluate("({ zf: __grasp.CONFIG.STRIKE_Z_FAR, hz: __grasp.CONFIG.STRIKE_HIT_Z, base: __grasp.CONFIG.STRIKE_BASE_SPEED, max: __grasp.CONFIG.STRIKE_MAX_SPEED, lives: __grasp.CONFIG.STRIKE_LIVES, sup: __grasp.CONFIG.STRIKE_SUPER_SPEED })")
@@ -142,7 +142,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(900)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)  # hand parked in a corner, clear of the walls
         ws = await page.evaluate(f"{S}.walls.map(w => ({{ z: w.z, n: w.bricks.length, alive: w.bricks.filter(k => k.alive).length, cols: w.cols, rows: w.rows, hp: w.hp, level: w.level }}))")
@@ -216,7 +216,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(900)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")  # every sound asked for, in order
@@ -351,7 +351,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(900)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(900)
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
         await page.evaluate("(() => { window.__sfx = []; const o = sfx; sfx = (k, a) => { __sfx.push(k); o(k, a); }; })()")
         PU = "{ const s = __grasp.strike; "
@@ -475,7 +475,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(900)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")  # no power-up bricks: a capsule caught by the parked cursor would change the ball's size, speed or number mid-check
         await page.mouse.move(1200, 760); await page.wait_for_timeout(200)
         chrome = await page.evaluate("(() => { const r = document.querySelector('.chrome').getBoundingClientRect(); return { l: r.left, t: r.top, b: r.bottom }; })()"); hud = await page.evaluate(f"{S}.ui.hud")
@@ -526,7 +526,7 @@ async def main():
         check('round over with a NEW BEST ribbon (saffron pixel on the card corner)', ov['nb'] and ov['best'] == ov['score'] > 0 and rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, [ov, rbp])
         check('stats for the card: hits, walls, the best combo multiplier (x1 here: the legacy suite has no combo)', ov['hits'] >= 1 and ov['walls'] >= 0 and ov['combo'] == 1, ov)
         bt = ov['bt']
-        check('two buttons on the card, side by side, on screen (Home shares its slot with Shop when something is affordable)', bt['again']['w'] > 100 and bt['home']['w'] > (50 if 'shop' in bt else 100) and bt['again']['y'] == bt['home']['y'] and bt['again']['x'] + bt['again']['w'] < bt['home']['x'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
+        check('home2: Play again (big) over Home, Share under them, on screen; no Shop upsell button, no Easy / Normal on the card', set(bt) == {'again', 'home', 'share'} and bt['again']['w'] > 100 and bt['again']['h'] > bt['home']['h'] and bt['again']['y'] < bt['home']['y'] < bt['share']['y'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
         ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
         check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
         await page.screenshot(path='tests/out/strike_ui_over.png')
@@ -558,7 +558,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_function(GFX_READY, timeout=20000); await page.evaluate(FRAMES)  # (3D: the renderer built before the round starts, so its one-off setup never eats into the banner's time)
+        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_function(GFX_READY, timeout=20000); await page.evaluate(FRAMES)  # (3D: the renderer built before the round starts, so its one-off setup never eats into the banner's time)
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
         await page.evaluate("__grasp.CONFIG.STRIKE_PU_RATE = 0")
         await page.mouse.move(1200, 760); await page.wait_for_timeout(100)
@@ -686,8 +686,8 @@ async def main():
         await page.screenshot(path='tests/out/strike5_over.png')
         bt = await page.evaluate(f"{S}.ui.buttons")
         await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(300)
-        badge = await page.evaluate("(() => { const b = document.querySelector('.modes button[data-mode=strike] .best'); return { hidden: b.hidden, text: b.textContent, title: b.title, fits: b.getBoundingClientRect().right <= document.querySelector('.modes button[data-mode=strike] .pv').getBoundingClientRect().right + 1 }; })()")
-        check('start screen: the Strike card badge shows the best score and "L8"', not badge['hidden'] and badge['text'].startswith('★ ') and badge['text'].endswith('L8') and 'Best level 8' in badge['title'] and badge['fits'] and await page.evaluate(FITS), badge)
+        badge = await page.evaluate("(() => { const b = document.querySelector('.modes button[data-mode=strike] .best'); return { hidden: b.hidden || getComputedStyle(b).display === 'none', saved: localStorage.getItem('strikeLevelBest'), hero: $('heroLbl').textContent }; })()")
+        check('home2: the best level (8) is saved; the start screen shows the hero (the Adventure\'s next stage), no Endless badge', badge['hidden'] and badge['saved'] == '8' and badge['hero'] and await page.evaluate(FITS), badge)
         await page.screenshot(path='tests/out/strike5_badge.png')
         check('levels + boss: no page errors', not errs, errs); await ctx.close()
 
@@ -695,7 +695,7 @@ async def main():
         ctx = await b.new_context(permissions=['camera'], viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + HAND_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-        await page.click('#camBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+        await page.evaluate("$('camBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function("mode === 'camera'", timeout=15000)
         await page.evaluate("window.__handFor = () => handAt(640, 400, 0.8); __grasp.CONFIG.STRIKE_PU_RATE = 0"); await page.wait_for_timeout(900)
         cur = await page.evaluate("[gesture, cursor.x, cursor.y, cursor.present]")
@@ -715,11 +715,11 @@ async def main():
             ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + TOUCH_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600); await page.evaluate(LEGACY)
-            if he: await page.tap('#startLang'); await page.wait_for_timeout(100)
+            if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: the 6 game tiles (3 + 3) and the link fit on one screen', await page.evaluate(FITS) and rows == 2, rows)
+            check(tag + ' phone: the hero, the 5 tiles (3 + 2) and the tab bar fit on one screen', await page.evaluate(FITS) and rows == 3, rows)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
-            await page.tap('.modes button[data-mode=strike]'); await page.tap('#advEndless')
+            await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))
             await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
             st = await page.evaluate(STATE)
@@ -773,10 +773,10 @@ async def main():
             check(tag + ' phone: round over after all lives are missed', await page.evaluate(f"{S}.over"))
             await page.wait_for_timeout(600); await page.screenshot(path='tests/out/strike_over_' + tag + '.png')
             bt = await page.evaluate(f"{S}.ui.buttons")
-            check(tag + ' phone: card buttons fit the screen' + (', Play again on the right' if he else ''), bt and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and ((bt['again']['x'] > bt['home']['x']) == he), bt)
-            check(tag + ' phone: Easy / Normal pill on the card, Easy at the start edge', 'easy' in bt and 'normal' in bt and ((bt['easy']['x'] > bt['normal']['x']) == he) and bt['easy']['y'] > bt['again']['y'], bt)
-            await page.tap('#stage', position={'x': bt['normal']['x'] + bt['normal']['w'] / 2, 'y': bt['normal']['y'] + bt['normal']['h'] / 2}); await page.wait_for_timeout(200)
-            check(tag + ' phone: tapping Normal on the card switches the difficulty without restarting', await page.evaluate(f"{S}.diff === 'normal' && {S}.over && localStorage.getItem('strikeDiff') === 'normal'"))
+            check(tag + ' phone: card buttons fit the screen (home2: Play again, Home, Share)', bt and set(bt) == {'again', 'home', 'share'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()), bt)
+            check(tag + ' phone: no Easy / Normal pill on the card (home2: in the Adventure map\'s header)', 'easy' not in bt and 'normal' not in bt, bt)
+            await page.evaluate("$('strikeDiff').querySelector('[data-diff=normal]').click()"); await page.wait_for_timeout(200)
+            check(tag + ' phone: Normal (the map header\'s toggle) switches the difficulty without restarting', await page.evaluate(f"{S}.diff === 'normal' && {S}.over && localStorage.getItem('strikeDiff') === 'normal'"))
             await page.tap('#stage', position={'x': bt['again']['x'] + bt['again']['w'] / 2, 'y': bt['again']['y'] + bt['again']['h'] / 2}); await page.wait_for_timeout(200)
             check(tag + ' phone: Play again starts a Normal round with 3 lives', await page.evaluate(f"!{S}.over && {S}.lives === 3"))
             await page.evaluate("__grasp.setGameMode('strike'); __grasp.setStrikeDiff('easy')")

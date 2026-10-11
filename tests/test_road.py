@@ -19,7 +19,7 @@ GATE_SIM = f"""((plv, L) => {{ const s = {S}; __grasp.setPlayerLevel(plv); s.set
   let curved = 0, waves = 0, plain = 0; for (let i = 0; i < 240; i++) {{ s.serve(); const b = s.ball; if (b.guest) guests[b.guest] = (guests[b.guest] || 0) + 1; else {{ plain++; if (b.curve) curved++; if (b.waves > 1 && b.curve) waves++; }} }}
   s.ball.guest = null; s.lives = lv0; const offers = []; for (let i = 0; i < 30; i++) {{ s.perks = {{}}; if (s.offerPerks()) offers.push(...s.perkOffer); s.perkOffer = null; }}
   const pc = s.pacing; return {{ kinds, pus, guests, curved, waves, plain, offers: [...new Set(offers)].sort(), puRate: pc.puRate, perksOpen: pc.perks, guestsOn: pc.guestsOn }}; }})"""
-START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('startLang').getBoundingClientRect(), r = document.querySelector('.metaRow').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, rowIn: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, nx: $('nextUnlock').textContent, nxFits: $('nextUnlock').getBoundingClientRect().right <= p.right + 1 && $('nextUnlock').getBoundingClientRect().left >= p.left - 1, btns: [...document.querySelectorAll('.metaBtn')].map(b => b.querySelector('[data-i18n]').textContent.trim()) }; })()"
+START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('moreBtn').getBoundingClientRect(), r = $('tabBar').getBoundingClientRect(), x = $('metaPill').querySelector('.xp').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth && p.top >= 0, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, rowIn: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, xpIn: x.width > 10 && x.left >= p.left && x.right <= p.right, nxShown: getComputedStyle($('nextUnlock')).display !== 'none', lv: $('metaPill').querySelector('.lvl').textContent, btns: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.querySelector('[data-i18n]').textContent.trim()) }; })()"  # home2: the pill (coins, level, XP bar) in the top bar; the tab bar
 
 async def frames(page, n=1):
     for _ in range(n): await page.evaluate(FRAMES)
@@ -33,7 +33,7 @@ async def new_page(b, mobile=False, he=False, init='', gfx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+    await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate(SFX_JS); await page.mouse.move(640, 760)
 
@@ -49,8 +49,8 @@ async def main():
         ctx, page, errs = await new_page(b)
         lad = await page.evaluate("__grasp.road.ladder.map(r => [r.id, r.lv])")
         check('the road: 20 unlocks over player levels 1-20 (the cow from the start), in the designed order', [tuple(x) for x in lad] == LADDER, lad)
-        fresh = await page.evaluate(f"({{ got: {P}.road.got, level: {P}.level, next: __grasp.road.next.id, nx: $('nextUnlock').textContent }})")
-        check('a fresh profile: level 1 with brick walls + the ball only; next: glass walls (180 XP to go, on the pill)', fresh['got'] == ['brick', 'cow'] and fresh['level'] == 1 and fresh['next'] == 'glass' and fresh['nx'] == '180 XP to: Glass walls', fresh)
+        fresh = await page.evaluate(f"({{ got: {P}.road.got, level: {P}.level, next: __grasp.road.next.id, nx: __grasp.road.nextText, pillNx: getComputedStyle($('nextUnlock')).display, road: __grasp.home2.roadOn() }})")
+        check('a fresh profile: level 1 with brick walls + the ball only; next: glass walls (180 XP to go: the Road says it; home2: no nudge text on the pill, the Road not shown until the first level-up)', fresh['got'] == ['brick', 'cow'] and fresh['level'] == 1 and fresh['next'] == 'glass' and fresh['nx'] == '180 XP to: Glass walls' and fresh['pillNx'] == 'none' and not fresh['road'], fresh)
         per = {}
         for n in (1, 2, 3, 4, 5, 8, 10, 12, 15, 16, 19, 20):
             per[n] = await page.evaluate(f"(() => {{ __grasp.setPlayerLevel({n}); return {{ got: __grasp.road.ladder.filter(r => __grasp.road.unlocked(r.id)).map(r => r.id), level: {P}.level, xp: {P}.xp, x0: __grasp.xpForLevel({n}), cards: {P}.road.cards.length, fresh: {P}.road.fresh.length, lv: __grasp.levelOf({P}.xp) }}; }})()")
@@ -108,7 +108,7 @@ async def main():
         nc = await page.evaluate(f"""(() => {{ const P = $('newCard'), r = P.querySelector('.sheet').getBoundingClientRect(), cv = P.querySelector('.nuArt canvas'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let lit = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) lit++;
           return {{ shown: !P.hidden, kick: P.querySelector('.nuKick').textContent, name: $('nuName').textContent, line: P.querySelector('.nuLine').textContent, grip: !!P.querySelector('.nuGrip, .bub'), art: lit / (d.length / 4), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
             xp: {P}.xp, level: {P}.level, fresh: {P}.road.fresh.slice(), xpBox: {S}.ui.xpBox && {S}.ui.xpBox.n, sfx: __sfx.slice(-12) }}; }})()""")
-        check('the run earned runXp(walls, levels, bosses) = 20 + 4 x 5 + 10 x 1 = 50 XP; the end card shows +50 XP', st['xp'] == 50 and nc['xp'] - st['xp0'] == 50 and nc['xpBox'] == 50, [st, nc['xp'], nc['xpBox']])
+        check('the run earned runXp(walls, levels, bosses) = 20 + 4 x 5 + 10 x 1 = 50 XP (home2: no XP pill on the card)', st['xp'] == 50 and nc['xp'] - st['xp0'] == 50 and nc['xpBox'] is None, [st, nc['xp'], nc['xpBox']])
         check('level 2 reached: the NEW UNLOCKED card over the end card (Glass walls, its art, a short line, no Grippy hand / bubble), inside the viewport, an unlock sound',
               nc['shown'] and nc['kick'] == 'NEW UNLOCKED!' and nc['name'] == 'Glass walls' and nc['line'] and not nc['grip'] and nc['art'] > 0.15 and nc['inside'] and nc['level'] == 2 and 'unlock' in nc['sfx'], nc)
         await page.screenshot(path='tests/out/road_newcard_endcard.png')
@@ -134,19 +134,19 @@ async def main():
             ctx, page, errs = await new_page(b, True, he)
             await page.evaluate("__grasp.setPlayerLevel(5)"); await page.wait_for_timeout(200)
             f = await page.evaluate(START_FIT)
-            check(tag + ': the pill shows the XP to the next unlock (260 XP to Slow-mo) inside it; the start screen still fits with the Road button',
-                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['nxFits'] and f['nx'] == ('עוד 260 XP: הילוך איטי' if he else '260 XP to: Slow-mo') and f['btns'] == (['משימות', 'הדרך', 'חנות'] if he else ['Missions', 'Road', 'Shop']), f)
+            check(tag + ': home2: the pill shows the level and its XP bar (no "… XP to: …" text); the start screen fits with the tab bar (Play, Shop, Events)',
+                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['xpIn'] and not f['nxShown'] and f['lv'] == ('רמה 5' if he else 'Lv 5') and f['btns'] == (['משחקים', 'חנות', 'אירועים'] if he else ['Play', 'Shop', 'Events']), f)
             await page.screenshot(path='tests/out/road_' + tag.replace(' ', '_') + '_start.png')
             # the shop: a labelled button (bag icon, 'Shop' + the coin balance) even on a phone, a red dot once something new is affordable
-            SHOP = "(() => { const b = $('collectionBtn'), l = b.querySelector('[data-i18n]').getBoundingClientRect(), r = b.getBoundingClientRect(), row = document.querySelector('.metaRow').getBoundingClientRect(); return { label: b.querySelector('[data-i18n]').textContent, lw: l.width, sc: b.querySelector('.sc').textContent, dot: !b.querySelector('.dot').hidden, inRow: r.left >= row.left - 0.5 && r.right <= row.right + 0.5, labelIn: l.left >= r.left && l.right <= r.right, title: $('collectionTitle').textContent }; })()"
+            SHOP = "(() => { const b = $('collectionBtn'), l = b.querySelector('[data-i18n]').getBoundingClientRect(), r = b.getBoundingClientRect(), row = $('tabBar').getBoundingClientRect(); return { label: b.querySelector('[data-i18n]').textContent, lw: l.width, dot: !b.querySelector('.dot').hidden, inRow: r.left >= row.left - 0.5 && r.right <= row.right + 0.5, labelIn: l.left >= r.left - 0.5 && l.right <= r.right + 0.5, h: r.height }; })()"
             sh = await page.evaluate(SHOP)
-            check(tag + ': the Shop button is labelled on the phone (' + sh['label'] + ' ' + sh['sc'] + '), inside the row; no dot with 0 coins', sh['label'] == ('חנות' if he else 'Shop') and sh['lw'] > 20 and sh['labelIn'] and sh['sc'] == '0' and sh['inRow'] and not sh['dot'] and sh['title'] == sh['label'], sh)
+            check(tag + ': the Shop tab is labelled on the phone (' + sh['label'] + '), in the tab bar, >= 44 px; no dot', sh['label'] == ('חנות' if he else 'Shop') and sh['lw'] > 20 and sh['labelIn'] and sh['inRow'] and sh['h'] >= 44 and not sh['dot'], sh)
             await page.evaluate("__grasp.addCoins(150)"); await page.wait_for_timeout(100)
             sh2 = await page.evaluate(SHOP); f2 = await page.evaluate(START_FIT)
-            check(tag + ': 150 coins: the balance on the button, a red dot (something new is affordable), the start screen still fits', sh2['sc'] == '150' and sh2['dot'] and f2['noScroll'] and f2['rowIn'], [sh2, f2['noScroll']])
+            check(tag + ': 150 coins (something new affordable): still no dot (home2: no coin upsell outside the Shop), the start screen still fits', not sh2['dot'] and f2['noScroll'] and f2['rowIn'], [sh2, f2['noScroll']])
             await page.screenshot(path='tests/out/road_' + tag.replace(' ', '_') + '_shop_dot.png')
             await page.evaluate("__grasp.addCoins(-150)"); await page.wait_for_timeout(50)
-            await page.tap('#roadBtn'); await page.wait_for_timeout(400)
+            await page.tap('#metaPill'); await page.wait_for_timeout(400)  # (home2: the pill opens the Road)
             rp = await page.evaluate("""(() => { const ov = $('road'), sh = ov.querySelector('.sheet'), r = sh.getBoundingClientRect(), x = sh.querySelector('.xBtn').getBoundingClientRect(), h2 = sh.querySelector('h2').getBoundingClientRect();
               const px = (cv) => { const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data, c = new Set(); for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) c.add(d[i] >> 3 << 10 | d[i + 1] >> 3 << 5 | d[i + 2] >> 3); return c.size; };
               return { hidden: ov.hidden, inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, scrolls: sh.scrollHeight > sh.clientHeight + 1, bodyScroll: document.documentElement.scrollHeight > innerHeight + 1, xEnd: x.left > h2.left,
@@ -185,13 +185,14 @@ async def main():
         nb = await page.evaluate(f"Object.keys({S}.ui.buttons)")
         check('end card with too few coins: no Shop button', 'shop' not in nb, nb)
         await page.evaluate(f"{P}.coins = 150; endCardAction('again', performance.now())"); await page.evaluate(PARK); await end_run(page)
-        await page.wait_for_function(f"{S}.ui.buttons && {S}.ui.buttons.shop", timeout=4000); await frames(page, 2)
-        bt = await page.evaluate(f"({{ b: {S}.ui.buttons, card: {S}.ui.card }})"); sb, hb, cd = bt['b']['shop'], bt['b']['home'], bt['card']
-        check('end card with an affordable item: a Shop button beside Home, inside the card, as tall as it', sb['y'] == hb['y'] and sb['h'] == hb['h'] and sb['x'] >= cd['x'] and sb['x'] + sb['w'] <= cd['x'] + cd['w'] and (sb['x'] >= hb['x'] + hb['w'] or sb['x'] + sb['w'] <= hb['x']), bt)
+        await page.wait_for_function(f"{S}.ui.buttons && {S}.over", timeout=4000); await frames(page, 2)
+        bt = await page.evaluate(f"({{ b: {S}.ui.buttons, card: {S}.ui.card, aff: !!shopAffordable() }})")
+        check('home2: an affordable item: still no Shop button on the card (no coin upsell outside the Shop)', bt['aff'] and 'shop' not in bt['b'] and sorted(bt['b']) == ['again', 'home', 'share'], bt)
         await page.screenshot(path='tests/out/road_endcard_shop.png')
-        await page.wait_for_timeout(600); await page.mouse.click(sb['x'] + sb['w'] / 2, sb['y'] + sb['h'] / 2); await page.wait_for_timeout(400)
+        hb = bt['b']['home']; await page.wait_for_timeout(600); await page.mouse.click(hb['x'] + hb['w'] / 2, hb['y'] + hb['h'] / 2); await page.wait_for_timeout(400)
+        await page.click('#collectionBtn'); await page.wait_for_timeout(400)
         st = await page.evaluate("({ mode, start: !$('start').hidden, shop: !$('collection').hidden, title: $('collectionTitle').textContent })")
-        check('tapping it: the start screen with the Shop open', st == {'mode': 'none', 'start': True, 'shop': True, 'title': 'Shop'}, st)
+        check('Home, then the Shop tab: the Shop open on the start screen', st == {'mode': 'none', 'start': True, 'shop': True, 'title': 'Shop'}, st)
         ok = await page.evaluate("__grasp.collection.buy('ball_beach') && __grasp.collection.equip('ball_beach') && __grasp.collection.state(__grasp.collection.items.find(i => i.id === 'ball_beach')) === 'equipped'")
         check('__grasp.collection hooks still work (buy, equip, state)', ok)
         check('shop: no page errors', not errs, errs); await ctx.close()
@@ -224,7 +225,7 @@ async def main():
         await page.wait_for_function(f"!{S}.chest", timeout=5000); await page.wait_for_function(f"{S}.balls.length > 0", timeout=6000)
         check('after the prize: the chest goes and play resumes in world 2 (a serve)', await page.evaluate(f"{S}.world") == 2)
         await page.evaluate(f"{P}.tickets = 0"); await menu_click(page, '#homeBtn'); await page.wait_for_timeout(300)
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         mp = await page.evaluate("({ shown: !$('worldMap').hidden, n: [...document.querySelectorAll('#wmap .wnode')].map(b => [b.classList.contains('locked'), b.classList.contains('cur')]), mode })")
         check('home, Strike, Play: the world map first (world 2 open, 3-5 locked), no game yet', mp['shown'] and [x[0] for x in mp['n']] == [False, False, True, True, True] and mp['mode'] == 'none', mp)
         await page.click('#wmap .wnode[data-world="3"]', force=True); await page.wait_for_timeout(200)
@@ -253,7 +254,7 @@ async def main():
         # 3D: the WebGL corridor takes on each world's palette too
         ctx, page, errs = await new_page(b, gfx="{ pr: 0.25, shadows: false, auto: false }")
         await page.evaluate("__grasp.setPlayerLevel(20); __grasp.worlds.unlocked = 5")
-        await page.click('#mouseBtn'); await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         await page.click('#wmap .wnode[data-world="1"]'); await page.wait_for_function("gameMode === 'strike' && mode === 'mouse'", timeout=8000)
         g = await page.evaluate("__grasp.setGfx('3d')")
         await page.wait_for_function(f"{S}.gfx === '3d'", timeout=20000)

@@ -128,12 +128,12 @@ async def main():
         check('the last wall clears the stage: one life lost = 2 stars; a first clear pays 3 + 2 coins', await page.evaluate(A + ".phase") == 'clear' and r['clear'] and r['stars'] == 2 and r['first'] and r['coins'] == 5 and await page.evaluate(P + ".coins") == c0 + 5, r)
         await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.advStars && {S}.ui.advStars.shown === 2", timeout=8000)
         card = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), stars: {A}.stars, unl: {A}.unlocked, nw: {S}.walls.length }})")
-        check('the clear card: the 2 stars flew in; Next / Try again / Map / Challenge a friend; stage 2 unlocked, stars saved; still no wall spawned', card['b'] == ['next', 'retry', 'map', 'duel'] and card['stars'] == {'1': 2} and card['unl'] == 2 and card['nw'] == 0, card)
+        check('the clear card: the 2 stars flew in; Next / Play again / Map / Share (home2: Replay + Challenge merged); stage 2 unlocked, stars saved; still no wall spawned', card['b'] == ['next', 'retry', 'map', 'share'] and card['stars'] == {'1': 2} and card['unl'] == 2 and card['nw'] == 0, card)
         await page.wait_for_function(f"{S}.ui.advStarHint && {S}.ui.advStarHint.a >= 1", timeout=6000)
         hn = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, c: {S}.ui.card, st: {S}.ui.advStars.stars[0], pay: {S}.ui.advPay[0], nx: {S}.ui.buttons.next }})")
         check('the clear card (2 stars): the line under the stars says why and how ("Lost 1 heart — clear without losing a heart for ★★★"), between the stars and what it paid, inside the card',
               hn['h']['text'] == 'Lost 1 heart — clear without losing a heart for ★★★' and hn['h']['y'] > hn['st']['y'] + 20 and hn['h']['y'] + hn['h']['h'] <= hn['pay']['y'] and hn['h']['x'] >= hn['c']['x'] and hn['h']['x'] + hn['h']['w'] <= hn['c']['x'] + hn['c']['w'], hn)
-        check('the clear card\'s buttons: Next / Play again / Map (not "Try again" after a success)', hn['lb'] == {'next': 'Next', 'retry': 'Play again', 'map': 'Map', 'duel': 'Challenge a friend'}, hn['lb'])
+        check('the clear card\'s buttons: Next / Play again / Map (not "Try again" after a success)', hn['lb'] == {'next': 'Next', 'retry': 'Play again', 'map': 'Map', 'share': 'Share ⤴'}, hn['lb'])
         await page.screenshot(path='tests/out/adv_clear_card.png')
         # replays: only the stars added pay (1 each); stars never go down
         res = []; hints = []
@@ -144,9 +144,8 @@ async def main():
             await page.wait_for_function(f"{S}.over && {S}.ui.advStarHint", timeout=8000); hints.append(await page.evaluate(f"{S}.ui.advStarHint.text"))
         check('the line under the stars per star count: 3 = "Perfect — no hearts lost!", 1 (2 hearts lost) = "Lost 2 hearts — …"', hints == ['Perfect — no hearts lost!', 'Perfect — no hearts lost!', 'Lost 2 hearts — clear without losing a heart for ★★★'], hints)
         check('Try again replays the stage; replays pay only the stars added (2 -> 3 stars: +1; 3 again: 0; 1 star: 0) and the best stays 3', res == [(3, 1, 1, 3), (3, 0, 0, 3), (1, 0, 0, 3)], res)
-        await press(page, 'next'); await page.wait_for_function(f"{S}.perkOffer && {S}.perkMode === 'run'", timeout=6000)  # v5: a power for the next stage first
-        await page.evaluate(f"{S}.pickPerk(0)"); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 2 && {S}.walls.length", timeout=6000)
-        check('Next: a run power for the next stage (v5), the pick plays the next stage at once', await page.evaluate(f"{A}.stage") == 2)
+        await press(page, 'next'); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 2 && {S}.walls.length", timeout=6000)
+        check('Next: in world 1 the next stage plays at once (home2: no run-power pick until world 2)', await page.evaluate(f"{A}.stage") == 2 and not await page.evaluate(f"{S}.perkOffer"))
         # fail: So close + Try again
         await page.evaluate(f"{S}.balls.length = 0; {S}.waiting = false; {S}.serveAt = performance.now() + 60000")
         await page.evaluate(DOWN); await page.evaluate(DOWN)
@@ -154,10 +153,10 @@ async def main():
         fr = await page.evaluate(A + ".failTest()")
         await page.wait_for_function(f"{S}.over && {S}.ui.advWalls && {S}.ui.buttons && {S}.ui.buttons.retry", timeout=6000)
         fc = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), walls: {S}.ui.advWalls, txt: [I18N.en.soClose, I18N.en.wallsOf], unl: {A}.unlocked, st: {A}.stars[2] || 0 }})")
-        check('losing the 3 lives: the fail card ("So close!", 2 of 4 walls lit), Try again (big) and Map; nothing unlocked, no stars', not fr['clear'] and fr['cleared'] == 2 and fr['walls'] == 4 and fc['b'] == ['retry', 'map', 'duel'] and fc['walls']['cleared'] == 2 and sum(1 for q in fc['walls']['pips'] if q['on']) == 2 and fc['unl'] == 2 and fc['st'] == 0, [fr, fc])
+        check('losing the 3 lives: the fail card ("So close!", 2 of 4 walls lit), Try again (big) and Map; nothing unlocked, no stars', not fr['clear'] and fr['cleared'] == 2 and fr['walls'] == 4 and fc['b'] == ['retry', 'map', 'share'] and fc['walls']['cleared'] == 2 and sum(1 for q in fc['walls']['pips'] if q['on']) == 2 and fc['unl'] == 2 and fc['st'] == 0, [fr, fc])
         await page.screenshot(path='tests/out/adv_fail_card.png')
         fl = await page.evaluate(f"({{ lb: {S}.ui.advLabels, h: {S}.ui.advStarHint }})")
-        check('fail card: the big button still reads "Try again" (Map beside it), no stars line', fl['lb'] == {'retry': 'Try again', 'map': 'Map', 'duel': 'Challenge a friend'} and fl['h'] is None, fl)
+        check('fail card: the big button still reads "Try again" (Map beside it), no stars line', fl['lb'] == {'retry': 'Try again', 'map': 'Map', 'share': 'Share ⤴'} and fl['h'] is None, fl)
         rb = await page.evaluate(f"{S}.ui.buttons.retry"); nb = await page.evaluate(f"{S}.ui.buttons.map")
         check('fail card: Try again is the big one', rb['w'] > nb['w'] * 0.99 and rb['h'] > nb['h'], [rb, nb])
         await press(page, 'retry')
@@ -202,14 +201,14 @@ async def main():
 
         # ---- Endless: the old run, exactly as before ----
         ctx, page, errs = await fresh(b)
-        await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless')
+        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"mode === 'mouse' && gameMode === 'strike' && {S}.walls.length === 4", timeout=8000)
         en = await page.evaluate(f"({{ on: {A}.on, level: {S}.level, goal: {S}.goal, lives: {S}.lives, gate: {S}.gate, map: {A}.mapOpen, pill: {S}.ui.advPill }})")
         await page.evaluate(DOWN); await page.wait_for_timeout(100)
         en['after'] = await page.evaluate(f"({{ walls: {S}.walls.length, prog: {S}.progress }})")
         check('Endless: the old run (level 1, goal 4 walls of the level, the world-1 gate, the walls pill not the stage pill), and a broken wall is replaced', not en['on'] and en['level'] == 1 and en['goal'] == 4 and en['gate'] == 6 and not en['map'] and en['pill'] is None and en['after'] == {'walls': 4, 'prog': 1}, en)
         await page.evaluate(f"goHome(); __grasp.worlds.unlocked = 2")
-        await page.click('.modes button[data-mode=strike]'); await page.click('#advEndless'); await page.wait_for_timeout(200)
+        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(200)
         check('Endless with a second world open: the old world map, as before', await page.evaluate("!$('worldMap').hidden && mode === 'none'") and not await page.evaluate(A + ".mapOpen"))
         await page.click('#wmap .wnode[data-world="2"]'); await page.wait_for_function(f"mode === 'mouse' && {S}.walls.length", timeout=8000)
         check('...and its world 2 checkpoint start', await page.evaluate(f"{S}.level") == 7 and not await page.evaluate(A + ".on"))

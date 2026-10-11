@@ -100,7 +100,7 @@ async def main():
         ctx, page, errs = await fresh(b)
         await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
         mb = await page.evaluate("(() => { const e = $('advFrenzy'), r = e.getBoundingClientRect(), n = $('advEndless').getBoundingClientRect(); return { text: e.innerText.replace(/\\s+/g, ' ').trim(), h: r.height, inScreen: r.right <= innerWidth + 1 && r.left >= -1 && r.bottom <= innerHeight + 1, sameRow: Math.abs((r.top + r.bottom) / 2 - (n.top + n.bottom) / 2) < 30 }; })()")
-        check('the map footer has a Frenzy button next to Endless ("Frenzy" / "Faster and faster!")', 'Frenzy' in mb['text'] and 'Faster and faster' in mb['text'] and mb['h'] >= 44 and mb['inScreen'] and mb['sameRow'], mb)
+        check('the map footer has a Frenzy button ("Frenzy" / "Faster and faster!"); home2: Endless stays hidden until world 2, Frenzy is always there', 'Frenzy' in mb['text'] and 'Faster and faster' in mb['text'] and mb['h'] >= 44 and mb['inScreen'] and await page.evaluate("$('advEndless').hidden"), mb)
         await page.click('#advFrenzy'); await frenzy_start(page, click=False)
         st = await page.evaluate(f"({{ path: location.pathname, lives: {S}.lives, shield: {S}.shield, cfg: challengeCfg() === CH_NONE, up: upgLv('heart'), banner: {S}.ui.levelBanner && {S}.ui.levelBanner.frenzy, now: __grasp.route.now }})")
         check('Frenzy starts: /frenzy, one heart + a shield for the first miss, clean walls (no specials), no upgrades, the "Frenzy!" banner', st['path'] == '/frenzy' and st['lives'] == 1 and st['shield'] == 1 and st['cfg'] and st['up'] == 0 and st['banner'] and st['now'] == 'frenzy', st)
@@ -141,7 +141,7 @@ async def main():
         await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
         sub = await page.evaluate("$('advFrenzySub').textContent")
         check('the map\'s Frenzy button shows the best under it ("Best: 65 in a row")', sub == 'Best: 65 in a row', sub)
-        await page.click('#advEndless'); await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
+        await page.evaluate("$('advEndless').click()"); await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
         en = await page.evaluate(f"({{ on: {F}.on, lives: {S}.lives, path: location.pathname }})")
         check('Endless after Frenzy is the normal run again', not en['on'] and en['lives'] > 1 and en['path'] == '/strike', en)
         # the profile: validated on load

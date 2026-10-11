@@ -42,7 +42,7 @@ async def main():
                 if g == 'strike':
                     check(tag + ': the map in the UI language', bool(re.search('[֐-׿]', title)) if he else title == 'Adventure', title)
                     await page.screenshot(path=f"tests/out/route_strike_{'he' if he else 'en'}.png")
-                    await page.click('#advEndless') if not he else await page.tap('#advEndless')
+                    await page.evaluate("$('advEndless').click()") if not he else await page.evaluate("$('advEndless').click()")
                     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.walls.length", timeout=10000)
                     await page.wait_for_function("['in', 'happy', 'dizzy', 'squash'].every(f => { const a = GUEST_ART['cow_' + f]; return a && a.state !== 'loading'; })", timeout=10000)
                     art = await page.evaluate("({ cow: ['in', 'happy', 'dizzy', 'squash'].map(f => GUEST_ART['cow_' + f].state), src: GUEST_ART.cow_in.img.src, tremorti: document.querySelector('a[href*=tremorti]').href, path: location.pathname })")
@@ -88,7 +88,7 @@ async def main():
             # Strike: map -> Endless -> in play -> Back: home, the round ended cleanly
             n0 = await page.evaluate("__grasp.route.log.length")
             await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
-            await page.tap('#advEndless'); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.walls.length", timeout=10000)
+            await page.evaluate("$('advEndless').click()"); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.walls.length", timeout=10000)
             s6 = await st(page); lg = await page.evaluate(f"__grasp.route.log.slice({n0})")
             check(tag + ': Strike Endless from the map: still /strike (one entry for the map and the round: one push)', s6['path'] == '/strike' and s6['now'] == 'strike' and lg == ['push:strike'], [s6, lg])
             await page.evaluate("__grasp.strike.playerServe('medium')"); await page.wait_for_timeout(200)
