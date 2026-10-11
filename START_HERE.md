@@ -48,7 +48,7 @@ Background helpers write to the shared branch `ccr-61aa39be-e8m1zx`. When they f
    - **Shadow Heist:** a stealth game using slow, steady hand movement.
    - **Hand Kaiju:** a giant hand smashing a 3D city.
 
-   My lean was Hand Wizard for depth, then Reflex Arena for virality. Nothing is built yet; the user wants to see more ideas and reactions first.
+   **Result:** see `docs/GAME_CONCEPTS_16-28.md`. Recommendation: a Hand Wizard hybrid with a one-week prototype and go/no-go criteria. Waiting for the user to decide.
 
 ## Agreed backlog (in order, after the items above)
 1. **Hero + story:** the pet is the hero, bosses kidnapped its friends, rescue one per world with short funny cutscenes.
