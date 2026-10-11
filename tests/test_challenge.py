@@ -166,13 +166,13 @@ async def main():
         ctx, page, errs = await fresh(b)
         plans = await page.evaluate(f"Array.from({{ length: 40 }}, (_, i) => {A}.plan(i + 1))")
         w1 = plans[:4]; later = plans[8:]
-        check('world 1 stages 1-4 are the gentle on-ramp: slower (x0.9), more reach (x1.08), 2 weak spots a wall, no armor / turrets / closing walls / two balls', all(q['paceK'] == 0.9 and q['reachK'] > 1 and q['weak'] == 2 and q['armor'] == 0 and q['turret'] == 0 and q['creep'] == 0 and q['balls'] == 1 for q in w1), w1[0])
+        check('world 1 stages 1-4 are the gentle on-ramp (panel fix: x1.4 tapering 0.08 a stage, with the aim help), more reach (x1.08), 2 weak spots a wall, no armor / turrets / closing walls / two balls', all(abs(q['paceK'] - (1.4 - 0.08 * i)) < 1e-9 and q['assist'] for i, q in enumerate(w1)) and all(q['reachK'] > 1 and q['weak'] == 2 and q['armor'] == 0 and q['turret'] == 0 and q['creep'] == 0 and q['balls'] == 1 for q in w1), w1[0])
         check('from world 2: faster (x1.1+; a boss stage a calmer ball, x1.05-1.18), less reach, walls closer, turrets from stage 10, walls closing in from stage 12, more armor each world', all((q['paceK'] > 1.1 or (q['boss'] and 1 < q['paceK'] <= 1.18)) and q['reachK'] < 1 and q['gapK'] < 1 for q in later) and plans[9]['turret'] > 0 and plans[8]['turret'] == 0 and plans[11]['creep'] > 0 and plans[10]['creep'] == 0 and [plans[i]['armor'] for i in (4, 12, 20, 28, 36)] == sorted([plans[i]['armor'] for i in (4, 12, 20, 28, 36)]), [plans[9]['turret'], plans[11]['creep']])
         two = [q['n'] for q in plans if q['balls'] == 2]
         check('two balls at once on some world 3+ stages (never a boss stage)', len(two) >= 4 and min(two) >= 17 and not any(plans[n - 1]['boss'] for n in two), two)
         await stage(page, 1); p1 = await page.evaluate(f"{S}.pace"); r1 = await page.evaluate("advK('reachK')")
         await stage(page, 9); p9 = await page.evaluate(f"{S}.pace"); r9 = await page.evaluate("advK('reachK')")
-        check('the pace in world 2 is far above world 1\'s first stage (x1.6+), the reach smaller', p9 / p1 > 1.6 and r9 < 1 < r1, [p1, p9, r1, r9])
+        check('the pace in world 2 is above world 1\'s first stage (x1.2+: panel fix, stage 1 itself got x1.4 faster), the reach smaller', p9 / p1 > 1.2 and r9 < 1 < r1, [p1, p9, r1, r9])
         # walls closing in (stage 12)
         await stage(page, 12)
         await page.evaluate(f"{S}.playerServe('medium'); park(2300)")

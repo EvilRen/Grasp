@@ -12,7 +12,7 @@ async def fresh(b, he=False, init='', mobile=True):
     opts = dict(viewport={'width': 360, 'height': 740}, device_scale_factor=2, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': 1280, 'height': 800})
     ctx = await b.new_context(permissions=['camera'], **opts); page = await ctx.new_page(); await routes(page); errs = []; bad = []
     page.on('pageerror', lambda e: errs.append(str(e)))
-    page.on('response', lambda r: bad.append(r.url + ' ' + str(r.status)) if r.status >= 400 and r.url.startswith(URL) and not re.search(r'/favicon\.ico$|/assets/guests/monkey_', r.url) else None)  # (the monkey art is pending: drawn in code until it arrives)
+    page.on('response', lambda r: bad.append(r.url + ' ' + str(r.status)) if r.status >= 400 and r.url.startswith(URL) and not re.search(r'/favicon\.ico$', r.url) else None)  # (panel fix: the pending monkey art is no longer requested, so no exemption for it)
     await page.add_init_script(INIT + HAND_JS + ("localStorage.setItem('lang','he');" if he else "localStorage.setItem('lang','en');") + init)
     return ctx, page, errs, bad
 

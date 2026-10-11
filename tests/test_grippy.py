@@ -72,9 +72,9 @@ async def main():
         # ---- in a Strike round: spoken on round start (EN voice), quiet events, the cooldown, a rare close one ----
         await play(page, 'strike')
         await page.wait_for_function(G + ".last && " + G + ".last.event === 'start' && __spoken.length === 1", timeout=5000)
-        st = await page.evaluate("({ last: __grasp.grippy.last, sp: __spoken[0], tips: __grasp.profile.tips.slice(), hint: $('hint').querySelector('.tx').textContent, how: hintText(), wait: __grasp.strike.balls.length > 0, flick: t('tipFlick') })")
-        hint_ok = (st['tips'] == ['serve'] and st['hint'] == st['how']) if not st['wait'] else (st['tips'] == ['serve', 'flick'] and st['hint'] == st['flick'])  # (once the first ball waits, the one-time pull-back + flick tip replaces the start hint)
-        check("round start (a fresh profile's first run): the start line spoken once in English (en-US); the serve tip is the start hint, marked seen (then the one-time flick tip once the ball waits)", st['sp']['text'] in ln['en']['start'] and st['sp']['lang'] == 'en-US' and st['last']['text'] == st['sp']['text'] and hint_ok, st)
+        st = await page.evaluate("({ last: __grasp.grippy.last, sp: __spoken[0], tips: __grasp.profile.tips.slice(), hintOp: +getComputedStyle($('hint')).opacity, shown: __grasp.grippy.tips.map(x => x.id), wait: __grasp.strike.balls.length > 0 })")
+        hint_ok = st['tips'][:1] == ['serve'] and (not st['wait'] or st['tips'] == ['serve', 'flick']) and st['hintOp'] < 0.05 and 'flick' not in st['shown']  # (panel fix: Strike's one serve instruction is the line over the ball: no how-to toast, the flick tip recorded but never toasted)
+        check("round start (a fresh profile's first run): the start line spoken once in English (en-US); the serve tip marked seen, no toast over the serve line (the flick tip recorded once the ball waits)", st['sp']['text'] in ln['en']['start'] and st['sp']['lang'] == 'en-US' and st['last']['text'] == st['sp']['text'] and hint_ok, st)
         await page.wait_for_timeout(200); await page.screenshot(path='tests/out/voice_play_en.png')
         q = await page.evaluate("(evs => { const n0 = __spoken.length; const r = evs.map(e => { __grasp.grippy.cool(); return __grasp.grippy.say(e); }); return { r, n: __spoken.length - n0 }; })(" + json.dumps(quiet) + ")")
         check('every other event is quiet: say() false, nothing spoken (' + ', '.join(quiet) + ')', not any(q['r']) and q['n'] == 0, q)
@@ -117,9 +117,9 @@ async def main():
 
         # ---- tips: a one-time hint toast instead of a bubble ----
         ctx, page, errs = await fresh(b)
-        await play(page, 'strike'); await page.wait_for_function("__grasp.strike.waiting && __grasp.grippy.tips.length === 1", timeout=8000)  # (the first serve's one-time flick tip first)
+        await play(page, 'strike'); await page.wait_for_function("__grasp.strike.waiting && __grasp.profile.tips.includes('flick')", timeout=8000)  # (the first serve's flick tip: recorded, not toasted since the panel fix)
         tp = await page.evaluate("(() => { const a = tipOnce('pu'), txt = $('hint').querySelector('.tx').textContent, show = $('hint').classList.contains('show'), b = tipOnce('pu'); return { a, b, txt, show, want: t('tipPu'), shown: __grasp.grippy.tips.map(x => x.id), seen: __grasp.profile.tips.slice() }; })()")
-        check('onboarding tip (gold brick): shown once as the hint toast, never again; marked in profile.tips', tp['a'] and not tp['b'] and tp['show'] and tp['txt'] == tp['want'] and tp['shown'] == ['flick', 'pu'] and 'pu' in tp['seen'], tp)
+        check('onboarding tip (gold brick): shown once as the hint toast, never again; marked in profile.tips', tp['a'] and not tp['b'] and tp['show'] and tp['txt'] == tp['want'] and tp['shown'] == ['pu'] and 'pu' in tp['seen'], tp)
         check('no page errors (tips)', not errs, errs); await ctx.close()
 
         # ---- no voice for the language / no speechSynthesis: silently skipped ----

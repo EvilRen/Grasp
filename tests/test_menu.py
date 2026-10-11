@@ -130,7 +130,7 @@ async def main():
                   'paint': "JSON.stringify(__grasp.cg.paint.ink)", 'stars': "JSON.stringify([Math.round(__grasp.cg.catcher.left / 100), __grasp.cg.catcher.items.map(q => Math.round(q.y))])"}
         for mobile, he in ((True, False), (True, True), (False, False)):
             tag = ('phone ' if mobile else 'desktop ') + ('HE' if he else 'EN')
-            ctx, page, errs = await fresh(b, mobile=mobile, he=he, init="sessionStorage.setItem('cgTouchOk', '1');")
+            ctx, page, errs = await fresh(b, mobile=mobile, he=he, init="sessionStorage.setItem('cgTouchOk', '1'); localStorage.setItem('cgTouchOk', '1');")
             for m in CGM:
                 await page.evaluate(f"__grasp.cg.start('{m}', 'mouse')"); await page.wait_for_function(f"mode === 'mouse' && gameMode === '{m}' && $('start').hidden", timeout=8000)
                 await page.evaluate(FRAMES)

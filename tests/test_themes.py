@@ -1,5 +1,5 @@
 # Strike themes (parent: "different themes for the breaking ball game like gym, basketball court, baseball"): a Themes section in the Shop
-# (Classic owned + Gym 300 / Basketball court 400 / Baseball 500), buy once then equip, saved in the profile (validated on load), applied in
+# (Classic owned + Gym 150 (panel fix: a first theme at ~150) / Basketball court 400 / Baseball 500), buy once then equip, saved in the profile (validated on load), applied in
 # Adventure, Endless, Frenzy and the daily. Covers: the Shop's cards (pictures, prices, buy deducts once, not enough coins, equip / persist),
 # the profile's validation; each theme's arena in 2D (pixel checks of its floor and walls: maple, parquet, grass; per-world time of day; one
 # cached background) and in 3D (its own surface pictures, pixels); the themed bricks with the special bricks still standing out (pixels,
@@ -71,24 +71,24 @@ async def main():
         await page.evaluate("openPanel('collection')"); await page.wait_for_timeout(300)
         cards = await page.evaluate("[...document.querySelectorAll('#thms .thm')].map(e => ({ id: e.dataset.id, st: e.dataset.st, nm: e.querySelector('.nm').textContent, pr: e.querySelector('.st').textContent, lock: !!e.querySelector('.lk'), pic: (() => { const c = e.querySelector('canvas'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 40) if (d[i] > 200) n++; return n; })() }))")
         check('the Shop has a Themes section with 4 cards: Classic, Gym, Basketball court, Baseball', [c['id'] for c in cards] == ['classic', 'gym', 'court', 'baseball'] and [c['nm'] for c in cards] == ['Classic', 'Gym', 'Basketball court', 'Baseball'], cards)
-        check('prices on the scarce economy: Gym 300, Basketball court 400, Baseball 500 (locked, a lock icon); Classic owned and equipped', [c['pr'] for c in cards[1:]] == ['300', '400', '500'] and all(c['lock'] for c in cards[1:]) and cards[0]['st'] == 'equipped' and await page.evaluate(f"{TH}.prices.gym === 300 && {TH}.prices.court === 400 && {TH}.prices.baseball === 500"), cards)
+        check('prices on the scarce economy: Gym 150 (the first theme within reach), Basketball court 400, Baseball 500 (locked, a lock icon); Classic owned and equipped', [c['pr'] for c in cards[1:]] == ['150', '400', '500'] and all(c['lock'] for c in cards[1:]) and cards[0]['st'] == 'equipped' and await page.evaluate(f"{TH}.prices.gym === 150 && {TH}.prices.court === 400 && {TH}.prices.baseball === 500"), cards)
         check('every card has a picture of its arena (drawn, not empty)', all(c['pic'] > 2000 for c in cards), [c['pic'] for c in cards])
         th_y = await page.evaluate("[document.querySelector('#cpower').getBoundingClientRect().top, document.querySelector('#cthemes').getBoundingClientRect().top, document.querySelector('#ctypes').getBoundingClientRect().top]")
         check('the Themes section sits after Power (forever), before the looks', th_y[0] < th_y[1] < th_y[2], th_y)
         await page.click('#thms .thm[data-id=gym]'); await page.wait_for_timeout(250)
         st = await page.evaluate(f"({{ coins: profile.coins, owned: {TH}.owned, now: {TH}.now, st: document.querySelector('#thms .thm[data-id=gym]').dataset.st, toast: meta.toasts.map(t => t.text).slice(-2) }})")
-        check('buying Gym: 300 coins off once, owned and worn at once (Equipped), a toast', st['coins'] == 50 and 'gym' in st['owned'] and st['now'] == 'gym' and st['st'] == 'equipped', st)
+        check('buying Gym: 150 coins off once, owned and worn at once (Equipped), a toast', st['coins'] == 200 and 'gym' in st['owned'] and st['now'] == 'gym' and st['st'] == 'equipped', st)
         again = await page.evaluate(f"(() => {{ const r = {TH}.buy('gym'); return {{ r, coins: profile.coins }}; }})()")
-        check('buying it again does nothing (no second charge)', again == {'r': False, 'coins': 50}, again)
+        check('buying it again does nothing (no second charge)', again == {'r': False, 'coins': 200}, again)
         await page.click('#thms .thm[data-id=court]'); await page.wait_for_timeout(200)
         poor = await page.evaluate(f"({{ coins: profile.coins, owned: {TH}.owned, now: {TH}.now, toast: meta.toasts.slice(-1)[0].key, shake: document.querySelector('#thms .thm[data-id=court]').classList.contains('shake') }})")
-        check('not enough coins: nothing bought, a "need N more" toast, the card shakes', poor['coins'] == 50 and 'court' not in poor['owned'] and poor['now'] == 'gym' and poor['toast'] == 'notEnough' and poor['shake'], poor)
+        check('not enough coins: nothing bought, a "need N more" toast, the card shakes', poor['coins'] == 200 and 'court' not in poor['owned'] and poor['now'] == 'gym' and poor['toast'] == 'notEnough' and poor['shake'], poor)
         await page.click('#thms .thm[data-id=classic]'); await page.wait_for_timeout(150)
-        check('tapping an owned theme equips it (Classic again), free', await page.evaluate(f"{TH}.now === 'classic' && profile.coins === 50"))
+        check('tapping an owned theme equips it (Classic again), free', await page.evaluate(f"{TH}.now === 'classic' && profile.coins === 200"))
         await page.click('#thms .thm[data-id=gym]'); await page.wait_for_timeout(150)
         await page.screenshot(path='tests/out/theme_shop_en.png')
         await page.reload(); await page.wait_for_timeout(700)
-        check('the equipped theme and the owned list persist (reload)', await page.evaluate(f"{TH}.now === 'gym' && JSON.stringify({TH}.owned) === '[\"classic\",\"gym\"]' && profile.coins === 50"))
+        check('the equipped theme and the owned list persist (reload)', await page.evaluate(f"{TH}.now === 'gym' && JSON.stringify({TH}.owned) === '[\"classic\",\"gym\"]' && profile.coins === 200"))
         check('no page errors (shop)', not errs, errs); await ctx.close()
 
         # ===== T2: the profile's validation =====

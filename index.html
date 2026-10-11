@@ -196,6 +196,12 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #status .tips{ list-style:none; margin:0 0 12px; padding:0; display:grid; gap:8px; text-align:start; }
 #status .tips li{ display:flex; align-items:center; gap:10px; font-size:14px; line-height:1.35; color:var(--muted); }
 #status .tips svg{ flex:none; width:28px; height:28px; padding:4px; border-radius:8px; background:rgba(255,194,75,.12); color:var(--saffron); stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+#status #nhMore{ text-align:start; margin:10px auto 0; max-width:320px; } #status #nhMore[hidden]{ display:none; }
+#status button.nhMoreBtn{ pointer-events:auto; width:auto; display:inline-block; font-size:13px; color:var(--muted); background:transparent; padding:8px 14px; border-radius:999px; border:1px solid var(--line); }
+#handChip{ position:fixed; left:50%; top:calc(env(safe-area-inset-top,0px) + 64px); transform:translateX(-50%); z-index:5; display:inline-flex; align-items:center; gap:6px; padding:6px 12px 6px 9px; border-radius:999px;
+  background:rgba(12,17,38,.72); border:1px solid rgba(255,194,75,.45); color:#ffd77a; font-size:13px; font-weight:600; pointer-events:none; }
+#handChip svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+#handChip[hidden]{ display:none; }
 #status .live{ display:block; margin:0 0 12px; font:12px/1.4 ui-monospace,Menlo,Consolas,monospace; color:var(--muted); }
 /* paused pill: the game is frozen while the hand is missing (camera mode); a 3-2-1 countdown on the canvas resumes it */
 #status .pausePill{ display:inline-flex; align-items:center; gap:7px; margin:0 0 10px; padding:6px 13px 6px 10px; border-radius:999px;
@@ -316,6 +322,7 @@ html[dir="rtl"] .sheet h3{ letter-spacing:0; text-transform:none; font-size:13px
 .mt.ok .ic svg{ stroke:currentColor; fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round; }
 .mt b{ color:var(--saffron); }
 /* while a round-over card is up, toasts shrink to one line in the gap between the toolbar and the card and show one at a time (the rest wait) */
+#metaToast.underHdr{ z-index:16; }
 #metaToast.compact{ gap:0; grid-template-columns:minmax(0,1fr); }
 #metaToast.compact .mt{ min-width:0; height:34px; padding:6px; padding-inline-end:12px; gap:8px; font-size:13px; white-space:nowrap; }
 #metaToast.compact .mt .tx{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
@@ -467,6 +474,12 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 @keyframes apop{ 0%{ transform:scale(.3); filter:brightness(2.2); } 60%{ transform:scale(1.35); } 100%{ transform:scale(1.12); filter:none; } }
 .amFoot{ flex:none; position:relative; z-index:3; display:flex; justify-content:center; padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 12px); background:linear-gradient(rgba(22,29,61,.94),#161d3d); box-shadow:0 -1px 0 var(--line); }
 .amFoot{ gap:10px; align-items:center; }
+.amFoot{ flex-wrap:wrap; } /* (the goal: its own slim row above the buttons) */
+.amGoal{ order:-1; flex:0 0 100%; justify-content:center; display:inline-flex; align-items:center; gap:7px; max-width:100%; min-height:30px; padding:5px 12px 5px 8px; border-radius:999px; border:0;
+  background:rgba(22,29,61,.92); box-shadow:inset 0 0 0 1.5px rgba(255,194,75,.55); color:#ffd77a; font:600 12px/1.2 Rubik, system-ui, sans-serif; white-space:nowrap; cursor:pointer; }
+.amGoal svg{ width:16px; height:16px; flex:none; } .amGoal b{ min-width:0; overflow:hidden; text-overflow:ellipsis; font-weight:600; }
+.amGoal .gbar{ flex:none; width:38px; height:4px; border-radius:2px; background:rgba(241,233,218,.16); overflow:hidden; } .amGoal .gbar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--saffron),var(--coral)); }
+.amGoal.ready{ color:#43d9a3; box-shadow:inset 0 0 0 1.5px rgba(67,217,163,.7); } .amGoal[hidden]{ display:none; }
 .amRank{ display:inline-flex; align-items:center; gap:7px; min-height:44px; padding:4px 14px 4px 10px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px var(--rc,#d08a4e); color:var(--bone); line-height:1.1; }
 .amRank i{ width:16px; height:16px; transform:rotate(45deg); border-radius:3px; background:var(--rg); box-shadow:0 0 0 1.5px rgba(8,11,28,.8), 0 0 8px var(--rc); flex:none; }
 .amRank span{ display:flex; flex-direction:column; }
@@ -525,6 +538,10 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 #advDwell, #menuDwell{ position:fixed; left:0; top:0; width:56px; height:56px; margin:-28px 0 0 -28px; border-radius:50%; pointer-events:none;
   background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.22) 0); -webkit-mask:radial-gradient(circle, transparent 21px, #000 22px); mask:radial-gradient(circle, transparent 21px, #000 22px); }
 #menuDwell{ z-index:10; } #menuDwell[hidden]{ display:none; }
+#homeDwell{ position:fixed; left:0; top:0; width:64px; height:64px; margin:-32px 0 0 -32px; border-radius:50%; pointer-events:none; z-index:30;
+  background:conic-gradient(var(--saffron) calc(var(--q, 0) * 1turn), rgba(255,194,75,.28) 0); -webkit-mask:radial-gradient(circle, transparent 24px, #000 25px); mask:radial-gradient(circle, transparent 24px, #000 25px); }
+#homeDwell::after{ content:''; position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:var(--saffron); }
+#homeDwell[hidden]{ display:none; }
 #newCard{ z-index:14; }
 #duelName{ z-index:15; }
 .dnSheet{ width:min(340px,100%); text-align:center; }
@@ -1064,7 +1081,9 @@ body:not(.home) .pwaToast{ display:none; }
 <div id="status" hidden>
   <div class="camSlot"><div class="handGuide" aria-hidden="true"><svg viewBox="0 0 100 124" preserveAspectRatio="xMidYMid meet"><path d="M44 118 L36 96 L36 84 L13 60 Q6 52 13 47 Q19 43 25 50 L36 62 L36 30 Q36 22 42 22 Q48 22 48 30 L48 66 L51 66 L51 14 Q51 6 57 6 Q63 6 63 14 L63 66 L66 66 L66 20 Q66 12 72 12 Q78 12 78 20 L78 68 L81 68 L81 38 Q81 31 86.5 31 Q92 31 92 38 L92 96 L84 118 Z" fill="rgba(255,194,75,0.1)" stroke="#ffc24b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 4"/></svg></div></div>
   <span class="pausePill" id="pausePill" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg><span data-i18n="paused">Paused – show your hand</span></span>
-  <h2 data-i18n="statusTitle">Show your whole hand inside the yellow box</h2>
+  <h2 data-i18n="statusTitle">Show me your hand 👋</h2>
+  <button class="nhMoreBtn" id="nhMoreBtn" type="button" aria-expanded="false" aria-controls="nhMore" data-i18n="nhMore">More help</button>
+  <div id="nhMore" hidden>
   <ul class="tips">
     <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="tip_open">Open palm, fingers spread</span></li>
     <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="2.5" stroke-dasharray="3 2.2"/><path d="M10 13V8.5a1 1 0 0 1 2 0V12M12 11.5V7.5a1 1 0 0 1 2 0V12M14 11.5V9a1 1 0 0 1 2 0v4.2a3.8 3.8 0 0 1-3.8 3.8h-.9a3.5 3.5 0 0 1-3-1.7L7.3 13.6a1 1 0 0 1 1.7-1L10 13.8"/></svg><span data-i18n="tip_box">Whole hand inside the box, wrist in view</span></li>
@@ -1072,7 +1091,10 @@ body:not(.home) .pwaToast{ display:none; }
   </ul>
   <span class="live" id="statusLive"></span>
   <button class="secondary" id="swapBtn" type="button" data-i18n="swap">Hand still not found? Switch tracker</button>
+  </div>
 </div>
+<span id="handChip" hidden role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="handChip">Hand?</span></span>
+<div id="homeDwell" hidden aria-hidden="true"></div>
 <div id="banner" hidden role="alert">
   <strong data-i18n="bannerTitle">Camera mode is off. You're playing with mouse or touch.</strong>
   <ul id="bannerList"></ul>
@@ -1156,7 +1178,7 @@ body:not(.home) .pwaToast{ display:none; }
     <div class="dstats"><div><b id="dStreakN">0</b><span data-i18n="dStreakL">Day streak</span></div><div><b id="dBestN">–</b><span data-i18n="dBestL">Today's best</span></div><div><b id="dAttN">0</b><span data-i18n="dAttL">Attempts</span></div></div>
     <h3 data-i18n="last7">Last 7 days</h3>
     <div class="strip" id="dStrip"></div>
-    <div class="dActs"><button class="primary" id="dailyCam" type="button">Enable camera</button><button class="secondary" id="dailyMouse" type="button" data-i18n="mouseBtn">Play with mouse or touch</button></div>
+    <div class="dActs"><button class="primary" id="dailyMouse" type="button" data-i18n="dailyPlayBtn">Play</button><button class="secondary" id="dailyCam" type="button">Play with camera</button></div>
   </div>
 </div>
 <div class="ov" id="road" hidden role="dialog" aria-modal="true" aria-labelledby="roadTitle">
@@ -1176,7 +1198,7 @@ body:not(.home) .pwaToast{ display:none; }
 <div id="advMap" hidden role="dialog" aria-modal="true" aria-labelledby="advTitle">
   <header class="amHead"><button class="amBack" id="advBack" type="button" data-i18n-aria="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="advTitle" data-i18n="advTitle">Adventure</h2><button class="amAlbum" id="advAlbumBtn" type="button" aria-label="Sticker album"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M5 4.5C5 3.1 6.1 2 7.5 2H27v22H7.5C6.1 24 5 25.1 5 26.5z" fill="#5a7cff" stroke="#1d2547" stroke-width="1.6" stroke-linejoin="round"/><path d="M5 26.5C5 25.1 6.1 24 7.5 24H27v3H7.5" fill="#f1e9da" stroke="#1d2547" stroke-width="1.4" stroke-linejoin="round"/><circle cx="16.5" cy="12" r="6.2" fill="#fbf8f2" stroke="#1d2547" stroke-width="1.3"/><path d="M16.5 8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" fill="#ffc24b"/></svg><b class="pr">0/64</b><i class="dot" hidden></i></button><button class="amDay" id="advDayChest" type="button"><svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg><b class="pr">0/3</b></button><span class="amStars" id="advStarTotal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b><small>/ 192</small></span></header>
   <div class="amScroll" id="advScroll"><div class="amPath" id="advPath"></div></div>
-  <footer class="amFoot"><button class="amTheme" id="advTheme" type="button" aria-label="Theme"><canvas width="64" height="64" aria-hidden="true"></canvas><span data-i18n="themeChip">Theme</span></button><span class="amRank" id="advRank" hidden><i></i><span><small data-i18n="rankTitle">Rank</small><b></b></span></span><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button><button class="amEndless amFrenzy" id="advFrenzy" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg><span><b data-i18n="frenzy">Frenzy</b><small id="advFrenzySub">Faster and faster!</small></span></button></footer>
+  <footer class="amFoot"><button class="amGoal" id="advGoal" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/></svg><b></b><span class="gbar"><i></i></span></button><button class="amTheme" id="advTheme" type="button" aria-label="Theme"><canvas width="64" height="64" aria-hidden="true"></canvas><span data-i18n="themeChip">Theme</span></button><span class="amRank" id="advRank" hidden><i></i><span><small data-i18n="rankTitle">Rank</small><b></b></span></span><button class="amEndless" id="advEndless" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.5 0 5.5-7 9-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.5 0-5.5-7-9-7z"/></svg><span><b data-i18n="endless">Endless</b><small data-i18n="endlessSub">Walls forever</small></span></button><button class="amEndless amFrenzy" id="advFrenzy" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/></svg><span><b data-i18n="frenzy">Frenzy</b><small id="advFrenzySub">Faster and faster!</small></span></button></footer>
   <div id="album" class="albOv" hidden role="dialog" aria-modal="true" aria-labelledby="albumTitle">
     <div class="sheet albSheet">
       <header><h2 id="albumTitle" data-i18n="albumTitle">Sticker album</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1384,17 +1406,18 @@ const ECONOMY = {
   starChests: { stars: [10, 25, 45, 70, 100, 130, 160, 192], coins: [15, 25, 35, 50, 80, 60, 70, 100], looks: [100, 192], lastFallback: 60 }, // (worlds 6-8 added 130 / 160 / 192; 100 and 192 also give a look, else lastFallback more)
   album: { page: 30 },
   upgrades: { heavy: [100, 260, 520], heart: [160, 600], cool: [80, 210, 440], reach: [100, 260, 520], lucky: [90, 230, 480], perfect: [80, 220, 450] }, // v5: the Shop's Power section, a price per level (the first level after ~3-4 runs)                                                      // the sticker album: a world's page of 8 stickers (3 stars on each of its stages) filled, once
-  themes: { gym: 300, court: 400, baseball: 500 }, // Strike themes (the Shop's Themes section): a whole arena + its ball, sounds and mascots, so priced above a single look (~10-20 runs + gifts)
+  starter: 80, // (panel fix: the welcome gift after the first finished round: the first power (80) is affordable after session 1)
+  themes: { gym: 150, court: 400, baseball: 500 }, // (panel fix: a first theme at ~150) // Strike themes (the Shop's Themes section): a whole arena + its ball, sounds and mascots, so priced above a single look (~10-20 runs + gifts)
   prices: { ball_beach: 135, hand_mint: 140, hand_sky: 140, hand_lilac: 150, blade_neon: 320, ball_soccer: 380, trail_sparkle: 420, trail_fire: 750, blade_rainbow: 850, hand_robot: 1000, ball_disco: 1000 },
 };
 // The pet (parent chose: "a little creature you feed from all games; it grows, changes and cheers you on. A daily reason to visit"). Its food is
 // snacks, separate from the coins (the economy is untouched): every finished round of any game puts 1 snack in the snack box, +1 for a 3-star /
 // perfect round, +1 for a boss beaten, +1 for a record (at most perRound); the box holds pantryMax. It eats at most perDay a day, so growth takes
 // days: each snack eaten = 1 food; the stages begin at their food (Baby 0 .. Legend 75 = ~15 days of visits). Colours and accessories unlock by stage.
-const PET = { taps: 5, perDay: 5, perRound: 3, pantryMax: 30, nameMax: 12,
+const PET = { taps: 5, starter: 1, perDay: 5, perRound: 3, pantryMax: 30, nameMax: 12,
   stages: [{ id: 'egg', at: -1 }, { id: 'baby', at: 0 }, { id: 'kid', at: 10 }, { id: 'teen', at: 25 }, { id: 'grown', at: 45 }, { id: 'legend', at: 75 }],
   colors: [{ id: 'mint', st: 1 }, { id: 'sky', st: 1 }, { id: 'pink', st: 2 }, { id: 'sun', st: 3 }, { id: 'lilac', st: 4 }, { id: 'gold', st: 5 }],
-  items: [{ id: 'bow', slot: 'head', st: 2 }, { id: 'scarf', slot: 'neck', st: 2 }, { id: 'glasses', slot: 'eyes', st: 3 }, { id: 'cap', slot: 'head', st: 3 }, { id: 'bowtie', slot: 'neck', st: 4 }, { id: 'crown', slot: 'head', st: 5 },
+  items: [{ id: 'bow', slot: 'head', st: 2 }, { id: 'scarf', slot: 'neck', st: 1 }, { id: 'glasses', slot: 'eyes', st: 3 }, { id: 'cap', slot: 'head', st: 3 }, { id: 'bowtie', slot: 'neck', st: 4 }, { id: 'crown', slot: 'head', st: 5 },
     { id: 'cowboy', slot: 'head', st: 1, ev: 'cows' }, { id: 'antenna', slot: 'head', st: 1, ev: 'space' }, { id: 'viking', slot: 'head', st: 1, ev: 'smash' }, { id: 'fruithat', slot: 'head', st: 1, ev: 'fruit' }, { id: 'bubcrown', slot: 'head', st: 1, ev: 'bubbles' }, { id: 'racer', slot: 'head', st: 1, ev: 'speed' }], // (ev: a weekly event's exclusive hat: worn once won, at any stage)
   slots: ['head', 'eyes', 'neck'] };
 const PET_PAL = { mint: ['#43d9a3', '#c2f8e3', '#178a63'], sky: ['#54c6eb', '#d2f2ff', '#1c78a3'], pink: ['#ff8fb8', '#ffdbe8', '#c44a7e'], sun: ['#ffc24b', '#fff2c6', '#bf780a'], lilac: ['#a98bff', '#e6ddff', '#6646cc'], gold: ['#ffd23f', '#fff8cc', '#b08200'] };
@@ -1433,7 +1456,7 @@ const I18N = {
     title: 'Grasp: hand physics sandbox', tagline: 'Your hand is the controller', langName: 'עב', langAria: 'Switch language to Hebrew',
     home: 'Home', hud: 'HUD', reset: 'Reset', pauseMenu: 'Pause', pausedTitle: 'Paused', resume: 'Resume', restart: 'Restart', statsLbl: 'Stats', langFull: 'עברית', soundOn: 'Sound on', soundOff: 'Sound off', modeTitle: 'Switch game mode', modeSandbox: 'Sandbox', modeSlice: 'Slice', modeSmash: 'Smash', modeBusy: 'Busy Board', modeStrike: 'Strike', modesAria: 'Game mode',
     stageAria: 'Physics sandbox', previewAria: 'Camera preview with hand landmarks',
-    statusTitle: 'Show your whole hand inside the yellow box',
+    statusTitle: 'Show me your hand 👋', nhMore: 'More help', handChip: 'Hand?',
     tip_open: 'Open palm, fingers spread', tip_box: 'Whole hand inside the box, wrist in view', tip_back: "Stand the phone up and step back if it doesn't fit",
     swap: 'Hand still not found? Switch tracker', toolbarAria: 'Game controls', mute: 'Mute sound', unmute: 'Unmute sound',
     bannerTitle: "Camera mode is off. You're playing with mouse or touch.", gotIt: 'Got it',
@@ -1455,9 +1478,9 @@ const I18N = {
     hintSmashTouch: 'Tap and swipe to smash! Big things take a few hits. Smash your way to the boss!', hintSmashMouse: 'Click or swipe fast to smash! Big things take a few hits. Smash your way to the boss!',
     smTitle: 'Smash', smFree: 'Free play', smFreeSub: 'Smash everything, no clock', smClear: 'Smashed!', smPct: '{n}% smashed', smStarGoal: '★★★ = finish with {n} s left', smStarsPerfect: 'Super fast, {n} s to spare!', smStars2: '{n} s left. Finish with {m} s left for ★★★', smStars1: 'Phew! Finish with {m} s left for ★★★', smStages: 'Stages',
     smBoss: 'BOSS', smBossTag: 'Boss!', smWave: 'Onward! {n}/{m}', sc_wall: 'The Brick Wall', sc_room: 'The Living Room', sc_city: 'Little City', sc_blocks: 'Toy Towers', sc_food: 'Fruit Market',
-    hintBusyCam: 'Point at a switch, button, key or door to poke it. Pinch a knob, slider, zipper or bolt and move your hand. Sweep an open hand over the xylophone, the wheel and the guitar strings. Pinch the empty board and drag it to see more. Keep your hand inside the yellow box.',
-    hintBusyTouch: 'Tap the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Swipe across the guitar strings to strum, tap a chord. Drag the board to see more.', gtrRock: 'ROCK!', gtrClean: 'CLEAN',
-    hintBusyMouse: 'Click the switches, buttons, keys, lights and door. Drag knobs, sliders, the zipper and the bolt. Flick the wheel. Swipe across the guitar strings to strum. Scroll or drag the board to see more. D for HUD.',
+    hintBusyCam: 'Point and pinch!',
+    hintBusyTouch: 'Tap and drag!', gtrRock: 'ROCK!', gtrClean: 'CLEAN',
+    hintBusyMouse: 'Click and drag!',
     hintStrikeCam: 'Move your hand onto the ball and slap it as it arrives. A fast slap smashes through the brick walls. Keep your hand inside the yellow box.',
     hintStrikeTouch: 'Touch the screen and slide your finger onto the ball as it arrives. A fast swipe smashes the brick walls.', hintStrikeMouse: 'Move the mouse onto the ball and swipe as it arrives. A fast swipe smashes the brick walls. D for HUD.',
     time: 'Time', best: 'Best {n}', roundOver: 'Round over', playAgain: 'Tap or punch to play again', playAgainWave: 'Tap or wave to play again',
@@ -1472,7 +1495,7 @@ const I18N = {
     nw_glass: 'New: glass walls!', nw_steel: 'New: steel walls!', nw_holed: 'New: walls with holes!', nw_moving: 'New: moving walls!', nw_tnt: 'New: TNT walls!', levelUp: 'Level up!', bossDown: 'Boss down!', wk_boss: 'Boss!', bosses: 'Bosses', levelBest: 'Best level {n}',
     perkTitle: 'Pick a power!', perkSub: 'Tap a card, or point at it and hold',
     perfect: 'PERFECT!', perfectN: 'PERFECT ×{n}', tmGood: 'Good', tmEarly: 'Early', tmLate: 'Late', shieldUp: 'Shield!', comboSaved: 'Combo saved!', splitShot: 'Split!',
-    rpTitle: 'Power for the next stage!', rpSub: 'Pick one: it lasts one stage',
+    runPowTitle: 'Power for the next stage!', rpSub: 'Pick one: it lasts one stage',
     pk_rp_magnet: 'Magnet Paddle', pk_rp_split: 'Split Shot', pk_rp_shield: 'Shield', pk_rp_fire: 'Fire Start', pk_rp_slow: 'Slow-mo Start', pk_rp_combo: 'Combo Keeper', pk_rp_heart: 'Extra Heart',
     pkd_rp_magnet: 'The ball flies to your hand', pkd_rp_split: 'A SUPER hit splits the ball in two', pkd_rp_shield: 'Blocks one lost heart', pkd_rp_fire: 'Start with a fireball', pkd_rp_slow: 'Start in slow motion', pkd_rp_combo: 'Your first miss keeps the combo', pkd_rp_heart: 'One more heart this stage',
     ct_themes: 'Themes', themesSub: 'A sports arena for Strike: its own ball, sounds, crowd and mascots.', th_classic: 'Classic', th_gym: 'Gym', th_court: 'Basketball court', th_baseball: 'Baseball',
@@ -1552,7 +1575,7 @@ const I18N = {
     // Strike Adventure: the saga map, the stages, their cards
     advTitle: 'Adventure', back: 'Back', endless: 'Endless', endlessSub: 'Walls forever, the classic run', frenzy: 'Frenzy', frenzySub: 'Faster and faster!', frenzySubBest: 'Best: {n} in a row', frenzyTitle: 'Frenzy!', frenzyGoal: 'Faster every hit. Don\'t miss!', frenzyOver: 'Frenzy over', frenzyBest: 'Best: {n} in a row', frenzyHits: 'in a row', topSpeed: 'top speed', speedWord: 'SPEED', speedMax: 'MAX SPEED!', frenzyShare: 'Grasp Frenzy ⚡ {n} hits in a row · top speed ×{k}', advBoss: 'Boss', advStarsN: '{n} of 3 stars', advLockedAria: 'locked', advLocked: 'Clear stage {n} first',
     stageN: 'Stage {n}', stageGoal: 'Break all {n} walls', stageGoalBoss: 'Beat the boss!', stageClear: 'Stage clear!', worldClear: 'World {n} done!', soClose: 'So close!', wallsOf: '{a} of {b} walls',
-    nextBtn: 'Next', retryBtn: 'Try again', replayBtn: 'Play again', mapBtn: 'Map', starsPerfect: 'Perfect — no hearts lost!', starsLost1: 'Lost 1 heart — clear without losing a heart for ★★★', starsLostN: 'Lost {n} hearts — clear without losing a heart for ★★★', starsRule: "★★★ = don't lose a heart", advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again',
+    nextBtn: 'Next', retryBtn: 'Try again', replayBtn: 'Play again', mapBtn: 'Map', starsPerfect: 'Perfect — no hearts lost!', starsLost1: 'Lost 1 heart — clear without losing a heart for ★★★', starsLostN: 'Lost {n} hearts — clear without losing a heart for ★★★', starsRule: "★★★ = don't lose a heart", advBest: 'Best: {n} ★', advWaveNext: 'Wave for the next stage', advWaveRetry: 'Wave to try again', advTapNext: 'Tap Next for the next stage', advTapRetry: 'Tap Try again', playAgainTap: 'Tap Play again', playAgainCam: 'Wave to play again', dailyPlayBtn: 'Play',
     // real bosses (each world's stage 8) and Challenge a friend
     bn_golem: 'Brick Golem', bn_queen: 'Glass Queen', bn_robot: 'Steel Robot', bn_kong: 'Jungle King Kong', bn_dragon: 'Lava Dragon', bossOfWorld: 'World {n} boss', bossBlocked: 'Blocked!', bossShield: 'Shield up!', bossShieldBroken: 'Shield broken!',
     bossWeak: 'WEAK SPOT ×3', bossReturned: 'Returned!', bossKnock: 'Knocked back!', bossCharge: 'Charge!', bossPhase2: "It's angry!", bossPhase3: 'Final phase!', bossVictory: 'Victory!', bossDefeated: '{b} defeated!', bossLeft: '{b}: {p}% left', bossWall: 'Break the wall!',
@@ -1580,7 +1603,7 @@ const I18N = {
     title: 'Grasp: ארגז חול פיזיקלי בתנועות יד', tagline: 'היד שלכם היא השלט', langName: 'EN', langAria: 'החלפת שפה לאנגלית',
     home: 'בית', hud: 'מדדים', reset: 'איפוס', pauseMenu: 'השהיה', pausedTitle: 'מושהה', resume: 'המשך', restart: 'מההתחלה', statsLbl: 'מדדים', langFull: 'English', soundOn: 'צליל פועל', soundOff: 'צליל כבוי', modeTitle: 'החלפת מצב משחק', modeSandbox: 'ארגז חול', modeSlice: 'חיתוך', modeSmash: 'ניפוץ', modeBusy: 'לוח עסוק', modeStrike: 'מכה', modesAria: 'מצב משחק',
     stageAria: 'ארגז חול פיזיקלי', previewAria: 'תצוגת המצלמה עם נקודות היד',
-    statusTitle: 'הראו את כל כף היד בתוך המסגרת הצהובה',
+    statusTitle: 'הראו לי את היד 👋', nhMore: 'עוד עזרה', handChip: 'יד?',
     tip_open: 'כף יד פתוחה, אצבעות פרושות', tip_box: 'כל כף היד בתוך המסגרת, כולל שורש כף היד', tip_back: 'העמידו את הטלפון והתרחקו קצת אם היד לא נכנסת',
     swap: 'היד עדיין לא מזוהה? החליפו מעבד זיהוי', toolbarAria: 'פקדי המשחק', mute: 'השתקת צלילים', unmute: 'הפעלת צלילים',
     bannerTitle: 'מצב מצלמה כבוי. אתם משחקים עם עכבר או מגע.', gotIt: 'הבנתי',
@@ -1602,9 +1625,9 @@ const I18N = {
     hintSmashTouch: 'הקישו והחליקו כדי לנפץ! דברים גדולים צריכים כמה מכות. נפצו את הדרך עד הבוס!', hintSmashMouse: 'לחצו או החליקו מהר כדי לנפץ! דברים גדולים צריכים כמה מכות. נפצו את הדרך עד הבוס!',
     smTitle: 'ניפוץ', smFree: 'משחק חופשי', smFreeSub: 'מנפצים הכל, בלי שעון', smClear: 'ניפצתם הכל!', smPct: '{n}% מנופץ', smStarGoal: '★★★ = לסיים כשנשארו {n} שניות', smStarsPerfect: 'סופר מהר! נשארו {n} שניות', smStars2: 'נשארו {n} שניות. סיימו עם {m} שניות לשלושה ★★★', smStars1: 'פיו! סיימו עם {m} שניות לשלושה ★★★', smStages: 'שלבים',
     smBoss: 'בוס', smBossTag: 'בוס!', smWave: 'קדימה! {n}/{m}', sc_wall: 'קיר הלבנים', sc_room: 'הסלון', sc_city: 'עיר קטנה', sc_blocks: 'מגדלי צעצועים', sc_food: 'שוק הפירות',
-    hintBusyCam: 'הצביעו על מתג, כפתור, קליד או דלת כדי ללחוץ. צבטו כפתור סיבוב, מחוון, רוכסן או בריח והזיזו את היד. העבירו יד פתוחה מהר מעל הקסילופון, הגלגל ומיתרי הגיטרה. צבטו את הלוח הריק וגררו כדי לראות עוד. שמרו על היד בתוך המסגרת הצהובה.',
-    hintBusyTouch: 'הקישו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. החליקו על מיתרי הגיטרה כדי לפרוט, הקישו על אקורד. גררו את הלוח כדי לראות עוד.', gtrRock: 'רוק!', gtrClean: 'נקי',
-    hintBusyMouse: 'לחצו על המתגים, הכפתורים, הקלידים, הנורות והדלת. גררו כפתורי סיבוב, מחוונים, את הרוכסן ואת הבריח. סובבו את הגלגל בהינף. החליקו על מיתרי הגיטרה כדי לפרוט. גללו או גררו את הלוח כדי לראות עוד. D למדדים.',
+    hintBusyCam: 'הצביעו וצבטו!',
+    hintBusyTouch: 'הקישו וגררו!', gtrRock: 'רוק!', gtrClean: 'נקי',
+    hintBusyMouse: 'לחצו וגררו!',
     hintStrikeCam: 'הזיזו את היד אל הכדור והכו בו כשהוא מגיע אליכם. מכה מהירה מנפצת את קירות הלבנים. שמרו על היד בתוך המסגרת הצהובה.',
     hintStrikeTouch: 'געו במסך והחליקו את האצבע אל הכדור כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים.', hintStrikeMouse: 'הזיזו את העכבר אל הכדור והחליקו כשהוא מגיע. החלקה מהירה מנפצת את קירות הלבנים. D למדדים.',
     time: 'זמן', best: 'שיא {n}', roundOver: 'הסיבוב נגמר', playAgain: 'הקישו או הכו כדי לשחק שוב', playAgainWave: 'הקישו או נופפו כדי לשחק שוב',
@@ -1619,10 +1642,10 @@ const I18N = {
     nw_glass: 'חדש: קירות זכוכית!', nw_steel: 'חדש: קירות פלדה!', nw_holed: 'חדש: קירות עם חור!', nw_moving: 'חדש: קירות זזים!', nw_tnt: 'חדש: קירות TNT!', levelUp: 'עליתם שלב!', bossDown: 'הבוס הובס!', wk_boss: 'בוס!', bosses: 'בוסים', levelBest: 'שלב שיא {n}',
     perkTitle: 'בחרו כוח!', perkSub: 'הקישו על קלף, או הצביעו עליו והחזיקו',
     perfect: 'מושלם!', perfectN: '‎מושלם ×{n}', tmGood: 'טוב', tmEarly: 'מוקדם', tmLate: 'מאוחר', shieldUp: 'מגן!', comboSaved: 'הקומבו ניצל!', splitShot: 'פיצול!',
-    rpTitle: 'כוח לשלב הבא!', rpSub: 'בחרו אחד: הוא נשאר לשלב אחד',
+    runPowTitle: 'כוח לשלב הבא!', rpSub: 'בחרו אחד: הוא נשאר לשלב אחד',
     pk_rp_magnet: 'מחבט מגנט', pk_rp_split: 'כדור מתפצל', pk_rp_shield: 'מגן', pk_rp_fire: 'פתיחת אש', pk_rp_slow: 'פתיחה איטית', pk_rp_combo: 'שומר קומבו', pk_rp_heart: 'לב נוסף',
     pkd_rp_magnet: 'הכדור עף אל היד', pkd_rp_split: 'מכת סופר מפצלת את הכדור לשניים', pkd_rp_shield: 'חוסם לב אחד שאבד', pkd_rp_fire: 'מתחילים עם כדור אש', pkd_rp_slow: 'מתחילים בהילוך איטי', pkd_rp_combo: 'ההחטאה הראשונה שומרת על הקומבו', pkd_rp_heart: 'עוד לב בשלב הזה',
-    ct_themes: 'מגרשים', themesSub: 'מגרש ספורט ל-Strike: עם כדור, צלילים, קהל וקמעות משלו.', th_classic: 'קלאסי', th_gym: 'אולם ספורט', th_court: 'מגרש כדורסל', th_baseball: 'בייסבול',
+    ct_themes: 'מגרשים', themesSub: 'מגרש ספורט למשחק „מכה”: עם כדור, צלילים, קהל וקמעות משלו.', th_classic: 'קלאסי', th_gym: 'אולם ספורט', th_court: 'מגרש כדורסל', th_baseball: 'בייסבול',
     thd_classic: 'המסדרון המקורי', thd_gym: 'כדור מחניים, שריקה והמאמן!', thd_court: 'כדורסל, באזר וקוף עם גופייה!', thd_baseball: 'חבטות מחבט, עוגב ונקניקייה!', themeChip: 'מגרש', themeAria: 'מגרש: {t}. אפשר להחליף בחנות', themeOn: '{t} פועל!',
     say_coach: 'פיייי!', say_medball: 'אוף!', say_hoopmonkey: 'סוויש!', say_foamfinger: 'אנחנו מספר 1!', say_hotdog: 'יאמי!', say_glove: 'תפסתי!',
     ct_power: 'כוח (לתמיד)', powerSub: 'שדרוגים נשארים לתמיד (לא באתגר היומי). עד רמה {n}.', upMax: 'מקס׳', upLv: 'רמה {n}', upBought: '{n}: רמה {l}!',
@@ -1697,7 +1720,7 @@ const I18N = {
     it_ball_lava: 'כדור לבה', it_trail_lava: 'שובל לבה', it_hand_legend: 'יד האגדה',
     advTitle: 'הרפתקה', back: 'חזרה', endless: 'אינסופי', endlessSub: 'קירות בלי סוף, המשחק הקלאסי', frenzy: 'טירוף', frenzySub: 'מהר יותר ויותר!', frenzySubBest: 'שיא: {n} ברצף', frenzyTitle: 'טירוף!', frenzyGoal: 'מהר יותר בכל מכה. אל תפספסו!', frenzyOver: 'הטירוף נגמר', frenzyBest: 'שיא: {n} ברצף', frenzyHits: 'ברצף', topSpeed: 'מהירות שיא', speedWord: 'מהירות', speedMax: 'מהירות מקסימלית!', frenzyShare: 'Grasp טירוף ⚡ {n} מכות ברצף · מהירות שיא ×{k}', advBoss: 'בוס', advStarsN: '{n} מתוך 3 כוכבים', advLockedAria: 'נעול', advLocked: 'קודם סיימו את שלב {n}',
     stageN: 'שלב {n}', stageGoal: 'שברו את כל {n} הקירות', stageGoalBoss: 'נצחו את הבוס!', stageClear: 'השלב הושלם!', worldClear: 'עולם {n} הושלם!', soClose: 'כמעט!', wallsOf: '{a} מתוך {b} קירות',
-    nextBtn: 'הבא', retryBtn: 'שוב', replayBtn: 'לשחק שוב', mapBtn: 'מפה', starsPerfect: 'מושלם — לא איבדתם אף לב!', starsLost1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★', starsLostN: 'איבדתם {n} לבבות — סיימו בלי לאבד לב ותקבלו ★★★', starsRule: '★★★ = בלי לאבד לב', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב',
+    nextBtn: 'הבא', retryBtn: 'שוב', replayBtn: 'לשחק שוב', mapBtn: 'מפה', starsPerfect: 'מושלם — לא איבדתם אף לב!', starsLost1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★', starsLostN: 'איבדתם {n} לבבות — סיימו בלי לאבד לב ותקבלו ★★★', starsRule: '★★★ = בלי לאבד לב', advBest: 'השיא: {n} ★', advWaveNext: 'נופפו לשלב הבא', advWaveRetry: 'נופפו כדי לנסות שוב', advTapNext: 'הקישו על „הבא” לשלב הבא', advTapRetry: 'הקישו על „שוב” כדי לנסות שוב', playAgainTap: 'הקישו על „לשחק שוב”', playAgainCam: 'נופפו כדי לשחק שוב', dailyPlayBtn: 'שחקו',
     bn_golem: 'גולם הלבנים', bn_queen: 'מלכת הזכוכית', bn_robot: 'רובוט הפלדה', bn_kong: 'קינג קונג של הג׳ונגל', bn_dragon: 'דרקון הלבה', bossOfWorld: 'הבוס של עולם {n}', bossBlocked: 'נחסם!', bossShield: 'מגן!', bossShieldBroken: 'המגן נשבר!',
     bossWeak: 'נקודת תורפה ×3', bossReturned: 'הוחזר!', bossKnock: 'נהדף אחורה!', bossCharge: 'הסתערות!', bossPhase2: 'הוא כועס!', bossPhase3: 'שלב אחרון!', bossVictory: 'ניצחון!', bossDefeated: '{b} הובס!', bossLeft: '{b}: נשארו {p}%', bossWall: 'שברו את הקיר!',
     bossShieldTip: 'מגן! רק מכת סופר או מכה מושלמת שוברת אותו.', bossWeakTip: 'פגעו בנקודה הזוהרת: נזק ×3!', bossShotTip: 'הדפו את היריות שלו בחזרה כדי לפגוע בו!',
@@ -1787,7 +1810,7 @@ Object.assign(I18N.en, {
   camGames: 'Camera games', camGamesSub: 'Drums · Bubbles · Paint · Stars', camGamesAria: 'Camera games: Air Drums, Bubble Pop, Air Painting, Catch the Stars',
   modeDrums: 'Air Drums', modeBubbles: 'Bubble Pop', modePaint: 'Air Painting', modeStars: 'Catch the Stars',
   cgSubDrums: 'Strike down to drum', cgSubBubbles: 'Pop them with your fingers', cgSubPaint: 'Pinch to paint glowing lines', cgSubStars: 'Catch them in your basket',
-  cgCamTitle: 'These games are best with the camera!', cgCamSub: 'Wave your hands in the air to play. Touch works too.', cgCamOn: 'Turn on camera', cgCamTouch: 'Play with touch', cgCamShort: 'Best with the camera!',
+  starterGift: 'Welcome gift: +{c} coins!', goalLeft: '{i}: {n} more', goalReady: 'You can buy: {i}!', drHarder: 'Harder!', cgCamTitle: 'These games are best with the camera!', cgCamSub: 'Wave your hands in the air to play. Touch works too.', cgCamOn: 'Turn on camera', cgCamTouch: 'Play with touch', cgCamShort: 'Best with the camera!',
   gm_drums: 'air drums', gm_bubbles: 'bubble pop', gm_paint: 'air painting', gm_stars: 'catch the stars',
   descDrums: 'A drum kit round the screen: strike down onto a drum with your hand (or tap it).', descBubbles: 'Bubbles float up: touch them with any finger to pop them.',
   descPaint: 'Pinch in the air to paint glowing lines; open your hand to stop.', descStars: 'Move the basket with your hand to catch falling stars. Dodge the bombs!',
@@ -1799,14 +1822,14 @@ Object.assign(I18N.en, {
   drBeat: 'Beat', onLbl: 'on', offLbl: 'off', drSimon: 'Follow the light', drStop: 'Stop', drWatch: 'Watch the lights…', drYourTurn: 'Your turn! {i}/{n}', drNice: 'Nice!', drGreat: 'Amazing!',
   drLevel: 'Level {n}', drSimonOver: 'Good drumming!', drLongest: 'Longest', drCorrect: 'Right hits',
   bbCalm: 'Calm', bbTimeUp: "Time's up!", bbPopped: 'Popped', bbPoppedN: 'Popped {n}', bbGolden: 'Golden', bbHooray: 'Hooray!', cgSnack: 'Yum! A snack for your pet',
-  pnSaved: 'Drawing saved!', pnSavedSnack: 'Drawing saved! A snack for your pet', pnShareTitle: 'My Grasp drawing', pnShake: 'Shake your fist to erase', pnAgain: 'Again?',
+  pnSaved: 'Drawing saved!', pnSavedSnack: 'Drawing saved! A snack for your pet', pnShareTitle: 'My Grasp drawing', pnShake: 'Shake your fist to erase', pnShakeAgain: 'Shake again to erase it all', pnAgain: 'Again?',
   stCaught: 'Caught', stStreak: 'Best streak', stStreakN: 'Streak ×{n}!',
 });
 Object.assign(I18N.he, {
   camGames: 'משחקי מצלמה', camGamesSub: 'תופים · בועות · ציור · כוכבים', camGamesAria: 'משחקי מצלמה: תופי אוויר, פיצוץ בועות, ציור באוויר, תופסים כוכבים',
   modeDrums: 'תופי אוויר', modeBubbles: 'פיצוץ בועות', modePaint: 'ציור באוויר', modeStars: 'תופסים כוכבים',
   cgSubDrums: 'מכים למטה ומתופפים', cgSubBubbles: 'מפוצצים עם האצבעות', cgSubPaint: 'צובטים ומציירים קווים זוהרים', cgSubStars: 'תופסים אותם בסל',
-  cgCamTitle: 'המשחקים האלה הכי כיפיים עם המצלמה!', cgCamSub: 'נופפו בידיים באוויר כדי לשחק. אפשר גם במגע.', cgCamOn: 'להפעיל מצלמה', cgCamTouch: 'לשחק במגע', cgCamShort: 'הכי כיף עם המצלמה!',
+  starterGift: 'מתנת פתיחה: ‎+{c} מטבעות!', goalLeft: '{i}: עוד {n}', goalReady: 'אפשר לקנות: {i}!', drHarder: 'חזק יותר!', cgCamTitle: 'המשחקים האלה הכי כיפיים עם המצלמה!', cgCamSub: 'נופפו בידיים באוויר כדי לשחק. אפשר גם במגע.', cgCamOn: 'להפעיל מצלמה', cgCamTouch: 'לשחק במגע', cgCamShort: 'הכי כיף עם המצלמה!',
   gm_drums: 'תופי אוויר', gm_bubbles: 'פיצוץ בועות', gm_paint: 'ציור באוויר', gm_stars: 'תופסים כוכבים',
   descDrums: 'מערכת תופים מסביב למסך: הכו למטה על תוף עם היד (או הקישו עליו).', descBubbles: 'בועות עולות למעלה: געו בהן עם אצבע כדי לפוצץ אותן.',
   descPaint: 'צבטו באוויר כדי לצייר קווים זוהרים; פתחו את היד כדי לעצור.', descStars: 'הזיזו את הסל עם היד כדי לתפוס כוכבים נופלים. התחמקו מהפצצות!',
@@ -1818,7 +1841,7 @@ Object.assign(I18N.he, {
   drBeat: 'קצב', onLbl: 'פועל', offLbl: 'כבוי', drSimon: 'עקבו אחרי האור', drStop: 'עצירה', drWatch: 'הסתכלו על האורות…', drYourTurn: 'תורכם! {i}/{n}', drNice: 'יפה!', drGreat: 'מדהים!',
   drLevel: 'שלב {n}', drSimonOver: 'תופפתם יפה!', drLongest: 'הרצף הארוך', drCorrect: 'מכות נכונות',
   bbCalm: 'רגוע', bbTimeUp: 'נגמר הזמן!', bbPopped: 'פוצצו', bbPoppedN: 'פוצצו {n}', bbGolden: 'זהובות', bbHooray: 'הידד!', cgSnack: 'יאמי! חטיף לחיית המחמד',
-  pnSaved: 'הציור נשמר!', pnSavedSnack: 'הציור נשמר! חטיף לחיית המחמד', pnShareTitle: 'הציור שלי ב-Grasp', pnShake: 'נערו את האגרוף כדי למחוק', pnAgain: 'שוב?',
+  pnSaved: 'הציור נשמר!', pnSavedSnack: 'הציור נשמר! חטיף לחיית המחמד', pnShareTitle: 'הציור שלי ב-Grasp', pnShake: 'נערו את האגרוף כדי למחוק', pnShakeAgain: 'נערו שוב כדי למחוק הכול', pnAgain: 'שוב?',
   stCaught: 'נתפסו', stStreak: 'רצף שיא', stStreakN: 'רצף ‎×{n}!',
 });
 Object.assign(I18N.en, { // worlds 6-8 (the Adventure's Space, Under the Sea, Candy Land)
@@ -1894,8 +1917,20 @@ Object.assign(I18N.he, {
   pwaInstall: 'התקנת האפליקציה', pwaInstallAria: 'להתקין את Grasp כאפליקציה', pwaIosTitle: 'הוספת Grasp למסך הבית', pwaIos1: 'הקישו על כפתור השיתוף', pwaIos2: 'בחרו "הוספה למסך הבית"', pwaIos3: 'הקישו "הוסף": Grasp ייפתח כמו אפליקציה, גם בלי אינטרנט',
   pwaLater: 'לא עכשיו', pwaInstalled: 'Grasp הותקן!', pwaUpdate: 'גרסה חדשה — הקישו לרענון', pwaOffline: 'מוכן למשחק גם בלי אינטרנט',
 });
+// Panel fix: singular forms. t(key, { n: 1 }) uses key + '1' when the language has it ("Clear 1 more stage", not "1 more stages").
+Object.assign(I18N.en, {
+  dayChestNeed1: 'Clear 1 more stage today to open the chest', starChestNeed1: '1 more star to open this chest', coinsN1: '1 coin', chestCoins1: '+1 coin!', evDaysLeft1: '1 day left',
+  evSnacks1: '1 snack', evGotSnacks1: '+1 snack for your pet!', evGotDup1: 'Already yours: 1 snack instead', teaseCoins1: 'Only 1 coin to the {i}!', evRoundToast1: '{e}: +1 point', nxLv1: '1 level to: {i}',
+  ms_bricks1: 'Smash 1 brick', ms_walls1: 'Clear 1 wall', ms_rounds1: 'Play 1 round', levelGoal1: 'Clear 1 wall', stageGoal1: 'Break the wall', starsLostN1: 'Lost 1 heart — clear without losing a heart for ★★★',
+});
+Object.assign(I18N.he, {
+  dayChestNeed1: 'סיימו עוד שלב אחד היום כדי לפתוח את התיבה', starChestNeed1: 'עוד כוכב אחד כדי לפתוח את התיבה', coinsN1: 'מטבע אחד', chestCoins1: '‎+1 מטבע!', evDaysLeft1: 'יום אחרון',
+  evSnacks1: 'חטיף אחד', evGotSnacks1: 'עוד חטיף אחד לחיה שלכם!', evGotDup1: 'כבר יש לכם: חטיף אחד במקום', teaseCoins1: 'רק עוד מטבע אחד ל{i}!', evRoundToast1: '{e}: עוד נקודה אחת', nxLv1: 'עוד רמה אחת: {i}',
+  ms_bricks1: 'נפצו לבנה אחת', ms_walls1: 'פנו קיר אחד', ms_rounds1: 'שחקו סיבוב אחד', levelGoal1: 'נפצו קיר אחד', stageGoal1: 'שברו את הקיר', starsLostN1: 'איבדתם לב אחד — סיימו בלי לאבד לב ותקבלו ★★★',
+});
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 function t(key, vars) {
+  if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
   let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
   return s;
@@ -1953,7 +1988,7 @@ function resize() {
   buildGrid(); sizePreviews();
   if (gameMode === 'busy' && busy.widgets.length) layoutBusy();
   if (gameMode === 'shapes' && shapes.spec) layoutShapes(false);
-  if (engine) { buildWalls(); clampBodies(); if (gameMode === 'smash') smashResize(); }
+  if (engine) { buildWalls(); clampBodies(); buildToyBox(); if (gameMode === 'smash') smashResize(); }
 }
 
 function buildGrid() {
@@ -2005,10 +2040,10 @@ function spawnObjects() {
     ['box', 56, 56, 0.005, 0],  // small heavy block
     ['poly', 8, 30, 0.001, 3],
   ];
-  const cols = Math.max(3, Math.min(5, Math.floor(W / (140 * s))));
+  const cols = Math.max(3, Math.min(5, Math.floor(W / (140 * s)))), band = Math.min(W * 0.62, cols * 150 * s), bx0 = (W - band) / 2; // (panel fix: they start mid-screen, in the middle of it, clear of the hint)
   specs.forEach((sp, i) => {
-    const cx = ((i % cols) + 0.5) * (W / cols) + (Math.random() - 0.5) * 20;
-    const cy = H * 0.18 + Math.floor(i / cols) * 120 * s + Math.random() * 20;
+    const cx = bx0 + ((i % cols) + 0.5) * (band / cols) + (Math.random() - 0.5) * 16;
+    const cy = H * 0.32 + Math.floor(i / cols) * 110 * s + Math.random() * 16;
     const common = { restitution: 0.32, friction: 0.25, frictionAir: 0.012, chamfer: undefined };
     let b;
     if (sp[0] === 'circle') b = Bodies.circle(cx, cy, sp[1] * s, { ...common, density: sp[2] });
@@ -2021,6 +2056,39 @@ function spawnObjects() {
     bodies.push(b);
   });
   Composite.add(world, bodies);
+  buildToyBox();
+}
+/* Panel fix (Sandbox had no goal and its hint covered the only objects): a toy box in the bottom end corner, a tiny goal: put things in it.
+   Its walls are static bodies in their own collision category (TOY_CAT, met only by the sandbox's things); a thing resting inside counts once,
+   with a chime and a "+1" (toyBox.count, best this visit toyBox.best); all of them in = confetti and a cheer. The sandbox hint sits at the top. */
+const TOY_CAT = 0x0010, toyBox = { parts: [], x: 0, y: 0, w: 0, h: 0, t: 6, inside: new Set(), count: 0, best: 0, fullAt: -1e9, popAt: -1e9, log: [] };
+function buildToyBox() {
+  if (!M || !world) return; const { Bodies, Composite } = M;
+  if (toyBox.parts.length) Composite.remove(world, toyBox.parts);
+  const s = Math.max(0.6, Math.min(1.1, Math.sqrt(W * H) / 950)), w = Math.round(170 * s), h = Math.round(92 * s), t = toyBox.t, rtl = lang === 'he', x = rtl ? 10 : W - 10 - w, y = H - h;
+  const o = { isStatic: true, friction: 0.4, restitution: 0.1, label: 'toybox', collisionFilter: { category: TOY_CAT, mask: 0x0001, group: 0 } };
+  toyBox.parts = [Bodies.rectangle(x + t / 2, y + h / 2, t, h, o), Bodies.rectangle(x + w - t / 2, y + h / 2, t, h, o), Bodies.rectangle(x + w / 2, H - t / 2, w, t, o)];
+  Object.assign(toyBox, { x, y, w, h }); toyBox.inside.clear(); toyBox.count = 0;
+  if (gameMode === 'sandbox') Composite.add(world, toyBox.parts);
+}
+function toyBoxSync() { // the box's walls only in the sandbox's world
+  if (!M || !world || !toyBox.parts.length) return; const on = gameMode === 'sandbox', inW = world.bodies.includes(toyBox.parts[0]);
+  if (on && !inW) M.Composite.add(world, toyBox.parts); else if (!on && inW) M.Composite.remove(world, toyBox.parts);
+}
+function toyBoxTick(now) {
+  if (gameMode !== 'sandbox' || !toyBox.parts.length) return;
+  const B = toyBox, n0 = B.inside.size;
+  for (const b of bodies) { const p = b.position, inn = p.x > B.x + B.t && p.x < B.x + B.w - B.t && p.y > B.y - b.plugin.r * 0.4 && p.y < H; if (inn && !(held && held.body === b)) { if (!B.inside.has(b) && b.speed < 1.2) { B.inside.add(b); B.count++; B.popAt = now; B.log.push(Math.round(now)); sfx('chime'); ring(B.x + B.w / 2, B.y, 'rgba(255,214,120,0.9)', B.w * 0.6, 320, 4); } } else B.inside.delete(b); }
+  B.best = Math.max(B.best, B.inside.size);
+  if (B.inside.size === bodies.length && bodies.length && n0 < bodies.length) { B.fullAt = now; confetti(B.x + B.w / 2, B.y, 60, 1.2); sfx('fanfare'); }
+}
+function drawToyBox(now) {
+  const B = toyBox; if (!B.parts.length) return; resetView();
+  const k = Math.max(0, 1 - (now - B.popAt) / 260), x = B.x, y = B.y - 3 * k, w = B.w, h = B.h + 3 * k;
+  ctx.fillStyle = 'rgba(176,112,58,0.92)'; ctx.beginPath(); ctx.roundRect(x, y + h * 0.18, w, h * 0.82, 8); ctx.fill(); // the crate's front
+  ctx.strokeStyle = 'rgba(96,56,24,0.9)'; ctx.lineWidth = 2; ctx.beginPath(); for (let i = 1; i < 3; i++) { ctx.moveTo(x + 6, y + h * 0.18 + i * h * 0.82 / 3); ctx.lineTo(x + w - 6, y + h * 0.18 + i * h * 0.82 / 3); } ctx.stroke();
+  ctx.fillStyle = '#7a4a22'; ctx.fillRect(x, y + h * 0.12, B.t, h * 0.88); ctx.fillRect(x + w - B.t, y + h * 0.12, B.t, h * 0.88);
+  blit(textSprite(String(B.inside.size), 22, '#fff8ec', 'rgba(255,170,60,0.9)', 800), x + w / 2, y + h * 0.6, 0, 1 + 0.3 * k);
 }
 
 function initPhysics() {
@@ -2184,13 +2252,23 @@ function recomputeTouch() {
     ptr.x = (pts[0].x + pts[1].x) / 2; ptr.y = (pts[0].y + pts[1].y) / 2; ptr.pinch = false; ptr.point = true;
   } else { ptr.pinch = false; ptr.point = false; }
 }
+// Panel fix (tap-through): a canvas card button acts on pointerdown (Home goes to the start screen at once); the same tap's click then landed on
+// whatever DOM now sits under the finger (e.g. the pet corner's #petInfoBtn opened the pet room). clickGuard(e) swallows a trusted click near that
+// point within CLICK_GUARD.ms (the touch's own touchend is cancelled too, so no compat click is made).
+const CLICK_GUARD = { ms: 450, r: 40 }, cguard = { until: 0, x: 0, y: 0, eaten: 0 };
+function clickGuard(e) { cguard.until = performance.now() + CLICK_GUARD.ms; cguard.x = e.clientX; cguard.y = e.clientY; }
+function clickGuarded(e) { return e.isTrusted && performance.now() < cguard.until && Math.hypot(e.clientX - cguard.x, e.clientY - cguard.y) <= CLICK_GUARD.r; }
+for (const ev of ['click', 'pointerup', 'mouseup', 'touchend']) document.addEventListener(ev, (e) => {
+  if (!clickGuarded(e.changedTouches ? { isTrusted: e.isTrusted, clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY } : e)) return;
+  if (ev === 'click') { cguard.eaten++; e.stopPropagation(); e.preventDefault(); } else if (ev === 'touchend' && e.cancelable) e.preventDefault();
+}, true);
 canvas.addEventListener('pointerdown', (e) => {
   const E = endState();
   if (mode !== 'none' && E && E.over && (e.button === 0 || e.pointerType === 'touch') && performance.now() - E.overAt > 500) { // a tap on a round-over card button
-    const k = endCardAt(e.clientX, e.clientY); if (k) { e.preventDefault(); endCardAction(k, performance.now()); return; }
+    const k = endCardAt(e.clientX, e.clientY); if (k) { e.preventDefault(); clickGuard(e); endCardAction(k, performance.now()); return; }
   }
   if (mode !== 'none' && gameMode === 'strike' && strike.perkOffer && (e.button === 0 || e.pointerType === 'touch') && performance.now() - strike.perkOfferAt >= PERK_ARM_MS) { // a tap on a perk card picks it
-    const i = perkCardAt(e.clientX, e.clientY); if (i >= 0) { e.preventDefault(); pickPerk(i, performance.now()); return; }
+    const i = perkCardAt(e.clientX, e.clientY); if (i >= 0) { e.preventDefault(); clickGuard(e); pickPerk(i, performance.now()); return; }
   }
   // (the waiting serve ball is not served by a tap: pull it back, then flick: see waitTick)
   if (mode !== 'none' && gameMode === 'strike' && strike.chest && !strike.over && (e.button === 0 || e.pointerType === 'touch') && chestAt(e.clientX, e.clientY)) { e.preventDefault(); openChest(strike.chest, performance.now()); return; } // a tap on the boss chest opens it
@@ -2232,7 +2310,7 @@ let held = null;                // { body, constraint }
 
 function readInput(now) {
   if (mode === 'camera') {
-    const present = hand.misses < CONFIG.HAND_LOST_FRAMES && now - hand.lastSeen < CONFIG.HAND_LOST_MAX_MS;
+    const present = handNow(now) || (hand.lastSeen > 0 && now - hand.lastSeen < NOHAND.coastMs && now - cameraStartedAt > NOHAND.coastMs); // (panel fix: a short gap coasts on the last cursor)
     const c = present ? camCursor(now) : null;
     return { present, x: c ? c.x : hand.x, y: c ? c.y : hand.y, pinch: present && hand.pinch, point: present && hand.point, fist: present && hand.fist };
   }
@@ -2312,12 +2390,24 @@ const STEP = 1000 / 60;
 let acc = 0, lastFrame = performance.now(), lastRaf = 0;
 let fps = 0, trackFps = 0, trackCount = 0, lastRateAt = performance.now(), frameCount = 0;
 
+// The frame loop never dies: the next frame is asked for first, and one mode's exception is caught (and reported once per message, still as
+// a page error so the suites see it) instead of killing the loop (a frozen game with no card and only a reload to help).
+const frameErr = { n: 0, seen: new Set(), last: '' };
 function frame(now) {
-  if (!engine) { requestAnimationFrame(frame); return; }
+  requestAnimationFrame(frame);
+  try { frameBody(now); }
+  catch (e) {
+    frameErr.n++; frameErr.last = String(e && e.message || e);
+    if (!frameErr.seen.has(frameErr.last) && frameErr.seen.size < 20) { frameErr.seen.add(frameErr.last); setTimeout(() => { throw e; }); }
+  }
+}
+function frameBody(now) {
+  if (!engine) return;
   if (rp.capNext) { rp.capNext = false; if (!rpBlock()) rpCapture(); } // the replay's capture of the last frame (2D)
   const dt = Math.min(100, now - lastFrame); lastFrame = now;
   gfxTick(now - lastRaf); lastRaf = now; fxp.frame++; // the quality watch (the real interval, not the clamped one)
   trackTick(now);
+  if (mode === 'none') homeCamTick(now); // (panel fix: the hand on the start screen, the maps and the picker)
   inputTick(now);
   pauseTick(now);
   if (mode !== 'none' && profile.road.cards.length && $('newCard').hidden) maybeNewCard(); // a level-up's NEW UNLOCKED card, once the round-over card is up
@@ -2363,7 +2453,6 @@ function frame(now) {
       : t('trackOn', { d: delegateUsed, n: Math.round(trackFps) }) + (trackFps < 1 ? t('stalled') : '');
     if (!hudEl.hidden) updateHud();
   }
-  requestAnimationFrame(frame);
 }
 
 /* ---------------- Rendering: sprite cache + shared helpers ---------------- */
@@ -2487,14 +2576,19 @@ function drawParticles() {
   if (puffs) { const sp = puffSprite(); for (const p of particles) if (p.puff) blit(sp, p.x, p.y, 0, p.r / 32, Math.max(0, p.life) * 0.7); }
   fxDraw();
 }
+// Panel fix (canvas bidi in Hebrew): a label with no Hebrew letters ("+1", "+32 XP") is drawn left-to-right (it read "1+"), and inside Hebrew
+// text a number with its sign / × (e.g. "×7", "+5") is wrapped in a left-to-right isolate (it read "רצף 7×!").
+const HEB = /[\u0590-\u05FF]/, BIDI_NUM = /\u200E?([+\-−]?[×x]?\d[\d,.:]*(?:\s?[×%])?)/g;
+function bidiDir(text) { return lang === 'he' && HEB.test(text) ? 'rtl' : 'ltr'; }
+function bidiText(text) { text = String(text); return lang === 'he' && HEB.test(text) ? text.replace(BIDI_NUM, '\u2066$1\u2069') : text; }
 function textSprite(text, size, color, glow, weight = 700) {
   const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang;
   let sp = TEXTS.get(key); if (sp) return sp;
   if (TEXTS.size > 80) TEXTS.clear();
-  const font = weight + ' ' + size + 'px Rubik, system-ui, sans-serif';
+  const font = weight + ' ' + size + 'px Rubik, system-ui, sans-serif', dir = bidiDir(text); text = bidiText(text);
   ctx.font = font; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size * 1.2, h = Math.ceil(size * 1.6);
   const c = document.createElement('canvas'); c.width = Math.ceil(w * SS); c.height = Math.ceil(h * SS);
-  const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = lang === 'he' ? 'rtl' : 'ltr'; // Hebrew labels with digits read right-to-left, the digits stay LTR
+  const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir; // Hebrew labels with digits read right-to-left, the digits stay LTR
   if (glow) { g.shadowColor = glow; g.shadowBlur = size * 0.5; g.fillStyle = glow; g.fillText(text, w / 2, h / 2); g.fillText(text, w / 2, h / 2); g.shadowColor = 'transparent'; }
   g.fillStyle = color; g.fillText(text, w / 2, h / 2);
   sp = { c, w, h, ox: w / 2, oy: h / 2, tw }; TEXTS.set(key, sp); return sp;
@@ -2690,7 +2784,7 @@ function bodySprite(b) {
   });
 }
 function render(now) {
-  beginFrame('sandbox', now);
+  beginFrame('sandbox', now); toyBoxTick(now); drawToyBox(now);
   for (const b of bodies) {
     const isHeld = held && held.body === b, sp = bodySprite(b), x = b.position.x, y = b.position.y;
     let s = 1;
@@ -2775,18 +2869,24 @@ const SLICE_LIVES = 3, BOMB = { name: 'bomb', rind: '#1c1c2e', flesh: '#1c1c2e',
 const slice = { fruits: [], halves: [], stains: [], floaters: [], cuts: [], score: 0, missed: 0, nextSpawn: 0, blade: [], bladeOn: false, last: null, ang: 0, drawn: 0, combo: { n: 0, t: 0 },
   lives: SLICE_LIVES, best: 0, over: false, overAt: 0, bestCombo: 0, spawned: 0, lastBomb: 0, bombEvery: 6, bombs: 0, bombsHit: 0, bombsAvoided: 0, flash: -1e9,
   ui: { hearts: [], heartLost: null, buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
-function sliceScale() { return { g: CONFIG.SLICE_GRAVITY * H / 800, r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) }; }
+// Panel fix (Slice rounds lasted 4-25 s with sparse fruit): the first wave waits SLICE_GRACE_MS (2 s), the session's first round has 5 hearts
+// (SLICE_FIRST_LIVES; the suites' shared harness sets window.__graspSlice3 to keep their 3-heart rounds), fruit on a phone is bigger and slower
+// (SLICE_PHONE), and later waves bring more fruit (up to 4 a wave from score 18). Measured with tests/slice_sim.js.
+const SLICE_GRACE_MS = 2000, SLICE_FIRST_LIVES = 5, SLICE_PHONE = { r: 1.22, g: 0.78 }, SLICE_WAVE = { per: 6, max: 4, cap: 8 };
+let sliceRounds = 0; // rounds played this session
+function slicePhone() { return Math.min(W, H) < 600; }
+function sliceScale() { const ph = slicePhone(); return { g: CONFIG.SLICE_GRAVITY * H / 800 * (ph ? SLICE_PHONE.g : 1), r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) * (ph ? SLICE_PHONE.r : 1) }; }
 function resetSlice() {
   slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = slice.cuts.length = 0;
   try { slice.best = Math.max(slice.best, +localStorage.getItem('sliceBest') || 0); } catch {}
-  slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + 700;
-  slice.lives = SLICE_LIVES; slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
+  slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + SLICE_GRACE_MS;
+  slice.lives = slice.maxLives = mode !== 'none' && sliceRounds === 0 && !window.__graspSlice3 ? SLICE_FIRST_LIVES : SLICE_LIVES; if (mode !== 'none') sliceRounds++; /* (a round in play: picking the tile on the start screen deals one too) */ slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
   slice.combo.n = 0; slice.combo.t = -1e9; roundStart(); grippySay('start');
   const ui = slice.ui; ui.heartLost = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
 }
 function spawnWave(now) {
   const { g, r } = sliceScale();
-  const n = 1 + Math.floor(Math.random() * Math.min(3, 1 + slice.score / 8));
+  const n = 1 + Math.floor(Math.random() * Math.min(SLICE_WAVE.max, 1 + slice.score / SLICE_WAVE.per));
   for (let i = 0; i < n; i++) {
     const rr = r * (0.85 + Math.random() * 0.35);
     const x = W * (0.12 + Math.random() * 0.76);
@@ -2867,7 +2967,8 @@ function sliceTick(now, dt) {
     if (!slice.last) { slice.last = p; slice.blade.push(p); }
     else if (p.x !== slice.last.x || p.y !== slice.last.y) {
       let d = Math.atan2(p.y - slice.last.y, p.x - slice.last.x) - slice.ang; d = Math.atan2(Math.sin(d), Math.cos(d)); slice.ang += d * 0.3; // blade follows the motion
-      cutAlong(slice.last, p, now); trailFx(skinOf('trail'), p.x, p.y, p.x - slice.last.x, p.y - slice.last.y); slice.last = p; slice.blade.push(p);
+      const ddx = p.x - slice.last.x, ddy = p.y - slice.last.y; // (read before the cut: a bomb on the last heart ends the round and clears slice.last)
+      cutAlong(slice.last, p, now); if (slice.over) return; trailFx(skinOf('trail'), p.x, p.y, ddx, ddy); slice.last = p; slice.blade.push(p);
     }
   } else slice.last = null;
   while (slice.blade.length && now - slice.blade[0].t > CONFIG.BLADE_TRAIL_MS) slice.blade.shift();
@@ -2875,7 +2976,7 @@ function sliceTick(now, dt) {
   if (slice.over) return; // a bomb on this very swipe ended the round
   if (pause.on) { slice.nextSpawn += dt; for (const f of slice.fruits) if (f.born > now) f.born += dt; return; } // the world waits (the hand is missing, or the pause sheet): a wave's later fruit too
   const { g } = sliceScale();
-  if (now >= slice.nextSpawn && slice.fruits.length < 6) spawnWave(now);
+  if (now >= slice.nextSpawn && slice.fruits.length < SLICE_WAVE.cap) spawnWave(now);
   for (let i = slice.fruits.length - 1; i >= 0; i--) {
     const f = slice.fruits[i]; if (now < f.born) continue;
     f.vy += g * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.vr * dt;
@@ -2895,9 +2996,9 @@ function drawFloaters(list) {
   ctx.textAlign = 'center';
   for (const f of list) {
     ctx.globalAlpha = Math.max(0, f.life); ctx.fillStyle = f.big ? '#ffc24b' : '#f1e9da';
-    ctx.font = (f.big ? '700 26px ' : '700 20px ') + 'Rubik, system-ui, sans-serif'; ctx.fillText(f.text, f.x, f.y);
+    ctx.font = (f.big ? '700 26px ' : '700 20px ') + 'Rubik, system-ui, sans-serif'; ctx.direction = bidiDir(f.text); ctx.fillText(bidiText(f.text), f.x, f.y);
   }
-  ctx.globalAlpha = 1; ctx.textAlign = 'start';
+  ctx.globalAlpha = 1; ctx.textAlign = 'start'; ctx.direction = 'inherit';
 }
 /* ---------------- Slice rendering: pre-rendered fruit sprites ---------------- */
 const FR = 64; // sprite radius in CSS px; drawn scaled to each fruit's radius
@@ -3132,7 +3233,7 @@ function renderSlice(now) {
   if (slice.bladeOn && cursor.present) { drawKatana(cursor.x, cursor.y, slice.ang); slice.drawn++; }
   drawFloaters(slice.floaters);
   const sy = scoreY(); drawScore(String(slice.score), sy, t('missed', { n: slice.missed }));
-  drawHearts(slice.ui, slice.lives, SLICE_LIVES, W / 2, sy + 44, now); // lives under the score
+  drawHearts(slice.ui, slice.lives, slice.maxLives || SLICE_LIVES, W / 2, sy + 44, now); // lives under the score
   drawCoinPill(now);
   const fk = Math.max(0, 1 - (now - slice.flash) / 420);
   if (fk > 0) { // a bomb went off: white flash, then a red glow creeping in from the edges
@@ -3324,7 +3425,7 @@ function smTileHit(T, x, y, Rb, dirx, diry, k, now) { // v3: every cell within R
     if (now - smash.lastCrunch > 70) { smash.lastCrunch = now; ring(x, y, 'rgba(255,255,255,0.85)', (40 + n * 5) * smashScale(), 280, 3.5); dust(x, y, Math.min(9, 3 + n)); shakeScreen(Math.min(4, 1.2 + k * 2.5)); }
     if (T.alive / T.total <= 0.12) smTileCrumble(T, now); // nearly gone: the rest comes down
   } else if (cr) { smSnd('smcrack', lv, T.kind === 'brick' ? 'brick' : 'tile', now); if (particles.length < 300) burst(x, y, BRICK.dust, 4); shakeScreen(0.8 + k); }
-  if (n || cr) smash.hits++;
+  if (n || cr) { smash.hits++; smash.lastHitAt = now; }
   return n;
 }
 function smTileCrumble(T, now) { // the last bricks of a wall tumble down together
@@ -3398,7 +3499,7 @@ function smSweep(x0, y0, x1, y1, R, k, now, id) { // a swipe: hits all along the
 }
 function smCrackLv(o) { return o.hits ? Math.max(1, Math.min(4, Math.ceil(4 * (o.maxHp - o.hp) / o.maxHp - 0.01))) : 0; } // v3: 1..4, the cracks' stage
 function smHit(o, x, y, dirx, diry, k, now) {
-  o.stamp = smash.punchId; smash.hits++;
+  o.stamp = smash.punchId; smash.hits++; smash.lastHitAt = now;
   if (o.kind === 'boss') { smBossHit(o, x, y, k, now); return; }
   smUnlock(o.group); smDamage(o, 1, x, y, dirx, diry, k, now, false);
 }
@@ -4254,7 +4355,7 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
   petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
-  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  if (now - E.overAt > 1000) { const al = t(againKey(clear ? 'advWaveNext' : 'advWaveRetry')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
 }
@@ -4353,13 +4454,41 @@ function smMoveTick(now, dt) { // cars drive (round the screen), balloons bob
     else if (o.kind === 'balloon') { _sv.x = o.x0 + Math.sin(now * 0.0013 + o.ph) * o.w * 0.12; _sv.y = o.y0 + Math.sin(now * 0.002 + o.ph) * o.h * 0.08; M.Body.setPosition(o.body, _sv); }
   }
 }
+// Panel fix: a thing knocked hard could tunnel through the floor or fly out past the sides (seen at y = 48967, x = -44); it never broke but still
+// counted in the wave's total, so the meter stalled at 0.70-0.80 under SMASH_CLEAR (free play sat on an empty cave, stage 1 failed at "70%").
+// Now: a CCD-like speed clamp (never more than SM_OFF.vmax px a physics step, far under the walls' 400 px), anything that leaves
+// [-60, W+60] x [-200, H+150] (or is wholly off the screen) is broken and credited (silently: smLost), and when nothing has been hit for 8 s the
+// things left pulse (tremble) to show where to hit; in free play, with most of the wave smashed, the scene rolls on by itself.
+const SM_OFF = { x: 60, top: 200, bot: 150, vmax: 38, idleMs: 8000, autoAt: 0.6 };
+function smLost(o, now) { // credited like a break, without the show (it is off the screen)
+  if (!o.alive) return;
+  o.alive = false; M.Composite.remove(world, o.body); if (o.wave === smash.wave) smash.done += o.value; smash.things++; smash.trk.smash++; smash.lost = (smash.lost || 0) + 1;
+  smash.broke[o.kind] = (smash.broke[o.kind] || 0) + 1; if (o.brick) smash.trk.brick++; if (o.kind === 'car') smash.trk.car++;
+  if (o.group && o.kind === 'floor' && !smash.objs.some((q) => q.alive && q.group === o.group)) smash.trk.wall++;
+  smUnlock(o.group);
+}
+function smOffTick(now) {
+  for (const o of smash.objs) {
+    if (!o.alive || o.stat || o.kind === 'boss') continue;
+    const b = o.body, v = b.velocity, sp = Math.hypot(v.x, v.y);
+    if (sp > SM_OFF.vmax) { _sv.x = v.x * SM_OFF.vmax / sp; _sv.y = v.y * SM_OFF.vmax / sp; M.Body.setVelocity(b, _sv); }
+    const p = b.position, B = b.bounds;
+    if (p.x < -SM_OFF.x || p.x > W + SM_OFF.x || p.y < -SM_OFF.top || p.y > H + SM_OFF.bot || B.max.x < 0 || B.min.x > W || B.min.y > H) smLost(o, now);
+  }
+  const idle = now - Math.max(smash.lastHitAt || 0, smash.phaseAt);
+  if (smash.seg === 'wave' && idle >= SM_OFF.idleMs && now - (smash.aidAt || 0) >= SM_OFF.idleMs) { // the toddler aid
+    smash.aidAt = now; smash.aids = (smash.aids || 0) + 1;
+    for (const o of smash.objs) if (o.alive && o.wave === smash.wave && o.kind !== 'boss') o.tremAt = now;
+    if (smash.run === 'free' && smMeter() >= SM_OFF.autoAt) { smash.autoNext = (smash.autoNext || 0) + 1; smScrollStart(now); }
+  }
+}
 function smashTick(now, dt) {
   tickFloaters(smash.floaters, dt);
   if (smashMapOpen()) { smashMapTick(now); return; } // the stage map over the game (from a stage card): everything waits
   menuTick(now); // the pause button (and its sheet) by a held gesture
   if (smash.over) { smash.prev = null; smash.punching = false; endCardTick(now); return; } // a stage's card: buttons by tap / dwell, a wave elsewhere: next / try again
   if (pause.on || menu.open) { if (smash.endAt !== Infinity) smash.endAt += dt; smash.phaseAt += dt; if (smash.banner) smash.banner.t += dt; smash.prev = null; smash.punching = false; smash.taps.length = 0; return; } // the clock waits (the pause sheet, or the hand missing)
-  smPiecesTick(now); smFxTick(now); if (smash.phase === 'play') smMoveTick(now, dt); smFlushTrack(now, false);
+  smPiecesTick(now); smFxTick(now); if (smash.phase === 'play') { smMoveTick(now, dt); smOffTick(now); } smFlushTrack(now, false);
   while (smash.queue.length) { const o = smash.queue.shift(); o.queued = false; if (o.alive) smDamage(o, 1, o.body.position.x, o.body.position.y - o.h * 0.3, 0, 0, 0.4, now, true); } // v3: fragile things that took a hard knock (a fall): one hit's worth, they crack
   smash.meter = smMeter();
   const ph = smash.phase, q = now - smash.phaseAt;
@@ -4493,7 +4622,7 @@ function smashNodeTap(n, b) {
 }
 function openSmashMap(o = {}) { // o.how: how a choice starts from the start screen (camera / touch)
   smap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : smap.how; smap.dwell = null;
-  const el = $('smashMap'); if (el.hidden) xfadeStart('in'); el.hidden = false; $('smDwell').hidden = true; renderSmashMap();
+  const el = $('smashMap'); if (el.hidden) xfadeStart('in'); el.hidden = false; $('smDwell').hidden = true; renderSmashMap(); if (mode === 'none' && smap.how === 'camera') homeCamStart(); // (panel fix: the hand works on the map)
   const c = $('smList').querySelector('.smNode.cur'); if (c && profile.smash.unlocked > 4) try { c.scrollIntoView({ block: 'center' }); } catch {}
   try { $('smashFree').focus({ preventScroll: true }); } catch {}
   routeEnter('smash'); // (/smash: the map is Smash's front door)
@@ -5729,12 +5858,14 @@ function resetBusy() { // new colours (and a new plank of wood); all states back
   layoutBusy();
 }
 function busyQuiet() { busy.tone.active = false; sfx('toneOff'); gtrHush(); } // stops the slider tone and the guitar's ringing strings (leaving the mode, reset, home)
+const BUSY_TOP = ['piano', 'xylophone', 'guitar'], BUSY_PHONE = { m: 4, pad: 3 }, BUSY_SCROLL_DRAG = 22; // (panel fix: the toddler board: its music first, ~175 px cells filling a phone's width, any vertical drag scrolls)
 function busyPack(cols) { // first-fit, top-left: 1x1 first, then blocks (the guitar), tall, wide: packs tightest
   const spans = busy.widgets.map((wd) => wd.span ? wd.span(cols) : [1, 1]), grid = [], place = [];
   const free = (r, c, cw, ch) => { for (let i = r; i < r + ch; i++) for (let j = c; j < c + cw; j++) if (grid[i] && grid[i][j]) return false; return true; };
   const rank = ([cw, ch]) => cw === 1 && ch === 1 ? 0 : cw > 1 && ch > 1 ? 1 : ch > 1 ? 2 : 3;
   let rows = 0;
-  const order = busy.widgets.map((_, i) => i).sort((a, b) => rank(spans[a]) - rank(spans[b]));
+  const top = cols <= 3 ? BUSY_TOP : [], tr = (i) => { const k = top.indexOf(busy.widgets[i].kind); return k < 0 ? 9 : k; }; // (panel fix: a phone / tablet board opens on the piano, the xylophone and the guitar)
+  const order = busy.widgets.map((_, i) => i).sort((a, b) => tr(a) - tr(b) || rank(spans[a]) - rank(spans[b]));
   for (const i of order) { const [cw, ch] = spans[i];
     for (let r = 0; !place[i]; r++) for (let c = 0; c + cw <= cols; c++) if (free(r, c, cw, ch)) {
       for (let ii = r; ii < r + ch; ii++) { grid[ii] = grid[ii] || []; for (let j = c; j < c + cw; j++) grid[ii][j] = true; }
@@ -5745,8 +5876,8 @@ function busyPack(cols) { // first-fit, top-left: 1x1 first, then blocks (the gu
 }
 function layoutBusy() { // grid packing: 2 columns on a phone, 3 on a tablet, 4 to 10 in landscape (as many as make the cells biggest); wide/tall widgets span cells
   busy.top = Math.max(64, Math.round(chromeRow.bottom) + 8); // the board starts under the toolbar / preview row
-  const m = busy.margin, top = busy.top, bw = W - 2 * m, avail = H - top - m;
-  const pad = Math.max(10, Math.min(bw, avail) * 0.035);
+  const phone = W / H <= 1.15 && W < 560, m = phone ? BUSY_PHONE.m : busy.margin, top = busy.top, bw = W - 2 * m, avail = H - top - m;
+  const pad = phone ? BUSY_PHONE.pad : Math.max(10, Math.min(bw, avail) * 0.035);
   const minCell = matchMedia('(pointer: coarse)').matches ? BUSY_MIN_CELL : BUSY_MIN_CELL_MOUSE; // a mouse pointer is fine with smaller cells, so a desktop fits the whole board
   let cols = W / H > 1.15 ? Math.max(4, Math.min(8, Math.floor(bw / 170))) : W >= 560 ? 3 : 2, pk = busyPack(cols);
   if (W / H > 1.15) { // landscape: a few more columns can lower the board (the wide rows stay full width) so every cell gets bigger
@@ -5755,7 +5886,7 @@ function layoutBusy() { // grid packing: 2 columns on a phone, 3 on a tablet, 4 
   }
   const { spans, place, rows } = pk;
   // the cell shrinks to fit the screen height only down to BUSY_MIN_CELL; past that the board grows and scrolls
-  const cell = Math.max(64, Math.min((bw - 2 * pad) / cols, BUSY_MAX_CELL, Math.max((avail - 2 * pad) / rows, minCell)));
+  const cell = phone ? Math.min((bw - 2 * pad) / cols, BUSY_MAX_CELL) : Math.max(64, Math.min((bw - 2 * pad) / cols, BUSY_MAX_CELL, Math.max((avail - 2 * pad) / rows, minCell))); // (a phone: the cells fill its width; the board scrolls)
   const bh = Math.max(avail, rows * cell + 2 * pad);
   busy.board = { x: m, y: top, w: bw, h: bh };
   busy.maxScroll = Math.max(0, Math.round(top + bh + m - H)); // whole px: a board that just fits does not scroll by a rounding hair
@@ -5787,6 +5918,11 @@ function busyScrollTick(now, dt, p, pinchStart) {
   if (c !== busy.scroll) { busy.scroll = c; busy.scrollV = 0; }
   applyBusyScroll();
 }
+function busyDragScroll(p, now) { // touch: a mostly vertical drag (BUSY_SCROLL_DRAG px) that began on a tap widget scrolls the board (it is no widget gesture)
+  const a = busy.pressAt; if (!a || !p || mode !== 'mouse' || ptr.type !== 'touch' || busy.maxScroll <= 0 || gesture !== 'pinch') return false;
+  const dx = p.x - a.x, dy = p.y - a.y; if (Math.abs(dy) < BUSY_SCROLL_DRAG || Math.abs(dy) < 1.5 * Math.abs(dx)) return false;
+  busy.active.release?.(now); busy.active = null; busy.pressAt = null; busy.scroll -= dy; busy.scrollDrag = { y: p.y, v: 0 }; busy.scrollV = 0; busy.scrollGoal = null; busy.dragScrolls = (busy.dragScrolls || 0) + 1; applyBusyScroll(); return true;
+}
 function busyTick(now, dt) {
   const p = cursor.present ? { x: cursor.x, y: cursor.y } : null;
   const pinchStart = gesture === 'pinch' && busy.lastGesture !== 'pinch'; busy.lastGesture = gesture;
@@ -5805,8 +5941,9 @@ function busyTick(now, dt) {
     if (under !== busy.active) { // sweeping a finger across the board presses each thing it passes
       if (busy.active) { busy.active.release?.(now); busy.active = null; }
       if (under && gesture === 'pinch' && under.grab) { under.grab(p, now); busy.grabbed = under; }
-      else if (under) { under.press(now); busy.active = under; }
-    } else if (busy.active && busy.active.move) busy.active.move(p, now); // a finger sliding inside a widget (piano glissando, xylophone run)
+      else if (under) { under.press(now); busy.active = under; busy.pressAt = { x: p.x, y: p.y }; }
+    } else if (busy.active && busyDragScroll(p, now)) { /* a vertical drag from a tap widget: the board scrolls instead */ }
+    else if (busy.active && busy.active.move) busy.active.move(p, now); // a finger sliding inside a widget (piano glissando, xylophone run)
   } else if (busy.active) { busy.active.release?.(now); busy.active = null; }
   busy.hover = pressing || busy.grabbed || busy.scrollDrag ? null : under;
   if (busy.hover && busy.hover.sweep) busy.hover.sweep(p, now); // an open hand sweeping over a widget (xylophone, spinner) without pressing
@@ -6651,6 +6788,11 @@ const ADV_NEW = [['brick'], ['glass'], ['steel'], ['holed', 'moving'], ['tnt'], 
 const frenzy = { on: false, armed: false, result: null, lastShare: null }; // Frenzy (the uncapped rally): armed = the next startGame() plays it
 const adv = { on: false, armed: false, n: 1, plan: null, world: 1, spawned: 0, lost: 0, phase: 'play', clearAt: 0, cardAt: 0, travel: null, lastTravel: null, result: null, bossDone: false, rngs: {}, how: 'mouse', dwell: null, sfxAt: {} };
 function advWorldOf(n) { return Math.max(1, Math.min(ADV_WN, Math.ceil(Math.max(1, n | 0) / ADV_WORLD))); }
+// Panel fix (Easy pacing: a still finger took ~95 s on stage 1, soft hits barely moved a wall): world 1's four gentle stages serve faster (paceK
+// was 0.9), on stages 1-3 a soft hit breaks the brick + a neighbour (softPlus) and on the gentle stages a hit aimed at a hole lands on the nearest
+// brick (assist: a still finger sent every ball through the same hole). Measured with tests/strike_sim.js (a still finger, phone, Easy): stage 1
+// 95.5 s -> ~42 s.
+const ADV_EASY = { paceK: 1.4, taper: 0.08, soft2: 3 }; // (the four gentle stages: x1.4 tapering by 0.08 a stage, so with the tuning levels' own growth the pace stays ~flat into stage 5's x1)
 function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
   n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); const w = advWorldOf(n), i = n - (w - 1) * ADV_WORLD, boss = i === ADV_WORLD, r = mulberry32(strSeed('advplan|' + n));
   const level = (w - 1) * WORLD_LEVELS + Math.max(1, Math.round(i * WORLD_LEVELS / ADV_WORLD)); // the tuning level: world 1 runs levels 1-6 (its boss stage at the old boss level 6), world 5 up to 30
@@ -6669,7 +6811,7 @@ function advPlan(n) { // stage n's fixed plan (pure: the same object for the sam
     armor: n < 5 ? 0 : [0.15, 0.25, 0.3, 0.35, 0.4, 0.4, 0.42, 0.44][w - 1], weak: easy ? 2 : 1, gold: n >= 2 ? 0.5 : 0, key: n >= 6 ? (w >= 2 ? 1 : 0.5) : 0, // armored share; glowing weak spots a wall; gold bricks (a chance a wall); keystones (a chance a wall)
     turret: n >= 10 ? [0, 0, 0.5, 1, 1.4, 2, 2, 2, 2.2][w] : 0, turretMs: [0, 0, 5200, 4600, 4000, 3400, 3300, 3200, 3100][w], shotSpeed: Math.min(0.6, 0.4 + 0.05 * Math.max(0, w - 2)), // turret bricks a wall (from stage 10), ms between shots, their projectiles' speed
     creep: n >= 12 ? [0, 0, 0.025, 0.035, 0.045, 0.055, 0.057, 0.059, 0.061][w] : 0, balls: !boss && ((w >= 3 && (i === 3 || i === 6)) || (w >= 5 && i % 2 === 0)) ? 2 : 1, // walls closing in (depth units / ms, from stage 12); two balls at once (some world 3+ stages)
-    paceK: easy ? 0.9 : w === 1 ? 1 : boss ? [0, 1, 1.05, 1.1, 1.14, 1.18, 1.2, 1.22, 1.24][w] : [0, 1, 1.1, 1.18, 1.24, 1.3, 1.32, 1.34, 1.36][w] + 0.01 * i, /* (a boss fight: a calmer ball, the boss is the threat) */ reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82, 0.81, 0.8, 0.8][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75, 0.74, 0.73, 0.72][w], magK: w === 1 ? 1 : 0.5,
+    soft2: n <= ADV_EASY.soft2, assist: easy, paceK: easy ? ADV_EASY.paceK - ADV_EASY.taper * (i - 1) : w === 1 ? 1 : boss ? [0, 1, 1.05, 1.1, 1.14, 1.18, 1.2, 1.22, 1.24][w] : [0, 1, 1.1, 1.18, 1.24, 1.3, 1.32, 1.34, 1.36][w] + 0.01 * i, /* (a boss fight: a calmer ball, the boss is the threat) */ reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82, 0.81, 0.8, 0.8][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75, 0.74, 0.73, 0.72][w], magK: w === 1 ? 1 : 0.5,
     pu: n >= 3 ? Math.min(0.4, 0.2 + 0.05 * (w - 1)) : 0, guests: n >= 2, monkey: w >= 2, curve: w >= 2, wobble: w >= 4, float: w === 6 ? 1 : 0 }; // (world 6: low gravity, the incoming ball floats up in a gentle arc) // power-up bricks from stage 3 and rare; the cow from stage 2, the monkey from world 2; bending serves from world 2, S-wobbles from world 4
 }
 function advOpen(id) { // what a stage may use in place of the road: everything, but the monkey, power-ups and serve shapes come with the worlds; no perks
@@ -6685,10 +6827,13 @@ function advCurrent() { const A = profile.adv; let c = 0; for (let n = 1; n <= A
 // (30 + 10 x its tuning level), + 200 x the world on a boss stage: about what a clear at x1 scores): Bronze any clear, Silver 1x par, Gold 1.8x,
 // Diamond 3x, Legend 4.5x (only with long combos). The map shows each stage's best rank; the overall rank is the average over the cleared stages.
 const RANKS = ['bronze', 'silver', 'gold', 'diamond', 'legend'], RANK_K = [0, 1, 1.8, 3, 4.5], RANK_COL = ['#d08a4e', '#c9d3e3', '#ffc24b', '#7fe6ff', '#ff7ad9'];
-function stagePar(n) { const P = advPlan(n); return P.boss ? 200 * P.world + Math.round(8 * BOSS_DEFS[P.world].hp) : P.walls * (30 + 10 * P.level); } // (a boss stage: its bonus + about its hp's points at a small combo)
+// Panel fix (ranks were inflated: "Legend" on stage 1, "Diamond" with 1 star): a walls stage's par is doubled (RANK_PAR), and a rank above Bronze
+// needs at least 2 stars (RANK_MIN_STARS: a 1-star clear is Bronze whatever its score).
+const RANK_PAR = 2, RANK_MIN_STARS = 2;
+function stagePar(n) { const P = advPlan(n); return P.boss ? 200 * P.world + Math.round(8 * BOSS_DEFS[P.world].hp) : P.walls * (30 + 10 * P.level) * RANK_PAR; } // (a boss stage: its bonus + about its hp's points at a small combo)
 function rankThresholds(n) { const par = stagePar(n); return RANK_K.map((k) => Math.round(k * par)); }
-function rankFor(n, score) { if (!(score > 0)) return -1; const th = rankThresholds(n); let r = 0; for (let i = 1; i < th.length; i++) if (score >= th[i]) r = i; return r; } // -1: no score yet
-function advBestRank(n) { const A = profile.adv; return A.stars[n] ? Math.max(0, rankFor(n, A.best[n] || 0)) : -1; } // a cleared stage with no score kept (cleared before v4): Bronze
+function rankFor(n, score, stars = 3) { if (!(score > 0)) return -1; const th = rankThresholds(n); let r = 0; for (let i = 1; i < th.length; i++) if (score >= th[i]) r = i; return stars < RANK_MIN_STARS ? Math.min(r, 0) : r; } // -1: no score yet
+function advBestRank(n) { const A = profile.adv; return A.stars[n] ? Math.max(0, rankFor(n, A.best[n] || 0, A.stars[n])) : -1; } // a cleared stage with no score kept (cleared before v4): Bronze
 function overallRank() { const ns = Object.keys(profile.adv.stars).map(Number); if (!ns.length) return -1; return Math.floor(ns.reduce((a, n) => a + advBestRank(n), 0) / ns.length + 1e-9); }
 function advStarTotal() { let s = 0; for (const k in profile.adv.stars) s += profile.adv.stars[k]; return s; }
 function advOpenNode(A, n) { // stage n becomes playable: the frontier moves on, or (past a gap: a world opened in Endless) it is kept on its own
@@ -7484,6 +7629,7 @@ function rectsHit(a, b, m = 2) { return a.x < b.x + b.w + m && b.x < a.x + a.w +
 function drawStrikeFloaters(now) {
   const ui = strike.ui, blocks = ui.blocks.slice(), out = []; ui.floaterRects = out;
   if (ui.hud) blocks.push({ name: 'hud', ...ui.hud });
+  for (const b of strike.balls) { if (b.z > CONFIG.STRIKE_Z_FAR * 0.6) continue; const sc = ballScreen(b), m = Math.max(sc.r * 1.6, 24); blocks.push({ name: 'ball', x: sc.x - m, y: sc.y - m, w: 2 * m, h: 2 * m }); } // (panel fix: "Hard", "SUPER!", "WALL +90", tips never on the ball)
   const L = strike.floaters.filter((f) => !(f.wait > now) && f.life > 0).sort((a, b) => (!!b.perfect - !!a.perfect) || (!!b.big - !!a.big) || (b.t0 - a.t0));
   for (const f of L) {
     const sp = floaterSprite(f), bw = f.bubble ? sp.tw + 26 : f.perfect ? (sp.w - 24) * 1.25 : sp.tw + 6, bh = f.bubble ? 50 : f.perfect ? sp.h * 0.62 * 1.25 : sp.h * 0.78, step = bh + 6; // (PERFECT: room for its pop)
@@ -7688,8 +7834,9 @@ function wallsTick(dt) { // walls sit in slots in depth order; a cleared one lea
 // shoots back until it is broken, a TNT crate blows a radius-2 area. A hole (holed / a moving wall's free column / a gap already
 // knocked out) lets the ball through untouched with a whoosh, or, when it is mostly in the gap, knocks out only the edge bricks it clips.
 // Returns what the ball does next: 'bounce' (it hit) or 'pass' (through a gap).
-const BLAST = { soft: [1, 0, 0], medium: [2, 1, 1], hard: [2, 1, 2], super: [3, 2, 3], fire: [3, 3, 4] }; // [damage at the hit brick, damage round it, shape: 0 the brick, 1 + a neighbour, 2 a plus, 3 the 3x3, 4 a radius-2 diamond]
+const BLAST = { softPlus: [1, 1, 1], soft: [1, 0, 0], medium: [2, 1, 1], hard: [2, 1, 2], super: [3, 2, 3], fire: [3, 3, 4] }; // [damage at the hit brick, damage round it, shape: 0 the brick, 1 + a neighbour, 2 a plus, 3 the 3x3, 4 a radius-2 diamond]
 const STEEL_DMG = { soft: [0, 0], medium: [0, 0], hard: [1, 1], super: [3, 1], fire: [3, 3] }; // steel plates: what a tier takes off (0: a dent)
+function softPlus() { return adv.on && adv.plan && adv.plan.soft2 && !strike.extrasOff; } // (panel fix: on Adventure stages 1-3 a soft hit still breaks 2 bricks: the brick + a neighbour)
 function blastShape(dc, dr, shape) { return shape === 2 ? dc + dr <= 1 : shape === 3 ? dc <= 1 && dr <= 1 : shape === 4 ? dc + dr <= 2 || (dc <= 1 && dr <= 1) : dc + dr === 0; }
 function blastTargets(w, a, shape, b) { // [brick, ring?] for anchor a and the shape; shape 1: the live neighbour on the side of the ball's centre
   const out = [[a, false]];
@@ -7720,7 +7867,7 @@ function smashWall(w, b, now) {
   let a = under; if (!a || !a.alive) a = nearest(r * 0.35) || nearest(r); // the brick it hits: the one under its centre, else the nearest one it overlaps
   if (!a) { sfx('whoosh'); return 'pass'; }
   if (w.kind === 'jelly') { const jx = w2Smash(w, b, tier, fire, now); if (jx) return jx; } // (jelly: a soft hit only wobbles it)
-  const bl = BLAST[fire ? 'fire' : tier] || BLAST.soft, hv = !glass && !fire && (tier === 'medium' || tier === 'hard') && upgLv('heavy') && strikeRand('upg') < 0.12 * upgLv('heavy'); // v5: Heavier ball: a medium / hard hit sometimes blasts one shape wider
+  const bl = (!fire && tier === 'soft' && softPlus() ? BLAST.softPlus : BLAST[fire ? 'fire' : tier]) || BLAST.soft, hv = !glass && !fire && (tier === 'medium' || tier === 'hard') && upgLv('heavy') && strikeRand('upg') < 0.12 * upgLv('heavy'); // v5: Heavier ball: a medium / hard hit sometimes blasts one shape wider
   const shape = glass ? Math.max(bl[2], fire || tier === 'super' ? 4 : 3) : bl[2] + (hv ? 1 : 0); if (hv) strike.heavyUps = (strike.heavyUps || 0) + 1;
   let targets = blastTargets(w, a, shape, b);
   if ((powerOn('big') || b.guest) && !glass) for (const k of w.bricks) if (k.alive && edgeDist(k) < r && !targets.some((q) => q[0] === k)) targets.push([k, 'x']); // a Big ball / a guest: every brick under its footprint too
@@ -8638,9 +8785,18 @@ function aimWall(b) { // what the outgoing ball meets first: the nearest standin
 }
 function aimBall(b, latx, laty, now) {
   const { L, R, T, B } = corridor(), tg = aimWall(b), tms = Math.max(120, (tg.z - b.z) / Math.max(0.05, b.speed * speedMul())), acc = (b.spin || 0) * STRIKE_CURVE * W;
-  const ax = b.x + latx * (R - L) * AIM_SPREAD, bs = strike.boss, G = tg.id === 'boss' && bs && bs.real ? bs.g : null, ay0 = b.y + laty * (B - T) * AIM_SPREAD, ay = G ? Math.max(G.y - G.hh * 0.8, Math.min(G.y + G.hh * 0.8, ay0)) : ay0; // (a real boss: the height lands on its body; sideways aim still counts)
+  let ax = b.x + latx * (R - L) * AIM_SPREAD; const bs = strike.boss, G = tg.id === 'boss' && bs && bs.real ? bs.g : null, ay0 = b.y + laty * (B - T) * AIM_SPREAD; let ay = G ? Math.max(G.y - G.hh * 0.8, Math.min(G.y + G.hh * 0.8, ay0)) : ay0; // (a real boss: the height lands on its body; sideways aim still counts)
+  b.assist = null; if (adv.on && adv.plan && adv.plan.assist && tg.id !== 'boss' && tg.id !== 'far') { const w = strike.walls.find((q) => q.id === tg.id), p = w && assistSpot(w, ax, ay); if (p) { b.assist = { from: [ax, ay], to: [p.x, p.y] }; ax = p.x; ay = p.y; } } // (panel fix: the gentle stages' aim help)
   b.vx = (ax - b.x - 0.5 * acc * tms * tms) / tms; b.vy = (ay - b.y) / tms;
   b.aim = { x: ax, y: ay, z: tg.z, wall: tg.id, t: now, ms: tms };
+}
+// Panel fix: on world 1's gentle stages (plan.assist) a hit aimed at a hole in the wall ahead lands on the nearest brick still standing instead
+// (a still finger sent every ball through the same hole to the far wall: one wall took 50 s).
+function assistSpot(w, x, y) {
+  const { L, R, T, B } = corridor(), cw = (R - L) / (w.span || w.cols), ch = (B - T) / w.rows, col = Math.floor((x - L - (w.ox || 0)) / cw), row = Math.floor((y - T) / ch);
+  if (w.bricks.some((k) => k.alive && k.col === col && k.row === row)) return null;
+  let best = null, bd = Infinity; for (const k of w.bricks) { if (!k.alive) continue; const c = brickCell(w, k.col, k.row), d = Math.hypot(c.x - x, c.y - y); if (d < bd) { bd = d; best = c; } }
+  return best;
 }
 function aimSpot(a) { // the landing point folded back into the corridor (a ball aimed past a side wall ricochets off it)
   const { L, R, T, B } = corridor(), fold = (v, lo, hi) => { const span = hi - lo; let q = ((v - lo) % (2 * span) + 2 * span) % (2 * span); return lo + (q > span ? 2 * span - q : q); };
@@ -8727,10 +8883,10 @@ function playerServe(force, now = performance.now(), aim = null, tm = null) { //
    with the ball's speed (timingWin), so a fast ball stays returnable on a phone. Off in the older suites (extrasOff) and with the test flag
    strike.noRally. Frenzy (טירוף): the same rally, uncapped (+4% a hit), clean walls, no heat, no upgrades; one miss ends the run, except the very
    first (a shield; the speed drops back halfway). Score: hits in a row; the best and the top speed kept in profile.frenzy; NEW RECORD!; Share. ===== */
-const RALLY = { step: 0.05, cap: 0.7, capGentle: 0.45, capEasy: 0.6, fstep: 0.04, pts: 0.5, tier: 0.6, tierMax: 0.5, reach: 0.35, hot: 0.7, pop: 0.2 };
+const RALLY = { step: 0.05, cap: 0.7, capGentle: 0.45, capEasy: 0.6, fstep0: 0.09, fN: 10, fstep: 0.04, pts: 0.5, tier: 0.6, tierMax: 0.5, reach: 0.35, hot: 0.7, pop: 0.2 };
 function rallyOn() { return frenzy.on || (!strike.extrasOff && !strike.noRally); }
-function rallyCap() { if (frenzy.on) return Infinity; if (adv.on && adv.plan) return adv.plan.paceK < 1 ? RALLY.capGentle : RALLY.cap; return strikeEasy() ? RALLY.capEasy : RALLY.cap; }
-function rallyK(n = strike.rally) { if (!(n > 0) || !rallyOn()) return 1; return 1 + Math.min(rallyCap(), (frenzy.on ? RALLY.fstep : RALLY.step) * n); } // x the ball's speed
+function rallyCap() { if (frenzy.on) return Infinity; if (adv.on && adv.plan) return adv.plan.assist || adv.plan.paceK < 1 ? RALLY.capGentle : RALLY.cap; /* (world 1's gentle stages) */ return strikeEasy() ? RALLY.capEasy : RALLY.cap; }
+function rallyK(n = strike.rally) { if (!(n > 0) || !rallyOn()) return 1; return 1 + Math.min(rallyCap(), frenzy.on ? RALLY.fstep0 * Math.min(n, RALLY.fN) + RALLY.fstep * Math.max(0, n - RALLY.fN) : RALLY.step * n); } // x the ball's speed (panel fix: Frenzy ramps +9% a hit for its first 10 hits, then +4%)
 function rallyHeat(k = rallyK()) { return Math.max(0, (k - 1) / RALLY.hot); } // 0 at the base speed, 1 at the normal cap (blazing), more in Frenzy
 function rallyPtsMul(k = rallyK()) { return 1 + RALLY.pts * (k - 1); }
 function rallyReach() { return 1 + RALLY.reach * (rallyK() - 1); }
@@ -9005,7 +9161,7 @@ function advClear(now) { // the stage's last wall (or its boss) is down: stars (
   const stk = stars === 3 ? albumAward(n) : null; // the first 3-star clear: the album's sticker (a full page: its bonus)
   const score = Math.round(strike.score), prevScore = A.best[n] || 0, record = score > prevScore && prevScore > 0; A.best[n] = Math.max(prevScore, score); saveProfile(); // v4: the stage's best score (a record: beaten, not just set)
   adv.phase = 'clear'; adv.clearAt = now; adv.result = { clear: true, n, stars, prev, best: A.stars[n], first, coins, walls: P.walls, cleared: strike.progress, boss: P.boss, world: P.world, lost: adv.lost, sticker: stk ? n : 0, page: stk && stk.page ? stk.page : null,
-    score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score), rb: P.boss ? adv.rbResult || { kind: rbDef(P.world).id, n: P.world } : null, bestRank: rankFor(n, A.best[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
+    score, prevScore, bestScore: A.best[n], record, rank: rankFor(n, score, stars), rb: P.boss ? adv.rbResult || { kind: rbDef(P.world).id, n: P.world } : null, bestRank: rankFor(n, A.best[n], A.stars[n]), next: (() => { const th = rankThresholds(n), r = rankFor(n, score, stars); return r < RANKS.length - 1 ? { rank: r + 1, at: th[r + 1] } : null; })(), mul: strike.bestMul || 1 };
   rpMoment('clear', 50 + (record ? 40 : 0)); if (record) rp.record = true; // (the replay: the stage's last wall; a record says so)
   const burstMs = P.boss ? ADV_BOSS_BURST_MS : ADV_BURST_MS;
   adv.travel = P.boss && P.world < ADV_WN ? { from: P.world, to: P.world + 1, t: now + burstMs, ms: ADV_TRAVEL_MS, q: 0, switched: false } : null; // a world's boss stage: the trip to the next world
@@ -9183,7 +9339,7 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
   petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
-  if (now - E.overAt > 1000) blit(textSprite(t(clear ? 'advWaveNext' : 'advWaveRetry'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  if (now - E.overAt > 1000) { const al = t(againKey(clear ? 'advWaveNext' : 'advWaveRetry')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
   ctx.restore();
   if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
@@ -9617,9 +9773,11 @@ function guestMouth(g, R, y, w, face, tongueCol) { // the mouth by mood, centred
   } else { g.fillStyle = '#5a1a24'; g.beginPath(); g.ellipse(0, yy + R * 0.04, R * 0.1, R * 0.08, 0, 0, TAU); g.fill(); g.stroke(); } // squashed: a small 'o'
 }
 const GUEST_FACES = ['in', 'happy', 'dizzy', 'squash'], GUEST_ART = {}; // painted guest art from assets/guests/<kind>_<face>.png (loaded lazily when Strike starts); a missing file keeps the drawn sprite
+const GUEST_ART_FILES = ['cow']; // the kinds whose art is in assets/guests/ (panel fix: the monkey's files are still pending, so they are never requested: no 404 on every load; add 'monkey' once they arrive)
 function loadGuestArt() {
   for (const kind of GUEST_KINDS) for (const face of GUEST_FACES) {
     const key = kind + '_' + face; if (GUEST_ART[key]) continue;
+    if (!GUEST_ART_FILES.includes(kind)) { GUEST_ART[key] = { img: null, state: 'none' }; continue; } // (drawn in code)
     const img = new Image(); GUEST_ART[key] = { img, state: 'loading' };
     img.onload = () => { GUEST_ART[key].state = 'img'; SPRITES.delete('guest|' + kind + '|' + face); }; // (the next draw makes the sprite from the art; 3D picks up its new canvas)
     img.onerror = () => { GUEST_ART[key].state = 'failed'; };
@@ -9822,12 +9980,28 @@ function heartSprite(on) {
     else { path(); g.fillStyle = 'rgba(241,233,218,0.08)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(241,233,218,0.35)'; g.stroke(); }
   });
 }
-function drawStrikeHand(now) {
-  if (!cursor.present) return;
-  const k = Math.max(0, 1 - (now - strike.handHit) / 140), sp = strikeHandSprite(), hs = handScale(), sx = hs * (1 + 0.3 * k), sy = hs * (1 - 0.25 * k); // squash on a hit; bigger on Easy
-  ctx.setTransform(DPR * sx, 0, 0, DPR * sy, (cursor.x + view.x) * DPR, (cursor.y + view.y) * DPR);
-  ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
-  resetView();
+// Panel fix (the top feel problem: the big see-through hand covered the ball, the wall and the boss's weak point):
+// touch / mouse: a small fingertip marker (a ring in the equipped hand's colour + a short trail), no hand; camera: the hand as a faint ghost
+// (STRIKE_HAND_GHOST alpha, the same size as its reach). In play it is drawn under the walls, the ball, the aim reticle and the weak points
+// (2D: before them; a card's hand stays on top to aim at the buttons). strike.ui.handDraw says what was drawn.
+const STRIKE_TIP = { r: 11, trailMs: 160 }, STRIKE_HAND_GHOST = 0.45; // (the sprite itself is 0.62 opaque: ~28% on screen)
+function strikeTipStyle() { return mode === 'mouse'; }
+function drawStrikeHand(now, under) {
+  if (!cursor.present) { strike.ui.handDraw = null; return; }
+  const k = Math.max(0, 1 - (now - strike.handHit) / 140);
+  if (strikeTipStyle()) { // the fingertip marker
+    const col = HAND_COLS[skinOf('hand')] || HAND_COLS.classic, r = STRIKE_TIP.r * (1 + 0.35 * k), hist = cursor.history; resetView();
+    if (hist.length > 1) { ctx.lineCap = 'round'; for (let i = 1; i < hist.length; i++) { const a = hist[i - 1], b = hist[i], age = now - b.t; if (age > STRIKE_TIP.trailMs) continue; const q = 1 - age / STRIKE_TIP.trailMs;
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.35 * q).toFixed(3) + ')'; ctx.lineWidth = 2 + 5 * q; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } }
+    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, r, 0, TAU); ctx.fillStyle = hexA(col, 0.22); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = col; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 2.5, 0, TAU); ctx.fillStyle = '#fff8ec'; ctx.fill();
+    strike.ui.handDraw = { kind: 'tip', x: cursor.x, y: cursor.y, r, col, under: !!under };
+    return;
+  }
+  const sp = strikeHandSprite(), hs = handScale(), sx = hs * (1 + 0.3 * k), sy = hs * (1 - 0.25 * k); // squash on a hit; bigger on Easy
+  ctx.globalAlpha = STRIKE_HAND_GHOST; ctx.setTransform(DPR * sx, 0, 0, DPR * sy, (cursor.x + view.x) * DPR, (cursor.y + view.y) * DPR);
+  ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h); ctx.globalAlpha = 1;
+  resetView(); strike.ui.handDraw = { kind: 'ghost', x: cursor.x, y: cursor.y, alpha: STRIKE_HAND_GHOST * 0.62, w: sp.w * sx, h: sp.h * sy, under: !!under };
 }
 /* ---------------- Strike UI: HUD card, power meter, combo banner, serve cue, round-over card ---------------- */
 const TIER_COL = { soft: '#43d9a3', medium: '#54c6eb', hard: '#ffc24b', super: '#ff6f59' };
@@ -9945,7 +10119,7 @@ function drawPerkOffer(now) { // the run is paused: a dim veil, 'Pick a power!',
   view.x = view.y = 0;
   const L = perkLayout(); ui.perkCards = L.map((r, i) => ({ x: r.x, y: r.y, w: r.w, h: r.h, id: O[i] }));
   const y0 = L[0].y, bottom = L[L.length - 1].y + L[L.length - 1].h;
-  const run = strike.perkMode === 'run', ttl = bigTextSprite(t(run ? 'rpTitle' : 'perkTitle'), 34); // (v5: the run powers between Adventure stages use the same cards)
+  const run = strike.perkMode === 'run', ttl = bigTextSprite(t(run ? 'runPowTitle' : 'perkTitle'), 34); strike.ui.perkTitle = t(run ? 'runPowTitle' : 'perkTitle'); // (v5: the run powers between Adventure stages use the same cards)
   blit(ttl, W / 2, y0 - 60 + (1 - e) * 12, 0, Math.min(1, (W - 24) / Math.max(1, ttl.w - 30)), e);
   blit(textSprite(t(run ? 'rpSub' : 'perkSub'), 13, 'rgba(241,233,218,0.75)', null, 500), W / 2, y0 - 22, 0, 1, e);
   L.forEach((r, i) => {
@@ -10212,10 +10386,10 @@ function drawMeterPop(now, F, k) { // a small gauge (open at the bottom) around 
 }
 function comboTextSprite(n) { return bigTextSprite(t('comboBig', { n }), 44); }
 function bigTextSprite(text, size = 44) { // big bold text with a saffron gradient, dark edge and a warm glow (combo / level / boss banners)
-  const key = 'bigtext|' + lang + '|' + size + '|' + text;
+  const key = 'bigtext|' + lang + '|' + size + '|' + text, dir = bidiDir(text); text = bidiText(text);
   ctx.font = '700 ' + size + 'px Rubik, system-ui, sans-serif'; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size, h = size * 1.8;
   return makeSprite(key, w, h, w / 2, h / 2, (g) => {
-    g.font = '700 ' + size + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
+    g.font = '700 ' + size + 'px Rubik, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir;
     g.shadowColor = 'rgba(255,150,40,0.9)'; g.shadowBlur = 22; g.lineWidth = 7; g.lineJoin = 'round'; g.strokeStyle = '#3a1d00'; g.strokeText(text, 0, 0); g.shadowColor = 'transparent';
     const gr = g.createLinearGradient(0, -size / 2, 0, size / 2); gr.addColorStop(0, '#fff4c2'); gr.addColorStop(0.45, '#ffc24b'); gr.addColorStop(1, '#ff8a3d');
     g.fillStyle = gr; g.fillText(text, 0, 0);
@@ -10360,8 +10534,9 @@ function drawServePrompt(now) { // the waiting serve ball: a soft pulsing glow r
   ctx.restore();
   const txt = t(P.armed ? 'flickNow' : 'hitToStart'), sp = textSprite(txt, 20, '#fff8ec', 'rgba(255,170,60,0.95)', 800), ty = Math.max((ui.hud ? ui.hud.y + ui.hud.h + 40 : 120), sc.y - sc.r * 3 - 22), k = Math.min(1, (W - 24) / sp.tw) * (1 + 0.06 * p);
   const hw = sp.tw * k / 2 + 12, tx = Math.max(hw, Math.min(W - hw, sc.x)); // (kept on screen when the ball sits near an edge)
-  blit(sp, tx, ty, 0, k, a * (0.75 + 0.25 * p));
-  ui.serve = { x: sc.x, y: sc.y, r: sc.r, text: txt, tx, ty, tw: sp.tw * k, charge: c, armed: !!P.armed };
+  const shown = !ui.levelBanner || !!P.armed || c > 0.05; // (panel fix: one instruction at a time: the line waits for the stage banner to go)
+  if (shown) blit(sp, tx, ty, 0, k, a * (0.75 + 0.25 * p));
+  ui.serve = { x: sc.x, y: sc.y, r: sc.r, text: txt, tx, ty, tw: sp.tw * k, charge: c, armed: !!P.armed, shown };
 }
 function drawChest(now) { // the boss chest on the overlay (both renderers): drops in with a bounce, wiggles and glows until opened; then a hard shake, the lid pops, rays and the prize rise
   const c = strike.chest, ui = strike.ui; ui.chest = null; if (!c || now < c.born) return;
@@ -10710,6 +10885,9 @@ function overButtonSprite(kind, w, h) {
    (with a NEW BEST ribbon), up to three stats, a saffron Play again button and an outline Home button, and, for Strike, the Easy / Normal pill.
    A tap on a button presses it (canvas pointerdown); in camera mode a point / pinch / fist held on a button for 400 ms presses it (a filling
    ring shows the dwell); a wave, a punch or a tap elsewhere after a second restarts. */
+// Panel fix: the line under a card names what the player's input does: "Wave…" only with the camera; touch / mouse: "Tap Next" / "Tap Play again"
+const AGAIN_TOUCH = { advWaveNext: 'advTapNext', advWaveRetry: 'advTapRetry', playAgainWave: 'playAgainTap' }, AGAIN_CAM = { playAgainWave: 'playAgainCam' };
+function againKey(k) { return (mode === 'camera' ? AGAIN_CAM[k] : AGAIN_TOUCH[k]) || k; }
 function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : cgOn() ? cgState() : null; } // the mode that owns a round-over card
 function endCardAt(px, py) { // which card button (if any) is under a screen point
   const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
@@ -10728,6 +10906,7 @@ function endCardAction(key, now) {
     if (key === 'again') key = smash.result.clear ? 'next' : 'retry';
     if (key === 'next') return smashNext(); if (key === 'retry') return smashStageStart(smash.n); if (key === 'map') return openSmashMap({});
   }
+  if (key === 'map' && gameMode === 'strike') return openAdvMap({}); // (the Frenzy card's Map)
   if (key === 'home') return goHome();
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
@@ -10794,9 +10973,9 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
     }
   }
   { // today's missions: three compact columns (name, bar, count) above the buttons
-    const ms = profile.missions.list, colw = (cw - 32) / 3, my = y0 + 240 + TZ + OY; ui.missionRow = [];
+    const ms = profile.missions.list.filter((m) => missionFits(m)), colw = (cw - 32) / 3, my = y0 + 240 + TZ + OY, off = (3 - ms.length) / 2; ui.missionRow = []; // (panel fix: only the missions this game can move on)
     ms.forEach((m, i) => {
-      const mx = x0 + 16 + (rtl ? 2 - i : i) * colw + colw / 2, frac = Math.min(1, m.progress / m.goal), bw = colw - 14, sp = textSprite(missionText(m), 11, m.done ? '#43d9a3' : 'rgba(241,233,218,0.75)', null, 500);
+      const mx = x0 + 16 + (rtl ? 2 - i - off : i + off) * colw + colw / 2, frac = Math.min(1, m.progress / m.goal), bw = colw - 14, sp = textSprite(missionText(m), 11, m.done ? '#43d9a3' : 'rgba(241,233,218,0.75)', null, 500);
       blit(sp, mx, my, 0, Math.min(1, bw / sp.tw));
       resetView(); ctx.fillStyle = 'rgba(8,11,28,0.7)'; ctx.beginPath(); ctx.roundRect(mx - bw / 2, my + 9, bw, 4, 2); ctx.fill();
       if (frac > 0) { ctx.fillStyle = m.done ? '#43d9a3' : '#ffc24b'; ctx.beginPath(); ctx.roundRect(rtl ? mx + bw / 2 - bw * frac : mx - bw / 2, my + 9, bw * frac, 4, 2); ctx.fill(); }
@@ -10817,7 +10996,8 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   } else ui.strip = null;
   const aw = (cw - 52) * 0.58, hw = (cw - 52) - aw, bh = 50, by = y0 + (dly ? 332 : 280) + TZ + OY, ax = rtl ? x0 + cw - 20 - aw : x0 + 20, hx = rtl ? x0 + 20 : x0 + cw - 20 - hw; // Play again: the wider, pulsing one
   ui.buttons = { again: { x: ax, y: by, w: aw, h: bh }, home: { x: hx, y: by, w: hw, h: bh } };
-  if (shopAffordable()) { const sw = (hw - 6) / 2; ui.buttons.home = { x: rtl ? hx + sw + 6 : hx, y: by, w: sw, h: bh }; ui.buttons.shop = { x: rtl ? hx : hx + sw + 6, y: by, w: sw, h: bh }; } // something new is affordable: a Shop button beside Home
+  if (o.map) { const sw = (hw - 6) / 2; ui.buttons.home = { x: rtl ? hx + sw + 6 : hx, y: by, w: sw, h: bh }; ui.buttons.map = { x: rtl ? hx : hx + sw + 6, y: by, w: sw, h: bh }; } // (panel fix: Frenzy is played from the Adventure map: a Map button beside Home)
+  else if (shopAffordable()) { const sw = (hw - 6) / 2; ui.buttons.home = { x: rtl ? hx + sw + 6 : hx, y: by, w: sw, h: bh }; ui.buttons.shop = { x: rtl ? hx : hx + sw + 6, y: by, w: sw, h: bh }; } // something new is affordable: a Shop button beside Home
   if (pill) { // Easy / Normal under the buttons (Easy at the start edge)
     const dw = Math.min(104, (cw - 52) / 2), dy = by + bh + 12, ex = rtl ? cx + 3 : cx - 3 - dw, nx = rtl ? cx - 3 - dw : cx + 3;
     ui.buttons.easy = { x: ex, y: dy, w: dw, h: 44 }; ui.buttons.normal = { x: nx, y: dy, w: dw, h: 44 };
@@ -10825,7 +11005,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   if (dly || o.share) ui.buttons.share = { x: x0 + 20, y: by + bh + 12, w: cw - 40, h: 44 }; // the daily: Share under the buttons (no Easy / Normal: the daily is always Normal)
   if (du) { if (o.share) { const hw2 = (cw - 50) / 2; ui.buttons.share = { x: rtl ? x0 + cw - 20 - hw2 : x0 + 20, y: by + bh + 12, w: hw2, h: 44 }; ui.buttons.duel = { x: rtl ? x0 + 20 : x0 + cw - 20 - hw2, y: by + bh + 12, w: hw2, h: 44 }; } // (Frenzy: Share | Challenge)
     else ui.buttons.duel = { x: x0 + 20, y: by + bh + 12 + (pill ? 54 : 0), w: cw - 40, h: 44 }; }
-  const label = { again: t('playAgainBtn'), home: t('home'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share'), shop: t('collection'), duel: duel.on ? t('duelSendBack') : t('duelBtn') };
+  const label = { again: t('playAgainBtn'), home: t('home'), map: t('mapBtn'), easy: t('diffEasy'), normal: t('diffNormal'), share: t('share'), shop: t('collection'), duel: duel.on ? t('duelSendBack') : t('duelBtn') };
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, on = pill && key === strike.diff;
     let bk = hot ? 1.04 : 1;
@@ -10841,7 +11021,7 @@ function drawEndCard(now, E, o) { // o: { score, best, stats: [[value, i18n key]
   }
   const rpG = rpCardBtn(now, E); // the round's best moment: Replay ▶ on the card's bottom edge
   petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
-  if (now - E.overAt > 1000) blit(textSprite(t(o.again || 'playAgainWave'), 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300));
+  if (now - E.overAt > 1000) { const al = t(againKey(o.again || 'playAgainWave')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + rpG, 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
   ctx.restore();
   if (DUp) drawDuelPanel(now, x0, y0 - DUp, cw, rtl); else if (E === strike) strike.ui.duelCard = null;
   if (ui.dwell && cursor.present) { // a point / pinch / fist held on a button: a ring fills over 400 ms
@@ -10992,7 +11172,7 @@ function rpReady() { return !!(rp.ok && rp.clip && rp.clip.round === rp.round); 
 function rpCardBtn(now, E) {
   const ui = E.ui, c = ui.card; ui.rpBtn = null;
   if (!c || !ui.buttons || !rpReady()) return 0;
-  const rtl = lang === 'he', C = rp.clip, sp = textSprite(t('rpBtn'), 15, '#ffd77a', null, 800), h = 38, w = Math.min(c.w - 40, Math.max(140, sp.tw + 74));
+  const rtl = lang === 'he', C = rp.clip, sp = textSprite(t('rpBtn'), 15, '#ffd77a', null, 800), h = 38, w = Math.min(c.w - 40, Math.max(150, sp.tw + 92)); // (room for the label between the thumb and the ▶ in both directions)
   let bb = 0; for (const k in ui.buttons) bb = Math.max(bb, ui.buttons[k].y + ui.buttons[k].h); // (clear of the card's lowest button)
   let x = c.x + c.w / 2 - w / 2, y = Math.max(c.y + c.h - 12, bb + 5), gap = Math.round(y + h - (c.y + c.h)) + 2, corner = false;
   if (y + h > H - 4) { corner = true; x = 12; y = 12; gap = 0; }
@@ -11006,8 +11186,8 @@ function rpCardBtn(now, E) {
   if (C.thumb) { const s = Math.max(2 * tr / C.fw, 2 * tr / C.fh); ctx.drawImage(C.thumb, tx - C.fw * s / 2, ty - C.fh * s / 2, C.fw * s, C.fh * s); } else { ctx.fillStyle = '#2a3366'; ctx.fill(); }
   ctx.restore(); resetView(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,215,122,0.9)'; ctx.beginPath(); ctx.arc(tx, ty, tr, 0, TAU); ctx.stroke();
   const px = rtl ? x + 18 : x + w - 18; ctx.fillStyle = '#ffc24b'; ctx.beginPath(); ctx.moveTo(px - 5, ty - 7); ctx.lineTo(px + 7, ty); ctx.lineTo(px - 5, ty + 7); ctx.closePath(); ctx.fill(); // ▶
-  const mid = x + w / 2 + (rtl ? 4 : -4); blit(sp, mid, ty, 0, Math.min(1, (w - 74) / sp.tw));
-  ui.rpBtn = { x, y, w, h, corner, label: t('rpBtn') };
+  const la = rtl ? x + 33 : x + 43, lb = rtl ? x + w - 43 : x + w - 33, lk = Math.min(1, (lb - la) / sp.tw), mid = (la + lb) / 2; blit(sp, mid, ty, 0, lk); // the label centred in the room between the thumb and the ▶ (Hebrew's longer label overlapped the thumb)
+  ui.rpBtn = { x, y, w, h, corner, label: t('rpBtn'), thumb: { x: tx - tr, w: 2 * tr }, play: { x: px - 5, w: 12 }, lab: { x: mid - sp.tw * lk / 2, w: sp.tw * lk } };
   return gap;
 }
 
@@ -11209,6 +11389,7 @@ function renderStrike(now) {
   }
   }
   w2Ambient(now, g3); // (worlds 6-8: stars, bubbles and kelp, sprinkles)
+  const handUnder = !strike.over && !strike.perkOffer; if (handUnder) drawStrikeHand(now, true); // (panel fix: under the walls, the ball, the reticle and the weak points)
   drawServeCue(now);
   const items = []; // walls, debris, capsules and the balls painted far to near, so a wall behind the ball is under it and one in front covers it
   for (const w of strike.walls) if (w.z < Z) items.push({ z: w.z, w });
@@ -11246,7 +11427,7 @@ function renderStrike(now) {
   drawServePrompt(now); drawComboBanner(now); drawLevelBanners(now); drawRealBossIntro(now); drawStreakToast(now); drawSpotlight(now); drawChest(now);
   drawStrikeFloaters(now); drawJuiceFx(now); // v5: never overlapping each other or the banners; the wall-down / PERFECT flashes
   drawPerkOffer(now);
-  drawStrikeHand(now);
+  if (!handUnder) drawStrikeHand(now);
   const sk = Math.max(0, 1 - (now - strike.superFlash) / 200);
   if (sk > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(255,230,150,' + (0.22 * sk).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); } // SUPER smash: a warm flash
   if (g3) { // 3D: SUPER and combo moments also bloom in from the screen edges (additive), with the edge strips flaring in the scene
@@ -11265,7 +11446,7 @@ function renderStrike(now) {
   }
   if (strike.over && adv.on && adv.result) { if (!strike.perkOffer) drawAdvCard(now); else strike.ui.buttons = null; drawStrikeHand(now); } // an Adventure stage's card (v5: under the run-power cards, hidden)
   else if (strike.over && frenzy.on && frenzy.result) { // Frenzy: hits in a row, the top speed, NEW RECORD! and Share
-    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true, duel: true });
+    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true, duel: true, map: true });
     drawStrikeHand(now);
   }
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
@@ -12526,7 +12707,7 @@ const STAT_KEYS = { fruit: 'fruit', brick: 'bricks', car: 'cars', wall: 'walls',
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, starter: false, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' }, pet: petDefault(), event: evDefault(), evx: { stickers: [], hats: [], balls: [] } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -12553,7 +12734,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.seen)) A.seen = [...new Set(a.seen.filter((k) => STRIKE_KINDS.includes(k)))];
       if (a.best && typeof a.best === 'object') for (const k of Object.keys(a.best)) { const n = +k, v = a.best[k]; if (Number.isInteger(n) && n >= 1 && n <= ADV_N && Number.isFinite(v) && v > 0) A.best[n] = Math.min(9999999, Math.round(v)); } // v4: the best score per stage
       if (A.stars[ADV_N_OLD]) advOpenNode(A, ADV_N_OLD + 1); } // worlds 6-8: a player who beat the Lava Dragon before they came finds world 6 open (nothing else changes)
-    if (typeof p.duelName === 'string') d.duelName = duelSanitize(p.duelName); if (p.duelAsked === true) d.duelAsked = true;
+    if (typeof p.duelName === 'string') d.duelName = duelSanitize(p.duelName); if (p.duelAsked === true) d.duelAsked = true; if (p.starter === true) d.starter = true;
     if (p.frenzy && typeof p.frenzy === 'object') { const f = p.frenzy; if (Number.isFinite(f.best) && f.best > 0) d.frenzy.best = Math.min(99999, Math.round(f.best)); if (Number.isFinite(f.top) && f.top >= 1) d.frenzy.top = Math.min(50, Math.round(f.top * 100) / 100); if (Number.isFinite(f.runs) && f.runs > 0) d.frenzy.runs = Math.min(1e6, Math.floor(f.runs)); } // Frenzy: the best hits in a row, the top speed (x), runs
     if (Array.isArray(p.themes)) d.themes = [...new Set(['classic'].concat(p.themes.filter((id) => THEME_IDS.includes(id))))]; // Strike themes: only known ids, classic always owned; the equipped one must be owned
     if (typeof p.theme === 'string' && d.themes.includes(p.theme)) d.theme = p.theme;
@@ -12630,6 +12811,28 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
 function roundStart() { rpReset(); petUi.earn = null; meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score, xp, pb) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission; pb: the pet's snack bonuses { star, boss, record }
   meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1); petEarn(pb); if (EV_READY) evRoundDone();
+  starterGift();
+}
+// Panel fix (economy: ~60 coins after a dozen runs, the cheapest power 80): a one-time welcome gift of ECONOMY.starter coins after the first
+// finished round (profile.starter), for a real visitor (the suites' exact coin counts: on with window.__graspStarter = true, like the gifts).
+function starterOk() { try { return !navigator.webdriver || window.__graspStarter === true; } catch { return true; } }
+function starterGift() {
+  if (profile.starter || !starterOk()) return false;
+  profile.starter = true; addCoins(ECONOMY.starter); saveProfile(); toast('starterGift', { c: ECONOMY.starter }, 'coin'); return true;
+}
+/* the map's "next purchase" goal: the cheapest thing not owned yet (a power level, a theme, a look) and the coins still missing */
+function nextPurchase() {
+  const c = [];
+  for (const id of UPG_IDS) { const p = upgPrice(id); if (p > 0) c.push({ kind: 'upg', id, cost: p, name: t('up_' + id) }); }
+  for (const id in ECONOMY.themes) if (!(profile.themes || []).includes(id)) c.push({ kind: 'theme', id, cost: ECONOMY.themes[id], name: t('th_' + id) });
+  for (const it of ITEMS) if (!it.level && it.cost > 0 && !profile.unlocked.includes(it.id)) c.push({ kind: 'item', id: it.id, cost: it.cost, name: t('it_' + it.id) });
+  if (!c.length) return null; c.sort((a, b) => a.cost - b.cost); const q = c[0];
+  return { ...q, have: profile.coins, left: Math.max(0, q.cost - profile.coins), frac: Math.min(1, profile.coins / q.cost), ready: profile.coins >= q.cost };
+}
+function renderAdvGoal() {
+  const el = $('advGoal'); if (!el) return null; const q = nextPurchase(); el.hidden = !q; if (!q) return null;
+  el.querySelector('b').textContent = q.ready ? t('goalReady', { i: q.name }) : t('goalLeft', { i: q.name, n: q.left }); el.querySelector('i').style.width = Math.round(q.frac * 100) + '%'; el.classList.toggle('ready', q.ready);
+  el.setAttribute('aria-label', el.querySelector('b').textContent); return q;
 }
 function coinSprite(r) {
   return makeSprite('coin|' + Math.round(r), r * 2 + 6, r * 2 + 6, r + 3, r + 3, (g) => {
@@ -12749,6 +12952,10 @@ function renderDailyPanel() {
     const a = document.createElement('small'); a.textContent = String(+d.date.slice(8)); const v = document.createElement('b'); v.textContent = d.best !== null ? String(d.best) : '–'; el.append(a, v); return el; }));
   let ok = false; try { ok = localStorage.getItem('camOk') === '1'; } catch {}
   $('dailyCam').textContent = t(ok ? 'camBtnAgain' : 'camBtn');
+  // Panel fix: "Play" (touch / mouse) is the primary button; the camera is the secondary option, unless the camera is the chosen way to play
+  const cam = inputPref() === 'camera', pm = $('dailyMouse'), pc = $('dailyCam');
+  pm.textContent = t(cam ? 'mouseBtn' : 'dailyPlayBtn'); pm.className = cam ? 'secondary' : 'primary'; pc.className = cam ? 'primary' : 'secondary';
+  if (cam) pc.after(pm); else pm.after(pc);
 }
 function openDaily() { setGameMode('strike'); renderDailyPanel(); $('daily').hidden = false; $('daily').querySelector('.sheet').scrollTop = 0; $('daily').querySelector('.xBtn').focus({ preventScroll: true }); }
 function startDaily(how) { // test hook / panel buttons: play today's daily (how: 'camera' | 'mouse'; default: the mouse, or a restart when a game is running)
@@ -13053,6 +13260,7 @@ const ST_ART = {
   dragon(g) { stDragon(g, '#7ae87a', '#2fa84a', '#fff0b0'); },
   dragonking(g) { g.save(); g.translate(0, 6); g.scale(0.9, 0.9); stDragon(g, '#ff7a5a', '#c8202a', '#ffe14a'); g.restore(); stCrown(g, -30, 0.62, '#5ab8ff'); g.fillStyle = 'rgba(255,170,40,.95)'; g.beginPath(); g.ellipse(-30, 26, 6, 3, 0.4, 0, TAU); g.ellipse(32, 26, 6, 3, -0.4, 0, TAU); g.fill(); },
 };
+function stickerSlotSprite(R = 32) { return makeSprite('stkslot|' + R, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => { g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fillStyle = 'rgba(241,233,218,0.07)'; g.fill(); g.setLineDash([R * 0.16, R * 0.12]); g.lineWidth = Math.max(1.5, R * 0.05); g.strokeStyle = 'rgba(241,233,218,0.4)'; g.stroke(); g.setLineDash([]); }); }
 function stickerSprite(n, sil, R = 32) { // sticker n (1..40) as a sprite of radius R: earned (sil false) or its silhouette (a slot still to fill)
   const id = STICKERS[n - 1], w = advWorldOf(n), acc = WORLDS[w - 1].accent;
   return makeSprite('stk|' + n + '|' + (sil ? 1 : 0) + '|' + R, R * 2 + 8, R * 2 + 8, R + 4, R + 4, (g) => {
@@ -13130,7 +13338,7 @@ function drawCardSticker(now, r, E, cx, y, cw, rtl) {
   const ui = E.ui, at = E.overAt + 350 + 3 * 420 + 150, q = Math.max(0, Math.min(1, (now - at) / 520)), x = cx + (rtl ? 1 : -1) * (cw / 2 - 58), R = 32;
   if (q > 0 && !adv.sfxAt.peel) { adv.sfxAt.peel = now; sfx('peel'); }
   if (q >= 0.6 && r.page && !adv.sfxAt.page) { adv.sfxAt.page = now; sfx('fanfare'); confetti(cx, y, 70, 1); burst(x, y, '#ffd77a', 18); }
-  blit(stickerSprite(r.sticker, true, R), x, y, 0, 1, q < 1 ? 1 - q : 0); // its slot (the silhouette) until it lands
+  if (q < 1) blit(stickerSlotSprite(R), x, y, 0, 1, 1 - q); // its slot until it lands (panel fix: a faint dashed ring; the dark silhouette read as a black rectangle while the card came in)
   if (q > 0) { // fall + spin in, overshoot, settle; the corner flap still curling up until it lands
     const e = 1 + 2.2 * Math.pow(q - 1, 3) + 1.2 * Math.pow(q - 1, 2), sc = 1.7 - 0.7 * e, ang = (1 - q) * (rtl ? 0.9 : -0.9) - (rtl ? -0.12 : 0.12);
     blit(stickerSprite(r.sticker, false, R), x, y - (1 - q) * 40, ang, sc, Math.min(1, q * 3));
@@ -13239,6 +13447,7 @@ function toast(key, vars, icon = 'star') {
   const host = $('metaToast'); host.appendChild(el);
   if (toastQ.compact && [...host.children].some((e) => e !== el && !e.classList.contains('wait'))) el.classList.add('wait'); // a card is up and a toast already shows: this one waits its turn
   else runToast(el);
+  toastAvoid();
 }
 /* Over a round-over card the toasts go compact: one line each, one at a time (TOAST_CARD_MS each) in the gap between the toolbar and the card. */
 const TOAST_MS = 3000, TOAST_CARD_MS = 1600, toastQ = { compact: false, top: 0 };
@@ -13253,25 +13462,52 @@ function pumpToasts() {
 }
 function setToastCompact(on, top) { // called every frame: on while a round-over card is showing; top = the toolbar's (or camera preview's) bottom
   const host = $('metaToast');
-  if (on && Math.abs(top - toastQ.top) > 0.5) { toastQ.top = top; host.style.top = top + 'px'; }
+  if (on && Math.abs(top - toastQ.top) > 0.5) { toastQ.top = top; if (!toastAv.on) host.style.top = top + 'px'; }
   if (on === toastQ.compact) return;
   toastQ.compact = on; host.classList.toggle('compact', on);
   if (on) { // the toasts already up: fading ones go, the first live one stays (for its card time), the others wait
     const live = [...host.children].filter((e) => !e.classList.contains('wait'));
     live.filter((e) => e.classList.contains('out')).forEach((e) => { clearTimeout(e._t); e.remove(); });
     live.filter((e) => !e.classList.contains('out')).forEach((e, i) => { if (i) { clearTimeout(e._t); e.classList.add('wait'); } else runToast(e); });
-  } else { host.style.top = ''; toastQ.top = 0; }
+  } else { if (!toastAv.on) host.style.top = ''; toastQ.top = 0; }
   pumpToasts();
+}
+// Panel fix: a toast never covers an open sheet's header (e.g. the pet room's title and its X): while a sheet (.ov) is open the toasts sit just
+// under its header (toastAvoid; checked when a toast shows and every 250 ms while any is up).
+const toastAv = { on: false, top: 0, timer: 0 };
+function toastModalHeader() {
+  let best = null, z = -1;
+  for (const ov of document.querySelectorAll('.ov')) { if (ov.hidden) continue; const cs = getComputedStyle(ov); if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const h = ov.querySelector('header'); if (!h) continue; const r = h.getBoundingClientRect(); if (r.height <= 0) continue; const zi = +cs.zIndex || 0; if (zi >= z) { z = zi; best = r; } }
+  return best;
+}
+function toastAvoid() {
+  const host = $('metaToast'), r = host.children.length ? toastModalHeader() : null;
+  if (r) { const top = Math.round(r.bottom + 8); if (!toastAv.on || Math.abs(top - toastAv.top) > 0.5) { toastAv.on = true; toastAv.top = top; host.classList.add('underHdr'); host.style.top = top + 'px'; } }
+  else if (toastAv.on) { toastAv.on = false; host.classList.remove('underHdr'); host.style.top = toastQ.compact ? toastQ.top + 'px' : ''; }
+  if (host.children.length && !toastAv.timer) toastAv.timer = setInterval(() => { if (!$('metaToast').children.length) { clearInterval(toastAv.timer); toastAv.timer = 0; } toastAvoid(); }, 250);
 }
 function syncToastLayout() { const E = mode !== 'none' ? endState() : null; setToastCompact(!!(E && E.over && E.ui.card), Math.max(56, chromeRow.bottom) + 6); }
 /* --- "One more?": the nearest goal for the round-over card: the cheapest locked item by coins, the next player level, or the closest unfinished mission (the highest fraction wins) --- */
+// Panel fix: a round-over card (its mission row and its "One more?" teaser) shows only the missions the game just played can move on
+// ("Crumple 2 cars" on a Frenzy card was noise). rounds: any game; on the start screen (no game) every mission fits.
+const MISSION_MODES = { fruit: ['slice'], bricks: ['strike', 'smash'], cars: ['smash'], walls: ['strike', 'smash'], powerups: ['strike'], boss: ['strike', 'smash'], strikeLevel: ['strike'], combo: ['slice'], close: ['strike'], daily: ['strike'], guest: ['strike'], shapes: ['shapes'] };
+const FRENZY_NO = ['strikeLevel', 'boss', 'powerups', 'guest', 'daily'];
+function missionFits(m, g = gameMode) {
+  if (mode === 'none') return true;
+  const ok = MISSION_MODES[m.id]; if (!ok) return true;
+  if (!ok.includes(g)) return false;
+  if (g === 'strike' && frenzy.on && FRENZY_NO.includes(m.id)) return false;
+  if (g === 'strike' && adv.on && (m.id === 'strikeLevel' || m.id === 'daily')) return false;
+  return true;
+}
 function teaser() {
   const c = [];
   const it = ITEMS.filter((q) => !q.level && q.cost > 0 && !profile.unlocked.includes(q.id)).sort((a, b) => a.cost - b.cost)[0];
   if (it) { const n = it.cost - profile.coins; c.push({ kind: n <= 0 ? 'buy' : 'coins', frac: Math.min(1, profile.coins / it.cost), n: Math.max(0, n), item: it.id, text: t(n <= 0 ? 'teaseBuy' : 'teaseCoins', { n, i: t('it_' + it.id) }) }); }
   const lv = profile.level, a = xpForLevel(lv), b = xpForLevel(lv + 1);
   c.push({ kind: 'xp', frac: Math.max(0, (profile.xp - a) / (b - a)), n: b - profile.xp, level: lv + 1, text: t('teaseXp', { n: b - profile.xp, l: lv + 1 }) });
-  for (const m of profile.missions.list) if (!m.done) {
+  for (const m of profile.missions.list) if (!m.done && missionFits(m)) {
     const n = Math.max(1, m.goal - m.progress), k1 = 'tm_' + m.id + '1';
     c.push({ kind: 'mission', id: m.id, frac: m.progress / m.goal, n, text: t(n === 1 && I18N[lang][k1] ? k1 : 'tm_' + m.id, { n, g: m.goal }) });
   }
@@ -13371,7 +13607,7 @@ function profileTip(id) { return (profile.tips || []).includes(id); }
 function tipOnce(id) { // onboarding: a thing explained the first time it shows up on this profile (once ever), as the hint toast; the serve is the mode's own start hint
   if (profileTip(id)) return false;
   (profile.tips || (profile.tips = [])).push(id); saveProfile();
-  if (!TIP_KEYS[id]) return false;
+  if (!TIP_KEYS[id] || id === 'flick') return false; // (panel fix: the serve's own line over the ball explains the pull-back + flick; no second, 3-line toast)
   const text = t(TIP_KEYS[id]); grippy.tips.push({ id, text, t: performance.now() }); showHint(text); return true;
 }
 function grippyHide() {} // (nothing on screen any more; kept for the callers)
@@ -13510,6 +13746,7 @@ function renderAdvMap() {
     host.appendChild(b);
   }
   renderStarChests(host, L); renderDayChest(); renderAlbumBtn();
+  renderAdvGoal(); // (panel fix: the next purchase as a goal)
   { const o = overallRank(), el = $('advRank'); el.hidden = o < 0; if (o >= 0) { el.dataset.rank = RANKS[o]; el.style.setProperty('--rc', RANK_COL[o]); el.style.setProperty('--rg', rankCss(o)); el.querySelector('b').textContent = t('rk_' + RANKS[o]); el.querySelector('small').textContent = t('rankTitle'); el.setAttribute('aria-label', t('rankAria', { r: t('rk_' + RANKS[o]) })); } } // v4: the overall rank
   renderThemeChip(); // the equipped Strike theme
   { const fb = profile.frenzy.best, el = $('advFrenzySub'); el.textContent = fb > 0 ? t('frenzySubBest', { n: fb }) : t('frenzySub'); } // Frenzy: its best run under the button
@@ -13523,7 +13760,7 @@ function advNodeTap(n, b) {
 }
 function openAdvMap(o = {}) { // o.how: the way a stop starts from the start screen; o.from / o.pop: after a world's boss, the map rises from stop `from` to the new world's first stop, which pops open
   amap.how = o.how === 'camera' ? 'camera' : o.how === 'mouse' ? 'mouse' : amap.how; amap.fromGame = mode !== 'none'; adv.dwell = null; duelEnd();
-  advSyncWorlds(profile); const M = $('advMap'); if (M.hidden) xfadeStart('in'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim);
+  advSyncWorlds(profile); const M = $('advMap'); if (M.hidden) xfadeStart('in'); M.hidden = false; $('advDwell').hidden = true; renderAdvMap(); clearTimeout(amap.anim); if (mode === 'none' && amap.how === 'camera') homeCamStart(); // (panel fix: the hand works on the map)
   if (o.pop && advPlayable(o.pop)) {
     advScrollTo(o.from || o.pop - 1, false); amap.popped = o.pop;
     amap.anim = setTimeout(() => { advScrollTo(o.pop, true); amap.anim = setTimeout(() => { const b = $('advPath').querySelector('.anode[data-n="' + o.pop + '"]'); if (!b) return; b.classList.add('pop'); sfx('unlock'); sfx('levelup'); try { domConfetti($('advPath'), b.getBoundingClientRect()); } catch {} setTimeout(() => b.classList.remove('pop'), 900); }, 750); }, 450);
@@ -13738,7 +13975,7 @@ $('nuOk').addEventListener('click', closeNewCard);
 $('duelNameGo').addEventListener('click', () => duelAskDone(true)); $('duelNameSkip').addEventListener('click', () => duelAskDone(false)); // Challenge a friend: the name, once
 $('duelNameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); duelAskDone(true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); $('duelName').hidden = true; duel.asking = null; duel.sheetAt = performance.now(); } });
 $('newCard').addEventListener('pointerdown', (e) => { if (e.target === $('newCard')) closeNewCard(); });
-$('metaPill').addEventListener('click', () => openPanel('collection'));
+$('metaPill').addEventListener('click', (e) => openPanel(e.target.closest && e.target.closest('.lvl, .xp, .nx') ? 'road' : 'collection')); // the coins open the Shop; the level, its XP bar and "180 XP to: Glass walls" open the Road (panel fix)
 $('dailyBtn').addEventListener('click', openDaily);
 $('dailyCam').addEventListener('click', () => { audioInit(); startDaily('camera'); });
 $('dailyMouse').addEventListener('click', () => { audioInit(); startDaily('mouse'); });
@@ -13748,6 +13985,7 @@ for (const id of ['missions', 'collection', 'daily', 'road', 'worldMap']) {
 }
 $('advBack').addEventListener('click', () => closeAdvMap());
 $('advTheme').addEventListener('click', openThemeShop);
+$('advGoal').addEventListener('click', () => { audioInit(); sfx('click'); openPanel('collection'); $('collection').classList.toggle('overMap', advMapOpen()); });
 $('advDayChest').addEventListener('click', dayChestTap);
 $('giftBtn').addEventListener('click', () => { audioInit(); sfx('click'); openGifts(false); });
 $('flameBtn').addEventListener('click', () => { const n = playStreak(); sfx('click'); toast(n ? 'flameToast' : 'flameZero', { n }, 'star'); });
@@ -13778,6 +14016,7 @@ function setGameMode(m) {
   if (engine) {
     if (was === 'smash' && m !== 'smash') { clearSmash(); closeSmashMap(true); }
     if (m === 'sandbox' && !bodies.length) spawnObjects();
+    toyBoxSync();
     if (m === 'smash' && mode !== 'none') resetSmash(performance.now());
   }
   renderModeText();
@@ -13798,10 +14037,12 @@ function hintText() {
 function hintBottom() { // px from the bottom edge: above Strike's power meter and its tier label, above Shapes' toy box, else a small margin
   if (cgOn()) return cgHintBottom();
   if (gameMode === 'shapes' && shapes.box && !(shapes.grid && shapes.grid.side)) return Math.max(16, Math.round(H - (shapes.box.y - shapes.box.h / 2 - Math.sin(shapes.box.rock) * shapes.box.w / 2)) + 10);
+  if (gameMode === 'sandbox') return Math.max(16, Math.round(H - Math.max(64, chromeRow.bottom + 12) - 90)); // (panel fix: at the top, clear of the things on the floor)
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
+  if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull back, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
   const src = document.querySelector('.modes button[data-mode="' + gameMode + '"] svg') || (cgOn() ? document.querySelector('#camGamesBtn .ctGo svg') : null);
   hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
@@ -13817,7 +14058,7 @@ function inputPref() { // the remembered way to play: 'camera' | 'mouse'; touch 
   let v = null; try { v = localStorage.getItem('inputPref'); } catch {}
   return v === 'camera' ? 'camera' : 'mouse';
 }
-function setInputPref(v) { try { localStorage.setItem('inputPref', v === 'camera' ? 'camera' : 'mouse'); } catch {} syncInputSeg(); }
+function setInputPref(v) { try { localStorage.setItem('inputPref', v === 'camera' ? 'camera' : 'mouse'); } catch {} syncInputSeg(); if (v !== 'camera' && homeCam.on && mode === 'none') homeCamOff(true); } // (touch chosen: the home camera goes off)
 function syncInputSeg() { const v = inputPref(); $('camBtn').setAttribute('aria-pressed', String(v === 'camera')); $('mouseBtn').setAttribute('aria-pressed', String(v === 'mouse')); }
 
 /* ---------------- HUD ---------------- */
@@ -13867,7 +14108,7 @@ function closeMenu(resume = true) { // resume: play goes on (camera: after the 3
   if (!menu.open) return false;
   menu.open = false; menu.dwell = null; chromeEl.classList.remove('open'); $('menuVeil').hidden = true; $('pauseBtn').setAttribute('aria-expanded', 'false');
   chromeEl.querySelectorAll('.chip.dwell').forEach((q) => q.classList.remove('dwell')); $('menuDwell').hidden = true;
-  if (resume && pause.on) { if (mode === 'camera') { if (!noHandShown) { pause.resumeT = performance.now(); pause.count = 0; } } else unpauseGame(); }
+  if (resume && pause.on) { if (mode === 'camera') { if (!nh.paused) { pause.resumeT = performance.now(); pause.count = 0; } } else unpauseGame(); } // (camera: the hand missing keeps it paused; it resumes when the hand is back)
   updateHudOffset(); musicSync(); return true;
 }
 $('pauseBtn').addEventListener('click', openMenu);
@@ -13894,7 +14135,7 @@ let makeLandmarker = null, swapping = false, autoSwapped = false, lastSwapAt = 0
 let landmarker = null, stream = null, lastVideoTime = -1, trackErrors = 0;
 
 function trackTick(now) {
-  if (mode !== 'camera' || !landmarker || video.readyState < 2 || document.hidden) return;
+  if ((mode !== 'camera' && !homeCam.on) || !landmarker || video.readyState < 2 || document.hidden) return;
   if (video.currentTime === lastVideoTime) return;
   lastVideoTime = video.currentTime;
   try {
@@ -14027,6 +14268,7 @@ async function loadTracker() {
 }
 
 async function enableCamera() {
+  if (homeCam.on && stream && landmarker && video.readyState >= 2) { homeCamOff(false); startGame('camera'); return; } // (the camera is already on: straight in)
   $('camBtn').disabled = true; $('checks').hidden = false;
   Object.keys(rows).forEach((k) => setRow(k, 'idle', ''));
   setRow('camera', 'pending', () => t('r_wait'));
@@ -14058,8 +14300,8 @@ async function enableCamera() {
 function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; }
 
 function fallbackToMouse(failures) {
-  stopCamera(); landmarker = null; lastLandmarks = null;
-  noHandShown = false; statusEl.hidden = true; setPreviewBig(false); unpauseGame();
+  homeCamOff(false); stopCamera(); landmarker = null; lastLandmarks = null;
+  noHandShown = false; nhReset(); statusEl.hidden = true; setPreviewBig(false); unpauseGame();
   lastFailures = failures; renderBanner();
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
@@ -14086,6 +14328,7 @@ async function swapTracker(next) {
   return ok;
 }
 $('swapBtn').addEventListener('click', () => swapTracker(delegateUsed === 'GPU' ? 'CPU' : 'GPU'));
+$('nhMoreBtn').addEventListener('click', () => nhMoreSet($('nhMore').hidden)); // (the no-hand card's tips and tracker line, on request)
 
 // GPU scanning happily but never finding a hand = likely a GPU that returns nothing. Move to CPU once, never back.
 function maybeAutoSwap(now) {
@@ -14096,16 +14339,31 @@ function maybeAutoSwap(now) {
   swapTracker('CPU');
 }
 
-// No hand: enlarge the camera preview to the centre with instructions. Hand found: shrink it back to the corner.
+// The hand goes missing (panel fix: any gap over 400 ms used to pause + the big card + a 3-2-1, 18-42% of play at real loss rates):
+// - the cursor coasts on its last place through gaps under NOHAND.coastMs (readInput);
+// - a quiet "Hand?" chip (#handChip) after NOHAND.chipMs;
+// - free modes (Air Drums, Air Painting, Calm bubbles, Busy Board, Sandbox) never pause; the no-hand card only after NOHAND.freeCardMs;
+// - timed modes pause after NOHAND.pauseMs and show the card after NOHAND.cardMs; when the hand is back, a 3-2-1 only if the gap was >= NOHAND.countMs.
+// The card: "Show me your hand 👋" + the camera picture; the tips, the tracker line and the switch button sit behind "More help".
+const NOHAND = { chipMs: 400, coastMs: 1000, pauseMs: 1000, cardMs: 2500, freeCardMs: 5000, countMs: 2000 };
+const nh = { gap: 0, lastGap: 0, chip: false, paused: false, log: [] };
 let noHandShown = false;
+function nhMoreSet(on) { $('nhMore').hidden = !on; $('nhMoreBtn').setAttribute('aria-expanded', String(!!on)); }
+function nhReset() { nh.gap = 0; nh.paused = false; nh.chip = false; $('handChip').hidden = true; }
+function handNow(now) { return hand.misses < CONFIG.HAND_LOST_FRAMES && now - hand.lastSeen < CONFIG.HAND_LOST_MAX_MS; } // (the tracker sees it right now)
+function freePlay() { return gameMode === 'sandbox' || gameMode === 'busy' || gameMode === 'drums' || gameMode === 'paint' || (gameMode === 'bubbles' && bubbles.calm); }
 function updateNoHand(now) {
-  const show = mode === 'camera' && !menu.open && !cursor.present && now - Math.max(hand.lastSeen, cameraStartedAt) > 400; // (not over the pause sheet: the game is paused already)
-  if (show === noHandShown) return;
+  const gap = mode === 'camera' && !menu.open && !handNow(now) ? now - Math.max(hand.lastSeen, cameraStartedAt) : 0, free = freePlay(); // (not over the pause sheet: the game is paused already)
+  if (gap > 0) nh.gap = gap; else if (nh.gap > 0) { nh.lastGap = nh.gap; nh.log.push(Math.round(nh.gap)); if (nh.log.length > 20) nh.log.shift(); nh.gap = 0; }
+  const show = gap > (free ? NOHAND.freeCardMs : NOHAND.cardMs), chip = gap > NOHAND.chipMs && !show;
+  if (chip !== nh.chip) { nh.chip = chip; $('handChip').hidden = !chip; }
+  if (!free && gap > NOHAND.pauseMs && !nh.paused) { nh.paused = true; hideHint(); if (!pause.on) pauseGame(); }
+  if (!gap && nh.paused) { nh.paused = false; if (pause.on && !menu.open) { if (nh.lastGap >= NOHAND.countMs) { pause.resumeT = now; pause.count = 0; } else unpauseGame(); } } // the hand is back: 3-2-1 only after a long gap
+  if (show === noHandShown) { if ($('pausePill').hidden !== !pause.on) $('pausePill').hidden = !pause.on; return; }
   noHandShown = show;
   setPreviewBig(show);
-  statusEl.hidden = !show;
-  if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); pauseGame(); }
-  else if (pause.on && !menu.open) { pause.resumeT = now; pause.count = 0; } // the hand is back: 3-2-1 before play goes on
+  statusEl.hidden = !show; if (!show) nhMoreSet(false);
+  if (show) { hideHint(); statusLive.textContent = t('trackStarting', { d: delegateUsed }); }
   $('pausePill').hidden = !pause.on;
   updateHudOffset();
 }
@@ -14166,6 +14424,39 @@ function updateHudOffset() {
 }
 window.addEventListener('resize', () => updateHudOffset());
 
+/* Panel fix: the camera everywhere once chosen. Home by hand keeps the camera on (goHome: keepCam); on the start screen, the Adventure / Smash
+   maps and the camera games' picker the hand moves a ring (#homeDwell), and held over a tile, a card, a map stop or a button for HOME_DWELL_MS
+   (any pose) presses it once (then the hand must move off it). Opening a map or the picker with the camera chosen starts it (homeCamStart, no
+   checks card: a real failure shows when a game starts). A game started meanwhile goes straight in (enableCamera's fast path). */
+const HOME_DWELL_MS = 900, HOME_DWELL_SEL = '#start .modes > button, #camGamesBtn, #cgPick [data-cg], #cgPick .xBtn, #cgCam button, #advMap button, #smashMap button, #eventBtn, #petPetBtn';
+const homeCam = { on: false, dwell: null, wait: null, starting: false, clicks: [], q: 0 };
+function homeCamOff(stop) {
+  homeCam.on = false; homeCam.dwell = null; homeCam.wait = null; $('homeDwell').hidden = true;
+  if (stop && mode === 'none') { stopCamera(); try { landmarker && landmarker.close(); } catch {} landmarker = null; makeLandmarker = null; }
+}
+async function homeCamStart() { // a map or the picker opened with the camera chosen: the camera and the tracker on, quietly
+  if (homeCam.on || homeCam.starting || mode !== 'none' || inputPref() !== 'camera') return homeCam.on;
+  homeCam.starting = true;
+  try {
+    if (!stream) await withTimeout(startCamera(), CONFIG.STAGE_TIMEOUT_MS, 'Camera start');
+    if (!landmarker) { const ok = await loadTracker(); if (!ok) throw new Error('tracker'); }
+    if (mode === 'none') { homeCam.on = true; cameraStartedAt = performance.now(); if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); } }
+  } catch (e) { console.warn('[grasp] home camera off', e); }
+  homeCam.starting = false; return homeCam.on;
+}
+function homeCamTick(now) {
+  const ring = $('homeDwell');
+  if (!homeCam.on || mode !== 'none' || document.hidden) { if (!ring.hidden) ring.hidden = true; homeCam.dwell = null; return; }
+  const c = handNow(now) ? camCursor(now) : null;
+  if (!c) { if (!ring.hidden) ring.hidden = true; homeCam.dwell = null; homeCam.q = 0; return; }
+  ring.hidden = false; ring.style.transform = 'translate(' + Math.round(c.x) + 'px,' + Math.round(c.y) + 'px)';
+  const el = document.elementFromPoint(c.x, c.y), btn = el && el.closest ? el.closest(HOME_DWELL_SEL) : null;
+  if (homeCam.wait) { if (btn === homeCam.wait) { ring.style.setProperty('--q', '0'); return; } homeCam.wait = null; }
+  if (!btn || btn.disabled) { homeCam.dwell = null; homeCam.q = 0; ring.style.setProperty('--q', '0'); return; }
+  if (!homeCam.dwell || homeCam.dwell.el !== btn) homeCam.dwell = { el: btn, t: now };
+  const q = homeCam.q = Math.min(1, (now - homeCam.dwell.t) / HOME_DWELL_MS); ring.style.setProperty('--q', q.toFixed(3));
+  if (q >= 1) { homeCam.dwell = null; homeCam.wait = btn; homeCam.clicks.push(btn.id || btn.dataset.mode || btn.dataset.cg || btn.dataset.n || btn.className); audioInit(); btn.click(); }
+}
 function goHome() {
   if (held) dropHeld();
   shapes.held = null; if (gameMode === 'shapes') shapes.over = false; // (the next start deals a fresh Shapes round)
@@ -14173,14 +14464,15 @@ function goHome() {
   if (cgOn()) cgLeave(); // (the camera games: the backing beat stops, the camera prompt closes)
   if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; smash.taps.length = 0; smFlushTrack(performance.now(), true); } // the clock stops; the next start deals a fresh run
   closeMenu(false); unpauseGame();
-  stopCamera();
-  try { landmarker && landmarker.close(); } catch {}
-  landmarker = null; lastLandmarks = null; makeLandmarker = null; autoSwapped = false; lastTrackError = '';
+  const keepCam = mode === 'camera' && !!stream && !!landmarker && inputPref() === 'camera'; // (panel fix: once the camera is chosen it stays on: the start screen, the maps and the picker answer to the hand)
+  if (!keepCam) { stopCamera(); try { landmarker && landmarker.close(); } catch {} landmarker = null; makeLandmarker = null; }
+  homeCam.on = keepCam; homeCam.dwell = null; homeCam.wait = null;
+  lastLandmarks = null; autoSwapped = false; lastTrackError = '';
   mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; duelEnd(); $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
   hand2.seen = false; hand2.lm = null; hand2.samples.length = 0; lastLandmarks2 = null; camg.numHands = 1; hand.lm = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
-  noHandShown = false; preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
+  noHandShown = false; nhReset(); preview.hidden = true; setPreviewBig(false); statusEl.hidden = true; hudEl.hidden = true; $('banner').hidden = true;
   hideHint(); grippyHide(); syncHudBtn(); syncLiveDot(); updateHudOffset();
   $('checks').hidden = true; $('camBtn').disabled = false;
   if ($('start').hidden) xfadeStart('home'); fxClear(); // (graphics pass: an iris back onto the start screen)
@@ -14653,7 +14945,7 @@ function petFeed() { // one snack from the box: food + 1, today's count + 1; ret
 }
 function petHatch() {
   const P = petP(), d = petToday(); if (P.hatched) return null;
-  P.hatched = true; P.born = d; P.last = d; P.food = 0; P.seen = 1; P.ate = { date: '', n: 0 }; saveProfile();
+  P.hatched = true; P.born = d; P.last = d; P.food = 0; P.seen = 1; P.ate = { date: '', n: 0 }; P.pantry = Math.min(PET.pantryMax, (P.pantry || 0) + PET.starter); saveProfile(); // (panel fix: a starter snack, so the first Feed works; the Scarf is a Baby's from the start)
   petUi.cracks = 0; petUi.hatchAt = performance.now(); petUi.wigAt = -1e9; return { hatched: true, stage: 1 };
 }
 function petEquip(kind, id) { // kind 'color' or a slot ('head' / 'eyes' / 'neck'); a slot's item again = off; only what the stage has unlocked
@@ -15450,7 +15742,7 @@ const CG = { dwellMs: 700, twoMinFps: 5, twoSlowMs: 3000, h2LostMs: 260, tip: 14
 const camg = { numHands: 1, twoOff: false, slowSince: 0, handsLog: [], taps: [], btns: [], dwell: null, block: null, ptrs: [], touchOk: false, asked: 0, trail: {} };
 const hand2 = { seen: false, lastSeen: -1e9, misses: 99, x: 0, y: 0, fx: new OneEuro(), fy: new OneEuro(), samples: [], lm: null, sm: null };
 let lastLandmarks2 = null;
-try { camg.touchOk = sessionStorage.getItem('cgTouchOk') === '1'; } catch {}
+try { camg.touchOk = localStorage.getItem('cgTouchOk') === '1'; } catch {} // (panel fix: once per device: toddlers took 3 taps to reach the first bubble)
 function cgOn(m = gameMode) { return CG_MODES.includes(m); }
 function cgState(m = gameMode) { return m === 'drums' ? drums : m === 'bubbles' ? bubbles : m === 'paint' ? paint : m === 'stars' ? catcher : null; }
 function cgBlocked() { return pause.on || menu.open || !$('cgCam').hidden; }
@@ -15591,18 +15883,19 @@ const CG_HAND_COL = { h0: 'rgba(255,194,75,0.95)', h1: 'rgba(84,198,235,0.95)' }
 /* ---- the picker sheet (start screen tile) and the camera prompt ---- */
 function cgOpenPick() {
   if (mode !== 'none' || physicsError) return false;
-  audioInit(); cgPickSync(); $('cgPick').hidden = false; try { $('cgPick').querySelector('[data-cg]').focus({ preventScroll: true }); } catch {}
+  audioInit(); cgPickSync(); $('cgPick').hidden = false; homeCamStart(); try { $('cgPick').querySelector('[data-cg]').focus({ preventScroll: true }); } catch {}
   return true;
 }
 function cgClosePick() { if ($('cgPick').hidden) return false; $('cgPick').hidden = true; return true; }
-function cgPickSync() { $('cgPickCam').hidden = inputPref() === 'camera'; }
+function cgPickSync() { $('cgPickCam').hidden = true; } // (panel fix: no 'Best with the camera!' line in the picker: the camera prompt asks once per device instead)
 function cgStart(m, how) { // a game from the picker (or a direct link): the remembered input (touch until the camera is picked)
   if (!cgOn(m) || mode !== 'none' || physicsError) return false;
   cgClosePick(); setGameMode(m); audioInit(); strikeStart(how || inputPref()); return true;
 }
-function cgAskMaybe() { // started without the camera: a friendly prompt to turn it on (once a session after 'Play with touch')
+function cgAskMaybe() { // started without the camera: a friendly prompt to turn it on (once per device)
   if (mode !== 'mouse' || !cgOn() || camg.touchOk) return false;
   camg.asked++; $('cgCam').hidden = false; try { $('cgCamOn').focus({ preventScroll: true }); } catch {}
+  camg.touchOk = true; try { localStorage.setItem('cgTouchOk', '1'); } catch {} // (asked once per device)
   return true;
 }
 function cgAskClose() { if ($('cgCam').hidden) return false; $('cgCam').hidden = true; return true; }
@@ -15611,7 +15904,7 @@ $('cgPickX').addEventListener('click', () => cgClosePick());
 $('cgPick').addEventListener('pointerdown', (e) => { if (e.target === $('cgPick')) cgClosePick(); });
 $('cgPick').querySelectorAll('[data-cg]').forEach((b) => b.addEventListener('click', () => cgStart(b.dataset.cg)));
 $('cgPickCamOn').addEventListener('click', () => { setInputPref('camera'); cgPickSync(); sfx('click'); });
-$('cgCamTouch').addEventListener('click', () => { camg.touchOk = true; try { sessionStorage.setItem('cgTouchOk', '1'); } catch {} cgAskClose(); });
+$('cgCamTouch').addEventListener('click', () => { camg.touchOk = true; try { localStorage.setItem('cgTouchOk', '1'); } catch {} cgAskClose(); });
 $('cgCamOn').addEventListener('click', () => { cgAskClose(); setInputPref('camera'); audioInit(); enableCamera(); });
 window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (cgClosePick() || (cgAskClose() && (camg.touchOk = true))) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 
@@ -15623,7 +15916,7 @@ window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (
    sequence one longer each time, copy it; a wrong pad ends the run: its card, the best, a pet snack). */
 const DRUM_KINDS = ['hihat', 'crash', 'snare', 'tom', 'cowbell', 'kick'];
 const DRUM_COL = { hihat: '#ffd166', crash: '#ffb547', snare: '#54c6eb', tom: '#a98bff', cowbell: '#43d9a3', kick: '#ff6f59' };
-const DRUM = { hitV: 0.42, reV: 0.4, tapVel: 0.85, bpm: 100, beatVel: 0.42, simonGap: [640, 380], simonIdleMs: 7000 };
+const DRUM = { hitV: 0.36, nearK: 0.55, nearMs: 1500, cueMs: 900, reV: 0.4, tapVel: 0.85, bpm: 100, beatVel: 0.42, simonGap: [640, 380], simonIdleMs: 7000 };
 const DRUM_BEAT = [['kick', 'hihat'], ['hihat'], ['snare', 'hihat'], ['hihat'], ['kick', 'hihat'], ['kick', 'hihat'], ['snare', 'hihat'], ['hihat']]; // eighths at DRUM.bpm
 const drums = { pads: [], lw: 0, lh: 0, lt: 0, log: [], snd: [], hs: {}, hits: 0, bus: null,
   beat: { on: false, step: 0, nextAt: 0, nextAudio: 0, n: 0, flashAt: -1e9 },
@@ -15672,10 +15965,14 @@ function drumsStrike(p, now) { // a hand's downward strike, judged on each new t
   const s1 = S[n - 1], s0 = S[n - 2], st = drums.hs[p.id] || (drums.hs[p.id] = { t: 0, armed: true, hitAt: -1e9 });
   if (s1.t === st.t) return; st.t = s1.t;
   const dt = s1.t - s0.t; if (dt <= 0 || dt > 260) return; // (a gap: the hand was lost)
-  const vy = (s1.y - s0.y) / dt, V = DRUM.hitV * H / 800;
+  const V = DRUM.hitV * H / 800, sm = n >= 3 ? S[n - 3] : null, dt2 = sm ? s1.t - sm.t : 0; // (panel fix: gentle strikes were missed ~38%: a lower gate (0.42 -> 0.36), and a
+  let vy = (s1.y - s0.y) / dt; if (vy > 0 && sm && dt2 > 0 && dt2 <= 360) vy = Math.max(vy, (s1.y - sm.y) / dt2); // downward move over the last 2 samples counts too)
   if (!st.armed) { if (vy < V * DRUM.reV) st.armed = true; return; } // after a hit: slow down / lift before the next
-  if (vy < V) return;
-  let i = drumsPadAt(s1.x, s1.y, 1.3); if (i < 0) i = drumsSegPad(s0, s1);
+  if (vy < V) { // a near miss over a pad: "Harder!" (at most every 1.5 s)
+    if (vy >= V * DRUM.nearK && now - (drums.cue ? drums.cue.t : -1e9) > DRUM.nearMs) { const j = drumsPadAt(s1.x, s1.y, 1.1); if (j >= 0) { const P = drums.pads[j]; drums.cue = { t: now, x: P.x, y: P.y - P.r * 0.2, i: j }; drums.nears = (drums.nears || 0) + 1; } }
+    return;
+  }
+  let i = drumsPadAt(s1.x, s1.y, 1.3); if (i < 0) i = drumsSegPad(sm || s0, s1);
   if (i < 0) return;
   st.armed = false; st.hitAt = now;
   drumHit(i, Math.min(1, 0.55 + (vy - V) / (V * 2.5)), p.id, now);
@@ -15845,6 +16142,7 @@ function renderDrums(now) {
     blit(textSprite(t('dr_' + P.k), 13, 'rgba(241,233,218,0.72)', null, 600), P.x, P.y + P.r * s + 14);
   }
   drawParticles(); drawRings(now);
+  if (D.cue && now - D.cue.t < DRUM.cueMs) { const q = (now - D.cue.t) / DRUM.cueMs; blit(textSprite(t('drHarder'), 22, '#fff8ec', 'rgba(255,111,89,0.95)', 800), D.cue.x, D.cue.y - 30 * q, 0, 1 + 0.15 * Math.max(0, 1 - q * 4), Math.min(1, (1 - q) * 2.5)); } // (a near miss)
   // the hands: a glowing ball each (both hands when two are tracked)
   for (const p of camg.ptrs) if (p.hand) cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 15);
   // the top row: Beat + Follow the light, or (Simon) Stop + the status pill
@@ -15872,7 +16170,7 @@ function renderDrums(now) {
    (a pop, a splash of droplets, a ring). Golden bubbles (every 8-14) are +5 with sparkles; pops within BUB.comboMs chain into a combo (x3 and up: +1 each).
    A 60 s round, 0-3 stars by the score, the best, the card, a pet snack. Calm (a toggle, kept): no timer, slower and bigger, nothing to lose; every
    BUB.calmEvery pops a little party and a snack for the pet. */
-const BUB = { roundMs: 60000, comboMs: 700, stars: [20, 40, 65], calmEvery: 30, gold: [8, 14], max: 13, maxCalm: 8, spawn: [480, 860], spawnCalm: [900, 1500] };
+const BUB = { minCalm: 5, minGap: 220, roundMs: 60000, comboMs: 700, stars: [20, 40, 65], calmEvery: 30, gold: [8, 14], max: 13, maxCalm: 8, spawn: [480, 860], spawnCalm: [900, 1500] };
 const BUB_COLS = ['#ff6f91', '#ffc24b', '#43d9a3', '#54c6eb', '#a98bff', '#ff9f43', '#7bed9f', '#70a1ff'];
 const bubbles = { list: [], seq: 0, score: 0, popped: 0, golden: 0, combo: { n: 0, t: -1e9 }, bestCombo: 0, left: BUB.roundMs, calm: false, nextAt: 0, sinceGold: 0, goldAt: 10,
   best: 0, floaters: [], log: [], calmPops: 0, treats: 0, starsN: 0, over: false, overAt: 0, ui: { buttons: null, hover: null, dwell: null, ribbon: null, newBest: false } };
@@ -15884,7 +16182,8 @@ function bubblesReset(now) {
   try { B.best = Math.max(B.best, +localStorage.getItem('bubblesBest') || 0); } catch {}
   const ui = B.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
   roundStart(); grippySay('start');
-  for (let i = 0; i < 3; i++) bubbleSpawn(now, { y: H * (0.55 + i * 0.15) });
+  if (bubbles.calm) for (let i = 0; i < BUB.minCalm; i++) bubbleSpawn(now, { y: H * (0.3 + i * 0.14), x: W * (0.14 + ((i * 0.37) % 0.72)) }); // (Calm: five bubbles about from the start)
+  else for (let i = 0; i < 3; i++) bubbleSpawn(now, { y: H * (0.55 + i * 0.15) });
 }
 function bubblesSetCalm(on, now = performance.now()) { bubbles.calm = !!on; try { localStorage.setItem('bubblesCalm', on ? '1' : '0'); } catch {} bubblesReset(now); }
 function bubbleSpawn(now, o = {}) {
@@ -15893,7 +16192,7 @@ function bubbleSpawn(now, o = {}) {
   const x = o.x ?? (W * 0.08 + Math.random() * W * 0.84), y = o.y ?? H + r + 4, ramp = B.calm ? 1 : 1 + (1 - B.left / BUB.roundMs) * 0.35;
   const evb = !gold && (o.ev !== undefined ? !!o.ev : EV_READY && evFestival() && Math.random() < 0.14); // (Bubble Festival: festival bubbles, +3 and event points)
   const b = { id: ++B.seq, x, x0: x, y, r: evb ? Math.max(r, 34 * sc) : r, vy: o.vy ?? -(0.045 + Math.random() * 0.04) * (H / 740) * (B.calm ? 0.6 : 1) * ramp, col: gold ? '#ffd23f' : evb ? '#ff8fd1' : BUB_COLS[Math.floor(Math.random() * BUB_COLS.length)], gold: !!gold, ev: evb, ph: Math.random() * TAU, amp: o.amp ?? 6 + Math.random() * 14, born: now };
-  B.list.push(b); return b;
+  B.list.push(b); B.lastSpawn = now; return b;
 }
 function bubblesTick(now, dt) {
   const B = bubbles; tickFloaters(B.floaters, dt);
@@ -15902,6 +16201,7 @@ function bubblesTick(now, dt) {
   if (cgBlocked()) { camg.taps.length = 0; return; }
   if (!B.calm) { B.left -= dt; if (B.left <= 0) { B.left = 0; bubblesOver(now); return; } if (B.left < 5000 && Math.ceil(B.left / 1000) !== Math.ceil((B.left + dt) / 1000)) sfx('tick'); }
   if (now >= B.nextAt) { if (B.list.length < (B.calm ? BUB.maxCalm : BUB.max)) bubbleSpawn(now); const [a, b] = B.calm ? BUB.spawnCalm : BUB.spawn; B.nextAt = now + a + Math.random() * (b - a); }
+  else if (B.calm && B.list.length < BUB.minCalm && now - (B.lastSpawn || 0) >= BUB.minGap) bubbleSpawn(now); // (panel fix: Calm keeps at least 5 bubbles about)
   for (let i = B.list.length - 1; i >= 0; i--) { const b = B.list[i]; b.y += b.vy * dt; b.x = b.x0 + Math.sin(now / 900 + b.ph) * b.amp; if (b.y + b.r < -12) B.list.splice(i, 1); } // (one that floats away is just gone: nothing lost)
   const pts = [];
   for (const p of camg.ptrs) { if (p.hand) { pts.push(p); for (const q of p.tips) pts.push(q); } else if (p.down) pts.push(p); }
@@ -16083,15 +16383,16 @@ function paintEnd() {
 function paintDotAt(x, y, now) { paintMove(x, y, now); paint.ink += 4; paintEnd(); }
 function paintFistTick(now) { // camera: a fist shows 'Shake to erase'; three quick shakes (sideways reversals) clear the drawing
   const F = paint.fist;
-  if (gesture !== 'fist' || !cursor.present) { F.on = false; F.done = false; F.times = []; return; }
+  if (gesture !== 'fist' || !cursor.present) { F.on = false; F.done = false; F.times = []; F.stage = 0; return; }
   const x = cursor.x, S = PAINT.shakeMin * Math.max(0.8, W / 400);
-  if (!F.on) { F.on = true; F.dir = 0; F.ext = x; F.piv = x; F.times = []; F.at = now; return; }
+  if (!F.on) { F.on = true; F.dir = 0; F.ext = x; F.piv = x; F.times = []; F.at = now; F.stage = 0; return; }
+  if (F.stage === 1 && now - F.stageAt > PAINT.confirmMs) { F.stage = 0; F.times = []; } // (the confirm shake did not come: back to the start)
   if (F.done) return;
   if (F.dir === 0) { if (Math.abs(x - F.piv) > S) { F.dir = Math.sign(x - F.piv); F.ext = x; } }
   else if (F.dir > 0) { if (x > F.ext) F.ext = x; else if (F.ext - x > S) { F.dir = -1; F.piv = F.ext; F.ext = x; F.times.push(now); } }
   else { if (x < F.ext) F.ext = x; else if (x - F.ext > S) { F.dir = 1; F.piv = F.ext; F.ext = x; F.times.push(now); } }
   F.times = F.times.filter((q) => now - q < PAINT.shakeMs);
-  if (F.times.length >= PAINT.shakeN) { F.done = true; F.times = []; paintClear(now, 'shake'); }
+  if (F.times.length >= PAINT.shakeN) { F.times = []; if (!F.stage) { F.stage = 1; F.stageAt = now; sfx('tick3'); } else { F.done = true; F.stage = 0; paintClear(now, 'shake'); } } // (panel fix: a shake, then a second one to confirm: a fist read by accident never wipes a drawing)
 }
 function paintClear(now, how) { // the drawing flies away (a snapshot shrinks and fades), a whoosh
   const P = paint; paintEnd();
@@ -16165,7 +16466,7 @@ function renderPaint(now) {
     if (armed) blit(textSprite(t('pnAgain'), 10, '#ffffff', null, 700), cx, r.y + s - 9, 0, Math.min(1, (s - 6) / textSprite(t('pnAgain'), 10, '#ffffff', null, 700).tw));
     camg.btns.push({ key, x: r.x, y: r.y, w: s, h: s }); });
   // the fist: 'Shake to erase' with three dots
-  if (mode === 'camera' && P.fist.on && !P.fist.done) { const n = P.fist.times.length, y = Math.max(cgTopY() + 30, H * 0.3); cgPill(t('pnShake') + '  ' + '●'.repeat(n) + '○'.repeat(Math.max(0, PAINT.shakeN - n)), W / 2, y, { bg: 'rgba(255,77,61,0.3)', rim: 'rgba(255,120,100,0.8)' }); }
+  if (mode === 'camera' && P.fist.on && !P.fist.done) { const n = P.fist.times.length, y = Math.max(cgTopY() + 30, H * 0.3); cgPill(t(P.fist.stage ? 'pnShakeAgain' : 'pnShake') + '  ' + '●'.repeat(n) + '○'.repeat(Math.max(0, PAINT.shakeN - n)), W / 2, y, { bg: 'rgba(255,77,61,0.3)', rim: 'rgba(255,120,100,0.8)' }); }
   // the brush at the hand / the mouse
   if (cursor.present && !(mode === 'mouse' && ptr.type === 'touch' && !ptr.touches.size)) {
     const w = PAINT_SIZES[P.size], col = P.brush === 'rainbow' ? 'hsl(' + Math.round(P.hue) + ',100%,62%)' : PAINT_COLS[P.color]; resetView();
@@ -16469,6 +16770,7 @@ window.__grasp.pwa = { pwa, get state() { return { allowed: pwa.allowed, can: pw
   chip: !$('installBtn').hidden, menu: !$('menuInstall').hidden, toast: !$('pwaUpdate').hidden, controlled: !!(navigator.serviceWorker && navigator.serviceWorker.controller), log: pwa.log.slice() }; },
   allowed: pwaAllowed, register: pwaRegister, install: pwaInstall, sync: pwaSync, showUpdate: pwaShowUpdate, apply: pwaApply, iosOpen: pwaIosOpen, iosClose: pwaIosClose, snooze: pwaSnooze };
 window.__grasp.route = { modes: ROUTE_MODES, of: routeOf, get now() { return routeNow(); }, get log() { return route.log; } };
+window.__grasp.panelfix = { frameErr, cguard, CLICK_GUARD, NOHAND, nh, homeCam, toyBox, SM_OFF, ADV_EASY, RANK_PAR, SLICE_GRACE_MS, SLICE_FIRST_LIVES, DRUM, missionFits, nextPurchase, starterGift, againKey, bidiText, bidiDir, freePlay, handNow, get sliceRounds() { return sliceRounds; } }; // (test hooks for the panel fixes)
 syncGrippyBtn(); if (!routeBoot() && !maybeNewCard() && !pwaOpenParam()) maybeGift(); // a game's path: straight into it; else the day's gift calendar (a real visitor's first open of the day); a NEW UNLOCKED card not seen yet (the tab closed before it showed)
 </script>
 </body>

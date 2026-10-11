@@ -704,9 +704,9 @@ async def main():
         st = await page.evaluate(STATE)
         check('camera: open hand at the ball position hits it', st['dir'] == -1 and st['score'] >= 1, st)
         await page.wait_for_timeout(40); await page.screenshot(path='tests/out/strike_camera.png')
-        await page.evaluate("window.__handFor = () => null"); await page.wait_for_timeout(700)
+        await page.evaluate("window.__handFor = () => null"); await page.wait_for_function("pause.on", timeout=4000)  # (panel fix: a gap under 1 s coasts; past it a timed game pauses)
         z0 = await page.evaluate(f"{S}.ball && {S}.ball.z"); await page.wait_for_timeout(300); z1 = await page.evaluate(f"{S}.ball && {S}.ball.z")
-        check('camera: the ball waits while the hand is missing', await page.evaluate("noHandShown") and z0 == z1, [z0, z1])
+        check('camera: the ball waits while the hand is missing', await page.evaluate("pause.on && !$('handChip').hidden") and z0 == z1, [z0, z1])
         check('camera: no page errors', not errs, errs); await ctx.close()
 
         # --- phone (touch), English + Hebrew ---
@@ -737,7 +737,7 @@ async def main():
             check(tag + ' phone: HUD row on the pause button\'s row, clear of it, inside 360 px', hud['y'] >= chrome['t'] and hud['y'] + hud['h'] <= chrome['b'] and hud['x'] >= 8 and hud['x'] + hud['w'] <= chrome['l'] - 4, [hud, chrome])
             check(tag + ' phone: tier flash on the meter after the hit (the hit\'s own tier; its speed band can shift under load)', await page.evaluate(f"{S}.ui.tierFlash && {S}.ui.tierFlash.tier === {S}.lastHit.tier && ['medium', 'hard', 'super'].includes({S}.lastHit.tier)"), await page.evaluate(f"[{S}.ui.tierFlash, {S}.lastHit]"))
             await page.evaluate("touchAt('pointerup', 180, 360)"); await page.wait_for_timeout(300)
-            check(tag + ' phone: hint mentions the walls', ('לבנים' if he else 'walls') in await page.inner_text('#hint'))
+            check(tag + ' phone: no how-to toast in Strike (panel fix: the serve line over the ball is the one instruction)', await page.evaluate("+getComputedStyle($('hint')).opacity < 0.05 || $('hint').querySelector('.tx').textContent !== hintText()"))
             pw = await page.evaluate(f"(() => {{ const s = {S}, r0 = __grasp.CONFIG.STRIKE_PU_RATE; __grasp.CONFIG.STRIKE_PU_RATE = 1 / 4; s.setLevel(3); __grasp.CONFIG.STRIKE_PU_RATE = r0; s.catchTest('multi'); s.catchTest('fire'); return {{ n: s.balls.length, lv: s.level }}; }})()"); await page.wait_for_timeout(150)
             pi = await page.evaluate(f"({{ icons: {S}.ui.puIcons, tb: {S}.ui.tagBox, hud: {S}.ui.hud, pu: {S}.walls.some(w => w.bricks.some(k => k.pu)) }})")
             check(tag + ' phone: two power-ups active: HUD icons under the card inside the screen, "' + ('כדור אש!' if he else 'Fireball!') + '" tag below them, three balls, power-up bricks on the level-3 walls', pw['n'] == 3 and len(pi['icons']) == 2 and all(8 <= i['x'] - i['r'] and i['x'] + i['r'] <= 352 and i['y'] - i['r'] >= pi['hud']['y'] + pi['hud']['h'] for i in pi['icons']) and ((pi['icons'][0]['x'] > pi['icons'][1]['x']) == he) and pi['tb'] and pi['tb']['pu'] and pi['tb']['kind'] == 'fire' and pi['tb']['y'] >= pi['icons'][0]['y'] + pi['icons'][0]['r'] and pi['tb']['x'] >= 8 and pi['tb']['x'] + pi['tb']['w'] <= 352 and pi['pu'] and await page.evaluate("t('pu_fire')") == ('כדור אש!' if he else 'Fireball!'), [pw, pi])

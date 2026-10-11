@@ -19,6 +19,7 @@ async def routes(page):
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
 INIT += "try { if (!localStorage.getItem('inputPref')) localStorage.setItem('inputPref', 'mouse'); } catch (e) {}"  # the start screen's tiles start a game at once with the remembered input: the suites play with the mouse unless they pick the camera
+INIT += "window.__graspSlice3 = true;"  # (the session's first Slice round has 5 hearts; the suites' Slice checks count 3: test_panelfix covers the 5)
 START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); document.querySelector('.modes > button[aria-pressed=\"true\"]').click(); if (!$('advMap').hidden) $('advEndless').click(); if (!$('smashMap').hidden) $('smashFree').click(); })()"  # 'play the selected game with the mouse' (the old Play with mouse button; Strike: the Adventure map's Endless, the old run)
 # Strike's renderer in the suites: by default (GRASP_GFX=2d) the 2D canvas; GRASP_GFX=3d runs the WebGL renderer at a low fixed pixel ratio, no
 # shadows and no low-fps fallback (headless Chromium's WebGL is SwiftShader, a CPU rasterizer: full resolution runs at ~2-5 fps and falls back
@@ -68,9 +69,10 @@ async def main():
         check('thresholds 0.25 / 0.25 / 0.25 (cheap landmark tracking)', (cr[0]['det'], cr[0]['pres'], cr[0]['trk']) == (0.25, 0.25, 0.25), cr[0])
         rows = await page.evaluate("Object.fromEntries([...document.querySelectorAll('#checks li')].map(l=>[l.dataset.k, l.dataset.s + ': ' + l.querySelector('small').textContent]))")
         check('all 5 boot rows ok', all(v.startswith('ok') for v in rows.values()), rows)
-        await page.wait_for_timeout(1500)
-        check('no-hand screen shown', await page.evaluate("!statusEl.hidden && preview.classList.contains('big')"))
-        live = await page.inner_text('#statusLive'); check('live line shows GPU + scans/s', 'GPU' in live and 'scans/s' in live, live)
+        await page.wait_for_function("!statusEl.hidden", timeout=9000)  # (panel fix: the Sandbox is a free mode: never paused, the no-hand card after 5 s)
+        check('no-hand screen shown (a free mode: not paused)', await page.evaluate("!statusEl.hidden && preview.classList.contains('big') && !pause.on"))
+        await page.wait_for_function("statusLive.textContent.includes('scans/s')", timeout=6000)  # (the card comes at 5 s, as the GPU -> CPU auto-switch does: 'Switching tracker…' for a moment)
+        live = await page.inner_text('#statusLive'); check('live line shows the tracker + scans/s (by the 5 s card it may have moved to CPU already)', ('GPU' in live or 'CPU' in live) and 'scans/s' in live, live)
         check('tracker reads a 320 px frame from the canvas, not the video', (await page.evaluate("__inputs.at(-1)")).startswith('CANVAS:320x240'), await page.evaluate("__inputs.at(-1)"))
         await page.wait_for_timeout(4500)
         check('auto-switched to CPU after ~5s', await page.evaluate("delegateUsed") == 'CPU', await page.evaluate("[delegateUsed, __created.map(c=>c.d), __closed]"))
@@ -125,14 +127,15 @@ async def main():
         await page.evaluate(f"window.__handFor = () => handAt({t2['x']}, {t2['y']}, 0.8)"); await page.wait_for_timeout(400)
         await page.evaluate(f"window.__handFor = () => handAt({t2['x']}, {t2['y']}, 0.1)"); await page.wait_for_timeout(400)
         held = (await page.evaluate("__grasp.state"))['held']
-        await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(500)
+        await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1400)  # (panel fix: a gap under 1 s coasts, still holding)
         st = await page.evaluate("__grasp.state"); check('hand lost -> drop without throw', held == 1 and st['held'] == -1 and st['lastThrow'] == 0, [held, st])
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
         # ---- Phone: CPU first, no auto-switch, manual switch button both ways ----
         ctx, page, errs = await boot(b, True)
         check('phone starts on CPU', (await page.evaluate("__created"))[0]['d'] == 'CPU')
-        await page.wait_for_timeout(1500)
+        await page.wait_for_function("!statusEl.hidden", timeout=9000)  # (the card after 5 s in a free mode)
+        await page.tap('#nhMoreBtn'); await page.wait_for_timeout(200)  # (panel fix: the tips and the tracker switch sit behind "More help")
         await page.screenshot(path='tests/out/phone_nohand.png')
         box = await page.evaluate("(() => { const r = $('swapBtn').getBoundingClientRect(), p = preview.getBoundingClientRect(); return {btn:[r.top,r.bottom], prev:[p.top,p.bottom], H: innerHeight}; })()")
         check('switch button visible, below preview, on screen', box['btn'][0] > box['prev'][1] and box['btn'][1] < box['H'], box)

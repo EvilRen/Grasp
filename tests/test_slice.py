@@ -144,9 +144,9 @@ async def main():
         await page.evaluate("sweep((x,y) => handAt(x, y, 0.1), 40, 400, 320, 400, 250)"); await page.wait_for_timeout(700)
         check('pinch swipe does not cut', await page.evaluate("__grasp.slice.fruits.length") == 1)
         # hand gone -> world freezes, no-hand screen
-        await page.evaluate("window.__handFor = null; __grasp.slice.fruits[0].vy = -0.5"); await page.wait_for_timeout(900)
+        await page.evaluate("window.__handFor = null; __grasp.slice.fruits[0].vy = -0.5"); await page.wait_for_function("!statusEl.hidden", timeout=6000)  # (panel fix: a timed game pauses after 1 s, the card after 2.5 s)
         y1 = await page.evaluate("__grasp.slice.fruits[0].y"); await page.wait_for_timeout(500); y2 = await page.evaluate("__grasp.slice.fruits[0].y")
-        check('no hand -> no-hand screen + fruit frozen', await page.evaluate("!statusEl.hidden") and y1 == y2, [y1, y2])
+        check('no hand -> no-hand screen + fruit frozen', await page.evaluate("!statusEl.hidden && pause.on") and y1 == y2, [y1, y2])
         await page.evaluate("__grasp.CONFIG.SLICE_GRAVITY = 0.0012; window.__handFor = () => pointAt(180, 300); __grasp.slice.nextSpawn = 0"); await page.wait_for_timeout(1500)
         await page.screenshot(path='tests/out/slice_phone.png')
         check('phone: no page errors', not errs, errs); await ctx.close()

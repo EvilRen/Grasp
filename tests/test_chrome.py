@@ -71,6 +71,9 @@ async def mode_ui_checks(page, tag):
         sy = await page.evaluate("__grasp.scoreY()")
         check(tag + f' {m}: score starts below the top row', sy - 37 >= row, [sy, row])
     await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(400)
+    h0 = await page.evaluate(HINT)
+    check(tag + ' strike: no how-to toast at the start (panel fix: the serve line over the ball is the one instruction)', not h0['show'], h0)
+    await page.evaluate("showHint('Aim for the glowing bricks!')"); await page.wait_for_timeout(450)  # (a one-time tip still shows: where it sits)
     hud = await page.evaluate("__grasp.strike.ui.hud"); mt = await page.evaluate("__grasp.strike.ui.meterTop"); h = await page.evaluate(HINT)
     tb = await page.evaluate("(() => { const r = $('pauseBtn').getBoundingClientRect(), v = [...document.querySelectorAll('.chrome > *')].filter(e => e.getBoundingClientRect().width > 0); return { l: r.left, t: r.top, b: r.bottom, n: v.length, id: v[0] && v[0].id, pv: preview.hidden ? 0 : preview.getBoundingClientRect().right }; })()")
     check(tag + ' strike: the toolbar folds into the one pause button; the slim HUD row sits beside it (between the preview and the button)', tb['n'] == 1 and tb['id'] == 'pauseBtn' and hud and hud['y'] < tb['b'] and hud['y'] + hud['h'] > tb['t'] and hud['x'] + hud['w'] <= tb['l'] and hud['x'] >= tb['pv'], [hud, tb])
@@ -91,8 +94,8 @@ async def main():
             check(tag + ' phone: the pause button sits in the top corner, clear of the 96 px preview at 360 px', tb['prevRight'] - tb['prevLeft'] == 96 and tb['left'] >= tb['prevRight'] + 4 and tb['right'] <= tb['W'] - 4 and tb['right'] >= tb['W'] - 24 and abs(tb['top'] - 12) < 1, tb)
             check(tag + ' phone: live dot on the small preview', await page.evaluate("!$('liveDot').hidden && getComputedStyle($('liveDot')).display !== 'none'"))
             h = await page.evaluate(HINT)
-            check(tag + ' phone: hint toast at the bottom, inside the screen, with the mode icon at the start edge',
-                  h['show'] and h['op'] == '1' and h['icon'] and h['top'] > h['H'] * 0.55 and h['bottom'] <= h['H'] - 8 and h['left'] >= 0 and h['right'] <= h['W'] and ((h['icLeft'] > h['txLeft']) if he else (h['icLeft'] < h['txLeft'])) and len(h['text']) > 10, h)
+            check(tag + ' phone: the Sandbox\'s hint toast at the top (panel fix: clear of the things on the floor), inside the screen, with the mode icon at the start edge',
+                  h['show'] and h['op'] == '1' and h['icon'] and h['top'] >= 64 and h['bottom'] < h['H'] * 0.45 and h['left'] >= 0 and h['right'] <= h['W'] and ((h['icLeft'] > h['txLeft']) if he else (h['icLeft'] < h['txLeft'])) and len(h['text']) > 10, h)
             await page.screenshot(path='tests/out/chrome_phone_' + tag + '.png')
             await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
             titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label') || b.textContent.trim())")
@@ -127,7 +130,8 @@ async def main():
                 check('cursor clamped to the screen with an 8 px margin', lx[0] == 8 and lx[1] and rx[0] == 352 and rx[1] == 732 and rx[2], [lx, rx])
                 await page.evaluate(HAND_ON); await page.wait_for_timeout(300)
             await mode_ui_checks(page, tag + ' phone')
-            await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+            await page.evaluate("window.__handFor = null"); await page.wait_for_function("!statusEl.hidden", timeout=9000)  # (panel fix: the Sandbox, a free mode: the card after 5 s, never paused)
+            await page.tap('#nhMoreBtn'); await page.wait_for_timeout(250)  # (the tips and the tracker switch behind "More help")
             c = await page.evaluate(CARD)
             check(tag + ' phone: no-hand card with the enlarged preview, 3 tips, hand guide; switch button inside the viewport below the preview',
                   c['shown'] and c['big'] and c['inCard'] and c['tips'] == 3 and c['guide'] and c['dot'] and c['prev'][2] > 200
@@ -153,7 +157,7 @@ async def main():
             await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(1200)
             await page.evaluate("__grasp.strike.serve()")  # a ball in flight (the round itself starts with the player's serve, waiting)
             z0 = await page.evaluate("__grasp.strike.ball && __grasp.strike.ball.z")
-            await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+            await page.evaluate("window.__handFor = null"); await page.wait_for_function("!statusEl.hidden", timeout=6000)  # (panel fix: a timed game pauses after a 1 s gap, the card after 2.5 s)
             P = "({on: __grasp.pause.on, count: __grasp.pause.count, card: !statusEl.hidden, pill: (() => { const r = $('pausePill').getBoundingClientRect(); return !$('pausePill').hidden && r.height > 10 && r.width > 40 && r.top >= 0 && r.bottom <= innerHeight; })(), txt: $('pausePill').textContent.trim(), z: __grasp.strike.ball && __grasp.strike.ball.z})"
             p = await page.evaluate(P)
             check(tag + ' pause: hand lost -> paused flag, no-hand card with the Paused pill', p['on'] and p['count'] == 0 and p['card'] and p['pill'] and p['txt'] == ('מושהה – הראו את היד' if he else 'Paused – show your hand'), p)
@@ -173,7 +177,7 @@ async def main():
             check(tag + ' pause: the ball flies on after the countdown', z3 is not None and z4 is not None and z3 - z4 > 100, [z3, z4])
             # Smash: the clock waits too
             await page.evaluate("__grasp.setGameMode('smash'); __grasp.sm.stage(1)"); await page.wait_for_timeout(300)  # (a Smash stage: free play has no clock)
-            await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+            await page.evaluate("window.__handFor = null"); await page.wait_for_function("__grasp.pause.on", timeout=4000); await page.wait_for_timeout(100)  # (a gap over 1 s)
             l0 = await page.evaluate("__grasp.smash.endAt - performance.now()"); await page.wait_for_timeout(600); l1 = await page.evaluate("__grasp.smash.endAt - performance.now()")
             check(tag + ' pause: the Smash clock stands still while the hand is missing', await page.evaluate("__grasp.pause.on") and abs(l0 - l1) < 80, [l0, l1])
             await page.evaluate(HAND_ON); await page.wait_for_function("!__grasp.pause.on", timeout=4500)
@@ -206,7 +210,8 @@ async def main():
         await mode_ui_checks(page, 'desktop')
         await page.evaluate("__grasp.setGameMode('strike')"); await page.wait_for_timeout(300)
         await page.screenshot(path='tests/out/chrome_desktop_strike.png')
-        await page.evaluate("window.__handFor = null"); await page.wait_for_timeout(1000)
+        await page.evaluate("window.__handFor = null"); await page.wait_for_function("!statusEl.hidden", timeout=6000)  # (panel fix: the card after a 2.5 s gap in a timed game)
+        await page.click('#nhMoreBtn'); await page.wait_for_timeout(250)  # (its tips and the tracker switch behind "More help")
         c = await page.evaluate(CARD)
         check('desktop: no-hand card centred and inside the viewport', c['shown'] and c['inCard'] and c['card'][0] > 40 and c['card'][1] < c['H'] - 40 and c['btn'][1] <= c['H'], c)
         await page.screenshot(path='tests/out/chrome_desktop_nohand.png')

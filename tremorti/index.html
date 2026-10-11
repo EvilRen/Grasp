@@ -556,7 +556,7 @@ legend{ font-weight:500; font-size:13px; color:var(--muted); margin-bottom:8px; 
         <dl class="details" id="spDetails"></dl>
         <div class="quality" id="spQuality" hidden></div>
         <div class="warn" id="spWarn" hidden></div>
-        <p class="i-caveat" data-i18n="spNoteAction"></p>
+        <p class="i-caveat" id="spNote" data-i18n="spNoteAction"></p>
       </div>
       <div id="spTagSlot"></div>
       <div class="stack">
@@ -772,6 +772,7 @@ const I18N = {
     fsNote: 'Dark bar: typical range. Light bar: wider range. Hatched: not measured (below {lo} Hz).', fsNoteHi: 'Dark bar: typical range. Light bar: wider range. Hatched: not measured (below {lo} Hz and above {hi} Hz).',
     fsAria: 'Frequency scale from 1 to 20 Hz with tremor types; this reading is at {f} Hz.',
     interpWeak: 'The rhythm is weak, so these matches are less certain.',
+    interpOdd: '{f} Hz is unusual for tremor, possibly a measurement artefact (a bump, the phone moving, or the way the recording was made). Repeat the measurement before reading anything into it.', oddHead: 'Unusual rhythm', hOdd: 'unusual for tremor, possibly a measurement artefact',
     interpEdge: 'The peak is at the bottom of the measured range and may be slow drifting rather than tremor, so treat these matches with care.',
     interpNone: 'No clear rhythm was found, so there is no pattern to match. The tiny natural shake everyone has often looks like this.',
     interpTip: 'For a better match, mark one side or both sides in the setup notes, or use Compare left and right.',
@@ -887,6 +888,7 @@ const I18N = {
     fsNote: 'פס כהה: הטווח האופייני. פס בהיר: טווח רחב יותר. מקווקו: לא נמדד (מתחת ל־[{lo} Hz]).', fsNoteHi: 'פס כהה: הטווח האופייני. פס בהיר: טווח רחב יותר. מקווקו: לא נמדד (מתחת ל־[{lo} Hz] ומעל [{hi} Hz]).',
     fsAria: 'סולם תדרים מ־1 עד 20 הרץ עם סוגי רעד; המדידה הזאת ב־[{f} Hz].',
     interpWeak: 'הקצב חלש, ולכן ההתאמות האלה פחות ודאיות.',
+    interpOdd: '[{f} Hz] לא אופייני לרעד, ייתכן שזו שגיאת מדידה (מכה, תזוזה של הטלפון או אופן ההקלטה). כדאי לחזור על המדידה לפני שמסיקים ממנה משהו.', oddHead: 'קצב לא רגיל', hOdd: 'לא אופייני לרעד, ייתכן שזו שגיאת מדידה',
     interpEdge: 'השיא נמצא בתחתית הטווח שנמדד ועשוי להיות סחיפה איטית ולא רעד, לכן כדאי להתייחס להתאמות בזהירות.',
     interpNone: 'לא נמצא קצב ברור, ולכן אין דפוס להתאים. הרעד הטבעי הזעיר שיש לכולם נראה הרבה פעמים בדיוק כך.',
     interpTip: 'להתאמה טובה יותר: מסמנים צד אחד או שני הצדדים בהערות למדידה, או משתמשים בהשוואה בין שמאל לימין.',
@@ -1015,6 +1017,7 @@ Object.assign(I18N.en, {
   spSize: 'Size of the wobble', spSizeV: '≈ {mm} mm back and forth (approximate)', spTurns: 'Turns drawn', spTime: 'Drawing time', spTimeV: '{d} s',
   spAgain: 'Draw again', spTooShort: 'The drawing was too short: trace at least 2 turns, then tap Done.',
   spNoteAction: 'Drawing is an action task: a rhythm here is more typical of action tremors (for example essential tremor) than of rest tremor. Not a diagnosis.',
+  spNoteOdd: 'A rhythm of {f} Hz in a drawing is unusual for tremor, possibly a measurement artefact (the drawing speed or the screen\'s sampling). Not a diagnosis.',
   spSub: 'Spiral drawing, {side} hand', kindSpiral: 'Spiral drawing',
 });
 Object.assign(I18N.en.label.posture, { action: 'moving', spiral: 'spiral' });
@@ -1104,6 +1107,7 @@ Object.assign(I18N.he, {
   spSize: 'גודל הסטייה', spSizeV: '≈ {mm} מ״מ הלוך ושוב (משוער)', spTurns: 'סיבובים', spTime: 'זמן הציור', spTimeV: '{d} שנ׳',
   spAgain: 'ציור נוסף', spTooShort: 'הציור היה קצר מדי: עוברים לפחות 2 סיבובים ואז לוחצים על סיום.',
   spNoteAction: 'ציור הוא משימת פעולה: קצב כאן אופייני יותר לרעד פעולה (למשל רעד ראשוני) מאשר לרעד מנוחה. זה לא אבחון.',
+  spNoteOdd: 'קצב של [{f} Hz] בציור לא אופייני לרעד, ייתכן שזו שגיאת מדידה (מהירות הציור או דגימת המסך). זה לא אבחון.',
   spSub: 'ציור ספירלה, יד {side}', kindSpiral: 'ציור ספירלה',
 });
 Object.assign(I18N.he.label.posture, { action: 'בתנועה', spiral: 'ספירלה' });
@@ -1806,7 +1810,7 @@ function renderResult(res, keep) { // keep: re-render in place (language change)
     $('spectrum').hidden = true;
   } else {
     $('spectrum').hidden = !res.psd;
-    $('resHead').textContent = t(res.strength === 'none' ? 'noneAt' : res.strength); $('resHead').className = 'res-head ' + res.strength;
+    const odd = oddRate(res); $('resHead').textContent = t(res.strength === 'none' ? 'noneAt' : odd ? 'oddHead' : res.strength); $('resHead').className = 'res-head ' + (odd ? 'weak' : res.strength); $('resHead').dataset.odd = odd ? '1' : '';
     $('resFreq').innerHTML = '';
     $('resFreq').append(document.createTextNode(res.f0.toFixed(1)));
     const sm = document.createElement('small'); sm.textContent = t('hz'); $('resFreq').append(sm);
@@ -1962,7 +1966,7 @@ function whyText(res, m) {
 }
 function renderInterp(res) {
   const card = $('interpCard'); card.hidden = !!res.error; if (res.error) { $('normCard').hidden = true; return; }
-  const ranked = interpret(res), none = res.strength === 'none';
+  const ranked = interpret(res), odd = oddRate(res), none = res.strength === 'none' || odd; // (an unusual rate: no pattern matches, the artefact note instead)
   const top = none ? [] : ranked.filter((m, i) => i === 0 || m.score >= 0.08).slice(0, 3), topIds = top.map((m) => m.id);
   // frequency scale (always left-to-right: slow to fast)
   const sc = $('fscale'); sc.innerHTML = ''; sc.setAttribute('aria-label', t('fsAria', { f: res.f0.toFixed(1) }));
@@ -1989,7 +1993,7 @@ function renderInterp(res) {
   // ranked matches
   const cav = res.edge === 'lo' && res.edgeOut ? 'interpEdge' : res.strength === 'weak' ? 'interpWeak' : '';
   $('interpCaveat').hidden = none || !cav; $('interpCaveat').textContent = cav && !none ? t(cav) : '';
-  $('interpNone').hidden = !none; $('interpNone').textContent = none ? t('interpNone') : '';
+  $('interpNone').hidden = !none; $('interpNone').textContent = odd ? t('interpOdd', { f: res.f0.toFixed(1) }) : none ? t('interpNone') : ''; $('interpNone').dataset.odd = odd ? '1' : '';
   const ol = $('matchList'); ol.innerHTML = '';
   top.forEach((m) => {
     const li = document.createElement('li'); li.dataset.id = m.id;
@@ -2376,6 +2380,14 @@ $('remTimes').addEventListener('click', (e) => { const b = e.target.closest('[da
 /* ---------------- journal screen: list grouped by day; a full check is one row ---------------- */
 let jShown = 40;
 const strengthWord = (s) => t(s === 'clear' ? 'hClear' : s === 'weak' ? 'hWeak' : 'hNone');
+// Panel fix: a rhythm outside about 3-12 Hz (ODD_HZ) is unusual for tremor (orthostatic 12-20 Hz in the legs / standing excepted): it is reported as
+// "unusual for tremor, possibly a measurement artefact" instead of a tremor pattern (a synthetic 18.2 Hz spiral got the essential-tremor wording).
+const ODD_HZ = [2.5, 12.5]; // (about 3-12 Hz, with a little room at both ends for the band edges of Holmes / cerebellar and physiological tremor)
+function oddRate(res) {
+  if (!res || res.error || res.strength === 'none' || !(res.f0 > 0)) return false;
+  if (res.f0 >= ODD_HZ[0] && res.f0 <= ODD_HZ[1]) return false;
+  return !(res.f0 > ODD_HZ[1] && res.f0 <= 20 && res.kind !== 'spiral' && (res.limb === 'leg' || res.posture === 'stand'));
+}
 const fmtScore = (x) => String(+(+x).toFixed(1));
 function el(tag, cls, txt) { const d = document.createElement(tag); if (cls) d.className = cls; if (txt != null) d.textContent = txt; return d; }
 function chipEl(txt) { return el('span', 'chip', txt); }
@@ -2810,7 +2822,9 @@ function fillSpiralResult(res) {
   $('spScoreLv').textContent = I18N[lang].spLv[lv]; $('spScoreLv').style.color = cssVar('--' + ['mint', 'saffron', 'coral', 'coral'][lv]);
   const dl = $('spDetails'); dl.innerHTML = '';
   const row = (k, v) => dl.append(el('dt', '', k), el('dd', '', v));
-  row(t('spRate'), res.strength === 'none' ? t('spNoRhythm') : t('spRateV', { f: res.f0.toFixed(1), s: strengthWord(res.strength) }));
+  const odd = oddRate(res);
+  row(t('spRate'), res.strength === 'none' ? t('spNoRhythm') : t('spRateV', { f: res.f0.toFixed(1), s: odd ? t('hOdd') : strengthWord(res.strength) }));
+  $('spNote').textContent = odd ? t('spNoteOdd', { f: res.f0.toFixed(1) }) : t('spNoteAction'); $('spNote').dataset.odd = odd ? '1' : '';
   row(t('spSize'), t('spSizeV', { mm: fmtMM(res.pp) }));
   row(t('spTurns'), (+sc.turns || 0).toFixed(1)); row(t('spTime'), t('spTimeV', { d: res.dur.toFixed(1) }));
   renderQuality($('spQuality'), res.q);

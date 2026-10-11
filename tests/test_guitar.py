@@ -157,7 +157,7 @@ async def main():
             await page.tap('.modes button[data-mode=busy]'); await page.evaluate(START_MOUSE); await page.wait_for_timeout(500)
             g = await page.evaluate(GJ)
             check(tag + ' phone: the guitar stands up, 2 columns x 3 rows', g['o'] == 'v' and abs(g['h'] - 1.5 * g['w']) < 1 and await page.evaluate(COLS(2)), g)
-            check(tag + ' phone: no widget overlaps, all inside the board horizontally', await page.evaluate(OVERLAP) and await page.evaluate(VISIBLE(8)))
+            check(tag + ' phone: no widget overlaps, all inside the board horizontally', await page.evaluate(OVERLAP) and await page.evaluate(VISIBLE(2)))  # (panel fix: ~175 px cells, the piano + xylophone on top: 2 fully visible)
             # scroll so the guitar is fully on screen (under the top row)
             await page.evaluate("(() => { const w = " + G + "; busy.scroll = Math.max(0, Math.min(busy.maxScroll, w.by - w.h / 2 - busy.top - 6)); applyBusyScroll(); })()"); await page.wait_for_timeout(200)
             g = await page.evaluate(GJ); parts = await page.evaluate(PARTS)

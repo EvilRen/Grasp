@@ -92,7 +92,7 @@ async def main():
                 pk = await page.evaluate("""(() => { const s = $('cgPick').querySelector('.sheet').getBoundingClientRect(), cards = [...$('cgPick').querySelectorAll('[data-cg]')];
                   return { box: [s.left, s.top, s.right, s.bottom], W: innerWidth, H: innerHeight, cards: cards.map(c => [c.dataset.cg, c.querySelector('b').textContent, c.getBoundingClientRect().height]), cam: !$('cgPickCam').hidden, camText: $('cgPickCam').textContent }; })()""")
                 chk(f'{tag}: the picker: four games, named, the sheet on screen', [c[0] for c in pk['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c[1] and c[2] >= 90 for c in pk['cards']) and pk['box'][0] >= 0 and pk['box'][2] <= pk['W'] and pk['box'][3] <= pk['H'], pk)
-                chk(f'{tag}: the picker says the games are best with the camera (touch is the input)', pk['cam'] and (('מצלמה' in pk['camText']) if he else ('camera' in pk['camText'])), pk)
+                chk(f'{tag}: the picker has no extra camera banner (panel fix: the camera prompt asks once per device instead)', not pk['cam'], pk)
                 if mobile: await page.screenshot(path=OUT + f"cam_picker_{'he' if he else 'en'}.png")
                 await page.keyboard.press('Escape'); await page.wait_for_function("$('cgPick').hidden", timeout=3000)
                 chk(f'{tag}: Escape closes the picker', True)
@@ -107,7 +107,7 @@ async def main():
                 chk(f'{m}: started from the picker by touch: its path, the corner menu; the camera prompt shows', st['gm'] == m and st['mode'] == 'mouse' and st['path'] == '/' + m and st['min'] and st['ask'] and st['route'] == m, st)
                 await page.screenshot(path=OUT + 'cam_ask_en.png')
                 await page.tap('#cgCamTouch'); await page.wait_for_function(f"!{CG}.asking", timeout=3000)
-            else: chk(f'{m}: started from the picker; after "Play with touch" no prompt again this session', st['gm'] == m and st['path'] == '/' + m and st['min'] and not st['ask'], st)
+            else: chk(f'{m}: started from the picker; the prompt asked once, never again on this device', st['gm'] == m and st['path'] == '/' + m and st['min'] and not st['ask'], st)
             await page.tap('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
             chk(f'{m}: the corner pause menu opens (paused)', True)
             await page.tap('#resumeBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
@@ -187,8 +187,8 @@ async def main():
         ctx, page, errs = await fresh(b, cam=True)
         await page.evaluate("window.__handFor = () => handAt(640, 300, 0.8)")
         await start_game(page, 'drums', cam=True)
-        cr = await page.evaluate("window.__created.map(c => c.nh)")
-        chk('drums camera: the tracker is made for two hands (numHands 2)', cr and cr[-1] == 2 and await page.evaluate(f"{CG}.numHands") == 2, cr)
+        cr = await page.evaluate("window.__created.map(c => c.nh)"); so = await page.evaluate("(window.__setOpts || []).map(q => q && q.numHands)")
+        chk('drums camera: the tracker is set for two hands (numHands 2; made at the picker by the home camera, then set)', cr and (cr[-1] == 2 or (so and so[-1] == 2)) and await page.evaluate(f"{CG}.numHands") == 2, [cr, so])
         pads = await page.evaluate(f"{CG}.pads()")
         sn, kk = pads[2], pads[5]
         await page.evaluate(f"window.__handFor = () => handAt({sn['x']}, {sn['y'] - 260}, 0.8)"); await page.wait_for_timeout(500)
