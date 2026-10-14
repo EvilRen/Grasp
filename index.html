@@ -171,6 +171,9 @@ html[dir="rtl"] #hud{ direction:rtl; }
 #banner[hidden]{ display:none; }
 #banner strong{ display:block; margin-bottom:6px; font-size:15px; }
 #banner ul{ margin:0 0 10px; padding-left:18px; }
+#banner ul[hidden]{ display:none; }
+#banner .nhMoreBtn{ display:inline-block; min-height:44px; font-size:13px; color:var(--muted); background:transparent; padding:8px 14px; margin:2px 0 8px; border-radius:999px; border:1px solid var(--line); cursor:pointer; } /* (phase 1: the camera resting card's More help) */
+#banner{ background:#1e2440; box-shadow:inset 0 0 0 1px rgba(120,200,255,.35), 0 10px 30px rgba(0,0,0,.4); }
 #banner li{ overflow-wrap:anywhere; }
 #banner .row{ display:flex; gap:8px; justify-content:flex-end; }
 /* hint toast: slides up at the bottom edge (above Strike's power meter), holds 4 s, fades; never over the centre of the play area */
@@ -543,6 +546,11 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 #homeDwell::after{ content:''; position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:var(--saffron); }
 #homeDwell[hidden]{ display:none; }
 #newCard{ z-index:14; }
+#awayCard{ z-index:14; } /* phase 1: While you were away */
+.awaySheet h2{ margin:6px 0 4px; font-size:22px; }
+.awayList{ list-style:none; padding:0; margin:6px 0 16px; display:grid; gap:8px; }
+.awayList li{ display:flex; align-items:center; justify-content:center; gap:8px; font-size:18px; font-weight:800; }
+.awayList .ic svg{ width:24px; height:24px; display:block; fill:currentColor; }
 #duelName{ z-index:15; }
 .dnSheet{ width:min(340px,100%); text-align:center; }
 .dnSheet h2{ margin:4px 0 6px; font-size:20px; }
@@ -651,6 +659,7 @@ html[dir="rtl"] #metaPill{ left:auto; right:auto; }
 .cgCamSheet .cgCamArt svg{ width:76px; height:76px; }
 .cgCamSheet .dnRow button:not(.primary){ background:rgba(241,233,218,.1); color:var(--bone); font-weight:600; }
 .cgCamSheet .dnRow .primary{ padding:12px 10px; font-size:16px; }
+.cgCamSheet .dnRow{ gap:16px; } @media (max-width:560px){ .cgCamSheet .dnRow{ flex-direction:column-reverse; gap:18px; } } /* phase 1 (panel D bug 9): the two choices 16+ px apart, stacked on phones (Turn on camera on top) */
 /* the daily habit: the play-streak flame and the gift chip beside the language button, the 'play today' hint, the 7-day gift calendar,
    the '3 stages today' chest in the Adventure map's header and the star chests beside its path */
 .habitBar{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); right:84px; display:flex; gap:6px; z-index:1; }
@@ -1069,6 +1078,8 @@ html[dir="rtl"] #start .h2Top #metaPill{ margin:0 0 0 auto; }
 #metaPill .nx{ display:none !important; }
 #start .h2More{ flex:none; width:48px; height:48px; border-radius:16px; display:grid; place-items:center; background:rgba(29,37,71,.6); color:var(--bone); box-shadow:inset 0 0 0 1.5px var(--line); }
 #start .h2More svg{ width:24px; height:24px; }
+#start .h2Top #metaPill{ flex:0 1 auto; min-width:0; overflow:hidden; } @media (max-width:400px){ #start .h2Top{ gap:8px; } #start .h2Top h1{ font-size:24px; } #start .h2Top #metaPill .xp{ width:22px; } } @media (max-width:370px){ #start .h2Top{ gap:6px; } #start .h2Top h1{ font-size:22px; } } /* phase 1: room for the sound button */
+#start .h2Snd{ width:44px; height:44px; border-radius:14px; } #start .h2Snd .off{ display:none; } #start .h2Snd[aria-pressed="false"] .on{ display:none; } #start .h2Snd[aria-pressed="false"] .off{ display:block; } #start .h2Snd[aria-pressed="false"]{ color:var(--muted); } /* phase 1: sound in one tap */
 #start .panel{ position:absolute; left:0; right:0; top:calc(env(safe-area-inset-top,0px) + 60px); bottom:var(--tabH); max-width:none; margin:0; padding:8px 16px 10px !important; display:flex !important; flex-direction:column; justify-content:center; align-items:center; gap:0; overflow:hidden auto; }
 #start .panel > *{ width:100%; max-width:560px; }
 #start .panel > .tagline, #start .panel > .dots, #start .panel > #modeCard, #start .panel > .petCorner{ display:none !important; }
@@ -1247,8 +1258,9 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 <span id="handChip" hidden role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11M11 10.5V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v6"/><path d="M8 12V9a1.5 1.5 0 0 0-3 0v6.5A5.5 5.5 0 0 0 10.5 21h2.3a5 5 0 0 0 4.9-4l.6-3.2"/></svg><span data-i18n="handChip">Hand?</span></span>
 <div id="homeDwell" hidden aria-hidden="true"></div>
 <div id="banner" hidden role="alert">
-  <strong data-i18n="bannerTitle">Camera mode is off. You're playing with mouse or touch.</strong>
-  <ul id="bannerList"></ul>
+  <strong data-i18n="camRest">Camera is resting — play with your finger 👆</strong>
+  <button class="nhMoreBtn" id="bannerMore" type="button" aria-expanded="false" aria-controls="bannerList" data-i18n="nhMore">More help</button>
+  <ul id="bannerList" hidden></ul>
   <div class="row"><button class="chip" id="bannerClose" type="button" data-i18n="gotIt">Got it</button></div>
 </div>
 
@@ -1257,6 +1269,7 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
   <header class="h2Top" id="h2Top">
     <h1 style="--i:0">Grasp</h1>
     <button class="metaPill" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#ffc24b" stroke="#b8730f" stroke-width="1.5"/><circle cx="12" cy="12" r="6" fill="none" stroke="#b8730f" stroke-width="1.3"/><path d="M12 8.5v7M10 10.2h3a1.4 1.4 0 0 1 0 2.8h-2a1.4 1.4 0 0 0 0 2.8h3" fill="none" stroke="#7a4a05" stroke-width="1.4" stroke-linecap="round"/></svg><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i><span class="nx" id="nextUnlock" hidden></span></button>
+    <button class="h2More h2Snd" id="startSound" type="button" aria-pressed="true" aria-label="Sound on"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18 6.5a7.6 7.6 0 0 1 0 11"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
     <button class="h2More" id="moreBtn" type="button" aria-expanded="false" data-i18n-aria="moreAria" aria-label="More"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="18.5" cy="12" r="2" fill="currentColor"/></svg></button>
   </header>
   <div class="panel">
@@ -1417,6 +1430,14 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
     <h2 id="cgCamT" data-i18n="cgCamTitle">These games are best with the camera!</h2>
     <p data-i18n="cgCamSub">Wave your hands in the air to play. Touch works too.</p>
     <div class="dnRow"><button type="button" id="cgCamTouch" data-i18n="cgCamTouch">Play with touch</button><button type="button" class="primary" id="cgCamOn" data-i18n="cgCamOn">Turn on camera</button></div>
+  </div>
+</div>
+<div class="ov" id="awayCard" hidden role="dialog" aria-modal="true" aria-labelledby="awayT">
+  <div class="sheet nuSheet awaySheet">
+    <h2 id="awayT" data-i18n="awayTitle">While you were away</h2>
+    <p class="nuLine" data-i18n="awaySub">Last week's event kept these for you:</p>
+    <ul class="awayList" id="awayList"></ul>
+    <button class="primary" id="awayOk" type="button" data-i18n="giftYay">Yay!</button>
   </div>
 </div>
 <div class="ov" id="newCard" hidden role="dialog" aria-modal="true" aria-labelledby="nuName">
@@ -1624,7 +1645,7 @@ const EVENT = { epoch: '2026-01-05', msPts: [40, 60, 80], dupSnacks: 3, // (a st
     he: { cows: 'מנוסת הפרות', space: 'סוף שבוע בחלל', smash: 'שיגעון ניפוץ', fruit: 'טירוף פירות', bubbles: 'פסטיבל בועות', speed: 'שבוע המהירות' } } };
 EVENT.ids = EVENT.defs.map((d) => d.id); const EV_HAT_IDS = EVENT.defs.map((d) => d.hat); EVENT.by = Object.fromEntries(EVENT.defs.map((d) => [d.id, d]));
 let EV_READY = false, PWA_READY = false; // (the event's UI is wired further down; syncMeta() runs before that)
-let H2_READY = false; const h2 = { tab: 'play', popup: null, popupAt: 0, acted: false, tipQ: null, log: [], share: null, sheetAt: -1e9, shDwell: null, seenMem: null, fresh: [], lastCopy: null }; // (home2: the start screen's state; its UI is wired near the end)
+let H2_READY = false; const h2 = { tab: 'play', popup: null, popupAt: 0, acted: false, tipQ: null, log: [], share: null, sheetAt: -1e9, shDwell: null, seenMem: null, fresh: [], lastCopy: null, rounds: 0 }; // (home2: the start screen's state; its UI is wired near the end)
 function evBallItem(ev, ed) { // an edition's ball as a Shop item (registered when it is won, or when a profile that owns it loads): 'evb_cows_3', skin 'ev_cows_3'
   if (!EVENT.by[ev] || !(ed >= 1 && ed <= 9999)) return null; ed = ed | 0; const id = 'evb_' + ev + '_' + ed;
   let it = ITEMS.find((q) => q.id === id); if (it) return it;
@@ -1698,16 +1719,16 @@ const I18N = {
     streak5: 'On fire!', streak10: 'Unstoppable!', streak20: 'Legendary!', streakLost: 'Streak lost', closeOne: 'Close one!',
     bricks: 'Bricks', cars: 'Cars', bigHit: 'Biggest hit', fruit: 'Fruit', bombsAvoided: 'Bombs dodged', playAgainSwipe: 'Tap or swipe to play again',
     paused: 'Paused – show your hand', getReady: 'Get ready',
-    switching: 'Switching tracker…', trackErr: 'Tracker error: {e}', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
-    trackStarting: 'Tracker on {d}, starting…', crashed: 'Crashed while tracking: {e}',
+    switching: 'Switching tracker…', trackErr: 'The hand tracker had a hiccup, trying again…', trackOn: 'Tracker on {d}, {n} scans/s', stalled: ' (stalled)',
+    trackStarting: 'Tracker on {d}, starting…', crashed: 'The hand tracker stopped.',
     ex_policy: 'This page is embedded in a frame that is not allowed to use the camera (permissions policy). No prompt can appear; the page cannot change this.',
-    ex_blockedSite: 'Camera is set to Blocked for this site in your browser. Allow it in site settings, then reload. ({m})',
+    ex_blockedSite: 'Camera is set to Blocked for this site in your browser. Allow it in site settings, then reload.',
     ex_noApi: 'Camera API is unavailable here (insecure page or sandboxed frame without camera permission).',
-    ex_denied: "Camera permission was denied, either by you or by this page's embedding policy. ({n}: {m})",
-    ex_notFound: 'No usable camera was found. ({n})', ex_busy: 'The camera is busy in another app or tab. ({n})',
-    ex_csp: "Blocked by this page's security policy ({d} refused {h}).",
-    ex_wasm: "WebAssembly is blocked by this page's security policy. ({m})",
-    ex_net: 'Download was blocked or the network is offline. ({m})', ex_timeout: '{l} timed out after {s}s',
+    ex_denied: "The camera wasn't allowed. Allow it in the browser's site settings, then try again.",
+    ex_notFound: 'No camera was found on this device.', ex_busy: 'The camera is busy in another app or tab.',
+    ex_csp: "This page isn't allowed to load the hand tracker.",
+    ex_wasm: "This browser blocked the hand tracker.",
+    ex_net: 'The hand tracker could not download. Check the internet, then try again.', ex_timeout: 'It took too long to start. Try again in a moment.',
     r_wait: 'Waiting for permission', r_loading: 'Loading from {h}', r_downloading: 'Downloading from {h}', r_checkWasm: 'Checking WebAssembly files',
     r_skipLib: 'Skipped: needs the library', r_skipModel: 'Reachable, but not started: the model is missing',
     r_starting: 'Starting ({d})', r_fallback: '{a} failed, starting on {b}', r_running: 'Running on {d}',
@@ -1715,7 +1736,7 @@ const I18N = {
     r_sandbox: 'Camera allowed in frame: {a}. Browser camera setting: {b}. WebAssembly: {c}. Same-origin files: {d}.',
     yes: 'yes', no: 'no', unknown: 'unknown', allowed: 'allowed', blocked: 'blocked', reachable: 'reachable',
     perm_granted: 'granted', perm_prompt: 'prompt', perm_denied: 'denied', perm_unknown: 'unknown',
-    physicsFail: 'The physics engine could not load ({m}). Reload to try again.',
+    physicsFail: 'The game could not load. Reload to try again.',
     missed: 'missed {n}', combo: 'Combo ×{n}',
     h_mode: 'Mode', h_fps: 'FPS', h_tfps: 'Scans/s', h_lat: 'Cursor latency', h_gesture: 'Gesture', h_pinch: 'Pinch dist', h_input: 'Input', h_hand: 'Hand', h_throw: 'Last throw',
     h_score: 'score', h_missed: 'missed', h_holding: ' (holding)', h_tracked: 'tracked', h_notFound: 'not found', h_step: 'px/step',
@@ -1845,16 +1866,16 @@ const I18N = {
     streak5: 'בוערים!', streak10: 'אין עצירה!', streak20: 'אגדי!', streakLost: 'הרצף נשבר', closeOne: 'היה קרוב!',
     bricks: 'לבנים', cars: 'מכוניות', bigHit: 'המכה הגדולה', fruit: 'פירות', bombsAvoided: 'פצצות שנמנעו', playAgainSwipe: 'הקישו או החליקו כדי לשחק שוב',
     paused: 'מושהה – הראו את היד', getReady: 'להתכונן',
-    switching: 'מחליף מעבד זיהוי…', trackErr: 'שגיאת זיהוי: {e}', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
-    trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'הזיהוי קרס: {e}',
+    switching: 'מחליף מעבד זיהוי…', trackErr: 'לזיהוי היד היה שיהוק, מנסים שוב…', trackOn: 'זיהוי על {d}, {n} סריקות בשנייה', stalled: ' (תקוע)',
+    trackStarting: 'זיהוי על {d}, מתחיל…', crashed: 'זיהוי היד נעצר.',
     ex_policy: 'הדף מוטמע במסגרת שאסור לה להשתמש במצלמה (מדיניות הרשאות). לא תופיע בקשת הרשאה, והדף לא יכול לשנות את זה.',
-    ex_blockedSite: 'המצלמה חסומה לאתר הזה בדפדפן. אשרו אותה בהגדרות האתר ורעננו את הדף. ({m})',
+    ex_blockedSite: 'המצלמה חסומה לאתר הזה בדפדפן. אשרו אותה בהגדרות האתר ורעננו את הדף.',
     ex_noApi: 'אין כאן גישה למצלמה (דף לא מאובטח או מסגרת מוגבלת בלי הרשאת מצלמה).',
-    ex_denied: 'הרשאת המצלמה נדחתה, על ידיכם או על ידי מדיניות ההטמעה של הדף. ({n}: {m})',
-    ex_notFound: 'לא נמצאה מצלמה זמינה. ({n})', ex_busy: 'המצלמה תפוסה באפליקציה או בלשונית אחרת. ({n})',
-    ex_csp: 'נחסם על ידי מדיניות האבטחה של הדף ({d} חסם את {h}).',
-    ex_wasm: 'WebAssembly חסום על ידי מדיניות האבטחה של הדף. ({m})',
-    ex_net: 'ההורדה נחסמה או שאין חיבור לרשת. ({m})', ex_timeout: 'עבר הזמן: {l} ({s} שניות)',
+    ex_denied: 'המצלמה לא אושרה. אשרו אותה בהגדרות האתר בדפדפן ונסו שוב.',
+    ex_notFound: 'לא נמצאה מצלמה במכשיר הזה.', ex_busy: 'המצלמה תפוסה באפליקציה או בלשונית אחרת.',
+    ex_csp: 'הדף הזה לא יכול לטעון את זיהוי היד.',
+    ex_wasm: 'הדפדפן חסם את זיהוי היד.',
+    ex_net: 'זיהוי היד לא הצליח לרדת. בדקו את האינטרנט ונסו שוב.', ex_timeout: 'לקח יותר מדי זמן. נסו שוב עוד רגע.',
     r_wait: 'ממתין להרשאה', r_loading: 'נטען מ-{h}', r_downloading: 'מוריד מ-{h}', r_checkWasm: 'בודק את קובצי WebAssembly',
     r_skipLib: 'דולג: צריך את הספרייה', r_skipModel: 'זמין, אבל לא הופעל: המודל חסר',
     r_starting: 'מופעל ({d})', r_fallback: '{a} נכשל, מופעל על {b}', r_running: 'רץ על {d}',
@@ -1862,14 +1883,14 @@ const I18N = {
     r_sandbox: 'מצלמה מותרת במסגרת: {a}. הגדרת המצלמה בדפדפן: {b}. WebAssembly: {c}. קבצים מאותו מקור: {d}.',
     yes: 'כן', no: 'לא', unknown: 'לא ידוע', allowed: 'מותר', blocked: 'חסום', reachable: 'זמינים',
     perm_granted: 'מאושרת', perm_prompt: 'תישאל', perm_denied: 'חסומה', perm_unknown: 'לא ידוע',
-    physicsFail: 'מנוע הפיזיקה לא נטען ({m}). רעננו את הדף כדי לנסות שוב.',
+    physicsFail: 'המשחק לא נטען. רעננו את הדף כדי לנסות שוב.',
     missed: 'פספוסים {n}', combo: 'קומבו ×{n}',
     h_mode: 'מצב', h_fps: 'FPS', h_tfps: 'סריקות/שנייה', h_lat: 'השהיית הסמן', h_gesture: 'מחווה', h_pinch: 'מרחק צביטה', h_input: 'קלט', h_hand: 'יד', h_throw: 'זריקה אחרונה',
     h_score: 'ניקוד', h_missed: 'פספוסים', h_holding: ' (מחזיק)', h_tracked: 'מזוהה', h_notFound: 'לא נמצאה', h_step: 'פיקסלים לצעד',
     g_none: 'אין', g_open: 'פתוחה', g_pinch: 'צביטה', g_point: 'הצבעה', g_fist: 'אגרוף',
     m_none: 'אין', m_camera: 'מצלמה', m_mouse: 'עכבר', gm_sandbox: 'ארגז חול', gm_slice: 'חיתוך', gm_smash: 'ניפוץ', gm_busy: 'לוח עסוק', gm_strike: 'מכה', Left: 'שמאל', Right: 'ימין',
     coinsN: '{n} מטבעות', lvShort: 'רמה {n}', playerLevelN: 'רמה {n}', missions: 'משימות', collection: 'חנות', shopNew: 'אפשר לקנות משהו חדש', missionsTitle: 'המשימות של היום', missionsSub: 'משימות חדשות בכל יום. סיימו משימה ואספו את המטבעות שלה.',
-    collectionSub: 'קנו מראה חדש במטבעות. הקישו כדי לקנות, הקישו כדי ללבוש.', claim: 'איסוף', claimed: 'נאסף', equip: 'ללבוש', equipped: 'לבוש', close: 'סגירה', roundCoins: 'מטבעות בסיבוב',
+    collectionSub: 'קנו מראה חדש במטבעות. הקישו כדי לקנות, הקישו כדי לבחור.', claim: 'איסוף', claimed: 'נאסף', equip: 'לבחור', equipped: 'נבחר', close: 'סגירה', roundCoins: 'מטבעות בסיבוב',
     ms_fruit: 'חתכו {n} פירות', ms_bricks: 'נפצו {n} לבנים', ms_cars: 'מעכו {n} מכוניות', ms_walls: 'פנו {n} קירות', ms_powerups: 'תפסו {n} חיזוקים', ms_boss: 'נצחו בוס', ms_strikeLevel: 'הגיעו לשלב {n} במכה', ms_rounds: 'שחקו {n} סיבובים', ms_combo: 'עשו קומבו ‎×3', ms_close: 'השיגו {n} מכות "היה קרוב!"',
     missionDone: 'משימה הושלמה! {m} (‎+{c})', claimedToast: '‎+{c} מטבעות', levelUpToast: 'עליתם רמה! רמה {n}: +{c} מטבעות', unlockedToast: 'נפתח: {n}', needLevel: 'הגיעו לרמה {n} כדי לפתוח', notEnough: 'חסרים {n} מטבעות',
     ct_ball: 'כדורים', ct_hand: 'ידיים', ct_blade: 'להבים', ct_trail: 'שובלים',
@@ -1953,7 +1974,7 @@ Object.assign(I18N.he, {
   pc_mint: 'מנטה', pc_sky: 'שמיים', pc_pink: 'ורוד', pc_sun: 'שמש', pc_lilac: 'סגול', pc_gold: 'זהב',
   pi_bow: 'סרט', pi_scarf: 'צעיף', pi_glasses: 'משקפיים', pi_cap: 'כובע', pi_bowtie: 'פפיון', pi_crown: 'כתר',
   petEvolved: '{name} גדל! עכשיו: {s}', petEvolveSay: 'יש! גדלתי!', petHatched: 'שלום! אני {name}!', petHatchSay: 'שלום!',
-  petNameTitle: 'איך נקרא לו?', petNameSub: 'אפשר לשנות מתי שרוצים.', petNameGo: 'זהו!', petNameSkip: 'דלג', petRename: 'שינוי שם',
+  petNameTitle: 'איך נקרא לחיה שלך?', petNameSub: 'אפשר לשנות מתי שרוצים.', petNameGo: 'זהו!', petNameSkip: 'דלג', petRename: 'שינוי שם',
   petYum: 'יאמי! עוד {n} חטיפים', petYum1: 'יאמי! עוד חטיף', petEggGot: 'עוד {n} חטיפים לביצה', petEggGot1: 'עוד חטיף לביצה', petBoxFull: 'קופסת החטיפים מלאה!',
   petNew: 'חדש ל{name}: {i}', petAria: 'חיית המחמד שלך, {name}', petOpen: 'לחדר של {name}', petFeedAria: 'להאכיל חטיף (נשארו {n})', petTitle: 'חיית מחמד',
 });
@@ -2134,6 +2155,22 @@ Object.assign(I18N.he, {
   shareTitle: 'שיתוף', shareBtn: 'שיתוף ⤴', shReplay: 'הילוך חוזר', shReplaySub: 'הרגע הכי טוב שלכם בהילוך איטי', shDuelSub: 'שלחו קישור: מי ינצח?',
   shDaily: 'שתפו את התוצאה של היום', shDailySub: 'האתגר היומי', shCopy: 'העתקת קישור', shCopyDuel: 'הקישור לאתגר', shCopyGame: 'קישור למשחק הזה', linkCopied: 'הקישור הועתק!',
   hooray: 'הידד!',
+});
+Object.assign(I18N.en, { // phase 1: the first 60 seconds (the bumper, the instruction fingers, the cards, the camera resting, while you were away)
+  starsPerfectB: 'Perfect — no misses!', starsRuleB: '★★★ = no misses', starsMiss1: 'Missed once — no misses for ★★★', starsMissN: 'Missed {n} times — no misses for ★★★', skip4: 'Skip to stage 4 ⏭',
+  fdServe: 'Pull, then flick!', fdSlice: 'Swipe the fruit!', fdSmash: 'Tap to smash!',
+  theEnd: 'The End 🎉', finaleLine: 'All 64 stages done. You are a Strike legend!', finaleWave: 'Thanks for playing!',
+  camRest: 'Camera is resting — play with your finger 👆', ex_trk: "The hand tracker didn't start. Try again later.", ex_other: "The camera didn't start. Check that no other app is using it, then try again.", chkFail: 'Not working right now',
+  awayTitle: 'While you were away', awaySub: "Last week's event kept these for you:", awayCoins: '+{n} coins', awaySnacks: '+{n} snacks', awaySticker: 'a sticker', awayHat: 'a hat for your pet', awayBall: 'a new ball',
+  soundOnAria: 'Sound on', soundOffAria: 'Sound off',
+});
+Object.assign(I18N.he, {
+  starsPerfectB: 'מושלם — בלי אף פספוס!', starsRuleB: '★★★ = בלי פספוסים', starsMiss1: 'פספסתם פעם אחת — בלי פספוסים מקבלים ★★★', starsMissN: 'פספסתם {n} פעמים — בלי פספוסים מקבלים ★★★', skip4: 'דלגו לשלב 4 ⏭',
+  fdServe: 'מושכים ומעיפים!', fdSlice: 'מחליקים על הפרי!', fdSmash: 'מקישים ומנפצים!',
+  theEnd: 'הסוף 🎉', finaleLine: 'כל 64 השלבים מאחוריכם. אתם אלופי המכה!', finaleWave: 'תודה ששיחקתם!',
+  camRest: 'המצלמה נחה — משחקים עם האצבע 👆', ex_trk: 'זיהוי היד לא הופעל. נסו שוב מאוחר יותר.', ex_other: 'המצלמה לא נדלקה. בדקו שאף אפליקציה אחרת לא משתמשת בה, ונסו שוב.', chkFail: 'לא עובד כרגע',
+  awayTitle: 'בזמן שלא הייתם', awaySub: 'האירוע של השבוע שעבר שמר לכם:', awayCoins: '+{n} מטבעות', awaySnacks: '+{n} חטיפים', awaySticker: 'מדבקה', awayHat: 'כובע לחיה', awayBall: 'כדור חדש',
+  soundOnAria: 'צלילים פועלים', soundOffAria: 'צלילים כבויים',
 });
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 function t(key, vars) {
@@ -2469,6 +2506,31 @@ for (const ev of ['click', 'pointerup', 'mouseup', 'touchend']) document.addEven
   if (!clickGuarded(e.changedTouches ? { isTrusted: e.isTrusted, clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY } : e)) return;
   if (ev === 'click') { cguard.eaten++; e.stopPropagation(); e.preventDefault(); } else if (ev === 'touchend' && e.cancelable) e.preventDefault();
 }, true);
+/* Phase 1 (panel D: input safety for small, shaky or double-tapping fingers): for TAPG.screenMs after any screen change (the start screen, a sheet,
+   a map or a card's overlay shown or hidden) every new tap is swallowed; a tap within TAPG.spotMs of a change on the spot of the tap that made it
+   (the second half of a double tap on a button that has just gone) too; and a second tap on the same button within TAPG.sameMs counts as one.
+   The game canvas in play is never filtered (Smash, drums and bubbles want fast taps). For a real visitor (opt in: window.__graspTapGuard = true). */
+const TAPG = { screenMs: 450, spotMs: 700, sameMs: 350, r: 40 }, tapg = { at: -1e9, why: '', cause: null, last: null, down: null, eaten: 0, log: [] };
+function tapGuardOn() { try { return !navigator.webdriver || window.__graspTapGuard === true; } catch { return true; } }
+function screenChanged(why) { const now = performance.now(), d = tapg.down; tapg.at = now; tapg.why = why; tapg.cause = d && now - d.t < 250 ? d : null; tapg.log.push('screen:' + why); if (tapg.log.length > 40) tapg.log.shift(); }
+function tapTarget(e) { // what a tap would press: a DOM control, or a card button on the canvas; null for the game canvas in play
+  const el = e.target && e.target.closest ? e.target.closest('button, a, [role=button], .gbox, label, input') : null; if (el) return el;
+  if (e.target === canvas) { const E = endState(); if (mode !== 'none' && E && E.over) { const k = endCardAt(e.clientX, e.clientY); return k ? 'card:' + k : null; } }
+  return null;
+}
+new MutationObserver((ms) => { for (const m of ms) { const el = m.target; if (!(el.id === 'start' || el.id === 'advMap' || el.id === 'smashMap' || el.id === 'album' || el.id === 'banner' || el.classList.contains('ov'))) continue; if ((m.oldValue !== null) !== el.hidden) screenChanged(el.id + (el.hidden ? ':off' : ':on')); } })
+  .observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
+document.addEventListener('pointerdown', (e) => {
+  if (!e.isTrusted || !tapGuardOn()) return;
+  const now = performance.now(), tg = tapTarget(e), C = tapg.cause, L = tapg.last; let why = '';
+  if (now - tapg.at < TAPG.screenMs) why = 'screen';
+  else if (C && now - tapg.at < TAPG.spotMs && Math.hypot(e.clientX - C.x, e.clientY - C.y) <= TAPG.r) why = 'spot';
+  else if (tg && L && L.el === tg && now - L.t < TAPG.sameMs) why = 'double';
+  tapg.down = { t: now, x: e.clientX, y: e.clientY }; if (tg) tapg.last = { t: now, el: tg };
+  if (!why || (e.target === canvas && !tg && mode !== 'none' && why !== 'screen')) return; // (play on the canvas: only the screen-change guard)
+  tapg.eaten++; tapg.log.push('eat:' + why + ':' + (typeof tg === 'string' ? tg : tg ? tg.id || tg.className || tg.tagName : 'none')); if (tapg.log.length > 40) tapg.log.shift();
+  e.stopImmediatePropagation(); e.preventDefault(); clickGuard(e);
+}, true);
 canvas.addEventListener('pointerdown', (e) => {
   const E = endState();
   if (mode !== 'none' && E && E.over && (e.button === 0 || e.pointerType === 'touch') && performance.now() - E.overAt > 500) { // a tap on a round-over card button
@@ -2611,6 +2673,7 @@ function frame(now) {
 function frameBody(now) {
   if (!engine) return;
   if (rp.capNext) { rp.capNext = false; if (!rpBlock()) rpCapture(); } // the replay's capture of the last frame (2D)
+  if (now - lastFrame > HIDE_GAP_MS && hideGapOk()) hidePause('gap'); // (phase 1: a frozen page shows no event: a long gap in the frames pauses too)
   const dt = Math.min(100, now - lastFrame); lastFrame = now;
   gfxTick(now - lastRaf); lastRaf = now; fxp.frame++; // the quality watch (the real interval, not the clamped one)
   trackTick(now);
@@ -2644,6 +2707,7 @@ function frameBody(now) {
   if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else render(now);
   if (fxp.n) fxDraw(); // (a mode that drew no particles this frame: the pool on top)
   gfx3dSync();
+  fdTick(now); drawFingerDemo(now); // (phase 1: the first-time instruction fingers)
   if (pause.resumeT) drawResume(now);
   syncToastLayout();
   updateNoHand(now);
@@ -2656,7 +2720,7 @@ function frameBody(now) {
     fps = frameCount * 1000 / (now - lastRateAt); trackFps = trackCount * 1000 / (now - lastRateAt);
     frameCount = 0; trackCount = 0; lastRateAt = now;
     if (!statusEl.hidden) statusLive.textContent = swapping ? t('switching')
-      : lastTrackError ? t('trackErr', { e: lastTrackError })
+      : lastTrackError ? t('trackErr')
       : t('trackOn', { d: delegateUsed, n: Math.round(trackFps) }) + (trackFps < 1 ? t('stalled') : '');
     if (!hudEl.hidden) updateHud();
   }
@@ -4517,7 +4581,7 @@ function smStarHint(r) { // the line under the stars: how they came, and how to 
 function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
   const E = smash, ui = E.ui, r = E.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear, acc = SMASH_ACCENT[r.scene];
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN + 54, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
+  const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN + (clear ? 54 : 0), cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
   view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const ts = bigTextSprite(clear ? t('stageClear') : t('soClose'), 34); blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
@@ -4550,7 +4614,7 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
   const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN : 230), bh = 56, sh = 46, hw = (bw - 10) / 2;
   ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
     : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
-  ui.buttons.share = { x: bx, y: by + bh + 10 + sh + 10, w: bw, h: 44 }; // (home2: Share = the replay clip / Copy link)
+  if (clear) ui.buttons.share = { x: bx, y: by + bh + 10 + sh + 10, w: bw, h: 44 }; // (home2: Share = the replay clip / Copy link; phase 1: only after a boss: a cleared Smash stage ends on its boss; never on the fail card)
   const main = clear ? 'next' : 'retry', label = { next: r.n >= SMASH_N ? t('mapBtn') : t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn'), share: t('shareBtn') }; ui.labels = {}; for (const key in ui.buttons) ui.labels[key] = label[key];
   for (const key in ui.buttons) {
     const b = ui.buttons[key], hot = ui.hover === key, mx = b.x + b.w / 2, my = b.y + b.h / 2, pri = key === main; let bk = hot ? 1.04 : 1;
@@ -6520,7 +6584,7 @@ function shapesTap(tp, now) { // a tap (a press that barely moved): pick / switc
   if (h) { shapes.held = null; const s = h.s; s.x = h.sx; s.y = h.sy; s.angle = h.sa; s.moved = h.moved0; } // the press grabbed it: undo (it was a tap)
   if (shapes.phase !== 'play') return;
   const i = shapeAt(tp);
-  if (i >= 0) { if (shapes.sel === i) shapesDeselect(now, 'again'); else shapesSelect(i, now); return; }
+  if (i >= 0) { if (shapes.sel === i) { if (now - (shapes.selAt || -1e9) < TAPG.sameMs && tapGuardOn()) { shapes.tapLog.push({ k: 'double', i, t: now }); return; } shapesDeselect(now, 'again'); } else shapesSelect(i, now); return; } // (phase 1: a double tap picks it once: the second half is the same tap)
   if (shapes.sel >= 0) { const j = shapeHoleTapAt(tp); if (j >= 0) shapesFly(shapes.sel, j, now, 'tap'); else shapesDeselect(now, 'elsewhere'); }
 }
 function shapesRotate(s, d) { s.angle = wrapAng(s.angle + d); }
@@ -6722,7 +6786,10 @@ function drawShapeDemo(now) { // first play: a finger taps a shape, then its hol
   const p = q < 0.25 ? lerp(rest, s, q / 0.25) : q < 0.42 ? { x: s.x, y: s.y } : q < 0.72 ? lerp(s, hl, (q - 0.42) / 0.3) : q < 0.9 ? { x: hl.x, y: hl.y } : lerp(hl, rest, (q - 0.9) / 0.1);
   const tapAt = q >= 0.25 && q < 0.42 ? (q - 0.25) / 0.17 : q >= 0.72 && q < 0.9 ? (q - 0.72) / 0.18 : -1, press = tapAt >= 0 && tapAt < 0.35 ? 1 : 0;
   const fz = Math.min(1.8, shapes.big || 1); shapes.ui.demo.scale = fz; // the finger grows with the shapes
-  resetView(); ctx.save(); ctx.globalAlpha = fade;
+  drawDemoFinger(p, press, fz, tapAt, fade);
+}
+function drawDemoFinger(p, press, fz, tapAt, alpha) { // the demo's cartoon finger (Shapes' first play; phase 1: Strike's serve, Slice, Smash): the tip at p, the hand below; tapAt >= 0: a tap ring growing
+  resetView(); ctx.save(); ctx.globalAlpha = alpha;
   if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, (12 + tapAt * 34) * fz, 0, TAU); ctx.lineWidth = 4 * fz; ctx.strokeStyle = 'rgba(255,248,236,' + (0.8 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
   ctx.translate(p.x + 6 * fz, p.y + (6 + press * 4) * fz); ctx.rotate(-0.35); ctx.scale(fz, fz); const fw = 22, fl = 64; // a cartoon finger: the tip at the point, the hand below
   ctx.beginPath(); ctx.roundRect(-fw / 2, 0, fw, fl, fw / 2); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#7a4a2a'; ctx.stroke();
@@ -6999,7 +7066,7 @@ function advWorldOf(n) { return Math.max(1, Math.min(ADV_WN, Math.ceil(Math.max(
 // was 0.9), on stages 1-3 a soft hit breaks the brick + a neighbour (softPlus) and on the gentle stages a hit aimed at a hole lands on the nearest
 // brick (assist: a still finger sent every ball through the same hole). Measured with tests/strike_sim.js (a still finger, phone, Easy): stage 1
 // 95.5 s -> ~42 s.
-const ADV_EASY = { paceK: 1.4, taper: 0.08, soft2: 3 }; // (the four gentle stages: x1.4 tapering by 0.08 a stage, so with the tuning levels' own growth the pace stays ~flat into stage 5's x1)
+const ADV_EASY = { paceK: 1.4, taper: 0.08, soft2: 3 }, ADV_BUMPER_N = 3; // (phase 1: on stages 1..ADV_BUMPER_N a miss costs a star, never a heart: the bumper sends the ball back) // (the four gentle stages: x1.4 tapering by 0.08 a stage, so with the tuning levels' own growth the pace stays ~flat into stage 5's x1)
 function advPlan(n) { // stage n's fixed plan (pure: the same object for the same n, every time)
   n = Math.max(1, Math.min(ADV_N, n | 0 || 1)); const w = advWorldOf(n), i = n - (w - 1) * ADV_WORLD, boss = i === ADV_WORLD, r = mulberry32(strSeed('advplan|' + n));
   const level = (w - 1) * WORLD_LEVELS + Math.max(1, Math.round(i * WORLD_LEVELS / ADV_WORLD)); // the tuning level: world 1 runs levels 1-6 (its boss stage at the old boss level 6), world 5 up to 30
@@ -7018,7 +7085,7 @@ function advPlan(n) { // stage n's fixed plan (pure: the same object for the sam
     armor: n < 5 ? 0 : [0.15, 0.25, 0.3, 0.35, 0.4, 0.4, 0.42, 0.44][w - 1], weak: easy ? 2 : 1, gold: n >= 2 ? 0.5 : 0, key: n >= 6 ? (w >= 2 ? 1 : 0.5) : 0, // armored share; glowing weak spots a wall; gold bricks (a chance a wall); keystones (a chance a wall)
     turret: n >= 10 ? [0, 0, 0.5, 1, 1.4, 2, 2, 2, 2.2][w] : 0, turretMs: [0, 0, 5200, 4600, 4000, 3400, 3300, 3200, 3100][w], shotSpeed: Math.min(0.6, 0.4 + 0.05 * Math.max(0, w - 2)), // turret bricks a wall (from stage 10), ms between shots, their projectiles' speed
     creep: n >= 12 ? [0, 0, 0.025, 0.035, 0.045, 0.055, 0.057, 0.059, 0.061][w] : 0, balls: !boss && ((w >= 3 && (i === 3 || i === 6)) || (w >= 5 && i % 2 === 0)) ? 2 : 1, // walls closing in (depth units / ms, from stage 12); two balls at once (some world 3+ stages)
-    soft2: n <= ADV_EASY.soft2, assist: easy, paceK: easy ? ADV_EASY.paceK - ADV_EASY.taper * (i - 1) : w === 1 ? 1 : boss ? [0, 1, 1.05, 1.1, 1.14, 1.18, 1.2, 1.22, 1.24][w] : [0, 1, 1.1, 1.18, 1.24, 1.3, 1.32, 1.34, 1.36][w] + 0.01 * i, /* (a boss fight: a calmer ball, the boss is the threat) */ reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82, 0.81, 0.8, 0.8][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75, 0.74, 0.73, 0.72][w], magK: w === 1 ? 1 : 0.5,
+    soft2: n <= ADV_EASY.soft2, bumper: !boss && n <= ADV_BUMPER_N, assist: easy, /* (phase 1: stages 1-3 cannot be failed) */ paceK: easy ? ADV_EASY.paceK - ADV_EASY.taper * (i - 1) : w === 1 ? 1 : boss ? [0, 1, 1.05, 1.1, 1.14, 1.18, 1.2, 1.22, 1.24][w] : [0, 1, 1.1, 1.18, 1.24, 1.3, 1.32, 1.34, 1.36][w] + 0.01 * i, /* (a boss fight: a calmer ball, the boss is the threat) */ reachK: easy ? 1.08 : [1, 1, 0.93, 0.88, 0.85, 0.82, 0.81, 0.8, 0.8][w], gapK: [1, 1, 0.9, 0.85, 0.8, 0.75, 0.74, 0.73, 0.72][w], magK: w === 1 ? 1 : 0.5,
     pu: n >= 3 ? Math.min(0.4, 0.2 + 0.05 * (w - 1)) : 0, guests: n >= 2, monkey: w >= 2, curve: w >= 2, wobble: w >= 4, float: w === 6 ? 1 : 0 }; // (world 6: low gravity, the incoming ball floats up in a gentle arc) // power-up bricks from stage 3 and rare; the cow from stage 2, the monkey from world 2; bending serves from world 2, S-wobbles from world 4
 }
 function advOpen(id) { // what a stage may use in place of the road: everything, but the monkey, power-ups and serve shapes come with the worlds; no perks
@@ -7328,7 +7395,7 @@ function resetStrike(now) {
   const w0 = A ? A.world : daily.on ? 1 : duel.on && duel.link && duel.link.m === 'end' ? duel.link.s : Math.max(1, Math.min(profile.worlds.unlocked, strike.startWorld | 0 || 1)), L0 = A ? A.level : (w0 - 1) * WORLD_LEVELS + 1; // a checkpoint start: the world's first level, base stats
   strike.waiting = false; strike.runWorld = w0; strike.gate = A ? 0 : worldGate(L0); strike.worldUp = 0; strike.chest = null; strike.chests = 0; strike.lastChest = null; strike.spots.length = 0; strike.lastSpot = null; strike.previewed.clear();
   strike.score = 0; strike.lives = strike.maxLives = (A ? ADV_LIVES : sd('STRIKE_LIVES')) + upgLv('heart'); /* (v5: + the Extra heart upgrade) */ strike.over = false; strike.level = L0; strike.levelBase = strike.pace = strikeLevelBase(); strike.speed = strike.pace; strike.beatAt = 0; strike.beats = 0;
-  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = 0; strike.level = L0; strike.cleared = strike.cleared0 = clearedAtLevel(L0); strike.power = ''; strike.lastHit = null;
+  strike.hits = strike.misses = strike.serves = strike.bounces = strike.cleared = strike.bestCombo = strike.caught = strike.puDrought = strike.bumps = 0; strike.ui.bumpAt = 0; strike.ui.starLost = null; /* (phase 1: the bumper's saves this round) */ strike.level = L0; strike.cleared = strike.cleared0 = clearedAtLevel(L0); strike.power = ''; strike.lastHit = null;
   strike.flash = strike.superFlash = strike.hitAt = strike.handHit = strike.tntAt = strike.ricochetAt = -1e9;
   strike.ricochets = strike.explosions = 0; strike.seenKinds.clear(); strike.nextKind = L0 > 1 && !A ? kindNewAt(L0) : null;
   strike.progress = 0; strike.boss = null; strike.bosses = 0; strike.bossDownAt = -1e9; strike.runReturns = strike.paceUps = 0; strike.ui.faster = null; roundStart();
@@ -7627,8 +7694,9 @@ function streakReset(now) { // a miss: the streak is gone, with a small grey fiz
    the player mix the hits instead of slapping SUPER after SUPER. (The older suites' extrasOff: no heat.) --- */
 const HEAT = { soft: -0.3, medium: -0.12, hard: 0.28, super: 0.45 }, HEAT_COOL = 0.00006, OVERHEAT_MS = 3000, HEAT_AFTER = 0.35; // per hit; per ms; the overheat; the heat left after it
 function overheated(now = performance.now()) { return now < strike.hotUntil; }
+function steelDay() { return dailyMod() === 'steel'; } // (phase 1, panel E: 'Steel day' said 'hit them hard' while hard hits overheated and an overheated hit only dents steel: no heat that day, and a medium hit breaks a plate)
 function heatHit(tier, now) {
-  if (strike.extrasOff || frenzy.on || overheated(now)) return; // (Frenzy: no heat, the speed is the challenge)
+  if (strike.extrasOff || frenzy.on || overheated(now) || steelDay()) return; // (Frenzy: no heat, the speed is the challenge)
   const dh = HEAT[tier] || 0; strike.heat = Math.max(0, Math.min(1, strike.heat + (dh > 0 ? dh * heatGainK() / rallyK() : dh * heatCoolK()))); // (a fast rally heats the hand less: speed is never punished twice) strike.ui.heatAt = now; // (v5: Cool hands)
   if (strike.heat >= 1) { // overheat!
     strike.hotUntil = now + OVERHEAT_MS; strike.overheats++; strike.ui.hotAt = now; sfx('sizzle'); shakeScreen(1.5);
@@ -8042,7 +8110,7 @@ function wallsTick(dt) { // walls sit in slots in depth order; a cleared one lea
 // knocked out) lets the ball through untouched with a whoosh, or, when it is mostly in the gap, knocks out only the edge bricks it clips.
 // Returns what the ball does next: 'bounce' (it hit) or 'pass' (through a gap).
 const BLAST = { softPlus: [1, 1, 1], soft: [1, 0, 0], medium: [2, 1, 1], hard: [2, 1, 2], super: [3, 2, 3], fire: [3, 3, 4] }; // [damage at the hit brick, damage round it, shape: 0 the brick, 1 + a neighbour, 2 a plus, 3 the 3x3, 4 a radius-2 diamond]
-const STEEL_DMG = { soft: [0, 0], medium: [0, 0], hard: [1, 1], super: [3, 1], fire: [3, 3] }; // steel plates: what a tier takes off (0: a dent)
+const STEEL_DMG = { soft: [0, 0], medium: [0, 0], hard: [1, 1], super: [3, 1], fire: [3, 3] }, STEEL_DAY_MED = [1, 0]; // steel plates: what a tier takes off (0: a dent); the steel daily: a medium hit takes one off the plate it lands on
 function softPlus() { return adv.on && adv.plan && adv.plan.soft2 && !strike.extrasOff; } // (panel fix: on Adventure stages 1-3 a soft hit still breaks 2 bricks: the brick + a neighbour)
 function blastShape(dc, dr, shape) { return shape === 2 ? dc + dr <= 1 : shape === 3 ? dc <= 1 && dr <= 1 : shape === 4 ? dc + dr <= 2 || (dc <= 1 && dr <= 1) : dc + dr === 0; }
 function blastTargets(w, a, shape, b) { // [brick, ring?] for anchor a and the shape; shape 1: the live neighbour on the side of the ball's centre
@@ -8085,7 +8153,7 @@ function smashWall(w, b, now) {
   for (const [k, ring] of targets) {
     if (!k.alive) continue;
     let d = glass ? 1e9 : ring === 'x' ? Math.max(1, bl[1]) : ring ? bl[1] : bl[0]; // ('x': a brick under a Big ball's / a guest's footprint, or Heavy Ball's extra: at least 1)
-    if (steel) { const sd2 = STEEL_DMG[fire ? 'fire' : tier] || STEEL_DMG.soft; d = ring ? sd2[1] : sd2[0]; }
+    if (steel) { const sd2 = (!fire && tier === 'medium' && steelDay() ? STEEL_DAY_MED : STEEL_DMG[fire ? 'fire' : tier]) || STEEL_DMG.soft; d = ring ? sd2[1] : sd2[0]; }
     if (w.kind === 'gummy' && !fire && d < 1e9) d = Math.min(d, 1); // (a gummy stretches: a hit takes at most one off it)
     if (k.armor && d > 0 && d < 1e9 && upgLv('heavy') >= 3) d++; // (v5: Heavier ball level 3: armor cracks faster)
     if (!d) { k.dent = (k.dent || 0) + 1; dents++; continue; }
@@ -9073,7 +9141,7 @@ function waitTick(now, dt) {
   const P0 = strike.pull, armedAt = P0 && P0.armed ? P0.armedAt : 0, go = pullTick(now);
   if (go) playerServe(go.v, now, go.aim, armedAt && timingOn() ? serveTiming(armedAt, now) : null); // (v5: flicked as the pulsing ring closes = PERFECT)
 }
-function playerServe(force, now = performance.now(), aim = null, tm = null) { h2Act(); // the waiting ball launched (force: a tier for the test hook, or the flick's speed; aim: -AIM_MAX..AIM_MAX sideways; tm: v5 serve timing)
+function playerServe(force, now = performance.now(), aim = null, tm = null) { h2Act(); fdDone('serve', now); // the waiting ball launched (force: a tier for the test hook, or the flick's speed; aim: -AIM_MAX..AIM_MAX sideways; tm: v5 serve timing)
   let b = strike.balls[0]; if (!strike.waiting || !b || !b.wait) b = startWait(now);
   const q = slapLaunch(b, now, force, tm); strike.waiting = false; b.wait = false; strike.serves++; pullReset();
   if (aim !== null) { b.spin = 0; aimBall(b, aim / AIM_MAX * 1.2, 0, now); } // a flick: straight on down the corridor, steered sideways by the flick
@@ -9263,7 +9331,30 @@ function paceUp(now) {
   const T = strikeTuning(), cap = Math.min(T.maxSpeed, T.paceCap) * paceMul(); if (strike.pace >= cap - 1e-9) return false;
   strike.pace = Math.min(cap, strike.pace * PACE_UP); strike.paceUps = (strike.paceUps || 0) + 1; strike.ui.faster = { t: now }; sfx('faster'); return true;
 }
+/* --- phase 1: the first win. Adventure stages 1-3 cannot be failed: a glowing bumper lies across the player's end; a missed ball hits it and goes
+   back down the corridor (once per miss: a soft boing, a ring of light), and the miss costs a star (3 / 2 / 1 for 0 / 1 / more misses), never a
+   heart. The hearts come in on stage 4 (the HUD shows the stage's stars instead until then). --- */
+function advBumperStage() { return adv.on && !!adv.plan && !!adv.plan.bumper && !daily.on && !strike.extrasOff; }
+function advBumper() { return advBumperStage() && adv.phase === 'play' && !adv.forceFail; } // (adv.forceFail: the failTest hook)
+function advStarsNow() { const n = adv.lost || 0; return n === 0 ? 3 : n === 1 ? 2 : 1; }
+function bumperReturn(b, now) {
+  const before = advStarsNow(); strike.misses++; adv.lost++; strike.bumps = (strike.bumps || 0) + 1; strike.power = '';
+  streakReset(now); rallyMiss(now); strike.runReturns = 0;
+  const ui = strike.ui; ui.bumpAt = now; if (advStarsNow() < before) ui.starLost = { i: advStarsNow(), t: now };
+  b.dir = -1; b.z = 1; b.super = false; b.tier = 'soft'; b.perf = false; b.combo = 0; b.hot = false; b.spin = 0; b.passed = false; b.bumped = (b.bumped || 0) + 1;
+  b.speed = strike.pace * 0.8; aimBall(b, 0, 0, now);
+  const sc = ballScreen(b); sfx('bumper'); ring(sc.x, Math.min(H - 20, sc.y), 'rgba(120,230,255,0.95)', sc.r * 3, 420, 5); burst(sc.x, Math.min(H - 20, sc.y), '#9ff0ff', 14);
+  addFloater({ x: sc.x, y: Math.max(strike.ui.top + 110, Math.min(H * 0.62, sc.y - sc.r - 40)), text: t('boing'), big: true, life: 1.1, bubble: true });
+}
+function drawBumper(now) { // the bumper: a soft cyan glow along the bottom edge (stages 1-3), flaring when it sends a ball back
+  if (!advBumper() || strike.over) { strike.ui.bumper = null; return; }
+  const q = Math.max(0, 1 - (now - (strike.ui.bumpAt || -1e9)) / 650), bh = 30 + 40 * q, a = 0.3 + 0.06 * Math.sin(now * 0.004) + 0.6 * q;
+  resetView(); ctx.save(); const gr = ctx.createLinearGradient(0, H, 0, H - bh); gr.addColorStop(0, 'rgba(120,230,255,' + a.toFixed(3) + ')'); gr.addColorStop(1, 'rgba(120,230,255,0)');
+  ctx.fillStyle = gr; ctx.fillRect(0, H - bh, W, bh); ctx.fillStyle = 'rgba(200,250,255,' + Math.min(0.9, a + 0.2).toFixed(3) + ')'; ctx.fillRect(0, H - 3, W, 3); ctx.restore();
+  strike.ui.bumper = { y: H - bh, h: bh, flare: q, bumps: strike.bumps || 0 };
+}
 function strikeMiss(b, now) { // a ball flew past: gone; with other balls still in play (Multi-ball) that is all, the last one costs a life (a two-ball stage: every ball missed costs one)
+  if (advBumper()) return bumperReturn(b, now); // (phase 1: stages 1-3: the bumper sends it back; a star, never a heart)
   const B = strike.balls, i = B.indexOf(b); if (i >= 0) B.splice(i, 1);
   const must = adv.on && adv.plan && adv.plan.balls > 1 && !powerOn('multi') && !b.split; // (v5: a Split shot's extra ball never costs a heart while another is in play)
   if (B.length && !must) { sfx('whiff'); return; }
@@ -9340,6 +9431,7 @@ function bouncersTick(now, dt) { // the missed guests: squashed for a moment, th
 function loseLife(now) { // a life gone (a missed ball, or the boss reaching the player): the heart shakes hollow, a red flash; the last one ends the round
   if (adv.on && adv.phase !== 'play') return; // (an Adventure stage already cleared: nothing more to lose)
   if (strike.shield > 0) { strike.shield--; strike.shieldUsed = (strike.shieldUsed || 0) + 1; sfx('deflect'); ring(W / 2, H * 0.7, 'rgba(95,216,255,0.95)', Math.min(W, H) * 0.4, 520, 8); burst(W / 2, H * 0.7, '#5fd8ff', 20); addFloater({ x: W / 2, y: H * 0.42, text: t('shieldUp'), big: true, life: 1.1 }); return; } // v5: the Shield power blocks one lost heart
+  if (advBumper()) { adv.lost++; strike.ui.starLost = { i: advStarsNow(), t: now }; return; } // (phase 1: stages 1-3 cannot be failed: a star, never a heart)
   strike.lives--; strike.flash = now; if (adv.on) adv.lost++;
   strike.ui.heartLost = { i: strike.lives, t: now }; // the heart that just went hollow shakes and fades
   if (strike.lives > 0) { grippySay(strike.lives === 1 ? 'lastLife' : 'miss'); return; }
@@ -9406,6 +9498,7 @@ function advClearTick(now, dt) { // between the clear and the card: the walls ar
     if (adv.result.stars === 3) sfx('chime');
   }
 }
+function advSkip4() { const A = profile.adv; A.unlocked = Math.max(A.unlocked, 4); saveProfile(); return advStart(4); } // (phase 1: the 'Skip to stage 4' chip: stages 2-3 stay open to play later)
 function advNext() { // the clear card's Next: the next stage at once; after a world's boss (or the last stage) the map first, where the new world's first stage pops open
   const r = adv.result, n = r ? r.n : adv.n;
   if (!r || !r.clear) return advStart(n);
@@ -9468,18 +9561,20 @@ function rankGemSprite(i, R) { // a faceted gem in the rank's colour (Legend: ra
     g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.moveTo(0, -R * 0.8); g.lineTo(R * 0.4, -R * 0.2); g.lineTo(0, -R * 0.05); g.lineTo(-R * 0.4, -R * 0.2); g.closePath(); g.fill();
   });
 }
-function advStarHint(r) { const n = r.lost || 0; return n === 0 ? t('starsPerfect') : n === 1 ? t('starsLost1') : t('starsLostN', { n }); } // the line under the stars: why not 3, and how
+function advStarHint(r) { const n = r.lost || 0; if (r.n <= ADV_BUMPER_N && !r.boss) return n === 0 ? t('starsPerfectB') : n === 1 ? t('starsMiss1') : t('starsMissN', { n }); return n === 0 ? t('starsPerfect') : n === 1 ? t('starsLost1') : t('starsLostN', { n }); } // (phase 1: stages 1-3 count misses: no hearts there) // the line under the stars: why not 3, and how
 function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by one, the line on how to get 3, coins, XP; Next / Play again / Map) or failed ('So close! 5 of 8 walls'; Try again / Map)
   const E = strike, ui = E.ui, r = adv.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const DB = 54, DU = duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button under the others; a duel: the WIN / LOSE panel above the card)
-  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC + DB, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16 + DU, (H - ch - DU) / 2 + DU) + (1 - e) * 26;
+  const fin = clear && r.n >= ADV_N, shr = clear && (!!r.record || !!r.boss), skip = clear && !fin && r.n <= 2 && r.stars === 3 && !profile.adv.stars[4]; // (phase 1: Share only on a record or a boss; the last stage's card is the ending; a 3-star stage 1 / 2: 'Skip to stage 4')
+  const DB = shr ? 54 : 0, DU = duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button under the others; a duel: the WIN / LOSE panel above the card)
+  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC + DB - (fin ? 56 : 0), cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16 + DU, (H - ch - DU) / 2 + DU) + (1 - e) * 26;
   view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
-  const title = clear ? (r.boss ? t('worldClear', { n: r.world }) : t('stageClear')) : t('soClose'), ts = bigTextSprite(title, 34);
-  blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
-  blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('wn_' + r.world), 14, acc, null, 700), cx, y0 + 84);
+  const title = fin ? t('theEnd') : clear ? (r.boss ? t('worldClear', { n: r.world }) : t('stageClear')) : t('soClose'), ts = bigTextSprite(title, 34);
+  blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34))); ui.advTitle = title;
+  if (fin) { const fs = textSprite(t('finaleLine'), 14, acc, null, 700); blit(fs, cx, y0 + 84, 0, Math.min(1, (cw - 24) / fs.tw)); ui.finale = t('finaleLine'); } // (phase 1: the ending after the last boss)
+  else { blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('wn_' + r.world), 14, acc, null, 700), cx, y0 + 84); ui.finale = null; }
   ui.advStars = null; ui.advWalls = null; ui.advStarHint = null; ui.advBoss = null;
   if (clear) { // three star slots; the earned ones fly in one by one, each with a note (the third with a chord)
     const sy = y0 + 134, gap = 72, st = [];
@@ -9531,10 +9626,10 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
   }
   ui.advSticker = null; if (stk) drawCardSticker(now, r, E, cx, y0 + 270 + HN + SC, cw, rtl); // a new sticker for the album, between what it paid and the buttons
   const bw = cw - 40, bx = x0 + 20, by = y0 + (clear ? 244 + HN + SC : 230) + stk, bh = 56, sh = 46, hw = (bw - 10) / 2;
-  ui.buttons = clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
+  ui.buttons = fin ? { map: { x: bx, y: by, w: bw, h: bh } } : clear ? { next: { x: bx, y: by, w: bw, h: bh }, retry: { x: rtl ? bx + hw + 10 : bx, y: by + bh + 10, w: hw, h: sh }, map: { x: rtl ? bx : bx + hw + 10, y: by + bh + 10, w: hw, h: sh } }
     : { retry: { x: bx, y: by, w: bw, h: bh }, map: { x: bx, y: by + bh + 10, w: bw, h: sh } };
-  ui.buttons.share = { x: bx, y: by + bh + 10 + sh + 10, w: bw, h: 44 }; // (home2: Share = the replay clip / Challenge a friend / Copy link)
-  const main = clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn'), share: t('shareBtn') }; ui.advLabels = Object.fromEntries(Object.keys(ui.buttons).map((k) => [k, label[k]])); // (a clear: 'Play again'; a fail: 'Try again')
+  if (shr) ui.buttons.share = { x: bx, y: by + bh + 10 + (fin ? 0 : sh + 10), w: bw, h: 44 }; // (home2: Share = the replay clip / Challenge a friend / Copy link; phase 1: only on a record or a boss)
+  const main = fin ? 'map' : clear ? 'next' : 'retry', label = { next: t('nextBtn'), retry: t(clear ? 'replayBtn' : 'retryBtn'), map: t('mapBtn'), share: t('shareBtn') }; ui.advLabels = Object.fromEntries(Object.keys(ui.buttons).map((k) => [k, label[k]])); // (a clear: 'Play again'; a fail: 'Try again')
   for (const key in ui.buttons) {
     const b = ui.buttons[key], hot = ui.hover === key, mx = b.x + b.w / 2, my = b.y + b.h / 2, pri = key === main; let bk = hot ? 1.04 : 1;
     if (pri) { const ph = 0.5 + 0.5 * Math.sin(now / 280); if (!hot) bk = 1 + 0.035 * ph; ui.againPulse = bk; resetView(); ctx.save(); ctx.shadowColor = 'rgba(255,194,75,' + (0.35 + 0.4 * ph).toFixed(3) + ')'; ctx.shadowBlur = 10 + 14 * ph; ctx.fillStyle = 'rgba(255,194,75,0.35)'; ctx.beginPath(); ctx.roundRect(mx - b.w * bk / 2, my - b.h * bk / 2, b.w * bk, b.h * bk, 14); ctx.fill(); ctx.restore(); }
@@ -9543,8 +9638,13 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
     const sp = textSprite(label[key], pri ? 21 : 15, pri ? '#2a1a00' : key === 'share' ? '#ffd77a' : '#f1e9da', null, pri || key === 'share' ? 800 : 600); blit(sp, mx, my, 0, Math.min(1, (b.w - 14) / sp.tw));
   }
   ui.rpBtn = null; ui.missionRow = []; ui.teaser = null; // (home2: the replay is in the Share sheet; no missions or upsell on cards)
+  ui.skip = null; if (skip) { // (phase 1: a 3-star stage 1 / 2: a small 'Skip to stage 4' chip under the card, for the ones the first stages bore)
+    const sp = textSprite(t('skip4'), 14, '#bff6ff', null, 700), kw = Math.max(120, sp.tw + 28), kh = 44, kx = cx - kw / 2, ky = Math.min(H - kh - 4, y0 + ch + 10), hot = ui.hover === 'skip';
+    blit(glassSprite(kw, kh, kh / 2), kx - 1, ky - 1); resetView(); ctx.lineWidth = 1.5; ctx.strokeStyle = hot ? 'rgba(191,246,255,0.95)' : 'rgba(191,246,255,0.55)'; ctx.beginPath(); ctx.roundRect(kx, ky, kw, kh, kh / 2); ctx.stroke();
+    blit(sp, cx, ky + kh / 2); ui.buttons.skip = ui.skip = { x: kx, y: ky, w: kw, h: kh }; ui.advLabels.skip = t('skip4');
+  }
   petCardTag(now, E); // the pet: 'Yum! +2 snacks' on the card's top edge
-  if (now - E.overAt > 1000) { const al = t(againKey(clear ? 'advWaveNext' : 'advWaveRetry')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
+  if (now - E.overAt > 1000) { const al = fin ? t('finaleWave') : t(againKey(clear ? 'advWaveNext' : 'advWaveRetry')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24 + (ui.skip ? 52 : 0), 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
   ctx.restore();
   if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
@@ -9583,7 +9683,7 @@ function strikeTick(now, dt) {
   if (!strike.balls.length) { // between rallies: the ball appears in front of the player for the serve (the older suites: a whoosh and a ring at the far end 500 ms before it comes)
     const auto = strike.extrasOff || strike.autoServe;
     if (auto && !strike.cued && now >= strike.serveAt - 500) { strike.cued = true; sfx('whoosh'); }
-    if (now >= strike.serveAt) { if (auto) serveBall(now); else { startWait(now); tipOnce('flick'); } } // (the first serve ever: the pull-back + flick explained once)
+    if (now >= strike.serveAt) { if (auto) serveBall(now); else { startWait(now); tipOnce('flick'); fdStart('serve', now); } } // (the first serve ever: the pull-back + flick explained once; phase 1: by the finger)
     return;
   }
   const fire = powerOn('fire'), mul = speedMul();
@@ -10416,7 +10516,8 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
     const d = strike.score - ui.shown; ui.shown = Math.abs(d) < 0.6 || d < 0 ? strike.score : ui.shown + d * Math.min(1, dt / 110);
     const n = Math.round(ui.shown); if (n !== ui.lastShown) { ui.lastShown = n; if (now - ui.lastTick > 45) { ui.lastTick = now; sfx('count'); } }
   }
-  const nL = Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives), compact = nL > 6; // an extra life (power-up) adds a heart; more than fit: one heart and ×N
+  drawBumper(now); // (phase 1: stages 1-3's bumper glow at the player's end)
+  const nL = advBumperStage() ? 3 : Math.max(strike.maxLives || sd('STRIKE_LIVES'), strike.lives), compact = nL > 6; // an extra life (power-up) adds a heart; more than fit: one heart and ×N
   const gap = nL > 4 ? 18 : 21, k = nL > 4 ? 0.46 : 0.52, xsp = compact ? textSprite(LRM + '×' + strike.lives, 13, '#fff8ec', null, 800) : null, hw = compact ? 20 + 4 + xsp.tw : (nL - 1) * gap + 18;
   const goal = strike.goal, rbs = strike.boss && strike.boss.real ? strike.boss : null, tx = frenzy.on ? '⚡' + LRM + strike.hits : adv.on && adv.plan && adv.plan.boss ? LRM + (rbs ? Math.ceil(100 * rbs.hp / rbs.maxHp) : adv.bossDone ? 0 : 100) + '%' : LRM + Math.min(strike.progress, goal) + '/' + goal, pw = tx.length > 5 ? 44 + 6 * Math.max(0, tx.length - 6) : 38, ph = 18, pad = 9, h = 28, w = pad + hw + 10 + pw + 5;
   const x = Math.round(Math.max(R.left, Math.min(W / 2 - w / 2, R.right - w))), y = Math.round(R.cy - h / 2), cy = y + h / 2;
@@ -10428,7 +10529,13 @@ function drawStrikeHud(now, dt) { // the minimal HUD: one slim, faint pill on th
     const hk = 0.52 * (pq < 1 ? 1 + 0.35 * Math.sin(Math.PI * pq) : 1), sx = lq < 1 ? Math.sin(lq * 42) * 4 * (1 - lq) : 0;
     ui.hearts.length = 0; ui.hearts.push({ x: hx, y: cy }); blit(heartSprite(strike.lives > 0), hx + sx, cy, 0, hk);
     edgeText(xsp, rtl ? hx - 13 : hx + 13, cy, rtl); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: true };
-  } else { drawHearts(ui, strike.lives, nL, hc, cy, now, k, gap); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: false }; }
+  } else if (advBumperStage()) { // (phase 1: stages 1-3: the stage's stars, not hearts; a miss dims one)
+    const n = advStarsNow(), L = ui.starLost; ui.hearts.length = 0;
+    for (let i = 0; i < 3; i++) { let hx = hc + (i - 1) * gap * (rtl ? -1 : 1); ui.hearts.push({ x: hx, y: cy });
+      if (L && L.i === i && now - L.t < 650) { const q = (now - L.t) / 650; hx += Math.sin(q * 42) * 4 * (1 - q); blit(shapeStarSprite(9, false), hx, cy); blit(shapeStarSprite(9, true), hx, cy, 0, 1 + 0.5 * q, 1 - q); continue; }
+      blit(shapeStarSprite(9, i < n), hx, cy); }
+    ui.heartsRow = { x: hc - hw / 2, w: hw, compact: false, stars: n }; }
+  else { drawHearts(ui, strike.lives, nL, hc, cy, now, k, gap); ui.heartsRow = { x: hc - hw / 2, w: hw, compact: false }; }
   if (frenzy.on && strike.shield > 0 && ui.hearts[0]) { const h0 = ui.hearts[0]; resetView(); ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(95,216,255,' + (0.7 + 0.3 * Math.sin(now * 0.006)).toFixed(3) + ')'; ctx.shadowColor = '#5fd8ff'; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(h0.x, h0.y, 11, 0, TAU); ctx.stroke(); ctx.restore(); ui.shieldRing = { x: h0.x, y: h0.y }; } else ui.shieldRing = null; // Frenzy: the first miss is shielded
   const col = frenzy.on ? '#ffb13d' : adv.on && adv.plan ? WORLDS[adv.world - 1].accent : STRIKE_LEVELS[(strike.level - 1) % STRIKE_LEVELS.length], pk = Math.max(0, 1 - (now - ui.progressAt) / 450); // a wall down: the pill pops
   blit(pillSprite(col, pw, ph), pc, cy, 0, 1 + 0.15 * pk, 0.9); blit(textSprite(tx, 11, '#141b34', null, 800), pc, cy, 0, 1 + 0.15 * pk);
@@ -10641,8 +10748,8 @@ function drawLevelBanners(now) { // the level-up burst ('Level up!' + bonus, 1 s
     const wld = !boss && !dly && Bn.world > 1 ? Bn.world : 0; // a new world: 'World 2' + 'Glass Garden · Level 7'
     if (Bn.stage) { // an Adventure stage: 'Stage 5' + 'Break all 6 walls' (a world's first stage: 'World 2' + 'Glass Garden · Stage 9')
       const main = bigTextSprite(wld ? t('worldN', { n: wld }) : t('stageN', { n: Bn.stage }), 40), sub = textSprite(wld ? t('wn_' + wld) + '  ·  ' + t('stageN', { n: Bn.stage }) : t(Bn.boss ? 'stageGoalBoss' : 'stageGoal', { n: Bn.goal }), 18, wld ? WORLDS[wld - 1].accent : '#f1e9da', null, wld ? 700 : 500);
-      const rule = textSprite(t('starsRule'), 13, '#ffd77a', null, 600); // the small line: '★★★ = don't lose a heart'
-      const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw, rule.tw) + 72), ph = 128; ui.stageBannerBox = { x: x - pw / 2, y: y - 52, w: pw, h: ph, a, rule: t('starsRule') }; blockRect('stageBanner', ui.stageBannerBox);
+      const ruleK = advBumperStage() ? 'starsRuleB' : 'starsRule', rule = textSprite(t(ruleK), 13, '#ffd77a', null, 600); // the small line: '★★★ = don't lose a heart' (phase 1: stages 1-3: '★★★ = no misses')
+      const pw = Math.min(W - 24, Math.max(main.w - 30, sub.tw, rule.tw) + 72), ph = 128; ui.stageBannerBox = { x: x - pw / 2, y: y - 52, w: pw, h: ph, a, rule: t(ruleK) }; blockRect('stageBanner', ui.stageBannerBox);
       blit(glassSprite(pw, ph, 20), x - pw / 2 - 1, y - 53, 0, 1, a); blit(main, x, y - 14, 0, Math.min(1, (pw - 20) / Math.max(1, main.w - 30)), a); blit(sub, x, y + 30, 0, Math.min(1, (pw - 24) / sub.tw), a);
       blit(rule, x, y + 56, 0, Math.min(1, (pw - 24) / rule.tw), a * 0.95); continue;
     }
@@ -10739,7 +10846,7 @@ function drawServePrompt(now) { // the waiting serve ball: a soft pulsing glow r
   ctx.restore();
   const txt = t(P.armed ? 'flickNow' : 'hitToStart'), sp = textSprite(txt, 20, '#fff8ec', 'rgba(255,170,60,0.95)', 800), ty = Math.max((ui.hud ? ui.hud.y + ui.hud.h + 40 : 120), sc.y - sc.r * 3 - 22), k = Math.min(1, (W - 24) / sp.tw) * (1 + 0.06 * p);
   const hw = sp.tw * k / 2 + 12, tx = Math.max(hw, Math.min(W - hw, sc.x)); // (kept on screen when the ball sits near an edge)
-  const shown = !ui.levelBanner || !!P.armed || c > 0.05; // (panel fix: one instruction at a time: the line waits for the stage banner to go)
+  const shown = (!ui.levelBanner || !!P.armed || c > 0.05) && !fdActive('serve'); // (panel fix: one instruction at a time: the line waits for the stage banner to go; phase 1: the finger's words instead, the first time)
   if (shown) blit(sp, tx, ty, 0, k, a * (0.75 + 0.25 * p));
   ui.serve = { x: sc.x, y: sc.y, r: sc.r, text: txt, tx, ty, tw: sp.tw * k, charge: c, armed: !!P.armed, shown };
 }
@@ -11105,8 +11212,9 @@ function endCardAction(key, now) {
   if (key === 'duel') return duelShare(); // Challenge a friend / Send back (from the Share sheet)
   if (key === 'replay') return rpOpen(); // the round's best moment, replayed (from the Share sheet)
   if (gameMode === 'strike' && adv.on && adv.result) { // an Adventure stage's card: Next / Try again / Map (a wave: the next stage after a clear, a retry after a fail)
-    if (key === 'again') key = adv.result.clear ? 'next' : 'retry';
-    if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap({});
+    if (key === 'again') key = adv.result.clear ? (adv.result.n >= ADV_N ? 'map' : 'next') : 'retry'; // (phase 1: the ending's wave: the map)
+    if (key === 'skip') return advSkip4(); // (phase 1: a 3-star stage 1 / 2: straight to stage 4)
+    if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap(adv.result.n >= ADV_N && adv.result.clear ? { from: ADV_N } : {});
   }
   if (gameMode === 'smash' && smash.run === 'stage' && smash.result) { // a Smash stage's card: Next / Play again / Map (a fail: Try again / Map; a wave: next after a clear, a retry after a fail)
     if (key === 'again') key = smash.result.clear ? 'next' : 'retry';
@@ -11136,7 +11244,7 @@ function drawEndCard(now, E, o) { // o: { score, best, bestText, stats: [[value,
   if (o.toddler) return drawToddlerCard(now, E, o);
   const ui = E.ui, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), dly = o.daily; // dly: the daily's record / streak / 7-day strip
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const du = !!o.duel && E === strike, DUp = du && duel.on && duel.link ? 64 : 0, shr = h2CardShare(E, o); // (a duel: the WIN / LOSE panel above the card)
+  const du = !!o.duel && E === strike, DUp = du && duel.on && duel.link ? 64 : 0, shr = h2CardShare(E, o) && (!!E.ui.newBest || (E === strike && (strike.bosses > 0 || daily.on))); // (a duel: the WIN / LOSE panel above the card; phase 1: Share only on a record or a boss; the daily always: sharing the day's result is its point)
   const nst = (o.stats || []).length ? 1 : 0, OY = 14, SY = nst ? 54 : 0, DS = dly ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380);
   const BY = 186 + SY + DS + OY, ch = BY + 54 + 10 + 46 + (shr ? 10 + 44 : 0) + 18, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84) + DUp, (H - ch - DUp) / 2 + DUp) + (1 - e) * 26;
   view.x = 0; view.y = gfxReduced() || k >= 1 ? 0 : 26 * (1 - (1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2))); resetView(); // (graphics pass: the card springs up into place, a little overshoot; its hit boxes stay where it lands)
@@ -12657,7 +12765,7 @@ function setMuted(m) {
   if (muted) { toneOff(); gtrHush(); }
   syncMuteBtn(); musicSync();
 }
-function syncMuteBtn() { const b = $('muteBtn'); $('muteLb').textContent = t(muted ? 'soundOff' : 'soundOn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
+function syncMuteBtn() { { const q = $('startSound'); if (q) { q.setAttribute('aria-pressed', String(!muted)); q.setAttribute('aria-label', t(muted ? 'soundOffAria' : 'soundOnAria')); q.title = q.getAttribute('aria-label'); } } const b = $('muteBtn'); $('muteLb').textContent = t(muted ? 'soundOff' : 'soundOn'); b.setAttribute('aria-pressed', String(muted)); b.setAttribute('aria-label', t(muted ? 'unmute' : 'mute')); b.title = t(muted ? 'unmute' : 'mute'); }
 $('muteBtn').addEventListener('click', () => setMuted(!muted));
 function audioInit() {
   try {
@@ -12714,6 +12822,7 @@ function sfx(kind, arg) { // all peaks <= 0.25; silently does nothing when muted
       tone('square', 2200, 1500, 0.05, 90, t0 + 0.03); tone('triangle', 3100, 2600, 0.04, 140, t0 + 0.06);
     }
     else if (kind === 'tick') tone('sine', 1250, 0, 0.07, 45, t0);
+    else if (kind === 'bumper') { tone('sine', 260, 520, 0.16, 200, t0); tone('sine', 780, 1040, 0.07, 240, t0 + 0.06); tone('triangle', 1560, 0, 0.03, 260, t0 + 0.1); } // (phase 1: the bumper sends a missed ball back: a soft rubbery 'boing-ding')
     else if (kind === 'bubble') { const f0 = Math.max(380, 1400 - (arg || 30) * 14); tone('sine', f0 * 0.7, f0 * 1.6, 0.16, 70, t0); tone('sine', f0 * 2, f0 * 2.5, 0.04, 60, t0 + 0.03); f.type = 'bandpass'; f.frequency.value = f0 * 2; f.Q.value = 2; env(f, 0.07, 30, t0); noise(t0, 30, f); } // Bubble Pop: a wet 'plip', higher for a small bubble
     else if (kind === 'goldPop') { tone('sine', 700, 1500, 0.14, 70, t0); [1318.5, 1760, 2637].forEach((q, i) => tone('sine', q, 0, 0.08, 240, t0 + 0.05 + i * 0.05)); tone('triangle', 3520, 0, 0.025, 260, t0 + 0.2); } // a golden bubble: the plip and a sparkling run
     else if (kind === 'catch') { const k = Math.pow(1.06, Math.min(12, Math.max(0, (arg || 1) - 1))); tone('triangle', 660 * k, 990 * k, 0.12, 110, t0); tone('sine', 1320 * k, 0, 0.05, 170, t0 + 0.05); } // Catch the Stars: a bright 'ding', climbing with the streak
@@ -12922,7 +13031,7 @@ function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
     upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, starter: false, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
-    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '' }, pet: petDefault(), event: evDefault(), evx: { stickers: [], hats: [], balls: [] } }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
+    habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '', first: '' }, pet: petDefault(), event: evDefault(), evx: { stickers: [], hats: [], balls: [] }, evAway: null }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
   const d = defaultProfile();
@@ -12934,6 +13043,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (p.worlds && Number.isFinite(p.worlds.unlocked)) { d.worlds.unlocked = Math.max(1, Math.min(WORLD_N, p.worlds.unlocked | 0)); d.worlds.last = Math.max(1, Math.min(d.worlds.unlocked, (p.worlds.last | 0) || 1)); }
     if (p.evx !== undefined) d.evx = evxValidate(p.evx); for (const b of d.evx.balls) { const [e, n] = b.split('_'); evBallItem(e, +n); } // the weekly events' prizes kept for good (their balls are Shop items)
     if (p.event !== undefined) d.event = evValidate(p.event); // this week's event state (another week is replaced by evEnsure)
+    if (p.evAway) d.evAway = evAwayValidate(p.evAway); // (phase 1: last week's rewards granted at the rollover, for the 'While you were away' card)
     if (Array.isArray(p.unlocked)) for (const id of p.unlocked) if (ITEMS.some((it) => it.id === id) && !d.unlocked.includes(id)) d.unlocked.push(id);
     if (p.equipped) for (const ty of ITEM_TYPES) { const it = ITEMS.find((q) => q.type === ty && q.skin === p.equipped[ty]); if (it && d.unlocked.includes(it.id)) d.equipped[ty] = it.skin; }
     if (p.missions && typeof p.missions.date === 'string' && Array.isArray(p.missions.list)) d.missions = { date: p.missions.date, list: p.missions.list.filter((m) => m && MISSION_POOL.some((q) => q.id === m.id)).map((m) => ({ id: m.id, progress: +m.progress || 0, goal: +m.goal || 1, reward: +m.reward || 0, done: !!m.done, claimed: !!m.claimed })) };
@@ -12963,6 +13073,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (h.flame && iso(h.flame.date) && Number.isInteger(h.flame.n) && h.flame.n >= 0) D.flame = { date: h.flame.date, n: h.flame.n };
       if (h.stages && iso(h.stages.date)) D.stages = { date: h.stages.date, n: Math.max(0, Math.min(99, +h.stages.n | 0)), claimed: h.stages.claimed === true };
       if (iso(h.seen)) D.seen = h.seen;
+      D.first = iso(h.first) ? h.first : '2000-01-01'; // (phase 1: the profile's first day; a profile stored before it counts as an old player's)
       if (Array.isArray(h.starChests)) D.starChests = [...new Set(h.starChests.filter((x) => ECONOMY.starChests.stars.includes(x)))].sort((a, b) => a - b); }
     if (p.album && typeof p.album === 'object') { const a = p.album, ok = (n) => Number.isInteger(n) && n >= 1 && n <= ADV_N;
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
@@ -12974,11 +13085,13 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     for (const r of ROAD) if (r.lv <= d.level && !d.road.got.includes(r.id)) d.road.got.push(r.id); // an existing player gets everything their level already earns (no cards for those)
     for (const it of ITEMS) if (it.level && it.level <= d.level && !d.unlocked.includes(it.id)) d.unlocked.push(it.id);
     d.tickets = Math.min(9, d.tickets | 0);
+    if (!d.habit.first) d.habit.first = '2000-01-01'; // (phase 1: a stored profile without the field is an old player's)
   } catch {}
   return d;
 }
 let profile = loadProfile();
-function saveProfile() { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch {} }
+function saveProfile() { habitFirst(); try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch {} }
+function habitFirst() { try { if (!profile.habit.first) profile.habit.first = missionDay(); } catch {} return profile.habit.first; } // (phase 1: the day this profile was first played; the gift calendar starts the day after)
 function xpForLevel(lv) { const n = Math.max(0, lv - 1); return XP_A * n * n + XP_B * n; } // xp at which level lv begins: 0, 180, 380, 600, 840, ... (+20 more each level)
 function levelOf(xp) { xp = Math.max(0, +xp || 0); let n = Math.floor((-XP_B + Math.sqrt(XP_B * XP_B + 4 * XP_A * xp)) / (2 * XP_A)); while (n > 0 && xpForLevel(n + 1) > xp) n--; while (xpForLevel(n + 2) <= xp) n++; return n + 1; }
 function levelReward(lv) { return ECONOMY.levelUp * lv; }
@@ -13014,7 +13127,7 @@ function addXp(n) { // XP, and the level-ups it brings: reward coins, a toast, a
   saveProfile(); syncMeta(); maybeNewCard();
 }
 function roadUnlock(lv, fx) { // the road items of level lv: unlocked; with fx, a NEW UNLOCKED card and the spotlight on their first appearance in a run
-  for (const r of ROAD) if (r.lv === lv && !profile.road.got.includes(r.id)) { profile.road.got.push(r.id); if (fx) { profile.road.cards.push(r.id); if (!r.items) profile.road.fresh.push(r.id); } }
+  for (const r of ROAD) if (r.lv === lv && !profile.road.got.includes(r.id)) { profile.road.got.push(r.id); if (fx && !roadSeenInAdv(r.id)) { profile.road.cards.push(r.id); if (!r.items) profile.road.fresh.push(r.id); } } // (phase 1: no NEW card for what the Adventure has already shown)
 }
 function setPlayerLevel(n) { // test hook: the player level n at once (its xp, every road item and level skin it earns; no rewards, no cards, no spotlights)
   n = Math.max(1, Math.min(60, n | 0)); profile.xp = xpForLevel(n); profile.level = n;
@@ -13024,6 +13137,7 @@ function setPlayerLevel(n) { // test hook: the player level n at once (its xp, e
 }
 function roundStart() { rpReset(); petUi.earn = null; meta.roundCoins = 0; meta.roundXp = 0; coinUi.floaters.length = 0; coinUi.shown = profile.coins; }
 function roundDone(score, xp, pb) { // a round ended: XP (Strike passes its run XP; Slice / Smash: score / 10), the rounds stat and mission; pb: the pet's snack bonuses { star, boss, record }
+  h2.rounds++; // (phase 1: the gift calendar and the 'While you were away' card wait for a finished round)
   meta.roundXp = xp === undefined ? Math.floor(Math.max(0, score) / 10) : Math.max(0, Math.round(xp)); habitPlayed(); addXp(meta.roundXp); track('round', 1); petEarn(pb); if (EV_READY) evRoundDone();
   starterGift();
 }
@@ -13189,6 +13303,7 @@ const GIFT_SVG = (day) => '<svg viewBox="0 0 48 48" aria-hidden="true">' + (day 
   ? '<g class="lid"><path d="M5 22V18C5 10 13 6 24 6s19 4 19 12v4z" fill="#c07a3c" stroke="#4a2810" stroke-width="2.2" stroke-linejoin="round"/><path d="M14 7.5V22M34 7.5V22" stroke="#ffc24b" stroke-width="3.6"/></g><rect x="4" y="21" width="40" height="23" rx="3" fill="#9a5426" stroke="#4a2810" stroke-width="2.2"/><path d="M14 21v23M34 21v23" stroke="#ffc24b" stroke-width="3.6"/><rect x="20" y="17" width="8" height="10" rx="2" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.6"/>'
   : '<rect x="8" y="22" width="32" height="21" rx="3" fill="var(--gc)"/><rect x="21.5" y="22" width="5" height="21" fill="#ffd23f"/><g class="lid"><rect x="5" y="14" width="38" height="9" rx="2.5" fill="var(--gc2)"/><rect x="21.5" y="14" width="5" height="9" fill="#ffd23f"/><path d="M24 14c-3-6-11-7-11-2 0 3 6 3 11 2zM24 14c3-6 11-7 11-2 0 3-6 3-11 2z" fill="none" stroke="#ffd23f" stroke-width="3" stroke-linejoin="round"/></g>') + '</svg>';
 const CHEST_SVG = '<svg viewBox="0 0 32 28" aria-hidden="true"><path class="lid" d="M4 12V9.5C4 5.4 9 3 16 3s12 2.4 12 6.5V12z" fill="#c07a3c" stroke="#4a2810" stroke-width="1.6" stroke-linejoin="round"/><rect x="3" y="11.5" width="26" height="14" rx="2" fill="#9a5426" stroke="#4a2810" stroke-width="1.6"/><path d="M8 3.8v21.7M24 3.8v21.7" stroke="#ffc24b" stroke-width="2.6"/><rect x="13" y="9.5" width="6" height="7" rx="1.4" fill="#ffd36b" stroke="#8a5a10" stroke-width="1.2"/></svg>';
+function giftPopDue() { return h2.rounds > 0 && missionDay() > habitFirst(); } // (phase 1: never on open, never on the profile's first day: from day 2, after a finished round)
 function giftAutoOk() { try { return !navigator.webdriver || window.__graspGiftAuto === true; } catch { return true; } }
 function giftState(date = missionDay()) { // day: today's box (1..7); opened: today's is open; missed: a day was skipped since the last box (the calendar starts again at 1); tomorrow: the next box
   const G = profile.habit.gift, y = addDays(date, -1), opened = !!G.date && G.date >= date; // (a stored date after today: the clock went back; no second gift)
@@ -13243,7 +13358,7 @@ function openGifts(auto) { // the calendar (auto: the once-a-day pop-up)
 function closeGifts() { const P = $('gifts'); if (P.hidden) return false; P.hidden = true; syncMeta(); setTimeout(maybeNewCard, 350); return true; }
 function maybeGift() { // the first open of the day: the calendar pops up by itself (once a day; not over a game, a panel or a NEW UNLOCKED card; home2: one popup a session, h2Popup)
   if (!giftAutoOk() || h2PopupSpent() || mode !== 'none' || $('start').hidden || !$('gifts').hidden || !$('newCard').hidden || anyMapOpen() || document.querySelector('.ov:not([hidden])')) return false;
-  const s = giftState(); if (s.opened || s.seen) return false;
+  const s = giftState(); if (s.opened || s.seen || !giftPopDue()) return false;
   const ok = openGifts(true); if (ok) h2PopupUsed('gift'); return ok;
 }
 function giftTap() { // today's box: a shake, the lid flies, confetti, the prize pops out and flies to the coin pill (or the shop)
@@ -13818,6 +13933,64 @@ function tipOnce(id) { // onboarding: a thing explained the first time it shows 
   const text = t(TIP_KEYS[id]); grippy.tips.push({ id, text, t: performance.now() }); if (h2.acted || id === 'shapesTap' || (mode === 'camera' && hand.seen)) { h2.acted = true; showHint(text); } else h2.tipQ = text; return true; // (home2: tips only after the first serve / touch)
 }
 function grippyHide() {} // (nothing on screen any more; kept for the callers)
+/* --- phase 1: show, don't tell. The first-time instruction of Strike's serve, Slice and Smash is an animated finger (Shapes' demo finger) and at most
+   3 words, spoken once through the voice (speechSynthesis, like Grippy; the words stay on screen as the fallback). One instruction on screen at a
+   time: while a finger is up, the how-to toast is not shown and a tip waits (fd.q) until it is done. Once per profile ('fd_serve' / 'fd_slice' /
+   'fd_smash' in profile.tips), done at the first serve / cut / tap. For a real visitor (the older suites' screens stay as they were; opt in with
+   window.__graspFd = true). --- */
+const FD = { serve: 'fdServe', slice: 'fdSlice', smash: 'fdSmash' }, FD_CYC = { serve: 2200, slice: 1800, smash: 1600 };
+const fd = { on: null, q: null, log: [], said: [] };
+function fdOk() { try { return !navigator.webdriver || window.__graspFd === true; } catch { return true; } }
+function fdSeen(id) { return profileTip('fd_' + id); }
+function fdActive(id) { return !!(fd.on && !fd.on.end && (!id || fd.on.id === id)); }
+function fdStart(id, now = performance.now()) {
+  if (!FD[id] || fd.on || fdSeen(id) || mode === 'none' || !fdOk()) return false;
+  fd.on = { id, t0: now, end: 0, words: t(FD[id]), said: false }; fd.log.push('start:' + id); hideHint(); return true;
+}
+function fdSay(d) { // the words, said once (the voice on, not muted); the text on screen is the fallback when there is no voice
+  if (d.said) return; d.said = true; const ok = profile.grippy !== false && speakLine(d.words, { needVoice: true, rate: 1, pitch: 1.2 }); fd.said.push({ id: d.id, text: d.words, lang, ok: !!ok });
+}
+function fdDone(id, now = performance.now()) {
+  const d = fd.on; if (!d || d.id !== id || d.end) return false;
+  d.end = now; if (!profileTip('fd_' + id)) { (profile.tips || (profile.tips = [])).push('fd_' + id); saveProfile(); } fd.log.push('done:' + id); return true;
+}
+function fdTouch() { if (fdActive('smash')) fdDone('smash'); } // (a canvas touch: Smash's tap is done)
+function fdTick(now) {
+  const d = fd.on; if (!d) return;
+  if (mode === 'none' || gameMode !== (d.id === 'serve' ? 'strike' : d.id)) { fd.on = null; fd.q = null; return; }
+  if (!d.end && d.id === 'slice' && slice.score > 0) fdDone('slice', now);
+  if (d.end && now - d.end > 300) { fd.on = null; const q = fd.q; fd.q = null; if (q) showHint(q); }
+}
+function drawFingerDemo(now) { // the finger and its words over the game
+  const d = fd.on; if (!d || mode === 'none') return;
+  if (d.id === 'serve' && (strike.ui.levelBanner || !strike.waiting || !strike.balls[0])) { if (!d.end) d.t0 = now; else fd.on = null; return; } // (after the stage banner; only while the ball waits)
+  if (d.id === 'smash' && smash.banner) { if (!d.end) d.t0 = now; return; } // (after Smash's stage banner: one thing to read at a time)
+  if (menu.open || pause.on) { d.t0 = now; return; }
+  fdSay(d);
+  const el = now - d.t0, q = (el % FD_CYC[d.id]) / FD_CYC[d.id], fade = (d.end ? Math.max(0, 1 - (now - d.end) / 300) : 1) * Math.min(1, el / 250), fz = Math.max(1, Math.min(1.5, Math.min(W, H) / 420));
+  const lerp = (a, b, k) => ({ x: a.x + (b.x - a.x) * ease(Math.max(0, Math.min(1, k))), y: a.y + (b.y - a.y) * ease(Math.max(0, Math.min(1, k))) });
+  let p, press = 0, tapAt = -1, wy = H * 0.3; const ui = { id: d.id, words: d.words };
+  if (d.id === 'serve') { // on the ball, pull it down, then flick up (arrows)
+    const sc = ballScreen(strike.balls[0]), A = { x: sc.x, y: sc.y }, B = { x: sc.x, y: Math.min(H - 30, sc.y + Math.max(70, sc.r * 2.6)) }, C = { x: sc.x, y: sc.y - Math.max(90, sc.r * 3) };
+    p = q < 0.18 ? A : q < 0.5 ? lerp(A, B, (q - 0.18) / 0.32) : q < 0.62 ? B : q < 0.78 ? lerp(B, C, (q - 0.62) / 0.16) : C; press = q < 0.62 ? 1 : 0; tapAt = q < 0.18 ? q / 0.18 : -1;
+    if (q >= 0.62 && q < 0.95) { resetView(); ctx.save(); ctx.globalAlpha = fade * (1 - (q - 0.62) / 0.33); ctx.strokeStyle = 'rgba(255,240,200,0.95)'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (let i = 0; i < 2; i++) { const y = sc.y - sc.r * (1.6 + i * 1.1), w = sc.r * 0.55; ctx.beginPath(); ctx.moveTo(sc.x - w, y + w * 0.7); ctx.lineTo(sc.x, y); ctx.lineTo(sc.x + w, y + w * 0.7); ctx.stroke(); } ctx.restore(); }
+    wy = Math.max((strike.ui.hud ? strike.ui.hud.y + strike.ui.hud.h + 40 : 120), sc.y - sc.r * 3 - 40);
+  } else if (d.id === 'slice') { // a swipe across a fruit (or the middle), a blade trail behind the finger
+    const f = slice.fruits && slice.fruits.find((o) => !o.cut && !o.bomb && o.x > 30 && o.x < W - 30 && o.y > H * 0.2 && o.y < H * 0.85), cy = f ? f.y : H * 0.52, cx = f ? f.x : W / 2;
+    const A = { x: Math.max(24, cx - W * 0.32), y: cy + 40 }, B = { x: Math.min(W - 24, cx + W * 0.32), y: cy - 40 };
+    p = q < 0.15 ? A : q < 0.6 ? lerp(A, B, (q - 0.15) / 0.45) : B; press = q < 0.6 ? 1 : 0;
+    if (q >= 0.15 && q < 0.75) { const k = Math.min(1, (q - 0.15) / 0.45), e0 = lerp(A, B, Math.max(0, k - 0.35)); resetView(); ctx.save(); ctx.globalAlpha = fade * (q < 0.6 ? 1 : 1 - (q - 0.6) / 0.15); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(e0.x, e0.y); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.restore(); }
+    wy = Math.max(chromeRow.bottom + 50, Math.min(H * 0.3, cy - 120));
+  } else { // smash: two taps on the scene, a ring each
+    const T = { x: W / 2, y: H * 0.55 }, rest = { x: W * 0.62, y: H * 0.72 };
+    p = q < 0.15 ? lerp(rest, T, q / 0.15) : q < 0.85 ? T : lerp(T, rest, (q - 0.85) / 0.15); const k = (q - 0.15) / 0.35; tapAt = q >= 0.15 && q < 0.85 ? (k % 1) : -1; press = tapAt >= 0 && tapAt < 0.3 ? 1 : 0;
+    wy = Math.max(chromeRow.bottom + 50, H * 0.3);
+  }
+  drawDemoFinger(p, press, fz, tapAt, fade);
+  const sp = textSprite(d.words, 24, '#fff8ec', 'rgba(255,170,60,0.95)', 800), k = Math.min(1, (W - 24) / sp.tw), hw = sp.tw * k / 2 + 12, tx = Math.max(hw, Math.min(W - hw, d.id === 'serve' ? ballScreen(strike.balls[0]).x : W / 2));
+  blit(sp, tx, wy, 0, k * (1 + 0.04 * Math.sin(now / 200)), fade); fd.ui = { ...ui, x: tx, y: wy, w: sp.tw * k, p: { x: p.x, y: p.y }, a: fade };
+}
 function setGrippy(on) { profile.grippy = !!on; saveProfile(); syncGrippyBtn(); if (!on) { try { if (grippy.last && performance.now() - grippy.lastAt < 3000) window.speechSynthesis.cancel(); } catch {} } }
 function syncGrippyBtn() {
   const b = $('grippyBtn'), on = profile.grippy !== false; b.setAttribute('aria-pressed', String(on));
@@ -13858,12 +14031,17 @@ function renderRoad() {
   }));
 }
 const newCard = { id: null, at: 0, timer: 0 };
-function newCardOk() { // may the NEW UNLOCKED card show now? on the start screen, or over Strike's round-over card (after it has risen in)
+function newCardOk() { // may the NEW UNLOCKED card show now? (phase 1, panel E bug 4: only back on the start screen, never over a game, a card or a sheet)
   if (!profile.road.cards.length || !$('newCard').hidden || !$('gifts').hidden) return false;
-  if (mode === 'none') return !$('start').hidden;
-  const E = endState(); return !!(E === strike && E.over && performance.now() - E.overAt > 900); // (Strike's round-over card; after Slice / Smash it waits for the start screen)
+  return mode === 'none' && !$('start').hidden && !anyMapOpen() && !document.querySelector('.ov:not([hidden])');
+}
+function roadSeenInAdv(id) { // (phase 1) has the Adventure already shown this road item? (a wall kind met on a stage; the monkey and bending serves from world 2): no NEW card for it
+  const A = profile.adv; if (STRIKE_KINDS.includes(id)) return id === 'brick' || A.seen.includes(id);
+  const top = Object.keys(A.stars).reduce((m, k) => Math.max(m, +k), 0), at = { cow: 2, monkey: ADV_WORLD + 1, curve: ADV_WORLD + 1, pu_multi: ADV_WORLD + 1, pu_fire: 2 * ADV_WORLD + 1, wobble: 3 * ADV_WORLD + 1, pu_life: 3 * ADV_WORLD + 1 }[id];
+  return !!at && top >= at;
 }
 function maybeNewCard() {
+  while (profile.road.cards.length && roadSeenInAdv(profile.road.cards[0])) profile.road.cards.shift(); // (phase 1: nothing the Adventure has already shown)
   if (!newCardOk()) return false;
   const id = profile.road.cards[0], P = $('newCard'), now = performance.now(); newCard.id = id; newCard.at = now;
   drawRoadArt(P.querySelector('.nuArt canvas'), id, 112, false); $('nuName').textContent = t('rd_' + id); P.querySelector('.nuLine').textContent = t('rdd_' + id);
@@ -13876,7 +14054,7 @@ function maybeNewCard() {
 function closeNewCard() {
   const P = $('newCard'); if (P.hidden) return false; P.hidden = true; clearTimeout(newCard.timer);
   const i = profile.road.cards.indexOf(newCard.id); if (i >= 0) profile.road.cards.splice(i, 1); saveProfile(); newCard.id = null;
-  setTimeout(() => { if (!maybeNewCard()) h2Popup(); }, 350); return true;
+  setTimeout(() => { if (!maybeNewCard() && !maybeAwayCard()) h2Popup(); }, 350); return true;
 }
 const WMAP_POS = [[10, 33], [30, 70], [50, 33], [70, 70], [90, 33]]; // node centres in % of the map box (on the dashed path)
 const wmap = { how: 'mouse' };
@@ -14175,6 +14353,9 @@ function trailFx(skin, x, y, dx, dy) { // particles shed by a moving trail: embe
 }
 /* --- panel wiring --- */
 $('nuOk').addEventListener('click', closeNewCard);
+$('awayOk').addEventListener('click', closeAwayCard);
+$('awayCard').addEventListener('click', (e) => { if (e.target === $('awayCard')) { e.stopPropagation(); closeAwayCard(); } }, true); // (on its own click: nothing below gets the tap)
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && closeAwayCard()) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 $('duelNameGo').addEventListener('click', () => duelAskDone(true)); $('duelNameSkip').addEventListener('click', () => duelAskDone(false)); // Challenge a friend: the name, once
 $('duelNameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); duelAskDone(true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); $('duelName').hidden = true; duel.asking = null; duel.sheetAt = performance.now(); } });
 $('newCard').addEventListener('pointerdown', (e) => { if (e.target === $('newCard')) closeNewCard(); });
@@ -14192,7 +14373,12 @@ $('advGoal').addEventListener('click', () => { audioInit(); sfx('click'); openPa
 $('advDayChest').addEventListener('click', dayChestTap);
 $('giftOk').addEventListener('click', () => { if (giftState().opened) closeGifts(); else giftTap(); });
 $('gifts').querySelector('.xBtn').addEventListener('click', closeGifts);
-$('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) { closeGifts(); return; } if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box; on the backdrop it closes
+$('gifts').addEventListener('pointerdown', (e) => { if (e.target === $('gifts')) return; if (!giftState().opened && !e.target.closest('.xBtn, #giftOk')) giftTap(); }); // a tap anywhere on the calendar opens today's box
+$('gifts').addEventListener('click', (e) => { if (e.target !== $('gifts')) return; e.stopPropagation(); giftBackdrop(); }, true); // (phase 1: the backdrop: never past the sheet, never a lost gift)
+function giftBackdrop() { // phase 1 (panel D bug 1): a tap beside the calendar acts on its own click (the overlay is still there: nothing below gets it); an unopened gift is opened, then it closes
+  if (giftState().opened) { closeGifts(); return 'close'; }
+  const p = giftTap(); if (!p) return null; clearTimeout(giftBackdrop.t); giftBackdrop.t = setTimeout(() => { if (!$('gifts').hidden && giftState().opened) closeGifts(); }, 1400); return 'claim';
+}
 $('advEndless').addEventListener('click', () => { audioInit(); strikeEndless(amap.how); });
 $('advFrenzy').addEventListener('click', () => { audioInit(); strikeFrenzy(amap.how); });
 $('smBack').addEventListener('click', () => closeSmashMap());
@@ -14242,6 +14428,8 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
   return gameMode === 'strike' ? Math.max(16, H - (strike.ui.meterTop || H - 52) + 8) : 16; // the meter sits at H - 30 and its tier flash reaches up to H - 100; drawPowerMeter sets meterTop to the same value
 }
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
+  if (typeof text !== 'string' && mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash') && fdStart(gameMode)) return; // (phase 1: the first time: the finger instead of the how-to toast)
+  if (fdActive()) { if (typeof text === 'string') fd.q = text; hideHint(); return; } // (phase 1: one instruction at a time: a tip waits for the finger)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull back, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
@@ -14310,10 +14498,31 @@ function closeMenu(resume = true) { // resume: play goes on (camera: after the 3
   if (!menu.open) return false;
   menu.open = false; menu.dwell = null; chromeEl.classList.remove('open'); $('menuVeil').hidden = true; $('pauseBtn').setAttribute('aria-expanded', 'false');
   chromeEl.querySelectorAll('.chip.dwell').forEach((q) => q.classList.remove('dwell')); $('menuDwell').hidden = true;
-  if (resume && pause.on) { if (mode === 'camera') { if (!nh.paused) { pause.resumeT = performance.now(); pause.count = 0; } } else unpauseGame(); } // (camera: the hand missing keeps it paused; it resumes when the hand is back)
+  const hid = menu.hid; menu.hid = null;
+  if (resume && pause.on) { if (mode === 'camera' || hid) { if (!nh.paused) { pause.resumeT = performance.now(); pause.count = 0; } } else unpauseGame(); } // (camera: the hand missing keeps it paused; it resumes when the hand is back; phase 1: back from a hidden app: a 3-2-1 too)
   updateHudOffset(); musicSync(); return true;
 }
 $('pauseBtn').addEventListener('click', openMenu);
+/* phase 1 (panel E bug 2): the app hidden (another app, the phone locked, the tab switched, the page frozen or left) pauses a timed round with the pause
+   sheet; Resume plays on after a 3-2-1. Strike, Slice, Smash, Catch the Stars, Bubble Pop's timed round; the free modes (drums, paint, Busy Board,
+   Sandbox, Shapes, Calm bubbles) play on. */
+const hidp = { log: [] }, HIDE_GAP_MS = 2000;
+function hideGapOk() { try { return !navigator.webdriver || window.__graspGapPause === true; } catch { return true; } } // (the suites' loaded machines stall frames: opt in)
+function hidePauseDue() {
+  if (mode === 'none' || menu.open || !menuMode() || anyMapOpen()) return false;
+  if (gameMode === 'strike') return !strike.over && !(adv.on && adv.phase !== 'play');
+  if (gameMode === 'slice') return !slice.over;
+  if (gameMode === 'smash') return !smash.over && !!engine;
+  if (cgOn() && !$('cgCam').hidden) return false; // (the camera question holds the round already)
+  if (gameMode === 'stars') return !catcher.over;
+  if (gameMode === 'bubbles') return !bubbles.calm && !bubbles.over;
+  return false;
+}
+function hidePause(why) { if (!hidePauseDue()) return false; if (!openMenu()) return false; menu.hid = why; hidp.log.push(why + ':' + gameMode); if (hidp.log.length > 20) hidp.log.shift(); return true; }
+document.addEventListener('visibilitychange', () => { if (document.hidden) hidePause('hidden'); });
+window.addEventListener('pagehide', () => hidePause('pagehide'));
+document.addEventListener('freeze', () => hidePause('freeze'));
+window.addEventListener('blur', () => setTimeout(() => { try { if (!document.hasFocus()) hidePause('blur'); } catch {} }, 250));
 $('resumeBtn').addEventListener('click', () => closeMenu(true));
 $('resetBtn').addEventListener('click', () => closeMenu(true)); // (after its own handler restarted the round)
 $('hudBtn').addEventListener('click', () => closeMenu(true)); // the stats panel shows live numbers: back to play
@@ -14355,14 +14564,14 @@ function trackTick(now) {
     processHand2(lastLandmarks2, now);
   } catch (err) {
     console.error('[grasp] detectForVideo failed', err); lastTrackError = String(err && err.message || err).slice(0, 80);
-    if (++trackErrors > 30) { const m = err.message || err; fallbackToMouse([{ stage: () => t('st_runtime'), why: () => t('crashed', { e: m }) }]); }
+    if (++trackErrors > 30) fallbackToMouse([{ stage: () => t('st_runtime'), why: () => t('crashed') }]);
   }
 }
 
 const rows = {};
 document.querySelectorAll('#checks li').forEach((li) => (rows[li.dataset.k] = li));
 // detail may be a function so it re-renders in the current language
-function setRow(k, state, detail = '') { rows[k].dataset.s = state; rows[k]._d = detail; rows[k].querySelector('small').textContent = typeof detail === 'function' ? detail() : detail; }
+function setRow(k, state, detail = '') { rows[k].dataset.s = state; rows[k]._d = detail; rows[k].querySelector('small').textContent = state === 'fail' ? t('chkFail') : state === 'ok' ? '✓' : state === 'pending' ? '…' : ''; } // (phase 1: the start-up list shows plain words only; the details sit behind the card's More help)
 function rowDetail(k) { const d = rows[k]._d; return typeof d === 'function' ? d() : d || ''; }
 let sandbox = {};
 
@@ -14374,23 +14583,23 @@ function cspFor(url) {
 }
 function explain(stage, err, url) {
   const name = err && err.name, msg = String((err && err.message) || err);
-  const timeout = () => (err && err.label ? t('ex_timeout', { l: err.label, s: err.secs }) : msg);
+  const timeout = () => t('ex_timeout'); void msg; // (phase 1: no technical text on screen: the raw error stays in the console)
   if (stage === 'camera') {
     if (name === 'PolicyBlocked') return t('ex_policy');
-    if (name === 'NotAllowedError' && sandbox.cameraPermission === 'denied') return t('ex_blockedSite', { m: msg });
+    if (name === 'NotAllowedError' && sandbox.cameraPermission === 'denied') return t('ex_blockedSite');
     if (name === 'NoMediaDevices') return t('ex_noApi');
-    if (name === 'NotAllowedError' || name === 'SecurityError') return t('ex_denied', { n: name, m: msg });
-    if (name === 'NotFoundError' || name === 'OverconstrainedError') return t('ex_notFound', { n: name });
-    if (name === 'NotReadableError') return t('ex_busy', { n: name });
+    if (name === 'NotAllowedError' || name === 'SecurityError') return t('ex_denied');
+    if (name === 'NotFoundError' || name === 'OverconstrainedError') return t('ex_notFound');
+    if (name === 'NotReadableError') return t('ex_busy');
     if (name === 'TimeoutError') return timeout();
-    return name + ': ' + msg;
+    return t('ex_other');
   }
   const v = url && cspFor(url);
-  if (v) return t('ex_csp', { d: v.directive, h: new URL(url).host });
-  if (/unsafe-eval|wasm-unsafe-eval|Refused to compile/i.test(msg)) return t('ex_wasm', { m: msg });
-  if (name === 'TypeError' && /fetch|load|import/i.test(msg)) return t('ex_net', { m: msg });
+  if (v) return t('ex_csp');
+  if (/unsafe-eval|wasm-unsafe-eval|Refused to compile/i.test(msg)) return t('ex_wasm');
+  if (name === 'TypeError' && /fetch|load|import/i.test(msg)) return t('ex_net');
   if (name === 'TimeoutError') return timeout();
-  return (name ? name + ': ' : '') + msg;
+  return t('ex_trk');
 }
 
 function cameraPolicy() {
@@ -14485,7 +14694,7 @@ async function enableCamera() {
     const good = sb.cameraPolicy !== false && sb.wasm && sb.sameOrigin;
     setRow('sandbox', good ? 'ok' : 'fail', () => t('r_sandbox', { a: yn(sb.cameraPolicy), b: t('perm_' + sb.cameraPermission), c: t(sb.wasm ? 'allowed' : 'blocked'), d: t(sb.sameOrigin ? 'reachable' : 'blocked') }));
     console.info('[grasp] sandbox', sb);
-  }).catch((e) => { console.error('[grasp] sandbox probe failed', e); setRow('sandbox', 'fail', String(e.message || e)); });
+  }).catch((e) => { console.error('[grasp] sandbox probe failed', e); setRow('sandbox', 'fail', () => t('ex_other')); });
   const [camOk, trkOk] = await Promise.all([camP, trackerP, sandboxP]);
   if (!camOk && rows.camera.dataset.s === 'fail' && sandbox.cameraPermission === 'denied' && sandbox.cameraPolicy !== false)
     setRow('camera', 'fail', () => explain('camera', { name: 'NotAllowedError', message: 'Permission denied' }));
@@ -14504,7 +14713,7 @@ function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop());
 function fallbackToMouse(failures) {
   homeCamOff(false); stopCamera(); landmarker = null; lastLandmarks = null;
   noHandShown = false; nhReset(); statusEl.hidden = true; setPreviewBig(false); unpauseGame();
-  lastFailures = failures; renderBanner();
+  lastFailures = failures; renderBanner(); bannerMore(false);
   $('banner').hidden = failures.length === 0;
   startGame('mouse');
 }
@@ -14515,6 +14724,8 @@ function renderBanner() {
   for (const f of lastFailures) { const li = document.createElement('li'); li.textContent = val(f.stage) + ': ' + val(f.why); list.appendChild(li); }
 }
 $('bannerClose').addEventListener('click', () => ($('banner').hidden = true));
+function bannerMore(on) { $('bannerList').hidden = !on; $('bannerMore').setAttribute('aria-expanded', String(!!on)); } // (phase 1: the details behind More help)
+$('bannerMore').addEventListener('click', () => bannerMore($('bannerList').hidden));
 
 async function swapTracker(next) {
   if (!makeLandmarker || swapping || next === delegateUsed) return false;
@@ -14679,7 +14890,7 @@ function goHome() {
   $('checks').hidden = true; $('camBtn').disabled = false;
   if ($('start').hidden) xfadeStart('home'); fxClear(); // (graphics pass: an iris back onto the start screen)
   $('start').hidden = false; document.body.classList.add('home');
-  h2.acted = false; h2CloseSheets(); syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); if (!maybeNewCard()) h2Popup();
+  h2.acted = false; h2CloseSheets(); syncBests(); syncCamBtn(); syncMeta(); scrollCardIntoView(gameMode, true); startPreviews(); if (!maybeNewCard() && !maybeAwayCard()) h2Popup(); // (phase 1: 'While you were away' after a round)
   routeHome(); // the address bar back to '/'
 }
 $('homeBtn').addEventListener('click', () => { if (!shapesHome()) goHome(); else closeMenu(true); }); // (Shapes: the round-over card first, over the sheet's place)
@@ -14702,6 +14913,7 @@ function startGame(m) {
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
+  littleFlowSet(); // (phase 1: the Today panel hides the streak flame in the Little ones flow)
   showHint();
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
@@ -14926,7 +15138,7 @@ syncDots.raf = 0;
 let physicsError = null;
 function onLangChange() {
   renderModeText();
-  if (physicsError) $('modeDesc').textContent = t('physicsFail', { m: physicsError });
+  if (physicsError) $('modeDesc').textContent = t('physicsFail');
   Object.keys(rows).forEach((k) => (rows[k].querySelector('small').textContent = rowDetail(k)));
   renderBanner();
   if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
@@ -14947,7 +15159,7 @@ initPreviews(); startPreviews();
 setTimeout(() => $('start').classList.remove('intro'), 1800); // the entrance plays once
 ensureMatter().then(initPhysics).catch((e) => {
   console.error(e);
-  physicsError = e.message; $('modeDesc').textContent = t('physicsFail', { m: physicsError });
+  physicsError = String(e && e.message || e || 'physics'); console.error('[grasp] physics failed', e); $('modeDesc').textContent = t('physicsFail');
   $('camBtn').disabled = $('mouseBtn').disabled = true;
 });
 
@@ -15040,7 +15252,7 @@ window.__grasp = {
     get power() { return adv.power || null; }, get pendingPower() { return adv.pendingPower || null; }, set pendingPower(v) { adv.pendingPower = RUN_POWERS.includes(v) ? v : null; }, runPowers: RUN_POWERS, // v5: this stage's run power; the one the next stage starts with
     get travel() { const T = adv.travel; return T ? { from: T.from, to: T.to, q: T.q, switched: T.switched } : null; }, get lastTravel() { return adv.lastTravel; },
     finishTest(livesLost = 0) { if (!adv.on || adv.phase !== 'play') return null; adv.lost = Math.max(0, livesLost | 0); strike.lives = Math.max(1, ADV_LIVES - adv.lost); if (adv.plan.boss) { adv.bossDone = true; strike.boss = null; } strike.walls.length = 0; strike.progress = adv.plan.walls; strike.cleared = strike.cleared0 + adv.plan.walls; return advClear(performance.now()); },
-    failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; while (!strike.over && i++ < 20) loseLife(performance.now()); return adv.result; } },
+    failTest() { if (!adv.on || adv.phase !== 'play') return null; let i = 0; adv.forceFail = true; try { while (!strike.over && i++ < 20) loseLife(performance.now()); } finally { adv.forceFail = false; } return adv.result; } }, // (test-only: a stage 1-3 fail card too, which a player cannot reach)
   // the sticker album: the stickers (ids by stage), the ones earned / new / pages paid, open(w) / close / page(w), award(n) as a 3-star clear of stage n would (test-only), the page bonus
   album: { list: STICKERS, get got() { return profile.album.got.slice(); }, get fresh() { return profile.album.fresh.slice(); }, get pages() { return profile.album.pages.slice(); }, get shown() { return albumOpen(); }, get page() { return album.w; },
     get peeled() { return album.peeled.slice(); }, count: (w) => albumPageCount(w), open: (w) => openAlbum(w), close: closeAlbum, setPage: albumPage, award: albumAward, claimPage: albumClaimPage, economy: ECONOMY.album, sprite: stickerSprite },
@@ -15525,7 +15737,7 @@ PET_READY = true; petSync();
    the week ends. Config in EVENT (by ECONOMY); state in profile.event (this week) and profile.evx (what was won, for good). The gameplay twists
    (cows everywhere, space walls, the piñata, golden fruit, festival bubbles) and the in-game toasts only run for a real visitor (not under
    automation: navigator.webdriver), unless __grasp.event.live(true); points and missions always count. ---------------- */
-const ev = { force: null, live: null, run: { pts: 0, acc: {} }, log: [], claims: [], opened: 0, anim: 0 };
+const ev = { force: null, live: null, run: { pts: 0, acc: {} }, log: [], claims: [], opened: 0, anim: 0, away: [], awayShown: 0 };
 function evMonday(date) { const [y, m, d] = date.split('-').map(Number), dt = new Date(y, m - 1, d), dow = (dt.getDay() + 6) % 7; return localDate(new Date(y, m - 1, d - dow)); }
 function evWeekIdx(date) { return Math.floor(petDays(EVENT.epoch, evMonday(date)) / 7); }
 function isoWeek(date) { // the ISO 8601 week of a local date: { year, week, key '2026-W41' }
@@ -15557,11 +15769,56 @@ function evxValidate(raw) { // what the events gave for good: their stickers, th
   if (Array.isArray(raw.balls)) d.balls = [...new Set(raw.balls.filter((x) => typeof x === 'string' && /^[a-z]+_\d{1,4}$/.test(x) && EVENT.by[x.split('_')[0]] && +x.split('_')[1] >= 1))].slice(0, 300);
   return d;
 }
-function evEnsure(date = missionDay()) { // a new week (or a forced event) brings a fresh state: last week's unclaimed rewards are gone
+function evEnsure(date = missionDay()) { // a new week (or a forced event) brings a fresh state (phase 1: what was earned last week and not claimed is granted first)
   const A = evAt(date); let E = profile.event;
-  if (!E || E.wk !== A.wk || E.id !== A.id) { E = profile.event = evDefault(); E.wk = A.wk; E.id = A.id; ev.run = { pts: 0, acc: {} }; saveProfile(); }
+  if (!E || E.wk !== A.wk || E.id !== A.id) {
+    const away = E && E.wk && EVENT.by[E.id] && E.wk < A.wk ? evRollover(E) : null; // (a past week only: a forced event in the same week is a test switch)
+    E = profile.event = evDefault(); E.wk = A.wk; E.id = A.id; ev.run = { pts: 0, acc: {} };
+    if (away) evAwayAdd(away);
+    saveProfile();
+  }
   return E;
 }
+/* phase 1 (panel E bug 1: "Monday morning they're gone? That's the moment I delete an app"): at the week's rollover the old event's missions done
+   but not claimed add their points, and every tier reached but not opened is granted quietly (coins, snacks, the sticker, the hat, the edition
+   ball). profile.evAway keeps the summary for one friendly card, "While you were away: +45 coins, a sticker…", shown back on the start screen after
+   the next finished round (never on open, never over a game or a card). */
+function evRollover(E) {
+  const D = EVENT.by[E.id]; let pts = E.pts;
+  D.ms.forEach((m, i) => { if ((E.ms[i] || 0) >= m.n && !E.mc[i]) pts = Math.min(99999, pts + (EVENT.msPts[i] || 40)); });
+  const A0 = evAt(E.wk), Ao = A0.id === E.id ? A0 : { ...A0, id: E.id, def: D }, X = profile.evx, P = petP();
+  const out = { ev: E.id, wk: E.wk, coins: 0, snacks: 0, stickers: [], hats: [], balls: [], tiers: 0 };
+  EVENT.track.forEach((T, i) => {
+    if (pts < T.at || E.got.includes(i)) return; const p = evPrize(i, Ao); if (!p) return; out.tiers++; E.got.push(i);
+    if (p.coins) { profile.coins += p.coins; out.coins += p.coins; }
+    if (p.snacks) { const b = P.pantry; P.pantry = Math.min(PET.pantryMax, P.pantry + p.snacks); P.earned += P.pantry - b; out.snacks += p.snacks; }
+    if (p.sticker && !X.stickers.includes(p.sticker)) { X.stickers.push(p.sticker); out.stickers.push(p.sticker); }
+    if (p.hat && !X.hats.includes(p.hat)) { X.hats.push(p.hat); out.hats.push(p.hat); }
+    if (p.ball) { const it = evBallItem(Ao.id, Ao.ed); if (!X.balls.includes(p.ball)) X.balls.push(p.ball); if (it && !profile.unlocked.includes(it.id)) { profile.unlocked.push(it.id); out.balls.push(it.id); } }
+  });
+  ev.away.push(out); return out.tiers ? out : null;
+}
+function evAwayAdd(o) { const W0 = profile.evAway || { coins: 0, snacks: 0, stickers: [], hats: [], balls: [], evs: [] }; W0.coins += o.coins; W0.snacks += o.snacks; for (const k of ['stickers', 'hats', 'balls']) W0[k] = [...new Set(W0[k].concat(o[k]))]; if (!W0.evs.includes(o.ev)) W0.evs.push(o.ev); profile.evAway = W0; }
+function evAwayValidate(raw) { // (the card's summary as stored: numbers and known ids only)
+  if (!raw || typeof raw !== 'object') return null; const n = (v) => Number.isFinite(v) && v > 0 ? Math.min(99999, Math.round(v)) : 0, ids = (a, ok) => Array.isArray(a) ? [...new Set(a.filter((x) => typeof x === 'string' && ok(x)))].slice(0, 20) : [];
+  const o = { coins: n(raw.coins), snacks: n(raw.snacks), stickers: ids(raw.stickers, (x) => !!EVENT.by[x]), hats: ids(raw.hats, (x) => EVENT.defs.some((q) => q.hat === x)), balls: ids(raw.balls, (x) => /^evb_[a-z]+_\d{1,4}$/.test(x)), evs: ids(raw.evs, (x) => !!EVENT.by[x]) };
+  return o.coins || o.snacks || o.stickers.length || o.hats.length || o.balls.length ? o : null;
+}
+function awayItems(W0 = profile.evAway) { // the card's lines
+  if (!W0) return []; const out = [];
+  if (W0.coins) out.push({ k: 'coins', text: t('awayCoins', { n: W0.coins }) }); if (W0.snacks) out.push({ k: 'snacks', text: t('awaySnacks', { n: W0.snacks }) });
+  for (const s of W0.stickers) out.push({ k: 'sticker', id: s, text: t('awaySticker') }); for (const h of W0.hats) out.push({ k: 'hat', id: h, text: t('awayHat') }); for (const b of W0.balls) out.push({ k: 'ball', id: b, text: t('awayBall') });
+  return out;
+}
+function maybeAwayCard() { // after a finished round, back on the start screen, nothing else up
+  if (!profile.evAway || !h2.rounds || mode !== 'none' || $('start').hidden || anyMapOpen() || document.querySelector('.ov:not([hidden])')) return false;
+  const P = $('awayCard'), L = $('awayList'), items = awayItems(); if (!items.length) { profile.evAway = null; saveProfile(); return false; }
+  L.replaceChildren(...items.map((it) => { const li = document.createElement('li'); li.dataset.k = it.k; const ic = document.createElement('span'); ic.className = 'ic';
+    ic.innerHTML = it.k === 'coins' ? TOAST_ICONS.coin.replace('<svg', '<svg style="color:#ffc24b"') : TOAST_ICONS.star.replace('<svg', '<svg style="color:#ffd77a"'); const tx = document.createElement('span'); tx.textContent = it.text; li.append(ic, tx); return li; }));
+  P.hidden = false; sfx('unlock'); sfx('chime'); requestAnimationFrame(() => domConfetti(P.querySelector('.sheet'), L.getBoundingClientRect())); try { $('awayOk').focus({ preventScroll: true }); } catch {}
+  ev.awayShown++; return true;
+}
+function closeAwayCard() { const P = $('awayCard'); if (P.hidden) return false; P.hidden = true; profile.evAway = null; saveProfile(); syncMeta(); setTimeout(() => { if (!maybeNewCard()) h2Popup(); }, 350); return true; }
 function evLive() { if (ev.live !== null) return ev.live; try { return !navigator.webdriver; } catch { return true; } }
 function evIs(id) { return evLive() && evAt().id === id; } // a gameplay twist is on: this week's event, for a real visitor
 function evFeatured(id) { // is the game on screen this event's featured game?
@@ -17027,12 +17284,14 @@ function h2PetTab() { // the Pet tab: hidden until the egg is earned; a '!' unti
 }
 /* --- the Today panel (Events): the weekly event, the daily gift, the day's missions, the play streak (quiet, here only) --- */
 function renderToday() { renderMissions(); renderTodayHabit(); if (EV_READY) evSync(); h2TodaySeen(); }
+function littleFlow() { try { return localStorage.getItem('grasp.little') === '1'; } catch { return false; } } // (phase 1: the last game played was a Little ones one: Busy Board, Shapes, Sandbox, Calm bubbles)
+function littleFlowSet() { const on = gameMode === 'busy' || gameMode === 'shapes' || gameMode === 'sandbox' || (gameMode === 'bubbles' && !!bubbles.calm); try { localStorage.setItem('grasp.little', on ? '1' : '0'); } catch {} return on; }
 function renderTodayHabit() {
   const g = giftState(), n = playStreak(), b = $('todayGift');
   $('todayGiftLine').textContent = g.opened ? t('giftTomorrow', { n: g.tomorrow }) : t('todayGiftDay', { n: g.day });
   $('todayGiftGo').textContent = g.opened ? '✓' : t('giftOpen'); b.classList.toggle('ready', !g.opened); b.dataset.opened = String(g.opened); b.querySelector('.dot').hidden = g.opened;
   b.setAttribute('aria-label', t('giftTitle') + ', ' + $('todayGiftLine').textContent);
-  const st = $('todayStreak'); st.hidden = !n; st.querySelector('b').textContent = LRM + String(n); st.title = n ? t('flameN', { n }) : ''; st.setAttribute('aria-label', st.title); st.dataset.n = String(n);
+  const st = $('todayStreak'); st.hidden = !n || littleFlow(); /* (phase 1: no flame in the Little ones flow) */ st.querySelector('b').textContent = LRM + String(n); st.title = n ? t('flameN', { n }) : ''; st.setAttribute('aria-label', st.title); st.dataset.n = String(n);
 }
 function h2TodayItems() { // what is new and waiting in the Today panel: today's gift, missions done and not claimed, event rewards to claim
   const d = missionDay(), out = [], g = giftState(d);
@@ -17086,10 +17345,12 @@ function h2Popup() {
 /* --- tips wait for the round's first serve / touch --- */
 function h2Act() { if (h2.acted) return; h2.acted = true; const q = h2.tipQ; h2.tipQ = null; if (q && mode !== 'none') setTimeout(() => { if (mode !== 'none') showHint(q); }, 300); }
 /* --- the end cards' Share sheet: the replay clip, Challenge a friend (Send back in a duel; the daily: its result), Copy link --- */
+const RP_SHARE_MIN = 50; // (phase 1: a replay worth sharing)
 function h2CardShare(E, o) { return !o.toddler && o.stars === undefined && (E === strike || E === smash || E === slice); } // (the modes with a replay clip or a challenge)
 function h2ShareCtx() {
   const strk = gameMode === 'strike', c = strk ? duelCtx() : null;
-  return { replay: rpReady(), making: !rpReady() && !!(rp.pend || rp.enc), duel: !!c, daily: strk && daily.on, ctx: c, sendBack: !!(duel.on && c) };
+  const R = adv.on && adv.result, noDuel = !!R && (!R.clear || R.n <= ADV_BUMPER_N), sc = rpReady() ? rp.clip.score : Math.max(rp.pend ? rp.pend.score : 0, rp.enc ? rp.enc.m.score : 0), big = sc >= RP_SHARE_MIN; // (phase 1: no Duel on a fail card or stages 1-3; the replay only for a moment scoring >= 50)
+  return { replay: rpReady() && big, making: !rpReady() && !!(rp.pend || rp.enc) && big, duel: !!c && !noDuel, daily: strk && daily.on, ctx: c, sendBack: !!(duel.on && c) && !noDuel, score: sc };
 }
 function h2ShareUrl() { // Copy link: the challenge's link (Strike), else the game's own page
   const c = gameMode === 'strike' ? duelCtx() : null; if (c) return duelLink({ ...c, by: profile.duelName || '' });
@@ -17136,6 +17397,7 @@ function h2Sync() {
 $('heroPlay').addEventListener('click', h2HeroPlay);
 $('moreBtn').addEventListener('click', () => { audioInit(); h2More(); });
 $('moreSound').addEventListener('click', () => { setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); });
+$('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); }); // (phase 1: the start screen's top bar: sound in one tap)
 $('moreVoice').addEventListener('click', () => { setGrippy(profile.grippy === false); h2SyncMore(); sfx('click'); });
 $('littleBtn').addEventListener('click', () => { audioInit(); h2Pick('littlePick'); });
 $('arcadeBtn').addEventListener('click', () => { audioInit(); h2Pick('arcadePick'); });
@@ -17155,7 +17417,7 @@ for (const id of ['moreSheet', 'littlePick', 'arcadePick', 'shareSheet']) {
   P.addEventListener('pointerdown', (e) => { if (e.target === P) close(); });
 }
 window.addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; const id = ['shareSheet', 'moreSheet', 'littlePick', 'arcadePick'].find((q) => !$(q).hidden); if (!id) return; e.preventDefault(); e.stopImmediatePropagation(); if (id === 'shareSheet') h2ShareClose(); else if (id === 'moreSheet') h2More(false); else h2Pick(id, false); }, true);
-canvas.addEventListener('pointerdown', () => { if (mode !== 'none') h2Act(); }, true);
+canvas.addEventListener('pointerdown', () => { if (mode !== 'none') { h2Act(); fdTouch(); } }, true);
 H2_READY = true; h2Sync();
 window.__grasp.home2 = { h2, sync: h2Sync, hero: h2Hero, heroPlay: h2HeroPlay, tab: h2Tab, syncTabs: h2SyncTabs, more: h2More, pick: h2Pick, closeSheets: h2CloseSheets, popup: h2Popup, popupOk: h2PopupOk,
   todayItems: h2TodayItems, todayDot: h2TodayDot, todaySeen: h2TodaySeen, world2: h2World2, roadOn: h2RoadOn, petOn: h2PetOn, albumOn: h2AlbumOn, act: h2Act,

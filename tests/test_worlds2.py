@@ -219,9 +219,10 @@ async def main():
                 await page.wait_for_function(f"{A}.phase === 'card'", timeout=8000)
                 check(f'...the corridor is world {wi + 1}\'s after the trip', await page.evaluate(f"{A}.world") == wi + 1)
             else:
-                await page.wait_for_function(f"{A}.phase === 'card' && {S}.ui.buttons && {S}.ui.buttons.next", timeout=8000)
-                await page.evaluate("advNext()"); await page.wait_for_timeout(400)
-                check('after the Candy King, Next opens the map', await page.evaluate("!$('advMap').hidden"))
+                await page.wait_for_function(f"{A}.phase === 'card' && {S}.ui.buttons && {S}.ui.buttons.map", timeout=8000)
+                check('after the Candy King: the ending card (phase 1): "The End", Map + Share, no Next', await page.evaluate(f"!{S}.ui.buttons.next && !!{S}.ui.buttons.share && {S}.ui.advTitle === t('theEnd')"))
+                await page.evaluate("endCardAction('map', performance.now())"); await page.wait_for_timeout(400)
+                check('...its Map opens the map', await page.evaluate("!$('advMap').hidden"))
         nm = await page.evaluate("(() => ['mothership', 'octopus', 'candyking'].map(k => [I18N.en['bn_' + k], I18N.he['bn_' + k]]))()")
         check('every new boss has its name in EN and HE', [tuple(x) for x in nm] == [(v[1], v[2]) for v in BOSSES2.values()], nm)
         check('B: no page errors', not errs, errs); await ctx.close()

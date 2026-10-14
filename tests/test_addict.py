@@ -243,7 +243,8 @@ async def main():
             await page.evaluate(f"{A}.pendingPower = '{pid}'; {A}.start({n})")
             await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === {n} && {S}.walls.length", timeout=6000)
             await page.evaluate("(() => { const l = __grasp.strike.lives; park(); __grasp.strike.lives = l; })()")
-        await with_power('rp_shield')
+        await page.evaluate('profile.adv.unlocked = Math.max(profile.adv.unlocked, 4)')
+        await with_power('rp_shield', 4)  # (phase 1: stages 1-3 have the bumper, no hearts to shield)
         sh = await page.evaluate(f"(() => {{ const s = {S}, l0 = s.lives; loseLife(performance.now()); const a = {{ lives: s.lives, lost: {A}.lost, shield: s.shield, fl: s.floaters.map(f => f.text) }}; loseLife(performance.now()); return {{ l0, a, b: {{ lives: s.lives, lost: {A}.lost }} }}; }})()")
         check('Shield: the first lost heart is blocked (no star lost either), the next one counts', sh['a']['lives'] == sh['l0'] and sh['a']['lost'] == 0 and sh['a']['shield'] == 0 and sh['b']['lives'] == sh['l0'] - 1 and sh['b']['lost'] == 1 and 'Shield!' in sh['a']['fl'], sh)
         await with_power('rp_heart'); hl = await page.evaluate(f"{S}.lives")
@@ -256,7 +257,7 @@ async def main():
         await with_power('rp_combo')
         cb = await page.evaluate(f"(() => {{ const s = {S}; s.streak = 9; const m0 = comboMul(); streakReset(performance.now()); const m1 = comboMul(); streakReset(performance.now()); return [m0, m1, comboMul(), s.comboSaves]; }})()")
         check('Combo keeper: the first miss keeps the combo (x4 stays), the next one drops it', cb == [4, 4, 1, 1], cb)
-        await with_power('rp_split')
+        await with_power('rp_split', 4)  # (phase 1: on stages 1-3 no miss costs a heart anyway)
         sp = await page.evaluate(f"(() => {{ const s = {S}; s.setBallZ(140, 640, 420); strikeHit(s.ball, performance.now(), 'super'); const n = s.balls.length, sp = s.balls.filter(b => b.split).length; const l0 = s.lives; const c = s.balls.find(b => b.split); strikeMiss(c, performance.now()); return {{ n, sp, lives: s.lives - l0, left: s.balls.length }}; }})()")
         check('Split shot: a SUPER hit splits the ball in two; missing the extra one costs no heart', sp['n'] == 2 and sp['sp'] == 1 and sp['lives'] == 0 and sp['left'] == 1, sp)
         # one stage only; kept for a retry after a fail; none after a boss; auto-pick

@@ -205,12 +205,12 @@ async def main():
             await page.evaluate(A + ".finishTest(1)")
             await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.advStarHint && {S}.ui.advStarHint.a >= 1 && {S}.ui.advStars.shown === 2", timeout=10000)
             await page.wait_for_timeout(300)
-            c = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, card: {S}.ui.card, W: innerWidth, want: t('starsLost1') }})")
+            c = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, card: {S}.ui.card, W: innerWidth, want: t('starsMiss1') }})")  # (phase 1: stage 1 counts misses)
             hw = c['h']
-            check(tag + ' phone: 2 stars, the line under them: "' + c['want'] + '"', hw['text'] == c['want'] and (hw['text'].startswith('איבדתם לב אחד') if he else hw['text'].startswith('Lost 1 heart')) and '★★★' in hw['text'], hw)
+            check(tag + ' phone: 2 stars, the line under them: "' + c['want'] + '"', hw['text'] == c['want'] and (hw['text'].startswith('פספסתם פעם אחת') if he else hw['text'].startswith('Missed once')) and '★★★' in hw['text'], hw)
             check(tag + ' phone: the line fits inside the card', hw['x'] >= c['card']['x'] + 4 and hw['x'] + hw['w'] <= c['card']['x'] + c['card']['w'] - 4 and c['card']['x'] + c['card']['w'] <= c['W'], [hw, c['card']])
-            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה', 'share': 'שיתוף ⤴'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map', 'share': 'Share ⤴'}
-            check(tag + ' phone: buttons Next / Play again / Map / Share (home2: Replay + Challenge a friend in one Share)', c['lb'] == want, c['lb'])
+            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}
+            check(tag + ' phone: buttons Next / Play again / Map (phase 1: Share only on a record or a boss)', c['lb'] == want, c['lb'])
             await page.screenshot(path=f'tests/out/fix_clear_2star_{tag.lower()}.png')
             check(tag + ' card: no page errors', not errs, errs); await ctx.close()
 

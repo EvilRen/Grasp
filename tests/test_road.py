@@ -97,27 +97,29 @@ async def main():
         check('a level-3 player completing run level 5: no perk pick (no perk unlocked yet); level 6 brings no holed wall', pk['level'] == 6 and pk['perkAt'] == 0 and not pk['offer'] and 'holed' not in pk['next'], pk)
         check('gate: no page errors', not errs, errs); await ctx.close()
 
-        # ---- a level-up at the end of a run: the NEW UNLOCKED card over the end card; the next run's spotlight ('New! Glass walls') ----
+        # ---- a level-up at the end of a run: the NEW UNLOCKED card (phase 1: on the start screen, never over the end card); the next run's spotlight ('New! Glass walls') ----
         ctx, page, errs = await new_page(b)
         await page.evaluate("__grasp.addXp(170)")
         await play(page); await page.evaluate(PARK)
         await page.evaluate(f"{S}.setCleared({S}.cleared + 5)"); await frames(page, 2)  # 5 walls, run level 2
         st = await page.evaluate(f"({{ walls: {S}.cleared - {S}.cleared0, levels: {S}.level - 1, bosses: {S}.bosses, xp: {S}.runXp, xp0: {P}.xp }})")
-        await end_run(page)
+        await end_run(page); await page.wait_for_timeout(1500)
+        w0 = await page.evaluate(f"({{ shown: !$('newCard').hidden, cards: {P}.road.cards.slice() }})")
+        check('level 2 reached at the end of the run: the NEW UNLOCKED card waits (phase 1: never over the end card)', not w0['shown'] and w0['cards'] == ['glass'], w0)
+        await page.evaluate("goHome()")
         await page.wait_for_function("__grasp.road.card === 'glass'", timeout=6000)
         nc = await page.evaluate(f"""(() => {{ const P = $('newCard'), r = P.querySelector('.sheet').getBoundingClientRect(), cv = P.querySelector('.nuArt canvas'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let lit = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 40) lit++;
           return {{ shown: !P.hidden, kick: P.querySelector('.nuKick').textContent, name: $('nuName').textContent, line: P.querySelector('.nuLine').textContent, grip: !!P.querySelector('.nuGrip, .bub'), art: lit / (d.length / 4), inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
             xp: {P}.xp, level: {P}.level, fresh: {P}.road.fresh.slice(), xpBox: {S}.ui.xpBox && {S}.ui.xpBox.n, sfx: __sfx.slice(-12) }}; }})()""")
         check('the run earned runXp(walls, levels, bosses) = 20 + 4 x 5 + 10 x 1 = 50 XP (home2: no XP pill on the card)', st['xp'] == 50 and nc['xp'] - st['xp0'] == 50 and nc['xpBox'] is None, [st, nc['xp'], nc['xpBox']])
-        check('level 2 reached: the NEW UNLOCKED card over the end card (Glass walls, its art, a short line, no Grippy hand / bubble), inside the viewport, an unlock sound',
+        check('...back on the start screen: the NEW UNLOCKED card (Glass walls, its art, a short line, no Grippy hand / bubble), inside the viewport, an unlock sound',
               nc['shown'] and nc['kick'] == 'NEW UNLOCKED!' and nc['name'] == 'Glass walls' and nc['line'] and not nc['grip'] and nc['art'] > 0.15 and nc['inside'] and nc['level'] == 2 and 'unlock' in nc['sfx'], nc)
         await page.screenshot(path='tests/out/road_newcard_endcard.png')
-        await page.mouse.move(640, 300); await page.mouse.move(900, 600, steps=3); await page.wait_for_timeout(300)
-        check('while the card is up, a wave does not restart the round', await page.evaluate(f"{S}.over"))
+        check('while the card is up, nothing else pops up over the start screen', await page.evaluate("[...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id)") == ['newCard'])
         await page.click('#nuOk'); await page.wait_for_timeout(450)
         cl = await page.evaluate(f"({{ shown: !$('newCard').hidden, cards: {P}.road.cards, fresh: {P}.road.fresh }})")
         check('"Awesome!" closes it; glass stays marked fresh for its first appearance in a run', not cl['shown'] and cl['cards'] == [] and cl['fresh'] == ['glass'], cl)
-        await page.evaluate("endCardAction('again', performance.now())"); await page.wait_for_timeout(300)
+        await play(page); await page.wait_for_timeout(300)
         await page.evaluate(f"{PARK}; __grasp.grippy.cool(); {S}.setLevel(3)")  # run level 3 brings glass (the first wall of the level is it)
         await page.wait_for_function(f"{S}.lastSpot && {S}.ui.spot", timeout=4000)
         sp = await page.evaluate(f"({{ last: {S}.lastSpot, ui: {S}.ui.spot, fresh: {P}.road.fresh, kinds: {S}.walls.map(w => w.kind) }})")
@@ -186,8 +188,8 @@ async def main():
         check('end card with too few coins: no Shop button', 'shop' not in nb, nb)
         await page.evaluate(f"{P}.coins = 150; endCardAction('again', performance.now())"); await page.evaluate(PARK); await end_run(page)
         await page.wait_for_function(f"{S}.ui.buttons && {S}.over", timeout=4000); await frames(page, 2)
-        bt = await page.evaluate(f"({{ b: {S}.ui.buttons, card: {S}.ui.card, aff: !!shopAffordable() }})")
-        check('home2: an affordable item: still no Shop button on the card (no coin upsell outside the Shop)', bt['aff'] and 'shop' not in bt['b'] and sorted(bt['b']) == ['again', 'home', 'share'], bt)
+        bt = await page.evaluate(f"({{ b: {S}.ui.buttons, card: {S}.ui.card, aff: !!shopAffordable(), rec: !!{S}.ui.newBest }})")
+        check('home2: an affordable item: still no Shop button on the card (no coin upsell outside the Shop)', bt['aff'] and 'shop' not in bt['b'] and sorted(bt['b']) == ['again', 'home'] + (['share'] if bt.get('rec') else []), bt)
         await page.screenshot(path='tests/out/road_endcard_shop.png')
         hb = bt['b']['home']; await page.wait_for_timeout(600); await page.mouse.click(hb['x'] + hb['w'] / 2, hb['y'] + hb['h'] / 2); await page.wait_for_timeout(400)
         await page.click('#collectionBtn'); await page.wait_for_timeout(400)

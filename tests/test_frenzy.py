@@ -182,7 +182,7 @@ async def main():
             await page.screenshot(path=f'tests/out/frenzy_hot_{tag}.png')
             await page.evaluate(f"(() => {{ const s = {S}; s.shield = 0; s.setBallZ(100, 180, 420); strikeMiss(s.ball, performance.now()); }})()"); await page.wait_for_timeout(700)
             fc = await page.evaluate(f"({{ over: {S}.over, card: {S}.ui.card, W: innerWidth, H: innerHeight, title: {S}.ui.titleBox, share: {S}.ui.buttons && {S}.ui.buttons.share }})")
-            check(tag + ': the Frenzy card fits the phone (title, Share button inside)', fc['over'] and fc['card'] and fc['card']['x'] >= 0 and fc['card']['x'] + fc['card']['w'] <= fc['W'] and fc['share'] and fc['share']['y'] + fc['share']['h'] <= fc['H'], fc)
+            check(tag + ': the Frenzy card fits the phone (title inside; phase 1: no Share, 34 is not a record over 42)', fc['over'] and fc['card'] and fc['card']['x'] >= 0 and fc['card']['x'] + fc['card']['w'] <= fc['W'] and fc['card']['y'] + fc['card']['h'] <= fc['H'] and fc['share'] is None, fc)
             if not g3: await page.screenshot(path=f'tests/out/frenzy_card_{tag}.png')
             if he:
                 hs = await page.evaluate(f"({{ best: {S}.ui.bestLine, share: {F}.shareText(), btn: $('advFrenzy').innerText }})")

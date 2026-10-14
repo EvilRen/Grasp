@@ -95,11 +95,13 @@ async def main():
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone ' if mobile else 'desktop ') + ('he' if he else 'en'); lt = 'he' if he else 'en'
-                ctx, page, errs = await fresh(b, mobile, he, auto=True)
+                ctx, page, errs = await fresh(b, mobile, he, auto=True, init=prof(habit={'first': '2026-10-01'}))  # (phase 1: never on the profile's first day)
+                check(tag + ': never on open (phase 1): nothing until a round is played', not await page.evaluate(G + ".shown"))
+                await page.evaluate("h2.rounds = 1; goHome()")  # (phase 1: a finished round, back on the start screen)
                 await page.wait_for_function(G + ".shown", timeout=4000)
                 await page.wait_for_timeout(600)  # the pop-in done
                 bx = await page.evaluate(BOXES)
-                check(tag + ': the first open of the day: the calendar pops up (7 boxes, day 1 today, the rest to come), inside the screen, no sideways scroll',
+                check(tag + ': after a first round today (phase 1): the calendar pops up (7 boxes, day 1 today, the rest to come), inside the screen, no sideways scroll',
                       bx['shown'] and [x['day'] for x in bx['boxes']] == list(range(1, 8)) and [x['st'] for x in bx['boxes']] == ['today'] + ['future'] * 6 and bx['inside'] and bx['noX'], bx)
                 check(tag + ': big kid-sized boxes (>= 60 x 80), day 7 the widest; a big Open button', all(x['w'] >= 60 and x['h'] >= 80 for x in bx['boxes']) and bx['boxes'][6]['w'] > bx['boxes'][0]['w'] * 1.6 and bx['okH'] >= 48, [(x['w'], x['h']) for x in bx['boxes']])
                 exp = {'title': 'מתנה יומית' if he else 'Daily gift', 'ok': 'לפתוח!' if he else 'Open it!', 'd1': 'יום 1' if he else 'Day 1'}
@@ -131,7 +133,7 @@ async def main():
                 await page.reload(); await page.wait_for_timeout(1200)
                 check(tag + ': a reload the same day: no pop-up', not await page.evaluate(G + ".shown"))
                 if not mobile and not he:
-                    await page.evaluate("__grasp.setDate('2026-10-03'); goHome()")
+                    await page.evaluate("__grasp.setDate('2026-10-03'); h2.rounds = 1; goHome()")
                     await page.wait_for_function(G + ".shown", timeout=3000)
                     check(tag + ': the next day (back on the start screen): it pops up again, day 2 today, day 1 done', [x['st'] for x in (await page.evaluate(BOXES))['boxes']][:3] == ['past', 'today', 'future'])
                     await page.keyboard.press('Escape'); await page.wait_for_timeout(100)
@@ -145,7 +147,7 @@ async def main():
                     check(tag + ': ...and day 2 pays 8', await page.evaluate(P + ".coins") == c0 + 13)
                     await page.click('#gifts', position={'x': 5, 'y': 5}); await page.wait_for_timeout(100)
                     check(tag + ': a tap on the backdrop closes it', not await page.evaluate(G + ".shown"))
-                    await page.evaluate("__grasp.setDate('2026-10-06'); goHome()")
+                    await page.evaluate("__grasp.setDate('2026-10-06'); h2.rounds = 1; goHome()")
                     await page.wait_for_function(G + ".shown", timeout=3000)
                     bx = await page.evaluate(BOXES)
                     check(tag + ': back after missed days: paused, not reset: day 3 today (days 1-2 done), the gentle line', [x['st'] for x in bx['boxes']][:4] == ['past', 'past', 'today', 'future'] and bx['sub'] == await page.evaluate("t('giftPaused', { n: 3 })"), bx['sub'])
@@ -156,7 +158,7 @@ async def main():
         ctx, page, errs = await fresh(b, auto=True, init=prof(road={'got': ['brick', 'cow', 'glass'], 'fresh': [], 'cards': ['glass']}, xp=200))
         await page.wait_for_timeout(500)
         check('a NEW UNLOCKED card waiting: it shows first, the calendar waits', await page.evaluate("__grasp.road.card") == 'glass' and not await page.evaluate(G + ".shown"))
-        await page.evaluate("__grasp.road.closeCard()"); await page.wait_for_function(G + ".shown", timeout=3000)
+        await page.evaluate("h2.rounds = 1; __grasp.road.closeCard()"); await page.wait_for_function(G + ".shown", timeout=3000)
         check('...and the calendar comes once the card is closed', await page.evaluate(G + ".shown"))
         await page.keyboard.press('Escape')
         await page.evaluate(START_MOUSE.replace("if (!$('advMap').hidden) $('advEndless').click();", '')); await page.wait_for_timeout(300)

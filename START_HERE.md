@@ -7,6 +7,17 @@ Read in this order:
 4. `docs/PLAYTEST_FINDINGS.md`: findings from the 6-persona playtest. Most are fixed; see "Panel fixes" in HANDOFF.
 5. `ROADMAP.md` (if it exists): Maya's plan to bring everything to 9–10. It may not have finished; see below.
 
+## Where we stopped (latest)
+- **Home v2 is live on main (90a87bf):** new start screen, simple end cards, gentler retention.
+- **Phase 1 of ROADMAP.md, partly done and NOT on main.** It is on branch `ccr-61aa39be-e8m1zx` (commits "Phase 1 …"). The helper was stopped at the user's request, so the full test run has not been done.
+  - Items 1–16 of the brief: see `git log origin/main..ccr-61aa39be-e8m1zx` and HANDOFF "Phase 1".
+  - To continue:
+    1. Check which items are missing.
+    2. Finish `tests/test_phase1.py`.
+    3. Run `tests/run_fast.sh`.
+    4. Ship.
+- **Panel D/E reports:** `docs/PLAYTEST_PANEL_D.md`, `docs/PLAYTEST_PANEL_E.md`.
+
 ## Live
 - Site: https://grasp-weld.vercel.app/. Vercel deploys `main` automatically.
 - Tremorti: https://grasp-weld.vercel.app/tremorti/

@@ -151,7 +151,7 @@ async def main():
         await page.evaluate(f"{A}.failTest()")
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.retry && {S}.ui.advBoss", timeout=8000); await page.wait_for_timeout(600)
         fl = await page.evaluate(f"({{ r: {A}.result, ab: {S}.ui.advBoss, btn: Object.keys({S}.ui.buttons), labels: {S}.ui.advLabels, card: {S}.ui.card }})")
-        check('fail: "So close!" with "Glass Queen: 40% left" and its bar; Try again / Map / Share (home2); the card fits the phone', not fl['r']['clear'] and fl['r']['rb']['left'] == 40 and fl['ab']['left'] == 40 and fl['labels']['retry'] == 'Try again' and set(fl['btn']) == {'retry', 'map', 'share'} and fl['card']['y'] + fl['card']['h'] <= 740, fl)
+        check('fail: "So close!" with "Glass Queen: 40% left" and its bar; Try again / Map (phase 1: no Share on a fail card); the card fits the phone', not fl['r']['clear'] and fl['r']['rb']['left'] == 40 and fl['ab']['left'] == 40 and fl['labels']['retry'] == 'Try again' and set(fl['btn']) == {'retry', 'map'} and fl['card']['y'] + fl['card']['h'] <= 740, fl)
         await page.screenshot(path='tests/out/boss_fail.png')
         await page.evaluate(f"endCardAction('retry', performance.now())")
         await page.wait_for_function(f"{A}.phase === 'play' && {B}.b", timeout=6000)

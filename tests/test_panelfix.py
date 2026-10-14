@@ -124,7 +124,7 @@ async def main():
         ctx, page, errs = await fresh(b, he=True)
         await slice_start(page, False)
         await page.evaluate("__grasp.replay.rp.noGate = true"); c0 = await page.evaluate("__grasp.replay.state.caps"); await page.wait_for_function(f"__grasp.replay.state.caps >= {c0 + 70}", timeout=30000)
-        await page.evaluate("(() => { const c = __grasp.slice.combo; c.n = 5; c.t = performance.now(); })()"); await page.wait_for_timeout(1800)
+        await page.evaluate("(() => { const c = __grasp.slice.combo; c.n = 5; c.t = performance.now(); slice.score = 5; })()"); await page.wait_for_timeout(1800)  # (phase 1: Share only on a record: a first round's score is one)
         await slice_end(page)
         await page.wait_for_function("__grasp.slice.ui.buttons && __grasp.slice.ui.buttons.share && __grasp.replay.ready() && performance.now() - __grasp.slice.overAt > 900", timeout=15000)
         bs = await page.evaluate("__grasp.slice.ui.buttons.share"); await page.mouse.click(bs['x'] + bs['w'] / 2, bs['y'] + bs['h'] / 2)

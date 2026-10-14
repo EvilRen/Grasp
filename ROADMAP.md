@@ -55,7 +55,9 @@ Caveat: the suites and my bots run Strike with the 2D renderer. Real phones get 
 
 Each phase is 1–2 weeks of agent work. Each ends with the playtest loop (§6). A phase ships only if no mode or player score drops.
 
-### Phase 1: The front door and the first 60 seconds (finish the in-progress work, plus the FTUE)
+### Phase 1: The front door and the first 60 seconds (finish the in-progress work, plus the FTUE) ✅ done
+
+> **Status (Oct 2026):** built and tested (`tests/test_phase1.py`, HANDOFF "Phase 1"). Not done as written: the voice lines use the device's speechSynthesis (the pre-rendered clips were out of scope), and the streak flame is hidden in the Little ones flow (there is no age setting or parent area yet). Not met: "at most 7 tappable things on first open": the parent-approved Home v2 screen has 13 (12 + the new sound button). Still to do: the phone check below.
 
 **Goal:** every player type gets a win before anything else happens.
 
