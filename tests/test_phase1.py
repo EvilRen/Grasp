@@ -177,8 +177,8 @@ async def main():
             check(tg + ': stage 1: the HUD shows the stage\'s 3 stars, not hearts', bn['row'].get('stars') == 3, bn)
             await page.evaluate("playerServe('medium')")
             await page.wait_for_function("strike.ui.bumpAt > 0", timeout=20000); await page.wait_for_timeout(90)
+            bu = await page.evaluate("({ lives: strike.lives, max: strike.maxLives, lost: adv.lost, bumps: strike.bumps, over: strike.over, phase: adv.phase, out: strike.balls.filter(b => b.dir < 0).length, bumper: strike.ui.bumper, row: strike.ui.heartsRow, floats: strike.floaters.map(f => f.text) })")  # before the screenshot: the flare fades in 650 ms
             if not he: await page.screenshot(path=OUT + 'phase1_after_bumper.png')
-            bu = await page.evaluate("({ lives: strike.lives, max: strike.maxLives, lost: adv.lost, bumps: strike.bumps, over: strike.over, phase: adv.phase, out: strike.balls.filter(b => b.dir < 0).length, bumper: strike.ui.bumper, row: strike.ui.heartsRow, floats: strike.floaters.map(f => f.text) })")
             check(tg + ': a miss on stage 1: the bumper flares and sends the ball back, a star dims (3 -> 2), no heart lost, play goes on',
                   bu['lives'] == bu['max'] and bu['lost'] == 1 and bu['bumps'] == 1 and bu['out'] == 1 and not bu['over'] and bu['phase'] == 'play' and bu['bumper'] and bu['bumper']['flare'] > 0 and bu['row'].get('stars') == 2, bu)
             for _ in range(4):
