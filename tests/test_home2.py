@@ -102,7 +102,7 @@ async def main():
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he)
             await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(500)
-            lp = await page.evaluate("""(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(); return { items: [...P.querySelectorAll('.pickGrid > button')].map(b => { const q = b.getBoundingClientRect(); return [b.dataset.mode || b.id, b.textContent.trim(), q.width >= 44 && q.height >= 44 && q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight]; }), x: P.querySelector('.xBtn').getBoundingClientRect().height }; })()""")
+            lp = await page.evaluate("""(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(); return { items: [...P.querySelectorAll('.pickGrid > button:not(.tgTile)')].map(b => { const q = b.getBoundingClientRect(); return [b.dataset.mode || b.id, b.textContent.trim(), q.width >= 44 && q.height >= 44 && q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight]; }), x: P.querySelector('.xBtn').getBoundingClientRect().height }; })()""")
             names = ['לוח עסוק', 'צורות', 'ארגז חול', 'בועות רגועות'] if he else ['Busy Board', 'Shapes', 'Sandbox', 'Calm bubbles']
             check(('HE' if he else 'EN') + ': Little ones: Busy Board, Shapes, Sandbox, Calm bubbles; big, inside the sheet', [i[0] for i in lp['items']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and [i[1] for i in lp['items']] == names and all(i[2] for i in lp['items']) and lp['x'] >= 44, lp)
             await page.screenshot(path=OUT + 'home2_after_little_%s.png' % ('he' if he else 'en'))

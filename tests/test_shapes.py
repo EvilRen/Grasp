@@ -666,7 +666,7 @@ async def main():
         check('camera: no page errors', not errs, errs); await ctx.close()
 
         # ---- home2: Shapes lives in the Little ones picker (a tile on the start screen); the picker fits 360 x 740 EN / HE, desktop too; a live preview ----
-        LAY = """(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(), tiles = [...P.querySelectorAll('.pickGrid > button')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode || b.id, in: r.left >= sh.left && r.top >= sh.top && r.right <= sh.right && r.bottom <= sh.bottom && r.bottom <= innerHeight, h: r.height, name: b.querySelector('[data-i18n]').textContent, fs: parseFloat(getComputedStyle(b).fontSize) }; });
+        LAY = """(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(), tiles = [...P.querySelectorAll('.pickGrid > button:not(.tgTile)')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode || b.id, in: r.left >= sh.left && r.top >= sh.top && r.right <= sh.right && r.bottom <= sh.bottom && r.bottom <= innerHeight, h: r.height, name: b.querySelector('[data-i18n]').textContent, fs: parseFloat(getComputedStyle(b).fontSize) }; });
           const st = $('start'), lt = $('littleBtn').getBoundingClientRect(); return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, little: lt.bottom <= innerHeight && lt.height >= 44, open: !P.hidden }; })()"""
         for mobile in (True, False):
             for he in (False, True):

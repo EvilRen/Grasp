@@ -102,6 +102,7 @@ Each phase is 1–2 weeks of agent work. Each ends with the playtest loop (§6).
 **Changes:**
 - **Little ones space.**
   - Holds Shapes, Busy Board, Bubble Pop (Calm) and Paint.
+  - **Built (toddler-games branch):** five new Little ones games in the picker, each with its own link: Animal sounds (`/animals`), Colors (`/colors`, with sorting and a camera "Show me something red!"), Peekaboo (`/peekaboo`), Feed the animal (`/feed`, the pet joins) and Giant puzzle (`/puzzle`). See HANDOFF "Little ones games". Still open here: the parent gate, the volume cap, the bedtime timer, and "at most 5 targets" in the picker (it now has 9 tiles in 3 columns).
   - Big icons, no text, no coins, stars, cards or fail states.
   - Exit is behind a parent gate: hold two fingers for 3 s. The gate also stops the browser's Back gesture.
   - Volume cap. An optional "bedtime" timer set by the parent.

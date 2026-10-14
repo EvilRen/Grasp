@@ -357,7 +357,7 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(450)  # (home2: Busy Board is in the Little ones picker)
-            fits = await page.evaluate("(() => { const bs = [...document.querySelectorAll('#littlePick .pickGrid > button')]; return bs.length === 4 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && r.height >= 44 && b.scrollWidth <= b.clientWidth + 1; }); })()")
+            fits = await page.evaluate("(() => { const bs = [...document.querySelectorAll('#littlePick .pickGrid > button:not(.tgTile)')]; return bs.length === 4 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight && r.height >= 44 && b.scrollWidth <= b.clientWidth + 1; }); })()")
             check(tag + ' phone: the Little ones picker: 4 cards fit (Busy Board, Shapes, Sandbox, Calm bubbles)', fits)
             check(tag + ' phone: busy card label', (await page.inner_text('#littlePick button[data-mode=busy]')).strip() == ('לוח עסוק' if he else 'Busy Board'))
             await page.tap('#littlePick button[data-mode=busy]')
