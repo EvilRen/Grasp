@@ -8,6 +8,9 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # the toddler card); the Share sheet (the replay clip, Challenge a friend, Copy link); the gift calendar pauses on a missed day; no streak nags; no red
 # dots but new rewards (cleared once seen); 44 px targets; no scroll at 360x740 / 390x844 / 1280x800, EN / HE; the camera dwell on the new screen;
 # direct links. Screenshots: tests/out/home2_after_*.png (the before shots: tests/out/home2_before_*.png, taken from the previous start screen).
+# Menu B (the Sticker Book, Oct 2026) moved things: the hero is a "Strike" sticker with a "Stage N" ribbon, Little ones is a room (the age switch),
+# the tab bar is a dock (Shop, Pet, Events; no Play tab: nothing lit on the start screen), the More sheet sits behind the parents' gate (the lock;
+# here opened through its hook), the Arcade / Little ones tiles are stickers. tests/test_menub.py covers the new screen itself.
 A = "__grasp.adventure"; S = "__grasp.strike"; H = "__grasp.home2"; P = "__grasp.profile"; G = "__grasp.gifts"
 OUT = 'tests/out/'
 TOASTS = "__grasp.toasts.map(t => t.text)"
@@ -44,9 +47,9 @@ SCREEN = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); ret
   const btns = [...st.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.className, ...r(b),
     fs: Math.min(99, ...[...b.querySelectorAll('b, span, small')].filter(x => x.offsetParent && x.textContent.trim() && !x.closest('.pv') && getComputedStyle(x).display !== 'none' && !x.classList.contains('bang') && !x.classList.contains('dot')).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
   return { btns, noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollHeight <= st.clientHeight + 1 && st.scrollWidth <= st.clientWidth + 1,
-    W: innerWidth, H: innerHeight, hero: $('heroLbl').textContent, sub: $('heroSub').textContent, dir: document.documentElement.dir, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab) }; })()"""
+    W: innerWidth, H: innerHeight, hero: $('heroLbl').textContent, sub: $('heroSub').textContent, aria: $('heroPlay').getAttribute('aria-label'), dir: document.documentElement.dir, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab) }; })()"""
 
-def screen_ok(tag, L, ntabs=3):
+def screen_ok(tag, L, ntabs=2):
     on = lambda q: q['l'] >= -0.5 and q['t'] >= -0.5 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5
     small = [b for b in L['btns'] if b['w'] < 44 or b['h'] < 44]
     tiny = [b for b in L['btns'] if b['fs'] < 14]
@@ -67,11 +70,11 @@ async def main():
                 L = await page.evaluate(SCREEN)
                 screen_ok(tag, L)
                 ids = [x['id'] for x in L['btns']]
-                check(tag + ': the hierarchy: the top bar (pill, sound, ⋯), the hero (Play + Map), Smash, Slice, Arcade, Camera games, Little ones, the tabs (Play, Shop, Events)',
-                      all(k in ids for k in ('metaPill', 'startSound', 'moreBtn', 'heroPlay', 'strike', 'smash', 'slice', 'arcadeBtn', 'camGamesBtn', 'littleBtn', 'tabPlay', 'collectionBtn', 'todayBtn')) and len(ids) == 13, ids)  # (phase 1: the sound button beside ⋯)
-                hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'arcadeBtn', 'camGamesBtn', 'littleBtn')]
-                check(tag + ': the hero is clearly the main thing: the biggest button, above the grid', hero['w'] * hero['h'] > 1.6 * max(o['w'] * o['h'] for o in others) and hero['b'] <= min(o['t'] for o in others), [hero, others])
-                check(tag + ': a new player: the hero just says "' + ('לשחק' if he else 'Play') + '"', L['hero'] == ('לשחק' if he else 'Play'), L['hero'])
+                check(tag + ': the hierarchy: the top bar (the lock, sound, Bubu, the coins), the age switch, the hero (Play + Map), Smash, Slice, Arcade, Camera games, the dock (Shop, Events)',
+                      all(k in ids for k in ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'smash', 'slice', 'arcadeBtn', 'camGamesBtn', 'collectionBtn', 'todayBtn')) and len(ids) == 14, ids)  # (phase 1: the sound button; menu B: the lock instead of ⋯)
+                hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'arcadeBtn', 'camGamesBtn')]
+                check(tag + ': the hero is clearly the main thing: the widest button, above the grid', hero['w'] > 1.6 * max(o['w'] for o in others) and hero['b'] <= min(o['t'] for o in others), [hero, others])
+                check(tag + ': a new player: the hero says "' + ('מכה' if he else 'Strike') + '" with "' + ('שלב 1' if he else 'Stage 1') + '" (aria: "' + L['aria'] + '")', L['hero'] == ('מכה' if he else 'Strike') and L['sub'] == ('שלב 1' if he else 'Stage 1') and L['aria'].startswith('לשחק' if he else 'Play'), L)
                 check(tag + ': RTL in Hebrew', L['dir'] == ('rtl' if he else 'ltr'))
                 await page.screenshot(path=OUT + 'home2_after_start_%s_%s.png' % (nm, 'he' if he else 'en'))
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
@@ -85,16 +88,16 @@ async def main():
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he, init=prof(adv={'stars': stars(4), 'unlocked': 5}))
             hh = await page.evaluate(f"({{ h: {H}.hero(), wc: getComputedStyle($('heroPlay')).getPropertyValue('--wc').trim(), want: WORLDS[0].accent }})")
-            check(('HE' if he else 'EN') + ': stages 1-4 cleared: "' + hh['h']['label'] + '", world 1\'s name and colour', hh['h']['n'] == 5 and hh['h']['label'] == ('לשחק במכה — שלב 5' if he else 'Play Strike — Stage 5') and hh['h']['sub'].endswith(('סמטת הלבנים' if he else 'Brick Alley')) and hh['wc'].lower() == hh['want'].lower(), hh)
+            check(('HE' if he else 'EN') + ': stages 1-4 cleared: "' + hh['h']['label'] + '" + "' + hh['h']['sub'] + '"; its label says "' + hh['h']['aria'] + '", world 1\'s name; its colour', hh['h']['n'] == 5 and hh['h']['label'] == ('מכה' if he else 'Strike') and hh['h']['sub'] == ('שלב 5' if he else 'Stage 5') and hh['h']['aria'].startswith('לשחק במכה — שלב 5' if he else 'Play Strike — Stage 5') and hh['h']['aria'].endswith(('סמטת הלבנים' if he else 'Brick Alley')) and hh['wc'].lower() == hh['want'].lower(), hh)
             await page.tap('#heroPlay')
             await page.wait_for_function(f"{A}.on && {A}.stage === 5 && mode === 'mouse'", timeout=10000)
             check(('HE' if he else 'EN') + ': the hero plays stage 5', True)
             check('hero 5: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(adv={'stars': stars(11), 'unlocked': 12}))
         hh = await page.evaluate(f"({{ h: {H}.hero(), wc: getComputedStyle($('heroPlay')).getPropertyValue('--wc').trim(), want: WORLDS[1].accent }})")
-        check('world 2: "Play Strike — Stage 12", World 2 and its colour', hh['h']['n'] == 12 and hh['h']['w'] == 2 and hh['h']['label'] == 'Play Strike — Stage 12' and hh['h']['sub'].startswith('World 2') and hh['wc'].lower() == hh['want'].lower(), hh)
+        check('world 2: "Strike" + "Stage 12", World 2 (in its label) and its colour', hh['h']['n'] == 12 and hh['h']['w'] == 2 and hh['h']['sub'] == 'Stage 12' and 'Play Strike — Stage 12, World 2' in hh['h']['aria'] and hh['wc'].lower() == hh['want'].lower(), hh)
         await page.screenshot(path=OUT + 'home2_after_hero_world2.png')
-        await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
+        await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
         check("the hero's Map opens the Adventure map (choose any stage there)", await page.evaluate("advMapOpen() && mode === 'none'"))
         check('hero world 2: no page errors', not errs, errs); await ctx.close()
 
@@ -102,23 +105,23 @@ async def main():
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he)
             await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(500)
-            lp = await page.evaluate("""(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(); return { items: [...P.querySelectorAll('.pickGrid > button:not(.tgTile)')].map(b => { const q = b.getBoundingClientRect(); return [b.dataset.mode || b.id, b.textContent.trim(), q.width >= 44 && q.height >= 44 && q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight]; }), x: P.querySelector('.xBtn').getBoundingClientRect().height }; })()""")
+            lp = await page.evaluate("""(() => { const P = $('littlePick'); return { items: [...P.querySelectorAll('.mbPg .stk:not(.tgTile)')].map(b => { const q = b.getBoundingClientRect(); return [b.dataset.mode || b.id, b.querySelector('.lb').textContent.trim(), q.width >= 120 && q.height >= 120 && q.left >= 0 && q.right <= innerWidth + 0.5 && q.bottom <= innerHeight]; }), x: $('bigBtn').getBoundingClientRect().height }; })()""")
             names = ['לוח עסוק', 'צורות', 'ארגז חול', 'בועות רגועות'] if he else ['Busy Board', 'Shapes', 'Sandbox', 'Calm bubbles']
-            check(('HE' if he else 'EN') + ': Little ones: Busy Board, Shapes, Sandbox, Calm bubbles; big, inside the sheet', [i[0] for i in lp['items']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and [i[1] for i in lp['items']] == names and all(i[2] for i in lp['items']) and lp['x'] >= 44, lp)
+            check(('HE' if he else 'EN') + ': Little ones (menu B: a room, its first page): Busy Board, Shapes, Sandbox, Calm bubbles; big, on screen; the way back (Big kids) >= 44 px', [i[0] for i in lp['items']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and [i[1] for i in lp['items']] == names and all(i[2] for i in lp['items']) and lp['x'] >= 44, lp)
             await page.screenshot(path=OUT + 'home2_after_little_%s.png' % ('he' if he else 'en'))
             if not he:
                 for m in ('busy', 'shapes', 'sandbox'):
                     if await page.evaluate("$('littlePick').hidden"): await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(400)
                     await page.tap('#littlePick button[data-mode=%s]' % m)
-                    await page.wait_for_function(f"gameMode === '{m}' && mode === 'mouse' && $('start').hidden && $('littlePick').hidden", timeout=8000)
-                    check('Little ones: ' + m + ' starts at once (the picker closes)', True)
+                    await page.wait_for_function(f"gameMode === '{m}' && mode === 'mouse' && $('start').hidden", timeout=8000)
+                    check('Little ones: ' + m + ' starts (after its name; menu B: the room stays for the way back)', True)
                     await page.evaluate("goHome()"); await page.wait_for_timeout(250)
                 await page.tap('#littleBtn'); await page.wait_for_timeout(400); await page.tap('#calmBtn')
                 await page.wait_for_function("gameMode === 'bubbles' && mode === 'mouse'", timeout=8000)
                 check('Little ones: Calm bubbles = Bubble Pop with Calm on (no timer)', await page.evaluate("__grasp.cg.bubbles.calm === true && localStorage.getItem('bubblesCalm') === '1'"))
                 await page.evaluate("goHome()"); await page.wait_for_timeout(250)
                 await page.tap('#littleBtn'); await page.wait_for_timeout(400); await page.keyboard.press('Escape'); await page.wait_for_timeout(150)
-                check('Little ones: Escape closes it', await page.evaluate("$('littlePick').hidden"))
+                check('Little ones: Escape goes back to Big kids', await page.evaluate("$('littlePick').hidden && !$('bigRoom').hidden"))
             check('little: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(frenzy={'best': 12, 'top': 1.4, 'runs': 2}))
         await page.tap('#arcadeBtn'); await page.wait_for_function("!$('arcadePick').hidden", timeout=3000); await page.wait_for_timeout(450)
@@ -154,26 +157,28 @@ async def main():
             want = {'collectionBtn': 'shop', 'petTab': 'pet', 'todayBtn': 'today'}[tab]
             check('tab ' + want + ': its sheet opens above the bar (the bar stays), the tab lit (aria-current), the other sheets closed', t['on'] == [want] and t['cur'] == [want] and [o['id'] for o in t['open']] == [ov] and t['open'][0]['tabbed'] and t['open'][0]['b'] <= t['barTop'] + 1, t)
             await page.screenshot(path=OUT + 'home2_after_tab_%s.png' % want)
-        await page.tap('#tabPlay'); await page.wait_for_timeout(250)
+        await page.evaluate("__grasp.home2.tab('play')"); await page.wait_for_timeout(250)
         t = await page.evaluate(TB)
-        check('Play: back to the start screen (no sheet), Play lit', t['on'] == ['play'] and not t['open'], t)
+        check('back to the start screen (no sheet; menu B: no Play tab, so nothing lit)', t['on'] == [] and not t['open'] and t['tab'] == 'play', t)
         await page.tap('#todayBtn'); await page.wait_for_timeout(400); await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
         t = await page.evaluate(TB)
-        check('Escape closes the tab\'s sheet; Play lit again', t['on'] == ['play'] and not t['open'], t)
+        check('Escape closes the tab\'s sheet; nothing lit again', t['on'] == [] and not t['open'], t)
         await page.tap('#collectionBtn'); await page.wait_for_timeout(400); await page.evaluate("$('collection').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))"); await page.wait_for_timeout(200)
-        check('a tap beside the sheet closes it too', (await page.evaluate(TB))['on'] == ['play'])
+        check('a tap beside the sheet closes it too', (await page.evaluate(TB))['on'] == [] and not (await page.evaluate(TB))['open'])
         check('tabs: no page errors', not errs, errs); await ctx.close()
 
         # ===== 5. the More sheet: Tremorti, language, install, sound, voice, camera | touch =====
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he)
             await page.evaluate("window.dispatchEvent(Object.assign(new Event('beforeinstallprompt', { cancelable: true }), { prompt: () => { window.__prompted = (window.__prompted || 0) + 1; return Promise.resolve(); }, userChoice: Promise.resolve({ outcome: 'accepted' }) }))")
-            await page.tap('#moreBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=3000); await page.wait_for_timeout(450)
+            await page.tap('#lockBtn'); await page.wait_for_timeout(300)
+            check(('HE' if he else 'EN') + ': the lock opens the parents\' gate, not the settings', await page.evaluate("!$('gate').hidden && $('moreSheet').hidden"))
+            await page.evaluate("__grasp.menub.gate.close(); __grasp.home2.more(true)"); await page.wait_for_function("!$('moreSheet').hidden", timeout=3000); await page.wait_for_timeout(450)  # (the gate itself: test_menub)
             mo = await page.evaluate("""(() => { const S = $('moreSheet'), sh = S.querySelector('.sheet').getBoundingClientRect(), rows = [...S.querySelectorAll('.moreRow')].filter(r => !r.hidden && r.offsetParent).map(r => { const q = r.getBoundingClientRect(); return { id: r.id || r.className, h: q.height, in: q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight }; });
               return { rows, link: $('tremortiLink').getAttribute('href'), linkTx: $('tremortiLink').textContent.trim(), lang: $('startLang').textContent.trim(), install: !$('installBtn').hidden, cam: $('camBtn').textContent.trim(), touch: $('mouseBtn').getAttribute('aria-pressed'),
-                sound: $('moreSound').getAttribute('aria-pressed'), voice: $('moreVoice').getAttribute('aria-pressed'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('moreBtn').getAttribute('aria-expanded') }; })()""")
+                sound: $('moreSound').getAttribute('aria-pressed'), voice: $('moreVoice').getAttribute('aria-pressed'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('lockBtn').getAttribute('aria-expanded') }; })()""")
             tg = 'HE' if he else 'EN'
-            check(tg + ': More (⋯): the language, Camera | Touch, Sound, Voice, Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 6 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
+            check(tg + ': More (behind the lock): the language, Camera | Touch, Sound, Voice, Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 6 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
             check(tg + ': the Tremorti link goes to /tremorti/ (' + mo['linkTx'] + ')', mo['link'] == '/tremorti/' and mo['linkTx'] == ('טרימורטי · מד רעד' if he else 'Tremorti · tremor meter'), mo)
             check(tg + ': Touch is the default way to play; sound and voice on; Install offered (the browser offered it)', mo['touch'] == 'true' and mo['sound'] == 'true' and mo['voice'] == 'true' and mo['install'], mo)
             await page.screenshot(path=OUT + 'home2_after_more_%s.png' % ('he' if he else 'en'))
@@ -188,12 +193,12 @@ async def main():
                 check('...Touch again', await page.evaluate("inputPref() === 'mouse'"))
                 await page.tap('#installBtn'); await page.wait_for_function("__grasp.pwa.state.log.includes('choice:accepted')", timeout=5000)
                 check('Install app: the browser\'s prompt (once); the More sheet closes', await page.evaluate("window.__prompted === 1 && $('moreSheet').hidden"))
-                await page.tap('#moreBtn'); await page.wait_for_timeout(400); await page.tap('#startLang'); await page.wait_for_timeout(200)
+                await page.evaluate("__grasp.home2.more(true)"); await page.wait_for_timeout(400); await page.tap('#startLang'); await page.wait_for_timeout(200)
                 check('the language row switches to Hebrew (RTL) and back', await page.evaluate("document.documentElement.dir === 'rtl' && lang === 'he'"))
                 await page.tap('#startLang'); await page.wait_for_timeout(150)
                 check('...English again', await page.evaluate("lang === 'en'"))
                 await page.keyboard.press('Escape'); await page.wait_for_timeout(150)
-                check('Escape closes the More sheet', await page.evaluate("$('moreSheet').hidden && $('moreBtn').getAttribute('aria-expanded') === 'false'"))
+                check('Escape closes the More sheet', await page.evaluate("$('moreSheet').hidden && $('lockBtn').getAttribute('aria-expanded') === 'false'"))
             check('more: no page errors', not errs, errs); await ctx.close()
 
         # ===== 6. hidden until earned: the pet (the first round finished, not a failed stage), the album, the Road, the run powers, Endless =====
@@ -211,7 +216,7 @@ async def main():
         check('the first round finished (Slice): the egg is earned', await page.evaluate("profile.pet.egg === true && !profile.pet.hatched"))
         await page.evaluate("goHome()"); await page.wait_for_timeout(300)
         pt = await page.evaluate("({ tab: !$('petTab').hidden, bang: !$('petTab').querySelector('.bang').hidden, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab), h: $('petTab').getBoundingClientRect().height })")
-        check('home: the Pet tab appears with a "!" (Play, Shop, Pet, Events)', pt['tab'] and pt['bang'] and pt['tabs'] == ['play', 'shop', 'pet', 'today'] and pt['h'] >= 44, pt)
+        check('home: the Pet sticker appears in the dock with a "!" (Shop, Pet, Events)', pt['tab'] and pt['bang'] and pt['tabs'] == ['shop', 'pet', 'today'] and pt['h'] >= 44, pt)
         await page.screenshot(path=OUT + 'home2_after_pet_tab.png')
         await page.tap('#petTab'); await page.wait_for_timeout(400)
         check('the room seen: the "!" goes away (and stays away after a reload)', await page.evaluate("$('petTab').querySelector('.bang').hidden && profile.pet.eggSeen === true"))
@@ -372,7 +377,7 @@ async def main():
 
         # ===== 11. the camera: the hand's dwell works on the new start screen (the camera chosen) =====
         ctx, page, errs = await fresh(b, mobile=False, camera=True, init="localStorage.setItem('inputPref','camera');")
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
         await page.wait_for_function("__grasp.panelfix.homeCam.on", timeout=15000)
         await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(300)
         r = await page.evaluate("(() => { const q = $('littleBtn').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")

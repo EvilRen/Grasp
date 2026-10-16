@@ -14,7 +14,7 @@ STRIKE_PLAY = "(() => { const s = __grasp.strike; s.lives = 99; window.__srv = s
 async def setup(page, m):
     if m in ('start',): return
     if m == 'advmap':
-        await page.evaluate("setInputPref('mouse'); document.querySelector('.modes button[data-mode=strike]').click()"); await page.wait_for_function("!$('advMap').hidden", timeout=8000); return
+        await page.evaluate("setInputPref('mouse'); document.querySelector('#start button[data-mode=strike]').click()"); await page.wait_for_function("!$('advMap').hidden", timeout=8000); return
     if m in ('drums', 'bubbles', 'paint', 'stars'):
         await page.evaluate(f"camg.touchOk = true; setInputPref('mouse'); __grasp.cg.start('{m}', 'mouse')"); await page.wait_for_function(f"gameMode === '{m}' && mode !== 'none'", timeout=8000)
         if m == 'paint': await page.evaluate("$('cgCam') && ($('cgCam').hidden = true)")

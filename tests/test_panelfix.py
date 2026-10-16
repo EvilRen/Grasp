@@ -36,7 +36,7 @@ async def tap_at(page, mobile, x, y):
     else: await page.mouse.click(x, y)
 
 async def slice_start(page, mobile):
-    await (page.tap if mobile else page.click)('.modes button[data-mode=slice]')
+    await (page.tap if mobile else page.click)('#start button[data-mode=slice]')
     await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=10000)
 
 async def slice_end(page):  # three misses (the suites' 3-heart rounds)
@@ -73,7 +73,7 @@ async def main():
 
         # ================= 2. Smash: a thing knocked off the screen is credited; the wave completes =================
         ctx, page, errs = await fresh(b)
-        await page.click('.modes button[data-mode=smash]'); await page.wait_for_function("!$('smashMap').hidden", timeout=6000); await page.click('#smashFree')
+        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("!$('smashMap').hidden", timeout=6000); await page.click('#smashFree')
         await page.wait_for_function("gameMode === 'smash' && mode === 'mouse' && __grasp.smash.phase === 'play'", timeout=10000)
         await page.evaluate("__grasp.sm.build('room')"); await page.wait_for_timeout(200)
         r = await page.evaluate("""(() => { const S = __grasp.smash, dyn = S.objs.filter(o => o.alive && !o.stat && o.kind !== 'boss' && o.wave === S.wave).sort((a, b) => b.value - a.value), a = dyn[0], c = dyn[1], now = performance.now();
@@ -106,7 +106,7 @@ async def main():
             await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000); await page.wait_for_timeout(600)
             o = await page.evaluate(f"(() => {{ const el = document.elementFromPoint({x}, {y}), btn = el && el.closest && el.closest('button'); return {{ under: btn ? (btn.id || btn.dataset.mode || btn.className) : (el && el.id), clicks: __clicks, room: !$('petRoom').hidden, ov: [...document.querySelectorAll('.ov')].filter(e => !e.hidden).map(e => e.id), pick: !$('cgPick').hidden, mode, gm: gameMode, guard: {PF}.cguard.until > 0 }}; }})()")
             check(f'3 tap-through ({"HE" if he else "EN"} phone): the card\'s Home goes home and its tap reaches nothing under it (was: the pet room opened)', not o['clicks'] and not o['room'] and not o['ov'] and not o['pick'] and o['mode'] == 'none' and o['gm'] == 'slice' and o['guard'], o)
-            await page.wait_for_timeout(200); await page.tap('#moreBtn'); await page.wait_for_timeout(300)
+            await page.wait_for_timeout(200); await page.evaluate("__grasp.home2.more(true)"); await page.wait_for_timeout(300)
             check(f'3 ...a real tap afterwards still works (home2: the More sheet opens)', await page.evaluate("!$('moreSheet').hidden"))
             check('3 no page errors', not errs, errs); await ctx.close()
 
@@ -200,7 +200,7 @@ async def main():
         # ================= 13 + 14. the Frenzy card's Map; the card's missions by the game =================
         ctx, page, errs = await fresh(b, init="localStorage.setItem('inputPref','mouse');")
         await page.evaluate("(() => { profile.missions = { date: missionDay(), list: [{ id: 'cars', goal: 2, progress: 0, reward: 15, done: false, claimed: false }, { id: 'walls', goal: 6, progress: 1, reward: 22, done: false, claimed: false }, { id: 'fruit', goal: 15, progress: 0, reward: 15, done: false, claimed: false }] }; saveProfile(); })()")
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen", timeout=8000); await page.click('#advFrenzy')
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen", timeout=8000); await page.click('#advFrenzy')
         await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=10000)
         await page.evaluate(f"(() => {{ const s = {S}; s.lives = 1; s.shield = 0; s.serve(); s.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.9, 30, 30); }})()")
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.map && performance.now() - {S}.overAt > 600", timeout=8000)
@@ -212,7 +212,7 @@ async def main():
         await page.wait_for_function(A + ".mapOpen", timeout=4000)
         check('13 its Map opens the Adventure map', await page.evaluate(A + ".mapOpen"))
         await page.evaluate("goHome()"); await page.wait_for_timeout(300)
-        await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000); await slice_end(page)
+        await page.click('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000); await slice_end(page)
         sr = await page.evaluate("__grasp.slice.ui.missionRow.map(r => r.id)")
         check('14 (home2) a Slice card lists no missions either', sr == [], [sr, await page.evaluate("profile.missions")])
         check('13/14 no page errors', not errs, errs); await ctx.close()

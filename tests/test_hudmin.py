@@ -41,7 +41,7 @@ def layout_ok(L):
             and h['x'] + h['w'] <= L['chrome']['l'] - 4 and h['x'] >= (L['prev']['r'] + 4 if L['prev'] else 0) and h['x'] + h['w'] <= L['W'])  # clear of the button and the camera preview
 
 async def adventure_stage(page, mobile):
-    await press(page, mobile, '.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen", timeout=8000)
+    await press(page, mobile, '#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen", timeout=8000)
     await press(page, mobile, '#advPath .anode[data-n="1"]')
     await page.wait_for_function(f"{A}.on && {A}.stage === 1 && mode === 'mouse' && {S}.walls.length === 4 && {S}.ui.hud && {S}.ui.serve", timeout=10000)
     await page.wait_for_function(f"!{S}.ui.levelBanner", timeout=6000)  # (the 'Stage 1' banner slides away)
@@ -81,7 +81,7 @@ async def main():
         # ---- desktop, Endless: the pause freezes the ball and the clock; each action works; other modes keep the full toolbar ----
         ctx, page, errs = await fresh(b, init="localStorage.setItem('inputPref','mouse');")
         await page.evaluate("__grasp.setPlayerLevel(20)")
-        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+        await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && !{A}.on && {S}.ui.hud && {S}.ui.wallsPill", timeout=10000)
         L = await page.evaluate(LAYOUT); vis = await page.evaluate(VIS)
         check('desktop Endless: only the pause button; HUD = hearts + walls toward the next level ("0/goal")', vis == ['pauseBtn'] and L['parts'] == ['hearts', 'walls'] and layout_ok(L) and L['adv'] is None
@@ -137,7 +137,7 @@ async def main():
         await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
         check('Home in the sheet: back to the start screen, the sheet gone, nothing paused', await page.evaluate("!menu.open && !pause.on && $('menuVeil').hidden && document.body.classList.contains('home')"))
         # other modes: the same corner menu
-        await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(200)
+        await page.click('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(200)
         vis = await page.evaluate(VIS)
         check('other modes (Slice) use the same corner menu: only the pause button (tests/test_menu.py covers every mode)', vis == ['pauseBtn'] and await page.evaluate("document.body.classList.contains('minChrome')"), vis)
         check('desktop: no page errors', not errs, errs); await ctx.close()
@@ -146,7 +146,7 @@ async def main():
         ctx, page, errs = await fresh(b, mobile=True, init=HAND_JS)
         await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
         await page.evaluate("__grasp.setPlayerLevel(20)")
-        await page.evaluate("$('camBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+        await page.evaluate("$('camBtn').click()"); await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"mode === 'camera' && gameMode === 'strike' && {S}.ui.hud && cursor.present", timeout=15000); await page.wait_for_timeout(400)
         L = await page.evaluate(LAYOUT)
         check('camera phone: the HUD row sits between the camera preview and the pause button', L['prev'] is not None and layout_ok(L), L)
@@ -173,7 +173,7 @@ async def main():
             tag = '3D' if g3 else '2D'
             ctx, page, errs = await fresh(b, mobile=True, init="localStorage.setItem('inputPref','mouse');" + ("window.__graspGfx = { pr: 0.12, shadows: false, auto: false };" if g3 else ''))
             await page.evaluate("__grasp.setPlayerLevel(20)")
-            await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+            await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.ui.hud && {S}.waiting && !{S}.ui.levelBanner" + (f" && {S}.gfx === '3d'" if g3 else ''), timeout=25000)
             idle = await page.evaluate(SAMPLE.replace('N', '30'))
             check(tag + ': before any hit no meter is drawn (30 frames)', idle == 0, idle)

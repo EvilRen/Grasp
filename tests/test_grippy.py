@@ -145,7 +145,7 @@ async def main():
         check('HE phone in play: no Grippy hand / bubble on screen', not await page.evaluate("!!document.querySelector('#grippy, .nuGrip, .bub')"))
         await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300)
         await page.tap('#collectionBtn'); await page.wait_for_timeout(400)
-        await page.keyboard.press('Escape'); await page.wait_for_timeout(150); await page.tap('#moreBtn'); await page.wait_for_timeout(400)  # (home2: the voice toggle lives in the More sheet)
+        await page.keyboard.press('Escape'); await page.wait_for_timeout(150); await page.evaluate("__grasp.home2.more(true)"); await page.wait_for_timeout(400)  # (home2: the voice toggle lives in the More sheet; menu B: behind the parents' gate)
         tb = await page.evaluate("(() => { const b = $('moreVoice'), r = b.getBoundingClientRect(), h = $('moreSheet').querySelector('.sheet').getBoundingClientRect(); return { pressed: b.getAttribute('aria-pressed'), label: b.getAttribute('aria-label'), canvas: !!b.querySelector('canvas'), svg: !!b.querySelector('svg'), inSheet: r.top >= h.top && r.bottom <= h.bottom && r.left >= h.left && r.right <= h.right, h: r.height, shopToggle: !!$('grippyBtn').offsetParent }; })()")
         check('the More sheet: the Voice toggle (an icon, no hand), on by default, labelled, a big target; not in the Shop any more', tb['pressed'] == 'true' and 'קול' in tb['label'] and tb['svg'] and not tb['canvas'] and tb['inSheet'] and tb['h'] >= 44 and not tb['shopToggle'], tb)
         await page.screenshot(path='tests/out/voice_toggle_he.png')

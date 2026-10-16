@@ -133,7 +133,7 @@ async def main():
             ctx, page, errs = await fresh(b, he=he, init="window.__graspPopups = true; window.__graspGiftAuto = true;")
             await page.wait_for_timeout(1200)
             o = await page.evaluate(OPEN)
-            check(tg + ': first open (a real visitor\'s pop-ups on): nothing pops up, the hero says "' + ('לשחק' if he else 'Play') + '"', o == [] and await page.evaluate("$('heroLbl').textContent") == ('לשחק' if he else 'Play') and await page.evaluate("profile.habit.first") == '2026-10-02', o)
+            check(tg + ': first open (a real visitor\'s pop-ups on): nothing pops up, the hero says "' + ('שלב 1' if he else 'Stage 1') + '" (menu B: the Strike sticker\'s ribbon)', o == [] and await page.evaluate("$('heroSub').textContent") == ('שלב 1' if he else 'Stage 1') and await page.evaluate("profile.habit.first") == '2026-10-02', o)
             await page.screenshot(path=OUT + 'phase1_after_first_open_%s.png' % ('he' if he else 'en'))
             if he: await ctx.close(); continue
             await page.tap('#heroPlay')
@@ -224,7 +224,7 @@ async def main():
             await page.evaluate("playerServe('medium')"); await page.wait_for_timeout(500)
             check(tg + ': the serve done: the finger goes, "fd_serve" kept (never again on this profile)', await page.evaluate("!fd.on && profile.tips.includes('fd_serve')"))
             await page.evaluate("goHome()"); await page.wait_for_timeout(600)
-            await page.tap('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && fd.ui && fd.ui.id === 'slice'", timeout=10000)
+            await page.tap('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && fd.ui && fd.ui.id === 'slice'", timeout=10000)
             await page.wait_for_timeout(1300)
             f = await page.evaluate("({ ui: fd.ui, said: fd.said.map(x => x.id), hint: $('hint').classList.contains('show') })")
             check(tg + ': Slice\'s first round: a finger swiping + "' + f['ui']['words'] + '", no how-to toast with it', len(f['ui']['words'].split()) <= 3 and f['said'] == ['serve', 'slice'] and not f['hint'], f)
@@ -332,7 +332,7 @@ async def main():
         # ===== 8. input safety: a double tap on a card's Home; Shapes' double tap =====
         for gap in (150, 300, 600):
             ctx, page, errs = await fresh(b, init="window.__graspTapGuard = true;" + prof(pet={'egg': True, 'eggSeen': True, 'pantry': 1}))
-            await page.tap('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000); await page.wait_for_timeout(700)
+            await page.tap('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000); await page.wait_for_timeout(700)
             await page.evaluate("slice.lives = 1"); await page.wait_for_function("slice.over && slice.ui.buttons && slice.ui.buttons.home && performance.now() - slice.overAt > 900", timeout=30000)
             r = await page.evaluate("slice.ui.buttons.home"); x = r['x'] + r['w'] / 2; y = r['y'] + r['h'] / 2
             await page.touchscreen.tap(x, y); await page.wait_for_timeout(gap); await page.touchscreen.tap(x, y); await page.wait_for_timeout(900)
@@ -354,7 +354,8 @@ async def main():
         d0 = await page.evaluate("[strike.diff, localStorage.getItem('strikeDiff')]")
         hits = await page.evaluate("(() => { const out = []; for (const b of [...$('start').querySelectorAll('button')].filter(b => b.offsetParent)) { const q = b.getBoundingClientRect(); out.push([b.id || b.dataset.mode || b.className, q.left + q.width / 2, q.bottom - 4]); } return out; })()")
         check('no Easy / Normal switch anywhere on the start screen (it lives on the Adventure map\'s header)', await page.evaluate("!$('start').querySelector('[data-diff], #strikeDiff')"))
-        r = await page.evaluate("(() => { const q = document.querySelector('#start button[data-mode=strike]').getBoundingClientRect(); return [q.left + q.width / 2, q.bottom - 3]; })()")
+        await page.wait_for_timeout(800)  # (menu B: after the stickers' entrance)
+        r = await page.evaluate("(() => { const q = document.querySelector('#start button[data-mode=strike]').getBoundingClientRect(); return [q.left + q.width / 2, q.bottom - 9]; })()")  # (menu B: the Map chip is tilted 4 degrees: its bottom edge, inside the chip)
         await page.touchscreen.tap(r[0], r[1]); await page.wait_for_timeout(500)
         check('a tap on the bottom edge of the Strike tile (the hero\'s Map) opens the map, the difficulty unchanged', await page.evaluate("!$('advMap').hidden") and await page.evaluate("[strike.diff, localStorage.getItem('strikeDiff')]") == d0, hits)
         await ctx.close()
@@ -447,7 +448,7 @@ async def main():
         # ===== 14-16. the sound button; the camera prompt; the Hebrew wording =====
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he, w=360, h=740, init=prof(coins=1234, xp=900))
-            sb = await page.evaluate("(() => { const q = $('startSound').getBoundingClientRect(), m = $('moreBtn').getBoundingClientRect(); return { w: q.width, h: q.height, l: q.left, r: q.right, ml: m.left, mr: m.right, W: innerWidth, muted, p: $('startSound').getAttribute('aria-pressed') }; })()")
+            sb = await page.evaluate("(() => { const q = $('startSound').getBoundingClientRect(), m = $('lockBtn').getBoundingClientRect(); return { w: q.width, h: q.height, l: q.left, r: q.right, ml: m.left, mr: m.right, W: innerWidth, muted, p: $('startSound').getAttribute('aria-pressed') }; })()")
             await page.tap('#startSound'); await page.wait_for_timeout(200)
             m1 = await page.evaluate("[muted, localStorage.getItem('muted'), $('startSound').getAttribute('aria-pressed')]")
             check(('HE' if he else 'EN') + ': the speaker beside ⋯ (44 px, on screen): one tap mutes, remembered', sb['w'] >= 44 and sb['h'] >= 44 and sb['l'] >= 0 and sb['r'] <= sb['W'] and not sb['muted'] and m1 == [True, '1', 'false'], [sb, m1])

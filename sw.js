@@ -1,5 +1,6 @@
 /* Grasp's service worker: the game installs as an app and plays offline.
-   - The app shell (index.html, the manifest, the icons, the self-hosted Matter.js / three.js, the guest art) is precached in a versioned cache
+   - The app shell (index.html, the manifest, the icons, the self-hosted Matter.js / three.js / GLTFLoader, the guest art, the pet's
+     dragon models) is precached in a versioned cache
      (CACHE). Navigations to /, /index.html and the game links (/strike, /smash, ... /duel?...) answer from the cached index.html at once
      (stale-while-revalidate): the network copy is fetched in the background and, when it differs, the cache is updated and the pages are told
      ({ type: 'update' }), so they show "New version — tap to refresh".
@@ -9,13 +10,14 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-10-10a';
+const VERSION = 'grasp-2026-10-16a';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
-const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js',
+const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
   '/icons/shortcut-strike.png', '/icons/shortcut-smash.png', '/icons/shortcut-shapes.png', '/icons/shortcut-camera.png',
-  '/assets/guests/cow_in.png', '/assets/guests/cow_happy.png', '/assets/guests/cow_dizzy.png', '/assets/guests/cow_squash.png'];
-const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle)\/?$/;
+  '/assets/guests/cow_in.png', '/assets/guests/cow_happy.png', '/assets/guests/cow_dizzy.png', '/assets/guests/cow_squash.png',
+  '/assets/pet/Flying_Dragon.glb', '/assets/pet/Flying_Dragon_Evolved.glb'];
+const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|popit)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;
 let lastUpdate = 0; // when a new index.html was last cached (a page loaded before that runs the old one; it can ask)

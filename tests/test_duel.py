@@ -53,7 +53,7 @@ async def main():
         # ===== D2: the Endless card: Challenge a friend, the name once, the share sheet / the clipboard; the same run from the link =====
         ctx, page, errs = await fresh(b, init=SHARE_STUB)
         await page.evaluate("__grasp.setPlayerLevel(12); profile.worlds.unlocked = 1; saveProfile()")
-        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+        await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
         s1 = await page.evaluate(SEQ)
         check('every Endless run has its own seed (strikeRand from it: a duel can replay the run)', isinstance(s1['seed'], int) and s1['seed'] >= 0, s1['seed'])
@@ -127,7 +127,7 @@ async def main():
         # ===== D3: Frenzy and the Adventure; the difficulty from the link; other seeds untouched =====
         ctx, page, errs = await fresh(b, init=SHARE_STUB)
         await page.evaluate("__grasp.setPlayerLevel(12); profile.frenzy = { best: 3, top: 1.2, runs: 1 }; saveProfile(); setInputPref('mouse')")
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000); await page.click('#advFrenzy')
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000); await page.click('#advFrenzy')
         await page.wait_for_function(f"__grasp.frenzy.on && {S}.walls.length === 4", timeout=10000)
         f1 = await page.evaluate(SEQ)
         await page.evaluate(f"(() => {{ const s = {S}; s.noTiming = true; s.hits = 21; s.shield = 0; s.lives = 1; s.setBallZ(100, 640, 420); strikeMiss(s.ball, performance.now()); }})()")

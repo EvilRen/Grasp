@@ -24,8 +24,8 @@ async def new_page(b, mobile=False):
     return ctx, page, errs
 
 async def play_strike(page, tap=False):
-    if tap: await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
-    else: await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    if tap: await page.evaluate("$('mouseBtn').click()"); await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    else: await page.evaluate("$('mouseBtn').click()"); await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && __grasp.strike.ball", timeout=8000)
     await page.evaluate(SFX_JS + ";\n" + HELP_JS + "\n__grasp.CONFIG.STRIKE_PU_RATE = 0; __grasp.strike.noSpecials = true; park()")
 

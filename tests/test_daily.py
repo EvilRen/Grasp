@@ -10,10 +10,10 @@ SEQ = """(() => { const g = __grasp, s = g.strike; g.startDaily(); s.setLevel(6)
   for (const w of s.walls) lay.push(w.kind + ':' + w.bricks.map(k => k.tnt ? 't' : k.hole ? 'h' : k.pu ? 'p' : '.').join(''));
   s.offerPerks(); const perks = s.perkOffer.slice(); s.pickPerk(0);
   return { kinds: kinds.slice(0, 12), lay, perks, mod: g.daily.modifier, date: g.daily.date, on: g.daily.on }; })()"""
-BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('arcFrenzy').getBoundingClientRect(), n = b.querySelector('.dNew');  // (home2: the Daily is a row in the Arcade sheet, under Frenzy)
-  return { label: b.querySelector('.dTx b').textContent, date: b.querySelector('.dDate').textContent, mod: b.querySelector('.dMod').textContent, modId: b.dataset.mod, streak: b.querySelector('.dStreak b').textContent,
+BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('arcFrenzy').getBoundingClientRect(), n = b.querySelector('.dNew');  // (home2: the Daily is in the Arcade sheet; menu B: a sticker beside Frenzy)
+  return { label: b.querySelector('.lb').textContent, date: b.querySelector('.dDate').textContent, mod: b.querySelector('.dMod').textContent, modId: b.dataset.mod, streak: b.querySelector('.dStreak b').textContent,
     zero: b.querySelector('.dStreak').classList.contains('zero'), newShown: !n.hidden && n.getBoundingClientRect().width > 0, newText: n.textContent, played: b.dataset.played,
-    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#arcadePick'),
+    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#arcadePick'),
     fits: (() => { const st = $('start'); return st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1; })() }; })()"""
 
 async def fresh(b, mobile=False, he=False, init='', date='2026-10-02'):
@@ -182,7 +182,7 @@ async def main():
                 mod_txt = await page.evaluate("t('mod_" + exp_mod + "')")
                 check(tag + ': Daily button: label, today\'s date, the modifier of the day', bt['label'] == ('יומי' if he else 'Daily') and bt['modId'] == exp_mod and bt['mod'] == mod_txt and bt['date'] and bt['date'] == await page.evaluate("shortDate('2026-10-02')"), bt)
                 check(tag + ': not played today: no NEW nag (home2: no red dots / badges except new rewards); streak 0', not bt['newShown'] and bt['streak'] == '0' and bt['played'] == 'false', bt)
-                check(tag + ': the Daily row: in the Arcade sheet under Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
+                check(tag + ': the Daily sticker: in the Arcade sheet beside Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
                 if mobile:
                     await page.screenshot(path='tests/out/daily_button_' + ('he' if he else 'en') + '.png')
                 if mobile: await page.tap('#dailyBtn')

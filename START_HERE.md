@@ -31,6 +31,7 @@ Read in this order:
 - **Smash:** destructible scenes with waves, a scrolling scene and a boss; free play and 20 stages.
 - **Slice**, **Busy Board** (including an electric guitar), **Shapes** (toddler tap-tap, big shapes), **Sandbox**.
 - **Little ones games** (toddlers): Animal sounds, Colors (+ the camera: "Show me something red!"), Peekaboo, Feed the animal, Giant puzzle.
+- **Pop It** (`/popit`): the silicone fidget toy (multi-touch, swipe-popping, FLIP!), Race / Colors / Remember modes, 10 boards to collect. In Little ones (Free) and the Arcade (all modes).
 - **Camera games:** Air Drums, Bubble Pop, Air Painting, Catch the Stars.
 - **Meta:**
   - coins (scarce economy), XP and the road;
@@ -38,7 +39,7 @@ Read in this order:
   - weekly event (6 rotating events with a reward track);
   - a pet that grows, a sticker album, the Shop;
   - voice lines, music, a graphics pass with auto quality.
-- **Installable** as an app (PWA, works offline). Direct links: `/strike` `/smash` `/slice` `/busy` `/shapes` `/sandbox` `/frenzy` `/drums` `/bubbles` `/paint` `/stars` `/duel` `/animals` `/colors` `/peekaboo` `/feed` `/puzzle`.
+- **Installable** as an app (PWA, works offline). Direct links: `/strike` `/smash` `/slice` `/busy` `/shapes` `/sandbox` `/frenzy` `/drums` `/bubbles` `/paint` `/stars` `/duel` `/animals` `/colors` `/peekaboo` `/feed` `/puzzle` `/popit`.
 - **Tremorti** (tremor meter):
   - measurement, interpretation by tremor type, a journal and trends;
   - a 3-minute full check, a doctor report, a spiral test;

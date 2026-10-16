@@ -306,14 +306,15 @@ async def picker_tests(b, games):
     for he in (False, True):
         ctx, page, errs = await page_for(b, '/', he)
         await page.tap('#littleBtn'); await wait(page, "!$('littlePick').hidden", 3000); await page.wait_for_timeout(500)
-        L = await page.evaluate("""(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(); return [...P.querySelectorAll('.pickGrid > button')].map(b => { const q = b.getBoundingClientRect(), c = b.querySelector('canvas.tgArt'); return { m: b.dataset.mode || b.id, w: q.width, h: q.height, inside: q.left >= sh.left - 0.5 && q.right <= sh.right + 0.5 && q.bottom <= innerHeight, art: c ? c.width > 0 && c.getContext('2d').getImageData(c.width / 2, c.height / 2, 1, 1).data[3] > 0 : null }; }); })()""")
+        L = await page.evaluate("""(() => { const P = $('littlePick'), sh = $('mbPager').getBoundingClientRect(); return [...P.querySelectorAll('.mbPg .stk')].map(b => { const q = b.getBoundingClientRect(), c = b.querySelector('.ic svg.mbI'); return { m: b.dataset.mode || b.id, w: q.width, h: q.height, inside: q.top >= sh.top - 8 && q.bottom <= sh.bottom + 8 && q.bottom <= innerHeight, art: !!c && c.childElementCount >= 2 && c.getBoundingClientRect().width > 60 }; }); })()""")  # (menu B: the Little ones room's pages of 4 stickers)
         tg_tiles = [x for x in L if x['m'] in games]
-        check(('HE' if he else 'EN') + ': the Little ones picker has a big drawn tile for each new game, all inside the sheet and on screen', [x['m'] for x in tg_tiles] == games and all(x['art'] and x['inside'] and x['w'] >= 90 and x['h'] >= 90 for x in tg_tiles), L)
+        check(('HE' if he else 'EN') + ': the Little ones room has a big sticker (its drawing) for each new game, each on its page, on screen', [x['m'] for x in tg_tiles] == games and all(x['art'] and x['inside'] and x['w'] >= 90 and x['h'] >= 90 for x in tg_tiles), L)
         await page.screenshot(path=OUT + 'toddler_picker_%s.png' % ('he' if he else 'en'))
         if not he:
             await page.evaluate("setInputPref('camera')")
             for g in games:
                 if await page.evaluate("$('littlePick').hidden"): await page.tap('#littleBtn'); await wait(page, "!$('littlePick').hidden", 3000); await page.wait_for_timeout(500)
+                await page.evaluate("(() => { const b = document.querySelector('#littlePick button[data-mode=%s]'); __grasp.menub.page([...$('mbPager').querySelectorAll('.mbPg')].indexOf(b.closest('.mbPg')), true); })()" % g); await page.wait_for_timeout(300)  # (its page)
                 await page.tap('#littlePick button[data-mode=%s]' % g)
                 ok = await wait(page, f"gameMode === '{g}' && mode === 'mouse' && $('start').hidden && location.pathname === '/{g}'", 6000)
                 check('the ' + g + ' tile starts it by touch (even with the camera chosen) and pushes /' + g, ok)

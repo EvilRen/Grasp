@@ -67,9 +67,9 @@ async def main():
         # ---- the pixel ratio: capped at 2 (a dpr-3 phone draws at 2x, crisp, not 3x), 1x and 1.5x as they are; the dot grid drawn at the ratio ----
         for mobile, dsf, want in ((True, 3, 2), (False, 1, 1), (False, 1.5, 1.5)):
             ctx, page, errs = await fresh(b, mobile, dsf=dsf)
-            d = await page.evaluate(f"(() => {{ resize(); return {{ dpr: DPR, ss: SS, c: {G}.canvas(), grid: gridCanvas.width, pv: document.querySelector('canvas.pvc').width }}; }})()")
+            d = await page.evaluate(f"(() => {{ resize(); return {{ dpr: DPR, ss: SS, c: {G}.canvas(), grid: gridCanvas.width, pv: $('bubuCv').width, pvw: $('bubuCv').clientWidth }}; }})()")  # (menu B: no preview canvases; Bubu's sticker is drawn at the ratio)
             W_ = 360 if mobile else 1280
-            check(f'dpr {dsf}: the canvas draws at {want}x (capped at 2), sprites at the same scale, the dot grid and previews too', d['dpr'] == want and d['ss'] == want and d['c']['w'] == round(W_ * want) and d['c']['cw'] == W_ and d['grid'] == 32 * max(1, round(want)) and d['pv'] == round(120 * want), d)
+            check(f'dpr {dsf}: the canvas draws at {want}x (capped at 2), sprites at the same scale, the dot grid and Bubu\'s sticker too', d['dpr'] == want and d['ss'] == want and d['c']['w'] == round(W_ * want) and d['c']['cw'] == W_ and d['grid'] == 32 * max(1, round(want)) and d['pvw'] > 20 and d['pv'] == round(d['pvw'] * want), d)
             await ctx.close()
 
         # ---- the screen transition: a tile tap starts the game at once under an iris that opens from the tile and ends cleanly ----
@@ -79,7 +79,7 @@ async def main():
             await page.wait_for_timeout(1300)
             check(f'{tag}: the iris takes about a third of a second', await page.evaluate(f"{G}.XF.ms") == 340)
             await page.evaluate(f"{G}.XF.ms = 1200")  # (slowed down so the checks below catch it mid-way on a loaded machine)
-            sel = '.modes button[data-mode=slice]'
+            sel = '#start button[data-mode=slice]'
             box = await page.evaluate(f"(() => {{ const r = document.querySelector('{sel}').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
             await (page.tap(sel) if mobile else page.click(sel))
             a = await page.evaluate(f"({{ on: {G}.xf.on, shown: !$('xfade').hidden, mode, gm: gameMode, start: $('start').hidden, last: {G}.xf.log.slice(-1)[0], runs: {G}.xf.runs, pe: getComputedStyle($('xfade')).pointerEvents }})")
@@ -96,7 +96,7 @@ async def main():
             h = await page.evaluate(f"({{ on: {G}.xf.on, kind: {G}.xf.kind, start: !$('start').hidden, mode }})")
             check(f'{tag}: Home: back on the start screen at once, under an iris from the centre', h['on'] and h['kind'] == 'home' and h['start'] and h['mode'] == 'none', h)
             await page.wait_for_function(f"!{G}.xf.on && $('xfade').hidden", timeout=3000)
-            sel = '.modes button[data-mode=strike]'
+            sel = '#start button[data-mode=strike]'
             await (page.tap(sel) if mobile else page.click(sel))
             await page.wait_for_function("!$('advMap').hidden", timeout=4000)
             check(f'{tag}: the Strike tile: the iris onto the Adventure map', await page.evaluate(f"{G}.xf.log.slice(-1)[0].kind === 'in' && {G}.xf.runs >= 3"))
@@ -105,11 +105,11 @@ async def main():
 
         # ---- prefers-reduced-motion: no iris, no ambient motion, half the particles, a tiny shake ----
         ctx, page, errs = await fresh(b, False, rm='reduce')
-        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle($('heroPlay'), '::after').animationName, cap: {G}.cap() }})")
-        await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000)
+        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, bg: getComputedStyle($('start')).animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle($('heroPlay'), '::after').animationName, cap: {G}.cap() }})")
+        await page.click('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000)
         x = await page.evaluate(f"({{ on: {G}.xf.on, shown: !$('xfade').hidden, skipped: {G}.xf.skipped, log: {G}.xf.log.slice(-1)[0] }})")
         await page.evaluate("shakeScreen(4)"); sh = await page.evaluate("shake.amp")
-        check('reduced motion: detected (body.gfxCalm); the start background still (no drifting blobs / shapes), no tile glow', rm['red'] and rm['calm'] and rm['blob'] == 'none' and rm['sh'] == 'none' and rm['tile'] == 'none', rm)
+        check('reduced motion: detected (body.gfxCalm); the start background still (no drifting blobs / shapes), no tile glow', rm['red'] and rm['calm'] and rm['blob'] == 'none' and rm['bg'] == 'none' and rm['sh'] == 'none' and rm['tile'] == 'none', rm)
         check('reduced motion: no iris (skipped, the game at once), a tiny shake, half the particle cap', not x['on'] and not x['shown'] and x['skipped'] >= 1 and x['log']['skipped'] == 'reduced' and sh <= 0.6 and rm['cap'] == 160, [x, sh, rm['cap']])
         check('reduced motion: no page errors', not errs, errs); await ctx.close()
 
@@ -137,16 +137,16 @@ async def main():
             check(f'{tag}: an older particle with no colour draws (white) and the game loop keeps running', await page.evaluate("__grasp.gfx.q.frames") - f0 >= 5)
             check(f'{tag}: pool: no page errors', not errs, errs); await ctx.close()
 
-        # ---- the start screen's living background: on screen, moving, inside the screen (no scroll), the tiles' spring ----
+        # ---- the start screen's living background (menu B: a sticker-book page of dots drifting diagonally): moving, the whole screen, no scroll, the tiles' spring ----
         ctx, page, errs = await fresh(b, True)
         await page.wait_for_timeout(1300)
-        L = await page.evaluate("""(() => { const f = $('startFx'), r = f.getBoundingClientRect(), st = $('start'); const tr = () => [...f.querySelectorAll('.blob, .sh')].map(e => getComputedStyle(e).transform).join('|');
-          return { n: f.querySelectorAll('.blob').length, sh: f.querySelectorAll('.sh').length, m: f.querySelectorAll('.m').length, full: r.width >= innerWidth - 1 && r.height >= innerHeight - 1, noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight, pe: getComputedStyle(f).pointerEvents, a: tr() }; })()""")
+        L = await page.evaluate("""(() => { const st = $('start'), r = st.getBoundingClientRect(), cs = getComputedStyle(st);
+          return { anim: cs.animationName, img: cs.backgroundImage.split('radial-gradient').length - 1, full: r.width >= innerWidth - 1 && r.height >= innerHeight - 1, noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight, oldFx: getComputedStyle($('startFx')).display, a: cs.backgroundPosition }; })()""")
         await page.wait_for_timeout(500)
-        a2 = await page.evaluate("[...$('startFx').querySelectorAll('.blob, .sh')].map(e => getComputedStyle(e).transform).join('|')")
-        check('start screen: a living background (4 colour blobs, drifting shapes, twinkling motes) behind everything, never scrolls, takes no taps', L['n'] == 4 and L['sh'] >= 7 and L['m'] >= 8 and L['full'] and L['noScroll'] and L['pe'] == 'none', L)
-        check('start screen: the background moves (CSS animations, no JS per frame)', a2 != L['a'])
-        tr = await page.evaluate("(() => { const b = document.querySelector('.modes button[data-mode=slice]'); return getComputedStyle(b).transitionTimingFunction; })()")
+        a2 = await page.evaluate("getComputedStyle($('start')).backgroundPosition")
+        check('start screen: a living background (two layers of dots, drifting) over the whole screen, never scrolls (the old blobs retired)', L['anim'] == 'mbBg' and L['img'] == 2 and L['full'] and L['noScroll'] and L['oldFx'] == 'none', L)
+        check('start screen: the background moves (CSS animations, no JS per frame)', a2 != L['a'], [L['a'], a2])
+        tr = await page.evaluate("(() => { const b = document.querySelector('#start button[data-mode=slice]'); return getComputedStyle(b).transitionTimingFunction; })()")
         check('tiles: a springy transition (an overshooting cubic-bezier)', '1.56' in tr, tr)
         await page.screenshot(path='tests/out/gfx_start_phone.png')
         check('start: no page errors', not errs, errs); await ctx.close()

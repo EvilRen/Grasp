@@ -36,7 +36,9 @@ async def start_mode(page, m, mobile):
     if m in ('sandbox', 'busy', 'shapes'):  # (home2: the toddler games are in the Little ones picker)
         await press(page, mobile, '#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=4000)
         await press(page, mobile, f'#littlePick button[data-mode={m}]')
-    else: await press(page, mobile, f'.modes button[data-mode={m}]')
+    else:
+        await press(page, mobile, '#bigBtn'); await page.wait_for_function("!$('bigRoom').hidden", timeout=4000)  # (menu B: the room is remembered)
+        await press(page, mobile, f'#start button[data-mode={m}]')
     await page.wait_for_function(f"mode === 'mouse' && gameMode === '{m}' && $('start').hidden", timeout=8000)
     if m == 'shapes': await page.wait_for_function("shapes.mat && shapes.box", timeout=5000)
     await page.evaluate(FRAMES)

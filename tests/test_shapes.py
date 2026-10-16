@@ -665,8 +665,8 @@ async def main():
         check('camera: opening the hand drops it in; its name is spoken', ok and await page.evaluate(f"{S}.spoken") == {'circle': 'Circle', 'square': 'Square', 'triangle': 'Triangle'}[s0['kind']])
         check('camera: no page errors', not errs, errs); await ctx.close()
 
-        # ---- home2: Shapes lives in the Little ones picker (a tile on the start screen); the picker fits 360 x 740 EN / HE, desktop too; a live preview ----
-        LAY = """(() => { const P = $('littlePick'), sh = P.querySelector('.sheet').getBoundingClientRect(), tiles = [...P.querySelectorAll('.pickGrid > button:not(.tgTile)')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode || b.id, in: r.left >= sh.left && r.top >= sh.top && r.right <= sh.right && r.bottom <= sh.bottom && r.bottom <= innerHeight, h: r.height, name: b.querySelector('[data-i18n]').textContent, fs: parseFloat(getComputedStyle(b).fontSize) }; });
+        # ---- home2 / menu B: Shapes lives in the Little ones room (the age switch on the start screen); its first page fits 360 x 740 EN / HE, desktop too; its sticker drawing ----
+        LAY = """(() => { const P = $('littlePick'), sh = $('mbPager').getBoundingClientRect(), tiles = [...P.querySelectorAll('.mbPg:first-child .stk:not(.tgTile)')].map(b => { const r = b.getBoundingClientRect(); return { m: b.dataset.mode || b.id, in: r.left >= sh.left - 6 && r.top >= sh.top - 6 && r.right <= sh.right + 6 && r.bottom <= sh.bottom + 6 && r.bottom <= innerHeight, h: r.height, name: b.querySelector('[data-i18n]').textContent, fs: parseFloat(getComputedStyle(b.querySelector('.lb')).fontSize) }; });
           const st = $('start'), lt = $('littleBtn').getBoundingClientRect(); return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, little: lt.bottom <= innerHeight && lt.height >= 44, open: !P.hidden }; })()"""
         for mobile in (True, False):
             for he in (False, True):
@@ -674,11 +674,9 @@ async def main():
                 ctx, page, errs = await ctx_page(b, mobile, he); await page.wait_for_timeout(1500)
                 await (page.tap('#littleBtn') if mobile else page.click('#littleBtn')); await page.wait_for_function("!$('littlePick').hidden", timeout=4000); await page.wait_for_timeout(500)
                 L = await page.evaluate(LAY)
-                check(tag + ': the Little ones picker: Busy Board, Shapes, Sandbox, Calm bubbles, all inside, big targets, text >= 14 px; no scroll', L['open'] and L['little'] and [t['m'] for t in L['tiles']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and all(t['in'] and t['h'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and L['noScroll'], L)
+                check(tag + ': the Little ones room: Busy Board, Shapes, Sandbox, Calm bubbles on its first page, all inside, big targets, text >= 14 px; no scroll', L['open'] and L['little'] and [t['m'] for t in L['tiles']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and all(t['in'] and t['h'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and L['noScroll'], L)
                 check(tag + ': the Shapes tile is named ' + ('צורות' if he else 'Shapes'), L['tiles'][1]['name'] == ('צורות' if he else 'Shapes'))
-                pv0 = await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] canvas').toDataURL()"); await page.wait_for_timeout(400)
-                pv1 = await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] canvas').toDataURL()")
-                check(tag + ': the Shapes tile has a live preview', pv0 != pv1 and await page.evaluate("__grasp.previews.running"))
+                check(tag + ': the Shapes sticker has its drawing (menu B: one sticker style, no live previews)', await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] .ic svg').dataset.ico === 'shapes' && !document.querySelector('#littlePick button[data-mode=shapes] canvas')"))
                 await page.screenshot(path='tests/out/shapes_start_' + tag + '.png')
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
         await b.close()

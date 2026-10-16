@@ -20,7 +20,7 @@ async def new_page(b, gfx=None, ctx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    await page.evaluate("$('mouseBtn').click()"); await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate(SFX_JS + "; __grasp.strike.noSpecials = true; __grasp.strike.walls.forEach(w => w.bricks.forEach(k => { k.weak = k.key = k.gold = k.turret = k.armor = false; }))"); await page.mouse.move(640, 760)  # (v4: plain walls: this suite counts brick hp and the onboarding tips; tests/test_challenge.py covers the special bricks)
 

@@ -15,7 +15,7 @@ KEYS = "(k => [...SPRITES.keys()].filter(q => q.startsWith(k)))"
 SHEET = """(id => { const ov = $(id), sh = ov.querySelector('.sheet'), r = sh.getBoundingClientRect(), h2 = sh.querySelector('h2').getBoundingClientRect(), x = sh.querySelector('.xBtn').getBoundingClientRect();
   return { hidden: ov.hidden, inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, w: r.width, h: r.height, scrolls: sh.scrollHeight > sh.clientHeight + 1, bodyScroll: document.documentElement.scrollHeight > innerHeight + 1,
     xEnd: x.left > h2.left, xIn: x.right <= innerWidth && x.left >= 0 }; })"""
-START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('moreBtn').getBoundingClientRect(), tb = $('tabBar').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth && p.top >= 0, pillLeftOfLang: p.left < l.left, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, row: [tb.left, tb.right, tb.top, tb.bottom], rowIn: tb.left >= 0 && tb.right <= innerWidth && tb.bottom <= innerHeight, linkIn: true, btns: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.querySelector('[data-i18n]').textContent.trim()), W: innerWidth, H: innerHeight }; })()"  # home2: the pill in the top bar opposite ⋯; the tab bar
+START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('lockBtn').getBoundingClientRect(), tb = $('tabBar').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth && p.top >= 0, pillLeftOfLang: p.left < l.left, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, row: [tb.left, tb.right, tb.top, tb.bottom], rowIn: tb.left >= 0 && tb.right <= innerWidth && tb.bottom <= innerHeight, linkIn: true, btns: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.querySelector('[data-i18n]').textContent.trim()), W: innerWidth, H: innerHeight }; })()"  # home2: the pill in the top bar opposite ⋯; the tab bar
 
 async def fresh(b, mobile=False, he=False, init=''):
     opts = dict(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width':1280,'height':800})
@@ -25,8 +25,8 @@ async def fresh(b, mobile=False, he=False, init=''):
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(700)
     return ctx, page, errs
 async def play(page, m, mobile=False):
-    if mobile: await page.tap('.modes button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE)
-    else: await page.click('.modes button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE)
+    if mobile: await page.tap('#start button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE)
+    else: await page.click('#start button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE)
     await page.wait_for_timeout(500); await page.evaluate(SFX_JS)
 async def drag(page, x0, x1, y, step=40, wait=16):
     await page.mouse.move(x0, y); await page.mouse.down()
@@ -233,8 +233,8 @@ async def main():
             ctx, page, errs = await fresh(b, True, he, "localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, coins: 123, xp: 60 }));")
             await page.wait_for_timeout(1300)
             f = await page.evaluate(START_FIT)
-            check(tag + ': coins + level pill in the top bar opposite ⋯, no overlap; the tab bar on screen; the start screen fits', f['noScroll'] and f['pillIn'] and f['pillLeftOfLang'] == (not he) and not f['pillOverlap'] and f['rowIn'], f)
-            check(tag + ': pill reads 123 coins, Lv 2 (the level shows once earned); tabs Play + Shop + Events (Pet hidden until the egg is earned)', await page.evaluate("$('metaPill').querySelector('.coins').textContent") == '123' and await page.evaluate("$('metaPill').querySelector('.lvl').textContent") == ('רמה 2' if he else 'Lv 2') and await page.evaluate("getComputedStyle($('metaPill').querySelector('.lvl')).display !== 'none'") and f['btns'] == (['משחקים', 'חנות', 'אירועים'] if he else ['Play', 'Shop', 'Events']), f)
+            check(tag + ': coins + level pill in the top bar opposite the lock (menu B), no overlap; the dock on screen; the start screen fits', f['noScroll'] and f['pillIn'] and f['pillLeftOfLang'] == he and not f['pillOverlap'] and f['rowIn'], f)
+            check(tag + ': pill reads 123 coins, Lv 2 (the level shows once earned); the dock: Shop + Events (Pet hidden until the egg is earned)', await page.evaluate("$('metaPill').querySelector('.coins').textContent") == '123' and await page.evaluate("$('metaPill').querySelector('.lvl').textContent") == ('רמה 2' if he else 'Lv 2') and await page.evaluate("getComputedStyle($('metaPill').querySelector('.lvl')).display !== 'none'") and f['btns'] == (['חנות', 'אירועים'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
             check(tag + ': no Easy / Normal toggle on the start screen (home2: in the map header); the screen still fits', (await page.evaluate(START_FIT))['noScroll'] and not await page.evaluate("!!document.querySelector('#start #strikeDiff')"))
             await page.screenshot(path='tests/out/meta_' + tag.replace(' ', '_') + '_start.png')
             await page.tap('#todayBtn'); await page.wait_for_timeout(350)
@@ -258,7 +258,7 @@ async def main():
             await page.wait_for_timeout(450); await page.tap('#metaPill .coins'); await page.wait_for_timeout(200)
             check(tag + ': home2: the coin + level pill opens the Road (earned: level 2)', not await page.evaluate("$('road').hidden") and await page.evaluate("$('collection').hidden")); await page.keyboard.press('Escape')
             for m in ['slice', 'smash', 'strike']:
-                await page.tap('.modes button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE); await page.wait_for_timeout(600)
+                await page.tap('#start button[data-mode=' + m + ']'); await page.evaluate(START_MOUSE); await page.wait_for_timeout(600)
                 await page.evaluate("__grasp.addCoins(7)"); await page.wait_for_timeout(100)
                 pl = await page.evaluate(PILL)
                 if m in ('strike', 'smash'): ok = pl is None and await page.evaluate("__grasp.coinUi.floaters.length") > 0  # a decluttered Strike: no pill, the +n floater only

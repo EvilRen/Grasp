@@ -54,7 +54,7 @@ async def fresh(b, mobile=False, he=False, init='', camera=False):
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("typeof __grasp !== 'undefined' && !!engine", timeout=15000); await page.wait_for_timeout(300)
     return ctx, page, errs
 async def free(page, tap=False):  # the Smash tile, then the map's Free play
-    await (page.tap if tap else page.click)('.modes button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+    await (page.tap if tap else page.click)('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
     await (page.tap if tap else page.click)('#smashFree'); await page.wait_for_function("mode !== 'none' && __grasp.smash.run === 'free' && __grasp.sm.objs.length > 0", timeout=15000)
 async def settle(page, ms=1300): await page.wait_for_timeout(ms)
 async def drag(page, x0, x1, y, step=64, wait=16):
@@ -69,7 +69,7 @@ async def main():
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
         # ---------------- desktop, mouse ----------------
         ctx, page, errs = await fresh(b)
-        await page.click('.modes button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
         mp = await page.evaluate("""(() => { const n = [...document.querySelectorAll('#smList .smNode')]; return { path: location.pathname, mode, title: $('smTitle').textContent, free: $('smashFree').getBoundingClientRect().height > 60, nodes: n.length,
           cur: n.filter(b => b.classList.contains('cur')).map(b => b.dataset.n), locked: n.filter(b => b.classList.contains('locked')).length, scenes: [...document.querySelectorAll('#smList .smScene')].map(s => s.dataset.scene), total: $('smStarTotal').textContent.trim() }; })()""")
         check('the Smash tile opens its map at /smash: Free play on top, 20 stages in 5 scene groups (stage 1 current, the rest locked), no game running yet', mp['path'] == '/smash' and mp['mode'] == 'none' and mp['title'] == 'Smash' and mp['free'] and mp['nodes'] == 20 and mp['cur'] == ['1'] and mp['locked'] == 19 and mp['scenes'] == ['wall', 'room', 'city', 'blocks', 'food'] and mp['total'].startswith('0'), mp)
@@ -262,7 +262,7 @@ async def main():
 
         # ---------------- camera ----------------
         ctx, page, errs = await fresh(b, camera=True)
-        await page.evaluate("$('camBtn').click()"); await page.click('.modes button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+        await page.evaluate("$('camBtn').click()"); await page.click('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
         await page.click('#smashFree'); await page.wait_for_function("mode === 'camera' && __grasp.sm.objs.length > 0", timeout=15000)
         await page.evaluate("window.__handFor = () => fistAt(200, 300)"); await page.wait_for_timeout(700)
         check('camera: a closed fist is recognised', await page.evaluate("gesture") == 'fist', await page.evaluate("[gesture, hand.pinchD]"))

@@ -15,7 +15,7 @@ def load_rules():
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     rewrites, redirects, vheaders = load_rules()
-    extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, '.webmanifest': 'application/manifest+json', '.js': 'application/javascript', '.mjs': 'text/javascript'}
+    extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, '.webmanifest': 'application/manifest+json', '.js': 'application/javascript', '.mjs': 'text/javascript', '.glb': 'model/gltf-binary'}
     def log_message(self, *a): pass
     def end_headers(self):  # vercel.json's headers for the path asked (the Content-Type is the static handler's own)
         path = getattr(self, '_asked', self.path).split('?', 1)[0]

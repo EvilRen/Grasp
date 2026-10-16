@@ -30,7 +30,7 @@ async def fresh(b, mobile=False, he=False, init='', gfx=None):
     return ctx, page, errs
 
 async def endless(page):  # the Endless run with the mouse, the ball parked far away
-    await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
     await page.evaluate(f"__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.guestEvery = 0; {S}.noRally = {'true' if NO_RALLY else 'false'}; park()")
 

@@ -39,7 +39,7 @@ async def main():
         bad = [e + ':' + l for e in ['smashClear', 'smashScene', 'smashHurry', 'smashBoss'] for l in ('en', 'he') if len(set(ln[l][e])) < 3 or any(not (1 <= len(x.split()) <= 3) or len(x) > 16 for x in ln[l][e]) or (l == 'he' and not all(re.search('[֐-׿]', x) for x in ln[l][e]))]
         check('voice lines for Smash\'s big moments (scene smashed, a new scene, hurry, the boss), 3 short lines each in EN and HE', not bad, bad)
         # ---------------- a stage from the map ----------------
-        await page.click('.modes button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
+        await page.click('#start button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
         await page.screenshot(path='tests/out/smash2_map_desktop_en.png')
         await page.click('#smList .smNode.cur'); await page.wait_for_function(f"mode === 'mouse' && {S}.run === 'stage' && {S}.n === 1 && {SM}.objs.length > 0", timeout=15000)
         await page.wait_for_timeout(400)
@@ -99,7 +99,7 @@ async def main():
         await page.click('#smBack'); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
         check('Back on the map over a game: home', await page.evaluate("!__grasp.sm.mapOpen"))
         await page.evaluate("syncBests()")
-        check('the Smash tile shows the stars won in its stages', await page.evaluate("document.querySelector('.modes button[data-mode=smash] .best').textContent") == '★ ' + str(await page.evaluate(SM + ".total")))
+        check('the Smash tile shows the stars won in its stages', await page.evaluate("document.querySelector('#start button[data-mode=smash] .best').textContent") == '★ ' + str(await page.evaluate(SM + ".total")))
         await page.reload(); await page.wait_for_timeout(600)
         check('progress and stars survive a reload', await page.evaluate("__grasp.profile.smash.stars['1'] === 3 && __grasp.profile.smash.stars['20'] >= 1 && __grasp.profile.smash.unlocked === 20"))
         check('stages desktop: no page errors', not errs, errs); await ctx.close()
@@ -117,7 +117,7 @@ async def main():
         for mobile, he in [(True, False), (True, True), (False, False)]:
             tag = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
             ctx, page, errs = await fresh(b, mobile=mobile, he=he, init=prof({'stars': {'1': 3, '2': 2, '3': 1}, 'unlocked': 4}))
-            await (page.tap if mobile else page.click)('.modes button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
+            await (page.tap if mobile else page.click)('#start button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
             await page.wait_for_timeout(200)
             mp = await page.evaluate("(() => { const f = $('smashFree').getBoundingClientRect(), n = [...document.querySelectorAll('#smList .smNode')].map(b => b.getBoundingClientRect()); return { title: $('smTitle').textContent, free: $('smashFree').textContent, in: f.left >= 0 && f.right <= innerWidth, nodes: n.every(r => r.left >= 0 && r.right <= innerWidth && r.width >= 44 && r.height >= 44), scene: document.querySelector('#smList .smScene b').textContent, dir: document.documentElement.dir, stars: document.querySelector('#smList .smScene small').textContent }; })()")
             check(tag + ': the map in the UI language, everything on screen, big tap targets', mp['in'] and mp['nodes'] and ((mp['title'] == 'ניפוץ' and 'משחק חופשי' in mp['free'] and mp['scene'] == 'קיר הלבנים' and mp['dir'] == 'rtl') if he else (mp['title'] == 'Smash' and 'Free play' in mp['free'] and mp['scene'] == 'The Brick Wall')) and mp['stars'] == '★ 6/12', mp)
@@ -149,7 +149,7 @@ async def main():
 
         # ---------------- v3: how long a stage takes a real child (a simulated player on a phone, the real game logic and physics on a virtual clock) ----------------
         ctx, page, errs = await fresh(b, mobile=True, init=prof({'stars': {}, 'unlocked': 20}))
-        await page.tap('.modes button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
+        await page.tap('#start button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
         lens = []
         for n in (1, 4, 5, 9, 12, 13, 17, 20):
             clock = (await page.evaluate(f"{SM}.plan({n})"))['time']; row = {'n': n, 'clock': clock}
@@ -174,7 +174,7 @@ async def main():
         for mobile, he in [(True, False), (True, True), (False, False)]:
             tag = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
             ctx, page, errs = await fresh(b, mobile=mobile, he=he, init=prof({'stars': {}, 'unlocked': 20}))
-            await (page.tap if mobile else page.click)('.modes button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
+            await (page.tap if mobile else page.click)('#start button[data-mode=smash]'); await page.wait_for_function(SM + ".mapOpen", timeout=5000)
             for si, sc in enumerate(['wall', 'room', 'city', 'blocks', 'food'] if mobile and not he else ['room', 'city']):
                 n = SCN[sc]
                 await page.evaluate(f"{SM}.stage({n})"); await page.wait_for_function(f"{S}.n === {n} && {S}.phase === 'play' && !{S}.over", timeout=8000)

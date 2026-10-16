@@ -19,7 +19,7 @@ GATE_SIM = f"""((plv, L) => {{ const s = {S}; __grasp.setPlayerLevel(plv); s.set
   let curved = 0, waves = 0, plain = 0; for (let i = 0; i < 240; i++) {{ s.serve(); const b = s.ball; if (b.guest) guests[b.guest] = (guests[b.guest] || 0) + 1; else {{ plain++; if (b.curve) curved++; if (b.waves > 1 && b.curve) waves++; }} }}
   s.ball.guest = null; s.lives = lv0; const offers = []; for (let i = 0; i < 30; i++) {{ s.perks = {{}}; if (s.offerPerks()) offers.push(...s.perkOffer); s.perkOffer = null; }}
   const pc = s.pacing; return {{ kinds, pus, guests, curved, waves, plain, offers: [...new Set(offers)].sort(), puRate: pc.puRate, perksOpen: pc.perks, guestsOn: pc.guestsOn }}; }})"""
-START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('moreBtn').getBoundingClientRect(), r = $('tabBar').getBoundingClientRect(), x = $('metaPill').querySelector('.xp').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth && p.top >= 0, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, rowIn: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, xpIn: x.width > 10 && x.left >= p.left && x.right <= p.right, nxShown: getComputedStyle($('nextUnlock')).display !== 'none', lv: $('metaPill').querySelector('.lvl').textContent, btns: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.querySelector('[data-i18n]').textContent.trim()) }; })()"  # home2: the pill (coins, level, XP bar) in the top bar; the tab bar
+START_FIT = "(() => { const st = $('start'), p = $('metaPill').getBoundingClientRect(), l = $('lockBtn').getBoundingClientRect(), r = $('tabBar').getBoundingClientRect(), x = $('metaPill').querySelector('.xp').getBoundingClientRect(); return { noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1, pillIn: p.left >= 0 && p.right <= innerWidth && p.top >= 0, pillOverlap: p.right > l.left && p.left < l.right && p.bottom > l.top && p.top < l.bottom, rowIn: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, xpIn: x.width > 10 && x.left >= p.left && x.right <= p.right, nxShown: getComputedStyle($('nextUnlock')).display !== 'none', lv: $('metaPill').querySelector('.lvl').textContent, btns: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.querySelector('[data-i18n]').textContent.trim()) }; })()"  # home2: the pill (coins, level, XP bar) in the top bar; the tab bar
 
 async def frames(page, n=1):
     for _ in range(n): await page.evaluate(FRAMES)
@@ -33,7 +33,7 @@ async def new_page(b, mobile=False, he=False, init='', gfx=None):
     return ctx, page, errs
 
 async def play(page):
-    await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+    await page.evaluate("$('mouseBtn').click()"); await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
     await page.wait_for_function("gameMode === 'strike' && __grasp.strike.walls.length", timeout=8000)
     await page.evaluate(SFX_JS); await page.mouse.move(640, 760)
 
@@ -136,8 +136,8 @@ async def main():
             ctx, page, errs = await new_page(b, True, he)
             await page.evaluate("__grasp.setPlayerLevel(5)"); await page.wait_for_timeout(200)
             f = await page.evaluate(START_FIT)
-            check(tag + ': home2: the pill shows the level and its XP bar (no "… XP to: …" text); the start screen fits with the tab bar (Play, Shop, Events)',
-                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['xpIn'] and not f['nxShown'] and f['lv'] == ('רמה 5' if he else 'Lv 5') and f['btns'] == (['משחקים', 'חנות', 'אירועים'] if he else ['Play', 'Shop', 'Events']), f)
+            check(tag + ': home2: the pill shows the level and its XP bar (no "… XP to: …" text); the start screen fits with the dock (Shop, Events)',
+                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['xpIn'] and not f['nxShown'] and f['lv'] == ('רמה 5' if he else 'Lv 5') and f['btns'] == (['חנות', 'אירועים'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
             await page.screenshot(path='tests/out/road_' + tag.replace(' ', '_') + '_start.png')
             # the shop: a labelled button (bag icon, 'Shop' + the coin balance) even on a phone, a red dot once something new is affordable
             SHOP = "(() => { const b = $('collectionBtn'), l = b.querySelector('[data-i18n]').getBoundingClientRect(), r = b.getBoundingClientRect(), row = $('tabBar').getBoundingClientRect(); return { label: b.querySelector('[data-i18n]').textContent, lw: l.width, dot: !b.querySelector('.dot').hidden, inRow: r.left >= row.left - 0.5 && r.right <= row.right + 0.5, labelIn: l.left >= r.left - 0.5 && l.right <= r.right + 0.5, h: r.height }; })()"
@@ -227,7 +227,7 @@ async def main():
         await page.wait_for_function(f"!{S}.chest", timeout=5000); await page.wait_for_function(f"{S}.balls.length > 0", timeout=6000)
         check('after the prize: the chest goes and play resumes in world 2 (a serve)', await page.evaluate(f"{S}.world") == 2)
         await page.evaluate(f"{P}.tickets = 0"); await menu_click(page, '#homeBtn'); await page.wait_for_timeout(300)
-        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         mp = await page.evaluate("({ shown: !$('worldMap').hidden, n: [...document.querySelectorAll('#wmap .wnode')].map(b => [b.classList.contains('locked'), b.classList.contains('cur')]), mode })")
         check('home, Strike, Play: the world map first (world 2 open, 3-5 locked), no game yet', mp['shown'] and [x[0] for x in mp['n']] == [False, False, True, True, True] and mp['mode'] == 'none', mp)
         await page.click('#wmap .wnode[data-world="3"]', force=True); await page.wait_for_timeout(200)
@@ -256,7 +256,7 @@ async def main():
         # 3D: the WebGL corridor takes on each world's palette too
         ctx, page, errs = await new_page(b, gfx="{ pr: 0.25, shadows: false, auto: false }")
         await page.evaluate("__grasp.setPlayerLevel(20); __grasp.worlds.unlocked = 5")
-        await page.evaluate("$('mouseBtn').click()"); await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         await page.click('#wmap .wnode[data-world="1"]'); await page.wait_for_function("gameMode === 'strike' && mode === 'mouse'", timeout=8000)
         g = await page.evaluate("__grasp.setGfx('3d')")
         await page.wait_for_function(f"{S}.gfx === '3d'", timeout=20000)

@@ -281,7 +281,7 @@ async def main():
 
         # ===== R8: Slice (desktop HE): a combo; the round-over card =====
         ctx, page, errs = await fresh(b, he=True, init=STUB + DROP)
-        await page.click('.modes button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=10000)
+        await page.click('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=10000)
         await page.evaluate(f"{R}.rp.noGate = true"); await caps(page, 70)
         await page.evaluate("(() => { const c = __grasp.slice.combo; c.n = 3; c.t = performance.now(); })()"); await page.wait_for_timeout(100)
         await page.evaluate("(() => { const c = __grasp.slice.combo; c.n = 5; c.t = performance.now(); })()"); await page.wait_for_timeout(100)

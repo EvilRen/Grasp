@@ -28,8 +28,8 @@ async def camera_page(b, mobile):
     await page.add_init_script(INIT + HAND_JS + POINT_JS)
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
     await page.evaluate("$('camBtn').click()") if not mobile else await page.evaluate("$('camBtn').click()")
-    if mobile: await page.tap('.modes button[data-mode=slice]')
-    else: await page.click('.modes button[data-mode=slice]')
+    if mobile: await page.tap('#start button[data-mode=slice]')
+    else: await page.click('#start button[data-mode=slice]')
     await page.wait_for_function("mode === 'camera'", timeout=15000)
     return ctx, page, errs
 
@@ -40,7 +40,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + POINT_JS)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        await page.click('.modes button[data-mode=slice]')
+        await page.click('#start button[data-mode=slice]')
         check('menu shows slice selected + description', await page.evaluate("document.querySelector('[data-mode=slice]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('Fruit')"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(2500)
         if not await page.evaluate("__grasp.slice.fruits.length > 0"): await page.evaluate("__grasp.spawnWave()"); await page.wait_for_timeout(300)  # spawn timing is random
@@ -158,7 +158,7 @@ async def main():
             page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT + POINT_JS)
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
             if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
-            await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=slice]'); await page.wait_for_timeout(300)
+            await page.evaluate("$('mouseBtn').click()"); await page.tap('#start button[data-mode=slice]'); await page.wait_for_timeout(300)
             await page.evaluate("parkBomb(180, 400); __grasp.slice.fruits[0].vy = -0.001"); await page.wait_for_timeout(120)
             await page.screenshot(path='tests/out/slice_bomb_phone_' + tag + '.png')
             await page.evaluate("__grasp.slice.fruits.length = 0; __grasp.slice.score = 7"); await end_round(page)

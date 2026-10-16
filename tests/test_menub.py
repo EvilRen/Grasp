@@ -1,0 +1,306 @@
+exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
+# Menu B "Sticker Book" (the parent's pick, Oct 2026): the start screen as a sticker book. One sticker template for every game; the Big kids room
+# (Bubu, the lock, the sound, the coins; the age switch; the Strike hero + Map; Smash, Slice, Arcade, Camera games; the dock: Shop, Pet, Events);
+# the Little ones room (4 huge stickers a page, swiped sideways, dots, RTL-correct; a sticker says its name, then opens its game); the Arcade and
+# Camera games sheets (stickers, 2 a row); the parents' gate (hold 2 s, then 7 + 5; wrong = a shake and back to the hold) before the settings;
+# every press squashes + boings with a blip pitched per game, the idle wiggle, Bubu's jump + "Hi!", reduced motion, the Sound setting; the
+# layout (no scroll at 360x740 / 390x844 / 1280x800, EN / HE; targets >= 44 px; labels >= 14 px); the camera's dwell on the stickers; the double-tap
+# guard on the room switch; Pop It (another branch) only when its mode exists. Screenshots: tests/out/menub_*.png.
+OUT = 'tests/out/'
+M = '__grasp.menub'; A = '__grasp.adventure'
+
+def prof(**kw):
+    d = dict(v=1, coins=0, xp=0); d.update(kw)
+    return "if (!sessionStorage.getItem('__seeded')) { localStorage.setItem('grasp.profile', " + json.dumps(json.dumps(d)) + "); sessionStorage.setItem('__seeded', '1'); }"
+
+def stars(n): return {str(i): 3 for i in range(1, n + 1)}
+
+async def fresh(b, he=False, w=390, h=844, mobile=True, init='', rm=None, camera=False):
+    opts = dict(viewport={'width': w, 'height': h}, device_scale_factor=2, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': w, 'height': h})
+    if rm: opts['reduced_motion'] = rm
+    if camera: opts['permissions'] = ['camera']
+    ctx = await b.new_context(**opts); page = await ctx.new_page(); await routes(page); errs = []
+    page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(INIT + HAND_JS + "localStorage.setItem('lang','" + ('he' if he else 'en') + "'); sessionStorage.setItem('grasp.testDate','2026-10-02');" + init)
+    await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("window.__grasp && __grasp.menub && document.readyState === 'complete'", timeout=10000)
+    await page.wait_for_timeout(500)
+    return ctx, page, errs
+
+# every visible button on screen (the start screen, or an open sheet): its box, its text sizes; no page scroll
+LAYOUT = """((sel) => { const root = sel ? document.querySelector(sel) : $('start'), r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; };
+  const pg = $('mbPager').getBoundingClientRect(), inView = (q, b) => b.closest('#mbPager') ? q.r > pg.left + 1 && q.l < pg.right - 1 : q.r > 1 && q.l < innerWidth - 1; // (the Little ones' other pages: scrolled out of the pager)
+  const btns = [...root.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden && !b.closest('[hidden]') && inView(r(b), b)).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg || b.dataset.k || b.dataset.pg || b.dataset.ans || b.className, ...r(b),
+    fs: Math.min(99, ...[...b.querySelectorAll('b, span, small')].filter(x => x.offsetParent && x.textContent.trim() && getComputedStyle(x).display !== 'none' && !x.classList.contains('bang')).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
+  const st = $('start');
+  return { btns, W: innerWidth, H: innerHeight, dir: document.documentElement.dir,
+    noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1 && document.body.scrollWidth <= innerWidth + 1 && st.scrollHeight <= st.clientHeight + 1 && st.scrollWidth <= st.clientWidth + 1 }; })"""
+
+def layout_ok(tag, L, need=()):
+    on = lambda q: q['l'] >= -0.5 and q['t'] >= -0.5 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5
+    small = [b for b in L['btns'] if b['w'] < 44 or b['h'] < 44]
+    tiny = [b for b in L['btns'] if b['fs'] < 14]
+    ids = [b['id'] for b in L['btns']]
+    check(tag + ': no page scroll either way; every button fully on screen', L['noScroll'] and all(on(b) for b in L['btns']), [b for b in L['btns'] if not on(b)])
+    check(tag + ': every tap target >= 44 x 44 px', not small, small)
+    check(tag + ': every label >= 14 px', not tiny, tiny)
+    if need: check(tag + ': shows ' + ', '.join(need), all(k in ids for k in need), ids)
+    return L
+
+BIG = ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'smash', 'slice', 'arcadeBtn', 'camGamesBtn', 'collectionBtn', 'todayBtn')
+LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'lilPopit']]
+
+async def page_of(page):
+    return await page.evaluate(f"({{ i: {M}.pageNow(), mb: {M}.mb.page, on: [...document.querySelectorAll('#mbDots .mbDot')].findIndex(d => d.classList.contains('on')), sl: $('mbPager').scrollLeft,"
+                               f" seen: [...document.querySelectorAll('#mbPager .stk')].filter(b => {{ const q = b.getBoundingClientRect(); return !b.hidden && q.left >= -1 && q.right <= innerWidth + 1; }}).map(b => b.dataset.mode || b.id) }})")
+
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required'])
+
+        # ===== 1. the screens at 390x844 (EN / HE): the screenshots + the layout rules; then 360x740 and the desktop =====
+        for he in (False, True):
+            lg = 'he' if he else 'en'; tg = lg.upper()
+            ctx, page, errs = await fresh(b, he)
+            await page.wait_for_timeout(600)
+            L = layout_ok(tg + ' main 390', await page.evaluate(LAYOUT + "()"), BIG)
+            bx = {x['id']: x for x in L['btns']}
+            check(tg + ': RTL in Hebrew, LTR in English', L['dir'] == ('rtl' if he else 'ltr'))
+            lock, coins = bx['lockBtn'], bx['metaPill']
+            check(tg + ': the top bar: the lock at the ' + ('right (RTL)' if he else 'left') + ', Bubu in the middle, the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])) and abs((bx['bubuBtn']['l'] + bx['bubuBtn']['r']) / 2 - L['W'] / 2) < 6, [lock, coins, bx['bubuBtn']])
+            hero = bx['heroPlay']; grid = [bx[k] for k in ('smash', 'slice', 'arcadeBtn', 'camGamesBtn')]
+            check(tg + ': the Strike hero is the widest sticker, above the 2 x 2 grid; the grid stickers are big (>= 140 px)', hero['w'] > 1.6 * max(g['w'] for g in grid) and hero['b'] <= min(g['t'] for g in grid) and all(g['w'] >= 140 and g['h'] >= 140 for g in grid), [hero, grid])
+            check(tg + ': 2 a row: Smash / Slice side by side, Arcade / Camera games under them', abs(grid[0]['t'] - grid[1]['t']) < 12 and abs(grid[2]['t'] - grid[3]['t']) < 12 and grid[2]['t'] > grid[0]['b'], grid)
+            st = await page.evaluate("""(() => { const s = [...document.querySelectorAll('#start .stk, .mbOv .stk')]; const cs = (e) => getComputedStyle(e); return { n: s.length,
+              ink: s.every(e => cs(e).borderTopColor === 'rgb(42, 31, 61)'), edge: s.every(e => cs(e).boxShadow.startsWith('rgb(255, 255, 255)')), svg: s.every(e => e.querySelector('.ic svg.mbI')), canvas: document.querySelectorAll('#start .stk canvas, .mbOv .stk canvas').length,
+              cols: new Set(s.map(e => cs(e).backgroundColor)).size, font: cs($('heroLbl')).fontFamily }; })()""")
+            check(tg + ': one template: every game sticker (' + str(st['n']) + ') has the dark outline, the white die-cut edge and an SVG drawing (no live canvas previews), one colour per game', st['n'] >= 22 and st['ink'] and st['edge'] and st['svg'] and st['canvas'] == 0 and st['cols'] >= 18, st)
+            check(tg + ': the rounded type (Fredoka first, then a rounded stack)', st['font'].startswith('Fredoka'), st['font'])
+            await page.screenshot(path=OUT + 'menub_main_%s.png' % lg)
+            # Little ones: page 1, page 2
+            await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden && $('start').dataset.room === 'little'", timeout=3000); await page.wait_for_timeout(500)
+            L = layout_ok(tg + ' little p1', await page.evaluate(LAYOUT + "()"), ('busy', 'shapes', 'sandbox', 'calmBtn'))
+            lb = {x['id']: x for x in L['btns']}
+            check(tg + ': Little ones: 4 huge stickers (2 x 2, each >= 140 px), mint background, 3 dots', all(lb[k]['w'] >= 140 and lb[k]['h'] >= 180 for k in LITTLE[0]) and await page.evaluate("getComputedStyle($('start')).backgroundColor === 'rgb(166, 236, 208)' && document.querySelectorAll('#mbDots .mbDot').length === 3"), [lb.get(k) for k in LITTLE[0]])
+            first = lb['busy']; check(tg + ': the first sticker sits at the ' + ('right (RTL)' if he else 'left'), (first['l'] > lb['shapes']['l']) if he else (first['l'] < lb['shapes']['l']), [first, lb['shapes']])
+            DOTS = "[...document.querySelectorAll('#mbDots .mbDot')].map(d => ({ pg: +d.dataset.pg, x: d.getBoundingClientRect().left, on: d.classList.contains('on') })).sort((a, b) => a.x - b.x)"  # (left to right on screen)
+            ds = await page.evaluate(DOTS); edge = ds[-1] if he else ds[0]
+            check(tg + ': the dots run with the pages: page 1\'s dot is the ' + ('rightmost (RTL)' if he else 'leftmost') + ' and it is the lit one', edge['pg'] == 0 and edge['on'] and sum(d['on'] for d in ds) == 1 and [d['pg'] for d in ds] == ([2, 1, 0] if he else [0, 1, 2]), ds)
+            await page.screenshot(path=OUT + 'menub_little_p1_%s.png' % lg)
+            await page.tap('#mbDots .mbDot[data-pg="1"]'); await page.wait_for_function(f"{M}.pageNow() === 1", timeout=3000); await page.wait_for_timeout(600)
+            ds = await page.evaluate(DOTS); p2 = await page_of(page)
+            check(tg + ': tapping the middle dot goes to page 2 (its stickers on screen), the middle dot lit', [d['on'] for d in ds] == [False, True, False] and p2['seen'] == LITTLE[1], [ds, p2])
+            layout_ok(tg + ' little p2', await page.evaluate(LAYOUT + "()"), ('animals', 'colors', 'peekaboo', 'feed'))
+            await page.screenshot(path=OUT + 'menub_little_p2_%s.png' % lg)
+            await page.tap('#bigBtn'); await page.wait_for_function("$('littlePick').hidden && !$('bigRoom').hidden", timeout=3000); await page.wait_for_timeout(400)
+            # the Arcade and Camera games sheets
+            await page.tap('#arcadeBtn'); await page.wait_for_function("!$('arcadePick').hidden", timeout=3000); await page.wait_for_timeout(850)
+            L = layout_ok(tg + ' arcade', await page.evaluate(LAYOUT + "('#arcadePick')"), ('arcFrenzy', 'dailyBtn'))
+            sh = await page.evaluate("(() => { const s = getComputedStyle($('arcadePick').querySelector('.sheet')); return [s.backgroundColor, s.borderTopColor]; })()")
+            ab = {x['id']: x for x in L['btns']}
+            check(tg + ': Arcade: a white sheet with the dark outline; Frenzy and Daily stickers side by side', sh == ['rgb(255, 255, 255)', 'rgb(42, 31, 61)'] and abs(ab['arcFrenzy']['t'] - ab['dailyBtn']['t']) < 12 and ab['arcFrenzy']['w'] >= 120, [sh, ab])
+            await page.screenshot(path=OUT + 'menub_arcade_%s.png' % lg)
+            await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
+            await page.tap('#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=3000); await page.wait_for_timeout(850)
+            L = layout_ok(tg + ' camera', await page.evaluate(LAYOUT + "('#cgPick')"), ('drums', 'bubbles', 'paint', 'stars'))
+            cb = {x['id']: x for x in L['btns']}
+            check(tg + ': Camera games: 4 stickers, 2 a row', abs(cb['drums']['t'] - cb['bubbles']['t']) < 12 and abs(cb['paint']['t'] - cb['stars']['t']) < 12 and cb['paint']['t'] > cb['drums']['b'], cb)
+            await page.screenshot(path=OUT + 'menub_camera_%s.png' % lg)
+            await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
+            # the gate, the settings
+            await page.tap('#lockBtn'); await page.wait_for_function("!$('gate').hidden", timeout=3000); await page.wait_for_timeout(850)
+            layout_ok(tg + ' gate', await page.evaluate(LAYOUT + "('#gate')"), ('gateHold',))
+            await page.screenshot(path=OUT + 'menub_gate_%s.png' % lg)
+            await page.evaluate(f"{M}.gate.close(); __grasp.home2.more(true)"); await page.wait_for_timeout(900)  # (after the sheet's spring-in)
+            L = layout_ok(tg + ' settings', await page.evaluate(LAYOUT + "('#moreSheet')"), ('startLang', 'camBtn', 'mouseBtn', 'moreSound', 'moreVoice'))
+            await page.screenshot(path=OUT + 'menub_settings_%s.png' % lg)
+            check(tg + ' screens: no page errors', not errs, errs); await ctx.close()
+        for (mobile, w, h, nm) in ((True, 360, 740, 'phone360'), (False, 1280, 800, 'desktop')):
+            for he in (False, True):
+                tg = nm + (' HE' if he else ' EN')
+                ctx, page, errs = await fresh(b, he, w=w, h=h, mobile=mobile); await page.wait_for_timeout(700)  # (after the entrance)
+                L = layout_ok(tg + ' main', await page.evaluate(LAYOUT + "()"), BIG)
+                if nm == 'desktop':
+                    col = await page.evaluate("(() => { const q = $('mbCol').getBoundingClientRect(); return { l: q.left, r: q.right, w: q.width }; })()")
+                    check(tg + ': a centred phone-width column (the stickers stay big)', abs(col['l'] + col['r'] - w) < 4 and 340 <= col['w'] <= 480, col)
+                    if not he: await page.screenshot(path=OUT + 'menub_main_desktop_en.png')
+                await page.evaluate(f"{M}.room('little')"); await page.wait_for_timeout(400)
+                for i in range(3):
+                    await page.evaluate(f"{M}.page({i}, true)"); await page.wait_for_timeout(250)
+                    layout_ok(tg + ' little p' + str(i + 1), await page.evaluate(LAYOUT + "()"), tuple(LITTLE[i]))
+                check(tg + ': no page errors', not errs, errs); await ctx.close()
+
+        # ===== 2. every sticker opens its game =====
+        ctx, page, errs = await fresh(b, init=prof(adv={'stars': stars(9), 'unlocked': 10}, pet={'hatched': True, 'food': 3, 'pantry': 2, 'born': '2026-10-01', 'last': '2026-10-01', 'egg': True, 'eggSeen': True, 'asked': True}))
+        async def home():
+            await page.evaluate("if (mode !== 'none') goHome(); closeAdvMap(true); closeSmashMap(true); for (const o of document.querySelectorAll('.ov')) o.hidden = true; __grasp.home2.syncTabs()"); await page.wait_for_timeout(500)
+        await page.tap('#heroPlay'); await page.wait_for_function(f"{A}.on && {A}.stage === 10 && mode === 'mouse' && $('start').hidden", timeout=10000)
+        check('Strike hero: plays the current stage (10) at once', True); await home()
+        await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
+        check('Map: the Adventure map', await page.evaluate("advMapOpen() && mode === 'none'")); await home()
+        await page.tap('#start button[data-mode=smash]'); await page.wait_for_function("!$('smashMap').hidden", timeout=5000)
+        check('Smash: its map', True); await home()
+        await page.tap('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000)
+        check('Slice: starts at once', True); await home()
+        await page.tap('#arcadeBtn'); await page.wait_for_function("!$('arcadePick').hidden && !$('arcEndless').hidden", timeout=3000); await page.wait_for_timeout(450)
+        await page.tap('#arcFrenzy'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
+        check('Arcade > Frenzy: plays', await page.evaluate("$('arcadePick').hidden")); await home()
+        await page.tap('#arcadeBtn'); await page.wait_for_timeout(450); await page.tap('#dailyBtn'); await page.wait_for_function("!$('daily').hidden && $('arcadePick').hidden", timeout=3000)
+        check('Arcade > Daily: its panel (alone)', await page.evaluate("[...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id)") == ['daily']); await home()
+        await page.tap('#arcadeBtn'); await page.wait_for_timeout(450); await page.tap('#arcEndless'); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && !__grasp.adventure.on && !__grasp.frenzy.on", timeout=8000)
+        check('Arcade > Endless (world 2): the old run', True); await home()
+        for cg in ('drums', 'bubbles', 'paint', 'stars'):
+            await page.evaluate("localStorage.setItem('cgTouchOk', '1'); __grasp.cg.touchOk = true")
+            await page.tap('#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=3000); await page.wait_for_timeout(450)
+            await page.tap('#cgPick [data-cg=%s]' % cg); await page.wait_for_function(f"gameMode === '{cg}' && mode === 'mouse' && $('cgPick').hidden", timeout=8000)
+            check('Camera games > ' + cg + ': plays', True); await home()
+        for tab, ov in (('collectionBtn', 'collection'), ('petTab', 'petRoom'), ('todayBtn', 'today')):
+            await page.tap('#' + tab); await page.wait_for_timeout(450)
+            o = await page.evaluate("[...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => ({ id: o.id, b: o.querySelector('.sheet').getBoundingClientRect().bottom }))")
+            dock = await page.evaluate("({ top: $('tabBar').getBoundingClientRect().top, on: [...document.querySelectorAll('#tabBar .tab.on')].map(b => b.id) })")
+            check('dock ' + tab + ': opens ' + ov + ' above the dock (the dock stays), the sticker lit', [x['id'] for x in o] == [ov] and o[0]['b'] <= dock['top'] + 2 and dock['on'] == [tab], [o, dock])
+            await home()
+        await page.tap('#littleBtn'); await page.wait_for_timeout(500)
+        for i, row in enumerate(LITTLE):
+            for k in row:
+                await page.evaluate(f"{M}.room('little'); {M}.page({i}, true)"); await page.wait_for_timeout(300)
+                sel = '#calmBtn' if k == 'calmBtn' else '#lilPopit' if k == 'lilPopit' else '#littlePick button[data-mode=%s]' % k
+                name = await page.evaluate(f"document.querySelector('{sel}').querySelector('.lb').textContent")
+                await page.tap(sel)
+                want = "gameMode === 'bubbles' && __grasp.cg.bubbles.calm" if k == 'calmBtn' else "gameMode === 'popit'" if k == 'lilPopit' else f"gameMode === '{k}'"
+                await page.wait_for_function(f"{want} && mode === 'mouse' && $('start').hidden", timeout=8000)
+                said = await page.evaluate(f"{M}.mb.said.map(x => x.text)")
+                check('Little ones > ' + k + ': says "' + name + '", then plays', said and said[-1] == name, said[-3:])
+                await home()
+        check('back home after a toddler game: still the Little ones room', await page.evaluate("$('start').dataset.room === 'little' && !$('littlePick').hidden"))
+        await page.tap('#bubuBtn'); await page.wait_for_timeout(150)
+        bu = await page.evaluate(f"({{ jump: $('bubuBtn').classList.contains('jump'), say: $('bubuSay').textContent, show: $('bubuSay').classList.contains('show'), said: {M}.mb.said.slice(-1)[0].text, st: $('bubuBtn').dataset.stage, anim: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName }})")
+        check('Bubu (the hatched pet, drawn from the pet system): a tap = a jump + "Hi!" (shown and said)', bu['jump'] and bu['show'] and bu['say'] == 'Hi!' and bu['said'] == 'Hi!' and bu['st'] != '0' and bu['anim'] == 'mbJump', bu)
+        # Pop It (merged): its sticker shows in Little ones (page 3) and in Arcade
+        await page.evaluate("window.routeOpen = (m) => { window.__opened = m; return true; }; __grasp.menub.page(2, true)"); await page.wait_for_timeout(300)
+        pi = await page.evaluate(f"({{ lil: !$('lilPopit').hidden, arc: !$('arcPopit').hidden, feat: {M}.feat('popit'), pages: {M}.mb.pages, seen: !!$('lilPopit').closest('.mbPg') }})")
+        check('Pop It: its sticker shows in Little ones (page 3) and in Arcade', pi['lil'] and pi['arc'] and pi['feat'] and pi['seen'] and pi['pages'] == 3, pi)
+        await page.tap('#lilPopit'); await page.wait_for_function("window.__opened === 'popit'", timeout=4000)
+        check('Pop It sticker: says its name and opens /popit (routeOpen)', await page.evaluate(f"{M}.mb.said.slice(-1)[0].text") == 'Pop It')
+        check('stickers: no page errors', not errs, errs); await ctx.close()
+
+        # ===== 3. Little ones' paging: both directions, EN / HE (RTL: the next page lies to the left) =====
+        for he in (False, True):
+            tg = 'HE' if he else 'EN'
+            ctx, page, errs = await fresh(b, he, init="localStorage.setItem('grasp.room', 'little');")
+            p0 = await page_of(page)
+            check(tg + ': the room is remembered (Little ones on open); page 1, its dot lit', await page.evaluate("$('start').dataset.room") == 'little' and p0['i'] == 0 and p0['on'] == 0 and p0['seen'] == LITTLE[0], p0)
+            sgn = -1 if he else 1
+            await page.evaluate(f"$('mbPager').scrollBy({{ left: {sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 1", timeout=3000); await page.wait_for_timeout(300)
+            p1 = await page_of(page)
+            check(tg + ': a swipe ' + ('right (RTL)' if he else 'left') + ' = page 2 (its stickers on screen, its dot lit, a page blip)', p1['i'] == 1 and p1['on'] == 1 and p1['seen'] == LITTLE[1] and (p1['sl'] < 0 if he else p1['sl'] > 0) and await page.evaluate(f"{M}.mb.blips.some(x => x.kind === 'page')"), p1)
+            await page.evaluate(f"$('mbPager').scrollBy({{ left: {sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 2", timeout=3000)
+            p2 = await page_of(page)
+            check(tg + ': ... page 3 (Puzzle, Pop It)', p2['i'] == 2 and p2['seen'] == LITTLE[2], p2)
+            await page.evaluate(f"$('mbPager').scrollBy({{ left: {-sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 1", timeout=3000)
+            check(tg + ': and back the other way to page 2', (await page_of(page))['seen'] == LITTLE[1])
+            await page.tap('#mbDots .mbDot[data-pg="0"]'); await page.wait_for_function(f"{M}.mb.page === 0 && Math.abs($('mbPager').scrollLeft) < 2", timeout=4000)
+            check(tg + ': the first dot: back to page 1', (await page_of(page))['seen'] == LITTLE[0])
+            await page.mouse.move(200, 500); await page.mouse.wheel(sgn * 260, 0)  # (a sideways swipe on a trackpad: the browser's own scroll, snapped to a page)
+            await page.wait_for_function(f"{M}.mb.page === 1 && Math.abs(Math.abs($('mbPager').scrollLeft) - $('mbPager').clientWidth) < 2", timeout=4000)
+            check(tg + ': a sideways swipe snaps to the next page', (await page_of(page))['seen'] == LITTLE[1])
+            await page.mouse.wheel(-sgn * 260, 0); await page.wait_for_function(f"{M}.mb.page === 0 && Math.abs($('mbPager').scrollLeft) < 2", timeout=4000)
+            check(tg + ': ... and the other way back to page 1', (await page_of(page))['seen'] == LITTLE[0])
+            await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
+            check(tg + ': Escape: back to Big kids', await page.evaluate("$('start').dataset.room === 'big' && !$('bigRoom').hidden && localStorage.getItem('grasp.room') === 'big'"))
+            check(tg + ' paging: no page errors', not errs, errs); await ctx.close()
+
+        # ===== 4. the parents' gate: a 2 s hold, then 7 + 5 =====
+        ctx, page, errs = await fresh(b)
+        await page.tap('#lockBtn'); await page.wait_for_function("!$('gate').hidden", timeout=3000); await page.wait_for_timeout(850)
+        check('the lock opens the gate (not the settings): step 1, the ring empty', await page.evaluate(f"{M}.mb.gate.step === 1 && $('moreSheet').hidden && $('gateRing').getAttribute('stroke-dashoffset') === '283' && !$('gateHoldStep').hidden && $('gateQStep').hidden"))
+        q = await page.evaluate("(() => { const r = $('gateHold').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+        await page.tap('#gateHold'); await page.wait_for_timeout(300)
+        check('a tap on the lock is not enough', await page.evaluate(f"{M}.mb.gate.step === 1"))
+        await page.mouse.move(q[0], q[1]); await page.mouse.down(); await page.wait_for_timeout(1000)
+        mid = await page.evaluate("+$('gateRing').getAttribute('stroke-dashoffset')")
+        await page.mouse.up(); await page.wait_for_timeout(250)
+        check('holding 1 s fills the ring part way; letting go early: the ring empties, still step 1', 60 < mid < 270 and await page.evaluate(f"{M}.mb.gate.step === 1 && $('gateRing').getAttribute('stroke-dashoffset') === '283' && $('moreSheet').hidden"), mid)
+        await page.mouse.down(); await page.wait_for_timeout(2250); await page.mouse.up(); await page.wait_for_timeout(200)
+        check('holding 2 s: the question "What is 7 + 5?" with 3 big answers', await page.evaluate(f"{M}.mb.gate.step === 2 && !$('gateQStep').hidden && $('gateQStep').querySelector('p').textContent === 'What is 7 + 5?' && [...$('gateOpts').children].every(b => b.getBoundingClientRect().height >= 60)"))
+        await page.screenshot(path=OUT + 'menub_gate_q_en.png')
+        await page.tap('#gateOpts [data-ans="10"]'); await page.wait_for_timeout(120)
+        check('a wrong answer (10): a shake ...', await page.evaluate("$('gateOpts').classList.contains('shake') && $('moreSheet').hidden"))
+        await page.wait_for_function(f"{M}.mb.gate.step === 1", timeout=2000)
+        check('... and back to the hold step (no settings)', await page.evaluate("$('moreSheet').hidden && !$('gate').hidden"))
+        await page.mouse.move(q[0], q[1]); await page.mouse.down(); await page.wait_for_timeout(2250); await page.mouse.up(); await page.wait_for_timeout(200)
+        await page.tap('#gateOpts [data-ans="12"]'); await page.wait_for_timeout(400)
+        check('hold 2 s + 12: the settings sheet (language, touch / camera, sound, voice, install, Tremorti); the gate closed', await page.evaluate("!$('moreSheet').hidden && $('gate').hidden && !!$('tremortiLink') && $('lockBtn').getAttribute('aria-expanded') === 'true'"))
+        await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
+        await page.tap('#lockBtn'); await page.wait_for_timeout(450); await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
+        check('Escape closes the gate', await page.evaluate("$('gate').hidden && $('lockBtn').getAttribute('aria-expanded') === 'false'"))
+        await page.tap('#lockBtn'); await page.wait_for_timeout(450); await page.evaluate("$('gate').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))"); await page.wait_for_timeout(200)
+        check('a tap beside the gate closes it', await page.evaluate("$('gate').hidden"))
+        # the one-tap sound button stays on the start screen
+        await page.tap('#startSound'); await page.wait_for_timeout(100)
+        check('the sound sticker: one tap = muted (saved), its picture changes', await page.evaluate("muted === true && localStorage.getItem('muted') === '1' && $('startSound').getAttribute('aria-pressed') === 'false' && getComputedStyle($('startSound').querySelector('.off')).display !== 'none'"))
+        await page.tap('#startSound'); await page.wait_for_timeout(100)
+        check('... and back on', await page.evaluate("muted === false"))
+        check('gate: no page errors', not errs, errs); await ctx.close()
+
+        # ===== 5. motion and sound: squash + boing, pitched blips (and silence when muted), the idle wiggle, the background; reduced motion =====
+        ctx, page, errs = await fresh(b)
+        await page.tap('#bigBtn'); await page.wait_for_timeout(200)  # (a first gesture: the AudioContext runs)
+        await page.evaluate("$('start').querySelector('[data-mode=smash]').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 7, isPrimary: true }))")
+        pr = await page.evaluate("({ pr: document.querySelector('#start [data-mode=smash]').classList.contains('mbPr'), tf: getComputedStyle(document.querySelector('#start [data-mode=smash]')).transform })")
+        await page.evaluate("document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 7 }))")
+        bo = await page.evaluate("({ bo: document.querySelector('#start [data-mode=smash]').classList.contains('mbBo'), an: getComputedStyle(document.querySelector('#start [data-mode=smash]')).animationName })")
+        check('a press squashes the sticker (scale .92); the release boings', pr['pr'] and bo['bo'] and bo['an'] == 'mbBoing', [pr, bo])
+        keys = ['strike', 'smash', 'slice', 'arcade', 'camera', 'busy', 'shapes', 'sandbox', 'calm', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'drums', 'bubbles', 'paint', 'stars', 'frenzy', 'daily', 'endless']
+        fs = await page.evaluate(f"{json.dumps(keys)}.map(k => Math.round({M}.pitch(k)))")
+        check('the blips are pitched per game (a pentatonic note from its name: ' + str(len(set(fs))) + ' different notes for 21 games)', len(set(fs)) >= 6, fs)
+        bl = await page.evaluate(f"{M}.mb.blips.slice(-2)")
+        st = await page.evaluate("audio && audio.state")
+        check('the press blip played (the Sound on, the audio running)', st != 'running' or (bl and bl[-1]['k'] == 'smash' and bl[-1]['kind'] == 'press' and bl[-1]['played']), [st, bl])
+        await page.evaluate("setMuted(true)")
+        await page.evaluate("$('start').querySelector('#arcadeBtn').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))")
+        check('muted: no blip plays (logged as silent)', await page.evaluate(f"{M}.mb.blips.slice(-1)[0].k === 'arcade' && {M}.mb.blips.slice(-1)[0].played === false"))
+        await page.evaluate("document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); setMuted(false)")
+        w0 = await page.evaluate(f"{M}.mb.wig"); await page.wait_for_timeout(4300)
+        w1 = await page.evaluate(f"{M}.mb.wig")
+        k = await page.evaluate(f"{M}.wiggle()")
+        check('the idle wiggle: a random sticker every ~2 s (' + str(w1 - w0) + ' in 4.3 s)', 1 <= w1 - w0 <= 3 and k and await page.evaluate("!!document.querySelector('#start .stk.mbWiggle')"), [w0, w1, k])
+        mo = await page.evaluate("({ bg: getComputedStyle($('start')).animationName, bob: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName })")
+        check('the background drifts, Bubu bobs, the ▶ pulses', mo == {'bg': 'mbBg', 'bob': 'mbBob', 'go': 'mbPulse'}, mo)
+        check('motion: no page errors', not errs, errs); await ctx.close()
+        ctx, page, errs = await fresh(b, rm='reduce')
+        await page.wait_for_timeout(2300)
+        rm = await page.evaluate(f"({{ wig: {M}.mb.wig, w: {M}.wiggle(), bg: getComputedStyle($('start')).animationName, bob: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName }})")
+        check('reduced motion: no wiggle, no drifting background, no bob, no pulse', rm['wig'] == 0 and rm['w'] is None and rm['bg'] == 'none' and rm['bob'] == 'none' and rm['go'] == 'none', rm)
+        await page.tap('#bubuBtn'); await page.wait_for_timeout(100)
+        check('reduced motion: Bubu still says "Hi!" (no jump)', await page.evaluate("$('bubuSay').classList.contains('show') && !$('bubuBtn').classList.contains('jump')"))
+        check('reduced motion: no page errors', not errs, errs); await ctx.close()
+
+        # ===== 6. phase 1 guarantees on the new screen: the double-tap guard on the room switch; the camera's dwell selects stickers =====
+        ctx, page, errs = await fresh(b, init="window.__graspTapGuard = true;")
+        await page.wait_for_timeout(800)
+        q = await page.evaluate("(() => { const r = $('littleBtn').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+        r2 = await page.evaluate(f"(() => {{ {M}.room('little', true); const r = document.querySelector('#littlePick [data-mode=busy]').getBoundingClientRect(); {M}.room('big', true); return [r.left + r.width / 2, r.top + 40]; }})()")  # (where the first sticker will be)
+        await page.wait_for_timeout(700)  # (past the guard of that programmatic switch)
+        await page.evaluate("window.__downs = []; document.addEventListener('pointerdown', (e) => __downs.push(performance.now()), true)")
+        await page.touchscreen.tap(q[0], q[1]); await page.touchscreen.tap(r2[0], r2[1]); await page.wait_for_timeout(1300)  # (a quick double tap: the room switches under the finger)
+        g = await page.evaluate("({ gap: __downs.length > 1 ? __downs[1] - __downs[0] : null, mode, start: !$('start').hidden, room: $('start').dataset.room, log: tapg.log.slice(-3) })")
+        check('double-tap guard: a second tap right after the room switch (' + str(round(g['gap'] or 0)) + ' ms) lands on a sticker and is swallowed (no game starts)', g['room'] == 'little' and (g['gap'] is not None and g['gap'] >= 450 or (g['mode'] == 'none' and g['start'] and any(x.startswith('eat:') for x in g['log']))), g)
+        check('guard: no page errors', not errs, errs); await ctx.close()
+        ctx, page, errs = await fresh(b, mobile=False, w=1280, h=800, camera=True, init="localStorage.setItem('inputPref','camera');")
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
+        await page.wait_for_function("__grasp.panelfix.homeCam.on", timeout=15000)
+        await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(300)
+        r = await page.evaluate("(() => { const q = $('littleBtn').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")
+        await page.evaluate(f"window.__handFor = () => handAt({r[0]}, {r[1]}, 0.8)")
+        await page.wait_for_function("!$('littlePick').hidden", timeout=8000)
+        check('camera: the hand held over "Little ones" switches the room', 'littleBtn' in await page.evaluate("__grasp.panelfix.homeCam.clicks"))
+        r = await page.evaluate("(() => { const q = document.querySelector('#littlePick [data-mode=shapes]').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")
+        await page.evaluate(f"window.__handFor = () => handAt({r[0]}, {r[1]}, 0.8)")
+        await page.wait_for_function("gameMode === 'shapes' && mode !== 'none'", timeout=12000)
+        check('camera: ... and over a Little ones sticker it opens that game', 'shapes' in await page.evaluate("__grasp.panelfix.homeCam.clicks"))
+        check('camera dwell: no page errors', not errs, errs); await ctx.close()
+
+        await b.close()
+    print('FAILURES:', check.fails)
+asyncio.run(main()); srv.terminate()
+if check.fails: sys.exit(1)

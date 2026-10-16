@@ -192,7 +192,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':360,'height':740}, device_scale_factor=3, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(600)
-        await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.wait_for_timeout(300)  # (home2: Easy / Normal moved to the Adventure map's header)
+        await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.wait_for_timeout(300)  # (home2: Easy / Normal moved to the Adventure map's header)
         d = await page.evaluate("(() => { const r = $('strikeDiff').getBoundingClientRect(), h = document.querySelector('#advMap .amHead').getBoundingClientRect(), bs = [...$('strikeDiff').querySelectorAll('button')].map(b => b.getBoundingClientRect()); return { hidden: $('strikeDiff').hidden, diff: __grasp.strike.diff, pressed: $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff, inHead: r.top >= h.top - 1 && r.bottom <= h.bottom + 1, big: bs.every(q => q.height >= 44 && q.width >= 44), fits: r.left >= 0 && r.right <= innerWidth, onStart: !!document.querySelector('#start #strikeDiff') }; })()")
         check('home2: the Easy / Normal toggle sits in the Adventure map header (>= 44 px), Easy by default; not on the start screen', not d['hidden'] and d['diff'] == 'easy' and d['pressed'] == 'easy' and d['inHead'] and d['big'] and d['fits'] and not d['onStart'], d)
         await page.tap('#strikeDiff button[data-diff=normal]'); await page.wait_for_timeout(100)
@@ -200,7 +200,7 @@ async def main():
         await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(200)  # (back to the start screen: the address back to /)
         await page.reload(); await page.wait_for_timeout(600)
         check('difficulty persists across a reload', await page.evaluate("__grasp.strike.diff === 'normal' && $('strikeDiff').querySelector('[aria-pressed=true]').dataset.diff === 'normal'"))
-        await page.evaluate("$('mouseBtn').click()"); await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
+        await page.evaluate("$('mouseBtn').click()"); await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(300)
         check('Normal round starts with 3 lives', await page.evaluate("__grasp.strike.lives === 3 && __grasp.strikeParams().speed === 1.1"))
         await page.screenshot(path='tests/out/chrome_phone_strike_normal.png')
         check('difficulty: no page errors', not errs, errs); await ctx.close()

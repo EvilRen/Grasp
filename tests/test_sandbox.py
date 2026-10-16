@@ -3,7 +3,9 @@ from playwright.async_api import async_playwright
 import socket as _sk
 class _NoSrv:
     def terminate(self): pass
-if _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
+import os as _os
+_DEV = int(_os.environ.get('GRASP_DEV_PORT', '0'))  # a developer's own server (python3 tests/serve.py PORT): the pages keep the localhost:8765 origin, their requests go to PORT
+if _DEV or _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
 else: srv = subprocess.Popen(['python3','tests/serve.py','8765'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
 MATTER = open('tests/vendor/matter.min.js').read(); THREE = open('tests/vendor/three.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
 async def routes(page):
@@ -15,6 +17,7 @@ async def routes(page):
         if '.wasm' in u or 'hand_landmarker.task' in u: return await route.fulfill(status=200, body=b'x'*2048, headers={'Access-Control-Allow-Origin':'*'})
         if 'fonts.g' in u: return await route.fulfill(status=200, body='')
         if '/_blob/probe' in u: return await route.fulfill(status=200, body='')
+        if _DEV and '://localhost:8765/' in u: return await route.continue_(url=u.replace('://localhost:8765/', '://127.0.0.1:%d/' % _DEV))
         return await route.continue_()
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
@@ -27,6 +30,9 @@ START_MOUSE = "(() => { if (mode !== 'none') return; setInputPref('mouse'); docu
 import os
 GFX = os.environ.get('GRASP_GFX', '2d')
 INIT += "window.__graspGfx = { mode: '2d' };" if GFX == '2d' else "window.__graspGfx = { pr: 0.12, shadows: false, auto: false };"
+# The pet's 3D dragon (WebGL, loaded when a pet view shows): the suites keep the 2D pet (its fallback art) unless GRASP_PET3D=1; test_pet3d.py turns
+# it on itself (SwiftShader is a CPU rasterizer: a WebGL pet in every suite would only add load)
+INIT += "window.__graspPet3d = { off: true };" if os.environ.get('GRASP_PET3D') != '1' else "window.__graspPet3d = { pr: 1, lowFps: 0 };"
 HAND_JS = """
 window.mkHand = (ax, ay, pd) => {  // ax, ay: pinch anchor in camera coords (0..1, NOT mirrored); pd: pinch distance / hand size
   const L = Array.from({length:21}, () => ({x: ax, y: ay + 0.12, z: 0}));

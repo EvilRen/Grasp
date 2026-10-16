@@ -16,7 +16,7 @@ HIT = """((n, tier) => { const s = __grasp.strike, out = []; for (let i = 0; i <
 async def frenzy_start(page, click=True):
     if click:
         await page.evaluate("profile.adv.unlocked = 1; saveProfile(); setInputPref('mouse')")
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
         await page.click('#advFrenzy')
     await page.wait_for_function(f"{F}.on && gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
     await page.evaluate(f"__grasp.CONFIG.STRIKE_PU_RATE = 0; {S}.guestEvery = 0")
@@ -98,7 +98,7 @@ async def main():
 
         # ===== F1: Frenzy from the map (EN) =====
         ctx, page, errs = await fresh(b)
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
         mb = await page.evaluate("(() => { const e = $('advFrenzy'), r = e.getBoundingClientRect(), n = $('advEndless').getBoundingClientRect(); return { text: e.innerText.replace(/\\s+/g, ' ').trim(), h: r.height, inScreen: r.right <= innerWidth + 1 && r.left >= -1 && r.bottom <= innerHeight + 1, sameRow: Math.abs((r.top + r.bottom) / 2 - (n.top + n.bottom) / 2) < 30 }; })()")
         check('the map footer has a Frenzy button ("Frenzy" / "Faster and faster!"); home2: Endless stays hidden until world 2, Frenzy is always there', 'Frenzy' in mb['text'] and 'Faster and faster' in mb['text'] and mb['h'] >= 44 and mb['inScreen'] and await page.evaluate("$('advEndless').hidden"), mb)
         await page.click('#advFrenzy'); await frenzy_start(page, click=False)
@@ -138,7 +138,7 @@ async def main():
         await page.evaluate("endCardAction('home', performance.now())"); await page.wait_for_timeout(400)
         hm = await page.evaluate(f"({{ on: {F}.on, path: location.pathname, mode }})")
         check('Home leaves Frenzy (and the address bar goes back to where the game was entered from)', not hm['on'] and hm['path'] in ('/', '/index.html') and hm['mode'] == 'none', hm)
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000)
         sub = await page.evaluate("$('advFrenzySub').textContent")
         check('the map\'s Frenzy button shows the best under it ("Best: 65 in a row")', sub == 'Best: 65 in a row', sub)
         await page.evaluate("$('advEndless').click()"); await page.wait_for_function(f"gameMode === 'strike' && mode === 'mouse' && {S}.walls.length === 4", timeout=10000)
@@ -168,7 +168,7 @@ async def main():
             tag = ('he' if he else 'en') + '_phone' + ('_3d' if g3 else '')
             ctx, page, errs = await fresh(b, mobile=True, he=he, gfx="{ pr: 0.2, shadows: false, auto: false }" if g3 else None)
             await page.evaluate("profile.frenzy = { best: 42, top: 2.6, runs: 5 }; saveProfile(); setInputPref('mouse')")
-            await page.tap('.modes button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000); await page.wait_for_timeout(300)
+            await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("advMapOpen()", timeout=8000); await page.wait_for_timeout(300)
             mp = await page.evaluate("(() => { const e = $('advFrenzy').getBoundingClientRect(), n = $('advEndless').getBoundingClientRect(); return { f: [e.left, e.right, e.bottom, e.height], n: [n.left, n.right], W: innerWidth, H: innerHeight, sub: $('advFrenzySub').textContent, noX: document.documentElement.scrollWidth <= innerWidth + 1 }; })()")
             check(tag + ': the map footer fits the phone: Endless and Frenzy side by side, both inside the screen, the best under Frenzy', mp['f'][0] >= -1 and mp['f'][1] <= mp['W'] + 1 and mp['n'][0] >= -1 and mp['n'][1] <= mp['W'] + 1 and mp['f'][2] <= mp['H'] + 1 and mp['f'][3] >= 44 and mp['noX'] and ('42' in mp['sub']), mp)
             if not g3: await page.screenshot(path=f'tests/out/frenzy_map_{tag}.png')

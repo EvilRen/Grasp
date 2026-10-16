@@ -75,7 +75,7 @@ async def main():
         ctx, page, errs = await fresh(b)
         d0 = await page.evaluate(DAILY_SEQ)
         await page.evaluate("goHome()"); await page.evaluate(f"{P}.adv.unlocked = 40; __grasp.setPlayerLevel(1)")
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
         await page.click('.anode[data-n="25"]'); await page.wait_for_function(f"{A}.on && {A}.stage === 25 && mode === 'mouse' && {S}.walls.length", timeout=8000)
         o1 = await page.evaluate(OPENING + "(25)")
         await page.evaluate("Math.random = () => 0.5")
@@ -95,7 +95,7 @@ async def main():
         # ---- the goal: break every wall; no more come; HUD pips; the stars rule; coins (first clear vs replay); fail + Try again; Next; Map ----
         ctx, page, errs = await fresh(b, init="localStorage.setItem('inputPref','mouse');")
         await page.evaluate("__grasp.setPlayerLevel(60)")  # (no level-up coins in the way of the coin checks)
-        await page.click('.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
+        await page.click('#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
         mp = await page.evaluate(MAP)
         check('fresh profile: stage 1 is the current stop, everything else locked', mp['cur'] == 1 and [n['n'] for n in mp['nodes'] if not n['locked']] == [1], mp['cur'])
         await page.click('#advPath .anode[data-n="2"]', force=True)  # (aria-disabled: Playwright would wait for it to be enabled)
@@ -175,7 +175,7 @@ async def main():
         for mobile, he, name in ((True, False, 'phone_en'), (True, True, 'phone_he'), (False, False, 'desktop')):
             stars = "{1:3,2:3,3:2,4:1,5:3,6:2,7:3,8:3,9:2,10:1,11:3}"
             ctx, page, errs = await fresh(b, mobile, he, init=f"if (!sessionStorage.getItem('s')) {{ sessionStorage.setItem('s', '1'); localStorage.setItem('grasp.profile', JSON.stringify({{ v: 1, coins: 0, xp: 0, adv: {{ stars: {stars}, unlocked: 12 }} }})); }}")
-            await tap(page, mobile, '.modes button[data-mode=strike]')
+            await tap(page, mobile, '#start button[data-mode=strike]')
             await page.wait_for_function(A + ".mapOpen"); await page.wait_for_timeout(500)
             m = await page.evaluate(MAP)
             nd = {n['n']: n for n in m['nodes']}
@@ -201,14 +201,14 @@ async def main():
 
         # ---- Endless: the old run, exactly as before ----
         ctx, page, errs = await fresh(b)
-        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+        await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         await page.wait_for_function(f"mode === 'mouse' && gameMode === 'strike' && {S}.walls.length === 4", timeout=8000)
         en = await page.evaluate(f"({{ on: {A}.on, level: {S}.level, goal: {S}.goal, lives: {S}.lives, gate: {S}.gate, map: {A}.mapOpen, pill: {S}.ui.advPill }})")
         await page.evaluate(DOWN); await page.wait_for_timeout(100)
         en['after'] = await page.evaluate(f"({{ walls: {S}.walls.length, prog: {S}.progress }})")
         check('Endless: the old run (level 1, goal 4 walls of the level, the world-1 gate, the walls pill not the stage pill), and a broken wall is replaced', not en['on'] and en['level'] == 1 and en['goal'] == 4 and en['gate'] == 6 and not en['map'] and en['pill'] is None and en['after'] == {'walls': 4, 'prog': 1}, en)
         await page.evaluate(f"goHome(); __grasp.worlds.unlocked = 2")
-        await page.click('.modes button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(200)
+        await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()"); await page.wait_for_timeout(200)
         check('Endless with a second world open: the old world map, as before', await page.evaluate("!$('worldMap').hidden && mode === 'none'") and not await page.evaluate(A + ".mapOpen"))
         await page.click('#wmap .wnode[data-world="2"]'); await page.wait_for_function(f"mode === 'mouse' && {S}.walls.length", timeout=8000)
         check('...and its world 2 checkpoint start', await page.evaluate(f"{S}.level") == 7 and not await page.evaluate(A + ".on"))
@@ -218,7 +218,7 @@ async def main():
 
         # ---- world travel after a boss stage: 2D (state + pixels), then the map rising to the new world's first stop ----
         ctx, page, errs = await fresh(b, True)
-        await page.evaluate(f"{P}.adv.unlocked = 8"); await tap(page, True, '.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
+        await page.evaluate(f"{P}.adv.unlocked = 8"); await tap(page, True, '#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
         await tap(page, True, '#advPath .anode[data-n="8"]')
         await page.wait_for_function(f"{A}.on && {A}.stage === 8 && {S}.boss && {S}.boss.real", timeout=8000)  # (a boss stage is the boss itself: no walls)
         bs = await page.evaluate(f"(() => {{ const s = {S}; s.balls.length = 0; s.waiting = false; s.serveAt = performance.now() + 60000; const n = {A}.plan(8).walls; for (let i = 0; i < n; i++) {{ const w = s.walls.slice().sort((a, b) => a.z - b.z)[0]; if (w) wallDown(w, performance.now()); }} return {{ boss: !!s.boss, phase: {A}.phase, walls: s.walls.length, spawned: {A}.spawned, next: s.next }}; }})()")
@@ -253,7 +253,7 @@ async def main():
 
         # ---- world travel on the WebGL renderer: the 3D corridor re-themes, no errors ----
         ctx, page, errs = await fresh(b, gfx="{ pr: 0.12, shadows: false, auto: false }")
-        await page.evaluate(f"{P}.adv.unlocked = 16"); await page.click('.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
+        await page.evaluate(f"{P}.adv.unlocked = 16"); await page.click('#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen")
         await page.click('#advPath .anode[data-n="16"]')
         try: await page.wait_for_function(f"{S}.gfx === '3d' && {A}.stage === 16 && {S}.boss", timeout=25000); g3 = True
         except Exception: g3 = False
@@ -271,7 +271,7 @@ async def main():
 
         # ---- persistence: the stars and the frontier survive a reload; an old profile keeps its worlds; broken data is cleaned ----
         ctx, page, errs = await fresh(b)
-        await page.evaluate(f"{P}.adv.unlocked = 3"); await page.click('.modes button[data-mode=strike]'); await page.click('#advPath .anode[data-n="3"]')
+        await page.evaluate(f"{P}.adv.unlocked = 3"); await page.click('#start button[data-mode=strike]'); await page.click('#advPath .anode[data-n="3"]')
         await page.wait_for_function(f"{A}.on && {A}.stage === 3", timeout=8000); await page.evaluate(f"{A}.finishTest(1)")
         await page.reload(); await page.wait_for_timeout(500)
         pr = await page.evaluate(f"({{ stars: {A}.stars, unl: {A}.unlocked, total: {A}.total, raw: JSON.parse(localStorage.getItem('grasp.profile')).adv }})")
@@ -280,7 +280,7 @@ async def main():
         ctx, page, errs = await fresh(b, True, init="if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', '1'); localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, coins: 70, xp: 900, worlds: { unlocked: 3, last: 3 } })); }")
         old = await page.evaluate(f"({{ unl: {A}.unlocked, open: {A}.open, p: [1, 2, 9, 10, 17, 18].map(n => {A}.playable(n)), cur: {A}.current, coins: {P}.coins, worlds: {P}.worlds.unlocked }})")
         check('an old profile with worlds 1-3 open (no Adventure data): stages 1, 9 and 17 open, the furthest (17) current; nothing else lost', old['unl'] == 1 and old['open'] == [9, 17] and old['p'] == [True, False, True, False, True, False] and old['cur'] == 17 and old['coins'] == 70 and old['worlds'] == 3, old)
-        await tap(page, True, '.modes button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen"); await page.wait_for_timeout(300)
+        await tap(page, True, '#start button[data-mode=strike]'); await page.wait_for_function(A + ".mapOpen"); await page.wait_for_timeout(300)
         m = await page.evaluate(MAP); nd = {n['n']: n for n in m['nodes']}
         check('...and its map: stops 1, 9, 17 open, 17 current', [n for n in nd if not nd[n]['locked']] == [1, 9, 17] and m['cur'] == 17 and m['curIn'], m['cur'])
         await tap(page, True, '#advPath .anode[data-n="9"]'); await page.wait_for_function(f"{A}.on && {A}.stage === 9", timeout=8000)

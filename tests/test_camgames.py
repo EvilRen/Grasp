@@ -67,10 +67,10 @@ async def home(page):
     await page.evaluate("goHome()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=5000)
 
 START = """(() => { const st = $('start'), r = (el) => { const q = el.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; };
-  const tiles = [...document.querySelectorAll('#start .modes button:not(.camTile)')].map(b => r(b)), cam = r($('camGamesBtn')), tab = r($('tabBar')), lit = r($('littleBtn'));  // (home2: the hero + Smash · Slice · Arcade, then Camera games · Little ones, the tab bar)
-  const tx = $('camGamesBtn').querySelector('.ctTx b');
+  const tiles = [...document.querySelectorAll('#start .mbGrid button:not(#camGamesBtn)')].map(b => r(b)), cam = r($('camGamesBtn')), tab = r($('tabBar')), lit = r($('arcadeBtn'));  // (menu B: the hero + Map, Smash · Slice, then Arcade · Camera games, the dock)
+  const tx = $('camGamesBtn').querySelector('.lb');
   return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, W: innerWidth, H: innerHeight, tiles, cam, tab, lit,
-    label: tx.textContent, labelFits: tx.scrollWidth <= tx.clientWidth + 1, icons: $('camGamesBtn').querySelectorAll('.ctIcons svg').length }; })()"""
+    label: tx.textContent, labelFits: tx.scrollWidth <= tx.clientWidth + 1, icons: $('camGamesBtn').querySelectorAll('.ic svg').length }; })()"""
 
 async def main():
     async with async_playwright() as p:
@@ -85,12 +85,12 @@ async def main():
                 L = await page.evaluate(START)
                 inside = lambda q: q['l'] >= 0 and q['t'] >= 0 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5 and q['w'] > 0
                 chk(f'{tag}: the start screen has no scroll with the Camera games tile', L['noScroll'], L)
-                chk(f'{tag}: the hero, the tiles, the Camera games tile and the tab bar all on screen', len(L['tiles']) == 6 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
-                chk(f'{tag}: home2: the Camera games tile in the grid\'s second row beside Little ones (>= 44 px), above the tab bar, named, 4 icons', abs(L['cam']['t'] - L['lit']['t']) < 2 and L['cam']['h'] >= 44 and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 4, L)
+                chk(f'{tag}: the hero, the tiles, the Camera games tile and the tab bar all on screen', len(L['tiles']) == 5 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
+                chk(f'{tag}: menu B: the Camera games sticker in the grid\'s second row beside Arcade (>= 44 px), above the dock, named, its one drawing', abs(L['cam']['t'] - L['lit']['t']) < 12 and L['cam']['h'] >= 44 and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 1, L)
                 await page.screenshot(path=OUT + f'cam_start_{sfx}.png')
                 await press(page, mobile, '#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=4000); await page.wait_for_timeout(350)
                 pk = await page.evaluate("""(() => { const s = $('cgPick').querySelector('.sheet').getBoundingClientRect(), cards = [...$('cgPick').querySelectorAll('[data-cg]')];
-                  return { box: [s.left, s.top, s.right, s.bottom], W: innerWidth, H: innerHeight, cards: cards.map(c => [c.dataset.cg, c.querySelector('b').textContent, c.getBoundingClientRect().height]), cam: !$('cgPickCam').hidden, camText: $('cgPickCam').textContent }; })()""")
+                  return { box: [s.left, s.top, s.right, s.bottom], W: innerWidth, H: innerHeight, cards: cards.map(c => [c.dataset.cg, c.querySelector('.lb').textContent, c.getBoundingClientRect().height]), cam: !$('cgPickCam').hidden, camText: $('cgPickCam').textContent }; })()""")
                 chk(f'{tag}: the picker: four games, named, the sheet on screen', [c[0] for c in pk['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c[1] and c[2] >= 90 for c in pk['cards']) and pk['box'][0] >= 0 and pk['box'][2] <= pk['W'] and pk['box'][3] <= pk['H'], pk)
                 chk(f'{tag}: the picker has no extra camera banner (panel fix: the camera prompt asks once per device instead)', not pk['cam'], pk)
                 if mobile: await page.screenshot(path=OUT + f"cam_picker_{'he' if he else 'en'}.png")
