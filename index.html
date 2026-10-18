@@ -13026,7 +13026,7 @@ $('muteBtn').addEventListener('click', () => setMuted(!muted));
 function audioInit() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-    if (!audio) audio = new AC();
+    if (!audio) { try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch {} audio = new AC(); } // (iPhone: 'playback' = Web Audio plays with the ring / silent switch on)
     if (audio.state === 'suspended') { audioIdle.sus = false; audio.resume().catch(() => {}); }
   } catch {}
 }
@@ -19148,8 +19148,9 @@ window.__grasp.tg = { modes: TG_MODES, TG, AN, tg, an, PZ, pz, pzNext: () => { p
   anAt, anAsk: (k) => anAskStart(performance.now(), k), demoOn: tgDemoOn, synth: tgSynth, syn: TG_SYN };
 
 /* ---------------- Pop It (/popit): the silicone fidget toy. Glossy rainbow boards drawn in code (a slab with a rim and a side wall, each bubble a
-   dome with a specular highlight and a soft shadow; a popped one a concave dimple), a pop = a synthesized "plop" (a noise click + a pitched body,
-   pitch by size and colour, slightly random), a squash, a few specks, navigator.vibrate(8). Several fingers at once; a finger sliding over the
+   dome with a specular highlight and a soft shadow; a popped one a deep cup), big bubbles (the square board 4 x 4; the same size on every board).
+   The feel (the owner's pick in the feel lab): a pop on touch = the crisp sound B (a bright click + a tiny pitched body), a squash, a burst of bits
+   + a white ring, the board flexing under the fingers (a damped spring, a kick per pop), navigator.vibrate(10) (iPhone: the switch haptic). Several fingers at once; a finger sliding over the
    bubbles pops each one it passes. All popped = "FLIP!": the board turns over (the dimples are domes on the other side, the board mirrored).
    Modes: Free (endless, the default; the Little ones tile), Race (a timer from the first pop, a best and 3 stars per board), Colours ("Pop the blue
    ones!": a wrong colour springs back with a boing, never a fail), Remember (Simon: bubbles light up in order, repeat; a mistake replays; in the kid
@@ -19157,7 +19158,7 @@ window.__grasp.tg = { modes: TG_MODES, TG, AN, tg, an, PZ, pz, pzNext: () => { p
    PI.unlockEvery flips or a 3-star race ("New board!"), kept in profile.popit (piValidate). A gameMode of the Little ones frame (tgOn) with its own
    multi-touch input (piPtrDown / Move / Up). The Arcade row opens the mode picker (pi.flow 'kid'); the Little ones tile and /popit open Free mode.
    Hooks: __grasp.popit. ---------------- */
-const PI = { minR: 22, maxN: 40, flipMs: 1150, flipDelay: 380, unlockEvery: 3, hintIdleMs: 5000, backMs: 300, simonOn: 520, simonGap: 240, simonStart: 2, colorNextMs: 1500, raceT3: 0.24, raceT2: 0.5, armMs: 380, revealArmMs: 700 };
+const PI = { minR: 22, maxN: 40, bubK: 0.9 / 4 * 0.45, pitchK: 0.45, minN: 8, popGain: 1.3, vibPop: 10, vibFlip: 30, raceMin3: 3000, raceMin2: 6000, flipMs: 1150, flipDelay: 380, unlockEvery: 3, hintIdleMs: 5000, backMs: 300, simonOn: 520, simonGap: 240, simonStart: 2, colorNextMs: 1500, raceT3: 0.24, raceT2: 0.5, armMs: 380, revealArmMs: 700 };
 const PI_RAINBOW = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 const PI_HEX = { red: '#ff4f64', orange: '#ff9a3c', yellow: '#ffd23f', green: '#3ccf7c', blue: '#3d9cff', purple: '#a66bff' };
 const PI_NEON = { red: '#ff4f9a', orange: '#ffb340', yellow: '#efff5a', green: '#46ffa8', blue: '#46e4ff', purple: '#c77dff' };
@@ -19170,25 +19171,25 @@ function piPolyNorm(pts) { // scale a point list to u 0..1 (keeping its aspect),
 const PI_HEART = piPolyNorm(Array.from({ length: 72 }, (_, i) => { const a = i / 72 * TAU; return [16 * Math.pow(Math.sin(a), 3), -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a))]; }));
 const PI_STAR = piPolyNorm(Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 0.56 : 1; return [Math.cos(a) * r, Math.sin(a) * r]; }));
 /* the shapes in unit coords (u 0..1 across, v 0..ar down; one unit = the board's width). prims: ['e', cx, cy, rx, ry, rot] | ['r', x, y, w, h, radius] |
-   ['p', points]; their union is the board. n: the bubbles wanted (fewer when they would be under PI.minR px); excl: [u, v, r] spots kept free (eyes). */
+   ['p', points]; their union is the board. Every board has the same big bubbles (piFit / piUnit: the square board's 4 x 4); excl: [u, v, r] spots kept free (eyes). */
 const PI_SHAPES = {
-  square: { ar: 1, grid: 'sq', n: 36, prims: [['r', 0, 0, 1, 1, 0.11]] },
-  circle: { ar: 1, n: 30, prims: [['e', 0.5, 0.5, 0.5, 0.5, 0]] },
-  heart: { ar: PI_HEART.reduce((m, p) => Math.max(m, p[1]), 0), n: 28, prims: [['p', PI_HEART]] },
-  star: { ar: PI_STAR.reduce((m, p) => Math.max(m, p[1]), 0), n: 22, prims: [['p', PI_STAR], ['e', 0.5, 0.53, 0.3, 0.29, 0]] },
-  butterfly: { ar: 0.9, n: 30, prims: [['e', 0.27, 0.32, 0.27, 0.3, -0.35], ['e', 0.73, 0.32, 0.27, 0.3, 0.35], ['e', 0.29, 0.7, 0.2, 0.19, 0.5], ['e', 0.71, 0.7, 0.2, 0.19, -0.5], ['e', 0.5, 0.5, 0.075, 0.36, 0]], deco: 'butterfly' },
-  octopus: { ar: 1.02, n: 28, prims: [['e', 0.5, 0.37, 0.42, 0.36, 0], ['r', 0.08, 0.42, 0.84, 0.3, 0.12], ['e', 0.16, 0.78, 0.12, 0.2, 0.3], ['e', 0.39, 0.83, 0.11, 0.19, 0.08], ['e', 0.61, 0.83, 0.11, 0.19, -0.08], ['e', 0.84, 0.78, 0.12, 0.2, -0.3]], excl: [[0.36, 0.3, 0.075], [0.64, 0.3, 0.075]], deco: 'octopus' },
-  dino: { ar: 0.84, n: 26, prims: [['e', 0.43, 0.53, 0.4, 0.31, 0], ['p', [[0.16, 0.42], [0.0, 0.66], [0.03, 0.7], [0.24, 0.64]]], ['p', [[0.6, 0.4], [0.7, 0.13], [0.86, 0.13], [0.78, 0.52]]], ['e', 0.83, 0.15, 0.15, 0.1, -0.1], ['r', 0.2, 0.58, 0.14, 0.26, 0.06], ['r', 0.52, 0.58, 0.14, 0.26, 0.06],
+  square: { ar: 1, grid: 'sq', prims: [['r', 0, 0, 1, 1, 0.11]] },
+  circle: { ar: 1, prims: [['e', 0.5, 0.5, 0.5, 0.5, 0]] },
+  heart: { ar: PI_HEART.reduce((m, p) => Math.max(m, p[1]), 0), prims: [['p', PI_HEART]] },
+  star: { ar: PI_STAR.reduce((m, p) => Math.max(m, p[1]), 0), prims: [['p', PI_STAR], ['e', 0.5, 0.53, 0.3, 0.29, 0]] },
+  butterfly: { ar: 0.9, prims: [['e', 0.27, 0.32, 0.27, 0.3, -0.35], ['e', 0.73, 0.32, 0.27, 0.3, 0.35], ['e', 0.29, 0.7, 0.2, 0.19, 0.5], ['e', 0.71, 0.7, 0.2, 0.19, -0.5], ['e', 0.5, 0.5, 0.075, 0.36, 0]], deco: 'butterfly' },
+  octopus: { ar: 1.02, prims: [['e', 0.5, 0.37, 0.42, 0.36, 0], ['r', 0.08, 0.42, 0.84, 0.3, 0.12], ['e', 0.16, 0.78, 0.12, 0.2, 0.3], ['e', 0.39, 0.83, 0.11, 0.19, 0.08], ['e', 0.61, 0.83, 0.11, 0.19, -0.08], ['e', 0.84, 0.78, 0.12, 0.2, -0.3]], excl: [[0.36, 0.3, 0.075], [0.64, 0.3, 0.075]], deco: 'octopus' },
+  dino: { ar: 0.84, prims: [['e', 0.43, 0.53, 0.4, 0.31, 0], ['p', [[0.16, 0.42], [0.0, 0.66], [0.03, 0.7], [0.24, 0.64]]], ['p', [[0.6, 0.4], [0.7, 0.13], [0.86, 0.13], [0.78, 0.52]]], ['e', 0.83, 0.15, 0.15, 0.1, -0.1], ['r', 0.2, 0.58, 0.14, 0.26, 0.06], ['r', 0.52, 0.58, 0.14, 0.26, 0.06],
     ['p', [[0.22, 0.34], [0.27, 0.2], [0.33, 0.31]]], ['p', [[0.34, 0.28], [0.4, 0.13], [0.46, 0.27]]], ['p', [[0.47, 0.27], [0.53, 0.14], [0.58, 0.3]]]], excl: [[0.87, 0.12, 0.04]], deco: 'dino' },
-  unicorn: { ar: 1, n: 26, prims: [['e', 0.5, 0.47, 0.32, 0.3, -0.2], ['e', 0.74, 0.66, 0.22, 0.16, -0.4], ['p', [[0.2, 0.55], [0.56, 0.6], [0.68, 1], [0.17, 1]]], ['p', [[0.37, 0.24], [0.43, 0.03], [0.53, 0.21]]], ['p', [[0.58, 0.21], [0.78, 0.0], [0.68, 0.27]]],
+  unicorn: { ar: 1, prims: [['e', 0.5, 0.47, 0.32, 0.3, -0.2], ['e', 0.74, 0.66, 0.22, 0.16, -0.4], ['p', [[0.2, 0.55], [0.56, 0.6], [0.68, 1], [0.17, 1]]], ['p', [[0.37, 0.24], [0.43, 0.03], [0.53, 0.21]]], ['p', [[0.58, 0.21], [0.78, 0.0], [0.68, 0.27]]],
     ...[[0.27, 0.22, 0.09, 0.09], [0.18, 0.38, 0.09, 0.09], [0.13, 0.56, 0.09, 0.09], [0.12, 0.75, 0.09, 0.09], [0.13, 0.92, 0.08, 0.07]].map(([x, y, a, b]) => Object.assign(['e', x, y, a, b, 0], { nb: 1 }))], excl: [[0.62, 0.43, 0.06], [0.88, 0.7, 0.035]], deco: 'unicorn' },
-  cat: { ar: 0.94, n: 28, prims: [['e', 0.5, 0.58, 0.48, 0.36, 0], ['p', [[0.08, 0.44], [0.13, 0.02], [0.42, 0.26]]], ['p', [[0.92, 0.44], [0.87, 0.02], [0.58, 0.26]]]], deco: 'cat' },
+  cat: { ar: 0.94, prims: [['e', 0.5, 0.58, 0.48, 0.36, 0], ['p', [[0.08, 0.44], [0.13, 0.02], [0.42, 0.26]]], ['p', [[0.92, 0.44], [0.87, 0.02], [0.58, 0.26]]]], deco: 'cat' },
 };
 const PI_BOARDS = [{ id: 'square', shape: 'square' }, { id: 'circle', shape: 'circle' }, { id: 'heart', shape: 'heart' }, { id: 'star', shape: 'star' }, { id: 'butterfly', shape: 'butterfly' }, { id: 'octopus', shape: 'octopus' },
   { id: 'dino', shape: 'dino' }, { id: 'unicorn', shape: 'unicorn' }, { id: 'glitter', shape: 'unicorn', fx: 'glitter' }, { id: 'glow', shape: 'cat', fx: 'glow' }];
 const PI_BY = Object.fromEntries(PI_BOARDS.map((b) => [b.id, b]));
 const pi = { flow: 'little', nextFlow: null, mode: 'free', board: 'square', over: null, queue: [], L: null, Lkey: '', st: [], side: 0, flip: null, flipAt: 0, flipText: null, flipsVisit: 0, ptrs: new Map(), ui: [], snd: [], log: [], vib: 0, pops: 0, lastPop: 0, hint: false,
-  race: { on: false, ms: 0, done: false }, color: { target: null, wrong: 0, okAt: 0, next: 0, prev: null, rounds: 0 }, simon: { seq: [], phase: 'idle', idx: 0, t0: 0, miss: 0, rounds: 0, shown: -1, best: 0 }, unlocked: [], twk: null };
+  parts: [], rings: [], flex: { x: 0, v: 0, dir: 0, dirT: 0 }, popLast: null, vibMs: 0, race: { on: false, ms: 0, done: false }, color: { target: null, wrong: 0, okAt: 0, next: 0, prev: null, rounds: 0 }, simon: { seq: [], phase: 'idle', idx: 0, t0: 0, miss: 0, rounds: 0, shown: -1, best: 0 }, unlocked: [], twk: null };
 function piSt() { return { down: false, t: -1e9, back: 0, lit: -1e9, wob: -1e9 }; }
 /* ---- geometry: the shapes' inside test, the bubble grid (unit coords, cached), the board in px ---- */
 function piPrimIn(q, u, v) {
@@ -19197,33 +19198,41 @@ function piPrimIn(q, u, v) {
   const P = q[1]; let inn = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const xi = P[i][0], yi = P[i][1], xj = P[j][0], yj = P[j][1]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / (yj - yi) + xi) inn = !inn; } return inn;
 }
 const piUnitCache = new Map();
-function piUnit(shapeId, rMinU) { // the bubble grid for a shape: the biggest bubbles that still give about S.n of them (never under rMinU, never over PI.maxN)
-  const key = shapeId + '|' + rMinU.toFixed(4); let U = piUnitCache.get(key); if (U) return U;
-  const S = PI_SHAPES[shapeId], hex = S.grid !== 'sq', ex = S.excl || [], bp = S.prims.filter((q) => !q.nb), inS = (u, v) => { for (const q of bp) if (piPrimIn(q, u, v)) return true; return false; }; // (q.nb: silicone with no bubbles: the unicorn's mane)
+function piUnit(shapeId, rU, rMinU = 0) { // the bubble grid for a shape: bubbles of radius rU (unit coords: the square board's 4 x 4 size, PI.bubK), as many as fit
+  // inside the outline (a hex grid; the square: a square grid), centred; under PI.minN of them: a little smaller (never under rMinU) until PI.minN fit
+  const key = shapeId + '|' + rU.toFixed(4) + '|' + rMinU.toFixed(4); let U = piUnitCache.get(key); if (U) return U;
+  const S = PI_SHAPES[shapeId], ex = S.excl || [], bp = S.prims.filter((q) => !q.nb), inS = (u, v) => { for (const q of bp) if (piPrimIn(q, u, v)) return true; return false; }; // (q.nb: silicone with no bubbles: the unicorn's mane)
   const ok = (u, v, r) => { if (!inS(u, v)) return false; const m = r * 1.1; for (let k = 0; k < 8; k++) { const a = k * TAU / 8; if (!inS(u + Math.cos(a) * m, v + Math.sin(a) * m)) return false; } for (const [x, y, er] of ex) if (Math.hypot(u - x, v - y) < er + r * 1.05) return false; return true; };
-  const grid = (d, xph, yph) => { const dy = hex ? d * 0.866 : d, r = d * 0.42, out = [], kmax = Math.ceil(0.5 / d) + 2; let j = 0;
+  const grid = (d, r, hex, xph, yph) => { const dy = hex ? d * 0.866 : d, out = [], kmax = Math.ceil(0.5 / d) + 2; let j = 0;
     for (let v = yph * dy; v <= S.ar + 1e-9; v += dy, j++) { const off = (hex && j % 2 ? 0.5 : 0) + xph; for (let k = -kmax; k <= kmax; k++) { const u = 0.5 + (k + off) * d; if (u > 0 && u < 1 && ok(u, v, r)) out.push({ u, v }); } }
     return out; };
-  let best = null, prev = null;
-  for (let d = 0.36; d > 0.02; d *= 0.965) {
-    const r = d * 0.42; let pts = null; for (const xph of [0, 0.5]) for (const yph of [0.5, 0, 0.25, 0.75]) { const g = grid(d, xph, yph); if (!pts || g.length > pts.length) pts = g; }
-    const cand = { d, r, pts };
-    if (r < rMinU && prev) { best = prev; break; }
-    if (pts.length > PI.maxN) { best = prev || cand; break; }
-    prev = cand; if (pts.length >= S.n) { best = cand; break; }
+  const off = (pts) => { if (!pts.length) return 9; let u = 0, v0 = 1e9, v1 = -1e9; for (const p of pts) { u += p.u; v0 = Math.min(v0, p.v); v1 = Math.max(v1, p.v); } return Math.abs(u / pts.length - 0.5) + Math.abs((v0 + v1) / 2 - S.ar / 2) * 0.5; }; // (how far off centre)
+  let best = null;
+  for (let r = rU, it = 0; it < 40; it++, r *= 0.97) {
+    const d = r / PI.pitchK; let pts = null, sc = 9;
+    for (const hex of S.grid === 'sq' ? [false] : [true, false]) for (let xi = 0; xi < 8; xi++) for (let yi = 0; yi < 8; yi++) { const g = grid(d, r, hex, xi / 8, yi / 8), o = off(g); if (!pts || g.length > pts.length || (g.length === pts.length && o < sc - 1e-6)) { pts = g; sc = o; } }
+    if (pts.length > PI.maxN && best) break; // (never more than PI.maxN: keep the last that fit)
+    best = { d, r, pts }; if (pts.length >= PI.minN || r * 0.97 < rMinU) break;
   }
-  best = best || prev;
   const ys = [...new Set(best.pts.map((p) => Math.round(p.v * 1e4)))].sort((a, b) => a - b), nR = ys.length;
   U = { shape: shapeId, d: best.d, r: best.r, pts: best.pts, rows: nR, cols: best.pts.map((p) => PI_RAINBOW[Math.min(5, Math.floor(ys.indexOf(Math.round(p.v * 1e4)) * 6 / Math.max(1, nR)))]), rowV: ys.map((y) => y / 1e4) };
   piUnitCache.set(key, U); return U;
 }
-function piBox(shapeId, w = W, h = H) { // the board's box: under the pause row, as wide as fits; a wide screen: the full height, the HUD beside it
-  const S = PI_SHAPES[shapeId], fit = (top) => { const aw = w - 24, ah = h - top - 16, bw = Math.min(620, aw, ah / S.ar) * 0.96; return { bx: (w - bw) / 2, by: top + (ah - bw * S.ar) / 2, bw, side: false }; };
+function piBox(shapeId, w = W, h = H, k = 1) { // the board's box: under the pause row, as wide as fits; a wide screen: the full height, the HUD beside it (k > 1: a shape grown to hold enough bubbles, up to the screen's edges)
+  const S = PI_SHAPES[shapeId], fit = (top) => { const aw = w - 24, ah = h - top - 16, bw = Math.min(620 * k, Math.min(aw * k, w - 6), Math.min(ah * k, h - top - 4) / S.ar) * 0.96; return { bx: (w - bw) / 2, by: top + (ah - bw * S.ar) / 2, bw, side: false }; };
   const a = fit(tgTop() + 8); if (w > h * 1.15) { const b = fit(14); if (b.bx >= 150 && b.bw > a.bw) { b.side = true; return b; } } return a;
 }
-function piRMinU(shapeId) { return PI.minR / piBox(shapeId).bw; }
-function piPxLayout(id, bx, by, bw, rMinU, mir) {
-  const B = PI_BY[id] || PI_BOARDS[0], S = PI_SHAPES[B.shape], U = piUnit(B.shape, rMinU);
+const piFitCache = new Map();
+function piFit(shapeId) { // the board's box + its bubble size (unit coords): the square board's 4 x 4 bubble on every board; a shape that holds under PI.minN of them grows (up to the screen's edges), then its bubbles shrink a little (piUnit)
+  const key = shapeId + '|' + W + 'x' + H + '|' + Math.round(tgTop()); let F = piFitCache.get(key); if (F) return F;
+  const rPx = Math.max(PI.minR, PI.bubK * piBox('square').bw); let box = piBox(shapeId);
+  for (let k = 1.04; k < 1.7 && piUnit(shapeId, rPx / box.bw, rPx / box.bw).pts.length < PI.minN; k *= 1.04) { const b = piBox(shapeId, W, H, k); if (b.bw <= box.bw + 0.5) break; box = b; }
+  F = { box, rU: rPx / box.bw }; if (piFitCache.size > 60) piFitCache.clear(); piFitCache.set(key, F); return F;
+}
+function piRMinU(shapeId) { return PI.minR / piFit(shapeId).box.bw; }
+function piRU(shapeId) { return piFit(shapeId).rU; } // (one bubble size for every board, in this shape's unit coords)
+function piPxLayout(id, bx, by, bw, rU, mir) {
+  const B = PI_BY[id] || PI_BOARDS[0], S = PI_SHAPES[B.shape], U = piUnit(B.shape, rU, piRMinU(B.shape));
   return { id: B.id, shape: B.shape, fx: B.fx || '', bx, by, bw, bh: bw * S.ar, mir: !!mir, U, rowY: U.rowV.map((v) => by + v * bw),
     bubbles: U.pts.map((p, i) => ({ i, x: bx + (mir ? 1 - p.u : p.u) * bw, y: by + p.v * bw, r: U.r * bw, col: U.cols[i] })) };
 }
@@ -19249,7 +19258,7 @@ function piBubbleArt(g, r, col, down, fx) {
   const hex = piHex(col, fx), glow = fx === 'glow';
   g.save();
   if (!down) { g.shadowColor = glow ? hex : 'rgba(40,16,60,0.38)'; g.shadowBlur = r * (glow ? 0.8 : 0.32); g.shadowOffsetX = glow ? 0 : r * 0.07; g.shadowOffsetY = glow ? 0 : r * 0.15; g.fillStyle = glow ? pc(hex, -0.1, 0.9) : pc(hex, -0.25); g.beginPath(); g.arc(0, 0, r * 0.97, 0, TAU); g.fill(); g.restore(); g.save(); }
-  g.lineWidth = r * 0.075; g.strokeStyle = glow ? pc(hex, -0.2, 0.7) : pc(hex, -0.38, 0.6); g.beginPath(); g.arc(0, 0, r * 1.0, 0, TAU); g.stroke(); // the groove round its base
+  g.lineWidth = r * (down ? 0.1 : 0.075); g.strokeStyle = glow ? pc(hex, down ? -0.35 : -0.2, down ? 0.75 : 0.7) : pc(hex, down ? -0.5 : -0.38, down ? 0.75 : 0.6); g.beginPath(); g.arc(0, 0, r * 1.0, 0, TAU); g.stroke(); // the groove round its base (a popped one: a deeper, darker rim)
   if (!down) {
     const gr = g.createRadialGradient(-r * 0.32, -r * 0.38, r * 0.04, 0, 0, r * 1.02);
     gr.addColorStop(0, pc(hex, glow ? 0.75 : 0.6)); gr.addColorStop(0.32, pc(hex, glow ? 0.35 : 0.14)); gr.addColorStop(0.78, hex); gr.addColorStop(1, pc(hex, glow ? -0.15 : -0.28));
@@ -19257,18 +19266,19 @@ function piBubbleArt(g, r, col, down, fx) {
     g.lineWidth = r * 0.07; g.strokeStyle = pc(hex, 0.4, 0.55); g.beginPath(); g.arc(0, 0, r * 0.82, 0.08 * Math.PI, 0.62 * Math.PI); g.stroke(); // bounce light on the lower edge
     g.save(); g.translate(-r * 0.33, -r * 0.4); g.rotate(-0.65); g.scale(1, 0.58); const sg = g.createRadialGradient(0, 0, 0, 0, 0, r * 0.4); sg.addColorStop(0, 'rgba(255,255,255,0.95)'); sg.addColorStop(0.55, 'rgba(255,255,255,0.45)'); sg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sg; g.beginPath(); g.arc(0, 0, r * 0.4, 0, TAU); g.fill(); g.restore();
     g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.arc(r * 0.05, -r * 0.62, r * 0.06, 0, TAU); g.fill();
-  } else {
-    const gr = g.createRadialGradient(r * 0.3, r * 0.36, r * 0.05, r * 0.08, r * 0.1, r * 1.0);
-    gr.addColorStop(0, pc(hex, glow ? 0.1 : 0.32)); gr.addColorStop(0.5, glow ? pc(hex, -0.35) : pc(hex, -0.06)); gr.addColorStop(1, pc(hex, glow ? -0.6 : -0.48));
+  } else { // the deep dimple (the feel lab's 'deep' cup): a darker floor, a wide shadow of the rim inside the cup, an inner shade, a bright lower lip
+    const gr = g.createRadialGradient(r * 0.26, r * 0.32, r * 0.04, r * 0.1, r * 0.12, r * 1.0);
+    gr.addColorStop(0, pc(hex, glow ? 0.02 : 0.1)); gr.addColorStop(0.45, pc(hex, glow ? -0.42 : -0.32)); gr.addColorStop(1, pc(hex, glow ? -0.78 : -0.72));
     g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r * 0.95, 0, TAU); g.fill();
-    g.save(); g.beginPath(); g.arc(0, 0, r * 0.95, 0, TAU); g.clip(); g.lineWidth = r * 0.3; g.strokeStyle = 'rgba(40,12,60,0.36)'; g.beginPath(); g.arc(r * 0.07, r * 0.09, r * 1.04, 0.85 * Math.PI, 1.8 * Math.PI); g.stroke(); g.restore(); // the rim's shadow inside the cup
-    g.lineWidth = r * 0.07; g.strokeStyle = 'rgba(255,255,255,0.5)'; g.beginPath(); g.arc(0, 0, r * 0.83, 0.02 * Math.PI, 0.55 * Math.PI); g.stroke(); // the lit lower lip
-    g.fillStyle = 'rgba(255,255,255,0.45)'; g.beginPath(); g.ellipse(r * 0.36, r * 0.42, r * 0.14, r * 0.08, -0.7, 0, TAU); g.fill();
+    g.save(); g.beginPath(); g.arc(0, 0, r * 0.95, 0, TAU); g.clip(); g.lineWidth = r * 0.55; g.strokeStyle = 'rgba(26,6,44,0.55)'; g.beginPath(); g.arc(r * 0.12, r * 0.15, r * 1.12, 0.8 * Math.PI, 1.86 * Math.PI); g.stroke(); // the rim's shadow inside the cup
+    const ig = g.createRadialGradient(0, 0, r * 0.5, 0, 0, r * 0.95); ig.addColorStop(0, 'rgba(26,6,44,0)'); ig.addColorStop(1, 'rgba(26,6,44,0.35)'); g.fillStyle = ig; g.fillRect(-r, -r, r * 2, r * 2); g.restore();
+    g.lineWidth = r * 0.09; g.strokeStyle = glow ? 'rgba(220,255,245,0.5)' : 'rgba(255,255,255,0.62)'; g.beginPath(); g.arc(0, 0, r * 0.85, 0, 0.6 * Math.PI); g.stroke(); // the lit lower lip
+    g.fillStyle = 'rgba(255,255,255,0.32)'; g.beginPath(); g.ellipse(r * 0.3, r * 0.36, r * 0.12, r * 0.06, -0.7, 0, TAU); g.fill();
   }
   if (fx === 'glitter') { const rr = rng(Math.round(r * 13) + PI_RAINBOW.indexOf(col) * 97 + (down ? 5 : 0)); for (let i = 0; i < 16; i++) { const a = rr() * TAU, d = Math.sqrt(rr()) * r * 0.8, x = Math.cos(a) * d, y = Math.sin(a) * d; g.fillStyle = rr() < 0.5 ? 'rgba(255,255,255,0.9)' : 'rgba(255,214,120,0.95)'; g.beginPath(); g.arc(x, y, r * (0.025 + rr() * 0.04), 0, TAU); g.fill(); } }
   g.restore();
 }
-function piBubbleSprite(col, r, down, fx) { const R = Math.max(3, Math.round(r)); return makeSprite('pib|' + col + '|' + R + '|' + (down ? 1 : 0) + '|' + (fx || ''), R * 2.9, R * 2.9, R * 1.45, R * 1.45, (g) => piBubbleArt(g, R, col, down, fx)); }
+function piBubbleSprite(col, r, down, fx) { const R = Math.max(3, Math.round(r)); return makeSprite('pib|' + col + '|' + R + '|' + (down ? 'deep' : 'dome') + '|' + (fx || ''), R * 2.9, R * 2.9, R * 1.45, R * 1.45, (g) => piBubbleArt(g, R, col, down, fx)); }
 function piFaceGrad(g, L, k = 0, a = 1) { // the slab's rainbow: a stop at each bubble row
   const gr = g.createLinearGradient(0, L.by, 0, L.by + L.bh), n = L.rowY.length;
   if (!n) { gr.addColorStop(0, pc(piHex('blue', L.fx), k, a)); gr.addColorStop(1, pc(piHex('purple', L.fx), k, a)); return gr; }
@@ -19318,23 +19328,55 @@ function piBackdrop(g, glow) {
   g.fillStyle = 'rgba(160,120,220,0.12)'; for (let y = 14; y < H; y += 28) for (let x = (y / 28 % 2) * 14 + 7; x < W; x += 28) { g.beginPath(); g.arc(x, y, 2.2, 0, TAU); g.fill(); }
 }
 /* ---- the sounds (Web Audio, no files) ---- */
+// the pop: the feel lab's sound B "Crisp": a bright ~5.2 kHz band-passed noise click (~11 ms) + a tiny pitched body 1500 -> 800 Hz (~36 ms), +-6% random,
+// a little lower for a bigger bubble; no colour / row pitch (no xylophone). Every pop goes through a sub-bus (piPopBus: PI.popGain, the lab's loudness
+// match to the old pop) into the master bus; pops that overlap in time (several fingers, a swipe) each get a little quieter (1 / sqrt), so a burst
+// stays about as loud as one pop and never drives the master limiter into pumping (it would squash fast popping quieter just when it should feel biggest).
+function piPopBus(A = audio) { if (A.__popBus) return A.__popBus; try { const g = A.createGain(); g.gain.value = PI.popGain; g.connect(audioBus(A)); A.__popBus = g; return g; } catch { return audioOut(A); } }
+function piNoise(t, ms, node) { // (as noise(), from a random point of the buffer: no two clicks the same)
+  const A = audio; if (!noiseBuf) { noiseBuf = A.createBuffer(1, A.sampleRate, A.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const src = A.createBufferSource(); src.buffer = noiseBuf; src.connect(node); src.start(t, Math.random() * 0.5); src.stop(t + ms / 1000 + 0.03);
+}
+function piEnv(out, t, peak, atk, dec) { const g = audio.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + atk); g.gain.exponentialRampToValueAtTime(0.0004, t + atk + dec); g.connect(out); return g; }
+const piPopT = []; // (the scheduled times of the pops still sounding)
 function piPopSyn(t0, o = {}) {
-  const A = audio, t = t0 + (o.delay || 0) / 1000, idx = Math.max(0, PI_RAINBOW.indexOf(o.col)), f = 540 * Math.pow(26 / Math.max(10, o.r || 26), 0.55) * Math.pow(2, idx * 2 / 12) * (0.93 + Math.random() * 0.14);
-  const bp = A.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2300 + Math.random() * 1900; bp.Q.value = 0.9; const ng = A.createGain(); ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.13, t + 0.0015); ng.gain.exponentialRampToValueAtTime(0.0004, t + 0.03); bp.connect(ng); ng.connect(audioOut(A)); noise(t, 32, bp);
-  const o1 = A.createOscillator(), g1 = A.createGain(); o1.type = 'sine'; o1.frequency.setValueAtTime(f * 1.9, t); o1.frequency.exponentialRampToValueAtTime(f, t + 0.03); o1.frequency.exponentialRampToValueAtTime(f * 0.9, t + 0.11);
-  g1.gain.setValueAtTime(0.0001, t); g1.gain.exponentialRampToValueAtTime(0.18, t + 0.003); g1.gain.exponentialRampToValueAtTime(0.0004, t + 0.12); o1.connect(g1); g1.connect(audioOut(A)); o1.start(t); o1.stop(t + 0.14);
-  const o2 = A.createOscillator(), g2 = A.createGain(); o2.type = 'triangle'; o2.frequency.setValueAtTime(f * 0.5, t); o2.frequency.exponentialRampToValueAtTime(f * 0.36, t + 0.05);
-  g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.07, t + 0.004); g2.gain.exponentialRampToValueAtTime(0.0004, t + 0.07); o2.connect(g2); g2.connect(audioOut(A)); o2.start(t); o2.stop(t + 0.09);
+  const A = audio, t = Math.max(A.currentTime + 0.002, t0 - 0.008) + (o.delay || 0) / 1000; // (tgSynth plays 10 ms ahead; a pop can start sooner)
+  while (piPopT.length && piPopT[0] < t - 0.08) piPopT.shift();
+  const near = piPopT.filter((x) => Math.abs(x - t) < 0.045).length; piPopT.push(t); piPopT.sort((x, y) => x - y);
+  const v = A.createGain(); v.gain.value = 1 / Math.sqrt(1 + 0.75 * near); v.connect(piPopBus(A)); pi.popLast = { t, near, k: v.gain.value };
+  const j = 0.94 + Math.random() * 0.12, sz = Math.pow(26 / Math.max(10, o.r || 26), 0.3);
+  const bp = A.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 5200 * j; bp.Q.value = 0.8; bp.connect(piEnv(v, t, 0.24, 0.0006, 0.011)); piNoise(t, 14, bp);
+  const o1 = A.createOscillator(); o1.type = 'sine'; o1.frequency.setValueAtTime(1500 * sz * j, t); o1.frequency.exponentialRampToValueAtTime(800 * sz * j, t + 0.018); o1.connect(piEnv(v, t, 0.17, 0.001, 0.036)); o1.start(t); o1.stop(t + 0.06);
+}
+function piWhooshSyn(t) { const A = audio, bp = A.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.2; bp.frequency.setValueAtTime(320, t); bp.frequency.exponentialRampToValueAtTime(1800, t + 0.4); bp.connect(piEnv(audioOut(A), t, 0.24, 0.03, 0.39)); piNoise(t, 420, bp); } // the flip's whoosh (the shared 'whoosh' peaks at 0.07: too quiet here)
+function piLandSyn(t) { // the board lands: a low thump + a little rising sparkle
+  const A = audio, out = audioOut(A), k = 0.85, a = A.createOscillator(), b = A.createOscillator(); a.type = 'sine'; a.frequency.setValueAtTime(92, t); a.frequency.exponentialRampToValueAtTime(34, t + 0.26); a.connect(piEnv(out, t, 0.25 * k, 0.003, 0.25)); a.start(t); a.stop(t + 0.28);
+  b.type = 'triangle'; b.frequency.setValueAtTime(60, t); b.frequency.exponentialRampToValueAtTime(30, t + 0.3); b.connect(piEnv(out, t, 0.16 * k, 0.003, 0.29)); b.start(t); b.stop(t + 0.32);
+  const lp = A.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260; lp.connect(piEnv(out, t, 0.2 * k, 0.002, 0.16)); piNoise(t, 160, lp);
+  [1046.5, 1318.5, 1568].forEach((f, i) => { const q = t + 0.05 + i * 0.06, o = A.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.connect(piEnv(out, q, 0.06, 0.004, 0.24)); o.start(q); o.stop(q + 0.3); });
 }
 function piBlip(t, type, f0, f1, ms, peak) { const A = audio, o = A.createOscillator(), g = A.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + ms / 1000); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0004, t + ms / 1000); o.connect(g); g.connect(audioOut(A)); o.start(t); o.stop(t + ms / 1000 + 0.02); }
 Object.assign(TG_SYN, {
   pi_pop: { ms: 120, play: (t, o) => piPopSyn(t, o) },
   pi_unpop: { ms: 110, play: (t, o = {}) => { const f = 300 * Math.pow(26 / Math.max(10, o.r || 26), 0.5) * (0.95 + Math.random() * 0.1), t1 = t + (o.delay || 0) / 1000; piBlip(t1, 'sine', f * 0.75, f * 1.25, 90, 0.09); } },
   pi_tock: { ms: 70, play: (t) => piBlip(t, 'triangle', 240, 170, 60, 0.09) },
+  pi_tick: { ms: 30, play: (t) => piBlip(t, 'sine', 1900, 1500, 22, 0.025) }, // (a tap between bubbles: a very soft tick, no note)
+  pi_whoosh: { ms: 450, play: (t) => piWhooshSyn(t) },
+  pi_land: { ms: 400, play: (t) => piLandSyn(t) },
   pi_note: { ms: 420, play: (t, o = {}) => { const f = PI_NOTE[o.col] || 660; piBlip(t, 'sine', f, f * 0.995, 420, 0.13); piBlip(t, 'triangle', f * 2, f * 1.99, 220, 0.04); } },
 });
 function piSfx(kind, arg) { pi.snd.push(kind); if (pi.snd.length > 160) pi.snd.shift(); return tgSfx(kind, arg); }
-function piVibe(ms) { pi.vib++; try { if (navigator.vibrate) navigator.vibrate(ms); } catch {} }
+const PI_IOS = (() => { try { return /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); } catch { return false; } })();
+let piHapEl = null;
+function piVibe(ms) { // Android: navigator.vibrate(ms) (10 per pop: 8 was under many motors' floor; 30 when the board lands); iPhone (no Vibration API): iOS 18+
+  pi.vib++; pi.vibMs = ms; // gives a system haptic tick when a switch control is toggled: a hidden <input type=checkbox switch> clicked (experimental: the feel lab's trick; never throws)
+  try {
+    if (typeof navigator.vibrate === 'function') { navigator.vibrate(ms); return; }
+    if (!PI_IOS) return;
+    if (!piHapEl) { const l = document.createElement('label'), i = document.createElement('input'); l.setAttribute('aria-hidden', 'true'); l.style.display = 'none'; i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1; l.appendChild(i); l.addEventListener('click', (e) => e.stopPropagation()); document.body.appendChild(l); piHapEl = l; }
+    piHapEl.click(); pi.hapIOS = (pi.hapIOS | 0) + 1;
+  } catch {}
+}
 /* ---- the profile's part (profile.popit: piDefault / piValidate sit by the profile code) ---- */
 function piP() { if (!profile.popit) profile.popit = piDefault(); return profile.popit; }
 function piGot(id) { return piP().got.includes(id); }
@@ -19348,13 +19390,13 @@ function piReset(now) { // tgReset: a fresh visit (from the start screen) or the
   const fresh = mode === 'none' || !pi.L;
   if (fresh) { pi.flow = pi.nextFlow === 'kid' ? 'kid' : 'little'; pi.nextFlow = null; pi.mode = 'free'; pi.over = null; pi.queue = []; pi.flipsVisit = 0; const P = piP(); pi.board = P.got.includes(P.board) ? P.board : 'square'; }
   else if (pi.over && pi.over.kind !== 'picker' && pi.over.kind !== 'shelf') pi.over = null;
-  pi.ptrs.clear(); pi.flip = null; pi.flipAt = 0; pi.flipText = null; pi.side = 0; pi.hint = false; pi.lastPop = now;
+  pi.ptrs.clear(); pi.flip = null; pi.flipAt = 0; pi.flipText = null; pi.side = 0; pi.hint = false; pi.lastPop = now; pi.parts.length = 0; pi.rings.length = 0; Object.assign(pi.flex, { x: 0, v: 0, dir: 0, dirT: 0 });
   piPlace(true); piAllUp(now, false); piModeStart(pi.mode, now);
 }
 function piPlace(force) {
   const B = PI_BY[pi.board] || PI_BOARDS[0], key = B.id + '|' + W + 'x' + H + '|' + pi.side + '|' + Math.round(tgTop());
   if (!force && pi.L && pi.Lkey === key) return false;
-  const bx = piBox(B.shape); pi.L = piPxLayout(B.id, bx.bx, bx.by, bx.bw, PI.minR / bx.bw, pi.side === 1); pi.Lkey = key;
+  const F = piFit(B.shape), bx = F.box; pi.L = piPxLayout(B.id, bx.bx, bx.by, bx.bw, F.rU, pi.side === 1); pi.Lkey = key;
   if (pi.st.length !== pi.L.bubbles.length) pi.st = pi.L.bubbles.map(() => piSt());
   return true;
 }
@@ -19383,14 +19425,22 @@ function piBubbleAt(x, y, k = 1.12) { const L = pi.L; if (!L) return -1; let bes
 function piPop(i, now, delay = 0) {
   const L = pi.L, b = L && L.bubbles[i], s = pi.st[i]; if (!b || !s || s.down) return false;
   s.down = true; s.t = now + delay; s.back = 0; pi.pops++; pi.lastPop = now; pi.hint = false;
-  piSfx('pi_pop', { r: b.r, col: b.col, delay }); piVibe(8);
-  const hex = piHex(b.col, L.fx); burst(b.x, b.y, pc(hex, 0.25), 2); if (Math.random() < 0.5) fxSparkle(b.x, b.y, [pc(hex, 0.5), '#ffffff'], 2, b.r * 0.9); ring(b.x, b.y, 'rgba(255,255,255,0.75)', b.r * 1.15, 240, 2.5);
+  piSfx('pi_pop', { r: b.r, delay }); piFeel(b, now, delay);
   tgDemoDone(now);
   if (pi.mode === 'race' && !pi.race.on && !pi.race.done) { pi.race.on = true; pi.log.push('race:go'); }
   if (pi.mode === 'color') { const C = pi.color; if (b.col !== C.target || C.okAt) { s.back = now + PI.backMs; C.wrong++; pi.log.push('wrong:' + b.col); } else if (!pi.st.some((q, j) => !q.down && L.bubbles[j].col === C.target)) piColorDone(now); }
   if (pi.st.every((q) => q.down && !q.back)) piAllDown(now);
   return true;
 }
+function piFeel(b, now, delay = 0) { // a pop's feel: the vibration, the feel lab's burst (9-12 bits sized by the bubble, every 4th white, + a white ring), the board's kick toward the pop's side
+  const L = pi.L, k = b.r / 26, t0 = now + delay, few = gfxLevel() === 0 || gfxReduced(), hex = piHex(b.col, L.fx), n = Math.round((9 + Math.floor(Math.random() * 4)) * (few ? 0.5 : 1));
+  piVibe(PI.vibPop);
+  for (let i = 0; i < n; i++) { const a = Math.random() * TAU, v = (0.06 + Math.random() * 0.22) * k; pi.parts.push({ x: b.x + Math.cos(a) * b.r * 0.5, y: b.y + Math.sin(a) * b.r * 0.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 0.08, t0, ms: 380 + Math.random() * 260, r: (1.6 + Math.random() * 2.6) * k, col: i % 4 === 0 ? '#ffffff' : pc(hex, 0.25) }); }
+  const cap = [120, 240, 400][gfxLevel()] || 400; if (pi.parts.length > cap) pi.parts.splice(0, pi.parts.length - cap);
+  pi.rings.push({ x: b.x, y: b.y, r0: b.r * 0.9, r1: b.r * 1.45, t0, ms: 240, a: 0.8 }); if (pi.rings.length > 40) pi.rings.shift();
+  if (piFlexOn()) { pi.flex.v += 0.011; pi.flex.dirT = (b.x - (L.bx + L.bw / 2)) / (L.bw / 2); }
+}
+function piFlexOn() { return !gfxReduced() && gfxLevel() > 0; } // (the board flex: never under reduced motion or the lowest graphics level)
 function piAllDown(now) {
   if (pi.mode === 'race') { if (!pi.race.done) piRaceFinish(now); return; }
   if (pi.mode === 'simon') return;
@@ -19405,7 +19455,7 @@ function piSweep(x0, y0, x1, y1, now) { // a finger sliding over the toy: every 
 /* ---- the flip ---- */
 function piFlipStart(now) {
   if (pi.flip) return; pi.flipAt = 0; pi.flip = { t0: now, landed: false }; pi.flipText = { t0: now }; pi.flipsVisit++; pi.log.push('flip');
-  piSfx('whoosh'); piVibe(14);
+  piSfx('pi_whoosh'); piVibe(16);
 }
 function piFlipEnd(now) {
   pi.flip = null; pi.side ^= 1; piPlace(true); piAllUp(now, false);
@@ -19416,7 +19466,7 @@ function piFlipEnd(now) {
 }
 function piFlipQ(now) { return pi.flip ? Math.min(1, (now - pi.flip.t0) / PI.flipMs) : 0; }
 /* ---- Race ---- */
-function piRaceT(n, k) { return Math.round(n * (k === 3 ? PI.raceT3 : PI.raceT2) * 2) / 2 * 1000; }
+function piRaceT(n, k) { return Math.max(k === 3 ? PI.raceMin3 : PI.raceMin2, Math.round(n * (k === 3 ? PI.raceT3 : PI.raceT2) * 2) / 2 * 1000); } // (per bubble; a small board (8-12 big bubbles) at least 3 s / 6 s)
 function piRaceFinish(now) {
   const R = pi.race, n = pi.L.bubbles.length, ms = Math.max(1, Math.round(R.ms)), stars = ms <= piRaceT(n, 3) ? 3 : ms <= piRaceT(n, 2) ? 2 : 1, P = piP(), id = pi.board, prev = P.best[id] || 0;
   R.on = false; R.done = true; const record = !!prev && ms < prev; if (!prev || ms < prev) P.best[id] = ms; P.stars[id] = Math.max(P.stars[id] || 0, stars); saveProfile();
@@ -19449,7 +19499,7 @@ function piSimonTap(i, now) {
   const S = pi.simon, b = pi.L.bubbles[i], s = pi.st[i]; if (!b) return;
   if (S.phase !== 'input') { s.wob = now; piSfx('pi_tock'); return; }
   if (i === S.seq[S.idx]) {
-    s.down = true; s.t = now; s.lit = now; s.wob = now; pi.pops++; pi.lastPop = now; piSfx('pi_note', { col: b.col }); piSfx('pi_pop', { r: b.r, col: b.col }); piVibe(8); burst(b.x, b.y, pc(piHex(b.col, pi.L.fx), 0.3), 2); tgDemoDone(now);
+    s.down = true; s.t = now; s.lit = now; s.wob = now; pi.pops++; pi.lastPop = now; piSfx('pi_note', { col: b.col }); piSfx('pi_pop', { r: b.r }); piFeel(b, now); tgDemoDone(now);
     S.idx++; pi.log.push('simon:ok:' + S.idx);
     if (S.idx >= S.seq.length) { S.rounds++; S.best = Math.max(S.best, S.seq.length); const P = piP(); if (S.seq.length > (P.simon | 0)) { P.simon = S.seq.length; saveProfile(); } S.miss = 0; S.phase = 'ok'; S.t0 = now + 1100; tgParty(b.x, b.y, S.seq.length % 4 === 0); pi.log.push('simon:len:' + S.seq.length); }
   } else if (s.down) { s.wob = now; piSfx('pi_tock'); // (one already pressed in this turn: nothing lost)
@@ -19473,7 +19523,7 @@ function piAct(id, now = performance.now()) { // a canvas button
   if (id === 'corner') { piOpen({ kind: 'picker' }, now); return; }
   if (id === 'swatch') { if (pi.color.target) tgSay(piColSay(pi.color.target), { gapSame: 2000 }); return; }
   if (id.startsWith('mode:')) { piSfx('click'); piSetMode(id.slice(5), now); return; }
-  if (id.startsWith('board:')) { const b = id.slice(6); piSfx('pi_pop', { r: 30, col: 'blue' }); pi.over = null; piSetBoard(b, now); if (pi.queue.length) piOpen(pi.queue.shift(), now); return; }
+  if (id.startsWith('board:')) { const b = id.slice(6); piSfx('pi_pop', { r: 30 }); pi.over = null; piSetBoard(b, now); if (pi.queue.length) piOpen(pi.queue.shift(), now); return; }
   if (id === 'close') { piClose(now); return; }
   if (id === 'again') { const k = o && o.kind; piClose(now); if (pi.over) return; if (k === 'race') { if (pi.st.some((s) => s.down)) piFlipStart(now); else piModeStart('race', now); } else piSetMode(pi.mode, now); return; }
   if (id === 'home') { pi.over = null; pi.queue.length = 0; goHome(); return; }
@@ -19498,10 +19548,11 @@ function piPtrDown(e) {
   pi.ptrs.set(e.pointerId, { x: p.x, y: p.y, ui: false });
   if (pi.flip || pi.flipAt || (pi.mode === 'race' && pi.race.done)) return;
   const i = piBubbleAt(p.x, p.y);
-  if (pi.mode === 'simon') { if (i >= 0) piSimonTap(i, now); else tgTwinkle(p.x, p.y); return; }
+  if (pi.mode === 'simon') { if (i >= 0) piSimonTap(i, now); else piMiss(p.x, p.y); return; }
   if (i >= 0) { if (!piPop(i, now)) { pi.st[i].wob = now; piSfx('pi_tock'); } return; }
-  if (pi.mode !== 'race') tgTwinkle(p.x, p.y);
+  piMiss(p.x, p.y);
 }
+function piMiss(x, y) { piSfx('pi_tick'); ring(x, y, 'rgba(255,255,255,0.6)', 20, 260, 2); } // a tap between bubbles: a very soft tick + a faint ring (no xylophone note: it is a toy, not an instrument)
 function piPtrMove(e) {
   const P = pi.ptrs.get(e.pointerId); if (!P) return;
   const x = e.clientX, y = e.clientY;
@@ -19513,13 +19564,24 @@ function piPtrUp(e) { pi.ptrs.delete(e.pointerId); }
 function piTick(now, dt) {
   piPlace(false); const L = pi.L; if (!L) return;
   if (pi.flipAt && now >= pi.flipAt && !pi.over) piFlipStart(now);
-  if (pi.flip) { const q = piFlipQ(now); if (q >= 0.84 && !pi.flip.landed) { pi.flip.landed = true; piSfx('thump'); shakeScreen(0.8); } if (q >= 1) piFlipEnd(now); }
+  if (pi.flip) { const q = piFlipQ(now); if (q >= 0.84 && !pi.flip.landed) { pi.flip.landed = true; piSfx('pi_land'); piVibe(PI.vibFlip); shakeScreen(0.8); if (piFlexOn()) pi.flex.v += 0.03; } if (q >= 1) piFlipEnd(now); }
   for (let i = 0; i < pi.st.length; i++) { const s = pi.st[i]; if (s.back && now >= s.back) { s.back = 0; s.down = false; s.t = now; s.wob = now; piSfx('boing'); piSfx('pi_unpop', { r: L.bubbles[i].r }); } }
   if (pi.mode === 'race' && pi.race.on && !pi.race.done && !pi.over) pi.race.ms += Math.min(100, dt);
   if (pi.mode === 'color' && pi.color.okAt && now >= pi.color.next && !pi.flip) { pi.color.okAt = 0; piColorNext(now); }
   if (pi.mode === 'simon' && !pi.over) piSimonTick(now);
+  piFeelTick(now, dt, L);
   const left = pi.st.filter((s) => !s.down).length;
   if (!pi.flip && !pi.over && left > 0 && pi.mode !== 'simon' && now - pi.lastPop > PI.hintIdleMs && (pi.mode === 'color' || left <= Math.max(3, L.bubbles.length * 0.3))) pi.hint = true;
+}
+function piFeelTick(now, dt, L) { // the burst's bits fly and fall; the board flex: a damped spring (the feel lab's): held fingers press it down a little, every pop kicks it
+  for (let i = pi.parts.length - 1; i >= 0; i--) { const p = pi.parts[i]; if (now < p.t0) continue; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.0007 * dt; p.vx *= Math.pow(0.996, dt); if (now - p.t0 > p.ms) pi.parts.splice(i, 1); }
+  for (let i = pi.rings.length - 1; i >= 0; i--) if (now - pi.rings[i].t0 > pi.rings[i].ms) pi.rings.splice(i, 1);
+  const F = pi.flex, on = piFlexOn(); let n = 0, sx = 0; for (const P of pi.ptrs.values()) if (!P.ui) { n++; sx += P.x; }
+  if (!on) { F.x = F.v = F.dir = 0; return; }
+  const target = n && !pi.over ? 0.55 : 0; let rem = Math.min(100, dt);
+  while (rem > 0) { const h = Math.min(8, rem); rem -= h; F.v += (-0.0006 * (F.x - target) - 0.025 * F.v) * h; F.x += F.v * h; }
+  if (n) F.dirT = (sx / n - (L.bx + L.bw / 2)) / (L.bw / 2);
+  F.dir += (Math.max(-1, Math.min(1, F.dirT)) - F.dir) * (1 - Math.exp(-dt / 60));
 }
 /* ---- render ---- */
 function piMatrix(now) { // the board's transform: identity, or the flip (a turn round the vertical axis with a lift and a little shear for depth)
@@ -19533,7 +19595,9 @@ function piRender(now) {
   piPlace(false); const L = pi.L; if (!L) return; const glow = L.fx === 'glow';
   { const k = (now - shake.t) / shake.ms; if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); view.x = Math.sin(now * 0.11) * a; view.y = Math.cos(now * 0.17) * a; } else view.x = view.y = 0; }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const bg = makeSprite('pibg|' + (glow ? 'glow' : 'day') + '|' + W + 'x' + H, W, H, 0, 0, (g) => piBackdrop(g, glow)); ctx.drawImage(bg.c, 0, 0, W, H);
-  const M = piMatrix(now), set = () => ctx.setTransform(DPR * M.a, DPR * M.b, 0, DPR * M.d, DPR * (M.e + view.x), DPR * (M.f + view.y));
+  const M = piMatrix(now), F = pi.flex, cx = L.bx + L.bw / 2, cy = L.by + L.bh / 2, fy = F.x * 4.5, kk = 1 - F.x * 0.006, sh = F.x * F.dir * 5 / L.bw; // (the flex: the board dips fy px, shrinks a hair, tilts toward the fingers / the pop)
+  let fa = kk * M.a, fb = kk * M.b; const fd = kk * M.d, fe = cx + kk * (M.e - cx); let ff = cy + kk * (M.f - cy) + fy; fb += sh * fa; ff += sh * (fe - cx);
+  const set = () => ctx.setTransform(DPR * fa, DPR * fb, 0, DPR * fd, DPR * (fe + view.x), DPR * (ff + view.y));
   set(); const sp = piSlabSprite(L); ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
   const blink = Math.sin(now / 180) > -0.2, C = pi.color;
   for (const b of L.bubbles) {
@@ -19555,6 +19619,12 @@ function piRender(now) {
     for (const [x, y, ph] of pi.twk.pts) { const a = Math.max(0, Math.sin(now / 420 + ph * 3)); if (a < 0.05) continue; ctx.save(); ctx.globalAlpha = a * 0.9; ctx.fillStyle = glow ? '#c8fff0' : '#ffffff'; ctx.translate(x, y); ctx.rotate(ph); const z = 3 + a * 3; ctx.beginPath(); ctx.moveTo(0, -z * 2); ctx.lineTo(z * 0.35, -z * 0.35); ctx.lineTo(z * 2, 0); ctx.lineTo(z * 0.35, z * 0.35); ctx.lineTo(0, z * 2); ctx.lineTo(-z * 0.35, z * 0.35); ctx.lineTo(-z * 2, 0); ctx.lineTo(-z * 0.35, -z * 0.35); ctx.closePath(); ctx.fill(); ctx.restore(); }
   }
   if (pi.flip && M.shade > 0.02) { set(); ctx.save(); ctx.globalAlpha = 0.22 * M.shade; ctx.fillStyle = M.back ? '#ffffff' : '#2a1240'; ctx.fill(piPaths(L).all); ctx.restore(); }
+  if (pi.rings.length || pi.parts.length) { // the pops' rings and bits (they ride the board's dip)
+    ctx.setTransform(DPR, 0, 0, DPR, DPR * view.x, DPR * (view.y + fy)); ctx.strokeStyle = '#ffffff';
+    for (const r of pi.rings) { const q = (now - r.t0) / r.ms; if (q < 0 || q >= 1) continue; ctx.globalAlpha = r.a * (1 - q); ctx.lineWidth = 2.5 * (1 - q) + 0.5; ctx.beginPath(); ctx.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * (1 - Math.pow(1 - q, 2)), 0, TAU); ctx.stroke(); }
+    for (const p of pi.parts) { if (now < p.t0) continue; const q = (now - p.t0) / p.ms; if (q >= 1) continue; ctx.globalAlpha = Math.max(0, 1 - q * q); ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (1 - q * 0.4), 0, TAU); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
   resetView();
 }
 function piInBoard(L, x, y) { const S = PI_SHAPES[L.shape], u = (x - L.bx) / L.bw, v = (y - L.by) / L.bw; return S.prims.some((q) => piPrimIn(q, L.mir ? 1 - u : u, v)); }
@@ -19586,9 +19656,9 @@ function piModeIcon(m, x, y, R, now) { // the mode picker's pictures (no words n
   else if (m === 'shelf') { [['heart', -1, -1], ['star', 1, -1], ['dino', -1, 1], ['unicorn', 1, 1]].forEach(([id, i, j], k) => { const sp = piMiniSprite(id, Math.round(R * 0.62), k > 1 && !piGot(id)); ctx.drawImage(sp.c, i * R * 0.34 - sp.w / 2, j * R * 0.34 - sp.h / 2, sp.w, sp.h); }); }
   ctx.restore();
 }
-function piMiniLayout(id, size) { const B = PI_BY[id], S = PI_SHAPES[B.shape], bw = size / Math.max(1, S.ar) * 0.8; return piPxLayout(id, size / 2 - bw / 2, size / 2 - bw * S.ar / 2, bw, piRMinU(B.shape), false); }
+function piMiniLayout(id, size) { const B = PI_BY[id], S = PI_SHAPES[B.shape], bw = size / Math.max(1, S.ar) * 0.8; return piPxLayout(id, size / 2 - bw / 2, size / 2 - bw * S.ar / 2, bw, piRU(B.shape), false); }
 function piMiniSprite(id, size, locked) { // a board in small (the shelf, the reveal, the picker, the tile): the same bubbles as in play
-  const B = PI_BY[id]; return makeSprite('pim|' + id + '|' + size + '|' + (locked ? 1 : 0) + '|' + piRMinU(B.shape).toFixed(4), size, size, 0, 0, (g) => {
+  const B = PI_BY[id]; return makeSprite('pim|' + id + '|' + size + '|' + (locked ? 1 : 0) + '|' + piRU(B.shape).toFixed(4), size, size, 0, 0, (g) => {
     const L = piMiniLayout(id, size); piSlabArt(g, L, { locked });
     if (locked) { g.fillStyle = 'rgba(255,255,255,0.18)'; for (const b of L.bubbles) { g.beginPath(); g.arc(b.x, b.y, b.r * 0.9, 0, TAU); g.fill(); } return; }
     L.bubbles.forEach((b, i) => { g.save(); g.translate(b.x, b.y); piBubbleArt(g, b.r, b.col, (i * 7) % 5 === 0, L.fx); g.restore(); });
