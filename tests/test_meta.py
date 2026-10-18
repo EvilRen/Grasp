@@ -96,7 +96,8 @@ async def main():
 
         # ---- coins per event: Smash ----
         ctx, page, errs = await fresh(b)
-        await play(page, 'smash')
+        await page.evaluate("__grasp.setGameMode('smash'); openSmashMap({ how: 'mouse' })"); await page.wait_for_function("!$('smashMap').hidden", timeout=6000); await page.click('#smashFree')  # (navigation v2: the Smash sticker plays its current stage; free play is on its map)
+        await page.wait_for_function("mode === 'mouse' && __grasp.smash.run === 'free' && __grasp.sm.objs.length > 0", timeout=15000); await page.wait_for_timeout(500); await page.evaluate(SFX_JS)
         c0 = await page.evaluate(P + ".coins")
         await page.mouse.move(340, 400); await page.wait_for_timeout(120); await drag(page, 340, 940, 400, step=64)
         st = await page.evaluate("({ coins: " + P + ".coins, ev: __grasp.events, out: __grasp.sm.tiles.reduce((a, t) => a + t.total - t.alive, 0) })")
@@ -234,7 +235,7 @@ async def main():
             await page.wait_for_timeout(1300)
             f = await page.evaluate(START_FIT)
             check(tag + ': coins + level pill in the top bar opposite the lock (menu B), no overlap; the dock on screen; the start screen fits', f['noScroll'] and f['pillIn'] and f['pillLeftOfLang'] == he and not f['pillOverlap'] and f['rowIn'], f)
-            check(tag + ': pill reads 123 coins, Lv 2 (the level shows once earned); the dock: Shop + Events (Pet hidden until the egg is earned)', await page.evaluate("$('metaPill').querySelector('.coins').textContent") == '123' and await page.evaluate("$('metaPill').querySelector('.lvl').textContent") == ('רמה 2' if he else 'Lv 2') and await page.evaluate("getComputedStyle($('metaPill').querySelector('.lvl')).display !== 'none'") and f['btns'] == (['חנות', 'אירועים'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
+            check(tag + ': pill reads 123 coins, Lv 2 (the level shows once earned); the dock: Shop + Events (Pet hidden until the egg is earned)', await page.evaluate("$('metaPill').querySelector('.coins').textContent") == '123' and await page.evaluate("$('metaPill').querySelector('.lvl').textContent") == ('רמה 2' if he else 'Lv 2') and await page.evaluate("getComputedStyle($('metaPill').querySelector('.lvl')).display !== 'none'") and f['btns'] == (['חנות', 'היום'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
             check(tag + ': no Easy / Normal toggle on the start screen (home2: in the map header); the screen still fits', (await page.evaluate(START_FIT))['noScroll'] and not await page.evaluate("!!document.querySelector('#start #strikeDiff')"))
             await page.screenshot(path='tests/out/meta_' + tag.replace(' ', '_') + '_start.png')
             await page.tap('#todayBtn'); await page.wait_for_timeout(350)

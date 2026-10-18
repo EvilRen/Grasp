@@ -2,7 +2,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # The pet: the egg on the start screen and its hatch (taps, cracks, the burst, the name sheet), snacks from every finished round (Slice, Strike
 # Endless / Adventure incl. a boss stage, Smash stage, Shapes; the bonuses for 3 stars / a boss / a record; the snack box's cap), feeding (food,
 # the growth bar, the daily cap of 5, a new day), the stage thresholds and the evolve celebration (rays, size pulses, the banner, confetti, the
-# spoken line; quiet when muted / voice off), the mood by date (__grasp.setDate: happy / full / hungry / sleepy, a tap wakes it; never anything
+# no spoken line since less talking; quiet when muted / voice off), the mood by date (__grasp.setDate: happy / full / hungry / sleepy, a tap wakes it; never anything
 # sad), the wardrobe (unlocks by stage, equip / unequip, locked taps), the end cards' 'Yum! +2 snacks' line (Slice, Adventure, Smash, Shapes;
 # phone EN / HE; inside the screen, clear of the card's pills / title / buttons), the profile's validation, the start screen (phone 360x740 and
 # desktop 1280x800, EN / HE: no scroll, the corner clear of the tiles / toggle / link / top bar), the loop stopping in a game / a hidden tab.
@@ -94,7 +94,7 @@ async def main():
         await pet_tap(page)
         st = await page.evaluate(P + ".state")
         check('the 5th tap hatches it: a Baby, born today, its default name (Bubu)', st['hatched'] and st['stage'] == 1 and st['stageId'] == 'baby' and st['food'] == 0 and st['shownName'] == 'Bubu' and await page.evaluate(P + ".p.born") == '2026-10-02', st)
-        check('the hatch: its sound, the bubble "Hello! I\'m Bubu!", the spoken "Hello!"', 'hatch' in await page.evaluate("__sfx") and await page.evaluate("$('petBub').textContent") == "Hello! I'm Bubu!" and any(s['text'] == 'Hello!' for s in await page.evaluate("__spoken")), await page.evaluate("__spoken"))
+        check('the hatch: its sound, the bubble "Hello! I\'m Bubu!" (less talking: nothing spoken)', 'hatch' in await page.evaluate("__sfx") and await page.evaluate("$('petBub').textContent") == "Hello! I'm Bubu!" and not any(s['text'] == 'Hello!' for s in await page.evaluate("__spoken")), await page.evaluate("__spoken"))
         await page.wait_for_timeout(350); await page.screenshot(path=OUT + 'pet_hatch.png')
         await page.wait_for_function(P + ".state.nameOpen", timeout=4000)
         check('then the name sheet (optional; the default as its placeholder)', await page.evaluate("$('petNameIn').placeholder") == 'Bubu')
@@ -231,7 +231,7 @@ async def main():
         await page.wait_for_timeout(1200); await page.screenshot(path=OUT + 'pet_evolve.png')
         ev = await page.evaluate("({ shown: !$('petEvo').hidden, b: $('petEvo').querySelector('b').textContent, s: $('petEvo').querySelector('small').textContent, cel: __grasp.pet.ui.celebrations, seen: __grasp.pet.p.seen, cf: document.querySelectorAll('#petRoom .cf').length })")
         check('the evolve: the room opens with the celebration ("Bubu is a Kid now!", the new things: Pink, Bow; the Scarf is a Baby\'s since the panel fix), seen = 2', ev['shown'] and ev['b'] == 'Bubu is a Kid now!' and ev['s'] == 'New for Bubu: Pink, Bow' and ev['cel'] == 1 and ev['seen'] == 2, ev)
-        check('...with the fanfare, confetti and the spoken "Yay! I grew!"', 'fanfare' in await page.evaluate("__sfx") and any(s['text'] == 'Yay! I grew!' for s in await page.evaluate("__spoken")), await page.evaluate("__spoken"))
+        check('...with the fanfare and confetti (less talking: no spoken "Yay! I grew!")', 'fanfare' in await page.evaluate("__sfx") and not any(s['text'] == 'Yay! I grew!' for s in await page.evaluate("__spoken")), await page.evaluate("__spoken"))
         await page.wait_for_function("!__grasp.pet.ui.evo", timeout=5000)
         await page.screenshot(path=OUT + 'pet_room_en.png')
         await page.click('#petFeedBig', force=True); await page.wait_for_timeout(300); await page.click('#petFeedBig', force=True); await page.wait_for_timeout(300)
@@ -252,10 +252,10 @@ async def main():
         # muted: the celebration is silent
         await page.evaluate(f"__grasp.muted = true; {P}.set({{ pantry: 3, food: 24, seen: 2 }}); window.__spoken.length = 0")
         r = await page.evaluate(P + ".feed()"); await page.evaluate(f"{P}.evolve({r['from']}, {r['evolved']})")
-        check('muted: the evolve says nothing (skipped: muted)', r['evolved'] == 3 and not await page.evaluate("__spoken.length") and (await page.evaluate(P + ".skipped"))[-1]['why'] == 'muted', r)
+        check('muted: the evolve says nothing', r['evolved'] == 3 and not await page.evaluate("__spoken.length"), r)
         await page.evaluate(f"__grasp.muted = false; profile.grippy = false; {P}.set({{ food: 44, seen: 3 }})")
         r = await page.evaluate(P + ".feed()"); await page.evaluate(f"{P}.evolve({r['from']}, {r['evolved']})")
-        check('the voice off (Collection): silent too', r['evolved'] == 4 and not await page.evaluate("__spoken.length") and (await page.evaluate(P + ".skipped"))[-1]['why'] == 'off', r)
+        check('the voice off: silent too', r['evolved'] == 4 and not await page.evaluate("__spoken.length"), r)
         check('no page errors (feeding)', not errs, errs); await ctx.close()
 
         # ---- the mood by date (hatched on 10-02) ----

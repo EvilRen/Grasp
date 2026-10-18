@@ -233,7 +233,7 @@ async def main():
             pc = await page.evaluate(f"{S}.ui.perkCards")
             check(tag + ' phone: three perk cards stacked as rows inside 360 px, above the power meter', len(pc) == 3 and all(c['x'] >= 8 and c['x'] + c['w'] <= 352 and c['h'] >= 90 for c in pc) and pc[0]['y'] + pc[0]['h'] < pc[1]['y'] < pc[2]['y'] and pc[2]['y'] + pc[2]['h'] < await page.evaluate(f"{S}.ui.meterTop"), pc)
             nm = await page.evaluate("[t('pk_spark'), t('pkd_spark'), t('perkTitle')]")
-            check(tag + ' phone: perk names in the language', nm == (['שובל ניצוצות', 'כל מכה מזפזפת לבנה בקיר הבא', 'בחרו כוח!'] if he else ['Spark Trail', 'Each hit zaps a brick on the next wall', 'Pick a power!']), nm)
+            check(tag + ' phone: perk names in the language', nm == (['שובל ניצוצות', 'כל מכה מחשמלת לבנה בקיר הבא', 'בחרו כוח!'] if he else ['Spark Trail', 'Each hit zaps a brick on the next wall', 'Pick a power!']), nm)
             await page.evaluate(f"{S}.lives = {S}.maxLives"); await frames(page, 2); await page.screenshot(path='tests/out/strike6_perks_' + tag + '.png')
             x, y = center(pc[1])
             await page.evaluate(f"touchAt('pointerdown', {x}, {y})"); await page.evaluate(f"touchAt('pointerup', {x}, {y})"); await page.wait_for_timeout(60)

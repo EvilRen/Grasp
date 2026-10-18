@@ -8,8 +8,8 @@ PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 GFX_READY = "['ready', 'failed'].includes(__grasp.strike.gfxInfo.state) || __grasp.strike.gfxInfo.want === '2d'"
 TO2D = "(async () => { await __grasp.setGfx('2d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"
 TO3D = "(async () => { if (!(window.__graspGfx && window.__graspGfx.mode === '2d')) await __grasp.setGfx('3d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
-ROWS = "new Set([...document.querySelectorAll('#start .mbGrid > *')].map(b => { const q = b.getBoundingClientRect(); return Math.round((q.top + q.bottom) / 40); })).size"  # menu B: the hero, then Smash · Slice, then Arcade · Camera games (by their centres: the stickers are tilted)
-FITS = "(() => { const bs = [...document.querySelectorAll('#start .mbGrid button')], tb = $('tabBar').getBoundingClientRect(), st = $('start'); return bs.length === 6 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= tb.top + 1 && r.height >= 44; }) && tb.bottom <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1; })()"  # menu B: the hero (play + map), 4 stickers, the dock: one screen, no scroll
+ROWS = "new Set([...document.querySelectorAll('#start .mbGrid > *')].map(b => { const q = b.getBoundingClientRect(); return Math.round((q.top + q.bottom) / 40); })).size"  # the hero, then Smash · Slice · Pop It, then the camera games row (navigation v2; by their centres: the stickers are tilted)
+FITS = "(() => { const bs = [...document.querySelectorAll('#start .mbGrid button')].filter(b => b.getBoundingClientRect().height > 0), tb = $('tabBar').getBoundingClientRect(), st = $('start'); return bs.length >= 11 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= tb.top + 1 && r.height >= 44; }) && tb.bottom <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1; })()"  # navigation v2 (no Arcade): the hero (play + map) with its mode chips (Frenzy, Daily; Endless from world 2), Smash · Slice · Pop It, the 4 camera games, the dock: one screen, no scroll
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
@@ -29,7 +29,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
-        check('desktop: the hero + the 4 stickers (2 + 2) and the dock fit on one screen', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
+        check('desktop: the hero (+ its chips), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
         await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
         check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'shapes' && MODE_NEXT.shapes === 'sandbox'"))
@@ -97,12 +97,14 @@ async def main():
         check('all lives missed: round over, best saved', st['over'] and st['lives'] == 0 and st['best'] == sc and best == str(sc), [st, best])
         await page.wait_for_timeout(1100); await page.screenshot(path='tests/out/strike_over.png')
         await page.mouse.move(300, 300); await page.mouse.down(); await page.mouse.up(); await page.wait_for_timeout(200)
+        check('a tap on empty space keeps the card (navigation v2: only its buttons act; the camera\'s wave replays)', await page.evaluate(S + ".over"))
+        bt = await page.evaluate(f"{S}.ui.buttons"); await page.mouse.click(bt['again']['x'] + bt['again']['w'] / 2, bt['again']['y'] + bt['again']['h'] / 2); await page.wait_for_timeout(200)
         st = await page.evaluate(STATE)
-        check('tap restarts a fresh round, best kept', not st['over'] and st['lives'] == cfg['lives'] and st['score'] == 0 and st['best'] == sc, st)
+        check('Play again restarts a fresh round, best kept', not st['over'] and st['lives'] == cfg['lives'] and st['score'] == 0 and st['best'] == sc, st)
         await page.wait_for_timeout(700)
         await page.mouse.move(640, 400); await page.wait_for_timeout(100); await page.evaluate(hit_js(640, 400)); await page.wait_for_timeout(120)
         check('reset button restarts', await page.evaluate(f"{S}.score") > 0 and (await menu_click(page, '#resetBtn') or True) and await page.evaluate(f"{S}.score === 0 && {S}.lives === {cfg['lives']} && !{S}.over"))
-        await menu_click(page, '#hudBtn'); await page.wait_for_timeout(700)
+        await page.evaluate("toggleHud()"); await page.wait_for_timeout(700)
         check('HUD shows strike + lives', 'strike' in await page.inner_text('#hud') and 'lives' in await page.inner_text('#hud'))
         # kid-friendly Easy default: 4 lives, slower ball, bigger reach, late slaps, magnet assist; Normal = the old values
         pr = await page.evaluate("__grasp.strikeParams()")
@@ -526,7 +528,7 @@ async def main():
         check('round over with a NEW BEST ribbon (saffron pixel on the card corner)', ov['nb'] and ov['best'] == ov['score'] > 0 and rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, [ov, rbp])
         check('stats for the card: hits, walls, the best combo multiplier (x1 here: the legacy suite has no combo)', ov['hits'] >= 1 and ov['walls'] >= 0 and ov['combo'] == 1, ov)
         bt = ov['bt']
-        check('home2: Play again (big) over Home, Share under them, on screen; no Shop upsell button, no Easy / Normal on the card', set(bt) == {'again', 'home', 'share'} and bt['again']['w'] > 100 and bt['again']['h'] > bt['home']['h'] and bt['again']['y'] < bt['home']['y'] < bt['share']['y'] and bt['home']['x'] + bt['home']['w'] <= 1280, bt)
+        check('home2: Play again (big) over Home | Share (navigation v2: one row under the big button), on screen; no Shop upsell button, no Easy / Normal on the card', set(bt) == {'again', 'home', 'share'} and bt['again']['w'] > 100 and bt['again']['h'] > bt['home']['h'] and bt['again']['y'] + bt['again']['h'] <= bt['home']['y'] and abs(bt['home']['y'] - bt['share']['y']) < 2 and (bt['home']['x'] + bt['home']['w'] <= bt['share']['x'] or bt['share']['x'] + bt['share']['w'] <= bt['home']['x']) and max(bt['home']['x'] + bt['home']['w'], bt['share']['x'] + bt['share']['w']) <= 1280, bt)
         ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
         check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
         await page.screenshot(path='tests/out/strike_ui_over.png')
@@ -717,7 +719,7 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
             if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: the hero, the 4 stickers (2 + 2) and the dock fit on one screen', await page.evaluate(FITS) and rows == 3, rows)
+            check(tag + ' phone: the hero (+ its chips), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and rows == 3, rows)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
             await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))

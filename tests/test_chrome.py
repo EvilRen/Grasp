@@ -4,7 +4,9 @@ from playwright.async_api import async_playwright
 import socket as _sk
 class _NoSrv:
     def terminate(self): pass
-if _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
+import os as _os
+_DEV = int(_os.environ.get('GRASP_DEV_PORT', '0'))  # a developer's own server (as in test_sandbox's prelude): the pages keep the localhost:8765 origin, their requests go to PORT
+if _DEV or _sk.socket().connect_ex(('127.0.0.1', 8765)) == 0: srv = _NoSrv()  # shared server from run_fast.sh
 else: srv = subprocess.Popen(['python3','tests/serve.py','8765'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(0.8)
 MATTER = open('tests/vendor/matter.min.js').read(); FAKE = open('tests/fake_vision.mjs').read()
 async def routes(page):
@@ -15,6 +17,7 @@ async def routes(page):
         if '.wasm' in u or 'hand_landmarker.task' in u: return await route.fulfill(status=200, body=b'x'*2048, headers={'Access-Control-Allow-Origin':'*'})
         if 'fonts.g' in u: return await route.fulfill(status=200, body='')
         if '/_blob/probe' in u: return await route.fulfill(status=200, body='')
+        if _DEV and '://localhost:8765/' in u: return await route.continue_(url=u.replace('://localhost:8765/', '://127.0.0.1:%d/' % _DEV))
         return await route.continue_()
     await page.route('**/*', h)
 INIT = "window.__created=[];window.__inputs=[];window.__closed=[];window.__handFor=null;"
@@ -100,15 +103,12 @@ async def main():
             await page.screenshot(path='tests/out/chrome_phone_' + tag + '.png')
             await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
             titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label') || b.textContent.trim())")
-            check(tag + ' phone: every sheet button is labelled in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('השתקת צלילים' in titles) if he else ('Mute sound' in titles)), titles)
-            await menu_click(page, '#hudBtn'); await page.wait_for_timeout(300)
+            check(tag + ' phone: every sheet button is labelled in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('המשך' in titles) if he else ('Resume' in titles)), titles)  # (navigation v2: Sound / Stats live in the Settings now)
+            await page.evaluate("closeMenu(true); toggleHud()"); await page.wait_for_timeout(300)
             st = await page.evaluate("({p: $('hudBtn').getAttribute('aria-pressed'), hud: !hudEl.hidden, open: menu.open})")
-            check(tag + ' phone: Stats shows the HUD (pressed) and closes the sheet', st['p'] == 'true' and st['hud'] and not st['open'], st)
-            await page.click('#pauseBtn'); await page.wait_for_function("menu.open", timeout=4000)
-            col = await page.evaluate("getComputedStyle($('hudBtn')).color")
-            check(tag + ' phone: Stats is highlighted in the sheet while the HUD shows', col == 'rgb(255, 194, 75)', col)
-            await menu_click(page, '#hudBtn'); await page.wait_for_timeout(100)
-            check(tag + ' phone: HUD button back to normal', await page.evaluate("$('hudBtn').getAttribute('aria-pressed') === 'false' && hudEl.hidden"))
+            check(tag + ' phone: Stats shows the HUD (pressed)', st['p'] == 'true' and st['hud'] and not st['open'], st)
+            await page.evaluate("toggleHud()"); await page.wait_for_timeout(100)
+            check(tag + ' phone: HUD back off', await page.evaluate("$('hudBtn').getAttribute('aria-pressed') === 'false' && hudEl.hidden"))
             await page.wait_for_function("$('hint').style.opacity === '0'", timeout=6000); await page.wait_for_timeout(700)
             check(tag + ' phone: hint toast faded after ~4 s', float(await page.evaluate("getComputedStyle($('hint')).opacity")) < 0.05 and not await page.evaluate("$('hint').classList.contains('show')"))
             await page.tap('#preview'); await page.wait_for_timeout(400)
@@ -141,7 +141,7 @@ async def main():
             await page.evaluate(HAND_ON); await page.wait_for_timeout(800)
             check(tag + ' phone: hand back -> card hides, preview back in the corner', await page.evaluate("statusEl.hidden && preview.parentNode === document.body && Math.abs(preview.getBoundingClientRect().width - 96) < 1 && !$('liveDot').hidden"))
             if not he:
-                await menu_click(page, '#muteBtn'); await page.wait_for_timeout(100)
+                await page.evaluate("$('muteBtn').click()"); await page.wait_for_timeout(100)  # (navigation v2: Sound is no longer a row of the pause sheet; the toolbar's mute button and its storage still work)
                 st = await page.evaluate("({m: __grasp.muted, p: $('muteBtn').getAttribute('aria-pressed'), ls: localStorage.getItem('muted'), t: $('muteBtn').title})")
                 check('mute button mutes and persists', st['m'] and st['p'] == 'true' and st['ls'] == '1' and st['t'] == 'Unmute sound', st)
                 await page.reload(); await page.wait_for_timeout(700)

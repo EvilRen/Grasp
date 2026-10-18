@@ -10,7 +10,7 @@ window.park = (z = 2300, x = 30, y = 30) => { const s = __grasp.strike; s.setBal
 window.tun = (l, d) => __grasp.strike.tuning(l, d);
 """
 EN_NEWS = {'nw_steel': 'New: steel walls!', 'nw_holed': 'New: walls with holes!', 'hd_curve': 'Curving balls!', 'hd_faster': 'Faster!', 'hd_tougher': 'Tougher walls!', 'nw_moving': 'New: moving walls!', 'nw_tnt': 'New: TNT walls!', 'hd_wobble': 'Wobbly balls!', 'hd_boss': 'Faster boss!'}
-HE_NEWS = {'nw_steel': 'חדש: קירות פלדה!', 'nw_holed': 'חדש: קירות עם חור!', 'hd_curve': 'הכדור מתעקל!', 'hd_faster': 'מהר יותר!', 'hd_tougher': 'קירות קשים יותר!', 'nw_moving': 'חדש: קירות זזים!', 'nw_tnt': 'חדש: קירות TNT!', 'hd_wobble': 'הכדור מתפתל!', 'hd_boss': 'הבוס מהיר יותר!'}
+HE_NEWS = {'nw_steel': 'חדש: קירות פלדה!', 'nw_holed': 'חדש: קירות עם חורים!', 'hd_curve': 'הכדור מתעקל!', 'hd_faster': 'מהר יותר!', 'hd_tougher': 'קירות קשים יותר!', 'nw_moving': 'חדש: קירות זזים!', 'nw_tnt': 'חדש: קירות TNT!', 'hd_wobble': 'הכדור מזגזג!', 'hd_boss': 'הבוס מהיר יותר!'}
 
 async def new_page(b, mobile=False, lang='en'):
     opts = dict(viewport={'width': 360, 'height': 740}, device_scale_factor=3, is_mobile=True, has_touch=True) if mobile else dict(viewport={'width': 1280, 'height': 800})

@@ -81,7 +81,7 @@ async def main():
         rbp = await page.evaluate(PIX + f"({st['rb']['x']}, {st['rb']['y']})") if st['rb'] else None
         check('NEW BEST ribbon drawn on the card corner', rbp and rbp[0] > 200 and rbp[1] > 140 and rbp[2] < 130, rbp)
         bt = st['buttons']
-        check('card (home2): Play again big on top, Home under it, Share (replay / link) under that; no difficulty pill', bt and set(bt) == {'again', 'home', 'share'} and bt['again']['y'] + bt['again']['h'] <= bt['home']['y'] and bt['home']['y'] + bt['home']['h'] <= bt['share']['y'] and bt['again']['h'] > bt['home']['h'] and all(q['h'] >= 44 and q['x'] + q['w'] <= 1280 for q in bt.values()), bt)
+        check('card (navigation v2): Play again big on top, Home | Share under it; no difficulty pill', bt and set(bt) == {'again', 'home', 'share'} and bt['again']['y'] + bt['again']['h'] <= bt['home']['y'] and bt['home']['y'] == bt['share']['y'] and bt['home']['x'] < bt['share']['x'] and bt['again']['h'] > bt['home']['h'] and all(q['h'] >= 44 and q['x'] + q['w'] <= 1280 for q in bt.values()), bt)
         ab = await page.evaluate(PIX + f"({bt['again']['x'] + 12}, {bt['again']['y'] + bt['again']['h'] / 2})")
         check('Play again button is saffron', ab[0] > 200 and ab[1] > 150 and ab[2] < 130, ab)
         await page.screenshot(path='tests/out/slice_over.png')
@@ -106,8 +106,8 @@ async def main():
         check('click Home on the card: back to the start screen', await page.evaluate("mode === 'none' && !$('start').hidden && document.body.classList.contains('home')"))
         await page.evaluate(START_MOUSE); await page.wait_for_timeout(300)
         check('start again: a fresh round', await page.evaluate("mode === 'mouse' && gameMode === 'slice' && __grasp.slice.lives === 3 && !__grasp.slice.over"))
-        await menu_click(page, '#hudBtn'); await page.wait_for_timeout(700)
-        check('HUD shows slice lives', 'lives' in await page.inner_text('#hud')); await menu_click(page, '#hudBtn')
+        await page.evaluate("toggleHud()"); await page.wait_for_timeout(700)
+        check('HUD shows slice lives', 'lives' in await page.inner_text('#hud')); await page.evaluate("toggleHud()")
         # katana: drawn while the blade is on, gone when it is off
         await page.evaluate("parkFruit(640, 460); __grasp.slice.drawn = 0")
         await page.mouse.move(400, 400); await page.mouse.down()
@@ -166,7 +166,7 @@ async def main():
             check(tag + ' phone: round over after 3 misses, best 7 saved', st['over'] and st['best'] == 7 and st['ls'] == '7' and st['nb'], st)
             await page.screenshot(path='tests/out/endcard_slice_' + tag + '.png')
             bt = st['buttons']
-            check(tag + ' phone: card buttons fit the screen (home2: Play again on top, Home, Share)', bt and set(bt) == {'again', 'home', 'share'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and bt['again']['y'] < bt['home']['y'] < bt['share']['y'], bt)
+            check(tag + ' phone: card buttons fit the screen (navigation v2: Play again on top, Home | Share)', bt and set(bt) == {'again', 'home', 'share'} and all(b['x'] >= 8 and b['x'] + b['w'] <= 352 and b['h'] >= 44 for b in bt.values()) and bt['again']['y'] < bt['home']['y'] == bt['share']['y'], bt)
             await page.tap('#stage', position={'x': bt['again']['x'] + bt['again']['w'] / 2, 'y': bt['again']['y'] + bt['again']['h'] / 2}); await page.wait_for_timeout(200)
             check(tag + ' phone: tap Play again -> fresh round', await page.evaluate("!__grasp.slice.over && __grasp.slice.lives === 3 && __grasp.slice.score === 0 && __grasp.slice.best === 7"))
             check(tag + ' phone: no page errors', not errs, errs); await ctx.close()

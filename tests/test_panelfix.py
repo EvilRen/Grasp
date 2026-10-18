@@ -73,7 +73,7 @@ async def main():
 
         # ================= 2. Smash: a thing knocked off the screen is credited; the wave completes =================
         ctx, page, errs = await fresh(b)
-        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("!$('smashMap').hidden", timeout=6000); await page.click('#smashFree')
+        await page.evaluate("__grasp.setGameMode('smash'); openSmashMap({ how: inputPref() })"); await page.wait_for_function("!$('smashMap').hidden", timeout=6000); await page.click('#smashFree')  # (navigation v2: the sticker plays the current stage; the map is behind its Map buttons)
         await page.wait_for_function("gameMode === 'smash' && mode === 'mouse' && __grasp.smash.phase === 'play'", timeout=10000)
         await page.evaluate("__grasp.sm.build('room')"); await page.wait_for_timeout(200)
         r = await page.evaluate("""(() => { const S = __grasp.smash, dyn = S.objs.filter(o => o.alive && !o.stat && o.kind !== 'boss' && o.wave === S.wave).sort((a, b) => b.value - a.value), a = dyn[0], c = dyn[1], now = performance.now();
@@ -139,20 +139,19 @@ async def main():
             tag = 'he' if he else 'en'
             ctx, page, errs = await fresh(b, mobile=True, he=he)
             await stage(page, 1); await page.evaluate(f"{A}.finishTest(0)")
-            await page.wait_for_function(f"{S}.over && {S}.ui.againLine && performance.now() - {S}.overAt > 1100", timeout=10000)
-            ln = await page.evaluate(f"{S}.ui.againLine")
-            check(f'6 {tag}: a stage clear by touch says "Tap Next…", not "Wave…"', ln == ('הקישו על „הבא” לשלב הבא' if he else 'Tap Next for the next stage'), ln)
+            await page.wait_for_function(f"{S}.over && {S}.ui.buttons && performance.now() - {S}.overAt > 1100", timeout=10000)
+            ln = await page.evaluate(f"[{S}.ui.againLine, t(againKey('advWaveNext'))]")
+            check(f'6 {tag}: a stage clear by touch: no "Tap Next…" line under the pulsing Next (game feel); its wording is the touch one, not "Wave…"', ln[0] is None and ln[1] == ('הקישו על „הבא”' if he else 'Tap Next for the next stage'), ln)
             await page.wait_for_timeout(300); await page.screenshot(path=f'tests/out/fix_card_touch_{tag}.png')
             await page.evaluate(f"{A}.start(1)"); await page.wait_for_function(f"{A}.phase === 'play'", timeout=8000); await page.evaluate(f"{A}.failTest()")
-            await page.wait_for_function(f"{S}.over && {S}.ui.againLine && performance.now() - {S}.overAt > 1100 && {A}.result && !{A}.result.clear", timeout=10000)
-            ln2 = await page.evaluate(f"{S}.ui.againLine")
-            check(f'6 {tag}: a fail by touch says "Tap Try again"', ln2 == ('הקישו על „שוב” כדי לנסות שוב' if he else 'Tap Try again'), ln2)
+            await page.wait_for_function(f"{S}.over && {S}.ui.buttons && performance.now() - {S}.overAt > 1100 && {A}.result && !{A}.result.clear", timeout=10000)
+            ln2 = await page.evaluate(f"[{S}.ui.againLine, t(againKey('advWaveRetry'))]")
+            check(f'6 {tag}: a fail by touch: no tap line either; its wording "Tap Try again"', ln2[0] is None and ln2[1] == ('הקישו על „לנסות שוב”' if he else 'Tap Try again'), ln2)
             ks = await page.evaluate("(() => { const m0 = mode; const a = againKey('playAgainWave'); mode = 'camera'; const c = [againKey('playAgainWave'), againKey('advWaveNext')]; mode = m0; return [a, ...c]; })()")
             check(f'6 {tag}: Endless / camera games by touch "Tap Play again"; with the camera "Wave…" stays', ks == ['playAgainTap', 'playAgainCam', 'advWaveNext'], ks)
             check(f'6 {tag}: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, mobile=True)
-        await page.tap('#arcadeBtn'); await page.wait_for_function("!$('arcadePick').hidden", timeout=4000); await page.wait_for_timeout(400)
-        await page.tap('#dailyBtn'); await page.wait_for_function("!$('daily').hidden", timeout=4000)
+        await page.evaluate("openDaily()"); await page.wait_for_function("!$('daily').hidden", timeout=4000)  # (navigation v2: the Daily chip plays at once; the panel's buttons are still checked)
         d = await page.evaluate("(() => { const a = $('daily').querySelector('.dActs'), bs = [...a.children]; return { ids: bs.map(x => x.id), cls: bs.map(x => x.className), txt: bs.map(x => x.textContent) }; })()")
         check('6 the Daily panel: "Play" (touch) is the primary button, the camera the secondary one', d['ids'] == ['dailyMouse', 'dailyCam'] and d['cls'] == ['primary', 'secondary'] and d['txt'][0] == 'Play', d)
         await ctx.close()
@@ -179,7 +178,7 @@ async def main():
         ctx, page, errs = await fresh(b, he=True)
         tx = await page.evaluate("(() => { const L = lang, r = {}; lang = 'en'; r.en1 = t('dayChestNeed', { n: 1 }); r.en2 = t('dayChestNeed', { n: 2 }); r.coins1 = t('coinsN', { n: 1 }); lang = 'he'; r.he1 = t('dayChestNeed', { n: 1 }); r.he2 = t('dayChestNeed', { n: 2 }); r.sub = t('themesSub'); lang = L; return r; })()")
         check('9 plurals: "Clear 1 more stage today…" (not "1 more stages"), 2 = plural; Hebrew too', tx['en1'] == 'Clear 1 more stage today to open the chest' and tx['en2'] == 'Clear 2 more stages today to open the chest' and tx['coins1'] == '1 coin' and tx['he1'] == 'סיימו עוד שלב אחד היום כדי לפתוח את התיבה' and 'שלבים' in tx['he2'], tx)
-        check('10 the HE Shop\'s Themes subtitle has no English "Strike"', 'Strike' not in tx['sub'] and 'מכה' in tx['sub'], tx['sub'])
+        check('10 the HE Shop\'s Themes subtitle has no English "Strike"', 'Strike' not in tx['sub'] and 'סטרייק' in tx['sub'], tx['sub'])
         bd = await page.evaluate(f"""(() => {{ const P = {PF}, a = P.bidiDir('+1'), b = P.bidiDir('רצף ×7!'), c = P.bidiText('רצף ‎×7!'), d = P.bidiText('+5');
           const sp = (txt) => {{ TEXTS.clear(); return textSprite(txt, 20, '#ffffff', null).c.toDataURL(); }}; const he = sp('+1'); const L = lang; lang = 'en'; const en = sp('+1'); lang = L;
           return {{ a, b, c, d, same: he === en }}; }})()""")

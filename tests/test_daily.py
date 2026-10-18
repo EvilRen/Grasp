@@ -10,10 +10,10 @@ SEQ = """(() => { const g = __grasp, s = g.strike; g.startDaily(); s.setLevel(6)
   for (const w of s.walls) lay.push(w.kind + ':' + w.bricks.map(k => k.tnt ? 't' : k.hole ? 'h' : k.pu ? 'p' : '.').join(''));
   s.offerPerks(); const perks = s.perkOffer.slice(); s.pickPerk(0);
   return { kinds: kinds.slice(0, 12), lay, perks, mod: g.daily.modifier, date: g.daily.date, on: g.daily.on }; })()"""
-BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('arcFrenzy').getBoundingClientRect(), n = b.querySelector('.dNew');  // (home2: the Daily is in the Arcade sheet; menu B: a sticker beside Frenzy)
+BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('frenzyChip').getBoundingClientRect(), n = b.querySelector('.dNew');  // (navigation v2: the Daily is a chip under the Strike hero, beside Frenzy)
   return { label: b.querySelector('.lb').textContent, date: b.querySelector('.dDate').textContent, mod: b.querySelector('.dMod').textContent, modId: b.dataset.mod, streak: b.querySelector('.dStreak b').textContent,
     zero: b.querySelector('.dStreak').classList.contains('zero'), newShown: !n.hidden && n.getBoundingClientRect().width > 0, newText: n.textContent, played: b.dataset.played,
-    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#arcadePick'),
+    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#heroModes'),
     fits: (() => { const st = $('start'); return st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1; })() }; })()"""
 
 async def fresh(b, mobile=False, he=False, init='', date='2026-10-02'):
@@ -155,7 +155,7 @@ async def main():
             await page.wait_for_timeout(600); await page.click('#shDuel')
             await page.wait_for_function("window.__clip", timeout=3000)
             clip = await page.evaluate("window.__clip")
-            exp = ('Grasp אתגר יומי' if he else 'Grasp daily') + ' 2026-10-02: 🧱 1234 · L5 · 🔥4'
+            exp = 'האתגר היומי ב־Grasp 2026-10-02: 🧱 1234 · שלב 5 · 🔥4' if he else 'Grasp daily 2026-10-02: 🧱 1234 · L5 · 🔥4'  # (the Hebrew pass: 'שלב 5', not 'L5')
             check(tag + ': Share with no navigator.share: the text goes to the clipboard', clip == exp, clip)
             await page.wait_for_function("__grasp.toasts.some(t => t.key === 'copied')", timeout=3000)
             check(tag + ': a "Copied" toast', any(x == ('הועתק' if he else 'Copied') for x in await page.evaluate(TOASTS)) and await page.evaluate(S + ".over"), await page.evaluate(TOASTS))
@@ -163,7 +163,7 @@ async def main():
             r = await page.evaluate(D + ".share()")
             check(tag + ': with navigator.share: the share sheet gets the same text', r == 'shared' and await page.evaluate("window.__shared") == exp, r)
             # the panel strip on the start screen
-            await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300); await page.tap('#arcadeBtn'); await page.wait_for_timeout(300); await page.tap('#dailyBtn'); await page.wait_for_timeout(400)
+            await menu_click(page, '#homeBtn', tap=True); await page.wait_for_timeout(300); await page.evaluate("openDaily()"); await page.wait_for_timeout(400)  # (navigation v2: the panel is no longer on the way to the daily; its strip still renders)
             ps = await page.evaluate("[...document.querySelectorAll('#dStrip .st')].map(e => ({ d: e.dataset.date, v: e.querySelector('b').textContent, today: e.classList.contains('today'), played: e.classList.contains('played') }))")
             check(tag + ': Daily panel strip matches (7 tiles, today highlighted)', [x['d'] for x in ps] == [x['date'] for x in st] and [x['v'] for x in ps] == ['–', '210', '–', '95', '400', '12345', '1234'] and ps[-1]['today'] and ps[-1]['played'] and not ps[0]['played'], ps)
             check(tag + ': no page errors (strip / share)', not errs, errs); await ctx.close()
@@ -175,32 +175,18 @@ async def main():
                 ctx, page, errs = await fresh(b, mobile, he)
                 await page.wait_for_timeout(1300)  # entrance done
                 exp_mod = await page.evaluate(D + ".modifierFor('2026-10-02')")
-                if mobile: await page.tap('#arcadeBtn')
-                else: await page.click('#arcadeBtn')
-                await page.wait_for_function("!$('arcadePick').hidden", timeout=3000); await page.wait_for_timeout(450)
                 bt = await page.evaluate(BTN)
                 mod_txt = await page.evaluate("t('mod_" + exp_mod + "')")
                 check(tag + ': Daily button: label, today\'s date, the modifier of the day', bt['label'] == ('יומי' if he else 'Daily') and bt['modId'] == exp_mod and bt['mod'] == mod_txt and bt['date'] and bt['date'] == await page.evaluate("shortDate('2026-10-02')"), bt)
                 check(tag + ': not played today: no NEW nag (home2: no red dots / badges except new rewards); streak 0', not bt['newShown'] and bt['streak'] == '0' and bt['played'] == 'false', bt)
-                check(tag + ': the Daily sticker: in the Arcade sheet beside Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
+                check(tag + ': the Daily chip: under the Strike hero beside Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
                 if mobile:
                     await page.screenshot(path='tests/out/daily_button_' + ('he' if he else 'en') + '.png')
-                if mobile: await page.tap('#dailyBtn')
+                if mobile: await page.tap('#dailyBtn')  # (navigation v2: the chip starts today's run at once: no panel first)
                 else: await page.click('#dailyBtn')
-                await page.wait_for_timeout(400)
-                pn = await page.evaluate("(() => { const ov = $('daily'), sh = ov.querySelector('.sheet').getBoundingClientRect(); return { hidden: ov.hidden, inside: sh.left >= 0 && sh.right <= innerWidth && sh.top >= 0 && sh.bottom <= innerHeight, mod: ov.querySelector('.dmod .nm').textContent, desc: ov.querySelector('.dmod .ds').textContent, tiles: ov.querySelectorAll('#dStrip .st').length, title: $('dailyTitle').textContent, gm: gameMode, cam: $('dailyCam').textContent }; })()")
-                check(tag + ': Daily panel: title, the modifier and its line, 7 tiles, inside the screen; Strike selected', not pn['hidden'] and pn['inside'] and pn['mod'] == mod_txt and pn['desc'] and pn['tiles'] == 7 and pn['title'] == ('אתגר יומי' if he else 'Daily challenge') and pn['gm'] == 'strike', pn)
-                if mobile: await page.screenshot(path='tests/out/daily_panel_' + ('he' if he else 'en') + '.png')
-                await page.keyboard.press('Escape'); await page.wait_for_timeout(150)
-                check(tag + ': Escape closes the panel', await page.evaluate("$('daily').hidden"))
-                if mobile: await page.tap('#arcadeBtn'); await page.wait_for_timeout(300); await page.tap('#dailyBtn')
-                else: await page.click('#arcadeBtn'); await page.wait_for_timeout(300); await page.click('#dailyBtn')
-                await page.wait_for_timeout(300)
-                if mobile: await page.tap('#dailyMouse')
-                else: await page.click('#dailyMouse')
                 await page.wait_for_function(D + ".on && " + S + ".ui.dailyBannerBox && " + S + ".ui.dailyBannerBox.a === 1 && Math.abs(" + S + ".ui.dailyBannerBox.x + " + S + ".ui.dailyBannerBox.w / 2 - innerWidth / 2) < 1", timeout=5000)  # slid in
                 bb = await page.evaluate(S + ".ui.dailyBannerBox")
-                check(tag + ': "Play with mouse or touch" in the panel starts the daily; the pre-run banner shows inside the screen', await page.evaluate("mode") == 'mouse' and bb['x'] >= 0 and bb['x'] + bb['w'] <= await page.evaluate("innerWidth") + 1, bb)
+                check(tag + ': the Daily chip starts the daily at once (the panel stays shut); the pre-run banner (today\'s twist) shows inside the screen', await page.evaluate("$('daily').hidden") and await page.evaluate("mode") == 'mouse' and bb['x'] >= 0 and bb['x'] + bb['w'] <= await page.evaluate("innerWidth") + 1, bb)
                 if mobile:
                     await page.wait_for_timeout(500)
                     await page.screenshot(path='tests/out/daily_banner_' + ('he' if he else 'en') + '.png')

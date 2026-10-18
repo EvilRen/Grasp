@@ -54,7 +54,7 @@ async def fresh(b, mobile=False, he=False, init='', camera=False):
     await page.goto('http://localhost:8765/index.html'); await page.wait_for_function("typeof __grasp !== 'undefined' && !!engine", timeout=15000); await page.wait_for_timeout(300)
     return ctx, page, errs
 async def free(page, tap=False):  # the Smash tile, then the map's Free play
-    await (page.tap if tap else page.click)('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+    await page.evaluate("__grasp.setGameMode('smash'); openSmashMap({ how: inputPref() })"); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)  # (navigation v2: the sticker plays the current stage; the map is behind its Map buttons)
     await (page.tap if tap else page.click)('#smashFree'); await page.wait_for_function("mode !== 'none' && __grasp.smash.run === 'free' && __grasp.sm.objs.length > 0", timeout=15000)
 async def settle(page, ms=1300): await page.wait_for_timeout(ms)
 async def drag(page, x0, x1, y, step=64, wait=16):
@@ -69,10 +69,12 @@ async def main():
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
         # ---------------- desktop, mouse ----------------
         ctx, page, errs = await fresh(b)
-        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("mode === 'mouse' && __grasp.smash.run === 'stage'", timeout=8000)  # (navigation v2: the sticker plays the current stage)
+        check('the Smash sticker: its current stage at once (no map)', await page.evaluate("$('smashMap').hidden && location.pathname === '/smash'"))
+        await page.evaluate("goHome()"); await page.wait_for_timeout(400); await page.evaluate("openSmashMap({ how: 'mouse' })"); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)  # (its map: the Map buttons, /smash)
         mp = await page.evaluate("""(() => { const n = [...document.querySelectorAll('#smList .smNode')]; return { path: location.pathname, mode, title: $('smTitle').textContent, free: $('smashFree').getBoundingClientRect().height > 60, nodes: n.length,
           cur: n.filter(b => b.classList.contains('cur')).map(b => b.dataset.n), locked: n.filter(b => b.classList.contains('locked')).length, scenes: [...document.querySelectorAll('#smList .smScene')].map(s => s.dataset.scene), total: $('smStarTotal').textContent.trim() }; })()""")
-        check('the Smash tile opens its map at /smash: Free play on top, 20 stages in 5 scene groups (stage 1 current, the rest locked), no game running yet', mp['path'] == '/smash' and mp['mode'] == 'none' and mp['title'] == 'Smash' and mp['free'] and mp['nodes'] == 20 and mp['cur'] == ['1'] and mp['locked'] == 19 and mp['scenes'] == ['wall', 'room', 'city', 'blocks', 'food'] and mp['total'].startswith('0'), mp)
+        check('the Smash map at /smash: Free play on top, 20 stages in 5 scene groups (stage 1 current, the rest locked), no game running yet', mp['path'] == '/smash' and mp['mode'] == 'none' and mp['title'] == 'Smash' and mp['free'] and mp['nodes'] == 20 and mp['cur'] == ['1'] and mp['locked'] == 19 and mp['scenes'] == ['wall', 'room', 'city', 'blocks', 'food'] and mp['total'].startswith('0'), mp)
         await page.click('#smList .smNode[data-n="5"]', force=True); await page.wait_for_timeout(300)
         check('a locked stage does not start (the map stays)', await page.evaluate("__grasp.sm.mapOpen && mode === 'none'"))
         await page.keyboard.press('Escape'); await page.wait_for_function("!__grasp.sm.mapOpen && !location.pathname.startsWith('/smash')", timeout=4000)
@@ -208,7 +210,7 @@ async def main():
         await page.evaluate("__grasp.grippy.cool()"); await page.evaluate(f"{SM}.toBoss()"); await play_phase(page)
         bs = await page.evaluate(f"(() => {{ const o = {SM}.boss; return {{ seg: {S}.seg, kind: o && o.extra.kind, hp: o && o.hp, max: o && o.maxHp, cx: o && o.body.position.x, said: __grasp.grippy.last && __grasp.grippy.last.event, tag: {S}.tag && {S}.tag.text, w: o && o.w, h: o && o.h }}; }})()")
         await page.wait_for_function(S + ".ui.bossBar", timeout=3000); bar = await page.evaluate(S + ".ui.bossBar")
-        check('the boss rolls in after the last wave: the room\'s giant TV, 50 hp, "Boss!", the voice says so (smashBoss)', bs['seg'] == 'boss' and bs['kind'] == 'tv' and bs['hp'] == 50 and bs['max'] == 50 and abs(bs['cx'] - 640) < 2 and bs['tag'] == 'Boss!' and bs['said'] == 'smashBoss' and bs['w'] > 250, bs)
+        check('the boss rolls in after the last wave: the room\'s giant TV, 50 hp, "Boss!" (its roar; no voice line)', bs['seg'] == 'boss' and bs['kind'] == 'tv' and bs['hp'] == 50 and bs['max'] == 50 and abs(bs['cx'] - 640) < 2 and bs['tag'] == 'Boss!' and bs['said'] != 'smashBoss' and bs['w'] > 250, bs)
         check('its health bar sits under the HUD pill, full', bar and bar['f'] == 1 and bar['y'] > (await page.evaluate(S + ".ui.hud"))['y'] and bar['w'] >= 200, bar)
         dm = await page.evaluate(f"[{SM}.hit({SM}.boss, 0.3), {SM}.hit({SM}.boss, 0.7), {SM}.hit({SM}.boss, 0.95)]")
         check('harder hits hurt the boss more: a tap 1, a fast swipe 2, a very fast one 3', dm == [49, 47, 44], dm)
@@ -226,13 +228,13 @@ async def main():
         await page.wait_for_function(S + ".phase === 'clear'", timeout=4000)
         await page.wait_for_function(S + ".ui.clearBox", timeout=3000)
         cl = await page.evaluate(f"({{ coins: __grasp.profile.coins, box: {S}.ui.clearBox, said: __grasp.grippy.last && __grasp.grippy.last.event, prog: {SM}.progress }})")
-        check('then the victory: "Smashed!", confetti, +6 coins, the voice cheers (smashClear), the track full', cl['box']['text'] == 'Smashed!' and cl['coins'] - c0 == 6 and cl['said'] == 'smashClear' and cl['prog'] == 1, [c0, cl])
+        check('then the victory: "Smashed!", confetti, +6 coins (no cheer line), the track full', cl['box']['text'] == 'Smashed!' and cl['coins'] - c0 == 6 and cl['said'] != 'smashClear' and cl['prog'] == 1, [c0, cl])
         await page.screenshot(path='tests/out/smash3_victory_desktop_en.png')
         await page.wait_for_function(S + ".phase === 'in'", timeout=5000)
         sl = await page.evaluate(f"({{ scene: {S}.scene, slide: {S}.slide, tag: {S}.ui.tagBox }})")
         await page.wait_for_function(S + ".phase === 'play'", timeout=5000)
         nx = await page.evaluate(f"({{ scene: {S}.scene, meter: {SM}.meter, slide: {S}.slide, wave: {S}.wave, seg: {S}.seg, said: __grasp.grippy.said.map(s => s.event).slice(-2) }})")
-        check('then the next scene (the city) slides in with its name, wave 1 of it, and the voice says so (smashScene)', sl['scene'] == 'city' and sl['slide'] > 0 and nx['scene'] == 'city' and nx['meter'] < 0.05 and nx['slide'] == 0 and nx['wave'] == 0 and nx['seg'] == 'wave' and nx['said'] == ['smashClear', 'smashScene'], [sl, nx])
+        check('then the next scene (the city) slides in with its name, wave 1 of it (its rise sound; no voice line)', sl['scene'] == 'city' and sl['slide'] > 0 and nx['scene'] == 'city' and nx['meter'] < 0.05 and nx['slide'] == 0 and nx['wave'] == 0 and nx['seg'] == 'wave' and not {'smashClear', 'smashScene'} & set(nx['said']), [sl, nx])
         check('free play order: wall, room, city, blocks, food, then round again', await page.evaluate("(() => { const out = []; for (let i = 0; i < 6; i++) { smFreeNext(performance.now()); out.push(__grasp.smash.scene); } return out; })()") == ['blocks', 'food', 'wall', 'room', 'city', 'blocks'])
         try: await page.wait_for_function("['brick', 'car', 'wall', 'smash'].every(k => __grasp.events.some(e => e[0] === k))", timeout=5000)  # (the stats are flushed to track() once a second: polled)
         except Exception: pass
@@ -242,7 +244,7 @@ async def main():
         await page.evaluate(f"{SM}.build('blocks', 1)"); await settle(page, 600)
         await page.click('#pauseBtn'); await page.wait_for_function("menu.open && __grasp.pause.on", timeout=3000)
         sh = await page.evaluate("[...document.querySelectorAll('.chrome.open button')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.id)")
-        check('the pause button opens the sheet: Resume, Restart, Sound, Language, Stats, Home', all(i in sh for i in ['resumeBtn', 'resetBtn', 'muteBtn', 'hudBtn', 'homeBtn']) and len(sh) >= 6, sh)
+        check('the pause button opens the sheet: Resume, Home, Restart, Map (navigation v2)', sh == ['resumeBtn', 'homeBtn', 'resetBtn', 'menuMap'] or sorted(sh) == sorted(['resumeBtn', 'homeBtn', 'resetBtn', 'menuMap']), sh)
         await page.evaluate(f"(() => {{ for (const o of {SM}.alive('block').slice(0, 3)) {SM}.breakObj(o); }})()")
         y0 = await page.evaluate("__grasp.smash.pieces.map(p => p.position.y).join()"); await page.wait_for_timeout(400); y1 = await page.evaluate("__grasp.smash.pieces.map(p => p.position.y).join()")
         check('paused: the debris hangs still (physics waits)', y0 == y1 and len(y0) > 0)
@@ -262,7 +264,7 @@ async def main():
 
         # ---------------- camera ----------------
         ctx, page, errs = await fresh(b, camera=True)
-        await page.evaluate("$('camBtn').click()"); await page.click('#start button[data-mode=smash]'); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)
+        await page.evaluate("$('camBtn').click()"); await page.evaluate("__grasp.setGameMode('smash'); openSmashMap({ how: inputPref() })"); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)  # (navigation v2: the sticker plays the current stage; the map is behind its Map buttons)
         await page.click('#smashFree'); await page.wait_for_function("mode === 'camera' && __grasp.sm.objs.length > 0", timeout=15000)
         await page.evaluate("window.__handFor = () => fistAt(200, 300)"); await page.wait_for_timeout(700)
         check('camera: a closed fist is recognised', await page.evaluate("gesture") == 'fist', await page.evaluate("[gesture, hand.pinchD]"))

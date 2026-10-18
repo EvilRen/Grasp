@@ -92,8 +92,8 @@ async def free_tests(b, he):
     # all popped: FLIP!
     side0 = await page.evaluate("pi.side")
     await pop_all(page)
-    ok = await wait(page, "!!pi.flip", 3000); fl = await page.evaluate("[pi.flipText ? 1 : 0, __grasp.tg.said.slice(-1)[0].text]")
-    check(tag + ': every bubble popped: the board flips ("FLIP!" on screen and said)', ok and fl[0] == 1 and fl[1] == ('הופכים!' if he else 'Flip!'), fl)
+    ok = await wait(page, "!!pi.flip", 3000); fl = await page.evaluate("[pi.flipText ? 1 : 0, __grasp.tg.said.map(x => x.text), __grasp.tg.snd.slice(-6)]")
+    check(tag + ': every bubble popped: the board flips ("FLIP!" on screen, a whoosh; less talking: not said)', ok and fl[0] == 1 and ('הופכים!' if he else 'Flip!') not in fl[1] and 'whoosh' in fl[2], fl)
     ok = await wait(page, "!pi.flip && pi.st.every(s => !s.down)", 4000)
     r = await page.evaluate("({ side: pi.side, flips: profile.popit.flips, prog: profile.popit.prog, left: __grasp.popit.left(), n: pi.L.bubbles.length })")
     check(tag + ': after the flip every bubble is up again (the other side: the board mirrored); the flip counted', ok and r['side'] != side0 and r['flips'] == 1 and r['prog'] == 1 and r['left'] == r['n'], r)
@@ -107,16 +107,16 @@ async def free_tests(b, he):
 
 async def kid_open(b, he, init=''):
     ctx, page, errs = await page_for(b, '/', he, init)
-    await page.tap('#arcadeBtn'); await wait(page, "!$('arcadePick').hidden", 3000); await page.wait_for_timeout(450)
-    sub = await page.inner_text('#arcPopitSub')
-    await page.tap('#arcPopit')
-    ok = await wait(page, "gameMode === 'popit' && mode === 'mouse' && pi.over && pi.over.kind === 'picker'", 6000)
+    await page.tap('#bigPopit')  # (navigation v2: the Big kids sticker: Free play at once; the modes in the corner)
+    sub = await wait(page, "gameMode === 'popit' && mode === 'mouse' && !pi.over && pi.mode === 'free' && pi.flow === 'kid'", 6000)
+    await page.wait_for_timeout(300); cr = await ui(page, 'corner'); await tap(page, cr['x'] + cr['w'] / 2, cr['y'] + cr['h'] / 2)
+    ok = await wait(page, "pi.over && pi.over.kind === 'picker'", 3000); await page.wait_for_timeout(300)
     return ctx, page, errs, ok, sub
 
 async def race_tests(b, he):
     tag = 'race ' + ('HE' if he else 'EN')
     ctx, page, errs, ok, sub = await kid_open(b, he)
-    check(tag + ': the Arcade row (its line: the boards, 3 of 10) opens Pop It with the mode picker (the kid flow)', ok and ('3 מתוך 10' if he else '3/10') in sub and await page.evaluate("pi.flow === 'kid' && location.pathname === '/popit'"), sub)
+    check(tag + ': the Big kids sticker opens Pop It in Free play at once (the kid flow, no picker first); its corner opens the mode picker', ok and sub and await page.evaluate("pi.flow === 'kid' && location.pathname === '/popit'"), sub)
     ids = [u['id'] for u in await page.evaluate(f"{P}.ui")]
     check(tag + ': the picker: Pop, Race, Colors, Remember, Boards (big round icons)', ids == ['mode:free', 'mode:race', 'mode:color', 'mode:simon', 'mode:shelf'] and all(u.get('r', 0) >= 44 for u in await page.evaluate(f"{P}.ui")), ids)
     if not he: await page.screenshot(path=OUT + 'popit_picker_en.png')
@@ -142,10 +142,11 @@ async def race_tests(b, he):
     await pop_all(page)
     ok = await wait(page, "pi.over && pi.over.kind === 'race'", 4000)
     r = await page.evaluate("({ o: pi.over, best: profile.popit.best.square, got: profile.popit.got.slice(), q: pi.queue.map(x => x.kind) })")
-    check(tag + ': a faster time: "New record!", 3 stars, the best updated', ok and r['o']['record'] and r['o']['stars'] == 3 and r['best'] == r['o']['ms'] and ('שיא חדש!' if he else 'New record!') in await said(page), r)
+    check(tag + ': a faster time: "New record!", 3 stars, the best updated', ok and r['o']['record'] and r['o']['stars'] == 3 and r['best'] == r['o']['ms'] and ('שיא חדש!' if he else 'New record!') not in await said(page) and 'record' in await page.evaluate("pi.snd"), r)
     check(tag + ': a 3-star race unlocks a new board (shown after the card)', len(r['got']) == got0 + 1 and r['q'] == ['reveal'], r)
     # Remember in the kid flow: two mistakes = a gentle end card
-    await press(page, 'modes'); ok = await wait(page, "pi.over && pi.over.kind === 'reveal'", 3000)
+    check(tag + ': the race card: Again (big), Home (navigation v2: the modes stay in the corner)', [u['id'] for u in await page.evaluate(f"{P}.ui")][-2:] == ['again', 'home'])
+    await press(page, 'again'); ok = await wait(page, "pi.over && pi.over.kind === 'reveal'", 3000)
     await page.wait_for_timeout(800); await tap(page, 195, 700); ok = await wait(page, "!pi.over || pi.over.kind === 'picker'", 3000)
     await page.evaluate(f"{P}.setMode('simon')"); ok = await wait(page, "pi.simon.phase === 'input'", 6000)
     seq = await page.evaluate("pi.simon.seq.slice()"); bs = await bubbles(page); wrong = next(q for q in bs if q['i'] != seq[0])
@@ -159,8 +160,9 @@ async def pattern_tests(b, he):
     tag = 'colors ' + ('HE' if he else 'EN')
     ctx, page, errs = await page_for(b, '/popit', he, "localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, tips: ['tg_popit'] }));")
     await wait(page, "gameMode === 'popit' && mode === 'mouse'")
-    # the corner button opens the picker (the little ones: no Race)
-    cr = await ui(page, 'corner'); await tap(page, cr['x'] + cr['w'] / 2, cr['y'] + cr['h'] / 2)
+    # the little ones' Pop It has no mode button (navigation v2: no door elsewhere in a toddler game); the picker, through its hook (the little ones: no Race)
+    check(tag + ': the little flow: no corner button drawn', await ui(page, 'corner') is None)
+    await page.evaluate(f"{P}.act('corner')")
     ok = await wait(page, "pi.over && pi.over.kind === 'picker'", 2000); await page.wait_for_timeout(300)
     ids = [u['id'] for u in await page.evaluate(f"{P}.ui")]
     check(tag + ': the corner button opens the mode picker; the little ones get Pop, Colors, Remember, Boards', ok and ids == ['mode:free', 'mode:color', 'mode:simon', 'mode:shelf'], ids)
@@ -168,7 +170,7 @@ async def pattern_tests(b, he):
     await page.wait_for_timeout(600)
     tgt = await page.evaluate("pi.color.target"); names = {'red': 'האדומות', 'blue': 'הכחולות', 'green': 'הירוקות', 'yellow': 'הצהובות', 'orange': 'הכתומות', 'purple': 'הסגולות'}
     w = await said(page)
-    check(tag + ': Colors: the voice names a colour ("Pop the %s ones!")' % tgt, ok and any((('פוצצו את ' + names[tgt]) if he else ('Pop the ' + tgt + ' ones!')) in s for s in w), w[-2:])
+    check(tag + ': Colors: the voice names the colour only ("%s!")' % tgt, ok and any(((names[tgt] + '!') if he else (tgt.capitalize() + '!')) == s for s in w), w[-2:])
     bs = await bubbles(page); wrong = next(q for q in bs if q['col'] != tgt); right = [q for q in bs if q['col'] == tgt]
     await tap(page, wrong['x'], wrong['y'])
     st = await page.evaluate(f"[pi.st[{wrong['i']}].down, pi.color.wrong]")
@@ -179,7 +181,7 @@ async def pattern_tests(b, he):
     await page.wait_for_timeout(250); await page.screenshot(path=OUT + 'popit_pattern_%s.png' % ('he' if he else 'en'))
     await tap(page, right[-1]['x'], right[-1]['y'])
     ok = await wait(page, "!!pi.color.okAt", 2000); w = await said(page)
-    check(tag + ': every %s one popped: a party, "%s! Well done!"' % (tgt, tgt), ok and ('כל הכבוד' in w[-1] if he else w[-1].endswith('Well done!')), w[-1:])
+    check(tag + ': every %s one popped: a party (its chord), no "Well done!" line' % tgt, ok and not any(('כל הכבוד' in x if he else 'Well done' in x) for x in w) and 'chord' in await page.evaluate("__grasp.tg.snd.slice(-6)"), w[-1:])
     ok = await wait(page, f"pi.color.target && pi.color.target !== '{tgt}' && !pi.color.okAt", 4000)
     check(tag + ': then the next colour', ok, await page.evaluate("pi.color.target"))
     # Remember (Simon), the little ones' flow: the sequence plays, repeat it, it grows; a mistake replays it (no end)
@@ -211,11 +213,11 @@ async def shelf_tests(b, he):
     r = await page.evaluate("({ got: profile.popit.got.slice(), stored: JSON.parse(localStorage.getItem('grasp.profile')).popit.got, id: pi.over && pi.over.id, prog: profile.popit.prog })")
     await page.wait_for_timeout(700); w = await said(page)
     if not he: await page.screenshot(path=OUT + 'popit_reveal_en.png')
-    check(tag + ': every 3 flips a new board: "New board!" (the star), in the profile and stored', ok and r['id'] == 'star' and 'star' in r['got'] and 'star' in r['stored'] and r['prog'] == 0 and any(('לוח חדש!' if he else 'New board!') in s for s in w), [r, w[-2:]])
+    check(tag + ': every 3 flips a new board: "New board!" (the star), in the profile and stored', ok and r['id'] == 'star' and 'star' in r['got'] and 'star' in r['stored'] and r['prog'] == 0 and not any(('לוח חדש!' if he else 'New board!') in s for s in w) and 'unlock' in await page.evaluate("pi.snd"), [r, w[-2:]])
     await tap(page, 195, 760); ok = await wait(page, "!pi.over && pi.board === 'star'", 3000)
     check(tag + ': a tap: play the new board', ok and await page.evaluate("profile.popit.board") == 'star')
     # the shelf: every board, the locked ones as silhouettes
-    cr = await ui(page, 'corner'); await tap(page, cr['x'] + cr['w'] / 2, cr['y'] + cr['h'] / 2); await wait(page, "pi.over && pi.over.kind === 'picker'", 2000)
+    await page.evaluate(f"{P}.act('corner')"); await wait(page, "pi.over && pi.over.kind === 'picker'", 2000)  # (the little flow: no corner button: its hook)
     await press(page, 'mode:shelf'); ok = await wait(page, "pi.over && pi.over.kind === 'shelf'", 2000); await page.wait_for_timeout(500)
     tiles = [u['id'] for u in await page.evaluate(f"{P}.ui") if u['id'].startswith('board:')]
     check(tag + ': the shelf shows the 4 boards got as tiles (the 6 others locked)', ok and tiles == ['board:square', 'board:circle', 'board:heart', 'board:star'], tiles)

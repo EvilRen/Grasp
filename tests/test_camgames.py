@@ -44,8 +44,7 @@ async def press(page, mobile, sel):
 
 async def start_game(page, m, mobile=False, touch_ok=True, cam=False):
     # the tile opens the picker; the card starts the game (with the remembered input); 'Play with touch' closes the camera prompt
-    await press(page, mobile, '#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=4000)
-    await press(page, mobile, f'#cgPick [data-cg={m}]')
+    await press(page, mobile, f'#camGamesBtn [data-cg={m}]')  # (navigation v2: each camera game is its own sticker on the start screen)
     if cam:
         await page.wait_for_function(f"mode === 'camera' && gameMode === '{m}'", timeout=15000)
     else:
@@ -67,10 +66,10 @@ async def home(page):
     await page.evaluate("goHome()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=5000)
 
 START = """(() => { const st = $('start'), r = (el) => { const q = el.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; };
-  const tiles = [...document.querySelectorAll('#start .mbGrid button:not(#camGamesBtn)')].map(b => r(b)), cam = r($('camGamesBtn')), tab = r($('tabBar')), lit = r($('arcadeBtn'));  // (menu B: the hero + Map, Smash · Slice, then Arcade · Camera games, the dock)
-  const tx = $('camGamesBtn').querySelector('.lb');
-  return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, W: innerWidth, H: innerHeight, tiles, cam, tab, lit,
-    label: tx.textContent, labelFits: tx.scrollWidth <= tx.clientWidth + 1, icons: $('camGamesBtn').querySelectorAll('.ic svg').length }; })()"""
+  const tiles = [$('heroPlay'), ...document.querySelectorAll('#start .mbGrid > .stk')].map(b => r(b)), cam = r($('camGamesBtn')), tab = r($('tabBar')), lit = r($('bigPopit'));  // (navigation v2: the hero + Map + chips, Smash · Slice · Pop It, then the camera games' row, the dock)
+  const tx = $('camGamesBtn').querySelector('.mbCamT .lb'), cards = [...$('camGamesBtn').querySelectorAll('[data-cg]')].map(c => ({ cg: c.dataset.cg, lb: c.querySelector('.lb').textContent, ...r(c) }));
+  return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, W: innerWidth, H: innerHeight, tiles, cam, tab, lit, cards,
+    label: tx.textContent, labelFits: tx.scrollWidth <= tx.clientWidth + 1, icons: $('camGamesBtn').querySelectorAll('.mbCamT .ic svg').length }; })()"""
 
 async def main():
     async with async_playwright() as p:
@@ -85,17 +84,10 @@ async def main():
                 L = await page.evaluate(START)
                 inside = lambda q: q['l'] >= 0 and q['t'] >= 0 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5 and q['w'] > 0
                 chk(f'{tag}: the start screen has no scroll with the Camera games tile', L['noScroll'], L)
-                chk(f'{tag}: the hero, the tiles, the Camera games tile and the tab bar all on screen', len(L['tiles']) == 5 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
-                chk(f'{tag}: menu B: the Camera games sticker in the grid\'s second row beside Arcade (>= 44 px), above the dock, named, its one drawing', abs(L['cam']['t'] - L['lit']['t']) < 12 and L['cam']['h'] >= 44 and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 1, L)
+                chk(f'{tag}: the hero, the tiles, the camera games\' row and the tab bar all on screen', len(L['tiles']) == 4 and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
+                chk(f'{tag}: navigation v2: the camera games\' row under Smash · Slice · Pop It, above the dock, named, its camera drawing', L['cam']['t'] > L['lit']['b'] and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 1, L)
                 await page.screenshot(path=OUT + f'cam_start_{sfx}.png')
-                await press(page, mobile, '#camGamesBtn'); await page.wait_for_function("!$('cgPick').hidden", timeout=4000); await page.wait_for_timeout(350)
-                pk = await page.evaluate("""(() => { const s = $('cgPick').querySelector('.sheet').getBoundingClientRect(), cards = [...$('cgPick').querySelectorAll('[data-cg]')];
-                  return { box: [s.left, s.top, s.right, s.bottom], W: innerWidth, H: innerHeight, cards: cards.map(c => [c.dataset.cg, c.querySelector('.lb').textContent, c.getBoundingClientRect().height]), cam: !$('cgPickCam').hidden, camText: $('cgPickCam').textContent }; })()""")
-                chk(f'{tag}: the picker: four games, named, the sheet on screen', [c[0] for c in pk['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c[1] and c[2] >= 90 for c in pk['cards']) and pk['box'][0] >= 0 and pk['box'][2] <= pk['W'] and pk['box'][3] <= pk['H'], pk)
-                chk(f'{tag}: the picker has no extra camera banner (panel fix: the camera prompt asks once per device instead)', not pk['cam'], pk)
-                if mobile: await page.screenshot(path=OUT + f"cam_picker_{'he' if he else 'en'}.png")
-                await page.keyboard.press('Escape'); await page.wait_for_function("$('cgPick').hidden", timeout=3000)
-                chk(f'{tag}: Escape closes the picker', True)
+                chk(f'{tag}: the row: four games, each its own sticker (>= 44 px), named, on screen (navigation v2: no picker sheet)', [c['cg'] for c in L['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c['lb'] and c['h'] >= 44 and c['w'] >= 44 and inside(c) for c in L['cards']), L['cards'])
                 chk(f'{tag}: no page errors', not errs, errs); await ctx.close()
 
         # ---- each game from the picker (touch: the camera prompt; 'Play with touch' once a session) and its direct link; the pause menu; Home ----

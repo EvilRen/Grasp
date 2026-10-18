@@ -43,7 +43,7 @@ async def main():
         await page.wait_for_function(f"{S}.ui.rbIntroBox", timeout=4000)
         en = await page.evaluate(f"({{ s: {B}.state(), sfx: __sfx.slice(), intro: {S}.ui.rbIntroBox, voice: __grasp.grippy.last && __grasp.grippy.last.event, bar: {S}.ui.bossBar, hud: {S}.ui.hud, accent: WORLDS[0].accent }})")
         check('it walks in to its spot (z ~ 0.32 of the corridor) with a roar', abs(en['s']['z'] - en['s']['zHome']) < 2 and abs(en['s']['zHome'] - 768) < 1 and 'roar' in en['sfx'], [en['s']['z'], en['sfx'][:6]])
-        check('its name drops in: "Brick Golem" (the banner), and the voice line for a boss', en['intro'] and en['intro']['name'] == 'Brick Golem' and en['voice'] == 'boss', [en['intro'], en['voice']])
+        check('its name drops in: "Brick Golem" (the banner) with its roar (less talking: no voice line)', en['intro'] and en['intro']['name'] == 'Brick Golem' and en['voice'] != 'boss', [en['intro'], en['voice']])
         bar = en['bar']; hud = en['hud']
         check('the health bar: thin, at the top under the hearts pill, its name, the world\'s colour, full, inside the screen', bar and bar['name'] == 'Brick Golem' and bar['col'] == en['accent'] and bar['frac'] == 1 and bar['y'] >= hud['y'] + hud['h'] and bar['y'] < hud['y'] + hud['h'] + 20 and bar['barH'] <= 10 and bar['x'] >= 0 and bar['x'] + bar['w'] <= 1280, [bar, hud])
         await page.wait_for_timeout(600); await page.screenshot(path='tests/out/boss_intro.png')
@@ -140,7 +140,7 @@ async def main():
         check('"Victory!" and "Brick Golem defeated!" over the burst', await page.evaluate("t('bossVictory')") == 'Victory!' and await page.evaluate("t('bossDefeated', { b: t('bn_golem') })") == 'Brick Golem defeated!')
         await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.buttons && {S}.ui.buttons.next", timeout=12000); await page.wait_for_timeout(1400)
         cd = await page.evaluate(f"({{ btn: Object.keys({S}.ui.buttons), card: {S}.ui.card, labels: {S}.ui.advLabels, world: {S}.world, coins: profile.coins - {c0} }})")
-        check('the card: "World 1 done!", Next / Play again / Map / Share (home2), inside the screen; world 2 now', set(cd['btn']) == {'next', 'retry', 'map', 'share'} and cd['card']['y'] + cd['card']['h'] <= 800 and cd['world'] == 2 and cd['coins'] >= 11, cd)
+        check('the card: "World 1 done!", Next / Home / Share (navigation v2: at most 3; the map in the pause sheet), inside the screen; world 2 now', set(cd['btn']) == {'next', 'home', 'share'} and cd['card']['y'] + cd['card']['h'] <= 800 and cd['world'] == 2 and cd['coins'] >= 11, cd)
         await page.screenshot(path='tests/out/boss_victory_card.png')
         check('B3: no page errors', not errs, errs); await ctx.close()
 
@@ -151,7 +151,7 @@ async def main():
         await page.evaluate(f"{A}.failTest()")
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.retry && {S}.ui.advBoss", timeout=8000); await page.wait_for_timeout(600)
         fl = await page.evaluate(f"({{ r: {A}.result, ab: {S}.ui.advBoss, btn: Object.keys({S}.ui.buttons), labels: {S}.ui.advLabels, card: {S}.ui.card }})")
-        check('fail: "So close!" with "Glass Queen: 40% left" and its bar; Try again / Map (phase 1: no Share on a fail card); the card fits the phone', not fl['r']['clear'] and fl['r']['rb']['left'] == 40 and fl['ab']['left'] == 40 and fl['labels']['retry'] == 'Try again' and set(fl['btn']) == {'retry', 'map'} and fl['card']['y'] + fl['card']['h'] <= 740, fl)
+        check('fail: "So close!" with "Glass Queen: 40% left" and its bar; Try again / Home / Map (phase 1: no Share on a fail card); the card fits the phone', not fl['r']['clear'] and fl['r']['rb']['left'] == 40 and fl['ab']['left'] == 40 and fl['labels']['retry'] == 'Try again' and set(fl['btn']) == {'retry', 'home', 'map'} and fl['card']['y'] + fl['card']['h'] <= 740, fl)
         await page.screenshot(path='tests/out/boss_fail.png')
         await page.evaluate(f"endCardAction('retry', performance.now())")
         await page.wait_for_function(f"{A}.phase === 'play' && {B}.b", timeout=6000)

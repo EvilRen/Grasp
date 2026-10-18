@@ -233,7 +233,7 @@ async def main():
                     else: await page.evaluate("__grasp.setGameMode('strike'); strikeEndless('mouse')")
                     await page.wait_for_function(f"gameMode === 'strike' && mode !== 'none' && {S}.walls.length", timeout=8000)
                     await page.evaluate(f"{S}.lives = 1; cursor.history.length = 0; {S}.chest = null; {S}.setBallZ(-__grasp.CONFIG.STRIKE_HIT_Z * 0.7, innerWidth * 0.5, innerHeight * 0.1)")
-                    await page.wait_for_function(f"{S}.over && {S}.ui.card && {S}.ui.titleBox && {S}.ui.coinBox", timeout=6000); await page.wait_for_timeout(600)
+                    await page.wait_for_function(f"{S}.over && {S}.ui.card && {S}.ui.titleBox && {S}.ui.buttons", timeout=6000); await page.wait_for_timeout(600)
                     u = await page.evaluate(f"(() => {{ const u = {S}.ui; return {{ title: u.titleBox, coin: u.coinBox, xp: u.xpBox, streak: u.streakChip, card: u.card, btn: u.buttons, W: innerWidth, H: innerHeight }}; }})()")
                     T = box(u['title']); pills = [box(u[k]) for k in ('coin', 'xp', 'streak') if u.get(k)]
                     tg = tag + (' daily' if daily else '')

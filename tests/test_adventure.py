@@ -128,17 +128,17 @@ async def main():
         check('the last wall clears the stage: one life lost = 2 stars; a first clear pays 3 + 2 coins', await page.evaluate(A + ".phase") == 'clear' and r['clear'] and r['stars'] == 2 and r['first'] and r['coins'] == 5 and await page.evaluate(P + ".coins") == c0 + 5, r)
         await page.wait_for_function(f"{S}.over && {A}.phase === 'card' && {S}.ui.advStars && {S}.ui.advStars.shown === 2", timeout=8000)
         card = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), stars: {A}.stars, unl: {A}.unlocked, nw: {S}.walls.length }})")
-        check('the clear card: the 2 stars flew in; Next / Play again / Map (phase 1: Share only on a record or a boss); stage 2 unlocked, stars saved; still no wall spawned', card['b'] == ['next', 'retry', 'map'] and card['stars'] == {'1': 2} and card['unl'] == 2 and card['nw'] == 0, card)
+        check('the clear card: the 2 stars flew in; Next / Home / Map (navigation v2: at most 3; phase 1: Share only on a record or a boss); stage 2 unlocked, stars saved; still no wall spawned', card['b'] == ['next', 'home', 'map'] and card['stars'] == {'1': 2} and card['unl'] == 2 and card['nw'] == 0, card)
         await page.wait_for_function(f"{S}.ui.advStarHint && {S}.ui.advStarHint.a >= 1", timeout=6000)
         hn = await page.evaluate(f"({{ h: {S}.ui.advStarHint, lb: {S}.ui.advLabels, c: {S}.ui.card, st: {S}.ui.advStars.stars[0], pay: {S}.ui.advPay[0], nx: {S}.ui.buttons.next }})")
         check('the clear card (2 stars): the line under the stars says why and how ("Missed once — no misses for ★★★": phase 1, stages 1-3 have no hearts), between the stars and what it paid, inside the card',
               hn['h']['text'] == 'Missed once — no misses for ★★★' and hn['h']['y'] > hn['st']['y'] + 20 and hn['h']['y'] + hn['h']['h'] <= hn['pay']['y'] and hn['h']['x'] >= hn['c']['x'] and hn['h']['x'] + hn['h']['w'] <= hn['c']['x'] + hn['c']['w'], hn)
-        check('the clear card\'s buttons: Next / Play again / Map (not "Try again" after a success)', hn['lb'] == {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}, hn['lb'])
+        check('the clear card\'s buttons: Next / Home / Map (navigation v2)', hn['lb'] == {'next': 'Next', 'home': 'Home', 'map': 'Map'}, hn['lb'])
         await page.screenshot(path='tests/out/adv_clear_card.png')
         # replays: only the stars added pay (1 each); stars never go down
         res = []; hints = []
         for lost in (0, 0, 2):
-            await press(page, 'retry'); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 1 && !{S}.over", timeout=6000)
+            await page.evaluate(f"{A}.start(1, 'mouse')"); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 1 && !{S}.over", timeout=6000)  # (navigation v2: no Play again on a clear card: the stage again from its stop)
             c = await page.evaluate(P + ".coins"); rr = await page.evaluate(f"{A}.finishTest({lost})")
             res.append((rr['stars'], rr['coins'], await page.evaluate(P + ".coins") - c, await page.evaluate(A + ".stars")['1'] if False else await page.evaluate(f"{A}.stars[1]")))
             await page.wait_for_function(f"{S}.over && {S}.ui.advStarHint", timeout=8000); hints.append(await page.evaluate(f"{S}.ui.advStarHint.text"))
@@ -153,10 +153,10 @@ async def main():
         fr = await page.evaluate(A + ".failTest()")
         await page.wait_for_function(f"{S}.over && {S}.ui.advWalls && {S}.ui.buttons && {S}.ui.buttons.retry", timeout=6000)
         fc = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), walls: {S}.ui.advWalls, txt: [I18N.en.soClose, I18N.en.wallsOf], unl: {A}.unlocked, st: {A}.stars[2] || 0 }})")
-        check('losing the 3 lives: the fail card ("So close!", 2 of 4 walls lit), Try again (big) and Map; nothing unlocked, no stars', not fr['clear'] and fr['cleared'] == 2 and fr['walls'] == 4 and fc['b'] == ['retry', 'map'] and fc['walls']['cleared'] == 2 and sum(1 for q in fc['walls']['pips'] if q['on']) == 2 and fc['unl'] == 2 and fc['st'] == 0, [fr, fc])
+        check('losing the 3 lives: the fail card ("So close!", 2 of 4 walls lit), Try again (big) and Map; nothing unlocked, no stars', not fr['clear'] and fr['cleared'] == 2 and fr['walls'] == 4 and fc['b'] == ['retry', 'home', 'map'] and fc['walls']['cleared'] == 2 and sum(1 for q in fc['walls']['pips'] if q['on']) == 2 and fc['unl'] == 2 and fc['st'] == 0, [fr, fc])
         await page.screenshot(path='tests/out/adv_fail_card.png')
         fl = await page.evaluate(f"({{ lb: {S}.ui.advLabels, h: {S}.ui.advStarHint }})")
-        check('fail card: the big button still reads "Try again" (Map beside it), no stars line', fl['lb'] == {'retry': 'Try again', 'map': 'Map'} and fl['h'] is None, fl)
+        check('fail card: the big button still reads "Try again" (Home | Map under it), no stars line', fl['lb'] == {'retry': 'Try again', 'home': 'Home', 'map': 'Map'} and fl['h'] is None, fl)
         rb = await page.evaluate(f"{S}.ui.buttons.retry"); nb = await page.evaluate(f"{S}.ui.buttons.map")
         check('fail card: Try again is the big one', rb['w'] > nb['w'] * 0.99 and rb['h'] > nb['h'], [rb, nb])
         await press(page, 'retry')
@@ -239,13 +239,11 @@ async def main():
         lt = await page.evaluate(A + ".lastTravel")
         check('after the trip: the card, world 2 for good (its floor is not world 1\'s)', lt and lt['from'] == 1 and lt['to'] == 2 and await page.evaluate(S + ".world") == 2 and fl[0] != fl[1], [lt, fl])
         await page.screenshot(path='tests/out/adv_travel_card.png')
+        await page.wait_for_function(f"{S}.ui.buttons && {S}.ui.buttons.next", timeout=10000); mb = await page.evaluate(f"Object.keys({S}.ui.buttons)")
         await press(page, 'next')
-        await page.wait_for_function(f"{A}.mapOpen && document.querySelector('#advPath .anode[data-n=\"9\"].pop')", timeout=8000, polling=50)
-        pop = await page.evaluate("(() => { const sc = $('advScroll').getBoundingClientRect(), b = document.querySelector('#advPath .anode[data-n=\"9\"]').getBoundingClientRect(); return { inView: b.top > sc.top && b.bottom < sc.bottom, cur: document.querySelector('#advPath .anode.cur').dataset.n }; })()")
-        check('Next after a world\'s boss: the map rises to the new world\'s first stop, which pops open (and is the current one)', pop['inView'] and pop['cur'] == '9', pop)
-        await page.wait_for_timeout(500); await page.screenshot(path='tests/out/adv_map_after_travel.png')
-        await tap(page, True, '#advPath .anode[data-n="9"]')
         await page.wait_for_function(f"{A}.on && {A}.stage === 9 && {S}.walls.length", timeout=8000)
+        st9 = {'card': mb, 'map': await page.evaluate(A + ".mapOpen"), 'unl': await page.evaluate(A + ".unlocked")}
+        check('Next after a world\'s boss plays the new world\'s first stage at once, no map first (navigation v2: the portal trip has played; the boss card is Next, Home | Share, the map is in the pause sheet); stage 9 unlocked', mb == ['next', 'home', 'share'] and not st9['map'] and st9['unl'] >= 9, st9)
         await page.wait_for_function(f"{A}.seen.includes('glass')", timeout=15000)
         sp = await page.evaluate(f"({{ world: {S}.world, banner: {S}.ui.levelBanner && {S}.ui.levelBanner.world, spot: {S}.lastSpot && {S}.lastSpot.id, road: __grasp.road.unlocked('glass') }})")
         check('stage 9 in world 2 ("World 2" banner); its glass wall gets the spotlight the first time (not unlocked on the road)', sp['world'] == 2 and sp['spot'] == 'glass' and not sp['road'], sp)
@@ -298,10 +296,10 @@ async def main():
         miss = await page.evaluate("(ks => ['en', 'he'].flatMap(l => ks.filter(k => !I18N[l][k] || (l === 'he' && I18N.he[k] === I18N.en[k])).map(k => l + ':' + k)))(" + json.dumps(keys) + ")")
         check('I18N: every Adventure string in EN and HE (HE translated)', not miss, miss)
         he = await page.evaluate("(() => { const o = {}; for (const k of ['replayBtn', 'retryBtn', 'playAgainBtn', 'starsPerfect', 'starsLost1', 'starsLostN', 'starsRule']) o[k] = I18N.he[k]; o.n3 = I18N.he.starsLostN.replace('{n}', 3); return o; })()")
-        check('HE: "לשחק שוב" on success cards (stage clear, round over), "שוב" kept for a fail; the stars lines in Hebrew', he['replayBtn'] == 'לשחק שוב' and he['playAgainBtn'] == 'לשחק שוב' and he['retryBtn'] == 'שוב'
+        check('HE: "לשחק שוב" on success cards (stage clear, round over), "לנסות שוב" for a fail (the Hebrew pass: buttons in the infinitive); the stars lines in Hebrew', he['replayBtn'] == 'לשחק שוב' and he['playAgainBtn'] == 'לשחק שוב' and he['retryBtn'] == 'לנסות שוב'
               and he['starsPerfect'].startswith('מושלם') and 'לב אחד' in he['starsLost1'] and '★★★' in he['starsLost1'] and he['n3'].startswith('איבדתם 3 לבבות') and he['starsRule'] == '★★★ = בלי לאבד לב', he)
         gl = await page.evaluate("['advClear', 'advPerfect', 'advFail', 'world'].map(e => [__grasp.grippy.lines.en[e], __grasp.grippy.lines.he[e]])")
-        check('Grippy (voice): >= 3 short (1-3 words) lines each for a clear, a perfect clear, a fail and a new world, EN and HE (Hebrew)', all(len(L) >= 3 and all(1 <= len(x.split()) <= 3 for x in L) for pair in gl for L in pair) and all(re.search('[\u0590-\u05ff]', x) for pair in gl for x in pair[1]), gl)
+        check('Grippy (voice): less talking: no lines for a clear, a perfect clear, a fail or a new world (their sounds say it)', all(L is None for pair in gl for L in pair), gl)
         check('strings: no page errors', not errs, errs); await ctx.close()
 
         await b.close()

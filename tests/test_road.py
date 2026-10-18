@@ -137,7 +137,7 @@ async def main():
             await page.evaluate("__grasp.setPlayerLevel(5)"); await page.wait_for_timeout(200)
             f = await page.evaluate(START_FIT)
             check(tag + ': home2: the pill shows the level and its XP bar (no "… XP to: …" text); the start screen fits with the dock (Shop, Events)',
-                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['xpIn'] and not f['nxShown'] and f['lv'] == ('רמה 5' if he else 'Lv 5') and f['btns'] == (['חנות', 'אירועים'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
+                  f['noScroll'] and f['pillIn'] and not f['pillOverlap'] and f['rowIn'] and f['xpIn'] and not f['nxShown'] and f['lv'] == ('רמה 5' if he else 'Lv 5') and f['btns'] == (['חנות', 'היום'] if he else ['Shop', 'Events']), f)  # (menu B: the dock has no Play tab)
             await page.screenshot(path='tests/out/road_' + tag.replace(' ', '_') + '_start.png')
             # the shop: a labelled button (bag icon, 'Shop' + the coin balance) even on a phone, a red dot once something new is affordable
             SHOP = "(() => { const b = $('collectionBtn'), l = b.querySelector('[data-i18n]').getBoundingClientRect(), r = b.getBoundingClientRect(), row = $('tabBar').getBoundingClientRect(); return { label: b.querySelector('[data-i18n]').textContent, lw: l.width, dot: !b.querySelector('.dot').hidden, inRow: r.left >= row.left - 0.5 && r.right <= row.right + 0.5, labelIn: l.left >= r.left - 0.5 && l.right <= r.right + 0.5, h: r.height }; })()"

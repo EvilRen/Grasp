@@ -81,8 +81,8 @@ async def animals_extra(page, tag):
     await page.screenshot(path=OUT + 'toddler_animals_ask_%s.png' % ('he' if 'HE' in tag else 'en'))
     await tap(page, pig['x'], pig['y']); await page.wait_for_timeout(900)
     r = await page.evaluate(f"({{ ask: {T}.an.ask, found: {T}.an.found, snd: {T}.snd.slice(-4) }})")
-    yes = ('נכון! חזיר!' if 'HE' in tag else 'Yes! Pig!')
-    check(tag + ': the right animal: found (confetti), "' + yes + '"', r['found'] == 1 and r['ask'] and r['ask'].get('ok') and 'an_pig' in r['snd'] and yes in await said(page), [r, (await said(page))[-2:]])
+    yes = ('נכון!' if 'HE' in tag else 'Yes!')
+    check(tag + ': the right animal: found (confetti, its sound + the chord), no "' + yes + '" line (less talking)', r['found'] == 1 and r['ask'] and r['ask'].get('ok') and 'an_pig' in r['snd'] and 'chord' in r['snd'] and not any(yes in x for x in await said(page)), [r, (await said(page))[-2:]])
     await page.wait_for_timeout(2600)
     check(tag + ': the next question follows after a moment (never a timer, never an end)', await page.evaluate(f"!!{T}.an.ask && !{T}.an.ask.ok && {T}.an.ask.kind !== 'pig'"), await page.evaluate(f"{T}.an.ask"))
 
@@ -103,8 +103,8 @@ async def colors_extra(page, tag):
     r2 = await co_round(page)
     check(tag + ': a wrong one wiggles and says its own colour ("' + N[wrong['col']] + '!"); no fail, the round goes on', not r2['ok'] and r2['target'] == r['target'] and (N[wrong['col']] + '!') in await said(page) and await page.evaluate(f"{T}.co.right") == 0, (await said(page))[-2:])
     await tap(page, right['x'], right['y']); await page.wait_for_timeout(500)
-    praise = N[right['col']] + ('! כל הכבוד!' if he else '! Well done!')
-    check(tag + ': the right one pops: "' + praise + '"', await page.evaluate(f"{T}.co.right") == 1 and praise in await said(page) and 'pop' in await snd(page), (await said(page))[-2:])
+    praise = ('כל הכבוד' if he else 'Well done')
+    check(tag + ': the right one pops (pop + chord), no "' + praise + '" line', await page.evaluate(f"{T}.co.right") == 1 and not any(praise in x for x in await said(page)) and 'pop' in await snd(page) and 'chord' in await snd(page), (await said(page))[-2:])
     await page.screenshot(path=OUT + 'toddler_colors_pop_%s.png' % ('he' if he else 'en'))
     if not he: # levels: every 3 right answers a level: more choices, more colours
         seen = []
@@ -121,7 +121,7 @@ async def colors_extra(page, tag):
     it = st['items'][0]; good = next(b for b in st['b'] if b['col'] == it['col']); bad = next(b for b in st['b'] if b['col'] != it['col'])
     await drag(page, it['x'], it['y'], bad['x'], bad['y'] - 10); await page.wait_for_timeout(700)
     r = await page.evaluate(f"({{ it: {T}.co.items[0], sorted: {T}.co.sorted }})")
-    check(tag + ': the wrong basket: it bounces home, its colour is said, nothing lost', not r['it']['done'] and abs(r['it']['x'] - r['it']['hx']) < 2 and r['sorted'] == 0 and (N[it['col']] + '!') in await said(page), r)
+    check(tag + ': the wrong basket: it bounces home (boing, the right basket glows), nothing lost', not r['it']['done'] and abs(r['it']['x'] - r['it']['hx']) < 2 and r['sorted'] == 0 and 'boing' in await snd(page), r)
     await drag(page, it['x'], it['y'], good['x'], good['y'] - 10); await page.wait_for_timeout(700)
     check(tag + ': dragged into its basket: in, a plop', await page.evaluate(f"{T}.co.items[0].done && {T}.co.sorted === 1"))
     it2 = st['items'][1]; b2 = next(b for b in st['b'] if b['col'] == it2['col'])
@@ -141,7 +141,7 @@ async def colors_extra(page, tag):
 CAM_FAIL = """(() => { const md = navigator.mediaDevices || {}; md.getUserMedia = () => Promise.reject(new TypeError("Cannot read properties of undefined (reading 'getUserMedia')")); try { Object.defineProperty(navigator, 'mediaDevices', { value: md, configurable: true }); } catch (e) {} })();"""
 async def cam_tests(b, he):
     tag = 'colors camera ' + ('HE' if he else 'EN'); N = CO_NAMES[he]
-    ctx, page, errs = await page_for(b, '/colors', he, init="localStorage.setItem('grasp.profile.tips.seen','1');")
+    ctx, page, errs = await page_for(b, '/colors', he, init="localStorage.setItem('grasp.profile.tips.seen','1'); localStorage.setItem('inputPref', 'camera');")  # (navigation v2: the camera chip shows once the camera is the chosen input)
     posts = []; page.on('request', lambda r: posts.append(r.url) if r.method != 'GET' else None)
     await wait(page, "gameMode === 'colors' && mode === 'mouse'")
     chip = await page.evaluate(f"{T}.co.chips.find(c => c.key === 'cam')")
@@ -161,8 +161,8 @@ async def cam_tests(b, he):
     t0 = await page.evaluate(f"(() => {{ {T}.ccInject({{ rgb: [220, 40, 40] }}); return performance.now(); }})()")
     ok = await wait(page, f"{T}.cc.found === 1", 4000); dt = await page.evaluate(f"performance.now() - {t0}")
     await page.wait_for_timeout(500)
-    seen = N['red'] + ('! מדהים!' if he else '! Amazing!')
-    check(tag + ': red held up: found after ~1 s, a big party, "' + seen + '", a photo-sticker (memory only)', ok and 900 <= dt <= 2500 and seen in await said(page) and await page.evaluate(f"{T}.cc.stickers.length === 1 && {T}.cc.stickers[0].c instanceof HTMLCanvasElement"), [dt, (await said(page))[-2:]])
+    seen = ('מדהים' if he else 'Amazing')
+    check(tag + ': red held up: found after ~1 s, a big party (no "' + seen + '" line), a photo-sticker (memory only)', ok and 900 <= dt <= 2500 and not any(seen in x for x in await said(page)) and await page.evaluate(f"{T}.cc.stickers.length === 1 && {T}.cc.stickers[0].c instanceof HTMLCanvasElement"), [dt, (await said(page))[-2:]])
     await page.screenshot(path=OUT + 'toddler_colors_cam_found_%s.png' % ('he' if he else 'en'))
     if not he:
         await page.wait_for_timeout(2800)
@@ -202,7 +202,7 @@ async def peekaboo_extra(page, tag):
     st = await page.evaluate(f"({{ spots: {T}.pk.spots.map(s => ({{ kind: s.kind, who: s.who, x: s.x, y: s.y, c: s.cell }})), target: {T}.pk.target }})")
     check(tag + ': 6 hiding spots (bush, door, cloud, box, curtain, tree), each >= 120 px; one hides the animal asked for', sorted(s['kind'] for s in st['spots']) == sorted(['bush', 'door', 'cloud', 'box', 'curtain', 'tree']) and all(s['c']['w'] >= 120 and s['c']['h'] >= 120 for s in st['spots']) and [s['who'] for s in st['spots']].count(st['target']) == 1, st)
     await page.wait_for_timeout(1700); tgt = st['target']
-    q = ('איפה ה%s %s?' % (N[tgt], 'מתחבאת' if tgt in ('cow', 'sheep') else 'מתחבא')) if he else "Where's the %s hiding?" % N[tgt]
+    q = ('איפה ה%s?' % N[tgt]) if he else "Where is the %s?" % N[tgt]  # (spoken short)
     check(tag + ': the voice asks "' + q + '"', q in await said(page), (await said(page))[-2:])
     empty = next(s for s in st['spots'] if not s['who']); other = next(s for s in st['spots'] if s['who'] and s['who'] != tgt); right = next(s for s in st['spots'] if s['who'] == tgt)
     SPOT = T + ".pk.spots.find(s => s.kind === '%s')"
@@ -210,14 +210,14 @@ async def peekaboo_extra(page, tag):
     r = await page.evaluate("({ st: " + (SPOT % empty['kind']) + ".state, snd: " + T + ".snd.slice(-2), found: " + T + ".pk.found, target: " + T + ".pk.target })")
     check(tag + ': an empty spot opens: a funny boing (a butterfly), nothing lost', r['st'] in ('open', 'opening') and 'boing' in r['snd'] and r['found'] == 0 and r['target'] == tgt, r)
     await tap(page, other['x'], other['y']); await page.wait_for_timeout(500)
-    peek = 'קוקו!' if he else 'Peekaboo!'
+    peek = 'קוּקוּ!' if he else 'Peekaboo!'
     r = await page.evaluate("({ st: " + (SPOT % other['kind']) + ".state, snd: " + T + ".snd.slice(-3), found: " + T + ".pk.found })")
-    check(tag + ': another animal pops out with a giggle and "' + peek + '"; the round goes on', r['st'] == 'open' and 'peek' in r['snd'] and r['found'] == 0 and peek in await said(page), r)
+    check(tag + ': another animal pops out with a peek + giggle (no "' + peek + '" line); the round goes on', r['st'] == 'open' and 'peek' in r['snd'] and r['found'] == 0 and peek not in await said(page), r)
     await page.wait_for_timeout(2300)
     check(tag + ': ... and it hides again', await page.evaluate((SPOT % other['kind']) + ".state") in ('closing', 'closed'))
     await tap(page, right['x'], right['y']); await page.wait_for_timeout(1300)
-    found = ('מצאת את ה%s!' % N[tgt]) if he else 'You found the %s!' % N[tgt]
-    check(tag + ': the right spot: the animal pops out, confetti, "' + found + '"', await page.evaluate(T + ".pk.found") == 1 and found in await said(page), (await said(page))[-3:])
+    found = ('יש! הנה ה%s!' % N[tgt]) if he else 'You found the %s!' % N[tgt]
+    check(tag + ': the right spot: the animal pops out, confetti (no "' + found + '" line)', await page.evaluate(T + ".pk.found") == 1 and found not in await said(page), (await said(page))[-3:])
     await page.screenshot(path=OUT + 'toddler_peekaboo_found_%s.png' % ('he' if he else 'en'))
     ok = await wait(page, T + ".pk.round === 2 && !" + T + ".pk.done", 6000)
     check(tag + ': then a new round (another animal, shuffled spots)', ok and await page.evaluate(T + ".pk.target") != tgt)
@@ -234,18 +234,18 @@ async def feed_extra(page, tag):
     he = 'HE' in tag
     await wait(page, T + ".fe.state === 'wait'", 4000); await page.wait_for_timeout(1700)
     st = await fe_state(page)
-    want = ('ה%s רוצה %s!' % (FE_AN[he][st['who']], FD_NAMES[he][st['like']])) if he else 'The %s wants a %s!' % (FE_AN[he][st['who']], FD_NAMES[he][st['like']])
+    want = FD_NAMES[he][st['like']] + '?'; want = want[0].upper() + want[1:]  # (spoken short: the food's name)
     check(tag + ': a hungry animal (the bunny), 3 foods >= 120 px apart, the voice: "' + want + '"', st['who'] == 'bunny' and len(st['foods']) == 3 and all(f['cell']['w'] >= 120 for f in st['foods']) and st['like'] in [f['kind'] for f in st['foods']] and want in await said(page), [st['foods'], (await said(page))[-2:]])
     bad = next(f['kind'] for f in st['foods'] if f['kind'] != st['like'])
     await feed_one(page, bad); await page.wait_for_timeout(700)
     r = await fe_state(page); yuck = 'איכס!' if he else 'Yuck!'
-    check(tag + ': the wrong food: a funny "' + yuck + '" face; nothing counted, never a fail', r['state'] == 'yuck' and r['fed'] == 0 and 'yuck' in await snd(page) and yuck in await said(page), r)
+    check(tag + ': the wrong food: a funny yuck face + sound (no "' + yuck + '" line); nothing counted, never a fail', r['state'] == 'yuck' and r['fed'] == 0 and 'yuck' in await snd(page) and yuck not in await said(page), r)
     await page.screenshot(path=OUT + 'toddler_feed_yuck_%s.png' % ('he' if he else 'en'))
     ok = await wait(page, T + ".fe.state === 'wait' && " + T + ".fe.foods.every(f => !f.anim)", 4000)
     check(tag + ': ... and it hops back to the blanket', ok)
     await feed_one(page, st['like']); await page.wait_for_timeout(900)
     r = await fe_state(page); yum = 'יאמי!' if he else 'Yummy!'
-    check(tag + ': the liked food (dragged): chomp, "' + yum + '", the tummy grows', r['fed'] == 1 and r['tummy'] > 1 and 'munch' in await snd(page) and yum in await said(page), r)
+    check(tag + ': the liked food (dragged): chomp (no "' + yum + '" line), the tummy grows', r['fed'] == 1 and r['tummy'] > 1 and 'munch' in await snd(page) and yum not in await said(page), r)
     await wait(page, T + ".fe.state === 'wait'", 4000)
     await feed_one(page, st['like'], how='tap'); ok = await wait(page, T + ".fe.fed === 2", 3000)
     check(tag + ': tap-tap: a tap on the food, a tap on the animal: eaten', ok)
@@ -254,14 +254,14 @@ async def feed_extra(page, tag):
             await wait(page, T + ".fe.state === 'wait'", 4000); await feed_one(page, st['like']); await page.wait_for_timeout(500)
         ok = await wait(page, T + ".fe.state === 'burp'", 4000); await page.wait_for_timeout(900)
         await page.screenshot(path=OUT + 'toddler_feed_burp_en.png')
-        check('feed: 5 good bites: a burp + confetti ("Burp! Excuse me!")', ok and 'burp' in await snd(page) and 'Burp! Excuse me!' in await said(page))
+        check('feed: 5 good bites: a burp + confetti (the burp sound, no line)', ok and 'burp' in await snd(page) and 'Burp! Excuse me!' not in await said(page))
         ok = await wait(page, T + ".fe.who !== 'bunny' && " + T + ".fe.state === 'wait'", 6000)
         check('feed: then the next animal comes in (hungry again)', ok and (await fe_state(page))['fed'] == 0)
         # the player's pet joins and gets +1 snack
         p0 = await page.evaluate("(() => { const P = petP(); P.hatched = true; P.egg = true; P.name = 'Bobo'; P.pantry = 2; saveProfile(); " + T + ".reset('feed'); return P.pantry; })()")
         order = await page.evaluate(T + ".fe.order")
         await page.evaluate(T + ".feEnter('pet')"); await wait(page, T + ".fe.state === 'wait'", 4000); await page.wait_for_timeout(300)
-        check('feed: a hatched pet comes as one of the animals and asks for its cookie ("Bobo wants a cookie!")', 'pet' in order and 'Bobo wants a cookie!' in await said(page), [order, (await said(page))[-2:]])
+        check('feed: a hatched pet comes as one of the animals and asks for its cookie ("Cookie?")', 'pet' in order and 'Cookie?' in await said(page), [order, (await said(page))[-2:]])
         await feed_one(page, 'snack'); await page.wait_for_timeout(1200)
         r = await fe_state(page); p1 = await page.evaluate("petP().pantry")
         await page.screenshot(path=OUT + 'toddler_feed_pet_en.png')
@@ -288,7 +288,7 @@ async def puzzle_extra(page, tag):
     await tap(page, b['x'], b['y']); await page.wait_for_timeout(200)
     check(tag + ': tap-tap: a tap picks the other piece', await page.evaluate(T + ".pz.sel && " + T + ".pz.sel.i === 1"))
     await tap(page, b['tx'] + 10, b['ty'] + 15); await page.wait_for_timeout(700)
-    st = await pz_state(page); done = ('הידד! מכונית!' if he else 'Hooray! A car!')
+    st = await pz_state(page); done = ('מכונית!' if he else 'Car!')  # (the picture's name only)
     check(tag + ': ... a tap on its place: it flies in; the picture is whole and comes alive (the car drives off)', st['done'] and st['solved'] == 1 and all(q['placed'] for q in st['pieces']), st)
     await page.wait_for_timeout(1700); await page.screenshot(path=OUT + 'toddler_puzzle_alive_%s.png' % ('he' if he else 'en'))
     check(tag + ': "' + done + '" + confetti', done in await said(page), (await said(page))[-2:])

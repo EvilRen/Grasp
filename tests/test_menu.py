@@ -54,7 +54,7 @@ async def main():
             for m in MODES:
                 await start_mode(page, m, mobile)
                 vis = await page.evaluate(VIS); bt = await page.evaluate(BTN)
-                check(f'{tag} {m}: the toolbar is one round pause button (no home / language / stats / sound / restart icons)', vis == ['pauseBtn'] and await page.evaluate("document.body.classList.contains('minChrome')") and bt['w'] >= 40 and abs(bt['w'] - bt['h']) < 1, vis)
+                check(f'{tag} {m}: the toolbar is one corner control (navigation v2: pause + house, >= 48 px, a 64 px hit area; no language / stats / sound / restart icons)', vis == ['pauseBtn'] and await page.evaluate("document.body.classList.contains('minChrome')") and bt['h'] >= 48 and bt['w'] >= bt['h'], vis)
                 check(f'{tag} {m}: the button sits in the top-right corner (as in Strike, also in Hebrew)', bt['W'] - 24 <= bt['r'] <= bt['W'] - 4 and 4 <= bt['t'] and bt['b'] <= 70, bt)
                 # the HUD, polled over a few frames (the hint toast and the coin pill appear in the first frames)
                 bad = []
@@ -64,7 +64,8 @@ async def main():
                 if m == 'busy': check(f'{tag} busy: the board starts under the button', await page.evaluate("busy.board.y") >= bt['b'], [await page.evaluate("busy.board"), bt])
                 await press(page, mobile, '#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
                 sh = await page.evaluate(SHEET)
-                check(f'{tag} {m}: the sheet opens over a veil, paused: Resume, Restart, Sound, Language, Stats, Home', sh['open'] and sh['veil'] and sh['paused'] and sh['ids'] == ['resumeBtn', 'resetBtn', 'muteBtn', 'lang', 'hudBtn', 'homeBtn'] and all(sh['labels']) and sh['minH'] >= 44, sh)
+                want = ['resumeBtn', 'homeBtn'] if m in ('sandbox', 'busy', 'shapes') else ['resumeBtn', 'homeBtn', 'resetBtn']  # (navigation v2: Little ones: Resume + Home only)
+                check(f'{tag} {m}: the sheet opens over a veil, paused: ' + ', '.join(want), sh['open'] and sh['veil'] and sh['paused'] and sh['ids'] == want and all(sh['labels']) and sh['minH'] >= 44, sh)
                 check(f'{tag} {m}: the sheet fits on screen, labels in the page language', sh['box']['l'] >= 0 and sh['box']['r'] <= sh['W'] and sh['box']['b'] <= sh['H'] and sh['labels'][0] == ('המשך' if he else 'Resume'), sh)
                 if mobile: await page.screenshot(path=f"tests/out/menu_{m}_{'he' if he else 'en'}.png")
                 await press(page, mobile, '#resumeBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
@@ -97,36 +98,26 @@ async def main():
             await page.click('#pauseBtn'); await page.wait_for_function("menu.open")
             await page.mouse.click(640, 700); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
             check(f'{m}: a click beside the sheet resumes', True)
-            # Sound: toggles, the sheet stays open; Language: switches (RTL), the sheet stays open, labels translated
-            await page.click('#pauseBtn'); await page.wait_for_function("menu.open")
-            m0 = await page.evaluate("__grasp.muted"); await page.click('#muteBtn'); await page.wait_for_timeout(100)
-            s1 = await page.evaluate("({ m: __grasp.muted, open: menu.open, paused: pause.on })")
-            check(f'{m}: Sound mutes, the sheet stays open and paused', s1['m'] != m0 and s1['open'] and s1['paused'], s1)
-            await page.click('#muteBtn'); await page.wait_for_timeout(100)
-            await page.click('.chrome .langBtn'); await page.wait_for_timeout(150)
-            lg = await page.evaluate("({ dir: document.documentElement.dir, open: menu.open, lb: document.querySelector('#resumeBtn .lb').textContent })")
-            check(f'{m}: Language switches to Hebrew (RTL) inside the open sheet', lg['dir'] == 'rtl' and lg['open'] and lg['lb'] == 'המשך' and await page.evaluate("__grasp.muted") == m0, lg)
-            await page.click('.chrome .langBtn'); await page.wait_for_timeout(150)
-            check(f'{m}: Language again: English', await page.evaluate("document.documentElement.dir === 'ltr'"))
-            # Stats: the panel shows, play goes on; again: hidden
-            await page.click('#hudBtn'); await page.wait_for_function("!menu.open && !pause.on && !hudEl.hidden", timeout=4000)
-            check(f'{m}: Stats shows the stats panel and resumes', await page.evaluate(f"hudEl.textContent.length > 20"))
-            await menu_click(page, '#hudBtn'); await page.wait_for_function("!menu.open && hudEl.hidden", timeout=4000)
+            # (navigation v2: Sound, Language and Stats moved to the gated Settings; Stats: the panel still shows when on)
+            await page.evaluate("toggleHud()"); await page.wait_for_function("!menu.open && !pause.on && !hudEl.hidden", timeout=4000)
+            check(f'{m}: Stats shows the stats panel', await page.evaluate(f"hudEl.textContent.length > 20"))
+            await page.evaluate("toggleHud()"); await page.wait_for_function("!menu.open && hudEl.hidden", timeout=4000)
             # Restart: the mode's own reset, the sheet closes and play goes on
             prep = {'sandbox': "for (const b of bodies) M.Body.setPosition(b, { x: 640, y: 400 }); 1", 'slice': "__grasp.slice.score = 7; __grasp.slice.lives = 1; 1",
                     'busy': "__grasp.busy.seed", 'shapes': "shapes.mistakes = 3; shapes.level"}[m]
             v0 = await page.evaluate(prep)
-            await menu_click(page, '#resetBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000); await page.evaluate(FRAMES)
+            if m == 'slice': await menu_click(page, '#resetBtn')
+            else: await page.evaluate("openMenu(); $('resetBtn').click()")  # (Little ones' sheet: Resume + Home only; Restart is still the mode's own reset)
+            await page.wait_for_function("!menu.open && !pause.on", timeout=4000); await page.evaluate(FRAMES)
             done = {'sandbox': "bodies.length === 10 && bodies.filter(b => Math.abs(b.position.x - 640) < 1 && Math.abs(b.position.y - 400) < 1).length < 3",
                     'slice': "__grasp.slice.score === 0 && __grasp.slice.lives === 3 && !__grasp.slice.over",
                     'busy': f"__grasp.busy.seed !== {v0}", 'shapes': f"shapes.mistakes === 0 && shapes.level === {v0}"}[m]
             check(f'{m}: Restart restarts the round, closes the sheet, play goes on', await page.evaluate(done), v0)
             await menu_click(page, '#homeBtn'); await page.wait_for_function("mode === 'none'", timeout=5000)
-        # Shapes: Home after something was sorted shows the round-over card first, the sheet closes
+        # Shapes: Home after something was sorted goes home at once (navigation v2: no round-over card on the way)
         await start_mode(page, 'shapes', False); await page.evaluate("__grasp.shapes.placeTest(0)")
-        await menu_click(page, '#homeBtn'); await page.wait_for_function("shapes.over && !menu.open && !pause.on", timeout=4000)
-        check('shapes: Home in the sheet after a sort: the round-over card, the sheet gone', await page.evaluate("mode === 'mouse' && $('menuVeil').hidden"))
-        await menu_click(page, '#homeBtn'); await page.wait_for_function("mode === 'none'", timeout=5000)
+        await menu_click(page, '#homeBtn'); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=5000)
+        check('shapes: Home in the sheet after a sort: the start screen in one tap', await page.evaluate("$('menuVeil').hidden && !menu.open"))
         check('desktop: no page errors', not errs, errs); await ctx.close()
 
         # ---- the camera games (Air Drums, Bubble Pop, Air Painting, Catch the Stars): the same corner menu; it freezes the game; Restart; Home ----
@@ -141,13 +132,13 @@ async def main():
                 await page.evaluate(FRAMES)
                 if m == 'drums': await page.evaluate("__grasp.cg.beat(true)")
                 vis = await page.evaluate(VIS); bt = await page.evaluate(BTN)
-                check(f'{tag} {m}: the toolbar is the one round pause button in the top-right corner', vis == ['pauseBtn'] and bt['W'] - 24 <= bt['r'] <= bt['W'] - 4 and bt['b'] <= 70, [vis, bt])
+                check(f'{tag} {m}: the toolbar is the one corner control in the top-right corner', vis == ['pauseBtn'] and bt['W'] - 24 <= bt['r'] <= bt['W'] - 4 and bt['b'] <= 70, [vis, bt])
                 cb = await page.evaluate("__grasp.cg.btns()")
                 check(f'{tag} {m}: the game\'s own buttons stay clear of it', not [q for q in cb if q['x'] < bt['r'] and q['x'] + q['w'] > bt['l'] and q['y'] < bt['b'] and q['y'] + q['h'] > bt['t']], [cb, bt])
                 await page.wait_for_timeout(250)
                 await press(page, mobile, '#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
                 sh = await page.evaluate(SHEET)
-                check(f'{tag} {m}: the sheet: Resume, Restart, Sound, Language, Stats, Home', sh['ids'] == ['resumeBtn', 'resetBtn', 'muteBtn', 'lang', 'hudBtn', 'homeBtn'] and sh['labels'][0] == ('המשך' if he else 'Resume'), sh)
+                check(f'{tag} {m}: the sheet: Resume, Home, Restart', sh['ids'] == ['resumeBtn', 'homeBtn', 'resetBtn'] and sh['labels'][0] == ('המשך' if he else 'Resume'), sh)
                 f0 = await page.evaluate(CPROBE[m]); await page.wait_for_timeout(500); f1 = await page.evaluate(CPROBE[m])
                 check(f'{tag} {m}: the sheet freezes the game', f0 == f1, [f0, f1])
                 if mobile: await page.screenshot(path=f"tests/out/menu_{m}_{'he' if he else 'en'}.png")

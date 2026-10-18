@@ -41,7 +41,7 @@ async def main():
         bs = await page.evaluate(BESTS)
         check('no scores yet: every badge hidden', all(v is None for v in bs.values()) and len(bs) == 6, bs)
         await page.evaluate("localStorage.setItem('sliceBest', '480'); localStorage.setItem('strikeBest', '12')")
-        await page.evaluate(START_MOUSE); await page.wait_for_timeout(100); await menu_click(page, '#homeBtn'); await page.wait_for_timeout(100)
+        await page.evaluate(START_MOUSE); await page.wait_for_timeout(100); await menu_click(page, '#homeBtn'); await page.wait_for_timeout(600); await page.evaluate("__grasp.menub.room('big', true)"); await page.wait_for_timeout(200)  # (navigation v2: Home's bookkeeping runs after the first frame; Home from Sandbox lands in Little ones: the badge is in Big kids)
         bs = await page.evaluate(BESTS)
         check('home refreshes the badges from localStorage (home2: no Endless badge on the hero\'s Map)', bs['slice'] == '★ 480' and bs['strike'] is None and bs['smash'] is None, bs)
         vis = await page.evaluate("(() => { const b = document.querySelector('#start button[data-mode=slice] .best').getBoundingClientRect(), c = document.querySelector('#start button[data-mode=slice]').getBoundingClientRect(); return b.width > 20 && b.top >= c.top && b.right <= c.right + 1 && b.bottom < c.top + c.height / 2; })()")
@@ -52,7 +52,7 @@ async def main():
 
         # ---- menu B, phone + desktop, EN + HE: one screen (no scroll): the top bar (the lock, sound, Bubu, the coins), the age switch, the hero + Map, Smash · Slice, Arcade · Camera games, the dock; a tap plays ----
         LAY = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; }, on = (q) => q.l >= 0 && q.t >= 0 && q.r <= innerWidth + 0.5 && q.b <= innerHeight + 0.5;
-          const tiles = [...document.querySelectorAll('#start .mbGrid button')].map(b => ({ id: b.id || b.dataset.mode, ...r(b), name: (b.querySelector('[data-i18n], b') || b).textContent.trim(), fs: Math.min(...[...b.querySelectorAll('b, span[data-i18n]')].filter(x => x.offsetParent).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
+          const tiles = [...document.querySelectorAll('#start .mbGrid button')].filter(b => !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg, ...r(b), name: (b.querySelector('[data-i18n], b') || b).textContent.trim(), fs: Math.min(...[...b.querySelectorAll('b, span[data-i18n]')].filter(x => x.offsetParent).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
           const st = $('start'), tabs = [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => ({ id: b.id, ...r(b) }));
           return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, tabs, allOn: tiles.every(on) && tabs.every(on), more: r($('lockBtn')), pill: r($('metaPill')), h1: r($('bubuBtn')),
             gone: ['metaRow', 'habitBar', 'flameBtn', 'giftBtn', 'strikeDiff', 'camBtn', 'eventBtn'].filter(id => { const e = document.getElementById(id) || document.querySelector('#start .' + id); return e && e.closest('#start') && e.offsetParent; }), link: !!document.querySelector('#start a.link') }; })()"""
@@ -62,7 +62,7 @@ async def main():
                 ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, xpv: 2, smash: { stars: { 1: 3, 2: 3, 3: 1 }, unlocked: 4 } })); if (!sessionStorage.getItem('pv')) { sessionStorage.setItem('pv', '1'); localStorage.removeItem('inputPref'); }")
                 await page.wait_for_timeout(1300)  # entrance done
                 L = await page.evaluate(LAY)
-                check(tag + ': no scrolling at all; the hero + 5 stickers (map, Smash, Slice, Arcade, Camera games) and the dock on screen, >= 44 px, text >= 14 px', L['noScroll'] and L['allOn'] and len(L['tiles']) == 6 and all(t['h'] >= 44 and t['w'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and len(L['tabs']) == 2, L)  # (menu B: the dock: Shop, Events)
+                check(tag + ': no scrolling at all; the hero + Map + Frenzy / Daily, Smash, Slice, Pop It, the 4 camera games (navigation v2) and the dock on screen, >= 44 px, text >= 14 px', L['noScroll'] and L['allOn'] and len(L['tiles']) == 11 and all(t['h'] >= 44 and t['w'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and len(L['tabs']) == 2, L)  # (menu B: the dock: Shop, Events)
                 check(tag + ': gone from the start screen: the meta row, the flame / gift chips, the Easy / Normal toggle, Camera | Touch, the event banner, the Tremorti link', not L['gone'] and not L['link'], L['gone'])
                 check(tag + ': the top bar: the parents\' lock, Bubu and the coins pill (>= 44 px)', L['more']['w'] >= 44 and L['more']['h'] >= 44 and L['pill']['h'] >= 44 and L['h1']['h'] >= 44, L)
                 check(tag + ': smash badge: the stars of its stages', (await page.evaluate(BESTS))['smash'] == '★ 7')
@@ -78,23 +78,16 @@ async def main():
                         sel = '#start button[data-mode=' + m + ']'
                     if mobile: await page.tap(sel)
                     else: await page.click(sel)
-                    if m == 'smash':  # (Smash: the tile opens its map; Free play starts)
-                        await page.wait_for_function("!$('smashMap').hidden", timeout=4000)
-                        if mobile: await page.tap('#smashFree')
-                        else: await page.click('#smashFree')
                     if m == 'strike':  # (Strike: the hero's Map opens the Adventure map; its current stop starts the stage)
                         await page.wait_for_function("!$('advMap').hidden", timeout=4000)
                         if mobile: await page.tap('#advPath .anode.cur')
                         else: await page.click('#advPath .anode.cur')
                     await page.wait_for_function("mode !== 'none'", timeout=8000); started[m] = await page.evaluate("[gameMode, mode, $('start').hidden]")
                     await page.evaluate("goHome()"); await page.wait_for_timeout(250)
-                check(tag + ': a tap on each game starts it with touch (Strike, Smash via their maps; Busy Board, Shapes, Sandbox via Little ones, after their names)', all(v == [m, 'mouse', True] for m, v in started.items()), started)
+                check(tag + ': a tap on each game starts it with touch (Strike via its map, Smash\'s current stage at once (navigation v2); Busy Board, Shapes, Sandbox via Little ones, after their names)', all(v == [m, 'mouse', True] for m, v in started.items()), started)
                 await (page.tap('#bigBtn') if mobile else page.click('#bigBtn')); await page.wait_for_timeout(200)
-                if mobile: await page.tap('#camGamesBtn')
-                else: await page.click('#camGamesBtn')
-                await page.wait_for_function("!$('cgPick').hidden", timeout=4000)
-                if mobile: await page.tap('#cgPick [data-cg=bubbles]')
-                else: await page.click('#cgPick [data-cg=bubbles]')
+                if mobile: await page.tap('#camGamesBtn [data-cg=bubbles]')  # (navigation v2: the camera games are stickers on the start screen)
+                else: await page.click('#camGamesBtn [data-cg=bubbles]')
                 await page.wait_for_function("mode === 'mouse' && gameMode === 'bubbles' && $('start').hidden && $('cgPick').hidden", timeout=8000)
                 check(tag + ': the Camera games tile opens its picker; a game there starts with touch', True)
                 await page.evaluate("goHome()"); await page.wait_for_timeout(250)

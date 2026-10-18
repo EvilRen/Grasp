@@ -57,7 +57,7 @@ async def main():
             ctx, page, errs = await fresh(b, mobile=True, he=he, init="localStorage.setItem('inputPref','mouse');")
             await adventure_stage(page, True)
             L = await page.evaluate(LAYOUT); vis = await page.evaluate(VIS)
-            check(tag + ' phone: in Strike the toolbar is one round pause button (no home / language / stats / sound / restart icons)', vis == ['pauseBtn'] and L['min'] and L['btn']['w'] >= 40 and abs(L['btn']['w'] - L['btn']['h']) < 1, vis)
+            check(tag + ' phone: in Strike the toolbar is one corner control (navigation v2: pause + house, a 48 px white sticker; no language / stats / sound / restart icons)', vis == ['pauseBtn'] and L['min'] and L['btn']['h'] >= 48 and L['btn']['w'] >= L['btn']['h'], vis)
             check(tag + ' phone: the pause button sits in the top corner, inside the screen', L['btn']['r'] <= L['W'] - 4 and L['btn']['r'] >= L['W'] - 24 and L['btn']['t'] >= 4 and L['btn']['b'] <= 70, L['btn'])
             check(tag + ' phone: the HUD is one slim row (hearts + walls pill) on the button\'s row, clear of it', L['parts'] == ['hearts', 'walls'] and L['hearts'] == 3 and layout_ok(L), L)
             check(tag + ' phone: the walls pill reads "0/4" (Adventure stage 1)', L['pill'] and L['pill']['text'].endswith('0/4') and L['adv'] and L['adv']['text'] == L['pill']['text'], L['pill'])
@@ -69,9 +69,9 @@ async def main():
             # the sheet: tap the pause button
             await press(page, True, '#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
             sh = await page.evaluate(SHEET)
-            check(tag + ' phone: the pause sheet opens over a veil, paused: Resume, Restart, Sound, Language, Stats, Home (labelled, tall rows)', sh['open'] and sh['veil'] and sh['paused'] and sh['ids'] == ['resumeBtn', 'resetBtn', 'muteBtn', 'lang', 'hudBtn', 'homeBtn'] and all(sh['labels']) and sh['minH'] >= 44, sh)
+            check(tag + ' phone: the pause sheet opens over a veil, paused: Resume, Home, Restart, Map (navigation v2; labelled, tall rows)', sh['open'] and sh['veil'] and sh['paused'] and sh['ids'] == ['resumeBtn', 'homeBtn', 'resetBtn', 'menuMap'] and all(sh['labels']) and sh['minH'] >= 44, sh)
             check(tag + ' phone: the sheet fits on screen', sh['box']['l'] >= 0 and sh['box']['r'] <= sh['W'] and sh['box']['b'] <= sh['H'], sh['box'])
-            want = ['המשך', 'מההתחלה'] if he else ['Resume', 'Restart']
+            want = ['המשך', 'בית'] if he else ['Resume', 'Home']
             check(tag + ' phone: sheet labels in the page language', sh['labels'][:2] == want, sh['labels'])
             await page.screenshot(path=f'tests/out/hud_min_sheet_{tag.lower()}.png')
             await press(page, True, '#resumeBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
@@ -110,24 +110,13 @@ async def main():
         await page.keyboard.press('Escape'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
         await page.keyboard.press('Escape'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
         check('Escape opens and closes the pause sheet', True)
-        # Sound: toggles, the sheet stays open
-        await page.click('#pauseBtn'); await page.wait_for_function("menu.open")
-        m0 = await page.evaluate("__grasp.muted"); await page.click('#muteBtn'); await page.wait_for_timeout(100)
-        m1 = await page.evaluate("({ m: __grasp.muted, open: menu.open, paused: pause.on, lb: $('muteLb').textContent })")
-        check('Sound in the sheet: mutes (its label says so), the sheet stays open and paused', m1['m'] != m0 and m1['open'] and m1['paused'] and m1['lb'] == ('Sound off' if m1['m'] else 'Sound on'), m1)
-        await page.click('#muteBtn'); await page.wait_for_timeout(100)
-        check('Sound again: back to the first state', await page.evaluate("__grasp.muted") == m0)
-        # Language: switches, the sheet stays open with translated labels
-        await page.click('.chrome .langBtn'); await page.wait_for_timeout(150)
-        lg = await page.evaluate("({ dir: document.documentElement.dir, open: menu.open, lb: document.querySelector('#resumeBtn .lb').textContent })")
-        check('Language in the sheet: switches to Hebrew (RTL), the sheet stays open, labels translated', lg['dir'] == 'rtl' and lg['open'] and lg['lb'] == 'המשך', lg)
-        await page.screenshot(path='tests/out/hud_min_sheet_desktop_he.png')
-        await page.click('.chrome .langBtn'); await page.wait_for_timeout(150)
-        check('Language again: back to English', await page.evaluate("document.documentElement.dir === 'ltr' && document.querySelector('#resumeBtn .lb').textContent === 'Resume'"))
-        # Stats: shows the stats panel and resumes
-        await page.click('#hudBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
-        check('Stats in the sheet: the stats panel shows and play resumes', await page.evaluate("!hudEl.hidden && $('hudBtn').getAttribute('aria-pressed') === 'true'"))
-        await page.click('#pauseBtn'); await page.click('#hudBtn'); await page.wait_for_function("!menu.open && hudEl.hidden", timeout=4000)
+        # navigation v2: Sound, Language, Stats and Install are not in the sheet (Sound: the start screen's top bar; all of them in the gated Settings)
+        off = await page.evaluate("(() => { const c = document.querySelector('.chrome'); c.classList.add('open'); const r = ['muteBtn', 'hudBtn', 'menuInstall'].map(id => getComputedStyle($(id)).display).concat([getComputedStyle(c.querySelector('.langBtn')).display]); c.classList.remove('open'); return r; })()")
+        check('the sheet has no Sound / Stats / Install / Language rows', off == ['none'] * 4, off)
+        # Stats from the Settings: on, then a game shows the stats panel
+        await page.evaluate("setHudPref(true); toggleHud()"); await page.wait_for_function("!hudEl.hidden", timeout=4000)
+        check('Stats (a setting now): the stats panel shows in play', await page.evaluate("$('hudBtn').getAttribute('aria-pressed') === 'true'"))
+        await page.evaluate("setHudPref(false); toggleHud()"); await page.wait_for_function("hudEl.hidden", timeout=4000)
         # Restart: a fresh round, resumed
         await page.evaluate(f"{S}.score = 120"); await page.click('#pauseBtn'); await page.wait_for_function("menu.open")
         await page.click('#resetBtn'); await page.wait_for_function(f"!menu.open && !pause.on && {S}.score === 0 && !{S}.over", timeout=4000)
@@ -209,8 +198,8 @@ async def main():
             hw = c['h']
             check(tag + ' phone: 2 stars, the line under them: "' + c['want'] + '"', hw['text'] == c['want'] and (hw['text'].startswith('פספסתם פעם אחת') if he else hw['text'].startswith('Missed once')) and '★★★' in hw['text'], hw)
             check(tag + ' phone: the line fits inside the card', hw['x'] >= c['card']['x'] + 4 and hw['x'] + hw['w'] <= c['card']['x'] + c['card']['w'] - 4 and c['card']['x'] + c['card']['w'] <= c['W'], [hw, c['card']])
-            want = {'next': 'הבא', 'retry': 'לשחק שוב', 'map': 'מפה'} if he else {'next': 'Next', 'retry': 'Play again', 'map': 'Map'}
-            check(tag + ' phone: buttons Next / Play again / Map (phase 1: Share only on a record or a boss)', c['lb'] == want, c['lb'])
+            want = {'next': 'הבא', 'home': 'בית', 'map': 'מפה'} if he else {'next': 'Next', 'home': 'Home', 'map': 'Map'}
+            check(tag + ' phone: buttons Next / Home / Map (navigation v2; phase 1: Share only on a record or a boss)', c['lb'] == want, c['lb'])
             await page.screenshot(path=f'tests/out/fix_clear_2star_{tag.lower()}.png')
             check(tag + ' card: no page errors', not errs, errs); await ctx.close()
 

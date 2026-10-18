@@ -61,7 +61,7 @@ async def main():
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.share", timeout=6000); await page.wait_for_timeout(700)
         eb = await page.evaluate(f"({{ btn: {S}.ui.buttons, card: {S}.ui.card, ctx: {D}.ctx() }})")
         db = eb['btn']['share']; cd = eb['card']
-        check('the Endless round-over card (home2): one Share button inside the card, under Play again / Home (no Easy / Normal, no separate Challenge)', db['y'] > eb['btn']['home']['y'] and 'easy' not in eb['btn'] and 'duel' not in eb['btn'] and cd['y'] <= db['y'] and db['y'] + db['h'] <= cd['y'] + cd['h'] and db['x'] >= cd['x'] and eb['ctx']['m'] == 'end' and eb['ctx']['score'] == 1234 and eb['ctx']['seed'] == s1['seed'], eb)
+        check('the Endless round-over card (home2): one Share button inside the card, beside Home under Play again (navigation v2: Home | Share; no Easy / Normal, no separate Challenge)', db['y'] > eb['btn']['again']['y'] + eb['btn']['again']['h'] - 1 and abs(db['y'] - eb['btn']['home']['y']) < 2 and 'easy' not in eb['btn'] and 'duel' not in eb['btn'] and cd['y'] <= db['y'] and db['y'] + db['h'] <= cd['y'] + cd['h'] and db['x'] >= cd['x'] and eb['ctx']['m'] == 'end' and eb['ctx']['score'] == 1234 and eb['ctx']['seed'] == s1['seed'], eb)
         await page.screenshot(path='tests/out/duel_card_endless_en.png')
         await page.evaluate("try { Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }); } catch (e) {}")
         await page.mouse.click(db['x'] + db['w'] / 2, db['y'] + db['h'] / 2)
@@ -133,7 +133,7 @@ async def main():
         await page.evaluate(f"(() => {{ const s = {S}; s.noTiming = true; s.hits = 21; s.shield = 0; s.lives = 1; s.setBallZ(100, 640, 420); strikeMiss(s.ball, performance.now()); }})()")
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && {S}.ui.buttons.share", timeout=6000); await page.wait_for_timeout(400)
         fb = await page.evaluate(f"({{ b: Object.keys({S}.ui.buttons), s: {S}.ui.buttons.share, card: {S}.ui.card, ctx: {D}.ctx(), text: {D}.text(), sheet: (__grasp.home2.share.open(), [$('shDuel').hidden, $('shDuelLb').textContent]) }})"); await page.evaluate("__grasp.home2.share.close()")
-        check('the Frenzy card (home2): Play again / Home / Map + one Share inside the card (its sheet: Challenge a friend); the line "I hit 21 in a row on Grasp Frenzy — can you beat me? 💥"', sorted(fb['b']) == ['again', 'home', 'map', 'share'] and fb['s']['x'] + fb['s']['w'] <= fb['card']['x'] + fb['card']['w'] and fb['sheet'] == [False, 'Challenge a friend'] and fb['ctx']['m'] == 'frz' and fb['ctx']['score'] == 21 and fb['text'] == 'I hit 21 in a row on Grasp Frenzy — can you beat me? 💥', fb)
+        check('the Frenzy card (navigation v2: at most 3): Play again / Home / Share inside the card (its sheet: Challenge a friend); the line "I hit 21 in a row on Grasp Frenzy — can you beat me? 💥"', sorted(fb['b']) == ['again', 'home', 'share'] and fb['s']['x'] + fb['s']['w'] <= fb['card']['x'] + fb['card']['w'] and fb['sheet'] == [False, 'Challenge a friend'] and fb['ctx']['m'] == 'frz' and fb['ctx']['score'] == 21 and fb['text'] == 'I hit 21 in a row on Grasp Frenzy — can you beat me? 💥', fb)
         await page.screenshot(path='tests/out/duel_card_frenzy_en.png')
         flink = await page.evaluate(f"{D}.build({{ ...{D}.ctx(), by: 'Ari' }})")
         ctx2, page2, errs2 = await new_page(b, local(flink))

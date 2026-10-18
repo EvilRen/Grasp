@@ -279,7 +279,7 @@ async def main():
         check('a new week: the banner shines (not seen yet), no dot with nothing to claim', q == [True, True], q)
         await ev_open(page, True)
         q = await page.evaluate(f"[{EV}.state.seen, $('eventBtn').classList.contains('fresh'), document.documentElement.dir, $('evTitle').textContent, $('evPlay').textContent]")
-        check('tapped: the page opens (RTL, Hebrew), the shine stops', q[0] and not q[1] and q[2] == 'rtl' and q[3] == 'טירוף פירות' and q[4] == 'לשחק בחיתוך', q)
+        check('tapped: the page opens (RTL, Hebrew), the shine stops', q[0] and not q[1] and q[2] == 'rtl' and q[3] == 'חגיגת פירות' and q[4] == 'לשחק בחיתוך', q)
         f0 = await page.evaluate(f"{EV}.frames"); await page.wait_for_timeout(400); f1 = await page.evaluate(f"{EV}.frames")
         check('the big mascot animates while the page is open', f1 > f0, [f0, f1])
         await page.screenshot(path=OUT + 'event_page_he.png')

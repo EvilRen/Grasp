@@ -44,7 +44,7 @@ async def card_tap(page, E, key, mobile=True):  # a card button: a tap on the ca
 
 # the start screen: every button on it (>= 44 px, text >= 14 px), the tab bar, no scroll
 SCREEN = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; }, st = $('start');
-  const btns = [...st.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.className, ...r(b),
+  const btns = [...st.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg || b.className, ...r(b),
     fs: Math.min(99, ...[...b.querySelectorAll('b, span, small')].filter(x => x.offsetParent && x.textContent.trim() && !x.closest('.pv') && getComputedStyle(x).display !== 'none' && !x.classList.contains('bang') && !x.classList.contains('dot')).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
   return { btns, noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1 && st.scrollHeight <= st.clientHeight + 1 && st.scrollWidth <= st.clientWidth + 1,
     W: innerWidth, H: innerHeight, hero: $('heroLbl').textContent, sub: $('heroSub').textContent, aria: $('heroPlay').getAttribute('aria-label'), dir: document.documentElement.dir, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab) }; })()"""
@@ -70,11 +70,11 @@ async def main():
                 L = await page.evaluate(SCREEN)
                 screen_ok(tag, L)
                 ids = [x['id'] for x in L['btns']]
-                check(tag + ': the hierarchy: the top bar (the lock, sound, Bubu, the coins), the age switch, the hero (Play + Map), Smash, Slice, Arcade, Camera games, the dock (Shop, Events)',
-                      all(k in ids for k in ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'smash', 'slice', 'arcadeBtn', 'camGamesBtn', 'collectionBtn', 'todayBtn')) and len(ids) == 14, ids)  # (phase 1: the sound button; menu B: the lock instead of ⋯)
-                hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'arcadeBtn', 'camGamesBtn')]
+                check(tag + ': the hierarchy: the top bar (the lock, sound, Bubu, the coins), the age switch, the hero (Play + Map + Frenzy / Daily), Smash, Slice, Pop It, the 4 camera games, the dock (Shop, Events)',
+                      all(k in ids for k in ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')) and len(ids) == 19, ids)  # (navigation v2: no Arcade, no Camera games sheet)  # (phase 1: the sound button; menu B: the lock instead of ⋯)
+                hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'bigPopit', 'drums', 'stars')]
                 check(tag + ': the hero is clearly the main thing: the widest button, above the grid', hero['w'] > 1.6 * max(o['w'] for o in others) and hero['b'] <= min(o['t'] for o in others), [hero, others])
-                check(tag + ': a new player: the hero says "' + ('מכה' if he else 'Strike') + '" with "' + ('שלב 1' if he else 'Stage 1') + '" (aria: "' + L['aria'] + '")', L['hero'] == ('מכה' if he else 'Strike') and L['sub'] == ('שלב 1' if he else 'Stage 1') and L['aria'].startswith('לשחק' if he else 'Play'), L)
+                check(tag + ': a new player: the hero says "' + ('סטרייק' if he else 'Strike') + '" with "' + ('שלב 1' if he else 'Stage 1') + '" (aria: "' + L['aria'] + '")', L['hero'] == ('סטרייק' if he else 'Strike') and L['sub'] == ('שלב 1' if he else 'Stage 1') and L['aria'].startswith('לשחק' if he else 'Play'), L)
                 check(tag + ': RTL in Hebrew', L['dir'] == ('rtl' if he else 'ltr'))
                 await page.screenshot(path=OUT + 'home2_after_start_%s_%s.png' % (nm, 'he' if he else 'en'))
                 check(tag + ': no page errors', not errs, errs); await ctx.close()
@@ -88,7 +88,7 @@ async def main():
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he, init=prof(adv={'stars': stars(4), 'unlocked': 5}))
             hh = await page.evaluate(f"({{ h: {H}.hero(), wc: getComputedStyle($('heroPlay')).getPropertyValue('--wc').trim(), want: WORLDS[0].accent }})")
-            check(('HE' if he else 'EN') + ': stages 1-4 cleared: "' + hh['h']['label'] + '" + "' + hh['h']['sub'] + '"; its label says "' + hh['h']['aria'] + '", world 1\'s name; its colour', hh['h']['n'] == 5 and hh['h']['label'] == ('מכה' if he else 'Strike') and hh['h']['sub'] == ('שלב 5' if he else 'Stage 5') and hh['h']['aria'].startswith('לשחק במכה — שלב 5' if he else 'Play Strike — Stage 5') and hh['h']['aria'].endswith(('סמטת הלבנים' if he else 'Brick Alley')) and hh['wc'].lower() == hh['want'].lower(), hh)
+            check(('HE' if he else 'EN') + ': stages 1-4 cleared: "' + hh['h']['label'] + '" + "' + hh['h']['sub'] + '"; its label says "' + hh['h']['aria'] + '", world 1\'s name; its colour', hh['h']['n'] == 5 and hh['h']['label'] == ('סטרייק' if he else 'Strike') and hh['h']['sub'] == ('שלב 5' if he else 'Stage 5') and hh['h']['aria'].startswith('לשחק בסטרייק — שלב 5' if he else 'Play Strike — Stage 5') and hh['h']['aria'].endswith(('סמטת הלבנים' if he else 'Brick Alley')) and hh['wc'].lower() == hh['want'].lower(), hh)
             await page.tap('#heroPlay')
             await page.wait_for_function(f"{A}.on && {A}.stage === 5 && mode === 'mouse'", timeout=10000)
             check(('HE' if he else 'EN') + ': the hero plays stage 5', True)
@@ -106,7 +106,7 @@ async def main():
             ctx, page, errs = await fresh(b, he=he)
             await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden", timeout=3000); await page.wait_for_timeout(500)
             lp = await page.evaluate("""(() => { const P = $('littlePick'); return { items: [...P.querySelectorAll('.mbPg .stk:not(.tgTile)')].map(b => { const q = b.getBoundingClientRect(); return [b.dataset.mode || b.id, b.querySelector('.lb').textContent.trim(), q.width >= 120 && q.height >= 120 && q.left >= 0 && q.right <= innerWidth + 0.5 && q.bottom <= innerHeight]; }), x: $('bigBtn').getBoundingClientRect().height }; })()""")
-            names = ['לוח עסוק', 'צורות', 'ארגז חול', 'בועות רגועות'] if he else ['Busy Board', 'Shapes', 'Sandbox', 'Calm bubbles']
+            names = ['לוח פעילות', 'צורות', 'ארגז חול', 'בועות רגועות'] if he else ['Busy Board', 'Shapes', 'Sandbox', 'Calm bubbles']
             check(('HE' if he else 'EN') + ': Little ones (menu B: a room, its first page): Busy Board, Shapes, Sandbox, Calm bubbles; big, on screen; the way back (Big kids) >= 44 px', [i[0] for i in lp['items']] == ['busy', 'shapes', 'sandbox', 'calmBtn'] and [i[1] for i in lp['items']] == names and all(i[2] for i in lp['items']) and lp['x'] >= 44, lp)
             await page.screenshot(path=OUT + 'home2_after_little_%s.png' % ('he' if he else 'en'))
             if not he:
@@ -118,27 +118,24 @@ async def main():
                     await page.evaluate("goHome()"); await page.wait_for_timeout(250)
                 await page.tap('#littleBtn'); await page.wait_for_timeout(400); await page.tap('#calmBtn')
                 await page.wait_for_function("gameMode === 'bubbles' && mode === 'mouse'", timeout=8000)
-                check('Little ones: Calm bubbles = Bubble Pop with Calm on (no timer)', await page.evaluate("__grasp.cg.bubbles.calm === true && localStorage.getItem('bubblesCalm') === '1'"))
+                check('Little ones: Calm bubbles = Bubble Pop with Calm on (no timer; navigation v2: not stored for the big kids\' Bubble Pop)', await page.evaluate("__grasp.cg.bubbles.calm === true && localStorage.getItem('bubblesCalm') !== '1'"))
                 await page.evaluate("goHome()"); await page.wait_for_timeout(250)
                 await page.tap('#littleBtn'); await page.wait_for_timeout(400); await page.keyboard.press('Escape'); await page.wait_for_timeout(150)
                 check('Little ones: Escape goes back to Big kids', await page.evaluate("$('littlePick').hidden && !$('bigRoom').hidden"))
             check('little: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(frenzy={'best': 12, 'top': 1.4, 'runs': 2}))
-        await page.tap('#arcadeBtn'); await page.wait_for_function("!$('arcadePick').hidden", timeout=3000); await page.wait_for_timeout(450)
-        ar = await page.evaluate("({ frz: !$('arcFrenzy').hidden, frzSub: $('arcFrenzySub').textContent, daily: !$('dailyBtn').hidden && !!$('dailyBtn').closest('#arcadePick'), endless: !$('arcEndless').hidden, mapEndless: $('advEndless').hidden })")
-        check('Arcade: Frenzy (its best "Best: 12 in a row") and the daily; Endless hidden until world 2 (on the map too)', ar['frz'] and '12' in ar['frzSub'] and ar['daily'] and not ar['endless'] and ar['mapEndless'], ar)
-        await page.screenshot(path=OUT + 'home2_after_arcade.png')
-        await page.tap('#arcFrenzy'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse' && $('arcadePick').hidden", timeout=8000)
-        check('Arcade: Frenzy starts at once', await page.evaluate("location.pathname") == '/frenzy')
-        await page.evaluate("goHome()"); await page.wait_for_timeout(250)
-        await page.tap('#arcadeBtn'); await page.wait_for_timeout(400); await page.tap('#dailyBtn'); await page.wait_for_function("!$('daily').hidden && $('arcadePick').hidden", timeout=3000)
-        check('Arcade: the daily opens its panel (the Arcade sheet closes: never two at once)', await page.evaluate("[...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id)") == ['daily'])
-        check('arcade: no page errors', not errs, errs); await ctx.close()
+        ar = await page.evaluate("({ frz: !$('frenzyChip').hidden, daily: !$('dailyBtn').hidden && !!$('dailyBtn').closest('#heroModes'), endless: !$('endlessChip').hidden, mapEndless: $('advEndless').hidden })")
+        check('Strike\'s chips (navigation v2: the Arcade dissolved): Frenzy and the daily; Endless hidden until world 2 (on the map too)', ar['frz'] and ar['daily'] and not ar['endless'] and ar['mapEndless'], ar)
+        await page.tap('#frenzyChip'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
+        check('the Frenzy chip: Frenzy starts at once', await page.evaluate("location.pathname") == '/frenzy')
+        await page.evaluate("goHome()"); await page.wait_for_timeout(450)
+        await page.tap('#dailyBtn'); await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
+        check('the Daily chip: today\'s run at once (no panel first)', await page.evaluate("[...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id)") == [])
+        check('chips: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, init=prof(adv={'stars': stars(8), 'unlocked': 9}))
-        await page.tap('#arcadeBtn'); await page.wait_for_timeout(450)
-        check('world 2 reached: Endless shows in the Arcade (and on the map)', await page.evaluate("!$('arcEndless').hidden && (renderAdvMap(), !$('advEndless').hidden)"))
-        await page.tap('#arcEndless'); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && !__grasp.adventure.on && !__grasp.frenzy.on", timeout=8000)
-        check('Arcade: Endless plays the old run', True)
+        check('world 2 reached: the Endless chip shows (and Endless on the map)', await page.evaluate("!$('endlessChip').hidden && (renderAdvMap(), !$('advEndless').hidden)"))
+        await page.tap('#endlessChip'); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && !__grasp.adventure.on && !__grasp.frenzy.on", timeout=8000)
+        check('the Endless chip: the old run', True)
         await ctx.close()
         for path, m in (('/busy', 'busy'), ('/shapes', 'shapes'), ('/sandbox', 'sandbox'), ('/slice', 'slice')):
             ctx = await b.new_context(viewport={'width': 360, 'height': 740}, is_mobile=True, has_touch=True); page = await ctx.new_page(); await routes(page); errs = []
@@ -176,18 +173,18 @@ async def main():
             await page.evaluate("__grasp.menub.gate.close(); __grasp.home2.more(true)"); await page.wait_for_function("!$('moreSheet').hidden", timeout=3000); await page.wait_for_timeout(450)  # (the gate itself: test_menub)
             mo = await page.evaluate("""(() => { const S = $('moreSheet'), sh = S.querySelector('.sheet').getBoundingClientRect(), rows = [...S.querySelectorAll('.moreRow')].filter(r => !r.hidden && r.offsetParent).map(r => { const q = r.getBoundingClientRect(); return { id: r.id || r.className, h: q.height, in: q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight }; });
               return { rows, link: $('tremortiLink').getAttribute('href'), linkTx: $('tremortiLink').textContent.trim(), lang: $('startLang').textContent.trim(), install: !$('installBtn').hidden, cam: $('camBtn').textContent.trim(), touch: $('mouseBtn').getAttribute('aria-pressed'),
-                sound: $('moreSound').getAttribute('aria-pressed'), voice: $('moreVoice').getAttribute('aria-pressed'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('lockBtn').getAttribute('aria-expanded') }; })()""")
+                sound: $('moreSound').getAttribute('aria-pressed'), voice: String($('voiceOff').getAttribute('aria-pressed') !== 'true'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('lockBtn').getAttribute('aria-expanded') }; })()""")
             tg = 'HE' if he else 'EN'
-            check(tg + ': More (behind the lock): the language, Camera | Touch, Sound, Voice, Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 6 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
-            check(tg + ': the Tremorti link goes to /tremorti/ (' + mo['linkTx'] + ')', mo['link'] == '/tremorti/' and mo['linkTx'] == ('טרימורטי · מד רעד' if he else 'Tremorti · tremor meter'), mo)
+            check(tg + ': More (behind the lock): the language, Camera | Touch, Sound, Voice, Stats (navigation v2: from the pause sheet), Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 7 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
+            check(tg + ': the Tremorti link goes to /tremorti/ (' + mo['linkTx'] + ')', mo['link'] == '/tremorti/' and mo['linkTx'] == ('טרמורטי · מד רעד' if he else 'Tremorti · tremor meter'), mo)
             check(tg + ': Touch is the default way to play; sound and voice on; Install offered (the browser offered it)', mo['touch'] == 'true' and mo['sound'] == 'true' and mo['voice'] == 'true' and mo['install'], mo)
             await page.screenshot(path=OUT + 'home2_after_more_%s.png' % ('he' if he else 'en'))
             if not he:
                 await page.tap('#moreSound'); await page.wait_for_timeout(100)
                 check('Sound: off (muted, saved)', await page.evaluate("muted === true && localStorage.getItem('muted') === '1' && $('moreSound').getAttribute('aria-pressed') === 'false'"))
-                await page.tap('#moreSound'); await page.tap('#moreVoice'); await page.wait_for_timeout(100)
-                check('Voice: off (the cheering voice, saved in the profile); Sound back on', await page.evaluate("profile.grippy === false && muted === false && $('moreVoice').getAttribute('aria-pressed') === 'false'"))
-                await page.tap('#moreVoice'); await page.tap('#camBtn'); await page.wait_for_timeout(150)
+                await page.tap('#moreSound'); await page.tap('#voiceOff'); await page.wait_for_timeout(100)
+                check('Voice: Off (Names · All · Off; profile.grippy follows); Sound back on', await page.evaluate("profile.grippy === false && muted === false && $('voiceOff').getAttribute('aria-pressed') === 'true'"))
+                await page.tap('#voiceAll'); await page.tap('#camBtn'); await page.wait_for_timeout(150)
                 check('Camera | Touch: Camera chosen and remembered (the existing pref)', await page.evaluate("inputPref() === 'camera' && localStorage.getItem('inputPref') === 'camera'"))
                 await page.tap('#mouseBtn'); await page.wait_for_timeout(100)
                 check('...Touch again', await page.evaluate("inputPref() === 'mouse'"))
@@ -245,8 +242,10 @@ async def main():
         ctx, page, errs = await fresh(b, init="window.__graspPopups = true; window.__graspGiftAuto = true;" + prof(pet={'egg': True, 'pantry': 1}))
         await page.wait_for_function(H + ".h2.popup", timeout=4000); await page.wait_for_timeout(600)
         o1 = await page.evaluate(OPEN)
-        check('session start, a gift due and an egg earned: only the pet\'s hatch pops up (the room with the egg; phase 1: the calendar never on open)', o1 == ['petRoom'] and await page.evaluate(H + ".h2.popup") == 'hatch' and await page.evaluate("__grasp.pet.state.stage") == 0, o1)
+        check('session start, a gift due and an egg earned: nothing pops up (navigation v2): Bubu glows for the hatch; phase 1: the calendar never on open', o1 == [] and await page.evaluate(H + ".h2.popup") == 'hatch' and await page.evaluate("$('bubuBtn').dataset.call") == 'hatch' and await page.evaluate("__grasp.pet.state.stage") == 0, o1)
         await page.screenshot(path=OUT + 'home2_after_popup_hatch.png')
+        await page.tap('#bubuBtn'); await page.wait_for_function("!$('petRoom').hidden", timeout=3000)
+        check('...a tap on the glowing Bubu: the room with the egg', await page.evaluate(OPEN) == ['petRoom'])
         for i in range(5): await page.tap('#petRoomCv'); await page.wait_for_timeout(80)
         await page.wait_for_function("__grasp.pet.state.nameOpen", timeout=4000)
         await page.tap('#petNameSkip'); await page.wait_for_timeout(200)
@@ -256,7 +255,8 @@ async def main():
         await page.evaluate("profile.pet.asked = false; saveProfile()")
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.home2", timeout=8000); await page.wait_for_timeout(900)
         o4 = await page.evaluate(OPEN)
-        check('a hatched pet never named (the sheet missed): the name sheet is the session\'s one popup', o4 == ['petName'] and await page.evaluate(H + ".h2.popup") == 'name', o4)
+        check('a hatched pet never named (the sheet missed): the session\'s one call is the name (Bubu glows; nothing pops up)', o4 == [] and await page.evaluate(H + ".h2.popup") == 'name' and await page.evaluate("$('bubuBtn').dataset.call") == 'name', o4)
+        await page.tap('#bubuBtn'); await page.wait_for_function("!$('petName').hidden", timeout=3000)
         await page.tap('#petNameSkip'); await page.wait_for_timeout(200)
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.home2", timeout=8000); await page.wait_for_timeout(900)
         check('nothing due on open: no popup at all (the gift calendar waits for a round)', await page.evaluate(OPEN) == [] and await page.evaluate(H + ".h2.popup") is None)
@@ -282,14 +282,14 @@ async def main():
         CARD = """((E) => { const u = E.ui; return { keys: Object.keys(u.buttons || {}), labels: u.labels || u.advLabels, missions: (u.missionRow || []).length, xp: !!u.xpBox, teaser: !!u.teaser, rp: !!u.rpBtn, coin: u.coinBox ? u.coinBox.n : null, card: u.card, best: u.bestChip || u.advBestChip || null, rank: u.advScore ? u.advScore.rank : null,
           inside: Object.values(u.buttons || {}).every(r => r.x >= u.card.x - 1 && r.x + r.w <= u.card.x + u.card.w + 1 && r.y + r.h <= u.card.y + u.card.h + 1 && r.h >= 44) }; })"""
         def card_ok(tag, c, keys):
-            check(tag + ': buttons ' + ' / '.join(keys) + ' (<= 3 + Share), inside the card, >= 44 px', c['keys'] == keys and len([k for k in c['keys'] if k != 'share']) <= 3 and c['inside'], c)
+            check(tag + ': buttons ' + ' / '.join(keys) + ' (<= 3 with Share), inside the card, >= 44 px', c['keys'] == keys and len(c['keys']) <= 3 and c['inside'], c)
             check(tag + ': no missions, no XP pill, no coin upsell, no Replay pill (merged into Share)', c['missions'] == 0 and not c['xp'] and not c['teaser'] and not c['rp'], c)
         ctx, page, errs = await fresh(b, init="localStorage.setItem('inputPref','mouse');" + prof(coins=40, adv={'stars': {'1': 3, '2': 3, '3': 3}, 'unlocked': 4, 'best': {'4': 100}}, missions={'date': '2026-10-02', 'list': [{'id': 'walls', 'goal': 6, 'progress': 1, 'reward': 22, 'done': False, 'claimed': False}, {'id': 'fruit', 'goal': 15, 'progress': 0, 'reward': 15, 'done': False, 'claimed': False}, {'id': 'rounds', 'goal': 3, 'progress': 0, 'reward': 10, 'done': False, 'claimed': False}]}))
         await page.evaluate(f"{A}.start(4, 'mouse')"); await page.wait_for_function(f"{A}.on && {A}.phase === 'play' && {S}.walls.length", timeout=8000)  # (phase 1: a stage 4 record: Share, and its sheet's challenge (none on stages 1-3))
         await page.evaluate(f"{S}.score = 640"); await page.evaluate(f"{A}.finishTest(1)")
         await page.wait_for_function(f"{S}.over && {S}.ui.advScore && {S}.ui.advScore.a >= 1 && {S}.ui.advStars.shown === 2", timeout=10000); await page.wait_for_timeout(500)
         c = await page.evaluate(CARD + f"({S})")
-        card_ok('Adventure clear', c, ['next', 'retry', 'map', 'share'])
+        card_ok('Adventure clear', c, ['next', 'home', 'share'])  # (navigation v2: the big one, Home, then Share on a record (else Map))
         check('Adventure clear: Next is the big one; stars + the score with NEW RECORD! (phase 1: a record, hence Share), no rank badge', c['labels']['next'] == 'Next' and c['rank'] is None and await page.evaluate(f"!!{S}.ui.advRecord"), c)
         await page.screenshot(path=OUT + 'home2_after_card_adv.png')
         # the Share sheet: Replay clip (when made), Challenge a friend, Copy link
@@ -320,7 +320,7 @@ async def main():
         await page.wait_for_function(f"{S}.over && {S}.ui.buttons && performance.now() - {S}.overAt > 800", timeout=8000)
         c = await page.evaluate(CARD + f"({S})")
         card_ok('Endless (HE)', c, ['again', 'home', 'share'])
-        check('Endless (HE): the score with a small best chip; +coins only', c['best'] and c['best']['h'] <= 26 and c['coin'] is not None and c['labels'] == {'again': 'לשחק שוב', 'home': 'בית', 'share': 'שיתוף ⤴'}, c)
+        check('Endless (HE): a first run: no best chip that only repeats the score, no "+0" (game feel); +coins only', c['best'] is None and (c['coin'] is None or c['coin'] > 0) and c['labels'] == {'again': 'לשחק שוב', 'home': 'בית', 'share': 'שיתוף ⤴'}, c)
         await page.screenshot(path=OUT + 'home2_after_card_endless_he.png')
         await page.evaluate("goHome()"); await page.wait_for_timeout(200)
         await page.evaluate("__grasp.setGameMode('slice')"); await page.evaluate(START_MOUSE); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=5000)

@@ -167,6 +167,8 @@ async def main():
         plans = await page.evaluate(f"Array.from({{ length: 40 }}, (_, i) => {A}.plan(i + 1))")
         w1 = plans[:4]; later = plans[8:]
         check('world 1 stages 1-4 are the gentle on-ramp (panel fix: x1.4 tapering 0.08 a stage, with the aim help), more reach (x1.08), 2 weak spots a wall, no armor / turrets / closing walls / two balls', all(abs(q['paceK'] - (1.4 - 0.08 * i)) < 1e-9 and q['assist'] for i, q in enumerate(w1)) and all(q['reachK'] > 1 and q['weak'] == 2 and q['armor'] == 0 and q['turret'] == 0 and q['creep'] == 0 and q['balls'] == 1 for q in w1), w1[0])
+        w1b = plans[4:7]
+        check('game feel: world 1\'s stages 5-7 keep the aim help and 2 weak spots a wall (no stage-5 cliff); its boss stage and world 2+ do not', all(q['assist'] and q['weak'] == 2 for q in w1b) and not plans[7]['assist'] and plans[7]['weak'] == 1 and all(not q['assist'] and q['weak'] == 1 for q in later), [(q['n'], q['assist'], q['weak']) for q in plans[4:10]])
         check('from world 2: faster (x1.1+; a boss stage a calmer ball, x1.05-1.18), less reach, walls closer, turrets from stage 10, walls closing in from stage 12, more armor each world', all((q['paceK'] > 1.1 or (q['boss'] and 1 < q['paceK'] <= 1.18)) and q['reachK'] < 1 and q['gapK'] < 1 for q in later) and plans[9]['turret'] > 0 and plans[8]['turret'] == 0 and plans[11]['creep'] > 0 and plans[10]['creep'] == 0 and [plans[i]['armor'] for i in (4, 12, 20, 28, 36)] == sorted([plans[i]['armor'] for i in (4, 12, 20, 28, 36)]), [plans[9]['turret'], plans[11]['creep']])
         two = [q['n'] for q in plans if q['balls'] == 2]
         check('two balls at once on some world 3+ stages (never a boss stage)', len(two) >= 4 and min(two) >= 17 and not any(plans[n - 1]['boss'] for n in two), two)
@@ -237,7 +239,7 @@ async def main():
             check(tag + ': a better score: NEW RECORD (the old best kept for the card), Legend, the profile\'s best updated', r2['record'] and r2['prevScore'] == r1['score'] and r2['rank'] == 4 and await page.evaluate("profile.adv.best[1]") == th[4] + 50, r2)
             await page.wait_for_function(f"{S}.over && {S}.ui.advRecord && {S}.ui.advRecord.a >= 1", timeout=10000)
             rec = await page.evaluate(f"({{ sfx: __sfx.slice(), said: __grasp.grippy.said.map(s => s.event || s.ev || s), spoken: __spoken.map(s => s.text) }})")
-            check(tag + ': the record moment: a fanfare and the voice says it', 'record' in rec['sfx'] and any(('record' in str(s)) for s in rec['said']), rec)
+            check(tag + ': the record moment: the record sound (less talking: no voice line)', 'record' in rec['sfx'] and not any(('record' in str(s)) for s in rec['said']), rec)
             await page.wait_for_timeout(300); await page.screenshot(path=f'tests/out/challenge_record_{tag}.png')
             await page.evaluate(f"{A}.start(1)"); await page.wait_for_function(f"{A}.phase === 'play' && {A}.stage === 1", timeout=8000)
             await page.evaluate(f"{S}.score = {th[1] + 5}"); r3 = await page.evaluate(f"{A}.finishTest(1)")

@@ -487,7 +487,7 @@ async def main():
         mv = await page.evaluate(f"{S}.shapes[{i1}]")
         check('dropped on the mat: it stays where it was let go', abs(mv['x'] - (s1['x'] + DX)) < 2 and abs(mv['y'] - (s1['y'] + 10)) < 2 and not mv['placed'] and mv['anim'] is None, mv)
 
-        # level completed: confetti, stars, coins, Grippy's spoken cheer, then the 'Level 2' banner and 4 shapes
+        # level completed: confetti, stars, coins (no spoken cheer: less talking), then the 'Level 2' banner and 4 shapes
         c0 = await page.evaluate("__grasp.profile.coins")
         await page.evaluate("__sfx.length = 0; __grasp.grippy.cool()")
         n_ok = await page.evaluate(f"{S}.shapes.map((s, i) => s.placed ? true : {S}.placeTest(i))")
@@ -497,8 +497,7 @@ async def main():
         res = await page.evaluate(f"({{ phase: {S}.phase, res: {S}.result, coins: __grasp.profile.coins, sfx: __sfx.slice(), grip: __grasp.grippy.said.map(x => x.event), spoken: __spoken.slice(), particles: particles.length, best: localStorage.getItem('shapesBest'), done: {S}.levelsDone, stars: {S}.stars }})")
         rr = res['res'] or {}
         check('level 1 done: the result (1 mistake: 2 stars), coins via ECONOMY.shapes (2), levelup sound, confetti', ok and rr.get('level') == 1 and rr.get('stars') == 2 and rr.get('coins') == 2 and res['coins'] - c0 == 2 and 'levelup' in res['sfx'] and res['particles'] > 40, [res, c0])
-        lv = await page.evaluate("__grasp.grippy.lines.en.shapesLevel")
-        check('Grippy: a level-done line spoken aloud (EN, en-US); best level saved', 'shapesLevel' in res['grip'] and any(x['text'] in lv and x['lang'] == 'en-US' for x in res['spoken']) and res['best'] == '1' and res['done'] == 1 and res['stars'] == 2, res)
+        check('less talking: no level-done line (the levelup sound + confetti say it); best level saved', 'shapesLevel' not in res['grip'] and not any(x['text'] in ('Hooray!', 'Well done!', 'Yes!') for x in res['spoken']) and res['best'] == '1' and res['done'] == 1 and res['stars'] == 2, res)
         check('ECONOMY.shapes: 2 a level, +1 for 3 stars', await page.evaluate("ECONOMY.shapes.level === 2 && ECONOMY.shapes.star3 === 1"))
         await page.screenshot(path='tests/out/shapes_level_done.png')
         ok = await wait(page, f"{S}.phase === 'banner'", 6000)
@@ -523,7 +522,7 @@ async def main():
             said.append([kd, await page.evaluate(f"{S}.spoken"), await page.evaluate("__spoken[__spoken.length - 1]")])
         check('HE: the names are spoken in Hebrew (he-IL): ' + ', '.join(x[1] for x in said), all(x[1] == heb[x[0]] and x[2] == {'text': heb[x[0]], 'lang': 'he-IL'} for x in said), said)
         allnames = await page.evaluate("__grasp.shapes.kinds.map(k => [I18N.en['shp_' + k], I18N.he['shp_' + k]])")
-        check('all 12 shapes have EN and HE names', len(allnames) == 12 and [x[1] for x in allnames] == ['עיגול', 'ריבוע', 'משולש', 'כוכב', 'לב', 'משושה', 'מלבן', 'אליפסה', 'סהר', 'מעוין', 'צלב', 'מחומש'] and all(x[0] for x in allnames), allnames)
+        check('all 12 shapes have EN and HE names', len(allnames) == 12 and [x[1] for x in allnames] == ['עיגול', 'ריבוע', 'משולש', 'כוכב', 'לב', 'משושה', 'מלבן', 'אליפסה', 'סהר', 'מעוין', 'פלוס', 'מחומש'] and all(x[0] for x in allnames), allnames)
         await page.evaluate("setLang('en')")
 
         # level 3: 4 shapes in similar colours; level 5: 6 shapes, two of them in another one's colour
@@ -590,17 +589,17 @@ async def main():
         check('level 8+: more shapes, faster motion', l9['n'] == 8 and l9['spec']['slideW'] > (await page.evaluate("shapeLevelSpec(7).slideW")), l9)
 
         # Home: the round-over card (levels done, stars, best level), then home; the tile shows the best level
-        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(700)
+        await page.evaluate("shapesHome()"); await page.wait_for_timeout(700)  # (navigation v2: the sheet's Home goes home at once; the round-over card stays reachable: shapesHome)
         await page.wait_for_function(f"{S}.ui.toddlerStars && {S}.ui.toddlerStars.filter(q => q.on).length === {S}.ui.starsRow", timeout=5000)
         ec = await page.evaluate(f"({{ over: {S}.over, mode, b: {S}.ui.buttons, done: {S}.levelsDone, stars: {S}.stars, best: localStorage.getItem('shapesBest'), nb: {S}.ui.newBest, row: {S}.ui.starsRow, coin: {S}.ui.coinBox, best2: {S}.ui.bestLine, labels: {S}.ui.labels }})")
-        check('Home in a Shapes round: the round-over card first (levels done 2, stars 5, best level 2 saved, new best)', ec['over'] and ec['mode'] == 'mouse' and ec['b'] and 'home' in ec['b'] and ec['done'] == 2 and ec['stars'] == 5 and ec['best'] == '2' and ec['nb'], ec)
+        check('the Shapes round-over card (shapesHome: levels done 2, stars 5, best level 2 saved, new best)', ec['over'] and ec['mode'] == 'mouse' and ec['b'] and 'home' in ec['b'] and ec['done'] == 2 and ec['stars'] == 5 and ec['best'] == '2' and ec['nb'], ec)
         check('home2: the toddler card: big stars (3: the levels\' average 2.5, rounded), confetti, only Play again (big) + Home; no score, best line or coins', ec['row'] == 3 and set(ec['b']) == {'again', 'home'} and ec['b']['again']['h'] > ec['b']['home']['h'] and ec['coin'] is None and ec['best2'] is None and ec['labels'] == {'again': 'Play again', 'home': 'Home'}, ec)
         await page.screenshot(path='tests/out/shapes_endcard.png')
         hb = ec['b']['home']; await page.mouse.click(hb['x'] + hb['w'] / 2, hb['y'] + hb['h'] / 2); await page.wait_for_timeout(400)
         check("the card's Home goes to the start screen; the tile shows the best level", await page.evaluate("mode === 'none' && !$('start').hidden") and await page.evaluate("document.querySelector('#littlePick button[data-mode=shapes] .best').textContent") == '★ L2')
         check('mission pool: "Sort 15 shapes"', await page.evaluate("(() => { const m = __grasp.missionPool.find(q => q.id === 'shapes'); return !!m && m.ev === 'shape' && m.goals[0] === 15 && t('ms_shapes', { n: 15 }) === 'Sort 15 shapes'; })()"))
         gl = await page.evaluate("({ en: __grasp.grippy.lines.en, he: __grasp.grippy.lines.he })")
-        check('Grippy (voice): >= 3 short (1-3 words) distinct lines EN / HE for a level done; a match is quiet (the shape name is spoken instead)', all(len(gl[l]['shapesLevel']) >= 3 and len(set(gl[l]['shapesLevel'])) == len(gl[l]['shapesLevel']) and all(1 <= len(x.split()) <= 3 for x in gl[l]['shapesLevel']) for l in ('en', 'he')) and 'shapesMatch' not in gl['en'] and 'shapesMatch' not in gl['he'])
+        check('Grippy (voice): less talking: no level-done or match lines (the shape name is spoken instead)', all(k not in gl[l] for k in ('shapesLevel', 'shapesMatch') for l in ('en', 'he')))
         await page.evaluate("document.querySelector('#littlePick [data-mode=shapes]').click()"); await page.wait_for_timeout(300)
         check('a new round starts at level 1 with nothing sorted', await page.evaluate(f"{S}.level === 1 && !{S}.over && {S}.levelsDone === 0 && {S}.shapes.every(s => !s.placed)"))
         check('desktop: no page errors', not errs, errs); await ctx.close()

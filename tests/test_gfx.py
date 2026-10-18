@@ -105,7 +105,7 @@ async def main():
 
         # ---- prefers-reduced-motion: no iris, no ambient motion, half the particles, a tiny shake ----
         ctx, page, errs = await fresh(b, False, rm='reduce')
-        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, bg: getComputedStyle($('start')).animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle($('heroPlay'), '::after').animationName, cap: {G}.cap() }})")
+        rm = await page.evaluate(f"({{ red: {G}.reduced(), calm: document.body.classList.contains('gfxCalm'), blob: getComputedStyle(document.querySelector('#startFx .blob')).animationName, bg: getComputedStyle($('start'), '::before').animationName, sh: getComputedStyle(document.querySelector('#startFx .sh')).display, tile: getComputedStyle($('heroPlay'), '::after').animationName, cap: {G}.cap() }})")
         await page.click('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000)
         x = await page.evaluate(f"({{ on: {G}.xf.on, shown: !$('xfade').hidden, skipped: {G}.xf.skipped, log: {G}.xf.log.slice(-1)[0] }})")
         await page.evaluate("shakeScreen(4)"); sh = await page.evaluate("shake.amp")
@@ -140,12 +140,12 @@ async def main():
         # ---- the start screen's living background (menu B: a sticker-book page of dots drifting diagonally): moving, the whole screen, no scroll, the tiles' spring ----
         ctx, page, errs = await fresh(b, True)
         await page.wait_for_timeout(1300)
-        L = await page.evaluate("""(() => { const st = $('start'), r = st.getBoundingClientRect(), cs = getComputedStyle(st);
-          return { anim: cs.animationName, img: cs.backgroundImage.split('radial-gradient').length - 1, full: r.width >= innerWidth - 1 && r.height >= innerHeight - 1, noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight, oldFx: getComputedStyle($('startFx')).display, a: cs.backgroundPosition }; })()""")
+        L = await page.evaluate("""(() => { const st = $('start'), r = st.getBoundingClientRect(), cs = getComputedStyle(st, '::before');
+          return { anim: cs.animationName, img: cs.backgroundImage.split('radial-gradient').length - 1, full: r.width >= innerWidth - 1 && r.height >= innerHeight - 1, noScroll: st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight, oldFx: getComputedStyle($('startFx')).display, a: cs.transform }; })()""")
         await page.wait_for_timeout(500)
-        a2 = await page.evaluate("getComputedStyle($('start')).backgroundPosition")
+        a2 = await page.evaluate("getComputedStyle($('start'), '::before').transform")
         check('start screen: a living background (two layers of dots, drifting) over the whole screen, never scrolls (the old blobs retired)', L['anim'] == 'mbBg' and L['img'] == 2 and L['full'] and L['noScroll'] and L['oldFx'] == 'none', L)
-        check('start screen: the background moves (CSS animations, no JS per frame)', a2 != L['a'], [L['a'], a2])
+        check('start screen: the background moves (CSS animations, no JS per frame; perf: a ::before layer moved by transform)', a2 != L['a'], [L['a'], a2])
         tr = await page.evaluate("(() => { const b = document.querySelector('#start button[data-mode=slice]'); return getComputedStyle(b).transitionTimingFunction; })()")
         check('tiles: a springy transition (an overshooting cubic-bezier)', '1.56' in tr, tr)
         await page.screenshot(path='tests/out/gfx_start_phone.png')
