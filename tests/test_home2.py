@@ -71,7 +71,7 @@ async def main():
                 screen_ok(tag, L)
                 ids = [x['id'] for x in L['btns']]
                 check(tag + ': the hierarchy: the top bar (the lock, sound, Bubu, the coins), the age switch, the hero (Play + Map + Frenzy / Daily), Smash, Slice, Pop It, the 4 camera games, the dock (Shop, Events)',
-                      all(k in ids for k in ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')) and len(ids) == 19, ids)  # (navigation v2: no Arcade, no Camera games sheet)  # (phase 1: the sound button; menu B: the lock instead of ⋯)
+                      all(k in ids for k in ('settingsBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')) and len(ids) == 19, ids)  # (navigation v2: no Arcade, no Camera games sheet)  # (phase 1: the sound button; menu B: the gear (was the lock) instead of ⋯)
                 hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'bigPopit', 'drums', 'stars')]
                 check(tag + ': the hero is clearly the main thing: the widest button, above the grid', hero['w'] > 1.6 * max(o['w'] for o in others) and hero['b'] <= min(o['t'] for o in others), [hero, others])
                 check(tag + ': a new player: the hero says "' + ('סטרייק' if he else 'Strike') + '" with "' + ('שלב 1' if he else 'Stage 1') + '" (aria: "' + L['aria'] + '")', L['hero'] == ('סטרייק' if he else 'Strike') and L['sub'] == ('שלב 1' if he else 'Stage 1') and L['aria'].startswith('לשחק' if he else 'Play'), L)
@@ -168,14 +168,13 @@ async def main():
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he)
             await page.evaluate("window.dispatchEvent(Object.assign(new Event('beforeinstallprompt', { cancelable: true }), { prompt: () => { window.__prompted = (window.__prompted || 0) + 1; return Promise.resolve(); }, userChoice: Promise.resolve({ outcome: 'accepted' }) }))")
-            await page.tap('#lockBtn'); await page.wait_for_timeout(300)
-            check(('HE' if he else 'EN') + ': the lock opens the parents\' gate, not the settings', await page.evaluate("!$('gate').hidden && $('moreSheet').hidden"))
-            await page.evaluate("__grasp.menub.gate.close(); __grasp.home2.more(true)"); await page.wait_for_function("!$('moreSheet').hidden", timeout=3000); await page.wait_for_timeout(450)  # (the gate itself: test_menub)
+            await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=1000); await page.wait_for_timeout(450)
+            check(('HE' if he else 'EN') + ': the gear opens the settings in one tap (no parents\' gate)', await page.evaluate("!document.getElementById('gate') && $('settingsBtn').getAttribute('aria-expanded') === 'true'"))
             mo = await page.evaluate("""(() => { const S = $('moreSheet'), sh = S.querySelector('.sheet').getBoundingClientRect(), rows = [...S.querySelectorAll('.moreRow')].filter(r => !r.hidden && r.offsetParent).map(r => { const q = r.getBoundingClientRect(); return { id: r.id || r.className, h: q.height, in: q.left >= sh.left && q.right <= sh.right + 0.5 && q.bottom <= innerHeight }; });
               return { rows, link: $('tremortiLink').getAttribute('href'), linkTx: $('tremortiLink').textContent.trim(), lang: $('startLang').textContent.trim(), install: !$('installBtn').hidden, cam: $('camBtn').textContent.trim(), touch: $('mouseBtn').getAttribute('aria-pressed'),
-                sound: $('moreSound').getAttribute('aria-pressed'), voice: String($('voiceOff').getAttribute('aria-pressed') !== 'true'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('lockBtn').getAttribute('aria-expanded') }; })()""")
+                sound: $('moreSound').getAttribute('aria-pressed'), voice: String($('voiceOff').getAttribute('aria-pressed') !== 'true'), small: [...S.querySelectorAll('button, a')].filter(e => e.offsetParent).map(e => e.getBoundingClientRect()).filter(q => q.height < 44 || q.width < 44).length, expanded: $('settingsBtn').getAttribute('aria-expanded') }; })()""")
             tg = 'HE' if he else 'EN'
-            check(tg + ': More (behind the lock): the language, Camera | Touch, Sound, Voice, Stats (navigation v2: from the pause sheet), Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 7 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
+            check(tg + ': More (the gear): the language, Camera | Touch, Sound, Voice, Stats (navigation v2: from the pause sheet), Install app, the Tremorti link; every row inside, >= 44 px', len(mo['rows']) == 7 and all(r['in'] and r['h'] >= 44 for r in mo['rows']) and mo['small'] == 0 and mo['expanded'] == 'true', mo)
             check(tg + ': the Tremorti link goes to /tremorti/ (' + mo['linkTx'] + ')', mo['link'] == '/tremorti/' and mo['linkTx'] == ('טרמורטי · מד רעד' if he else 'Tremorti · tremor meter'), mo)
             check(tg + ': Touch is the default way to play; sound and voice on; Install offered (the browser offered it)', mo['touch'] == 'true' and mo['sound'] == 'true' and mo['voice'] == 'true' and mo['install'], mo)
             await page.screenshot(path=OUT + 'home2_after_more_%s.png' % ('he' if he else 'en'))
@@ -195,7 +194,7 @@ async def main():
                 await page.tap('#startLang'); await page.wait_for_timeout(150)
                 check('...English again', await page.evaluate("lang === 'en'"))
                 await page.keyboard.press('Escape'); await page.wait_for_timeout(150)
-                check('Escape closes the More sheet', await page.evaluate("$('moreSheet').hidden && $('lockBtn').getAttribute('aria-expanded') === 'false'"))
+                check('Escape closes the More sheet', await page.evaluate("$('moreSheet').hidden && $('settingsBtn').getAttribute('aria-expanded') === 'false'"))
             check('more: no page errors', not errs, errs); await ctx.close()
 
         # ===== 6. hidden until earned: the pet (the first round finished, not a failed stage), the album, the Road, the run powers, Endless =====

@@ -50,11 +50,11 @@ async def main():
         check('badges read on load', (await page.evaluate(BESTS))['slice'] == '★ 480')
         check('badges: no page errors', not errs, errs); await ctx.close()
 
-        # ---- menu B, phone + desktop, EN + HE: one screen (no scroll): the top bar (the lock, sound, Bubu, the coins), the age switch, the hero + Map, Smash · Slice, Arcade · Camera games, the dock; a tap plays ----
+        # ---- menu B, phone + desktop, EN + HE: one screen (no scroll): the top bar (the gear, sound, Bubu, the coins), the age switch, the hero + Map, Smash · Slice, Arcade · Camera games, the dock; a tap plays ----
         LAY = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; }, on = (q) => q.l >= 0 && q.t >= 0 && q.r <= innerWidth + 0.5 && q.b <= innerHeight + 0.5;
           const tiles = [...document.querySelectorAll('#start .mbGrid button')].filter(b => !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg, ...r(b), name: (b.querySelector('[data-i18n], b') || b).textContent.trim(), fs: Math.min(...[...b.querySelectorAll('b, span[data-i18n]')].filter(x => x.offsetParent).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
           const st = $('start'), tabs = [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => ({ id: b.id, ...r(b) }));
-          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, tabs, allOn: tiles.every(on) && tabs.every(on), more: r($('lockBtn')), pill: r($('metaPill')), h1: r($('bubuBtn')),
+          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, tabs, allOn: tiles.every(on) && tabs.every(on), more: r($('settingsBtn')), pill: r($('metaPill')), h1: r($('bubuBtn')),
             gone: ['metaRow', 'habitBar', 'flameBtn', 'giftBtn', 'strikeDiff', 'camBtn', 'eventBtn'].filter(id => { const e = document.getElementById(id) || document.querySelector('#start .' + id); return e && e.closest('#start') && e.offsetParent; }), link: !!document.querySelector('#start a.link') }; })()"""
         for mobile in (True, False):
             for he in (False, True):

@@ -1,8 +1,8 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Menu B "Sticker Book" (the parent's pick, Oct 2026): the start screen as a sticker book. One sticker template for every game; the Big kids room
-# (Bubu, the lock, the sound, the coins; the age switch; the Strike hero + Map; Smash, Slice, Arcade, Camera games; the dock: Shop, Pet, Events);
+# (Bubu, the Settings gear, the sound, the coins; the age switch; the Strike hero + Map; Smash, Slice, Arcade, Camera games; the dock: Shop, Pet, Events);
 # the Little ones room (4 huge stickers a page, swiped sideways, dots, RTL-correct; a sticker says its name, then opens its game); the Arcade and
-# Camera games sheets (stickers, 2 a row); the parents' gate (hold 2 s, then 7 + 5; wrong = a shake and back to the hold) before the settings;
+# Camera games sheets (stickers, 2 a row); the gear opens the settings in one tap (the owner removed the parents' gate on purpose);
 # every press squashes + boings with a blip pitched per game, the idle wiggle, Bubu's jump + "Hi!", reduced motion, the Sound setting; the
 # layout (no scroll at 360x740 / 390x844 / 1280x800, EN / HE; targets >= 44 px; labels >= 14 px); the camera's dwell on the stickers; the double-tap
 # guard on the room switch; Pop It (another branch) only when its mode exists. Screenshots: tests/out/menub_*.png.
@@ -46,7 +46,7 @@ def layout_ok(tag, L, need=()):
     if need: check(tag + ': shows ' + ', '.join(need), all(k in ids for k in need), ids)
     return L
 
-BIG = ('lockBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
+BIG = ('settingsBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
 LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'lilPopit']]
 
 async def page_of(page):
@@ -65,8 +65,8 @@ async def main():
             L = layout_ok(tg + ' main 390', await page.evaluate(LAYOUT + "()"), BIG)
             bx = {x['id']: x for x in L['btns']}
             check(tg + ': RTL in Hebrew, LTR in English', L['dir'] == ('rtl' if he else 'ltr'))
-            lock, coins = bx['lockBtn'], bx['metaPill']
-            check(tg + ': the top bar: the lock at the ' + ('right (RTL)' if he else 'left') + ', Bubu in the middle, the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])) and abs((bx['bubuBtn']['l'] + bx['bubuBtn']['r']) / 2 - L['W'] / 2) < 6, [lock, coins, bx['bubuBtn']])
+            lock, coins = bx['settingsBtn'], bx['metaPill']
+            check(tg + ': the top bar: the gear at the ' + ('right (RTL)' if he else 'left') + ', Bubu in the middle, the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])) and abs((bx['bubuBtn']['l'] + bx['bubuBtn']['r']) / 2 - L['W'] / 2) < 6, [lock, coins, bx['bubuBtn']])
             hero = bx['heroPlay']; grid = [bx[k] for k in ('smash', 'slice', 'bigPopit')]; cams = [bx[k] for k in ('drums', 'bubbles', 'paint', 'stars')]
             check(tg + ': the Strike hero is the widest sticker, above the grid; Smash / Slice / Pop It big (>= 95 x 150 px)', hero['w'] > 2.4 * max(g['w'] for g in grid) and hero['b'] <= min(g['t'] for g in grid) and all(g['w'] >= 95 and g['h'] >= 150 for g in grid), [hero, grid])
             check(tg + ': 3 a row: Smash / Slice / Pop It side by side, the 4 camera games in one row under them', max(g['t'] for g in grid) - min(g['t'] for g in grid) < 12 and max(c['t'] for c in cams) - min(c['t'] for c in cams) < 12 and min(c['t'] for c in cams) > max(g['b'] for g in grid), [grid, cams])
@@ -94,11 +94,8 @@ async def main():
             await page.tap('#bigBtn'); await page.wait_for_function("$('littlePick').hidden && !$('bigRoom').hidden", timeout=3000); await page.wait_for_timeout(400)
             # (navigation v2: no Arcade or Camera games sheet: Strike's modes are chips under the hero, the camera games a row of stickers)
             check(tg + ': Strike\'s Frenzy / Daily chips side by side under the hero', abs(bx['frenzyChip']['t'] - bx['dailyBtn']['t']) < 6 and bx['frenzyChip']['t'] >= hero['b'] - 2, [bx['frenzyChip'], bx['dailyBtn']])
-            # the gate, the settings
-            await page.tap('#lockBtn'); await page.wait_for_function("!$('gate').hidden", timeout=3000); await page.wait_for_timeout(850)
-            layout_ok(tg + ' gate', await page.evaluate(LAYOUT + "('#gate')"), ('gateHold',))
-            await page.screenshot(path=OUT + 'menub_gate_%s.png' % lg)
-            await page.evaluate(f"{M}.gate.close(); __grasp.home2.more(true)"); await page.wait_for_timeout(900)  # (after the sheet's spring-in)
+            # the settings: one tap on the gear
+            await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=1000); await page.wait_for_timeout(900)  # (after the sheet's spring-in)
             L = layout_ok(tg + ' settings', await page.evaluate(LAYOUT + "('#moreSheet')"), ('startLang', 'camBtn', 'mouseBtn', 'moreSound', 'voiceNames', 'voiceAll', 'voiceOff'))
             await page.screenshot(path=OUT + 'menub_settings_%s.png' % lg)
             check(tg + ' screens: no page errors', not errs, errs); await ctx.close()
@@ -195,39 +192,21 @@ async def main():
             check(tg + ': Escape: back to Big kids', await page.evaluate("$('start').dataset.room === 'big' && !$('bigRoom').hidden && localStorage.getItem('grasp.room') === 'big'"))
             check(tg + ' paging: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 4. the parents' gate: a 2 s hold, then a small sum (navigation v2: random, shuffled; test_nav covers the arming and the rest) =====
-        ctx, page, errs = await fresh(b, init="window.__graspGateCoolMs = 0;")
-        await page.tap('#lockBtn'); await page.wait_for_function("!$('gate').hidden", timeout=3000); await page.wait_for_timeout(850)
-        check('the lock opens the gate (not the settings): step 1, the ring empty', await page.evaluate(f"{M}.mb.gate.step === 1 && $('moreSheet').hidden && $('gateRing').getAttribute('stroke-dashoffset') === '283' && !$('gateHoldStep').hidden && $('gateQStep').hidden"))
-        q = await page.evaluate("(() => { const r = $('gateHold').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
-        await page.tap('#gateHold'); await page.wait_for_timeout(300)
-        check('a tap on the lock is not enough', await page.evaluate(f"{M}.mb.gate.step === 1"))
-        await page.mouse.move(q[0], q[1]); await page.mouse.down(); await page.wait_for_timeout(1000)
-        mid = await page.evaluate("+$('gateRing').getAttribute('stroke-dashoffset')")
-        await page.mouse.up(); await page.wait_for_timeout(250)
-        check('holding 1 s fills the ring part way; letting go early: the ring empties, still step 1', 60 < mid < 270 and await page.evaluate(f"{M}.mb.gate.step === 1 && $('gateRing').getAttribute('stroke-dashoffset') === '283' && $('moreSheet').hidden"), mid)
-        await page.mouse.down(); await page.wait_for_timeout(2700); await page.mouse.up(); await page.wait_for_timeout(450); await page.wait_for_function(f"{M}.mb.gate.step === 2 && performance.now() - {M}.mb.gate.qAt > 450", timeout=4000)
-        check('holding 2 s: the question "What is a + b?" with 3 big answers', await page.evaluate(f"{M}.mb.gate.step === 2 && !$('gateQStep').hidden && /^What is \\d \\+ \\d\\?$/.test($('gateQStep').querySelector('p').textContent) && [...$('gateOpts').children].every(b => b.getBoundingClientRect().height >= 60)"))
-        await page.screenshot(path=OUT + 'menub_gate_q_en.png')
-        wrong = await page.evaluate(f"{M}.mb.gate.opts.find(v => v !== {M}.mb.gate.ans)")
-        await page.tap('#gateOpts [data-ans="%s"]' % wrong); await page.wait_for_timeout(120)
-        check('a wrong answer (' + wrong + '): a shake ...', await page.evaluate("$('gateOpts').classList.contains('shake') && $('moreSheet').hidden"))
-        await page.wait_for_function(f"{M}.mb.gate.step === 1", timeout=2000)
-        check('... and back to the hold step (no settings)', await page.evaluate("$('moreSheet').hidden && !$('gate').hidden"))
-        await page.mouse.move(q[0], q[1]); await page.mouse.down(); await page.wait_for_timeout(2700); await page.mouse.up(); await page.wait_for_timeout(450); await page.wait_for_function(f"{M}.mb.gate.step === 2 && performance.now() - {M}.mb.gate.qAt > 450", timeout=4000)
-        await page.tap('#gateOpts [data-ans="%s"]' % await page.evaluate(f"{M}.mb.gate.ans")); await page.wait_for_timeout(400)
-        check('hold 2 s + the right answer: the settings sheet (language, touch / camera, sound, voice, install, Tremorti); the gate closed', await page.evaluate("!$('moreSheet').hidden && $('gate').hidden && !!$('tremortiLink') && $('lockBtn').getAttribute('aria-expanded') === 'true'"))
+        # ===== 4. Settings: the gear opens it with one tap (the owner removed the parents' gate on purpose) =====
+        ctx, page, errs = await fresh(b)
+        check('no parents\' gate in the page (no #gate, no lock)', await page.evaluate("!document.getElementById('gate') && !document.getElementById('lockBtn') && !document.querySelector('[data-ic=\"lock\"], .gateHold, .gateOpts')"))
+        await page.tap('#settingsBtn'); await page.wait_for_timeout(400)
+        check('one tap on the gear: the settings sheet (language, touch / camera, sound, voice, install, Tremorti)', await page.evaluate("!$('moreSheet').hidden && !!$('tremortiLink') && $('settingsBtn').getAttribute('aria-expanded') === 'true'"))
         await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
-        await page.tap('#lockBtn'); await page.wait_for_timeout(450); await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
-        check('Escape closes the gate', await page.evaluate("$('gate').hidden && $('lockBtn').getAttribute('aria-expanded') === 'false'"))
-        await page.tap('#lockBtn'); await page.wait_for_timeout(450); await page.evaluate("$('gate').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))"); await page.wait_for_timeout(200)
-        check('a tap beside the gate closes it', await page.evaluate("$('gate').hidden"))
+        check('Escape closes the settings', await page.evaluate("$('moreSheet').hidden && $('settingsBtn').getAttribute('aria-expanded') === 'false'"))
+        await page.tap('#settingsBtn'); await page.wait_for_timeout(450); await page.evaluate("$('moreSheet').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))"); await page.wait_for_timeout(200)
+        check('a tap beside the settings closes them', await page.evaluate("$('moreSheet').hidden"))
         # the one-tap sound button stays on the start screen
         await page.tap('#startSound'); await page.wait_for_timeout(100)
         check('the sound sticker: one tap = muted (saved), its picture changes', await page.evaluate("muted === true && localStorage.getItem('muted') === '1' && $('startSound').getAttribute('aria-pressed') === 'false' && getComputedStyle($('startSound').querySelector('.off')).display !== 'none'"))
         await page.tap('#startSound'); await page.wait_for_timeout(100)
         check('... and back on', await page.evaluate("muted === false"))
-        check('gate: no page errors', not errs, errs); await ctx.close()
+        check('settings: no page errors', not errs, errs); await ctx.close()
 
         # ===== 5. motion and sound: squash + boing, pitched blips (and silence when muted), the idle wiggle, the background; reduced motion =====
         ctx, page, errs = await fresh(b)

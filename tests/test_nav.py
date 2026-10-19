@@ -2,10 +2,10 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Navigation v2 (the owner's "one way home" pass, Oct 2026): the Arcade dissolved (Strike's modes are chips under its hero, each plays at once;
 # Pop It has its own sticker; the camera games are a row of stickers); "a sticker plays" (Smash's sticker = its current stage; nothing pops up
 # after Home: what waits glows); one way home (the corner control = pause + house; the sheet: Resume, Home, Restart, Map (Strike / Smash), at most
-# 4 rows; every end card: the big button, then Home, then Map / Share: at most 3); Home = the room the game belongs to; toddler-safe exits (a hold
-# on the corner control and the Big kids switch, the browser's Back re-pushed with a hint; window.__graspHomeHold opts the suites in); Back on
-# the start screen closes the sheet on top; the parents' gate (a random sum, shuffled answers, 400 ms arming, a cool-down after a wrong answer).
-# Screenshots: tests/out/nav_{main,strike_chips,pause,card_strike,card_smash,toddler_hold}_{en,he}.png at 390x844.
+# 4 rows; every end card: the big button, then Home, then Map / Share: at most 3); Home = the room the game belongs to; one tap everywhere (the
+# owner removed the parental controls on purpose: the corner control, the Big kids switch and Settings are plain taps; the browser's Back in any
+# game: the pause sheet first, then Home; window.__graspNavGuard opts the suites in to the Back handling); Back on the start screen closes the
+# sheet on top. Screenshots: tests/out/nav_{main,strike_chips,pause,card_strike,card_smash,toddler_pause}_{en,he}.png at 390x844.
 OUT = 'tests/out/'
 A = '__grasp.adventure'; S = '__grasp.strike'; N = '__grasp.nav'; M = '__grasp.menub'; H = '__grasp.home2'
 
@@ -164,47 +164,33 @@ async def main():
             await page.evaluate(f"{M}.room('big')")
             check(tg + ': cards: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 5. toddler-safe exits (opted in: window.__graspHomeHold) =====
+        # ===== 5. one tap everywhere (the owner removed the parental controls); Back in a toddler game = the pause sheet first (opted in: window.__graspNavGuard) =====
         for he in (False, True):
             tg = 'HE' if he else 'EN'
-            ctx, page, errs = await fresh(b, he, init="window.__graspHomeHold = true; localStorage.setItem('grasp.room', 'little');")
+            ctx, page, errs = await fresh(b, he, init="window.__graspNavGuard = true; localStorage.setItem('grasp.room', 'little');")
             await page.tap('#start .stk[data-mode="busy"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'busy'", timeout=8000); await page.wait_for_timeout(600)
-            await page.tap('#pauseBtn'); await page.wait_for_timeout(350)
-            st = await page.evaluate(f"({{ open: menu.open, hint: document.querySelector('#pauseBtn .navHint').classList.contains('show'), txt: document.querySelector('#pauseBtn .navHint').textContent, log: {N}.nav.log.slice(-3) }})")
-            check(tg + ': Busy Board: a short tap on the corner control does not pause; it wiggles + "Hold to pause"', not st['open'] and st['hint'] and st['txt'] == ('להחזיק כדי לעצור' if he else 'Hold to pause'), st)
-            r = await page.evaluate("(() => { const q = $('pauseBtn').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; })()")
-            await page.wait_for_timeout(1800)
-            await page.mouse.move(r['x'], r['y']); await page.mouse.down(); await page.wait_for_timeout(650)
-            mid = await page.evaluate("({ holding: $('pauseBtn').classList.contains('holding'), off: +document.querySelector('#pauseBtn .navRing rect').getAttribute('stroke-dashoffset'), open: menu.open })")
-            await page.screenshot(path=OUT + 'nav_toddler_hold_' + tg.lower() + '.png')
-            check(tg + ': holding: the ring fills, not paused yet', mid['holding'] and 10 < mid['off'] < 90 and not mid['open'], mid)
-            await page.wait_for_timeout(1000); await page.mouse.up(); await page.wait_for_timeout(200)
+            check(tg + ': no hold ring / hint left on the corner control or the Big kids switch', await page.evaluate("!document.querySelector('.navRing, .navHint')"))
+            await page.tap('#pauseBtn'); await page.wait_for_function("menu.open", timeout=1000)
+            await page.screenshot(path=OUT + 'nav_toddler_pause_' + tg.lower() + '.png')
             sh = await page.evaluate(SHEET)
-            check(tg + ': after ~1.3 s: the pause sheet (Resume, Home first)', sh['open'] and sh['ids'][:2] == ['resumeBtn', 'homeBtn'], sh['ids'])
+            check(tg + ': Busy Board: one tap on the corner control pauses (Resume + Home only)', sh['open'] and sh['ids'][:2] == ['resumeBtn', 'homeBtn'] and 'resetBtn' not in sh['ids'], sh['ids'])
             await page.evaluate("closeMenu(true)"); await page.wait_for_timeout(300)
-            # the browser's Back inside a toddler game: stays, the hint; a second Back within 2 s leaves
-            await page.evaluate("history.back()"); await page.wait_for_timeout(600)
-            bk = await page.evaluate(f"({{ mode, path: location.pathname, log: __grasp.route.log.slice(-3), hint: {N}.nav.log.slice(-1)[0] }})")
-            check(tg + ': Back inside Busy Board: still playing (the entry pushed again), the hint', bk['mode'] == 'mouse' and bk['path'] == '/busy' and 'guard:busy' in bk['log'] and bk['hint'] == 'hint:navBackHold', bk)
+            # the browser's Back inside a toddler game: like Big kids: the pause sheet first, then Home
+            await page.evaluate("history.back()"); await page.wait_for_function("menu.open", timeout=4000); await page.wait_for_timeout(200)
+            bk = await page.evaluate("({ mode, open: menu.open, path: location.pathname, log: __grasp.route.log.slice(-3) })")
+            check(tg + ': Back inside Busy Board: the pause sheet (still in the game, its entry pushed again)', bk['mode'] == 'mouse' and bk['open'] and bk['path'] == '/busy' and 'guard:busy' in bk['log'], bk)
             await page.evaluate("history.back()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
-            check(tg + ': a second Back within 2 s: home (Little ones)', await page.evaluate(f"!__grasp.route.of(location.pathname) && {M}.mb.room === 'little'")); await page.wait_for_timeout(450)
-            # the coin pill hidden in Little ones; Big kids needs the hold
+            check(tg + ': ...Back again (the sheet open): home (Little ones)', await page.evaluate(f"!__grasp.route.of(location.pathname) && {M}.mb.room === 'little'")); await page.wait_for_timeout(450)
+            # the coin pill hidden in Little ones; Big kids is one tap
             check(tg + ': Little ones: the coin pill is out of reach', await page.evaluate("getComputedStyle($('metaPill')).visibility === 'hidden'"))
-            await page.tap('#bigBtn'); await page.wait_for_timeout(400)
-            check(tg + ': Little ones -> Big kids: a tap stays (the hint)', await page.evaluate(f"{M}.mb.room === 'little' && document.querySelector('#bigBtn .navHint').classList.contains('show')"))
-            q = await page.evaluate("(() => { const q = $('bigBtn').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; })()")
-            await page.wait_for_timeout(1800)  # (after the hint)
-            await page.mouse.move(q['x'], q['y']); await page.mouse.down()
-            try: await page.wait_for_function(f"{M}.mb.room === 'big'", timeout=5000)
-            except Exception: pass
-            await page.mouse.up(); await page.wait_for_timeout(300)
-            check(tg + ': ...held ~1.3 s: Big kids', await page.evaluate(f"{M}.mb.room") == 'big', await page.evaluate(f"{N}.nav.log.slice(-4)"))
-            # a Big kids game: the corner control is a plain tap
+            await page.tap('#bigBtn'); await page.wait_for_function(f"{M}.mb.room === 'big'", timeout=1000)
+            check(tg + ': Little ones -> Big kids: one tap', await page.evaluate(f"{M}.mb.room") == 'big')
+            # a Big kids game: the corner control is a plain tap too
             await page.evaluate(f"{A}.start(1, 'mouse')"); await page.wait_for_function(f"{A}.on && mode === 'mouse'", timeout=8000); await page.wait_for_timeout(500)
             await page.tap('#pauseBtn'); await page.wait_for_function("menu.open", timeout=3000)
             check(tg + ': a Big kids game: one tap pauses', True)
             await page.evaluate("closeMenu(false); goHome()"); await page.wait_for_timeout(300)
-            check(tg + ': toddler: no page errors', not errs, errs); await ctx.close()
+            check(tg + ': one tap: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, init="localStorage.setItem('grasp.room', 'little');")
         await page.tap('#start .stk[data-mode="busy"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'busy'", timeout=8000); await page.wait_for_timeout(500)
         await page.tap('#pauseBtn'); await page.wait_for_function("menu.open", timeout=3000)
@@ -220,8 +206,8 @@ async def main():
         await page.evaluate("history.back()"); await page.wait_for_function("$('collection').hidden", timeout=3000)
         check('Back: the sheet closes, the start screen stays', await page.evaluate("mode === 'none' && !$('start').hidden && !__grasp.route.of(location.pathname)"))
         await page.wait_for_timeout(450)
-        await page.tap('#lockBtn'); await page.wait_for_function("!$('gate').hidden", timeout=3000); await page.evaluate("history.back()"); await page.wait_for_function("$('gate').hidden", timeout=3000)
-        check('Back closes the parents\' gate too', True); await page.wait_for_timeout(450)
+        await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=3000); await page.evaluate("history.back()"); await page.wait_for_function("$('moreSheet').hidden", timeout=3000)
+        check('Back closes the Settings sheet too', True); await page.wait_for_timeout(450)
         await page.tap('#collectionBtn'); await page.wait_for_function("!$('collection').hidden", timeout=3000); await page.wait_for_timeout(450)
         await page.evaluate("closePanel('collection')"); await page.wait_for_timeout(450)
         await page.tap('#start .stk[data-mode="slice"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=8000)
@@ -243,30 +229,20 @@ async def main():
         check('back home with the pet\'s name not asked yet: no name sheet pops up; Bubu glows', o['open'] == [] and o['call'] == 'name', o)
         check('popups: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 8. the parents' gate: a random small sum, shuffled answers, 400 ms arming, a cool-down after a wrong answer =====
-        ctx, page, errs = await fresh(b, init="window.__graspGateCoolMs = 1500;")
-        qs = []
-        for i in range(12):
-            q = await page.evaluate(f"(() => {{ const g = {M}.gate.question(); return {{ a: g.a, b: g.b, ans: g.ans, opts: [...$('gateOpts').querySelectorAll('button')].map(b => b.dataset.ans), q: $('gateQTx').textContent }}; }})()")
-            qs.append(q)
-        check('the gate: a + b with a, b in 3..9; 3 different answers, the right one among them', all(3 <= q['a'] <= 9 and 3 <= q['b'] <= 9 and len(set(q['opts'])) == 3 and q['ans'] in q['opts'] and int(q['ans']) == q['a'] + q['b'] for q in qs), qs[:3])
-        check('...not always the same sum, not always in the same place', len({(q['a'], q['b']) for q in qs}) > 3 and len({q['opts'].index(q['ans']) for q in qs}) > 1, [(q['a'], q['b'], q['opts'].index(q['ans'])) for q in qs])
-        await page.evaluate(f"{M}.gate.open(); {M}.gate.step(2)")
-        early = await page.evaluate(f"{M}.gate.answer({M}.mb.gate.ans)")
-        check('an answer within 400 ms of the question is ignored', early is None and not await page.evaluate("$('gate').hidden"))
-        await page.wait_for_timeout(450)
-        wrong = await page.evaluate(f"{M}.mb.gate.opts.find(v => v !== {M}.mb.gate.ans)")
-        await page.evaluate(f"{M}.gate.answer('{wrong}')"); await page.wait_for_function(f"{M}.mb.gate.step === 1", timeout=3000)
-        cool = await page.evaluate(f"({{ step: {M}.mb.gate.step, held: {M}.gate.hold(), txt: $('gateHoldTx').textContent }})")
-        check('a wrong answer: back to the hold, which rests (the hold refused, "Try again in N s")', cool['step'] == 1 and cool['held'] is False and 'Try again in' in cool['txt'], cool)
-        await page.wait_for_function("!mbGateCooling()", timeout=4000)
-        check('...after the rest the hold works again', await page.evaluate(f"(() => {{ const ok = {M}.gate.hold(); {M}.gate.stop(); return ok; }})()"))
-        await page.evaluate(f"{M}.gate.step(2)"); await page.wait_for_timeout(450); await page.evaluate(f"{M}.gate.answer({M}.mb.gate.ans)"); await page.wait_for_timeout(200)
-        check('the right answer: the settings (Stats lives there now)', await page.evaluate("!$('moreSheet').hidden && !!$('moreHud').offsetParent"))
-        check('gate: no page errors', not errs, errs); await ctx.close()
+        # ===== 8. Settings: the top bar's gear opens it with one tap (no parents' gate) =====
+        for he in (False, True):
+            tg = 'HE' if he else 'EN'
+            ctx, page, errs = await fresh(b, he)
+            g = await page.evaluate("({ gate: !!document.getElementById('gate'), lock: !!document.getElementById('lockBtn'), aria: $('settingsBtn').getAttribute('aria-label'), ico: !!$('settingsBtn').querySelector('svg[data-ico=\"gear\"]') })")
+            check(tg + ': the gear (labelled Settings) replaces the lock; no gate sheet in the page', not g['gate'] and not g['lock'] and g['ico'] and g['aria'] == ('הגדרות' if he else 'Settings'), g)
+            await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=1000)
+            check(tg + ': one tap: the settings (Stats lives there)', await page.evaluate("!!$('moreHud').offsetParent && $('settingsBtn').getAttribute('aria-expanded') === 'true'"))
+            await page.tap('#moreSheet .xBtn'); await page.wait_for_timeout(300)
+            check(tg + ': its X closes it', await page.evaluate("$('moreSheet').hidden && $('settingsBtn').getAttribute('aria-expanded') === 'false'"))
+            check(tg + ': settings: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 9. the QA pass: Back traps for a real visitor (opted in), Forward under a sheet, Calm bubbles per start =====
-        HOLD = "window.__graspHomeHold = true;"
+        # ===== 9. the QA pass: Back for a real visitor (opted in), Forward under a sheet, Calm bubbles per start =====
+        HOLD = "window.__graspNavGuard = true;"
         ctx, page, errs = await fresh(b, init=HOLD)
         await page.tap('#start .stk[data-mode="slice"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=8000); await page.wait_for_timeout(400)
         await page.evaluate("history.back()"); await page.wait_for_function("menu.open", timeout=4000)
@@ -276,8 +252,8 @@ async def main():
         await page.tap('#littleBtn'); await page.wait_for_timeout(500)
         check('the Little ones room (a real visitor): its own history entry', await page.evaluate("history.state && history.state.grasp === 'room'"))
         await page.evaluate("history.back()"); await page.wait_for_timeout(500)
-        check('Back in the Little ones room: stays there, the hold hint on Big kids', await page.evaluate(f"{M}.mb.room === 'little' && document.querySelector('#bigBtn .navHint').classList.contains('show') && history.state && history.state.grasp === 'room'"))
-        check('QA Back traps: no page errors', not errs, errs); await ctx.close()
+        check('Back in the Little ones room: to Big kids (like Escape; no trap)', await page.evaluate(f"{M}.mb.room === 'big' && mode === 'none' && !$('start').hidden"))
+        check('QA Back: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b)
         await page.tap('#start .stk[data-mode="slice"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=8000); await page.wait_for_timeout(300)
         await page.evaluate("history.back()"); await page.wait_for_function("mode === 'none'", timeout=4000); await page.wait_for_timeout(450)

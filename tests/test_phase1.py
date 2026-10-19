@@ -447,7 +447,7 @@ async def main():
         # ===== 14-16. the sound button; the camera prompt; the Hebrew wording =====
         for he in (False, True):
             ctx, page, errs = await fresh(b, he=he, w=360, h=740, init=prof(coins=1234, xp=900))
-            sb = await page.evaluate("(() => { const q = $('startSound').getBoundingClientRect(), m = $('lockBtn').getBoundingClientRect(); return { w: q.width, h: q.height, l: q.left, r: q.right, ml: m.left, mr: m.right, W: innerWidth, muted, p: $('startSound').getAttribute('aria-pressed') }; })()")
+            sb = await page.evaluate("(() => { const q = $('startSound').getBoundingClientRect(), m = $('settingsBtn').getBoundingClientRect(); return { w: q.width, h: q.height, l: q.left, r: q.right, ml: m.left, mr: m.right, W: innerWidth, muted, p: $('startSound').getAttribute('aria-pressed') }; })()")
             await page.tap('#startSound'); await page.wait_for_timeout(200)
             m1 = await page.evaluate("[muted, localStorage.getItem('muted'), $('startSound').getAttribute('aria-pressed')]")
             check(('HE' if he else 'EN') + ': the speaker beside ⋯ (44 px, on screen): one tap mutes, remembered', sb['w'] >= 44 and sb['h'] >= 44 and sb['l'] >= 0 and sb['r'] <= sb['W'] and not sb['muted'] and m1 == [True, '1', 'false'], [sb, m1])
