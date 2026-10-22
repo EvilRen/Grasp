@@ -185,12 +185,12 @@ async def cam_tests(b, he):
     await page.evaluate("goHome()"); await page.wait_for_timeout(300)
     check(tag + ': Home stops the camera', await page.evaluate(f"{T}.cc.state === 'off' && !{T}.cc.stream"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
-    # no camera: the friendly card, the touch game
+    # no camera: no card over the game (the owner), the touch game goes on
     ctx, page, errs = await page_for(b, '/colors', he, init=CAM_FAIL)
     await wait(page, "gameMode === 'colors' && mode === 'mouse'"); await page.evaluate(f"{T}.coAct('cam')")
-    ok = await wait(page, f"!$('banner').hidden && {T}.co.act === 'find' && {T}.cc.state === 'resting'", 8000); await page.wait_for_timeout(400)
-    txt = await page.evaluate("document.body.innerText"); rest = 'המצלמה נחה' if he else 'Camera is resting'
-    check(tag + ': no camera: "' + rest + ' ..." and the touch game (find) goes on; no technical text', ok and rest in txt and 'TypeError' not in txt and 'getUserMedia' not in txt and await page.evaluate("$('bannerList').hidden"), txt[:200])
+    ok = await wait(page, f"{T}.co.act === 'find' && {T}.cc.state === 'resting'", 8000); await page.wait_for_timeout(400)
+    txt = await page.evaluate("document.body.innerText")
+    check(tag + ': no camera: no card pops up, the touch game (find) goes on; no technical text', ok and await page.evaluate("$('banner').hidden") and 'TypeError' not in txt and 'getUserMedia' not in txt, txt[:200])
     await page.screenshot(path=OUT + 'toddler_colors_cam_resting_%s.png' % ('he' if he else 'en'))
     check(tag + ' (no camera): no page errors', not errs, errs); await ctx.close()
 

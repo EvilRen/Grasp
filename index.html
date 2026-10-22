@@ -15054,7 +15054,7 @@ function fallbackToMouse(failures) {
   homeCamOff(false); stopCamera(); landmarker = null; lastLandmarks = null;
   noHandShown = false; nhReset(); statusEl.hidden = true; setPreviewBig(false); unpauseGame();
   lastFailures = failures; renderBanner(); bannerMore(false);
-  $('banner').hidden = failures.length === 0;
+  $('banner').hidden = true; // (the owner: no card over the game when the camera fails; the game just plays by touch)
   startGame('mouse');
 }
 let lastFailures = [];
@@ -18590,9 +18590,9 @@ async function ccCamOpen() {
     cc.state = 'on'; cc.log.push('on');
   } catch (e) { if (id === cc.startId) ccCamFail(e); }
 }
-function ccCamFail(e) { // phase 1: the friendly card ("Camera is resting — play with your finger"), the details behind More help; the touch game goes on
+function ccCamFail(e) { // no card (the owner: no pop-ups over games); the touch game (find) goes on
   console.error('[grasp] colours camera failed', e); cc.state = 'resting'; cc.log.push('resting');
-  lastFailures = [{ stage: () => t('st_camera'), why: () => explain('camera', e) }]; renderBanner(); bannerMore(false); $('banner').hidden = false;
+  lastFailures = [{ stage: () => t('st_camera'), why: () => explain('camera', e) }];
   if (gameMode === 'colors' && co.act === 'cam') coSetAct('find');
 }
 function ccCamStop() {

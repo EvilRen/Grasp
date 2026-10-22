@@ -280,21 +280,17 @@ async def main():
             tg = 'HE' if he else 'EN'
             ctx, page, errs = await fresh(b, he=he, w=360, h=740, init=CAM_FAIL)
             await page.evaluate(DRAWN); await page.evaluate("setInputPref('camera')")
-            await page.tap('#heroPlay'); await page.wait_for_function("!$('banner').hidden && mode === 'mouse'", timeout=25000); await page.wait_for_timeout(1500)
+            await page.tap('#heroPlay'); await page.wait_for_function("mode === 'mouse' && lastFailures.length > 0", timeout=25000); await page.wait_for_timeout(1500)
             vis = await page.evaluate("document.body.innerText"); drawn = await page.evaluate("[...__drawn]")
-            bn = await page.evaluate("({ title: $('banner').querySelector('strong').textContent, more: $('bannerMore').textContent, list: $('bannerList').hidden, h: $('bannerMore').getBoundingClientRect().height })")
-            check(tg + ': getUserMedia rejects with a TypeError: "' + bn['title'] + '" with More help (details hidden)', bn['title'] == ('המצלמה נחה — משחקים עם האצבע 👆' if he else 'Camera is resting — play with your finger 👆') and bn['list'] and bn['h'] >= 44, bn)
+            check(tg + ': getUserMedia rejects with a TypeError: the game plays by touch, no card pops up over it (the owner)', await page.evaluate("$('banner').hidden"), vis[:200])
             bad = [x for x in drawn if re.search(r'Error|TypeError|undefined', x)]
             check(tg + ': no "Error" / "TypeError" visible: not in the DOM text, not on the canvas', not re.search(r'Error|TypeError|getUserMedia|undefined', vis) and not bad, [vis[:300], bad])
             if he: await page.screenshot(path=OUT + 'phase1_after_nocam_he.png')
-            await page.tap('#bannerMore'); await page.wait_for_timeout(250)
-            li = await page.evaluate("[...$('bannerList').children].map(l => l.textContent)")
-            check(tg + ': More help reveals the details, in plain words (still no technical text)', not await page.evaluate("$('bannerList').hidden") and li and not any(re.search(r'Error|TypeError|undefined|\(', x) for x in li), li)
             await page.evaluate("goHome()"); await page.wait_for_timeout(400)
-            await page.evaluate("$('banner').hidden = true; localStorage.removeItem('cgTouchOk'); cgStart('stars')"); await page.wait_for_function("!$('cgCam').hidden", timeout=8000); await page.wait_for_timeout(500)
-            await page.click('#cgCamOn'); await page.wait_for_function("!$('banner').hidden", timeout=25000); await page.wait_for_timeout(800)
+            await page.evaluate("localStorage.removeItem('cgTouchOk'); cgStart('stars')"); await page.wait_for_function("!$('cgCam').hidden", timeout=8000); await page.wait_for_timeout(500)
+            await page.evaluate("lastFailures = []"); await page.click('#cgCamOn'); await page.wait_for_function("mode === 'mouse' && lastFailures.length > 0", timeout=25000); await page.wait_for_timeout(800)
             vis = await page.evaluate("document.body.innerText"); bad = [x for x in await page.evaluate("[...__drawn]") if re.search(r'Error|TypeError', x)]
-            check(tg + ': a camera game\'s "Turn on camera" failing: the same resting card, no technical text', not re.search(r'Error|TypeError|getUserMedia', vis) and not bad, [vis[:200], bad])
+            check(tg + ': a camera game\'s "Turn on camera" failing: plays by touch, no card, no technical text', await page.evaluate("$('banner').hidden") and not re.search(r'Error|TypeError|getUserMedia', vis) and not bad, [vis[:200], bad])
             check(tg + ': no page errors (camera fail)', not errs, errs); await ctx.close()
 
         # ===== 6. the streak flame: quiet; hidden from the Today panel in the Little ones flow =====
