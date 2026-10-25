@@ -64,7 +64,7 @@ def regrain(out, base, m):
     k = cv2.GaussianBlur(base.astype(np.float32), (0, 0), 2.2); hi = base.astype(np.float32) - k   # the high frequencies
     ring = cv2.dilate(m, np.ones((41, 41), np.uint8)) & ~cv2.dilate(m, np.ones((9, 9), np.uint8))
     if ring.sum() == 0: return out
-    sd = hi[ring > 0].std(axis=0)
+    v = hi[ring > 0]; sd = 1.4826 * np.median(np.abs(v - np.median(v, axis=0)), axis=0)  # (robust: the plain texture, not the outlines of things nearby)
     noise = np.random.default_rng(7).normal(0, 1, out.shape).astype(np.float32) * sd * 0.8
     noise = cv2.GaussianBlur(noise, (0, 0), 0.6)
     a = (m.astype(np.float32) / 255.0)[..., None]
@@ -75,6 +75,11 @@ def apply(img, e):
     if e['do'] == 'remove':  # gone: the object filled in from its surroundings
         m = shape_mask(e, cx, cy, rx, ry); hole = cv2.dilate(m, np.ones((7, 7), np.uint8))
         known = (hole == 0).astype(np.float32); f = img.astype(np.float32)
+        # only the background feeds the fill: not the outlines (dark) or the edges (sharp) of other things touching the hole
+        g = cv2.GaussianBlur(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY).astype(np.float32), (0, 0), 1)
+        grad = np.hypot(cv2.Sobel(g, cv2.CV_32F, 1, 0), cv2.Sobel(g, cv2.CV_32F, 0, 1)); val = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[..., 2]
+        bad = cv2.dilate(((grad > e.get('edge', 60)) | (val < 90)).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+        known[bad] = 0
         # a smooth fill from the colours round the hole (normalized convolution: no streaks); near the rim a tight blur, inside a wide one
         def nc(sig): return cv2.GaussianBlur(f * known[..., None], (0, 0), sig) / np.maximum(cv2.GaussianBlur(known, (0, 0), sig)[..., None], 1e-4)
         R = max(rx * OUT_W, ry * OUT_H); near, far = nc(max(3, R * 0.12)), nc(max(8, R * 0.45))
