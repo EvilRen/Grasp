@@ -282,6 +282,20 @@ async def main():
             check(tg + ': another tap: out of full screen', not await page.evaluate("!!document.fullscreenElement") and await page.evaluate("$('fullBtn').getAttribute('aria-pressed')") == 'false')
             check(tg + ' full screen: no page errors', not errs, errs); await ctx.close()
 
+        # ===== full screen by itself when a game starts (touch devices; the owner: "full screen inside the games"); the button's exit keeps it off for the visit; not with a mouse =====
+        ctx, page, errs = await fresh(b, False, w=390, h=844); await page.wait_for_timeout(700)
+        await page.tap('#bigRoom [data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(400)
+        a1 = await page.evaluate("!!document.fullscreenElement")
+        await page.evaluate("goHome()"); await page.wait_for_timeout(500); a2 = await page.evaluate("!!document.fullscreenElement")
+        check('a phone: a game starts in full screen by itself, and it stays back Home', a1 and a2, [a1, a2, await page.evaluate("__fsLog = fsA.log.slice()")])
+        await page.tap('#fullBtn'); await page.wait_for_timeout(400); await page.tap('#bigRoom [data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(400)
+        check('...the full screen button\'s exit: the next game stays as it is (not full screen) for this visit', not await page.evaluate("!!document.fullscreenElement") and await page.evaluate("sessionStorage.getItem('grasp.fsOff')") == '1')
+        check('auto full screen: no page errors', not errs, errs); await ctx.close()
+        ctx, page, errs = await fresh(b, False, w=1280, h=800, mobile=False); await page.wait_for_timeout(700)
+        await page.click('#bigRoom [data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode !== 'none'", timeout=8000); await page.wait_for_timeout(400)
+        check('a computer (a mouse): no full screen by itself', not await page.evaluate("!!document.fullscreenElement"))
+        check('desktop: no page errors', not errs, errs); await ctx.close()
+
         await b.close()
     print('FAILURES:', check.fails)
 asyncio.run(main()); srv.terminate()

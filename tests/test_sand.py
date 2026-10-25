@@ -31,7 +31,7 @@ async def mechanics(b):
     B = await box(page); cx = B['ix'] + B['iw'] / 2; cy = B['iy'] + B['ih'] / 2; base = await page.evaluate(f"{S}.SA.base")
     flat = f"(() => {{ const a = {S}.sa; let m = 0; for (let k = 0; k < a.h.length; k++) m = Math.max(m, Math.abs(a.h[k] - a.h0[k])); return m < 0.01; }})()"
     check('the tray: fresh soft sand, ~2 px a cell on a phone (%d cells)' % await page.evaluate(f"{S}.sa.GW * {S}.sa.GH"), await page.evaluate(flat) and await page.evaluate(f"{S}.sa.cs") < 2.5 and await page.evaluate(f"{S}.sa.GW * {S}.sa.GH") > 50000)
-    check('finger only: two buttons under the tray (smooth, moon), no tools, no colours', await page.evaluate(f"{S}.sa.L.btns.map(b => b.id).join()") == 'smooth,night' and await page.evaluate(f"!{S}.sa.L.tools && !{S}.sa.L.cols"))
+    check('finger only: two buttons (smooth, moon), no tools, no colours', sorted((await page.evaluate(f"{S}.sa.L.btns.map(b => b.id).join()")).split(',')) == ['night', 'smooth'] and await page.evaluate(f"!{S}.sa.L.tools && !{S}.sa.L.cols"))
     # the finger: a groove, the sand piled on its sides, the volume kept
     s0 = await page.evaluate(f"{S}.sum()"); await page.evaluate(f"window.__lv = 0; window.__lvT = setInterval(() => {{ __lv = Math.max(__lv, {S}.snd.lv); }}, 20)")
     await stroke(page, [(cx - 110, cy - 150), (cx + 110, cy - 150)], 14)
@@ -88,13 +88,13 @@ async def mechanics(b):
 async def layouts(b):
     for he, (w, h) in ((False, (320, 568)), (True, (390, 844)), (False, (844, 390)), (True, (1280, 800))):
         tag = ('HE' if he else 'EN') + ' %dx%d' % (w, h); ctx, page, errs = await sand_page(b, he, w, h)
-        r = await page.evaluate(f"""(() => {{ const L = {S}.sa.L, B = L.box, bs = L.btns;
-          const inside = bs.every((b) => b.x - b.r >= 0 && b.x + b.r <= innerWidth && b.y - b.r >= 0 && b.y + b.r <= innerHeight);
-          const clear = bs.every((b) => b.y - b.r >= B.y + B.h); const apart = Math.hypot(bs[0].x - bs[1].x, bs[0].y - bs[1].y) > bs[0].r + bs[1].r + 20;
-          const pb = $('pauseBtn').getBoundingClientRect();
-          return {{ inside, clear, apart, d: Math.min(...bs.map((b) => b.r * 2)), bh: B.h, under: B.y >= pb.bottom - 2, rtl: bs[0].x > bs[1].x }}; }})()""")
-        check(tag + ': the tray, then the two buttons (%d px): on screen, apart, under the tray; the tray under the pause button; RTL mirrors them' % r['d'],
-              r['inside'] and r['clear'] and r['apart'] and r['d'] >= 56 and r['bh'] >= 150 and r['under'] and r['rtl'] == he, r)
+        r = await page.evaluate(f"""(() => {{ const L = {S}.sa.L, B = L.box, bs = L.btns, pb = document.querySelector('.chrome').getBoundingClientRect();
+          const inside = bs.every((b) => b.x - b.r >= 0 && b.x + b.r <= innerWidth && b.y - b.r >= 0);
+          const above = bs.every((b) => b.y + b.r <= B.y + 2); const apart = Math.hypot(bs[0].x - bs[1].x, bs[0].y - bs[1].y) >= bs[0].r + bs[1].r + 8;
+          const clearPill = bs.every((b) => b.x + b.r <= pb.left - 6 || b.x - b.r >= pb.right + 6);
+          return {{ inside, above, apart, clearPill, d: Math.min(...bs.map((b) => b.r * 2)), bh: B.h, bottomGap: innerHeight - (B.y + B.h), under: B.y >= pb.bottom - 2, order: bs.map((b) => b.id).join() }}; }})()""")
+        check(tag + ': no dead space: the two buttons (%d px) in the top row beside the pause pill (clear of it), the tray from under that row to %d px from the bottom' % (r['d'], r['bottomGap']),
+              r['inside'] and r['above'] and r['apart'] and r['clearPill'] and r['d'] >= 50 and r['bh'] >= 150 and r['under'] and r['bottomGap'] <= 12, r)
         await page.screenshot(path=OUT + 'sand_%s_%dx%d.png' % ('he' if he else 'en', w, h))
         check(tag + ': no page errors', not errs, errs); await ctx.close()
 

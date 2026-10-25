@@ -1284,7 +1284,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mbDot::after{ content:""; width:18px; height:18px; border-radius:9px; background:rgba(40,20,60,.3); box-shadow:0 0 0 2px #fff; transition:width .2s; }
 .mbDot.on::after{ width:38px; background:var(--mbInk); }
 /* the start-up checks (camera boot) as a sticker card over the screen */
-#start.mb > .checks{ position:absolute; left:50%; top:50%; z-index:5; transform:translate(-50%,-50%); width:min(340px, calc(100% - 32px)); margin:0; padding:16px 18px; background:#fff; color:var(--mbInk); border:3px solid var(--mbInk); border-radius:20px; box-shadow:0 5px 0 var(--mbInk); text-align:start; }
+#start.mb > .checks{ position:absolute; inset:0; z-index:5; transform:none !important; animation:none !important; opacity:1 !important; width:min(340px, calc(100% - 32px)); height:max-content; margin:auto; /* (centred by margin: an entrance's transform once threw it half off the screen, the owner's screenshot) */ padding:16px 18px; background:#fff; color:var(--mbInk); border:3px solid var(--mbInk); border-radius:20px; box-shadow:0 5px 0 var(--mbInk); text-align:start; }
 #start.mb > .checks[hidden]{ display:none; }
 #start.mb > .checks small{ color:#6a5a7e; }
 /* the sheets of the menu (the More sheet, Arcade, Camera games): white, a dark outline */
@@ -15285,6 +15285,7 @@ $('homeBtn').addEventListener('click', () => goHome()); // (navigation v2: Home 
 
 let running = false, loopStops = 0;
 function startGame(m) {
+  fsAuto('start'); // (a game: full screen by itself on a phone)
   if (!$('start').hidden || !$('advMap').hidden || !$('smashMap').hidden) xfadeStart('in'); // (graphics pass: an iris onto the game from the start screen or a map)
   fxClear();
   mode = m;
@@ -19205,8 +19206,8 @@ function piPrimIn(q, u, v) {
 const piUnitCache = new Map();
 function piUnit(shapeId, rU, rMinU = 0) { // the bubble grid for a shape: bubbles of radius rU (unit coords: the square board's 4 x 4 size, PI.bubK), as many as fit
   // inside the outline (a hex grid; the square: a square grid), centred; under PI.minN of them: a little smaller (never under rMinU) until PI.minN fit
-  const key = shapeId + '|' + rU.toFixed(4) + '|' + rMinU.toFixed(4); let U = piUnitCache.get(key); if (U) return U;
-  const S = PI_SHAPES[shapeId], ex = S.excl || [], bp = S.prims.filter((q) => !q.nb), inS = (u, v) => { for (const q of bp) if (piPrimIn(q, u, v)) return true; return false; }; // (q.nb: silicone with no bubbles: the unicorn's mane)
+  const S = PI_SHAPES[shapeId], key = shapeId + '|' + S.ar.toFixed(3) + '|' + rU.toFixed(4) + '|' + rMinU.toFixed(4); let U = piUnitCache.get(key); if (U) return U;
+  const ex = S.excl || [], bp = S.prims.filter((q) => !q.nb), inS = (u, v) => { for (const q of bp) if (piPrimIn(q, u, v)) return true; return false; }; // (q.nb: silicone with no bubbles: the unicorn's mane)
   const ok = (u, v, r) => { if (!inS(u, v)) return false; const m = r * 1.1; for (let k = 0; k < 8; k++) { const a = k * TAU / 8; if (!inS(u + Math.cos(a) * m, v + Math.sin(a) * m)) return false; } for (const [x, y, er] of ex) if (Math.hypot(u - x, v - y) < er + r * 1.05) return false; return true; };
   const grid = (d, r, hex, xph, yph) => { const dy = hex ? d * 0.866 : d, out = [], kmax = Math.ceil(0.5 / d) + 2; let j = 0;
     for (let v = yph * dy; v <= S.ar + 1e-9; v += dy, j++) { const off = (hex && j % 2 ? 0.5 : 0) + xph; for (let k = -kmax; k <= kmax; k++) { const u = 0.5 + (k + off) * d; if (u > 0 && u < 1 && ok(u, v, r)) out.push({ u, v }); } }
@@ -19228,9 +19229,14 @@ function piBox(shapeId, w = W, h = H, k = 1) { // the board's box: under the pau
   const a = fit(tgTop() + 8); if (w > h * 1.15) { const b = fit(14); if (b.bx >= 150 && b.bw > a.bw) { b.side = true; return b; } } return a;
 }
 const piFitCache = new Map();
+function piSquareRows(w = W, h = H) { // the square board on a tall screen: 4 columns of the same big bubbles, as many rows as the height holds (4-8; the owner: "why so small? more rows")
+  const top = tgTop() + 8, aw = w - 24, ah = h - top - 16; if (w > h * 1.15) return 4; const bw = Math.min(620, aw);
+  return Math.max(4, Math.min(8, Math.floor(ah * 0.96 / (bw / 4) + 0.1)));
+}
+function piSquareSet() { const n = piSquareRows(), S = PI_SHAPES.square, ar = n / 4; if (S.ar !== ar) { S.ar = ar; S.prims = [['r', 0, 0, 1, ar, 0.11]]; S.rows = n; } return n; }
 function piFit(shapeId) { // the board's box + its bubble size (unit coords): the square board's 4 x 4 bubble on every board; a shape that holds under PI.minN of them grows (up to the screen's edges), then its bubbles shrink a little (piUnit)
-  const key = shapeId + '|' + W + 'x' + H + '|' + Math.round(tgTop()); let F = piFitCache.get(key); if (F) return F;
-  const rPx = Math.max(PI.minR, PI.bubK * piBox('square').bw); let box = piBox(shapeId);
+  piSquareSet(); const key = shapeId + '|' + W + 'x' + H + '|' + Math.round(tgTop()) + '|' + PI_SHAPES.square.ar; let F = piFitCache.get(key); if (F) return F;
+  const rPx = Math.max(PI.minR, PI.bubK * piBox('square').bw); let box = piBox(shapeId); // (the square's width sets the bubble: its rows only add height)
   for (let k = 1.04; k < 1.7 && piUnit(shapeId, rPx / box.bw, rPx / box.bw).pts.length < PI.minN; k *= 1.04) { const b = piBox(shapeId, W, H, k); if (b.bw <= box.bw + 0.5) break; box = b; }
   F = { box, rU: rPx / box.bw }; if (piFitCache.size > 60) piFitCache.clear(); piFitCache.set(key, F); return F;
 }
@@ -19841,12 +19847,14 @@ const sa = { L: null, key: '', GW: 0, GH: 0, cs: 2, csy: 2, h: null, h0: null, n
 try { sa.night = localStorage.getItem('grasp.sandNight') === '1'; } catch {}
 /* the layout: the tray fills the screen under the pause button; the two buttons under it */
 function saLayout(force) {
-  const key = W + 'x' + H + '|' + lang + '|' + tgTop(); if (!force && sa.key === key && sa.h) return false; sa.key = key;
-  const top = tgTop(), btn = Math.round(Math.max(58, Math.min(84, W / 5.6, H / 9))), gap = Math.max(10, Math.round(btn * 0.2));
-  const by0 = H - 14 - btn / 2, bx = 10, by = top, bw = W - 20, bh = Math.max(150, by0 - btn / 2 - gap - top);
+  const cr = document.querySelector('.chrome'), cb = cr ? cr.getBoundingClientRect() : null, key = W + 'x' + H + '|' + lang + '|' + tgTop() + '|' + (cb ? Math.round(cb.left) + ',' + Math.round(cb.bottom) : ''); if (!force && sa.key === key && sa.h) return false; sa.key = key;
+  // (the owner: "a lot of dead space round the tray": the two buttons sit in the top row beside the pause pill, the tray fills the rest down to the bottom)
+  const top = tgTop(), ch = (document.querySelector('.chrome') || { getBoundingClientRect: () => ({ top: 12, bottom: 64, left: W - 120, right: W - 12, height: 52 }) }).getBoundingClientRect();
+  const rowY = ch.height > 0 ? (ch.top + ch.bottom) / 2 : 38, btn = Math.round(Math.max(52, Math.min(60, (ch.height || 52) + 4))), gap = 12, pillRight = ch.left + (ch.right - ch.left) / 2 > W / 2;
+  const bx = 10, by = Math.max(top - 4, (ch.bottom || 60) + 8), bw = W - 20, bh = Math.max(150, H - 10 - by);
   const rim = Math.round(Math.max(12, Math.min(22, Math.min(bw, bh) * 0.04))), box = { x: bx, y: by, w: bw, h: bh, rim, ix: bx + rim, iy: by + rim, iw: bw - 2 * rim, ih: bh - 2 * rim };
-  const rtl = lang === 'he', sp = btn * 1.9, ids = ['smooth', 'night'];
-  const btns = ids.map((id, i) => ({ id, x: W / 2 + ((rtl ? 1 - i : i) - 0.5) * sp, y: by0, r: btn / 2 }));
+  const rtl = lang === 'he', ids = rtl ? ['night', 'smooth'] : ['smooth', 'night'], x0 = pillRight ? 12 + btn / 2 : W - 12 - btn / 2 - (btn + gap), sp = btn + gap; // (the side away from the pill)
+  const btns = ids.map((id, i) => ({ id, x: x0 + i * sp, y: Math.max(btn / 2 + 4, rowY), r: btn / 2 }));
   sa.L = { box, btn, btns, r: Math.max(15, Math.min(30, Math.min(box.iw, box.ih) * 0.055)) }; // (r: the finger)
   const cs = Math.max(1.6, Math.sqrt(box.iw * box.ih / SA.cells)), GW = Math.max(8, Math.round(box.iw / cs)), GH = Math.max(8, Math.round(box.ih / cs));
   if (!sa.h || GW !== sa.GW || GH !== sa.GH) saGrid(GW, GH);
@@ -20638,7 +20646,19 @@ async function toggleFull() {
   try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); else await (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); } catch (e) { console.warn('[grasp] full screen', e); }
   syncFullBtn();
 }
-$('fullBtn').addEventListener('click', () => { audioInit(); sfx('click'); toggleFull(); });
+$('fullBtn').addEventListener('click', () => { audioInit(); sfx('click'); fsOptOut(!!fsEl()); toggleFull(); });
+/* --- full screen by itself in the games (the owner, Oct 2026): entering a game on a touch device goes full screen (the tap that opened it is
+   still a user activation); if the browser said no (the activation was gone, e.g. after the camera's question), the next touch in the game does
+   it. The button's "exit" keeps it off for the visit (sessionStorage). Not on a computer (a mouse), not in the installed app (already full). --- */
+const fsA = { off: false, want: false, tries: 0, log: [] }; try { fsA.off = sessionStorage.getItem('grasp.fsOff') === '1'; } catch {}
+function fsOptOut(on) { fsA.off = on; fsA.want = false; try { if (on) sessionStorage.setItem('grasp.fsOff', '1'); else sessionStorage.removeItem('grasp.fsOff'); } catch {} }
+function fsAutoOk() { return fsCan() && !fsEl() && !fsA.off && !window.__graspNoAutoFs && matchMedia('(pointer: coarse)').matches && !matchMedia('(display-mode: standalone)').matches; }
+function fsAuto(why) {
+  if (!fsAutoOk()) { fsA.want = false; return false; } fsA.want = true; fsA.tries++; const d = document.documentElement;
+  try { const p = (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); if (p && p.then) p.then(() => { fsA.want = false; fsA.log.push('on:' + why); syncFullBtn(); }, () => fsA.log.push('later:' + why)); } catch { fsA.log.push('later:' + why); }
+  return true;
+}
+document.addEventListener('pointerup', (e) => { if (e.isTrusted && fsA.want && mode !== 'none') fsAuto('tap'); }, true);
 document.addEventListener('fullscreenchange', syncFullBtn); document.addEventListener('webkitfullscreenchange', syncFullBtn);
 syncFullBtn();
 $('moreHud').addEventListener('click', () => { setHudPref(!hudPref()); h2SyncMore(); sfx('click'); });

@@ -68,8 +68,8 @@ async def free_tests(b, he):
     check(tag + ': first play: the demo finger + <= 3 words, voiced', ok and len(w[0].replace('!', '').split()) <= 3 and w[0] == ('מפוצצים בועות!' if he else 'Pop the bubbles!'), w)
     check(tag + ': the pause button is the way out (minChrome)', await page.evaluate("document.body.classList.contains('minChrome') && !$('pauseBtn').hidden"))
     bs = await bubbles(page)
-    sq = await page.evaluate("({ bw: pi.L.bw, rows: pi.L.U.rows })"); pitch = sq['bw'] * 0.9 / 4
-    check(tag + ': the square board: large 4 x 4 bubbles (r = 0.45 x pitch, pitch = board width x 0.9 / 4: ~35 px at 390 px), each >= 44 px across', len(bs) == 16 and sq['rows'] == 4 and all(abs(q['r'] - 0.45 * pitch) < 0.6 for q in bs) and 30 <= bs[0]['r'] <= 40 and min(q['r'] for q in bs) * 2 >= 44, (len(bs), sq, bs[0]['r']))
+    sq = await page.evaluate("({ bw: pi.L.bw, rows: pi.L.U.rows })"); pitch = sq["bw"] * 0.9 / 4; W0, H0 = await page.evaluate("[innerWidth, innerHeight]")
+    check(tag + ': the square board: 4 columns of large bubbles (r = 0.45 x pitch, pitch = board width x 0.9 / 4: ~35 px at 390 px), as many rows as the height holds (the owner: more rows; 7 at 390 x 844), each >= 44 px across', len(bs) == 4 * sq['rows'] and 4 <= sq['rows'] <= 8 and (sq['rows'] >= 6 or W0 > H0) and all(abs(q['r'] - 0.45 * pitch) < 0.6 for q in bs) and 30 <= bs[0]['r'] <= 40 and min(q['r'] for q in bs) * 2 >= 44, (len(bs), sq, bs[0]['r']))
     # a tap pops one
     q = bs[0]; n0 = await page.evaluate("[__grasp.tg.snd.length, __vib]")
     await tap(page, q['x'], q['y'])
@@ -253,7 +253,7 @@ async def shelf_tests(b, he):
             await page.evaluate(f"{P}.board('{bid}')"); await page.wait_for_timeout(250)
             bs = await bubbles(page); n = len(bs)
             r_min = min(q['r'] for q in bs); r_sq = r_sq or r_min
-            check(tag + ': board %s: 8-16 large bubbles (the square\'s size, at most a little smaller to fit 8), >= 44 px' % bid, 8 <= n <= 16 and r_min >= 22 and r_min >= r_sq * 0.88, (n, round(r_min, 1), round(r_sq, 1)))
+            check(tag + ': board %s: 8-32 large bubbles (the square\'s size, at most a little smaller to fit 8; the square: 4 a row, rows to the height), >= 44 px' % bid, 8 <= n <= 32 and r_min >= 22 and r_min >= r_sq * 0.88, (n, round(r_min, 1), round(r_sq, 1)))
             for q in bs[::3]: await page.evaluate(f"pi.st[{q['i']}].down = true")
             await page.wait_for_timeout(200); p = OUT + 'popit_b_%s.png' % bid; await page.screenshot(path=p); shots.append(p)
         ims = [Image.open(p).crop((0, 300, 780, 1500)).resize((260, 400)) for p in shots]
