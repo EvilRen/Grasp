@@ -257,11 +257,11 @@ async def feed_extra(page, tag):
         check('feed: 5 good bites: a burp + confetti (the burp sound, no line)', ok and 'burp' in await snd(page) and 'Burp! Excuse me!' not in await said(page))
         ok = await wait(page, T + ".fe.who !== 'bunny' && " + T + ".fe.state === 'wait'", 6000)
         check('feed: then the next animal comes in (hungry again)', ok and (await fe_state(page))['fed'] == 0)
-        # the player's pet joins and gets +1 snack
+        # no pet: a hatched pet is not one of the guests (fed by hand below, it still takes +1 snack once)
         p0 = await page.evaluate("(() => { const P = petP(); P.hatched = true; P.egg = true; P.name = 'Bobo'; P.pantry = 2; saveProfile(); " + T + ".reset('feed'); return P.pantry; })()")
         order = await page.evaluate(T + ".fe.order")
         await page.evaluate(T + ".feEnter('pet')"); await wait(page, T + ".fe.state === 'wait'", 4000); await page.wait_for_timeout(300)
-        check('feed: a hatched pet comes as one of the animals and asks for its cookie ("Cookie?")', 'pet' in order and 'Cookie?' in await said(page), [order, (await said(page))[-2:]])
+        check('feed: a hatched pet does NOT come to Feed (no pet): only the four animals (bunny, dog, cat, monkey)', 'pet' not in order and order == ['bunny', 'dog', 'cat', 'monkey'], order)
         await feed_one(page, 'snack'); await page.wait_for_timeout(1200)
         r = await fe_state(page); p1 = await page.evaluate("petP().pantry")
         await page.screenshot(path=OUT + 'toddler_feed_pet_en.png')
