@@ -181,6 +181,8 @@ async def main():
             await page.evaluate("$('mouseBtn').click()"); await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
             await page.wait_for_function(f"gameMode === 'strike' && {S}.waiting && !{S}.ui.levelBanner", timeout=10000)
             await page.evaluate("__grasp.grippy.on = false; hideHint()")
+            try: await page.wait_for_function("__grasp.strike.ui.serve && __grasp.strike.ui.serve.shown", timeout=4000)  # (the line comes a frame or two after the wait starts: read it once drawn)
+            except Exception: pass
             tip = await page.evaluate("({ seen: __grasp.profile.tips.slice(), shown: __grasp.grippy.tips.map(x => x.text), line: __grasp.strike.ui.serve && __grasp.strike.ui.serve.shown && __grasp.strike.ui.serve.text, want: t('hitToStart') })")
             check(tag + ': the first serve ever: one instruction, the line over the ball (in the UI language); the flick tip recorded, no second toast (panel fix)', 'flick' in tip['seen'] and tip['shown'] == [] and tip['line'] == tip['want'] and (not he or re.search('[\u0590-\u05ff]', tip['want'])), tip)
             await armed_wait(page); sc = await page.evaluate(f"{S}.ballScreen()"); n0 = await page.evaluate(f"{S}.serves")

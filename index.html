@@ -20341,13 +20341,13 @@ function h2PetTab() { // the Pet tab: hidden until the egg is earned; a '!' unti
   const src = document.createElement('canvas'); src.width = src.height = k; const sg = src.getContext('2d'); sg.setTransform(SS, 0, 0, SS, 0, 0);
   if (img) sg.drawImage(img, 0, 0, S, S);
   else { const st = petStage(), R = 19 * PET_SCALE.corner[st]; sg.save(); sg.translate(S / 2, S - 2 - R * 0.9 - 1); drawPetArt(sg, R, { stage: st, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: 'happy', t: 0, cracks: petUi.cracks }); sg.restore(); }
-  h2FitCenter(g, src, S); // (the owner: "the icons aren't in the circles' middle": the pet stood on the icon's floor; now its drawing, wherever it is, is centred and fills the circle)
+  h2FitCenter(g, src, S); // (the owner: "the icons aren't in the circles' middle": the pet stood on the icon's floor; now its drawing, wherever it is, is centred)
 }
-function h2FitCenter(g, src, S) { // draws src (a square canvas) into g's S x S box: its visible pixels' box centred, as big as fits (88%)
+function h2FitCenter(g, src, S) { // draws src (a square canvas) into g's S x S box: its visible pixels' box centred (at its own size)
   const k = src.width; let x0 = k, y0 = k, x1 = -1, y1 = -1;
   try { const d = src.getContext('2d').getImageData(0, 0, k, k).data; for (let y = 0; y < k; y++) for (let x = 0; x < k; x++) if (d[(y * k + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch { x1 = -1; }
   if (x1 < x0) { g.drawImage(src, 0, 0, S, S); return false; }
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, f = Math.min(S * 0.88 / w, S * 0.88 / h, S * 1.6 / k);
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, f = Math.min(S / k, S * 0.9 / w, S * 0.9 / h); // (its own size: a grown pet stays bigger; only shrunk if it would spill)
   g.drawImage(src, x0, y0, w, h, (S - w * f) / 2, (S - h * f) / 2, w * f, h * f); return true;
 }
 /* --- the Today panel (Events): the weekly event, the daily gift, the day's missions, the play streak (quiet, here only) --- */
