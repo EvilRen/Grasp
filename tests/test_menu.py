@@ -83,7 +83,7 @@ async def main():
             if m == 'busy':
                 await page.evaluate("(() => { const w = __grasp.busy.widgets.find(w => w.kind === 'slider'); w.grab({ x: w.x, y: w.y }); })()")
                 check('busy: a grabbed slider sings', await page.evaluate("__grasp.busy.tone.active"))
-            await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
+            await (page.evaluate("openMenu()") if await page.evaluate("navHomeSync()") else page.click('#pauseBtn')); await page.wait_for_function("menu.open && pause.on", timeout=4000); await page.evaluate(FRAMES)
             f0 = await page.evaluate(PROBE[m]); await page.wait_for_timeout(600); f1 = await page.evaluate(PROBE[m])
             check(f'{m}: the sheet freezes the game (and its clocks)', f0 == f1, [f0, f1])
             if m == 'busy': check('busy: the sheet silences the board (the slider tone, the guitar)', await page.evaluate("!__grasp.busy.tone.active && __grasp.gtr.voices === 0"))
@@ -95,7 +95,7 @@ async def main():
             await page.keyboard.press('p'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
             await page.keyboard.press('P'); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
             check(f'{m}: Escape and P open and close the sheet', True)
-            await page.click('#pauseBtn'); await page.wait_for_function("menu.open")
+            await (page.evaluate("openMenu()") if await page.evaluate("navHomeSync()") else page.click('#pauseBtn')); await page.wait_for_function("menu.open")
             await page.mouse.click(640, 700); await page.wait_for_function("!menu.open && !pause.on", timeout=4000)
             check(f'{m}: a click beside the sheet resumes', True)
             # (navigation v2: Sound, Language and Stats moved to the gated Settings; Stats: the panel still shows when on)
@@ -150,14 +150,16 @@ async def main():
                 if m == 'drums': check(f'{tag} drums: Home stops the backing beat', not await page.evaluate("__grasp.cg.drums.beat.on"))
             check(f'{tag} camera games: no page errors', not errs, errs); await ctx.close()
 
-        # ---- camera (phone): a pinch held on the pause button opens the sheet in every mode; one held on Resume closes it (3-2-1) ----
+        # ---- camera (phone): a pinch held on the pause button opens the sheet in every mode with something to pause; one held on Resume closes it (3-2-1) ----
         ctx, page, errs = await fresh(b, mobile=True, init=HAND_JS)
         await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
         await page.evaluate("$('camBtn').click()"); await page.evaluate("document.querySelector('#littlePick [data-mode=sandbox]').click()")
         await page.wait_for_function("mode === 'camera' && gameMode === 'sandbox' && cursor.present", timeout=15000)
+        homeOnly = []
         for m in MODES + ['drums', 'bubbles', 'paint', 'stars']:  # (the camera games too)
             await page.evaluate(f"__grasp.setGameMode('{m}')"); await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
             await page.wait_for_function("cursor.present && !pause.on", timeout=8000); await page.wait_for_timeout(300)
+            if await page.evaluate("navHomeSync()"): homeOnly.append(m); continue  # (nothing to pause there: the corner is the house alone; checked below)
             bt = await page.evaluate(BTN); pv = await page.evaluate("preview.getBoundingClientRect().right")
             check(f'camera {m}: only the pause button, clear of the camera preview', await page.evaluate(VIS) == ['pauseBtn'] and bt['l'] >= pv + 4, [bt, pv])
             await page.evaluate(f"window.__handFor = () => handAt({(bt['l'] + bt['r']) / 2}, {(bt['t'] + bt['b']) / 2}, 0.1)")
@@ -173,6 +175,14 @@ async def main():
             check(f'camera {m}: a pinch held on Resume closes the sheet; the 3-2-1 runs', ok, await page.evaluate("({ c: [cursor.x, cursor.y], g: gesture, open: menu.open, r: pause.resumeT })"))
             await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.6, 0.8)")
             await page.wait_for_function("!pause.on", timeout=8000)
+        # where there is nothing to pause (the owner: "why do I need this pause button?") the corner is the house: a pinch held on it goes home
+        check('camera: the games with nothing to pause skip the sheet (%s)' % ', '.join(homeOnly), 'sandbox' in homeOnly and 'paint' in homeOnly and 'strike' not in homeOnly, homeOnly)
+        await page.evaluate("__grasp.setGameMode('sandbox')"); await page.evaluate("window.__handFor = () => handAt(innerWidth * 0.5, innerHeight * 0.5, 0.8)")
+        await page.wait_for_function("cursor.present && !pause.on", timeout=8000); await page.wait_for_timeout(300)
+        bt = await page.evaluate(BTN); await page.evaluate(f"window.__handFor = () => handAt({(bt['l'] + bt['r']) / 2}, {(bt['t'] + bt['b']) / 2}, 0.1)")
+        try: await page.wait_for_function("mode === 'none' && !$('start').hidden && !menu.open", timeout=6000); ok = True
+        except Exception: ok = False
+        check('camera sandbox: a pinch held on the house (the corner) goes home, no sheet; it grabbed nothing', ok and await page.evaluate("held === null"), await page.evaluate("({ c: [cursor.x, cursor.y], g: gesture, open: menu.open, mode })"))
         check('camera: no page errors', not errs, errs); await ctx.close()
         await b.close()
     print('FAILURES:', check.fails)
