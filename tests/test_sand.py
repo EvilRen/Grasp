@@ -94,7 +94,7 @@ async def layouts(b):
           const above = bs.every((b) => b.y + b.r <= B.y + 2); const apart = Math.hypot(bs[0].x - bs[1].x, bs[0].y - bs[1].y) >= bs[0].r + bs[1].r + 8;
           const clearPill = bs.every((b) => b.x + b.r <= pb.left - 6 || b.x - b.r >= pb.right + 6);
           return {{ inside, above, apart, clearPill, d: Math.min(...bs.map((b) => b.r * 2)), bh: B.h, bottomGap: innerHeight - (B.y + B.h), under: B.y >= pb.bottom - 2, order: bs.map((b) => b.id).join() }}; }})()""")
-        check(tag + ': no dead space: the two buttons (%d px) in the top row beside the pause pill (clear of it), the tray from under that row to %d px from the bottom' % (r['d'], r['bottomGap']),
+        check(tag + ': no dead space: the two buttons (%d px) in the top row beside the corner stickers (clear of them), the tray from under that row to %d px from the bottom' % (r['d'], r['bottomGap']),
               r['inside'] and r['above'] and r['apart'] and r['clearPill'] and r['d'] >= 50 and r['bh'] >= 150 and r['under'] and r['bottomGap'] <= 12, r)
         await page.screenshot(path=OUT + 'sand_%s_%dx%d.png' % ('he' if he else 'en', w, h))
         check(tag + ': no page errors', not errs, errs); await ctx.close()

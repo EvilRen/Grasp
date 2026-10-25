@@ -144,7 +144,8 @@ async def tap_tests(b, he):
         i1 = next(i for i, s in enumerate(st['shapes']) if not s['placed']); s1 = st['shapes'][i1]
         # (big shapes: the release help reaches 4.2 S from its hole, most of the mat; drop it at the mat spot farthest from its hole)
         HR = await page.evaluate(f"{S}.helpR"); S1 = s1['size'] / 2; m = st['mat']; own = next(h for h in st['holes'] if h['kind'] == s1['kind'])
-        tx, ty = max(((m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10, m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6) for gx in range(11) for gy in range(7) if math.hypot(m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10 - s1['x'], m['y'] + 1.3 * S1 + (m['h'] - 2.6 * S1) * gy / 6 - s1['y']) > 60),
+        MT = m['top']; MH = m['y'] + m['h'] - MT  # (the mat's free part: below the corner's row, the house and the full-screen sticker)
+        tx, ty = max(((m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10, MT + 1.3 * S1 + (MH - 2.6 * S1) * gy / 6) for gx in range(11) for gy in range(7) if math.hypot(m['x'] + 1.3 * S1 + (m['w'] - 2.6 * S1) * gx / 10 - s1['x'], MT + 1.3 * S1 + (MH - 2.6 * S1) * gy / 6 - s1['y']) > 60),
                      key=lambda p: math.hypot(p[0] - own['x'], p[1] - own['y']))
         await fdrag(page, s1['x'], s1['y'], tx, ty + LIFT, up=False)
         mid = await page.evaluate(f"({{ held: {S}.held, s: {S}.shapes[{i1}], info: {S}.heldInfo }})")
