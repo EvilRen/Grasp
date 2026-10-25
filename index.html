@@ -1271,7 +1271,8 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mbDockB{ position:relative; display:flex; flex-direction:column; align-items:center; gap:.8cqw; min-width:max(64px,20cqw); padding:0; background:none; color:var(--mbInk); font-size:max(14px,3.9cqw); font-weight:700; line-height:1.1; }
 .mbDockB[hidden]{ display:none; }
 .mbDockB .rd{ --c:#ff8fab; width:max(50px,15cqw); height:max(50px,15cqw); border-radius:50%; display:grid; place-items:center; background:var(--c); border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 0 0 max(3px,1.2cqw) #fff, 0 max(4px,1.6cqw) 0 max(3px,1.2cqw) rgba(42,31,61,.28); transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-.mbDockB .rd svg, .mbDockB .rd canvas{ width:72%; height:72%; display:block; }
+.mbDockB .rd > .ic{ display:grid; place-items:center; width:100%; height:100%; } /* (the owner: "the icons aren't in the circles' middle": the icon's box was wider than the drawing, so it sat off to one side) */
+.mbDockB .rd svg, .mbDockB .rd canvas{ width:72%; height:72%; display:block; } .mbDockB .rd > .ic svg{ width:72%; height:72%; }
 .mbDockB .dl{ max-width:24cqw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .mbDockB.on .rd{ transform:translateY(-1.2cqw) scale(1.06); box-shadow:0 0 0 max(3px,1.2cqw) #ffd23f, 0 max(4px,1.6cqw) 0 max(3px,1.2cqw) rgba(42,31,61,.28); }
 .mbDockB .dot{ position:absolute; top:-.6cqw; inset-inline-end:calc(50% - max(25px,7.5cqw) - 2px); width:max(14px,4cqw); height:max(14px,4cqw); border-radius:50%; background:#ff3b30; border:max(2px,.7cqw) solid #fff; box-shadow:0 0 0 1.5px var(--mbInk); }
@@ -7054,13 +7055,15 @@ function drawShapeDemo(now) { // first play: a finger taps a shape, then its hol
   const fz = Math.min(1.8, shapes.big || 1); shapes.ui.demo.scale = fz; // the finger grows with the shapes
   drawDemoFinger(p, press, fz, tapAt, fade);
 }
-function drawDemoFinger(p, press, fz, tapAt, alpha) { // the demo's cartoon finger (Shapes' first play; phase 1: Strike's serve, Slice, Smash): the tip at p, the hand below; tapAt >= 0: a tap ring growing
+function drawDemoFinger(p, press, fz, tapAt, alpha) { // the demo's touch mark (Shapes' first play; phase 1: Strike's serve, Slice, Smash; the Little ones' demos): at p; tapAt >= 0: a tap ring growing
+  // (the owner, Oct 2026: the drawn finger "looks like something else", twice: no hand at all now: a glowing dot where the finger goes, a ring on each tap)
   resetView(); ctx.save(); ctx.globalAlpha = alpha;
-  if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, (12 + tapAt * 34) * fz, 0, TAU); ctx.lineWidth = 4 * fz; ctx.strokeStyle = 'rgba(255,248,236,' + (0.8 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
-  ctx.translate(p.x + 6 * fz, p.y + (6 + press * 4) * fz); ctx.rotate(-0.35); ctx.scale(fz, fz); const fw = 22, fl = 64; // a cartoon finger: the tip at the point, the hand below
-  ctx.beginPath(); ctx.roundRect(-fw / 2, 0, fw, fl, fw / 2); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#7a4a2a'; ctx.stroke();
-  ctx.beginPath(); ctx.roundRect(-fw / 2 + 4, 4, fw - 8, 12, 5); ctx.fillStyle = '#fff1e6'; ctx.fill();
-  ctx.beginPath(); ctx.roundRect(-fw / 2 - 6, fl - 14, fw + 34, 46, 18); ctx.fillStyle = '#ffd9b8'; ctx.fill(); ctx.stroke();
+  if (tapAt >= 0) { ctx.beginPath(); ctx.arc(p.x, p.y, (16 + tapAt * 40) * fz, 0, TAU); ctx.lineWidth = 5 * fz; ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 * (1 - tapAt)).toFixed(3) + ')'; ctx.stroke(); }
+  const r = (22 - press * 4) * fz, g = ctx.createRadialGradient(p.x, p.y, r * 0.2, p.x, p.y, r * 2.1);
+  g.addColorStop(0, 'rgba(255,255,255,.85)'); g.addColorStop(0.45, 'rgba(255,236,150,.45)'); g.addColorStop(1, 'rgba(255,236,150,0)');
+  ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.1, 0, TAU); ctx.fillStyle = g; ctx.fill(); // the glow
+  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fill(); ctx.lineWidth = 3.5 * fz; ctx.strokeStyle = '#ffb02e'; ctx.stroke(); // the dot
+  ctx.beginPath(); ctx.arc(p.x, p.y, r * 0.42, 0, TAU); ctx.fillStyle = '#ffc94a'; ctx.fill();
   ctx.restore();
 }
 function drawShapesResult(now) { // a glass card over the mat: 'Level N done!', 1-3 stars popping in one by one, the coins
@@ -20335,8 +20338,17 @@ function h2PetTab() { // the Pet tab: hidden until the egg is earned; a '!' unti
   const img = petSnapshot(44, 'idle', { why: 'home', load: mode === 'none' && !$('start').hidden }); // (the 3D dragon once ready: it loads only after the start screen has been idle a moment, never on a game's start-up)
   const key = [petStage(), P.color, P.head, P.eyes, P.neck, petUi.cracks, SS, img ? '3d' : ''].join('|'), cv = $('petTabCv'); if (cv.dataset.k === key) return; cv.dataset.k = key;
   const S = 44, k = Math.round(S * SS); cv.width = cv.height = k; const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, S, S);
-  if (img) { g.drawImage(img, 0, 0, S, S); return; }
-  const st = petStage(), R = 19 * PET_SCALE.corner[st]; g.save(); g.translate(S / 2, S - 2 - R * 0.9 - 1); drawPetArt(g, R, { stage: st, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: 'happy', t: 0, cracks: petUi.cracks }); g.restore(); // (the feet on the icon's floor; bigger each stage)
+  const src = document.createElement('canvas'); src.width = src.height = k; const sg = src.getContext('2d'); sg.setTransform(SS, 0, 0, SS, 0, 0);
+  if (img) sg.drawImage(img, 0, 0, S, S);
+  else { const st = petStage(), R = 19 * PET_SCALE.corner[st]; sg.save(); sg.translate(S / 2, S - 2 - R * 0.9 - 1); drawPetArt(sg, R, { stage: st, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: 'happy', t: 0, cracks: petUi.cracks }); sg.restore(); }
+  h2FitCenter(g, src, S); // (the owner: "the icons aren't in the circles' middle": the pet stood on the icon's floor; now its drawing, wherever it is, is centred and fills the circle)
+}
+function h2FitCenter(g, src, S) { // draws src (a square canvas) into g's S x S box: its visible pixels' box centred, as big as fits (88%)
+  const k = src.width; let x0 = k, y0 = k, x1 = -1, y1 = -1;
+  try { const d = src.getContext('2d').getImageData(0, 0, k, k).data; for (let y = 0; y < k; y++) for (let x = 0; x < k; x++) if (d[(y * k + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch { x1 = -1; }
+  if (x1 < x0) { g.drawImage(src, 0, 0, S, S); return false; }
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, f = Math.min(S * 0.88 / w, S * 0.88 / h, S * 1.6 / k);
+  g.drawImage(src, x0, y0, w, h, (S - w * f) / 2, (S - h * f) / 2, w * f, h * f); return true;
 }
 /* --- the Today panel (Events): the weekly event, the daily gift, the day's missions, the play streak (quiet, here only) --- */
 function renderToday() { renderMissions(); renderTodayHabit(); if (EV_READY) evSync(); h2TodaySeen(); }
@@ -20461,7 +20473,7 @@ function h2Sync() {
    Pop It (built on another branch) shows only when its mode exists here (mbFeat). Hooks: __grasp.menub. */
 const MB_COL = { strike: '#ff7a52', big: '#ff7a52', smash: '#9a7bff', slice: '#2cc4ae', arcade: '#ff5d97', camera: '#4a8dff', little: '#ffc233', frenzy: '#ffa23a', daily: '#ff6b88', endless: '#45a8ff',
   drums: '#ff6b6b', bubbles: '#52cdf2', paint: '#b88aff', stars: '#5468ff', busy: '#f6a75c', shapes: '#ff7a7a', sandbox: '#f8c94c', calm: '#9ad4ee', animals: '#94d870', colors: '#ffb0b0', peekaboo: '#7fcf6a',
-  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', shop: '#ff8fab', events: '#56c8f0', pet: '#3fd68f', map: '#ffd166' };
+  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
 const MB_ROT = ['-1.6deg', '1.4deg', '1.1deg', '-1.3deg'], MB_INK = '#2a1f3d', MB_SAY_MS = 400, MB_WIG_MS = 2000;
 const MB_PENT = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 const mb = { room: 'big', page: 0, pages: 0, sayUntil: 0, log: [], said: [], blips: [], wig: 0, wigLast: null, pressed: null, pressAt: -1e9, bubuKey: '', feats: {} };

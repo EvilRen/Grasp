@@ -410,6 +410,10 @@ Code: the JS block `Pop It` just before the direct links (after the Little ones 
 - What waits for the pet (the egg to hatch, its name) glows on the Pet tab now (`mbCall` picks `#petTab` while Bubu is hidden); the tab's tap with a 'name' call opens the name sheet, otherwise the room.
 - `PET_OFF` (next to `PET_READY`, now `false`) is still there: `true` turns the whole pet off (no Pet tab, no snacks, no room, no Feed guest, the event's snack / hat tiers paid in coins via `evPrize` -> `evPrize0`).
 
+## The demo's touch mark + the dock's icons (Oct 2026, the owner: the drawn finger "looks like something else", twice)
+- `drawDemoFinger` draws no hand any more: a glowing dot (white, orange rim, yellow core) where the finger goes, a ring on each tap. Every demo uses it (the Little ones' demos, Shapes, Strike's serve, Slice, Smash, Pop It's reveal).
+- The dock: the icon's box was wider than its drawing (off to one side): `.mbDockB .rd > .ic` is a centred grid now. The Pet tab draws the pet into a scratch canvas and `h2FitCenter` centres its visible pixels and fills the circle (the pet used to stand on the icon's floor); the Pet circle is light lilac (`MB_COL.pet`), a green dragon on green was hard to see.
+
 ## The corner sticker: just Home where nothing pauses (Oct 2026, the owner: "why do I need this pause button?")
 - `navHomeOnly()`: the Little ones' games (navRoomOf 'little': Busy, Shapes, Sandbox, the tg games incl. Sand and the little Pop It, Calm bubbles), both Pop Its and Paint. There the corner sticker is the house alone (`body.homeOnly`), labelled Home, and its tap goes home at once (no sheet). Strike, Smash, Slice, Spot, the other camera games: pause + the sheet as before. `navHomeSync()` runs from `syncChromeMode`, `bubblesSetCalm` and the language switch.
 
