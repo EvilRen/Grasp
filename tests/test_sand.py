@@ -3,7 +3,7 @@ exec(open('tests/test_toddler.py').read().split('# ---------------- Animal sound
 # words, the pause menu is the way out); the finger digs a groove and the sand piles up on its sides (the volume stays); a touch leaves a
 # fingerprint; retracing a groove digs to the tray's floor; a mold turns out a raised shape and its button again picks the next shape (its name
 # said); the rake leaves four grooves; the roller evens a mound; the knife cuts thin and deep; a colour pours a mound of that colour and the
-# finger smears it; a second finger never steals the first; Home and back = a fresh flat tray; the sand's hiss plays only while the finger moves;
+# finger smears it; two fingers dig at once; Home and back = a fresh flat tray; the sand's hiss plays only while the finger moves;
 # the layout fits a small phone and a landscape one; the shading stays cheap (only the changed part is redrawn).
 # Screenshots: tests/out/sand_*.png
 S = '__grasp.sand'
@@ -88,7 +88,7 @@ async def mechanics(b):
     await fresh(page); await page.evaluate(f"fing('pointerdown', 1, {cx - 60}, {cy})"); await page.evaluate(f"fing('pointerdown', 2, {cx + 60}, {cy + 120})")
     for k in range(1, 9): await page.evaluate(f"fing('pointermove', 2, {cx + 60 + k * 8}, {cy + 120})"); await page.wait_for_timeout(16)
     await page.evaluate(f"fing('pointerup', 2, {cx + 124}, {cy + 120})"); await page.evaluate(f"fing('pointerup', 1, {cx - 60}, {cy})"); await page.wait_for_timeout(150)
-    check('a second finger is ignored while one is down (no groove under it)', await hat(page, cx + 90, cy + 120) > base - 1.5)
+    check('two fingers at once: each digs its own groove (every finger plays)', await hat(page, cx + 90, cy + 120) < base - 3 and await hat(page, cx - 60, cy) < base - 1.5)
     # Restart: a fresh flat tray
     await btn(page, 'cols', 2); await page.evaluate(f"fing('pointerdown', 1, {cx}, {cy})"); await page.wait_for_timeout(500); await page.evaluate(f"fing('pointerup', 1, {cx}, {cy})")
     await page.evaluate("goHome()"); await page.wait_for_timeout(400); await page.evaluate("__grasp.setGameMode('sand'); strikeStart('mouse')"); await wait(page, "gameMode === 'sand' && mode === 'mouse'", 8000); await page.wait_for_timeout(300)

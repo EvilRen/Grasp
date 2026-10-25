@@ -2739,6 +2739,37 @@ function tapTarget(e) { // what a tap would press: a DOM control, or a card butt
 }
 new MutationObserver((ms) => { for (const m of ms) { const el = m.target; if (!(el.id === 'start' || el.id === 'advMap' || el.id === 'smashMap' || el.id === 'album' || el.id === 'banner' || el.classList.contains('ov'))) continue; if ((m.oldValue !== null) !== el.hidden) screenChanged(el.id + (el.hidden ? ':off' : ':on')); } })
   .observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
+/* Grip (the owner, Oct 2026: "she holds the phone in both hands, a finger of the holding hand rests on the screen's edge and blocks the game").
+   In the Little ones games, Sand and Paint a touch that starts in the edge band (GRIP.edge of the short side, GRIP.min..max px) or with a palm-sized
+   contact is a hold, held back from the game: still, it never does anything; moved (GRIP.slop) it becomes a finger from there;
+   lifted quickly (GRIP.tapMs) it was a tap at the edge, replayed as a tap. Every other finger plays (see tgPtrDown, paintPens). Hooks: __grasp.grip. */
+const GRIP = { edge: 0.075, min: 20, max: 34, slop: 16, tapMs: 320, palm: 70 }, grip = { pend: new Map(), replay: false, holds: 0, slides: 0, taps: 0, log: [] };
+function gripOn() { return mode !== 'none' && !menu.open && (tgOn() || gameMode === 'busy' || gameMode === 'shapes' || gameMode === 'sandbox' || gameMode === 'paint' || (gameMode === 'bubbles' && !!bubbles.calm)); }
+function gripBand() { return Math.max(GRIP.min, Math.min(GRIP.max, Math.min(W, H) * GRIP.edge)); }
+function gripEdge(x, y) { const e = gripBand(); return x < e || x > W - e || y < e || y > H - e; }
+function gripFire(type, G, x, y) { // a held-back touch, handed to the game after all (a replay: untrusted, so the tap guard skips it)
+  grip.replay = true;
+  try { const ev = new PointerEvent(type, { pointerId: G.id, pointerType: 'touch', clientX: x, clientY: y, isPrimary: false, bubbles: true, cancelable: true, button: 0, buttons: type === 'pointerup' ? 0 : 1, width: 1, height: 1 }); (type === 'pointerdown' ? canvas : window).dispatchEvent(ev); }
+  finally { grip.replay = false; }
+}
+function gripLog(s) { grip.log.push(s); if (grip.log.length > 40) grip.log.shift(); }
+window.addEventListener('pointerdown', (e) => {
+  if (grip.replay || e.pointerType !== 'touch' || e.target !== canvas || !gripOn()) return;
+  const palm = Math.max(e.width || 0, e.height || 0) > GRIP.palm; if (!palm && !gripEdge(e.clientX, e.clientY)) return;
+  grip.pend.set(e.pointerId, { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now(), palm }); grip.holds++; gripLog(palm ? 'palm' : 'hold');
+  e.stopImmediatePropagation(); e.preventDefault();
+}, true);
+window.addEventListener('pointermove', (e) => {
+  if (grip.replay) return; const G = grip.pend.get(e.pointerId); if (!G) return; e.stopImmediatePropagation();
+  if (!G.palm && Math.hypot(e.clientX - G.x0, e.clientY - G.y0) >= GRIP.slop) { grip.pend.delete(e.pointerId); grip.slides++; gripLog('slide'); gripFire('pointerdown', G, G.x0, G.y0); } // (down where it started; its next move carries on from there: no movement lost, and the games that read the finger once a frame see the start first) // (it moved: a finger from here, inward or along the edge (Busy Board's margin scrolls); only a still touch is a hold)
+}, true);
+const gripUp = (e) => {
+  if (grip.replay) return; const G = grip.pend.get(e.pointerId); if (!G) return; grip.pend.delete(e.pointerId); e.stopImmediatePropagation();
+  if (e.type === 'pointerup' && !G.palm && performance.now() - G.t0 <= GRIP.tapMs && Math.hypot(e.clientX - G.x0, e.clientY - G.y0) < GRIP.slop) { grip.taps++; gripLog('tap'); gripFire('pointerdown', G, G.x0, G.y0); gripFire('pointerup', G, G.x0, G.y0); }
+  else gripLog('let go');
+};
+window.addEventListener('pointerup', gripUp, true); window.addEventListener('pointercancel', gripUp, true);
+
 document.addEventListener('pointerdown', (e) => {
   if (!e.isTrusted || !tapGuardOn()) return;
   const now = performance.now(), tg = tapTarget(e), C = tapg.cause, L = tapg.last; let why = '';
@@ -15636,6 +15667,7 @@ window.__grasp = {
     placeTest(i) { const s = shapes.shapes[i]; if (!s || s.placed || shapes.phase !== 'play') return false; const j = shapes.holes.findIndex((h) => !h.filled && h.kind === s.kind); if (j < 0) return false;
       const h = shapes.holes[j]; s.anim = null; s.x = h.x; s.y = h.y; s.angle = h.wa; shapes.held = { i, s, ox: 0, oy: 0, roll: hand.roll, tw: 0, two: false, t0: performance.now(), overSince: 0, overHole: -1 }; shapesRelease(performance.now()); return s.placed; } },
 };
+window.__grasp.grip = { GRIP, grip, band: gripBand, on: gripOn }; // (the grip filter, see GRIP)
 /* ---------------- The pet (parent chose: "a little creature you feed with what you win in all games; it grows, changes and cheers you on;
    a daily reason to visit") ----------------
    The start screen's pet corner (under the Camera | Touch toggle): the pet drawn in code (glossy, round, idle blinks / hops / breathing, eyes that
@@ -17629,13 +17661,15 @@ function paintPress(key, now) {
 function paintTick(now, dt) {
   const P = paint; paintCanvas(); P.panel = paintPanelLayout();
   for (let i = P.twinkles.length - 1; i >= 0; i--) if (now - P.twinkles[i].t > 1400) P.twinkles.splice(i, 1);
-  if (cgBlocked()) { paintEnd(); camg.taps.length = 0; return; }
+  if (cgBlocked()) { paintPens([], now); paintEnd(); camg.taps.length = 0; return; }
   cgDwellTick(now);
-  let pen = null;
+  let pen = null, pens = null;
   if (mode === 'camera') { if (cursor.present && (gesture === 'pinch' || gesture === 'point')) pen = { x: cursor.x, y: cursor.y }; paintFistTick(now); }
-  else if (ptr.type === 'touch' ? ptr.touches.size === 1 : ptr.pinch) pen = { x: ptr.x, y: ptr.y };
-  for (const tp of camg.taps) if (!P.drawing && !paintInPanel(tp.x, tp.y) && !pen) paintDotAt(tp.x, tp.y, now); // (a tap shorter than a frame: a dot)
+  else if (ptr.type === 'touch') pens = [...ptr.touches].filter(([, q]) => !paintInPanel(q.x, q.y)); // (touch: every finger paints; the hand holding the phone is held back at the edge: grip)
+  else if (ptr.pinch) pen = { x: ptr.x, y: ptr.y };
+  for (const tp of camg.taps) if (!P.drawing && !paintInPanel(tp.x, tp.y) && !pen && !(pens && pens.length)) paintDotAt(tp.x, tp.y, now); // (a tap shorter than a frame: a dot)
   camg.taps.length = 0;
+  if (pens) { paintPens(pens, now); return; }
   if (pen && paintInPanel(pen.x, pen.y)) pen = null; // over the palette: picking, not painting
   if (pen) paintMove(pen.x, pen.y, now); else paintEnd();
 }
@@ -17659,11 +17693,12 @@ function paintDraw(g, pts, w, mirror) { // the glow of every run first, then the
   for (const R of sets) for (const r of R) { paintTrace(g, r.pts); g.stroke(); }
   g.restore();
 }
-function paintLive() { const P = paint; P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore(); if (P.seg.length) paintDraw(P.lg, P.seg, PAINT_SIZES[P.size], P.mirror); }
+function paintLive() { const P = paint; P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore(); if (P.seg.length) paintDraw(P.lg, P.seg, PAINT_SIZES[P.size], P.mirror); if (P.multi) for (const st of P.multi.values()) if (st !== P.cur && st.seg.length) paintDraw(P.lg, st.seg, PAINT_SIZES[P.size], P.mirror); } // (+ the other fingers' strokes)
 function paintCommit() { // the live stroke onto the drawing
   const P = paint; if (!P.live || !P.g) return;
   P.g.save(); P.g.setTransform(1, 0, 0, 1, 0, 0); P.g.drawImage(P.live, 0, 0); P.g.restore();
   P.lg.save(); P.lg.setTransform(1, 0, 0, 1, 0, 0); P.lg.clearRect(0, 0, P.live.width, P.live.height); P.lg.restore();
+  if (P.multi) for (const st of P.multi.values()) if (st !== P.cur && st.seg.length > 2) st.seg = st.seg.slice(-2); // (the other fingers' strokes went down too: they go on from their last points)
 }
 function paintSparkles(a, b, d, now) { // the sparkle brush: little stars stamped along the way, a few twinkling for a moment
   const P = paint, w = PAINT_SIZES[P.size], n = Math.floor(d / 12 + Math.random());
@@ -17687,6 +17722,13 @@ function paintEnd() {
   paintLive(); paintCommit(); P.drawing = false; P.seg = []; P.log.push({ ev: 'end', t: Math.round(performance.now()) }); if (P.log.length > 80) P.log.shift();
 }
 function paintDotAt(x, y, now) { paintMove(x, y, now); paint.ink += 4; paintEnd(); }
+function paintPens(pens, now) { // touch: each finger its own stroke (P.multi: id -> { drawing, seg }), swapped into the one stroke paintMove / paintEnd know
+  const P = paint, M = P.multi || (P.multi = new Map()), ids = new Set(pens.map(([id]) => id));
+  const run = (st, fn) => { P.cur = st; P.drawing = st.drawing; P.seg = st.seg; fn(); st.drawing = P.drawing; st.seg = P.seg; P.cur = null; P.seg = []; };
+  for (const [id, st] of [...M]) if (!ids.has(id)) { run(st, () => paintEnd()); M.delete(id); }
+  for (const [id, q] of pens) { let st = M.get(id); if (!st) M.set(id, st = { drawing: false, seg: [] }); run(st, () => paintMove(q.x, q.y, now)); }
+  P.drawing = [...M.values()].some((st) => st.drawing); if (M.size > 1) P.multiMax = Math.max(P.multiMax || 0, M.size);
+}
 function paintFistTick(now) { // camera: a fist shows 'Shake to erase'; three quick shakes (sideways reversals) clear the drawing
   const F = paint.fist;
   if (gesture !== 'fist' || !cursor.present) { F.on = false; F.done = false; F.times = []; F.stage = 0; return; }
@@ -17978,40 +18020,52 @@ window.__grasp.cg = { modes: CG_MODES, drums, bubbles, paint, catcher, hand2, ca
 const TG_MODES = ['animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand'];
 function tgOn(m = gameMode) { return m === 'animals' || m === 'colors' || m === 'peekaboo' || m === 'feed' || m === 'puzzle' || m === 'sand' || m === 'popit'; } // (+ Pop It: the same frame, its own multi-touch input)
 const TG = { slop: 22, tapMs: 700, palm: 90, demoTap: 1700, demoDrag: 2600 };
-const tg = { press: null, last: null, said: [], snd: [], sndN: 0, ignored: 0, demo: null, t0: 0, log: [], sayId: 0, notes: [] };
+const tg = { press: null, presses: new Map(), last: null, said: [], snd: [], sndN: 0, ignored: 0, demo: null, t0: 0, log: [], sayId: 0, notes: [] };
 function tgGame(m = gameMode) { return m === 'animals' ? AN_GAME : m === 'colors' ? CO_GAME : m === 'peekaboo' ? PK_GAME : m === 'feed' ? FE_GAME : m === 'puzzle' ? PZ_GAME : m === 'sand' ? SA_GAME : m === 'popit' ? PI_GAME : null; }
 function tgBig() { return Math.max(1, Math.min(1.8, Math.min(W, H) / 400)); }
 function tgTop() { return cgTopY(); } // under the pause button
 function tgReset(m = gameMode, now = performance.now()) { // a fresh visit / Restart
-  tg.press = null; tg.last = null; tg.t0 = now; tg.notes.length = 0; tg.sayId++;
+  tg.press = null; tg.presses.clear(); tg.last = null; tg.t0 = now; tg.notes.length = 0; tg.sayId++;
   tgDemoStart(m, now); // (first: a game's first prompt waits for the demo's words)
   const G = tgGame(m); if (G) G.reset(now);
 }
-function tgLeave() { tg.press = null; tg.demo = null; tg.sayId++; ccCamStop(); saSndStop(); sa.st = null; }
+function tgLeave() { tg.press = null; tg.presses.clear(); tg.demo = null; tg.sayId++; ccCamStop(); saSndStop(); sa.st = null; }
 function tgTick(now, dt) { const G = tgGame(); if (G && mode !== 'none' && !pause.on && !menu.open) G.tick(now, dt); } // (a11y: the last game no longer ticks (and re-asks) under the start screen)
 function tgRender(now) { const G = tgGame(); if (!G) return; G.render(now); drawParticles(); drawRings(now); tgNotesDraw(now); if (G.overlay) G.overlay(now); tgDemoDraw(now); }
-/* input: one finger at a time; taps vs drags by the slop */
+/* input: every finger (the owner, Oct 2026: two hands at once; the hand holding the phone is held back at the edge by the grip filter);
+   taps vs drags by the slop. A game with one thing in the hand (G.slot: Feed's fe.held, the puzzle's pz.held, Colors' co.held, Sand's sa.st) gets
+   that slot swapped per finger, so each finger carries its own; tg.press = the latest finger (for the readers that want one). */
+function tgSlotKey(v) { return v && (v.f || v.p || v.it) || null; }
+function tgWith(G, P, fn) { // run a game's handler for finger P with P's own slot in the game's one slot
+  const S = G && G.slot; if (!S) return fn(); S.obj[S.key] = P.slot || null;
+  try { fn(); } finally {
+    P.slot = S.obj[S.key] || null; const k = tgSlotKey(P.slot);
+    if (k) for (const Q of tg.presses.values()) if (Q !== P && tgSlotKey(Q.slot) === k) { P.slot = null; break; } // (two fingers on one thing: the first keeps it)
+    let cur = null; for (const Q of tg.presses.values()) if (Q.slot) cur = Q.slot; S.obj[S.key] = cur; // (what the game sees between events: the latest finger's)
+  }
+}
 function tgPtrDown(e) {
   if (gameMode === 'popit') return piPtrDown(e); // (Pop It: every finger pops)
   if (menu.open || pause.on || !(e.button === 0 || e.pointerType === 'touch')) return;
-  if (tg.press) { tg.ignored++; tg.log.push('2nd'); return; } // (a second finger never steals the first one's drag)
+  if (tg.presses.has(e.pointerId) || tg.presses.size >= 5) { tg.ignored++; tg.log.push('more'); return; }
   if (e.pointerType === 'touch' && Math.max(e.width || 0, e.height || 0) > TG.palm) { tg.ignored++; tg.log.push('palm'); return; }
   const now = performance.now(), p = { x: e.clientX, y: e.clientY, t: now };
-  tg.press = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y, t0: now, maxD: 0, snd: tg.snd.length + tg.sndN };
+  const P = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y, t0: now, maxD: 0, snd: tg.snd.length + tg.sndN, slot: null };
+  tg.presses.set(P.id, P); tg.press = P; if (tg.presses.size > 1) tg.log.push('multi');
   try { if (e.pointerType !== 'touch') canvas.setPointerCapture(e.pointerId); } catch {}
-  audioInit(); const G = tgGame(); if (G && G.down) G.down(p, now);
+  audioInit(); const G = tgGame(); if (G && G.down) tgWith(G, P, () => G.down(p, now, P));
 }
 function tgPtrMove(e) {
   if (gameMode === 'popit') return piPtrMove(e);
-  const P = tg.press; if (!P || e.pointerId !== P.id) return;
+  const P = tg.presses.get(e.pointerId); if (!P) return;
   P.x = e.clientX; P.y = e.clientY; P.maxD = Math.max(P.maxD, Math.hypot(P.x - P.x0, P.y - P.y0));
-  const G = tgGame(); if (G && G.move) G.move({ x: P.x, y: P.y, t: performance.now() }, P);
+  const G = tgGame(); if (G && G.move) tgWith(G, P, () => G.move({ x: P.x, y: P.y, t: performance.now() }, P));
 }
 function tgPtrUp(e, cancel) {
   if (gameMode === 'popit') return piPtrUp(e);
-  const P = tg.press; if (!P || e.pointerId !== P.id) return; tg.press = null;
+  const P = tg.presses.get(e.pointerId); if (!P) return; tg.presses.delete(P.id); if (tg.press === P) tg.press = [...tg.presses.values()].pop() || null;
   const now = performance.now(), tap = !cancel && P.maxD < TG.slop * tgBig() && now - P.t0 < TG.tapMs;
-  const G = tgGame(); if (G && G.up) G.up({ x: e.clientX, y: e.clientY, t: now }, P, tap, !!cancel);
+  const G = tgGame(); if (G && G.up) tgWith(G, P, () => G.up({ x: e.clientX, y: e.clientY, t: now }, P, tap, !!cancel));
   if (tap && tg.snd.length + tg.sndN === P.snd) tgTwinkle(e.clientX, e.clientY); // (every touch answers: a tap on nothing in particular twinkles)
 }
 const TG_NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
@@ -18558,7 +18612,7 @@ function coDemo() {
   if (co.act === 'sort') { const it = co.items.find((q) => !q.done), b = it && co.baskets.find((q) => q.col === it.col); return it && b ? { a: { x: it.x, y: it.y }, b: { x: b.x, y: b.y - b.h * 0.2 } } : null; }
   return null;
 }
-const CO_GAME = { reset: coReset, tick: coTick, render: coRender, down: coDown, move: coMove, up: coUp, demo: coDemo };
+const CO_GAME = { reset: coReset, tick: coTick, render: coRender, down: coDown, move: coMove, up: coUp, demo: coDemo, slot: { obj: co, key: 'held' } };
 /* ---------------- Colors with the camera: "Show me something red!" ----------------
    The voice asks for a colour (the splash shows it); the child holds a real thing up to the camera. Every CC.every ms the centre square of the
    frame is drawn onto a 48 x 48 canvas; the light is read from the frame OUTSIDE the target circle (a grey-world white balance from its
@@ -18943,7 +18997,7 @@ function feRender(now) {
   resetView(); for (let i = 0; i < FE.perAnimal; i++) { const on = i < fe.fed, x = W / 2 + (i - 2) * 26 * (lang === 'he' ? -1 : 1), y = G.trayY - 16; ctx.fillStyle = on ? '#ff5d7a' : 'rgba(255,255,255,0.7)'; ctx.strokeStyle = PET_INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y + 6); ctx.bezierCurveTo(x - 12, y - 4, x - 6, y - 12, x, y - 5); ctx.bezierCurveTo(x + 6, y - 12, x + 12, y - 4, x, y + 6); ctx.fill(); ctx.stroke(); }
 }
 function feDemo() { const f = fe.foods.find((q) => q.kind === FE_LIKES[fe.who]); if (!f || !fe.geo) return null; const m = feMouth(); return { a: { x: f.hx, y: f.hy }, b: { x: m.x, y: m.y }, item: (p) => { resetView(); ctx.save(); ctx.globalAlpha = 0.85; feFoodDraw(ctx, f.kind, p.x - 20, p.y - 30, f.r * 0.9, 0); ctx.restore(); } }; }
-const FE_GAME = { reset: feReset, tick: feTick, render: feRender, down: feDown, move: feMove, up: feUp, demo: feDemo };
+const FE_GAME = { reset: feReset, tick: feTick, render: feRender, down: feDown, move: feMove, up: feUp, demo: feDemo, slot: { obj: fe, key: 'held' } };
 /* ---------------- Giant puzzle (/puzzle): a picture drawn in code (a car, a cow, a duck, a boat) cut into 2, then 3, then 4 big pieces (halves, strips,
    quarters). The board shows the picture faintly with the pieces' places; the pieces wait on the table. Drag a piece near its place (snap radius >= 30%
    of the piece's size) and it clicks in; or tap a piece, then tap its place. A piece let go anywhere else just stays there, always fully on screen.
@@ -19070,7 +19124,7 @@ function pzRender(now) {
   }
 }
 function pzDemo() { const p = pz.pieces.find((q) => !q.placed); return p ? { a: { x: p.hx, y: p.hy }, b: { x: p.tx, y: p.ty } } : null; }
-const PZ_GAME = { reset: pzReset, tick: pzTick, render: pzRender, down: pzDown, move: pzMove, up: pzUp, demo: pzDemo };
+const PZ_GAME = { reset: pzReset, tick: pzTick, render: pzRender, down: pzDown, move: pzMove, up: pzUp, demo: pzDemo, slot: { obj: pz, key: 'held' } };
 /* the Little ones picker's tiles for these games: a little scene drawn in code (redrawn when the picker opens) */
 function tgTileArt(g, m, w, h) {
   const R = Math.min(w, h);
@@ -19946,9 +20000,9 @@ function saUp() { sa.st = null; }
 function saRef(x, y) { const k = saIdx(x, y); return Math.max(sa.h[k], sa.hb && sa.hb[k] || 0); } // (the surface under a point: its blurred level, never under the sand that is there)
 function saIdx(x, y) { const B = sa.L.box, i = Math.max(0, Math.min(sa.GW - 1, Math.floor((x - B.ix) / sa.cs))), j = Math.max(0, Math.min(sa.GH - 1, Math.floor((y - B.iy) / sa.csy))); return j * sa.GW + i; }
 function saTick(now, dt) {
-  saLayout(false); const S = sa.st;
-  if (S && !S.bar && sa.tool === 'pour' && tg.press && saInBox(tg.press.x, tg.press.y)) { // pouring: sand streams from the fingertips while held
-    const x = tg.press.x, y = tg.press.y; saPour(x, y, sa.L.r * 1.15, SA.pourRate * Math.min(50, dt), sa.col);
+  saLayout(false);
+  for (const P of tg.presses.values()) { const S = P.slot; if (!S || S.bar || sa.tool !== 'pour' || !saInBox(P.x, P.y)) continue; // pouring: sand streams from every fingertip held on the sand
+    const x = P.x, y = P.y; saPour(x, y, sa.L.r * 1.15, SA.pourRate * Math.min(50, dt), sa.col);
     const C = SA.cols[sa.col]; for (let i = 0; i < 2; i++) sa.grains.push({ x: x + (Math.random() - 0.5) * sa.L.r * 1.2, y: y - 70 - Math.random() * 40, ty: y + (Math.random() - 0.5) * sa.L.r, vy: 0.25 + Math.random() * 0.2, col: C });
   }
   for (let i = sa.grains.length - 1; i >= 0; i--) { const g = sa.grains[i]; g.vy += 0.002 * dt; g.y += g.vy * dt; if (g.y >= g.ty) sa.grains.splice(i, 1); } if (sa.grains.length > 160) sa.grains.splice(0, sa.grains.length - 160);
@@ -19968,7 +20022,7 @@ function saSnd() {
 }
 const SA_SND = { finger: [1100, 0.8, 0.2], rake: [2300, 1.4, 0.2], roller: [420, 0.7, 0.26], knife: [3400, 2.2, 0.14], pour: [2600, 0.5, 0.11], mold: [900, 0.8, 0] };
 function saSndTick() {
-  const S = sa.st, run = S && !S.bar && mode !== 'none' && !pause.on && !menu.open, cfg = SA_SND[sa.tool] || SA_SND.finger;
+  const run = [...tg.presses.values()].some((P) => P.slot && !P.slot.bar) && mode !== 'none' && !pause.on && !menu.open, cfg = SA_SND[sa.tool] || SA_SND.finger;
   const lv = !run ? 0 : sa.tool === 'pour' ? cfg[2] : Math.min(cfg[2], sa.speed * cfg[2] * 1.4); sa.sndLv = lv;
   if (lv <= 0 && !sa.snd) return; const A = saSnd(); if (!A) return;
   try { const t = audio.currentTime; A.g.gain.setTargetAtTime(muted ? 0 : lv, t, lv > A.g.gain.value ? 0.03 : 0.08); A.f.frequency.setTargetAtTime(cfg[0] * (1 + Math.min(0.5, sa.speed * 0.3)), t, 0.05); A.f.Q.setTargetAtTime(cfg[1], t, 0.05); } catch {}
@@ -19992,8 +20046,9 @@ function saToolDraw(g, id, x, y, s, now) { // the tool icons (s: the half size)
   else if (id === 'knife') { g.rotate(0.7); g.fillStyle = '#ffd23f'; g.strokeStyle = ink; g.lineWidth = s * 0.08; g.beginPath(); g.roundRect(-s * 0.13, s * 0.1, s * 0.26, s * 0.72, s * 0.1); g.fill(); g.stroke(); g.fillStyle = '#e9eef5'; g.beginPath(); g.moveTo(-s * 0.13, s * 0.1); g.lineTo(-s * 0.13, -s * 0.62); g.quadraticCurveTo(s * 0.2, -s * 0.85, s * 0.13, s * 0.1); g.closePath(); g.fill(); g.stroke(); }
   g.restore();
 }
-function saHeld(now) { // the tool at the finger while it works (the finger alone shows nothing: the real finger is there)
-  const S = sa.st, P = tg.press; if (!S || S.bar || !P) return; const r = sa.L.r, a = S.dir ? Math.atan2(S.dir.y, S.dir.x) : 0; resetView(); ctx.save(); ctx.translate(P.x, P.y);
+function saHeld(now) { for (const P of tg.presses.values()) if (P.slot && !P.slot.bar) saHeldOne(P.slot, P, now); }
+function saHeldOne(S, P, now) { // the tool at the finger while it works (the finger alone shows nothing: the real finger is there)
+  const r = sa.L.r, a = S.dir ? Math.atan2(S.dir.y, S.dir.x) : 0; resetView(); ctx.save(); ctx.translate(P.x, P.y);
   if (sa.tool === 'rake') { ctx.rotate(a + Math.PI / 2); ctx.globalAlpha = 0.92; ctx.strokeStyle = '#2bb673'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(5, r * 0.25); const sp = r * 0.55; ctx.beginPath(); ctx.moveTo(-sp * 1.7, -r * 0.6); ctx.lineTo(sp * 1.7, -r * 0.6); ctx.stroke(); for (const q of [-1.5, -0.5, 0.5, 1.5]) { ctx.beginPath(); ctx.moveTo(q * sp, -r * 0.6); ctx.lineTo(q * sp, 0); ctx.stroke(); } }
   else if (sa.tool === 'roller') { ctx.rotate(a + Math.PI / 2); ctx.globalAlpha = 0.95; saToolDraw(ctx, 'roller', 0, 0, r * 1.7, now); }
   else if (sa.tool === 'knife') { ctx.rotate(a - Math.PI / 2 + 0.7); ctx.globalAlpha = 0.95; saToolDraw(ctx, 'knife', 0, -r * 0.7, r * 1.3, now); }
@@ -20027,7 +20082,7 @@ function saRender(now) {
   if (pause.on || menu.open || mode === 'none') saSndTick();
 }
 function saDemo() { const B = sa.L && sa.L.box; if (!B) return null; const y = B.iy + B.ih * 0.5, d = B.iw * 0.28; return { a: { x: B.ix + B.iw / 2 - d, y }, b: { x: B.ix + B.iw / 2 + d, y } }; }
-const SA_GAME = { reset: saReset, tick: saTick, render: saRender, down: saDown, move: saMove, up: saUp, demo: saDemo };
+const SA_GAME = { reset: saReset, tick: saTick, render: saRender, down: saDown, move: saMove, up: saUp, demo: saDemo, slot: { obj: sa, key: 'st' } };
 window.__grasp.sand = { SA, sa, poly: SA_POLY, shade: () => saShade(), layout: () => (saLayout(true), sa.L),
   at: (x, y) => sa.h[saIdx(x, y)], colAt: (x, y) => sa.c[saIdx(x, y)], sum() { let s = 0; for (let k = 0; k < sa.h.length; k++) s += sa.h[k]; return s; },
   get snd() { return { on: !!sa.snd, lv: sa.sndLv }; } };
