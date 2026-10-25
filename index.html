@@ -1179,6 +1179,7 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 #start.mb #metaPill .xp i{ background:linear-gradient(90deg,#ffb020,#ff6b4a); }
 #start.mb #metaPill.noLv .lvl, #start.mb #metaPill.noLv .xp, #start.mb #metaPill .nx{ display:none; }
 /* Bubu: the pet (or its egg) as a round sticker that bobs; a tap: a jump and "Hi!" */
+.mbBubu[hidden]{ display:none !important; }
 .mbBubu{ position:relative; width:max(58px,17cqw); height:max(58px,17cqw); margin-top:-1cqw; padding:0; border-radius:50%; display:grid; place-items:center; background:#fff; border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 max(3px,1.1cqw) 0 var(--mbInk); }
 .mbBubu .bb{ display:block; width:86%; height:86%; animation:mbBob 1.1s ease-in-out infinite alternate; }
 .mbBubu canvas{ display:block; width:100%; height:100%; }
@@ -1367,7 +1368,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button class="mbChip mbRnd" id="settingsBtn" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-aria="moreTitle" aria-label="Settings"><span class="ic" data-ic="gear"></span></button>
         <button class="mbChip mbRnd" id="startSound" type="button" aria-pressed="true" aria-label="Sound on"><span class="ic on" data-ic="sndOn"></span><span class="ic off" data-ic="sndOff"></span></button>
       </div>
-      <button class="mbBubu" id="bubuBtn" type="button" data-k="pet" aria-label="Bubu"><span class="bb"><canvas id="bubuCv" aria-hidden="true"></canvas></span><span class="say" id="bubuSay" aria-hidden="true"></span></button>
+      <button class="mbBubu" id="bubuBtn" type="button" data-k="pet" aria-label="Bubu" hidden><span class="bb"><canvas id="bubuCv" aria-hidden="true"></canvas></span><span class="say" id="bubuSay" aria-hidden="true"></span></button>
       <div class="mbTopE"><button class="mbChip mbRnd" id="fullBtn" type="button" aria-pressed="false" aria-label="Full screen" hidden><span class="ic on" data-ic="fsOn"></span><span class="ic off" data-ic="fsOff"></span></button>
       <button class="metaPill mbChip" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><span class="ic" data-ic="coin"></span><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i><span class="nx" id="nextUnlock" hidden></span></button></div>
     </header>
@@ -15688,6 +15689,7 @@ window.__grasp.grip = { GRIP, grip, band: gripBand, on: gripOn }; // (the grip f
    bow tie / crown, unlocked by stage, one per slot). The end cards: 'Yum! +2 snacks' with the pet's face on the card's top edge (petCardTag).
    Hooks: __grasp.pet. */
 var PET_READY = false;
+const PET_OFF = true; // (the owner, Oct 2026: "take my animal off the top": no pet anywhere: no Bubu, no snacks, no pet room, no pet guest in Feed)
 const PET_INK = '#1d2547';
 const petUi = { earn: null, raf: 0, last: 0, frames: 0, look: { x: 0, y: 0, at: -1e9 }, blinkAt: 0, blinkNext: 0, hopAt: -1e9, hopNext: 0, wigAt: -1e9, eatAt: -1e9, hatchAt: -1e9, evo: null,
   cracks: 0, crackAt: -1e9, awake: false, bubble: null, bubT: 0, said: [], skipped: [], log: [], tag: null, celebrations: 0, taps: 0, feeds: 0, refused: [], asked: 0, evoT: 0 };
@@ -15738,6 +15740,7 @@ function petCanFeed() { const P = petP(); return !P.hatched ? 'egg' : petAteToda
 function petUnlocksAt(st) { return [...PET.colors.filter((c) => c.st === st).map((c) => t('pc_' + c.id)), ...PET.items.filter((i) => i.st === st && !i.ev).map((i) => t('pi_' + i.id))]; }
 /* --- snacks from play, feeding, hatching, growing --- */
 function petEarn(pb) { // a finished round: snacks into the box (the end card's line reads petUi.earn)
+  if (PET_OFF) return null;
   pb = pb || {}; const P = petP(), n = Math.min(PET.perRound, 1 + (pb.star ? 1 : 0) + (pb.boss ? 1 : 0) + (pb.record ? 1 : 0)), before = P.pantry;
   if (!pb.fail && !P.egg) P.egg = true; // (home2: the first round finished, not a failed stage, earns the egg: the Pet tab appears with a '!')
   P.pantry = Math.min(PET.pantryMax, P.pantry + n); P.earned += P.pantry - before; saveProfile();
@@ -15821,6 +15824,7 @@ function petEvolve(from, to) { // a new stage: the room opens (if it was not), t
   return petUi.evo;
 }
 function petOpenRoom(quiet) {
+  if (PET_OFF) return false;
   const R = $('petRoom'); if (!R.hidden) return false; if (petP().egg && !petP().eggSeen) { petP().eggSeen = true; saveProfile(); }
   R.hidden = false; R.querySelector('.sheet').scrollTop = 0; if (!quiet) sfx('click');
   petSync(); petLoopStart(); p3RoomOpen(); // (the 3D dragon loads now; the 2D pet shows until its first frame)
@@ -16724,7 +16728,11 @@ function evRoundDone() { // a finished round of any game: the featured one pays 
   ev.run.pts = 0;
 }
 function evMsText(D, i) { const m = D.ms[i]; return t('evm_' + D.id + '_' + m.k, { n: m.n }); }
-function evPrize(i, A = evAt()) { // what tier i holds this week
+function evPrize(i, A = evAt()) { // what tier i holds this week (no pet: its snacks and its hat are paid in coins instead)
+  const p = evPrize0(i, A); if (!PET_OFF || !p) return p;
+  if (p.snacks) return { coins: p.snacks * 5 }; if (p.hat) return { coins: 25 }; return p;
+}
+function evPrize0(i, A) {
   const T = EVENT.track[i], X = profile.evx; if (!T) return null;
   if (T.coins) return { coins: T.coins, chest: !!T.chest };
   if (T.snacks) return { snacks: T.snacks };
@@ -18875,7 +18883,7 @@ const FE_LIKES = { bunny: 'carrot', dog: 'bone', cat: 'fish', monkey: 'banana', 
 const FE_FOODS = ['carrot', 'bone', 'fish', 'banana', 'apple'];
 const FE = { perAnimal: 5, flyMs: 420, chompMs: 950, yuckMs: 1300, burpMs: 2600, inMs: 700, reAskMs: 9000, tummy: 0.07 };
 const fe = { petMouth: null, prefAt: 0, order: [], idx: 0, who: 'bunny', fed: 0, tummy: 1, foods: [], held: null, sel: null, state: 'wait', at: 0, fly: null, total: 0, yucks: 0, petSnack: 0, log: [], askAt: 0, key: '', geo: null, tapAt: -1e9 };
-function fePetOk() { try { const P = petP(); return !!(P && P.hatched); } catch { return false; } }
+function fePetOk() { if (PET_OFF) return false; try { const P = petP(); return !!(P && P.hatched); } catch { return false; } }
 function feReset(now) {
   fe.order = ['bunny', 'dog', 'cat', 'monkey']; if (fePetOk()) fe.order.splice(1, 0, 'pet'); // (the player's pet, as the second guest)
   fe.idx = 0; fe.total = 0; fe.yucks = 0; fe.petSnack = 0; fe.log.length = 0; fe.key = ''; feEnter(fe.order[0], now);
@@ -20275,7 +20283,7 @@ window.__grasp.panelfix = { frameErr, cguard, CLICK_GUARD, NOHAND, nh, homeCam, 
    pet's hatch, else the name sheet), never two at once. The end cards' Share sheet (replay clip / Challenge a friend / Copy link). */
 function h2World2() { return advPlayable(ADV_WORLD + 1); } // world 2 reached (the first boss beaten): the run powers and Endless show up
 function h2RoadOn() { return profile.level >= 2; } // the first level-up: the Road (the pill's level + XP part opens it)
-function h2PetOn() { const P = petP(); return !!(P.hatched || P.egg); }
+function h2PetOn() { if (PET_OFF) return false; const P = petP(); return !!(P.hatched || P.egg); }
 function h2AlbumOn() { return profile.album.got.length > 0; }
 function h2Hero() { // the hero sticker: "Strike" + a ribbon with the Adventure's current stage (menu B); the aria label says it all
   const n = advCurrent(), w = advWorldOf(n), WP = WORLDS[w - 1], started = advStarTotal() > 0 || n > 1, b = $('heroPlay');
@@ -20374,7 +20382,7 @@ function h2Popup() {
   if (h2PopupSpent() || mode !== 'none' || $('start').hidden || anyMapOpen() || document.querySelector('.ov:not([hidden])')) return null;
   if (maybeGift()) return 'gift'; // (the day's gift calendar: once a day, from day 2, after a round; real visitors only)
   // navigation v2: the pet no longer opens a sheet by itself; what waits glows on Bubu instead (the egg / a name); a tap opens it
-  if (!h2PopupOk() || !PET_READY) return null;
+  if (!h2PopupOk() || !PET_READY || PET_OFF) return null;
   const P = petP();
   if (P.egg && !P.hatched && !P.eggSeen) { h2PopupUsed('hatch'); mbCall('hatch'); return 'hatch'; }
   if (P.hatched && !P.asked) { h2PopupUsed('name'); mbCall('name'); return 'name'; }
@@ -20594,6 +20602,7 @@ function mbBubuDraw() {
   return true;
 }
 function mbCall(kind) { // navigation v2: something waits (the gift, the egg, the pet's name): a glow and a bounce on its button instead of a popup
+  if (PET_OFF && kind !== 'gift') return null;
   mb.call = kind; const el = kind === 'gift' ? $('todayBtn') : $('bubuBtn'); el.classList.add('mbCall'); el.dataset.call = kind; mb.log.push('call:' + kind); return kind;
 }
 function mbCallClear(el) { el.classList.remove('mbCall'); delete el.dataset.call; mb.call = null; }
