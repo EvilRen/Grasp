@@ -2337,8 +2337,7 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   modeFeed: 'Feed me', gm_feed: 'feed', descFeed: 'A hungry animal with a big open mouth: give it the food it wants (drag it, or tap it and then the animal). Five good bites: a burp!',
   tgd_feed: 'Feed me!', feWants: 'The {a} wants a {f}!', feWantsPet: '{a} wants a {f}!', feYum: 'Yummy!', feYuck: 'Yuck!', feBurp: 'Burp! Excuse me!',
   fd_carrot: 'Carrot', fd_bone: 'Bone', fd_fish: 'Fish', fd_banana: 'Banana', fd_apple: 'Apple', fd_snack: 'Cookie',
-  modeSand: 'Sand', gm_sand: 'sand', descSand: 'A tray of soft sand: dig with a finger, press molds, rake, roll and cut, pour coloured sand and mix it.', tgd_sand: 'Dig and squish!',
-  sd_sand: 'sand', sd_finger: 'finger', sd_rake: 'rake', sd_roller: 'roller', sd_knife: 'knife', sd_star: 'star', sd_heart: 'heart', sd_fish: 'fish', sd_flower: 'flower',
+  modeSand: 'Sand', gm_sand: 'sand', descSand: 'A tray of soft sand: dig with your fingers, smooth it flat again, and switch on the glow in the dark.', tgd_sand: 'Dig and squish!',
   modePuzzle: 'Puzzle', gm_puzzle: 'puzzle', descPuzzle: 'A giant puzzle: 2, then 3, then 4 big pieces. Drag each one to its place (or tap it, then its place); the picture comes alive.',
   tgd_puzzle: 'Drag the piece!', pzDone: 'Hooray! A {p}!', pz_car: 'car', pz_cow: 'cow', pz_duck: 'duck', pz_boat: 'boat',
 });
@@ -2356,8 +2355,7 @@ Object.assign(I18N.he, {
   modeFeed: 'מאכילים', gm_feed: 'מאכילים', descFeed: 'חיה רעבה עם פה פתוח: תנו לה את האוכל שהיא רוצה (גררו אותו, או הקישו עליו ואז על החיה). חמישה ביסים טובים: גרפס!',
   tgd_feed: 'תאכילו אותי!', feWants: 'ה{a} רוצה {f}!', feWantsPet: '{a} רוצה {f}!', feYum: 'יאמי!', feYuck: 'איכס!', feBurp: 'גרעפס! סליחה!',
   fd_carrot: 'גזר', fd_bone: 'עצם', fd_fish: 'דג', fd_banana: 'בננה', fd_apple: 'תפוח', fd_snack: 'עוגייה',
-  modeSand: 'חול קינטי', gm_sand: 'חול קינטי', descSand: 'ארגז של חול רך: חופרים באצבע, לוחצים תבניות, מגרפים, מחליקים וחותכים, שופכים חול צבעוני ומערבבים.', tgd_sand: 'חופרים באצבע!',
-  sd_sand: 'חול', sd_finger: 'אצבע', sd_rake: 'מגרפה', sd_roller: 'מערוך', sd_knife: 'סכין', sd_star: 'כוכב', sd_heart: 'לב', sd_fish: 'דג', sd_flower: 'פרח',
+  modeSand: 'חול קינטי', gm_sand: 'חול קינטי', descSand: 'ארגז של חול רך: חופרים באצבעות, מחליקים מחדש, ומדליקים זוהר בחושך.', tgd_sand: 'חופרים באצבע!',
   modePuzzle: 'פאזל', gm_puzzle: 'פאזל', descPuzzle: 'פאזל ענק: 2, אחר כך 3 ואחר כך 4 חלקים גדולים. גררו כל חלק למקום שלו (או הקישו עליו ואז על המקום); התמונה מתעוררת לחיים.',
   tgd_puzzle: 'גוררים את החלק!', pzDone: 'הידד! {p}!', pz_car: 'מכונית', pz_cow: 'פרה', pz_duck: 'ברווז', pz_boat: 'סירה',
 });
@@ -19821,195 +19819,188 @@ function routeBoot() { // on load: a game's path opens it (no start screen first
     else history.replaceState({ grasp: m, fromHome: false }, '', p); routeOpen(m); } catch {} finally { route.applying = false; }
   return true;
 }
-/* ---------------- Sand (/sand): a tray of soft kinetic sand for the Little ones (the owner, Oct 2026: touch only, real-looking, with shadows).
-   The sand is a height field (sa.h: the height of each cell in CSS px, ~26k cells) with a colour per cell (sa.c), shaded on every frame that
-   changed something: the light from the top left (a normal from the slope), soft cast shadows (a short march toward the light; the tray's rim
-   casts one too), cavity shading (the height against its blurred self: grooves darker, ridges lighter) and grain (a jitter per cell + a fine noise
-   overlay). The tools (the row at the bottom, one tap each): the finger (digs a groove, the sand piles up on its sides; a touch leaves a
-   fingerprint), the mold (a tap on the sand turns out a star / heart / fish / flower; the mold button again = the next shape), the rake (four
-   grooves), the roller (smooths) and the knife (a thin deep cut). The colours (the row under the tools): a tap picks that colour and the finger
-   pours it; digging through two colours smears them together. Dig down to the bottom: the tray's blue floor shows. No goal, no fail, no clock,
-   nothing to read. Restart (the pause menu) = a fresh flat tray. Played by touch / mouse, one finger (the Little ones frame). Hooks: __grasp.sand. */
-const SA = { cells: 26000, base: 18, moldH: 17, maxH: 72, rimH: 9, finger: 8, print: 4, rake: 5, knife: 15, talus: 2.1, pourTalus: 1.35, pourRate: 0.055, floorAt: 3.6,
-  tools: ['finger', 'mold', 'rake', 'roller', 'knife'], shapes: ['star', 'heart', 'fish', 'flower'],
-  cols: [[236, 200, 146], [250, 140, 182], [104, 166, 236], [124, 204, 120], [178, 138, 232]], colKeys: ['sd_sand', 'co_pink', 'co_blue', 'co_green', 'co_purple'],
-  moldCols: { star: '#ffb21f', heart: '#ff5a76', fish: '#33b6ff', flower: '#c77dff' }, floor: [196, 232, 250], light: [-0.52, -0.72, 0.58] };
-const sa = { L: null, key: '', GW: 0, GH: 0, cs: 4, csy: 4, h: null, c: null, nz: null, hb: null, tmp: null, img: null, cv: null, grain: null, pat: null, dirty: true,
-  tool: 'finger', shape: 0, col: 0, st: null, mold: null, grains: [], speed: 0, snd: null, sndLv: 0, log: [], n: { dig: 0, print: 0, mold: 0, pour: 0, rake: 0, roll: 0, cut: 0 }, shadeMs: 0, shades: 0, pressAt: -1e9 };
-const SA_POLY = (() => { // each mold's outline in unit space (radius ~1, y down)
-  const P = {}, N = 72;
-  P.star = Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 0.46 : 1; return [Math.cos(a) * r, Math.sin(a) * r]; });
-  let hp = Array.from({ length: N }, (_, i) => { const t = i / N * TAU; return [16 * Math.pow(Math.sin(t), 3), -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))]; });
-  const ys = hp.map((p) => p[1]), my = (Math.min(...ys) + Math.max(...ys)) / 2; P.heart = hp.map(([x, y]) => [x / 16.5, (y - my) / 16.5]);
-  const fb = [], a = 0.68, b = 0.5, cx = 0.18; for (let i = 0; i <= 40; i++) { const t = (Math.PI - 0.5) - i / 40 * 2 * (Math.PI - 0.5); fb.push([cx + a * Math.cos(t), b * Math.sin(t)]); }
-  P.fish = [...fb, [-1, -0.56], [-0.8, 0], [-1, 0.56]];
-  P.flower = Array.from({ length: N }, (_, i) => { const t = i / N * TAU, r = 0.6 + 0.4 * Math.pow(0.5 + 0.5 * Math.cos(5 * (t + Math.PI / 2)), 0.7); return [Math.cos(t) * r, Math.sin(t) * r]; });
-  return P;
-})();
-function saInPoly(P, x, y) { let inside = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside; } return inside; }
-function saEdgeD(P, x, y) { let m = 1e9; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [ax, ay] = P[j], [bx, by] = P[i], dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy || 1, q = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l)), ex = ax + q * dx - x, ey = ay + q * dy - y; m = Math.min(m, ex * ex + ey * ey); } return Math.sqrt(m); }
-/* the layout: the tray fills the screen under the pause button; the tools, then the colours, at the bottom */
+/* ---------------- Sand (/sand): a tray of soft kinetic sand for the Little ones (Oct 2026, the owner: touch only, real-looking with shadows;
+   then "too pixelated, make it good, only the finger, maybe glow in the dark"). The sand is a height field (sa.h: the height of each cell in CSS px,
+   ~64k cells, ~2 px each on a phone), shaded only where it changed (saDirty): Sobel normals, the light from the top left, soft cast shadows (a
+   bilinear march toward the light; the tray's rim casts one too), cavity shading (the height against its blur), a jitter per cell and a fine grain
+   overlay. Every finger digs (the frame's fingers; the sand piles up on the sides, retracing digs to the floor). Two buttons under the tray: the
+   smoother (a bar sweeps the tray flat again) and the moon (glow in the dark: dark sand, and every groove glows in a rainbow colour that slowly
+   fades to a faint glow; a soft halo = the glow drawn blurred on top). No goal, no fail, nothing to read. Hooks: __grasp.sand. ---------------- */
+const SA = { cells: 64000, base: 18, maxH: 60, rimH: 9, finger: 8, print: 4, talus: 2.1, floorAt: 3.6, sweepMs: 900,
+  sand: [236, 200, 146], floor: [196, 232, 250], night: { sand: [58, 52, 104], floor: [24, 20, 48] }, light: [-0.52, -0.72, 0.58],
+  glowTau: 9000, glowRest: 0.16, hueRate: 0.5 };
+const sa = { L: null, key: '', GW: 0, GH: 0, cs: 2, csy: 2, h: null, h0: null, nz: null, hb: null, tmp: null, lit: null, img: null, cv: null, grain: null, dirty: true, dr: null,
+  glow: null, hue: null, gmax: 0, picV: 0, tc: null, tcV: -1, em: null, emCv: null, halo: null, halo2: null, hueNow: 0, night: false, sweep: null, st: null, speed: 0, snd: null, sndLv: 0,
+  log: [], n: { dig: 0, print: 0, sweep: 0, toggle: 0 }, shadeMs: 0, shades: 0, lastCells: 0, btnTap: null };
+try { sa.night = localStorage.getItem('grasp.sandNight') === '1'; } catch {}
+/* the layout: the tray fills the screen under the pause button; the two buttons under it */
 function saLayout(force) {
   const key = W + 'x' + H + '|' + lang + '|' + tgTop(); if (!force && sa.key === key && sa.h) return false; sa.key = key;
-  const top = tgTop(), btn = Math.round(Math.max(54, Math.min(84, W / 6.4, H / 9))), dot = Math.round(btn * 0.74), gap = Math.max(8, Math.round(btn * 0.16));
-  const cy = H - 12 - dot / 2, ty = cy - dot / 2 - gap - btn / 2, bx = 10, by = top, bw = W - 20, bh = Math.max(140, ty - btn / 2 - gap - top);
+  const top = tgTop(), btn = Math.round(Math.max(58, Math.min(84, W / 5.6, H / 9))), gap = Math.max(10, Math.round(btn * 0.2));
+  const by0 = H - 14 - btn / 2, bx = 10, by = top, bw = W - 20, bh = Math.max(150, by0 - btn / 2 - gap - top);
   const rim = Math.round(Math.max(12, Math.min(22, Math.min(bw, bh) * 0.04))), box = { x: bx, y: by, w: bw, h: bh, rim, ix: bx + rim, iy: by + rim, iw: bw - 2 * rim, ih: bh - 2 * rim };
-  const rtl = lang === 'he', row = (n, size, y) => { const sp = Math.min(size + gap * 1.5, (W - 16) / n), x0 = W / 2 - sp * (n - 1) / 2; return Array.from({ length: n }, (_, i) => ({ x: x0 + (rtl ? n - 1 - i : i) * sp, y, r: size / 2 })); };
-  const tools = row(SA.tools.length, btn, ty).map((b, i) => ({ ...b, k: 'tool', id: SA.tools[i] })), cols = row(SA.cols.length, dot, cy).map((b, i) => ({ ...b, k: 'col', id: i }));
-  sa.L = { box, btn, dot, tools, cols, r: Math.max(15, Math.min(30, Math.min(box.iw, box.ih) * 0.055)), R: Math.max(42, Math.min(96, Math.min(box.iw, box.ih) * 0.17)) }; // (r: the finger; R: a mold)
-  const cs = Math.max(2.5, Math.sqrt(box.iw * box.ih / SA.cells)), GW = Math.max(8, Math.round(box.iw / cs)), GH = Math.max(8, Math.round(box.ih / cs));
+  const rtl = lang === 'he', sp = btn * 1.9, ids = ['smooth', 'night'];
+  const btns = ids.map((id, i) => ({ id, x: W / 2 + ((rtl ? 1 - i : i) - 0.5) * sp, y: by0, r: btn / 2 }));
+  sa.L = { box, btn, btns, r: Math.max(15, Math.min(30, Math.min(box.iw, box.ih) * 0.055)) }; // (r: the finger)
+  const cs = Math.max(1.6, Math.sqrt(box.iw * box.ih / SA.cells)), GW = Math.max(8, Math.round(box.iw / cs)), GH = Math.max(8, Math.round(box.ih / cs));
   if (!sa.h || GW !== sa.GW || GH !== sa.GH) saGrid(GW, GH);
   sa.cs = box.iw / GW; sa.csy = box.ih / GH; sa.dirty = true; sa.dr = null; return true;
 }
-function saGrid(GW, GH) { // a new grid (first visit / a new screen size): the old sand, resampled, so a rotation keeps the creation
-  const N = GW * GH, h = new Float32Array(N), c = new Uint8Array(N), o = sa.h ? { h: sa.h, c: sa.c, GW: sa.GW, GH: sa.GH } : null;
-  if (o) for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { const oi = Math.min(o.GW - 1, Math.floor(i * o.GW / GW)), oj = Math.min(o.GH - 1, Math.floor(j * o.GH / GH)); h[j * GW + i] = o.h[oj * o.GW + oi]; c[j * GW + i] = o.c[oj * o.GW + oi]; }
-  sa.GW = GW; sa.GH = GH; sa.h = h; sa.c = c; sa.hb = new Float32Array(N); sa.tmp = new Float32Array(N); sa.nz = new Uint8Array(N);
+function saGrid(GW, GH) { // a new grid (first visit / a new screen size): the old sand resampled, so a rotation keeps it
+  const N = GW * GH, o = sa.h ? { h: sa.h, h0: sa.h0, g: sa.glow, u: sa.hue, GW: sa.GW, GH: sa.GH } : null, h = new Float32Array(N), glow = new Float32Array(N), hue = new Float32Array(N * 3);
+  if (o) for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { const q = Math.min(o.GH - 1, Math.floor(j * o.GH / GH)) * o.GW + Math.min(o.GW - 1, Math.floor(i * o.GW / GW)), k = j * GW + i; h[k] = o.h[q]; glow[k] = o.g[q]; hue[k * 3] = o.u[q * 3]; hue[k * 3 + 1] = o.u[q * 3 + 1]; hue[k * 3 + 2] = o.u[q * 3 + 2]; }
+  Object.assign(sa, { GW, GH, h, glow, hue, h0: new Float32Array(N), hb: new Float32Array(N), tmp: new Float32Array(N), nz: new Uint8Array(N), lit: new Uint8ClampedArray(N * 4) });
   const r = rng(GW * 31 + GH); for (let k = 0; k < N; k++) sa.nz[k] = Math.floor(r() * 256);
   sa.cv = document.createElement('canvas'); sa.cv.width = GW; sa.cv.height = GH; sa.img = sa.cv.getContext('2d').createImageData(GW, GH);
-  if (!o) saFresh();
+  sa.emCv = document.createElement('canvas'); sa.emCv.width = GW; sa.emCv.height = GH; sa.em = sa.emCv.getContext('2d').createImageData(GW, GH);
+  const mk = (d) => { const c = document.createElement('canvas'); c.width = Math.max(2, Math.round(GW / d)); c.height = Math.max(2, Math.round(GH / d)); return c; }; sa.halo = mk(4); sa.halo2 = mk(10);
+  if (o) for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) sa.h0[j * GW + i] = o.h0[Math.min(o.GH - 1, Math.floor(j * o.GH / GH)) * o.GW + Math.min(o.GW - 1, Math.floor(i * o.GW / GW))]; // (the fresh surface resampled too: the smoother returns to the same sand)
+  else { saSurface(); h.set(sa.h0); }
 }
-function saFresh() { // a fresh tray: flat natural sand with a soft lumpy surface
-  const { GW, GH, h, c } = sa, r = rng(Math.floor(performance.now()) + 7), ph = [r() * TAU, r() * TAU, r() * TAU];
-  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { const x = i / GW, y = j / GH; h[j * GW + i] = SA.base + 0.9 * Math.sin(x * 9 + ph[0]) * Math.sin(y * 7 + ph[1]) + 0.5 * Math.sin((x + y) * 17 + ph[2]) + (r() - 0.5) * 0.5; c[j * GW + i] = 0; }
-  sa.dirty = true; sa.dr = null;
+function saSurface() { // the fresh tray's soft lumpy surface (sa.h0): where the smoother returns the sand to
+  const { GW, GH } = sa, r = rng(Math.floor(performance.now()) + 7), ph = [r() * TAU, r() * TAU, r() * TAU];
+  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) { const x = i / GW, y = j / GH; sa.h0[j * GW + i] = SA.base + 0.9 * Math.sin(x * 9 + ph[0]) * Math.sin(y * 7 + ph[1]) + 0.5 * Math.sin((x + y) * 17 + ph[2]); }
 }
-function saReset(now) { sa.st = null; sa.mold = null; sa.grains.length = 0; sa.speed = 0; sa.tool = 'finger'; sa.shape = 0; sa.col = 0; sa.log.length = 0; for (const k in sa.n) sa.n[k] = 0; saLayout(true); if (sa.h) saFresh(); }
-/* the shading: a light from the top left, cast shadows, cavities, grain */
+function saFresh() { saSurface(); sa.h.set(sa.h0); sa.glow.fill(0); sa.gmax = 0; sa.dirty = true; sa.dr = null; sa.glowDirty = true; }
+function saReset(now) { sa.st = null; sa.sweep = null; sa.speed = 0; sa.log.length = 0; for (const k in sa.n) sa.n[k] = 0; saLayout(true); if (sa.h) saFresh(); }
+/* the shading: a light from the top left, cast shadows, cavities, grain; at night dark sand (its glow is added each frame: saGlowFrame) */
 function saBlur(src, dst, tmp, GW, GH, R) { // a box blur (R cells), two separable passes
   const n = 2 * R + 1;
   for (let j = 0; j < GH; j++) { const o = j * GW; let s = 0; for (let i = -R; i <= R; i++) s += src[o + Math.max(0, Math.min(GW - 1, i))]; for (let i = 0; i < GW; i++) { tmp[o + i] = s / n; s += src[o + Math.min(GW - 1, i + R + 1)] - src[o + Math.max(0, i - R)]; } }
   for (let i = 0; i < GW; i++) { let s = 0; for (let j = -R; j <= R; j++) s += tmp[Math.max(0, Math.min(GH - 1, j)) * GW + i]; for (let j = 0; j < GH; j++) { dst[j * GW + i] = s / n; s += tmp[Math.min(GH - 1, j + R + 1) * GW + i] - tmp[Math.max(0, j - R) * GW + i]; } }
 }
 function saShade() {
-  const t0 = performance.now(), { GW, GH, h, c, nz, hb } = sa, d = sa.img.data, cs = sa.cs, csy = sa.csy;
-  saBlur(h, hb, sa.tmp, GW, GH, 3);
+  const t0 = performance.now(), { GW, GH, h, nz, hb, lit } = sa, cs = sa.cs, csy = sa.csy, night = sa.night, C = night ? SA.night.sand : SA.sand, F = night ? SA.night.floor : SA.floor;
+  saBlur(h, hb, sa.tmp, GW, GH, 4);
   const [Lx, Ly, Lz] = SA.light, ll = Math.hypot(Lx, Ly, Lz), lx = Lx / ll, ly = Ly / ll, lz = Lz / ll, lxy = Math.hypot(lx, ly), sx = lx / lxy, sy = ly / lxy, rise = lz / lxy;
-  const step = 1.15, stepPx = step * cs, rimTop = SA.base + SA.rimH, F = SA.floor;
-  const R = sa.dr, I0 = R ? Math.max(0, R.i0) : 0, I1 = R ? Math.min(GW - 1, R.i1) : GW - 1, J0 = R ? Math.max(0, R.j0) : 0, J1 = R ? Math.min(GH - 1, R.j1) : GH - 1;
+  const step = 1.15, stepPx = step * cs, rimTop = SA.base + SA.rimH, R = sa.dr;
+  const I0 = R ? Math.max(0, R.i0) : 0, I1 = R ? Math.min(GW - 1, R.i1) : GW - 1, J0 = R ? Math.max(0, R.j0) : 0, J1 = R ? Math.min(GH - 1, R.j1) : GH - 1;
   for (let j = J0; j <= J1; j++) {
     const jU = Math.max(0, j - 1) * GW, jD = Math.min(GH - 1, j + 1) * GW, o = j * GW;
     for (let i = I0; i <= I1; i++) {
       const k = o + i, hk = h[k], iL = Math.max(0, i - 1), iR = Math.min(GW - 1, i + 1);
-      const gx = ((h[jU + iR] - h[jU + iL]) + 2 * (h[o + iR] - h[o + iL]) + (h[jD + iR] - h[jD + iL])) / (4 * (iR - iL) * cs), gy = ((h[jD + iL] - h[jU + iL]) + 2 * (h[jD + i] - h[jU + i]) + (h[jD + iR] - h[jU + iR])) / (4 * (((jD - jU) / GW) * csy || 1)); // (Sobel: smooth walls, no stair steps)
+      const gx = ((h[jU + iR] - h[jU + iL]) + 2 * (h[o + iR] - h[o + iL]) + (h[jD + iR] - h[jD + iL])) / (4 * (iR - iL) * cs), gy = ((h[jD + iL] - h[jU + iL]) + 2 * (h[jD + i] - h[jU + i]) + (h[jD + iR] - h[jU + iR])) / (4 * (((jD - jU) / GW) * csy || 1)); // (Sobel: smooth walls)
       const ndl = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1);
       let sh = 1; // the shadow: march toward the light; anything above the ray (or the tray's rim beyond the edge) shades this cell
-      for (let s = 1; s <= 18; s++) {
+      for (let s = 1; s <= 22; s++) {
         const ray = hk + rise * s * stepPx; if (ray > SA.maxH + 4) break;
         const fx = i + sx * s * step, fy = j + sy * s * step * cs / csy, si = Math.floor(fx), sj = Math.floor(fy);
-        let occ; if (si < 0 || sj < 0 || si >= GW - 1 || sj >= GH - 1) occ = rimTop; else { const ax = fx - si, ay = fy - sj, q = sj * GW + si; occ = (h[q] * (1 - ax) + h[q + 1] * ax) * (1 - ay) + (h[q + GW] * (1 - ax) + h[q + GW + 1] * ax) * ay; } // (bilinear: soft shadow edges)
+        let occ; if (si < 0 || sj < 0 || si >= GW - 1 || sj >= GH - 1) occ = rimTop; else { const ax = fx - si, ay = fy - sj, q = sj * GW + si; occ = (h[q] * (1 - ax) + h[q + 1] * ax) * (1 - ay) + (h[q + GW] * (1 - ax) + h[q + GW + 1] * ax) * ay; }
         if (occ > ray) { sh = Math.min(sh, 1 - 0.55 * Math.min(1, (occ - ray) / 6)); if (sh <= 0.45) break; }
       }
       const cav = Math.max(-1, Math.min(1, (hk - hb[k]) * 0.08));
-      const I = (0.44 + 0.98 * Math.max(0, ndl) * sh) * (1 + cav * 0.2) * (0.94 + nz[k] * 0.00047);
-      const C = SA.cols[c[k]] || SA.cols[0], f = hk < SA.floorAt ? Math.min(1, (SA.floorAt - hk) / 2.6) : 0;
-      const r = C[0] + (F[0] - C[0]) * f, g = C[1] + (F[1] - C[1]) * f, b = C[2] + (F[2] - C[2]) * f, q = k * 4;
-      d[q] = r * I > 255 ? 255 : r * I; d[q + 1] = g * I > 255 ? 255 : g * I; d[q + 2] = b * I > 255 ? 255 : b * I; d[q + 3] = 255;
+      const I = (0.44 + 0.98 * Math.max(0, ndl) * sh) * (1 + cav * 0.2) * (0.95 + nz[k] * 0.0004);
+      const f = hk < SA.floorAt ? Math.min(1, (SA.floorAt - hk) / 2.6) : 0, q = k * 4;
+      lit[q] = (C[0] + (F[0] - C[0]) * f) * I; lit[q + 1] = (C[1] + (F[1] - C[1]) * f) * I; lit[q + 2] = (C[2] + (F[2] - C[2]) * f) * I; lit[q + 3] = 255;
     }
   }
-  if (I1 >= I0 && J1 >= J0) sa.cv.getContext('2d').putImageData(sa.img, 0, 0, I0, J0, I1 - I0 + 1, J1 - J0 + 1); sa.dirty = false; sa.dr = null; sa.lastCells = (I1 - I0 + 1) * (J1 - J0 + 1); sa.shades++; sa.shadeMs = sa.shadeMs * 0.9 + (performance.now() - t0) * 0.1;
+  if (I1 >= I0 && J1 >= J0) {
+    if (!night) { sa.img.data.set(lit); sa.cv.getContext('2d').putImageData(sa.img, 0, 0, I0, J0, I1 - I0 + 1, J1 - J0 + 1); sa.picV++; } else if (R) saGlowRect(I0, I1, J0, J1); else sa.glowDirty = true;
+  }
+  sa.dirty = false; sa.dr = null; sa.shades++; sa.lastCells = (I1 - I0 + 1) * (J1 - J0 + 1); sa.shadeMs = sa.shadeMs * 0.9 + (performance.now() - t0) * 0.1;
 }
+function saHueRGB(hd) { // a rainbow colour (0-360°) as bright neon r, g, b (0-1)
+  const h = ((hd % 360) + 360) % 360 / 60, x = 1 - Math.abs(h % 2 - 1); const [r, g, b] = h < 1 ? [1, x, 0] : h < 2 ? [x, 1, 0] : h < 3 ? [0, 1, x] : h < 4 ? [0, x, 1] : h < 5 ? [x, 0, 1] : [1, 0, x]; return [r * 0.6 + 0.4 * Math.max(r, g, b), g * 0.6 + 0.2, b * 0.6 + 0.3]; } // (bright neon, never fully dark)
+function saGlowFrame(dt) { // at night: the glow fades (to a faint rest glow in the grooves); the picture = the lit dark sand + the glow
+  if (!sa.night) return; const { glow, hue, h, lit, GW, GH } = sa, d = sa.img.data, e = sa.em.data;
+  if (sa.glowDirty) { sa.gdr = { i0: 0, i1: GW - 1, j0: 0, j1: GH - 1 }; sa.glowDirty = false; } // (a new shading or the night just on: all of it)
+  const R = sa.gdr; if (!R) return; sa.gdr = null; // (only where something glows on or changed: the rest of the picture stands)
+  const I0 = Math.max(0, R.i0), I1 = Math.min(GW - 1, R.i1), J0 = Math.max(0, R.j0), J1 = Math.min(GH - 1, R.j1); if (I1 < I0 || J1 < J0) return;
+  const kf = Math.exp(-dt / SA.glowTau); let gm = 0, act = 0, a0 = GW, a1 = -1, b0 = GH, b1 = -1;
+  for (let j = J0; j <= J1; j++) for (let i = I0; i <= I1; i++) { const k = j * GW + i;
+    const depth = SA.base - h[k], rest = depth > 1.5 ? Math.min(1, (depth - 1.5) / 5) * SA.glowRest : 0; let g = glow[k];
+    if (g > rest) { g = Math.max(rest, g * kf); glow[k] = g; if (g > rest + 0.004) { act++; if (i < a0) a0 = i; if (i > a1) a1 = i; if (j < b0) b0 = j; if (j > b1) b1 = j; } } if (g > gm) gm = g;
+    const q = k * 4; if (g < 0.01) { d[q] = lit[q]; d[q + 1] = lit[q + 1]; d[q + 2] = lit[q + 2]; d[q + 3] = 255; e[q] = e[q + 1] = e[q + 2] = 0; e[q + 3] = 255; continue; }
+    const u = k * 3, v = g * 255;
+    d[q] = lit[q] + hue[u] * v; d[q + 1] = lit[q + 1] + hue[u + 1] * v; d[q + 2] = lit[q + 2] + hue[u + 2] * v; d[q + 3] = 255;
+    e[q] = hue[u] * v; e[q + 1] = hue[u + 1] * v; e[q + 2] = hue[u + 2] * v; e[q + 3] = 255;
+  }
+  if (act) saGlowRect(a0, a1, b0, b1); // (still fading there: again next frame)
+  sa.gmax = Math.max(gm, sa.gmax * 0.999); sa.gActive = act; sa.glowCells = (I1 - I0 + 1) * (J1 - J0 + 1);
+  sa.cv.getContext('2d').putImageData(sa.img, 0, 0, I0, J0, I1 - I0 + 1, J1 - J0 + 1); sa.emCv.getContext('2d').putImageData(sa.em, 0, 0, I0, J0, I1 - I0 + 1, J1 - J0 + 1);
+  for (const c of [sa.halo, sa.halo2]) { const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.clearRect(0, 0, c.width, c.height); g.drawImage(sa.emCv, 0, 0, c.width, c.height); }
+  sa.picV++;
+}
+function saGlowArea(x, y, rad) { const B = sa.L.box, i0 = Math.floor((x - rad - B.ix) / sa.cs) - 1, i1 = Math.ceil((x + rad - B.ix) / sa.cs) + 1, j0 = Math.floor((y - rad - B.iy) / sa.csy) - 1, j1 = Math.ceil((y + rad - B.iy) / sa.csy) + 1; saGlowRect(i0, i1, j0, j1); }
+function saGlowRect(i0, i1, j0, j1) { const g = sa.gdr; if (!g) sa.gdr = { i0, i1, j0, j1 }; else { g.i0 = Math.min(g.i0, i0); g.i1 = Math.max(g.i1, i1); g.j0 = Math.min(g.j0, j0); g.j1 = Math.max(g.j1, j1); } }
+function saNight(on) { sa.picV++; sa.night = !!on; try { localStorage.setItem('grasp.sandNight', on ? '1' : '0'); } catch {} sa.dirty = true; sa.dr = null; sa.glowDirty = true; if (!on) { sa.gmax = 0; } }
 function saGrain() { // a fine noise tile (overlay): the grains of the sand, finer than a cell
   if (sa.grain && sa.grain.dpr === DPR) return sa.grain;
   const n = 160, cv = document.createElement('canvas'); cv.width = cv.height = n; const g = cv.getContext('2d'), im = g.createImageData(n, n), r = rng(99);
-  for (let k = 0; k < n * n; k++) { const v = 128 + (r() - 0.5) * 90 + (r() < 0.02 ? 60 : 0); im.data[k * 4] = im.data[k * 4 + 1] = im.data[k * 4 + 2] = Math.max(0, Math.min(255, v)); im.data[k * 4 + 3] = 255; }
+  for (let k = 0; k < n * n; k++) { const v = 128 + (r() - 0.5) * 80 + (r() < 0.02 ? 55 : 0); im.data[k * 4] = im.data[k * 4 + 1] = im.data[k * 4 + 2] = Math.max(0, Math.min(255, v)); im.data[k * 4 + 3] = 255; }
   g.putImageData(im, 0, 0); sa.grain = { cv, dpr: DPR, pat: null }; return sa.grain;
 }
 /* editing the sand (x, y, r in CSS px) */
-function saDirty(x, y, rad) { // the cells whose look changes: the edit, its normals and cavity (+4), and the shadow it can cast away from the light (+22, down and right)
-  const B = sa.L.box, i0 = Math.floor((x - rad - B.ix) / sa.cs) - 4, i1 = Math.ceil((x + rad - B.ix) / sa.cs) + 23, j0 = Math.floor((y - rad - B.iy) / sa.csy) - 4, j1 = Math.ceil((y + rad - B.iy) / sa.csy) + Math.ceil(23 * sa.cs / sa.csy);
+function saDirty(x, y, rad) { // the cells whose look changes: the edit, its normals and cavity (+5), and the shadow it can cast away from the light (+27, down and right)
+  const B = sa.L.box, i0 = Math.floor((x - rad - B.ix) / sa.cs) - 5, i1 = Math.ceil((x + rad - B.ix) / sa.cs) + 27, j0 = Math.floor((y - rad - B.iy) / sa.csy) - 5, j1 = Math.ceil((y + rad - B.iy) / sa.csy) + Math.ceil(27 * sa.cs / sa.csy);
   if (!sa.dirty) { sa.dr = { i0, i1, j0, j1 }; sa.dirty = true; } else if (sa.dr) { const d = sa.dr; d.i0 = Math.min(d.i0, i0); d.i1 = Math.max(d.i1, i1); d.j0 = Math.min(d.j0, j0); d.j1 = Math.max(d.j1, j1); }
 }
 function saCells(x, y, rad, fn) { // every cell within rad of (x, y): fn(k, dx, dy, d)
   const B = sa.L.box, cs = sa.cs, csy = sa.csy, { GW, GH } = sa, i0 = Math.max(0, Math.floor((x - rad - B.ix) / cs)), i1 = Math.min(GW - 1, Math.ceil((x + rad - B.ix) / cs)), j0 = Math.max(0, Math.floor((y - rad - B.iy) / csy)), j1 = Math.min(GH - 1, Math.ceil((y + rad - B.iy) / csy));
   for (let j = j0; j <= j1; j++) { const dy = B.iy + (j + 0.5) * csy - y; for (let i = i0; i <= i1; i++) { const dx = B.ix + (i + 0.5) * cs - x, dd = Math.sqrt(dx * dx + dy * dy); if (dd <= rad) fn(j * GW + i, dx, dy, dd); } }
 }
-function saCut(x, y, r, depth, dir, ref = SA.base) { // a finger / tine / blade pushed in to a depth under the surface it follows (ref): the sand above it moves to the sides (and a little ahead)
-  const { h, c } = sa, lvl = Math.max(0.3, ref - depth); let rem = 0, cc = -1, best = -1;
-  saCells(x, y, r, (k, dx, dy, d) => { const q = d / r, tip = lvl + depth * 1.2 * q * q; if (h[k] > tip) { const m = h[k] - tip; rem += m; h[k] = tip; if (m > best) { best = m; cc = c[k]; } } });
-  if (rem <= 0.01) return 0;
+function saCut(x, y, r, depth, dir, ref = SA.base) { // a fingertip pushed in to a depth under the surface it follows (ref): the sand above it moves to the sides (and a little ahead)
+  const { h, glow, hue } = sa, lvl = Math.max(0.3, ref - depth), hc = saHueRGB(sa.hueNow); let rem = 0;
+  saCells(x, y, r * 1.1, (k, dx, dy, d) => { const q = d / r, tip = lvl + depth * 1.2 * q * q; if (d <= r && h[k] > tip) { rem += h[k] - tip; h[k] = tip; }
+    const gl = 1 - Math.max(0, q - 0.55) * 1.6; if (gl <= 0) return; const a = glow[k] < 0.02 ? 1 : gl * 0.5, u = k * 3; // (the glow where the fingertip went: its colour blended into what glowed there, no specks)
+    hue[u] += (hc[0] - hue[u]) * a; hue[u + 1] += (hc[1] - hue[u + 1]) * a; hue[u + 2] += (hc[2] - hue[u + 2]) * a; if (gl > glow[k]) glow[k] = gl; });
+  saGlowArea(x, y, r * 1.1); sa.gmax = Math.max(sa.gmax, 1); sa.gActive = Math.max(sa.gActive || 0, 1);
+  if (rem <= 0.01) { saDirty(x, y, r * 1.1); return 0; }
   const R2 = r * 1.8, mid = r * 1.32, wid = r * 0.48; let sw = 0; const ring = [];
   saCells(x, y, R2, (k, dx, dy, d) => { if (d < r * 0.85) return; let w = 1 - Math.abs(d - mid) / wid; if (w <= 0) return; if (dir) { const dot = (dx * dir.x + dy * dir.y) / (d || 1); w *= dot < -0.25 ? 0.05 : dot > 0.6 ? 0.4 : 1; } ring.push(k, w); sw += w; });
-  if (sw > 0) for (let n = 0; n < ring.length; n += 2) { const k = ring[n], add = rem * ring[n + 1] / sw; h[k] = Math.min(SA.maxH, h[k] + add); if (cc >= 0 && add > 0.25 && Math.random() < Math.min(0.8, add / 2.4)) c[k] = cc; }
-  saRelax(x, y, R2 + 2 * sa.cs, SA.talus, 2); saDirty(x, y, R2 + 2 * sa.cs); return rem;
+  if (sw > 0) for (let n = 0; n < ring.length; n += 2) { const k = ring[n]; h[k] = Math.min(SA.maxH, h[k] + rem * ring[n + 1] / sw); }
+  saRelax(x, y, R2 + 2 * sa.cs, SA.talus, 2); saSettle(x, y, R2 + sa.cs, 0.3); saDirty(x, y, R2 + 2 * sa.cs); return rem;
+}
+function saSettle(x, y, rad, k0) { // the sand settles a little: a soft 3x3 smoothing over the edit (the rims of a groove come out round, not toothed)
+  const B = sa.L.box, { GW, GH, h, tmp } = sa, i0 = Math.max(1, Math.floor((x - rad - B.ix) / sa.cs)), i1 = Math.min(GW - 2, Math.ceil((x + rad - B.ix) / sa.cs)), j0 = Math.max(1, Math.floor((y - rad - B.iy) / sa.csy)), j1 = Math.min(GH - 2, Math.ceil((y + rad - B.iy) / sa.csy));
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const k = j * GW + i; tmp[k] = (h[k - GW - 1] + h[k - GW + 1] + h[k + GW - 1] + h[k + GW + 1] + 2 * (h[k - 1] + h[k + 1] + h[k - GW] + h[k + GW]) + 4 * h[k]) / 16; }
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const k = j * GW + i; h[k] += (tmp[k] - h[k]) * k0; }
 }
 function saRelax(x, y, rad, talus, passes) { // a too-steep step slides a little (kinetic sand holds steep walls: only past the talus)
   const B = sa.L.box, cs = sa.cs, csy = sa.csy, { GW, GH, h } = sa, i0 = Math.max(0, Math.floor((x - rad - B.ix) / cs)), i1 = Math.min(GW - 2, Math.ceil((x + rad - B.ix) / cs)), j0 = Math.max(0, Math.floor((y - rad - B.iy) / csy)), j1 = Math.min(GH - 2, Math.ceil((y + rad - B.iy) / csy)), lim = talus * cs;
   for (let p = 0; p < passes; p++) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const k = j * GW + i;
     for (const n of [k + 1, k + GW]) { const df = h[k] - h[n]; if (df > lim) { const m = (df - lim) * 0.25; h[k] -= m; h[n] += m; } else if (-df > lim) { const m = (-df - lim) * 0.25; h[n] -= m; h[k] += m; } } }
 }
-function saPour(x, y, r, amt, col) { // coloured sand falls on the spot: a little cone that spreads past the talus
-  const { h, c } = sa; let got = 0;
-  saCells(x, y, r, (k, dx, dy, d) => { const q = 1 - (d / r) * (d / r), add = amt * q * q; if (h[k] + add > SA.maxH) return; h[k] += add; got += add; if (add > 0.015 && Math.random() < Math.min(1, 0.35 + add * 3)) c[k] = col; });
-  saRelax(x, y, r * 1.6, SA.pourTalus, 1); saDirty(x, y, r * 1.6 + sa.cs); return got;
+/* the smoother: a bar sweeps down the tray; behind it the sand is fresh again */
+function saSweepStart(now) { if (sa.sweep) return; sa.sweep = { t0: now, row: 0 }; sa.n.sweep++; sa.log.push('sweep'); tgSfx('whoosh'); }
+function saSweepTick(now) {
+  const S = sa.sweep; if (!S) return; const q = Math.min(1, (now - S.t0) / SA.sweepMs), row = Math.round(ease(q) * sa.GH), { GW, h, h0, glow } = sa;
+  for (let j = S.row; j < row; j++) for (let i = 0; i < GW; i++) { const k = j * GW + i; h[k] = h0[k]; glow[k] = 0; }
+  if (row > S.row) { sa.dirty = true; sa.dr = null; saGlowRect(0, GW - 1, S.row, row); } S.row = row;
+  if (q >= 1) sa.sweep = null;
 }
-function saRoll(x, y, r) { // the roller: the sand under it evens out toward its local level
-  const { h } = sa, R = r * 1.6; let s = 0, n = 0; saCells(x, y, R, (k) => { s += h[k]; n++; }); if (!n) return; const m = s / n;
-  saCells(x, y, R, (k, dx, dy, d) => { const w = 0.42 * (1 - (d / R) * 0.6); h[k] += (m - h[k]) * w; }); saDirty(x, y, R);
-}
-function saMoldApply(M) { // the mold lifts: the shape stands in the sand, its top MOLDH above the sand that was there
-  const P = SA_POLY[M.shape], { h, c } = sa, R = M.R, bev = Math.max(5, R * 0.15); let s = 0, n = 0;
-  saCells(M.x, M.y, R * 0.55, (k) => { s += h[k]; n++; }); const base0 = Math.max(SA.base * 0.55, n ? s / n : SA.base), top = Math.min(SA.maxH - 2, base0 + SA.moldH);
-  saCells(M.x, M.y, R * 1.05, (k, dx, dy) => { const ux = dx / R, uy = dy / R; if (!saInPoly(P, ux, uy)) return; const e = saEdgeD(P, ux, uy) * R;
-    let ht = base0 + (top - base0) * Math.min(1, Math.sqrt(e / bev));
-    if (M.shape === 'fish' && Math.hypot(ux - 0.5, uy + 0.12) < 0.1) ht -= 4; // (the eye)
-    if (M.shape === 'flower' && Math.hypot(ux, uy) < 0.26) ht += 3 * (1 - Math.hypot(ux, uy) / 0.26); // (the middle)
-    if (M.shape === 'star' && e > bev) ht += Math.min(2.5, (e - bev) * 0.12); // (a ridge to each point)
-    h[k] = ht; c[k] = M.col; });
-  saDirty(M.x, M.y, R * 1.1);
-}
-/* input: a tap on a button picks it; on the sand the tool works */
-function saBtnAt(x, y) { const L = sa.L; for (const b of [...L.tools, ...L.cols]) if (Math.hypot(x - b.x, y - b.y) <= b.r + 8) return b; return null; }
+/* input: a tap on a button presses it; on the sand every finger digs */
+function saBtnAt(x, y) { for (const b of sa.L.btns) if (Math.hypot(x - b.x, y - b.y) <= b.r + 10) return b; return null; }
 function saInBox(x, y) { const B = sa.L.box; return x >= B.ix && x <= B.ix + B.iw && y >= B.iy && y <= B.iy + B.ih; }
-function saPick(b, now) {
-  if (b.k === 'col') { sa.tool = 'pour'; sa.col = b.id; sa.log.push('col:' + b.id); tgSfx('pop'); tgSay(tgCap(t(SA.colKeys[b.id])) + '!'); }
-  else if (b.id === 'mold' && sa.tool === 'mold') { sa.shape = (sa.shape + 1) % SA.shapes.length; sa.log.push('shape:' + SA.shapes[sa.shape]); tgSfx('boop'); tgSay(tgCap(t('sd_' + SA.shapes[sa.shape])) + '!'); }
-  else { sa.tool = b.id; sa.log.push('tool:' + b.id); tgSfx(b.id === 'mold' ? 'boop' : 'click'); tgSay(tgCap(t(b.id === 'mold' ? 'sd_' + SA.shapes[sa.shape] : 'sd_' + b.id)) + '!'); }
-  sa.btnTap = { b: b.k + ':' + b.id, t: now };
+function saPress(b, now) {
+  sa.btnTap = { id: b.id, t: now };
+  if (b.id === 'smooth') saSweepStart(now);
+  else { saNight(!sa.night); sa.n.toggle++; sa.log.push(sa.night ? 'night' : 'day'); tgSfx(sa.night ? 'chime' : 'pop'); }
 }
 function saDown(p, now) {
   saLayout(false); const b = saBtnAt(p.x, p.y);
-  if (b) { sa.st = { bar: true }; if (tgGuard('sa:' + b.k + b.id, now)) saPick(b, now); return; }
+  if (b) { sa.st = { bar: true }; if (tgGuard('sa:' + b.id, now)) saPress(b, now); return; }
   if (!saInBox(p.x, p.y)) { sa.st = { bar: true }; return; }
-  tgDemoDone(now); sa.pressAt = now; const r = sa.L.r;
-  const ref = saRef(p.x, p.y); sa.st = { x: p.x, y: p.y, t: now, acc: 0, dir: null, moved: 0, ref };
-  if (sa.tool === 'finger') { saCut(p.x, p.y, r * 0.8, SA.print, null, ref); sa.n.print++; sa.speed = Math.max(sa.speed, 0.25); tgSfx('crunch'); }
-  else if (sa.tool === 'knife') { saCut(p.x, p.y, Math.max(5, r * 0.2), SA.knife, null, ref); sa.n.cut++; }
-  else if (sa.tool === 'mold' && !sa.mold) { const B = sa.L.box, R = sa.L.R, x = Math.max(B.ix + R * 0.6, Math.min(B.ix + B.iw - R * 0.6, p.x)), y = Math.max(B.iy + R * 0.6, Math.min(B.iy + B.ih - R * 0.6, p.y));
-    let cc = 0; saCells(x, y, sa.cs * 1.5, (k) => { cc = sa.c[k]; }); sa.mold = { x, y, R, shape: SA.shapes[sa.shape], col: cc, t0: now, applied: false }; tgSfx('whoosh'); }
-  else if (sa.tool === 'pour') sa.n.pour++;
-  if (sa.tool !== 'finger' && sa.tool !== 'mold') tgSfx('crunch'); // (every touch answers)
+  tgDemoDone(now); const ref = saRef(p.x, p.y); sa.st = { x: p.x, y: p.y, t: now, acc: 0, dir: null, moved: 0, ref };
+  saCut(p.x, p.y, sa.L.r * 0.8, SA.print, null, ref); sa.n.print++; sa.speed = Math.max(sa.speed, 0.25); tgSfx('crunch');
+  if (sa.night) fxSparkle(p.x, p.y, ['#ffffff', 'hsl(' + Math.round(sa.hueNow) + ',100%,70%)'], 4, 26);
 }
 function saMove(p, P) {
   const S = sa.st; if (!S || S.bar) return; const now = performance.now(), r = sa.L.r, dx = p.x - S.x, dy = p.y - S.y, len = Math.hypot(dx, dy); if (len < 0.5) return;
   const dir = { x: dx / len, y: dy / len }, dt = Math.max(1, now - S.t); sa.speed = Math.max(sa.speed * 0.6, Math.min(2, len / dt)); S.dir = dir; S.moved += len;
-  if (sa.tool === 'mold' || !saInBox(p.x, p.y) && !saInBox(S.x, S.y)) { S.x = p.x; S.y = p.y; S.t = now; return; }
-  const tool = sa.tool, step = tool === 'knife' ? 2 : tool === 'rake' ? Math.max(2.5, r * 0.22) : Math.max(2.5, r * 0.3);
-  let s = step - S.acc;
+  if (!saInBox(p.x, p.y) && !saInBox(S.x, S.y)) { S.x = p.x; S.y = p.y; S.t = now; return; }
+  const step = Math.max(2, r * 0.25); let s = step - S.acc;
   for (; s <= len; s += step) { const x = S.x + dir.x * s, y = S.y + dir.y * s;
     const ax = x + dir.x * r * 1.7, ay = y + dir.y * r * 1.7; if (saInBox(ax, ay)) S.ref += (saRef(ax, ay) - S.ref) * 0.3; // (the surface just ahead: over a mound the finger rides up, back along a groove it digs deeper, down to the floor)
-    if (tool === 'finger') { saCut(x, y, r, SA.finger, dir, S.ref); sa.n.dig++; }
-    else if (tool === 'rake') { const px = -dir.y, py = dir.x, sp = r * 0.55; for (const q of [-1.5, -0.5, 0.5, 1.5]) saCut(x + px * q * sp, y + py * q * sp, r * 0.2, SA.rake, dir, S.ref); sa.n.rake++; }
-    else if (tool === 'roller') { saRoll(x, y, r); sa.n.roll++; }
-    else if (tool === 'knife') { saCut(x, y, Math.max(5, r * 0.2), SA.knife, dir, S.ref); sa.n.cut++; }
-  }
+    saCut(x, y, r, SA.finger, dir, S.ref); sa.n.dig++; sa.hueNow = (sa.hueNow + step * SA.hueRate) % 360; }
   S.acc = len - (s - step); S.x = p.x; S.y = p.y; S.t = now;
-  if (tool === 'finger' && sa.speed > 0.9 && Math.random() < 0.35) { const C = SA.cols[sa.c[saIdx(p.x, p.y)] || 0]; burst(p.x, p.y, 'rgb(' + C.join(',') + ')', 6); } // (a fast swipe flicks a few crumbs)
+  if (sa.night && Math.random() < 0.25) fxSparkle(p.x, p.y, ['#ffffff', 'hsl(' + Math.round(sa.hueNow) + ',100%,70%)'], 2, 22);
 }
 function saUp() { sa.st = null; }
 function saRef(x, y) { const k = saIdx(x, y); return Math.max(sa.h[k], sa.hb && sa.hb[k] || 0); } // (the surface under a point: its blurred level, never under the sand that is there)
 function saIdx(x, y) { const B = sa.L.box, i = Math.max(0, Math.min(sa.GW - 1, Math.floor((x - B.ix) / sa.cs))), j = Math.max(0, Math.min(sa.GH - 1, Math.floor((y - B.iy) / sa.csy))); return j * sa.GW + i; }
-function saTick(now, dt) {
-  saLayout(false);
-  for (const P of tg.presses.values()) { const S = P.slot; if (!S || S.bar || sa.tool !== 'pour' || !saInBox(P.x, P.y)) continue; // pouring: sand streams from every fingertip held on the sand
-    const x = P.x, y = P.y; saPour(x, y, sa.L.r * 1.15, SA.pourRate * Math.min(50, dt), sa.col);
-    const C = SA.cols[sa.col]; for (let i = 0; i < 2; i++) sa.grains.push({ x: x + (Math.random() - 0.5) * sa.L.r * 1.2, y: y - 70 - Math.random() * 40, ty: y + (Math.random() - 0.5) * sa.L.r, vy: 0.25 + Math.random() * 0.2, col: C });
-  }
-  for (let i = sa.grains.length - 1; i >= 0; i--) { const g = sa.grains[i]; g.vy += 0.002 * dt; g.y += g.vy * dt; if (g.y >= g.ty) sa.grains.splice(i, 1); } if (sa.grains.length > 160) sa.grains.splice(0, sa.grains.length - 160);
-  const M = sa.mold; if (M) { const e = now - M.t0; if (!M.applied && e >= 200) { M.applied = true; saMoldApply(M); sa.n.mold++; tgSfx('thump'); shakeScreen(0.35); const C = SA.cols[M.col]; for (let i = 0; i < 3; i++) burst(M.x + (Math.random() - 0.5) * M.R, M.y + M.R * 0.6, 'rgb(' + C.join(',') + ')', 7); } if (e >= 420 && !M.popped) { M.popped = true; tgSfx('pop'); } if (e >= 700) sa.mold = null; }
-  sa.speed *= Math.pow(0.9, dt / 16); saSndTick();
-}
-/* the sound: one soft looping hiss, filtered per tool, as loud as the finger is fast (nothing when still) */
+function saTick(now, dt) { saLayout(false); saSweepTick(now); sa.speed *= Math.pow(0.9, dt / 16); saSndTick(); sa.dt = dt; }
+/* the sound: one soft looping hiss, as loud as the fingers are fast (nothing when still) */
 function saSnd() {
   if (sa.snd || !audio || muted || audio.state !== 'running') return sa.snd;
   try {
@@ -20020,71 +20011,70 @@ function saSnd() {
   } catch { sa.snd = null; }
   return sa.snd;
 }
-const SA_SND = { finger: [1100, 0.8, 0.2], rake: [2300, 1.4, 0.2], roller: [420, 0.7, 0.26], knife: [3400, 2.2, 0.14], pour: [2600, 0.5, 0.11], mold: [900, 0.8, 0] };
 function saSndTick() {
-  const run = [...tg.presses.values()].some((P) => P.slot && !P.slot.bar) && mode !== 'none' && !pause.on && !menu.open, cfg = SA_SND[sa.tool] || SA_SND.finger;
-  const lv = !run ? 0 : sa.tool === 'pour' ? cfg[2] : Math.min(cfg[2], sa.speed * cfg[2] * 1.4); sa.sndLv = lv;
+  const run = [...tg.presses.values()].some((P) => P.slot && !P.slot.bar) && mode !== 'none' && !pause.on && !menu.open, sw = !!sa.sweep && mode !== 'none' && !pause.on;
+  const lv = sw ? 0.16 : run ? Math.min(0.2, sa.speed * 0.28) : 0; sa.sndLv = lv;
   if (lv <= 0 && !sa.snd) return; const A = saSnd(); if (!A) return;
-  try { const t = audio.currentTime; A.g.gain.setTargetAtTime(muted ? 0 : lv, t, lv > A.g.gain.value ? 0.03 : 0.08); A.f.frequency.setTargetAtTime(cfg[0] * (1 + Math.min(0.5, sa.speed * 0.3)), t, 0.05); A.f.Q.setTargetAtTime(cfg[1], t, 0.05); } catch {}
+  try { const t = audio.currentTime; A.g.gain.setTargetAtTime(muted ? 0 : lv, t, lv > A.g.gain.value ? 0.03 : 0.08); A.f.frequency.setTargetAtTime((sw ? 700 : 1100) * (1 + Math.min(0.5, sa.speed * 0.3)), t, 0.05); } catch {}
 }
 function saSndStop() { const A = sa.snd; sa.snd = null; if (!A) return; try { A.g.gain.setTargetAtTime(0, audio.currentTime, 0.03); A.src.stop(audio.currentTime + 0.2); } catch {} }
 /* drawing */
-function saShapePath(g, shape, x, y, R) { const P = SA_POLY[shape]; g.beginPath(); P.forEach(([px, py], i) => (i ? g.lineTo(x + px * R, y + py * R) : g.moveTo(x + px * R, y + py * R))); g.closePath(); }
-function saMoldDraw(g, shape, x, y, R, o = {}) { // a plastic mold seen from above: a thick rim, a lighter face, a shine
-  const col = SA.moldCols[shape]; g.save(); g.lineJoin = 'round';
-  if (o.shadow) { g.save(); g.globalAlpha = (o.a ?? 1) * 0.28; g.fillStyle = '#3a2410'; saShapePath(g, shape, x + o.shadow, y + o.shadow * 1.3, R); g.fill(); g.restore(); }
-  g.globalAlpha = o.a ?? 1; saShapePath(g, shape, x, y, R); g.fillStyle = col; g.fill(); g.lineWidth = Math.max(3, R * 0.09); g.strokeStyle = 'rgba(0,0,0,0.25)'; g.stroke();
-  saShapePath(g, shape, x, y, R * 0.8); const gr = g.createLinearGradient(x - R, y - R, x + R, y + R); gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(0.5, 'rgba(255,255,255,0.12)'); gr.addColorStop(1, 'rgba(0,0,0,0.12)'); g.fillStyle = gr; g.fill();
-  g.globalAlpha = (o.a ?? 1) * 0.7; g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(x - R * 0.32, y - R * 0.38, R * 0.16, R * 0.07, -0.6, 0, TAU); g.fill(); g.restore();
-}
-function saToolDraw(g, id, x, y, s, now) { // the tool icons (s: the half size)
-  g.save(); g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round'; const ink = PET_INK;
-  if (id === 'finger') { g.rotate(-0.5); g.fillStyle = '#ffd7b8'; g.strokeStyle = ink; g.lineWidth = s * 0.09; g.beginPath(); g.roundRect(-s * 0.2, -s * 0.78, s * 0.4, s * 1.0, s * 0.2); g.fill(); g.stroke(); g.beginPath(); g.roundRect(-s * 0.42, -s * 0.05, s * 0.84, s * 0.7, s * 0.26); g.fill(); g.stroke(); g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(0, -s * 0.6, s * 0.1, s * 0.12, 0, 0, TAU); g.fill(); }
-  else if (id === 'mold') saMoldDraw(g, SA.shapes[sa.shape], 0, 0, s * 0.78);
-  else if (id === 'rake') { g.strokeStyle = ink; g.lineWidth = s * 0.12; g.beginPath(); g.moveTo(0, s * 0.85); g.lineTo(0, -s * 0.1); g.stroke(); g.strokeStyle = '#2bb673'; g.lineWidth = s * 0.16; g.beginPath(); g.moveTo(-s * 0.62, -s * 0.15); g.lineTo(s * 0.62, -s * 0.15); g.stroke(); for (const q of [-0.6, -0.2, 0.2, 0.6]) { g.beginPath(); g.moveTo(q * s, -s * 0.15); g.lineTo(q * s, -s * 0.7); g.stroke(); } }
-  else if (id === 'roller') { g.rotate(-0.35); g.fillStyle = '#d99a5b'; g.strokeStyle = ink; g.lineWidth = s * 0.08; g.beginPath(); g.roundRect(-s * 0.55, -s * 0.24, s * 1.1, s * 0.48, s * 0.2); g.fill(); g.stroke(); g.fillStyle = '#ff6f91'; for (const q of [-1, 1]) { g.beginPath(); g.roundRect(q > 0 ? s * 0.55 : -s * 0.9, -s * 0.11, s * 0.35, s * 0.22, s * 0.1); g.fill(); g.stroke(); } g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(-s * 0.45, -s * 0.16, s * 0.9, s * 0.08); }
-  else if (id === 'knife') { g.rotate(0.7); g.fillStyle = '#ffd23f'; g.strokeStyle = ink; g.lineWidth = s * 0.08; g.beginPath(); g.roundRect(-s * 0.13, s * 0.1, s * 0.26, s * 0.72, s * 0.1); g.fill(); g.stroke(); g.fillStyle = '#e9eef5'; g.beginPath(); g.moveTo(-s * 0.13, s * 0.1); g.lineTo(-s * 0.13, -s * 0.62); g.quadraticCurveTo(s * 0.2, -s * 0.85, s * 0.13, s * 0.1); g.closePath(); g.fill(); g.stroke(); }
-  g.restore();
-}
-function saHeld(now) { for (const P of tg.presses.values()) if (P.slot && !P.slot.bar) saHeldOne(P.slot, P, now); }
-function saHeldOne(S, P, now) { // the tool at the finger while it works (the finger alone shows nothing: the real finger is there)
-  const r = sa.L.r, a = S.dir ? Math.atan2(S.dir.y, S.dir.x) : 0; resetView(); ctx.save(); ctx.translate(P.x, P.y);
-  if (sa.tool === 'rake') { ctx.rotate(a + Math.PI / 2); ctx.globalAlpha = 0.92; ctx.strokeStyle = '#2bb673'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(5, r * 0.25); const sp = r * 0.55; ctx.beginPath(); ctx.moveTo(-sp * 1.7, -r * 0.6); ctx.lineTo(sp * 1.7, -r * 0.6); ctx.stroke(); for (const q of [-1.5, -0.5, 0.5, 1.5]) { ctx.beginPath(); ctx.moveTo(q * sp, -r * 0.6); ctx.lineTo(q * sp, 0); ctx.stroke(); } }
-  else if (sa.tool === 'roller') { ctx.rotate(a + Math.PI / 2); ctx.globalAlpha = 0.95; saToolDraw(ctx, 'roller', 0, 0, r * 1.7, now); }
-  else if (sa.tool === 'knife') { ctx.rotate(a - Math.PI / 2 + 0.7); ctx.globalAlpha = 0.95; saToolDraw(ctx, 'knife', 0, -r * 0.7, r * 1.3, now); }
+function saBtnDraw(b, now) {
+  const on = b.id === 'night' && sa.night, tq = sa.btnTap && sa.btnTap.id === b.id ? (now - sa.btnTap.t) / 300 : 1, r = b.r * (1 + (tq < 1 ? Math.sin(tq * Math.PI) * 0.12 : 0)), x = b.x, y = b.y;
+  resetView(); drawShadow(x, y + b.r * 0.85, b.r * 1.7, b.r * 0.32, 0.25); resetView();
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = on ? '#2b2660' : '#ffffff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = on ? '#b9a8ff' : PET_INK; ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.translate(x, y); const s = r * 0.62; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (b.id === 'smooth') { // a smoothing bar over a wavy line
+    ctx.strokeStyle = '#e2b77a'; ctx.lineWidth = s * 0.18; ctx.beginPath(); ctx.moveTo(-s * 0.8, s * 0.35); for (let i = 0; i <= 8; i++) ctx.lineTo(-s * 0.8 + i * s * 0.2, s * 0.35 + Math.sin(i * 1.6) * s * 0.12); ctx.stroke();
+    ctx.fillStyle = '#ff8a1f'; ctx.strokeStyle = PET_INK; ctx.lineWidth = s * 0.1; ctx.beginPath(); ctx.roundRect(-s * 0.9, -s * 0.25, s * 1.8, s * 0.32, s * 0.12); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.roundRect(-s * 0.14, -s * 0.85, s * 0.28, s * 0.62, s * 0.12); ctx.fill(); ctx.stroke();
+  } else if (on) { // the sun: back to day
+    ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = PET_INK; ctx.lineWidth = s * 0.1; for (let i = 0; i < 8; i++) { const a = i * TAU / 8; ctx.beginPath(); ctx.moveTo(Math.cos(a) * s * 0.62, Math.sin(a) * s * 0.62); ctx.lineTo(Math.cos(a) * s * 0.92, Math.sin(a) * s * 0.92); ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = s * 0.16; ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(0, 0, s * 0.45, 0, TAU); ctx.lineWidth = s * 0.1; ctx.strokeStyle = PET_INK; ctx.fill(); ctx.stroke();
+  } else { // the moon: glow in the dark
+    ctx.fillStyle = '#5b4bd6'; ctx.strokeStyle = PET_INK; ctx.lineWidth = s * 0.1; ctx.beginPath(); ctx.arc(0, 0, s * 0.78, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff3b0'; ctx.beginPath(); ctx.arc(-s * 0.05, 0, s * 0.5, -Math.PI / 2, Math.PI / 2); ctx.bezierCurveTo(s * 0.25, s * 0.35, s * 0.25, -s * 0.35, -s * 0.05, -s * 0.5); ctx.fill();
+    ctx.fillStyle = '#ffffff'; for (const [px, py, pr] of [[0.42, -0.4, 0.07], [0.5, 0.25, 0.05], [0.25, 0.5, 0.04]]) { ctx.beginPath(); ctx.arc(px * s, py * s, pr * s, 0, TAU); ctx.fill(); }
+  }
   ctx.restore();
+}
+function saTray() { // the sand as the screen shows it (scaled smooth, the grain, at night the glow's halo), composed again only when it changed
+  const B = sa.L.box, w = Math.max(2, Math.round(B.iw * DPR)), h = Math.max(2, Math.round(B.ih * DPR)); let T = sa.tc;
+  if (!T || T.width !== w || T.height !== h) { T = sa.tc = document.createElement('canvas'); T.width = w; T.height = h; sa.tcV = -1; }
+  if (sa.tcV === sa.picV) return T; sa.tcV = sa.picV;
+  let src = sa.cv;
+  if (sa.night && sa.gmax > 0.01) { // the glow's soft halo, blended at the grid's size (cheap), then scaled up with the sand
+    let M = sa.mix; if (!M || M.width !== sa.GW || M.height !== sa.GH) { M = sa.mix = document.createElement('canvas'); M.width = sa.GW; M.height = sa.GH; }
+    const m = M.getContext('2d'); m.globalCompositeOperation = 'source-over'; m.globalAlpha = 1; m.drawImage(sa.cv, 0, 0); m.imageSmoothingEnabled = true;
+    m.globalCompositeOperation = 'lighter'; m.globalAlpha = 0.85; m.drawImage(sa.halo, 0, 0, M.width, M.height); m.globalAlpha = 0.6; m.drawImage(sa.halo2, 0, 0, M.width, M.height); src = M;
+  }
+  const g = T.getContext('2d'); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'low'; g.drawImage(src, 0, 0, w, h); // (bilinear: a cell is ~4 device px, smooth enough; 'high' cost a third of the frame)
+  const G = saGrain(); if (!G.patT) G.patT = g.createPattern(G.cv, 'repeat'); // (the grain one per device pixel)
+  g.globalCompositeOperation = 'overlay'; g.globalAlpha = sa.night ? 0.18 : 0.24; g.fillStyle = G.patT; g.fillRect(0, 0, w, h);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; sa.tcDraws = (sa.tcDraws || 0) + 1; return T;
+}
+function saStars(now) { // the night sky round the tray: a few twinkles (drawn once a size, then a soft pulse)
+  const sp = makeSprite('sastars|' + W + 'x' + H, W, H, 0, 0, (g) => { const r = rng(W * 3 + H); for (let i = 0; i < Math.round(W * H / 5000); i++) { g.fillStyle = 'rgba(255,255,255,' + (0.3 + r() * 0.6).toFixed(2) + ')'; g.beginPath(); g.arc(r() * W, r() * H, 0.6 + r() * 1.4, 0, TAU); g.fill(); } });
+  ctx.save(); ctx.globalAlpha = 0.75 + 0.25 * Math.sin(now / 900); ctx.drawImage(sp.c, 0, 0, W, H); ctx.restore();
 }
 function saRender(now) {
-  tgBegin('sand', now); saLayout(false); if (sa.dirty) saShade(); const L = sa.L, B = L.box;
-  resetView(); ctx.save(); ctx.shadowColor = 'rgba(70,35,10,0.4)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 10; ctx.fillStyle = '#3aa7e0'; ctx.beginPath(); ctx.roundRect(B.x, B.y, B.w, B.h, B.rim * 1.5); ctx.fill(); ctx.restore(); // the tray
-  resetView(); const rg = ctx.createLinearGradient(0, B.y, 0, B.y + B.h); rg.addColorStop(0, '#7fd0f7'); rg.addColorStop(0.5, '#43ade4'); rg.addColorStop(1, '#2a8fc7'); ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(B.x, B.y, B.w, B.h, B.rim * 1.5); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(B.x + 2, B.y + 2, B.w - 4, B.h - 4, B.rim * 1.4); ctx.stroke();
-  ctx.save(); ctx.beginPath(); ctx.roundRect(B.ix, B.iy, B.iw, B.ih, B.rim * 0.7); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(sa.cv, B.ix, B.iy, B.iw, B.ih);
-  const G = saGrain(); if (!G.pat) { G.pat = ctx.createPattern(G.cv, 'repeat'); try { G.pat.setTransform(new DOMMatrix().scale(1 / DPR)); } catch {} }
-  ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = 0.26; ctx.fillStyle = G.pat; ctx.fillRect(B.ix, B.iy, B.iw, B.ih); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  tgBegin('sand', now); saLayout(false); if (sa.dirty) saShade(); saGlowFrame(Math.min(80, sa.dt || 16)); const L = sa.L, B = L.box, night = sa.night;
+  if (night) { resetView(); ctx.fillStyle = 'rgba(10,8,32,0.86)'; ctx.fillRect(-20, -20, W + 40, H + 40); saStars(now); }
+  resetView(); ctx.save(); ctx.shadowColor = night ? 'rgba(120,90,255,0.45)' : 'rgba(70,35,10,0.4)'; ctx.shadowBlur = night ? 28 : 22; ctx.shadowOffsetY = night ? 0 : 10; ctx.fillStyle = night ? '#2a2363' : '#3aa7e0'; ctx.beginPath(); ctx.roundRect(B.x, B.y, B.w, B.h, B.rim * 1.5); ctx.fill(); ctx.restore(); // the tray
+  resetView(); const rg = ctx.createLinearGradient(0, B.y, 0, B.y + B.h); if (night) { rg.addColorStop(0, '#4a3fa6'); rg.addColorStop(1, '#221c55'); } else { rg.addColorStop(0, '#7fd0f7'); rg.addColorStop(0.5, '#43ade4'); rg.addColorStop(1, '#2a8fc7'); } ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(B.x, B.y, B.w, B.h, B.rim * 1.5); ctx.fill();
+  ctx.strokeStyle = night ? 'rgba(190,170,255,0.6)' : 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(B.x + 2, B.y + 2, B.w - 4, B.h - 4, B.rim * 1.4); ctx.stroke();
+  ctx.save(); ctx.beginPath(); ctx.roundRect(B.ix, B.iy, B.iw, B.ih, B.rim * 0.7); ctx.clip(); ctx.drawImage(saTray(), B.ix, B.iy, B.iw, B.ih);
   const ig = ctx.createLinearGradient(B.ix, B.iy, B.ix, B.iy + 10); ig.addColorStop(0, 'rgba(0,30,60,0.25)'); ig.addColorStop(1, 'rgba(0,30,60,0)'); ctx.fillStyle = ig; ctx.fillRect(B.ix, B.iy, B.iw, 10); // (the inner lip)
-  for (const g of sa.grains) { ctx.fillStyle = 'rgb(' + g.col.join(',') + ')'; ctx.fillRect(g.x - 1.2, g.y - 1.2, 2.4, 2.4); }
+  if (sa.sweep) { const y = B.iy + (sa.sweep.row / sa.GH) * B.ih; ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(B.ix, y + 6, B.iw, 10); ctx.fillStyle = night ? '#8f7bff' : '#ff8a1f'; ctx.strokeStyle = PET_INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(B.ix - 4, y - 8, B.iw + 8, 16, 8); ctx.fill(); ctx.stroke(); } // (the smoothing bar)
   ctx.restore();
-  ctx.strokeStyle = 'rgba(0,40,80,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(B.ix, B.iy, B.iw, B.ih, B.rim * 0.7); ctx.stroke();
-  const M = sa.mold; if (M) { const e = now - M.t0; let lift = 0, sc = 1, a = 1, sh = 4; // down (0-200 ms), pressed (200-330), up and away (330-700)
-    if (e < 200) { const q = ease(e / 200); lift = (1 - q) * 46; sc = 1.18 - 0.18 * q; a = 0.4 + 0.6 * q; sh = 4 + (1 - q) * 22; } else if (e < 330) { sc = 0.97; } else { const q = ease((e - 330) / 370); lift = q * 70; sc = 1 + 0.12 * q; a = 1 - q; sh = 4 + q * 26; }
-    resetView(); saMoldDraw(ctx, M.shape, M.x, M.y - lift, M.R * sc, { shadow: sh, a }); }
-  saHeld(now);
-  for (const b of [...L.tools, ...L.cols]) { // the buttons: big round stickers; the one in use lifts with a ring
-    const on = b.k === 'tool' ? sa.tool === b.id : sa.tool === 'pour' && sa.col === b.id, tq = sa.btnTap && sa.btnTap.b === b.k + ':' + b.id ? (now - sa.btnTap.t) / 300 : 1, bump = tq < 1 ? Math.sin(tq * Math.PI) * 0.12 : 0;
-    const y = b.y - (on ? 4 : 0), r = b.r * (1 + bump); resetView(); drawShadow(b.x, b.y + b.r * 0.85, b.r * 1.7, b.r * 0.32, 0.22); resetView();
-    ctx.beginPath(); ctx.arc(b.x, y, r, 0, TAU);
-    if (b.k === 'col') { const C = SA.cols[b.id], gr = ctx.createRadialGradient(b.x - r * 0.35, y - r * 0.4, r * 0.1, b.x, y, r); gr.addColorStop(0, 'rgb(' + C.map((v) => Math.min(255, v + 40)).join(',') + ')'); gr.addColorStop(1, 'rgb(' + C.map((v) => v * 0.78).join(',') + ')'); ctx.fillStyle = gr; ctx.fill(); ctx.save(); ctx.clip(); ctx.globalCompositeOperation = 'overlay'; ctx.globalAlpha = 0.5; ctx.fillStyle = G.pat; ctx.fillRect(b.x - r, y - r, 2 * r, 2 * r); ctx.restore(); }
-    else { ctx.fillStyle = on ? '#fff6d8' : '#ffffff'; ctx.fill(); }
-    ctx.lineWidth = on ? 5 : 3; ctx.strokeStyle = on ? '#ff8a1f' : PET_INK; ctx.beginPath(); ctx.arc(b.x, y, r, 0, TAU); ctx.stroke();
-    if (b.k === 'tool') saToolDraw(ctx, b.id, b.x, y, r * 0.72, now);
-  }
+  ctx.strokeStyle = night ? 'rgba(160,140,255,0.4)' : 'rgba(0,40,80,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(B.ix, B.iy, B.iw, B.ih, B.rim * 0.7); ctx.stroke();
+  for (const b of L.btns) saBtnDraw(b, now);
   if (pause.on || menu.open || mode === 'none') saSndTick();
 }
 function saDemo() { const B = sa.L && sa.L.box; if (!B) return null; const y = B.iy + B.ih * 0.5, d = B.iw * 0.28; return { a: { x: B.ix + B.iw / 2 - d, y }, b: { x: B.ix + B.iw / 2 + d, y } }; }
 const SA_GAME = { reset: saReset, tick: saTick, render: saRender, down: saDown, move: saMove, up: saUp, demo: saDemo, slot: { obj: sa, key: 'st' } };
-window.__grasp.sand = { SA, sa, poly: SA_POLY, shade: () => saShade(), layout: () => (saLayout(true), sa.L),
-  at: (x, y) => sa.h[saIdx(x, y)], colAt: (x, y) => sa.c[saIdx(x, y)], sum() { let s = 0; for (let k = 0; k < sa.h.length; k++) s += sa.h[k]; return s; },
+window.__grasp.sand = { SA, sa, shade: () => saShade(), layout: () => (saLayout(true), sa.L), night: (on) => (saNight(on), sa.night),
+  at: (x, y) => sa.h[saIdx(x, y)], glowAt: (x, y) => sa.glow[saIdx(x, y)], colAt: (x, y) => { const u = saIdx(x, y) * 3; return [sa.hue[u], sa.hue[u + 1], sa.hue[u + 2]]; }, sum() { let s = 0; for (let k = 0; k < sa.h.length; k++) s += sa.h[k]; return s; },
   get snd() { return { on: !!sa.snd, lv: sa.sndLv }; } };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
@@ -20356,7 +20346,7 @@ const MB_ICONS = {
   peekaboo: [['e', 30, 40, 8, 15, '#8a5a2a'], ['e', 70, 40, 8, 15, '#8a5a2a'], ['c', 50, 46, 22, '#d9a066'], ['e', 50, 55, 10, 7, '#fff1dd'], ['e', 50, 51, 4, 3, '!#2a1f3d'], ['c', 42, 42, 3.5, '!#1e2a3a'], ['c', 58, 42, 3.5, '!#1e2a3a'], ['c', 24, 78, 20, '#4caf50'], ['c', 76, 78, 20, '#4caf50'], ['c', 50, 74, 22, '#5cc05f'], ['c', 36, 72, 3, '!#ff7eb6'], ['c', 62, 80, 3, '!#ffd23f']],
   feed: [['e', 34, 26, 7, 18, '#ffffff'], ['e', 52, 24, 7, 18, '#ffffff'], ['e', 34, 28, 3, 11, '!#ffb3c6'], ['e', 52, 26, 3, 11, '!#ffb3c6'], ['c', 43, 58, 24, '#ffffff'], ['c', 35, 54, 3.5, '!#1e2a3a'], ['c', 51, 54, 3.5, '!#1e2a3a'], ['e', 43, 68, 5, 6, '!#c2185b'], ['p', 'M68 40 L90 52 L64 88 Z', '#ff8a1f'], ['l', 'M80 44 L86 28', '!#3fae4f', 4], ['l', 'M82 46 L96 40', '!#3fae4f', 4]],
   puzzle: [['p', 'M14 30 H40 A10 10 0 1 1 60 30 H86 V52 A10 10 0 1 0 86 72 V88 H14 Z', '#ff7eb6'], ['star', 46, 62, 13, '#ffd23f']],
-  sand: [['p', 'M8 80 Q14 50 34 46 Q48 30 64 44 Q88 46 92 80 Z', '#e8c48f'], ['e', 50, 82, 44, 9, '#d9ad72'], ['star', 46, 54, 13, '#ffb21f'], ['c', 72, 62, 6, '!#c9995e'], ['l', 'M70 30 L84 12', '#2bb673', 6]],
+  sand: [['r', 8, 22, 84, 64, 14, '#3aa7e0'], ['r', 15, 29, 70, 50, 9, '#ecc892'], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#b98a4e', 6], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#ff6fd8', 2.5], ['c', 76, 18, 9, '#5b4bd6'], ['c', 79, 15, 6, '!#ecc892']],
   popit: [['r', 10, 10, 80, 80, 22, '#b07cff'], ['c', 30, 30, 8, '#ff4f64'], ['c', 50, 30, 8, '#ff4f64'], ['c', 70, 30, 8, '#ff4f64'], ['c', 30, 50, 8, '#ffd23f'], ['c', 50, 50, 8, '#ffd23f'], ['c', 70, 50, 8, '#ffd23f'], ['c', 30, 70, 8, '#5cd16e'], ['c', 50, 70, 8, '#5cd16e'], ['c', 70, 70, 8, '#5cd16e']],
   little: [['r', 6, 58, 30, 30, 6, '#3ec5ff'], ['star', 21, 73, 8, '!#ffffff'], ['e', 62, 68, 28, 18, '#ffd23f'], ['c', 72, 42, 14, '#ffd23f'], ['p', 'M84 40 L98 44 L84 49 Z', '#ff8a1f'], ['c', 75, 38, 2.8, '!#1e2a3a'], ['e', 56, 66, 12, 7, '#f5c000']],
   map: [['p', 'M8 24 L34 14 L66 24 L92 14 V76 L66 86 L34 76 L8 86 Z', '#fff3d6'], ['l', 'M34 14 V76', '!#d9c49a', 2], ['l', 'M66 24 V86', '!#d9c49a', 2], ['l', 'M18 70 Q34 50 50 58 T78 34', '!#ff4f64', 3], ['star', 78, 32, 8, '#ffd23f']],

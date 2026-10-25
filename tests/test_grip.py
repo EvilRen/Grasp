@@ -43,12 +43,13 @@ async def sand(b, he):
     if sx < band: check(tag + ': a finger sliding in from the edge is a finger: it digs all the way (%.1f px deep in the middle)' % (base - await at(cx, cy + 230)), await at(cx, cy + 230) < base - 4 and await page.evaluate(f"{GR}.grip.slides") >= 1)
     else: check(tag + ': (the tray starts outside the edge band here)', True)
     # a quick tap in the band still taps: the colour dot's lower edge, near the bottom
-    d = await page.evaluate(f"(() => {{ const b = {S}.sa.L.cols[1]; return [b.x, Math.min(innerHeight - 3, b.y + b.r - 4)]; }})()")
+    d = await page.evaluate(f"(() => {{ const b = {S}.sa.L.btns.find(q => q.id === 'night'); return [b.x, Math.min(innerHeight - 3, b.y + b.r - 4)]; }})()")
     inband = d[1] > 844 - band
     await tap(page, d[0], d[1], hold=60, pid=5); await page.wait_for_timeout(300)
-    check(tag + ': a quick tap in the edge band still taps (a colour dot\'s lower rim: pink picked)' + ('' if inband else ' (not in the band here)'), await page.evaluate(f"{S}.sa.tool") == 'pour' and await page.evaluate(f"{S}.sa.col") == 1 and (not inband or await page.evaluate(f"{GR}.grip.taps") >= 1))
+    check(tag + ': a quick tap in the edge band still taps (the moon button\'s lower rim: glow on)' + ('' if inband else ' (not in the band here)'), await page.evaluate(f"{S}.sa.night") and (not inband or await page.evaluate(f"{GR}.grip.taps") >= 1))
+    await page.evaluate(f"{S}.night(false)")
     # a palm anywhere: held back
-    await page.evaluate(f"{S}.sa.tool = 'finger'"); h0 = await at(cx, cy + 300)
+    h0 = await at(cx, cy + 300)
     await down(page, 6, cx, cy + 300, w=110); await page.wait_for_timeout(100); await move(page, 6, cx + 40, cy + 300); await up(page, 6, cx + 40, cy + 300); await page.wait_for_timeout(150)
     check(tag + ': a palm-sized contact in the middle is held back (no dent)', abs(await at(cx, cy + 300) - h0) < 0.5)
     await page.screenshot(path=OUT + 'grip_sand_%s.png' % ('he' if he else 'en'))
