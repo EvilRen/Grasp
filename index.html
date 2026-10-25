@@ -1163,11 +1163,13 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 /* the top bar: the Settings gear + the sound (start), Bubu (centre), the coins (end) */
 .mbTop{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:2cqw; padding:3.4cqw 4.5cqw 1cqw; }
 .mbTopS{ display:flex; gap:2.4cqw; justify-self:start; }
+.mbTopE{ display:flex; gap:2.4cqw; justify-self:end; align-items:center; min-width:0; } /* (the full screen button + the coins) */
 .mbChip{ position:relative; background:#fff; color:var(--mbInk); border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 max(3px,1cqw) 0 var(--mbInk); }
 .mbRnd{ width:max(44px,12cqw); height:max(44px,12cqw); border-radius:50%; display:grid; place-items:center; padding:0; }
 .mbRnd .ic svg{ width:max(26px,7.2cqw); height:max(26px,7.2cqw); }
 #startSound .off{ display:none; } #startSound[aria-pressed="false"] .on{ display:none; } #startSound[aria-pressed="false"] .off{ display:block; }
 #startSound[aria-pressed="false"]{ background:#ece8f2; }
+#fullBtn[hidden]{ display:none; } #fullBtn .off{ display:none; } #fullBtn[aria-pressed="true"] .on{ display:none; } #fullBtn[aria-pressed="true"] .off{ display:block; } /* (the full screen button: on the start screen, one tap in, one tap out) */
 #start.mb #metaPill{ position:relative; top:auto; left:auto; right:auto; justify-self:end; margin:0; max-width:100%; min-width:0; min-height:44px; display:inline-flex; align-items:center; gap:1.2cqw; padding:.6cqw 3cqw .6cqw 1cqw; border-radius:99px;
   background:#fff; color:var(--mbInk); font-size:max(16px,4.8cqw); font-weight:700; line-height:1; overflow:visible; }
 #start.mb #metaPill .ic svg{ width:max(26px,7cqw); height:max(26px,7cqw); }
@@ -1365,7 +1367,8 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button class="mbChip mbRnd" id="startSound" type="button" aria-pressed="true" aria-label="Sound on"><span class="ic on" data-ic="sndOn"></span><span class="ic off" data-ic="sndOff"></span></button>
       </div>
       <button class="mbBubu" id="bubuBtn" type="button" data-k="pet" aria-label="Bubu"><span class="bb"><canvas id="bubuCv" aria-hidden="true"></canvas></span><span class="say" id="bubuSay" aria-hidden="true"></span></button>
-      <button class="metaPill mbChip" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><span class="ic" data-ic="coin"></span><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i><span class="nx" id="nextUnlock" hidden></span></button>
+      <div class="mbTopE"><button class="mbChip mbRnd" id="fullBtn" type="button" aria-pressed="false" aria-label="Full screen" hidden><span class="ic on" data-ic="fsOn"></span><span class="ic off" data-ic="fsOff"></span></button>
+      <button class="metaPill mbChip" id="metaPill" type="button" data-i18n-aria="collection" aria-label="Collection"><span class="ic" data-ic="coin"></span><b class="coins">0</b><span class="lvl">Lv 1</span><i class="xp"><i></i></i><span class="nx" id="nextUnlock" hidden></span></button></div>
     </header>
     <div class="mbAge" role="group" data-i18n-aria="mbAgeAria" aria-label="Who is playing?">
       <button class="mbAgeB" id="bigBtn" type="button" data-k="big" aria-pressed="true"><span class="ic" data-ic="strike"></span><span data-i18n="mbBig">Big kids</span></button>
@@ -2309,7 +2312,7 @@ Object.assign(I18N.en, { // phase 1: the first 60 seconds (the bumper, the instr
   theEnd: 'The End 🎉', finaleLine: 'All 64 stages done. You are a Strike legend!', finaleWave: 'Thanks for playing!',
   camRest: 'Camera is resting — play with your finger 👆', ex_trk: "The hand tracker didn't start. Try again later.", ex_other: "The camera didn't start. Check that no other app is using it, then try again.", chkFail: 'Not working right now',
   awayTitle: 'While you were away', awaySub: "Last week's event kept these for you:", awayCoins: '+{n} coins', awaySnacks: '+{n} snacks', awaySticker: 'a sticker', awayHat: 'a hat for your pet', awayBall: 'a new ball',
-  soundOnAria: 'Sound on', soundOffAria: 'Sound off',
+  soundOnAria: 'Sound on', soundOffAria: 'Sound off', fullOnAria: 'Full screen', fullOffAria: 'Exit full screen',
 });
 Object.assign(I18N.he, {
   starsPerfectB: 'מושלם — בלי אף פספוס!', starsRuleB: '★★★ = בלי פספוסים', starsMiss1: 'פספסתם פעם אחת — בלי פספוסים מקבלים ★★★', starsMissN: 'פספסתם {n} פעמים — בלי פספוסים מקבלים ★★★', skip4: 'דלגו לשלב 4 ⏭',
@@ -2317,7 +2320,7 @@ Object.assign(I18N.he, {
   theEnd: 'הסוף 🎉', finaleLine: 'כל 64 השלבים מאחוריכם. אתם אלופי הסטרייק!', finaleWave: 'תודה ששיחקתם!',
   camRest: 'המצלמה נחה — משחקים עם האצבע 👆', ex_trk: 'זיהוי היד לא הופעל. נסו שוב מאוחר יותר.', ex_other: 'המצלמה לא נדלקה. בדקו שאף אפליקציה אחרת לא משתמשת בה, ונסו שוב.', chkFail: 'לא עובד כרגע',
   awayTitle: 'בזמן שלא הייתם', awaySub: 'האירוע של השבוע שעבר שמר לכם:', awayCoins: '‎+{n} מטבעות', awaySnacks: '‎+{n} חטיפים', awaySticker: 'מדבקה', awayHat: 'כובע לחיה', awayBall: 'כדור חדש',
-  soundOnAria: 'צלילים פועלים', soundOffAria: 'צלילים כבויים',
+  soundOnAria: 'צלילים פועלים', soundOffAria: 'צלילים כבויים', fullOnAria: 'מסך מלא', fullOffAria: 'יציאה ממסך מלא',
 });
 Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekaboo, Feed the animal, Giant puzzle): names and spoken lines
   modeAnimals: 'Animals', gm_animals: 'animals', descAnimals: 'A farm of big animals: tap one to hear it and its name. Then a gentle game: "Where is the cow?"',
@@ -15489,7 +15492,7 @@ function onLangChange() {
   renderBanner();
   if (hintEl.style.opacity === '1') hintEl.querySelector('.tx').textContent = hintText();
   if (!hudEl.hidden) updateHud();
-  syncMuteBtn(); syncMeta(); syncGrippyBtn();
+  syncMuteBtn(); syncFullBtn(); syncMeta(); syncGrippyBtn();
   if (advMapOpen()) { const sc = $('advScroll'), y = sc.scrollTop; renderAdvMap(); sc.scrollTop = y; } // (the map: its names and its mirrored path)
   if (smashMapOpen()) { const sc = $('smBody'), y = sc.scrollTop; renderSmashMap(); sc.scrollTop = y; }
 }
@@ -20037,6 +20040,8 @@ const MB_ICONS = {
   events: [['r', 16, 46, 68, 42, 6, '#3ec5ff'], ['r', 12, 34, 76, 16, 5, '#2f8fe0'], ['r', 45, 34, 10, 54, 0, '#ffd23f'], ['e', 39, 28, 11, 7, '#ffd23f'], ['e', 61, 28, 11, 7, '#ffd23f'], ['c', 50, 30, 4, '#f5b400']],
   gear: [['p', 'M40.1 18.5 L41.6 6.8 L58.4 6.8 L59.9 18.5 L65.3 20.7 L74.6 13.5 L86.5 25.4 L79.3 34.7 L81.5 40.1 L93.2 41.6 L93.2 58.4 L81.5 59.9 L79.3 65.3 L86.5 74.6 L74.6 86.5 L65.3 79.3 L59.9 81.5 L58.4 93.2 L41.6 93.2 L40.1 81.5 L34.7 79.3 L25.4 86.5 L13.5 74.6 L20.7 65.3 L18.5 59.9 L6.8 58.4 L6.8 41.6 L18.5 40.1 L20.7 34.7 L13.5 25.4 L25.4 13.5 L34.7 20.7 Z', '#ffd23f'], ['c', 50, 50, 14, '#fff6e6']],
   sndOn: [['p', 'M12 38 H28 L50 18 V82 L28 62 H12 Z', '#ffd23f'], ['l', 'M62 36 Q72 50 62 64', '#3ec5ff', 6], ['l', 'M74 24 Q92 50 74 76', '#3ec5ff', 6]],
+  fsOn: [['l', 'M14 36 V14 H36', '#3ec5ff', 8], ['l', 'M64 14 H86 V36', '#3ec5ff', 8], ['l', 'M86 64 V86 H64', '#3ec5ff', 8], ['l', 'M36 86 H14 V64', '#3ec5ff', 8]],
+  fsOff: [['l', 'M14 36 H36 V14', '#ff8a1f', 8], ['l', 'M64 14 V36 H86', '#ff8a1f', 8], ['l', 'M86 64 H64 V86', '#ff8a1f', 8], ['l', 'M36 86 V64 H14', '#ff8a1f', 8]],
   sndOff: [['p', 'M12 38 H28 L50 18 V82 L28 62 H12 Z', '#c9c3d4'], ['l', 'M62 38 L86 62', '#ff4f64', 6], ['l', 'M86 38 L62 62', '#ff4f64', 6]],
 };
 function mbIco(name) { // one sticker drawing as an inline SVG: flat fills, the ink outline (3 units), round joins
@@ -20192,6 +20197,18 @@ $('lilPopit').addEventListener('click', () => mbLittleGo($('lilPopit'), () => mb
 $('heroPlay').addEventListener('click', h2HeroPlay);
 $('moreSound').addEventListener('click', () => { setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); });
 $('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); }); // (phase 1: the start screen's top bar: sound in one tap)
+/* --- full screen (the owner: Brave hides its own): a button on the start screen; the whole app stays full screen across games and home until the button again (or the phone's Back) --- */
+function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+function fsCan() { const d = document.documentElement; return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(d.requestFullscreen || d.webkitRequestFullscreen); } // (no iPhone Safari: it has no full screen for pages; the button stays hidden there)
+function syncFullBtn() { const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
+async function toggleFull() {
+  const d = document.documentElement;
+  try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); else await (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); } catch (e) { console.warn('[grasp] full screen', e); }
+  syncFullBtn();
+}
+$('fullBtn').addEventListener('click', () => { audioInit(); sfx('click'); toggleFull(); });
+document.addEventListener('fullscreenchange', syncFullBtn); document.addEventListener('webkitfullscreenchange', syncFullBtn);
+syncFullBtn();
 $('moreHud').addEventListener('click', () => { setHudPref(!hudPref()); h2SyncMore(); sfx('click'); });
 $('moreVoice').addEventListener('click', (e) => { const b = e.target.closest('.segBtn'); if (!b) return; setVoice(b.dataset.v); h2SyncMore(); sfx('click'); }); // (Voice: Names · All · Off; profile.grippy follows)
 $('calmBtn').addEventListener('click', () => mbLittleGo($('calmBtn'), h2Calm)); // (menu B: its name out loud, then Calm bubbles)

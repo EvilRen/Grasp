@@ -266,6 +266,22 @@ async def main():
         check('camera: ... and over a Little ones sticker it opens that game', 'shapes' in await page.evaluate("__grasp.panelfix.homeCam.clicks"))
         check('camera dwell: no page errors', not errs, errs); await ctx.close()
 
+        # ===== full screen (the owner: Brave hides its own): a button on the start screen, one tap in, one tap out; it stays across a game and Home =====
+        for he in (False, True):
+            tg = 'HE' if he else 'EN'
+            ctx, page, errs = await fresh(b, he, w=320, h=700); await page.wait_for_timeout(700)
+            r = await page.evaluate("(() => { const a = $('fullBtn').getBoundingClientRect(), e = $('bubuBtn').getBoundingClientRect(); return { hid: $('fullBtn').hidden, w: a.width, gap: Math.max(e.left - a.right, a.left - e.right), lbl: $('fullBtn').getAttribute('aria-label') }; })()")
+            check(tg + ': the full screen button shows on the start screen (44 px, clear of Bubu at 320 px), "' + r['lbl'] + '"', not r['hid'] and r['w'] >= 44 and r['gap'] >= 2 and r['lbl'] == ('מסך מלא' if he else 'Full screen'), r)
+            await page.tap('#fullBtn'); await page.wait_for_timeout(500)
+            r = await page.evaluate("({ fs: !!document.fullscreenElement, p: $('fullBtn').getAttribute('aria-pressed'), lbl: $('fullBtn').getAttribute('aria-label') })")
+            check(tg + ': one tap: full screen, the button now says "' + r['lbl'] + '"', r['fs'] and r['p'] == 'true' and r['lbl'] == ('יציאה ממסך מלא' if he else 'Exit full screen'), r)
+            await page.evaluate("routeOpen('popit')"); await page.wait_for_function("mode !== 'none'", timeout=8000); a1 = await page.evaluate("!!document.fullscreenElement")
+            await page.evaluate("goHome()"); await page.wait_for_timeout(500); a2 = await page.evaluate("!!document.fullscreenElement")
+            check(tg + ': ...it stays full screen in a game and back Home', a1 and a2, [a1, a2])
+            await page.tap('#fullBtn'); await page.wait_for_timeout(500)
+            check(tg + ': another tap: out of full screen', not await page.evaluate("!!document.fullscreenElement") and await page.evaluate("$('fullBtn').getAttribute('aria-pressed')") == 'false')
+            check(tg + ' full screen: no page errors', not errs, errs); await ctx.close()
+
         await b.close()
     print('FAILURES:', check.fails)
 asyncio.run(main()); srv.terminate()
