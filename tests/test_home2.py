@@ -11,6 +11,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Menu B (the Sticker Book, Oct 2026) moved things: the hero is a "Strike" sticker with a "Stage N" ribbon, Little ones is a room (the age switch),
 # the tab bar is a dock (Shop, Pet, Events; no Play tab: nothing lit on the start screen), the More sheet sits behind the parents' gate (the lock;
 # here opened through its hook), the Arcade / Little ones tiles are stickers. tests/test_menub.py covers the new screen itself.
+# The pet is gone (the owner, Oct 2026: PET_OFF): no Bubu, no Pet tab, no egg, no hatch / name call; the dock is Shop, Events.
 A = "__grasp.adventure"; S = "__grasp.strike"; H = "__grasp.home2"; P = "__grasp.profile"; G = "__grasp.gifts"
 OUT = 'tests/out/'
 TOASTS = "__grasp.toasts.map(t => t.text)"
@@ -70,8 +71,8 @@ async def main():
                 L = await page.evaluate(SCREEN)
                 screen_ok(tag, L)
                 ids = [x['id'] for x in L['btns']]
-                check(tag + ': the hierarchy: the top bar (the gear, sound, Bubu, full screen, the coins), the age switch, the hero (Play + Map + Frenzy / Daily), Smash, Slice, Pop It, Spot it, the 4 camera games, the dock (Shop, Events)',
-                      all(k in ids for k in ('settingsBtn', 'startSound', 'bubuBtn', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')) and len(ids) == 21, ids)  # (navigation v2: no Arcade, no Camera games sheet)  # (phase 1: the sound button; menu B: the gear (was the lock) instead of ⋯)
+                check(tag + ': the hierarchy: the top bar (the gear, sound, full screen, the coins; no Bubu), the age switch, the hero (Play + Map + Frenzy / Daily), Smash, Slice, Pop It, Spot it, the 4 camera games, the dock (Shop, Events)',
+                      'bubuBtn' not in ids and all(k in ids for k in ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')) and len(ids) == 20, ids)  # (navigation v2: no Arcade, no Camera games sheet)  # (phase 1: the sound button; menu B: the gear (was the lock) instead of ⋯)
                 hero = next(x for x in L['btns'] if x['id'] == 'heroPlay'); others = [x for x in L['btns'] if x['id'] in ('smash', 'slice', 'bigPopit', 'drums', 'stars')]
                 check(tag + ': the hero is clearly the main thing: the widest button, above the grid', hero['w'] > 1.6 * max(o['w'] for o in others) and hero['b'] <= min(o['t'] for o in others), [hero, others])
                 check(tag + ': a new player: the hero says "' + ('סטרייק' if he else 'Strike') + '" with "' + ('שלב 1' if he else 'Stage 1') + '" (aria: "' + L['aria'] + '")', L['hero'] == ('סטרייק' if he else 'Strike') and L['sub'] == ('שלב 1' if he else 'Stage 1') and L['aria'].startswith('לשחק' if he else 'Play'), L)
@@ -144,14 +145,15 @@ async def main():
             await page.wait_for_function(f"window.__grasp && gameMode === '{m}' && mode === 'mouse' && $('start').hidden", timeout=10000)
             check('the direct link ' + path + ' still starts ' + m, not errs, errs); await ctx.close()
 
-        # ===== 4. the tab bar: Play / Shop / Pet / Events; the sheets above it; switching; Play / Escape close =====
+        # ===== 4. the tab bar: Play / Shop / Events (the pet is gone); the sheets above it; switching; Play / Escape close =====
         ctx, page, errs = await fresh(b, init=prof(pet={'hatched': True, 'food': 3, 'pantry': 2, 'born': '2026-10-01', 'last': '2026-10-01'}))
         TB = """(() => { const bar = $('tabBar').getBoundingClientRect(), open = [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => ({ id: o.id, tabbed: o.classList.contains('tabbed'), b: o.querySelector('.sheet').getBoundingClientRect().bottom }));
           return { on: [...document.querySelectorAll('#tabBar .tab.on')].map(b => b.dataset.tab), cur: [...document.querySelectorAll('#tabBar .tab[aria-current=page]')].map(b => b.dataset.tab), open, barTop: bar.top, tab: __grasp.home2.h2.tab }; })()"""
-        for tab, ov in (('collectionBtn', 'collection'), ('petTab', 'petRoom'), ('todayBtn', 'today')):
+        check('no Pet tab, even for a hatched pet (the pet is gone): the dock is Shop, Events', await page.evaluate("$('petTab').hidden && [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab).join() === 'shop,today'"))
+        for tab, ov in (('collectionBtn', 'collection'), ('todayBtn', 'today')):
             await page.tap('#' + tab); await page.wait_for_timeout(450)
             t = await page.evaluate(TB)
-            want = {'collectionBtn': 'shop', 'petTab': 'pet', 'todayBtn': 'today'}[tab]
+            want = {'collectionBtn': 'shop', 'todayBtn': 'today'}[tab]
             check('tab ' + want + ': its sheet opens above the bar (the bar stays), the tab lit (aria-current), the other sheets closed', t['on'] == [want] and t['cur'] == [want] and [o['id'] for o in t['open']] == [ov] and t['open'][0]['tabbed'] and t['open'][0]['b'] <= t['barTop'] + 1, t)
             await page.screenshot(path=OUT + 'home2_after_tab_%s.png' % want)
         await page.evaluate("__grasp.home2.tab('play')"); await page.wait_for_timeout(250)
@@ -197,7 +199,7 @@ async def main():
                 check('Escape closes the More sheet', await page.evaluate("$('moreSheet').hidden && $('settingsBtn').getAttribute('aria-expanded') === 'false'"))
             check('more: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 6. hidden until earned: the pet (the first round finished, not a failed stage), the album, the Road, the run powers, Endless =====
+        # ===== 6. hidden until earned: the album, the Road, the run powers, Endless; the pet never (it is gone: no egg, no Pet tab) =====
         ctx, page, errs = await fresh(b, init="localStorage.setItem('inputPref','mouse');")
         e0 = await page.evaluate("({ tab: !$('petTab').hidden, lv: getComputedStyle($('metaPill').querySelector('.lvl')).display, xp: getComputedStyle($('metaPill').querySelector('.xp')).display, egg: profile.pet.egg })")
         check('a new player: no Pet tab, no level / XP on the pill (the Road not earned), no egg', not e0['tab'] and e0['lv'] == 'none' and e0['xp'] == 'none' and not e0['egg'], e0)
@@ -209,13 +211,10 @@ async def main():
         await page.evaluate("__grasp.setGameMode('slice')"); await page.evaluate(START_MOUSE); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=5000)
         await page.evaluate("sliceLoseLife(performance.now()); sliceLoseLife(performance.now()); sliceLoseLife(performance.now())")
         await page.wait_for_function("__grasp.slice.over && __grasp.slice.ui.buttons", timeout=5000)
-        check('the first round finished (Slice): the egg is earned', await page.evaluate("profile.pet.egg === true && !profile.pet.hatched"))
+        check('the first round finished (Slice): still no egg (the pet is gone: no snacks either)', await page.evaluate("!profile.pet.egg && !profile.pet.hatched"))
         await page.evaluate("goHome()"); await page.wait_for_timeout(300)
-        pt = await page.evaluate("({ tab: !$('petTab').hidden, bang: !$('petTab').querySelector('.bang').hidden, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab), h: $('petTab').getBoundingClientRect().height })")
-        check('home: the Pet sticker appears in the dock with a "!" (Shop, Pet, Events)', pt['tab'] and pt['bang'] and pt['tabs'] == ['shop', 'pet', 'today'] and pt['h'] >= 44, pt)
-        await page.screenshot(path=OUT + 'home2_after_pet_tab.png')
-        await page.tap('#petTab'); await page.wait_for_timeout(400)
-        check('the room seen: the "!" goes away (and stays away after a reload)', await page.evaluate("$('petTab').querySelector('.bang').hidden && profile.pet.eggSeen === true"))
+        pt = await page.evaluate("({ tab: !$('petTab').hidden, tabs: [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => b.dataset.tab), room: petOpenRoom(true), roomHid: $('petRoom').hidden })")
+        check('home: no Pet sticker in the dock (Shop, Events); the pet room never opens', not pt['tab'] and pt['tabs'] == ['shop', 'today'] and pt['room'] is False and pt['roomHid'], pt)
         await page.evaluate("__grasp.addXp(200)"); await page.wait_for_timeout(100)
         check('the first level-up: the pill shows the level + XP bar; it opens the Road', await page.evaluate("getComputedStyle($('metaPill').querySelector('.lvl')).display !== 'none'"))
         await page.evaluate("__grasp.road.closeCard && __grasp.road.closeCard(); __grasp.home2.tab('play')"); await page.wait_for_timeout(500)
@@ -236,27 +235,16 @@ async def main():
         check('world 2: Next offers the run powers', True)
         check('run powers: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 7. one popup a session: on open the pet's hatch, else the name sheet; the gift calendar only after a round (phase 1); never two at once =====
+        # ===== 7. one popup a session: the gift calendar only after a round (phase 1); never two at once; the pet is gone: no hatch / name call =====
         OPEN = "[...document.querySelectorAll('.ov, #newCard')].filter(o => !o.hidden).map(o => o.id)"
         ctx, page, errs = await fresh(b, init="window.__graspPopups = true; window.__graspGiftAuto = true;" + prof(pet={'egg': True, 'pantry': 1}))
-        await page.wait_for_function(H + ".h2.popup", timeout=4000); await page.wait_for_timeout(600)
+        await page.wait_for_timeout(1500)
         o1 = await page.evaluate(OPEN)
-        check('session start, a gift due and an egg earned: nothing pops up (navigation v2): Bubu glows for the hatch; phase 1: the calendar never on open', o1 == [] and await page.evaluate(H + ".h2.popup") == 'hatch' and await page.evaluate("$('bubuBtn').dataset.call") == 'hatch' and await page.evaluate("__grasp.pet.state.stage") == 0, o1)
-        await page.screenshot(path=OUT + 'home2_after_popup_hatch.png')
-        await page.tap('#bubuBtn'); await page.wait_for_function("!$('petRoom').hidden", timeout=3000)
-        check('...a tap on the glowing Bubu: the room with the egg', await page.evaluate(OPEN) == ['petRoom'])
-        for i in range(5): await page.tap('#petRoomCv'); await page.wait_for_timeout(80)
-        await page.wait_for_function("__grasp.pet.state.nameOpen", timeout=4000)
-        await page.tap('#petNameSkip'); await page.wait_for_timeout(200)
-        await page.evaluate("__grasp.home2.tab('play')"); await page.wait_for_timeout(200)
-        await page.evaluate("h2.rounds = 1; goHome()"); await page.wait_for_timeout(500)
-        check('a round later, back home: no second popup in this session (the gift waits)', await page.evaluate(OPEN) == [] and not await page.evaluate(G + ".shown"))
-        await page.evaluate("profile.pet.asked = false; saveProfile()")
+        check('session start, a gift due and an egg stored: nothing pops up (navigation v2); the pet is gone: no hatch call (Bubu hidden); phase 1: the calendar never on open', o1 == [] and await page.evaluate(H + ".h2.popup") is None and await page.evaluate("$('bubuBtn').hidden && !$('bubuBtn').dataset.call"), o1)
+        await page.evaluate("profile.pet.hatched = true; profile.pet.asked = false; saveProfile()")
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.home2", timeout=8000); await page.wait_for_timeout(900)
         o4 = await page.evaluate(OPEN)
-        check('a hatched pet never named (the sheet missed): the session\'s one call is the name (Bubu glows; nothing pops up)', o4 == [] and await page.evaluate(H + ".h2.popup") == 'name' and await page.evaluate("$('bubuBtn').dataset.call") == 'name', o4)
-        await page.tap('#bubuBtn'); await page.wait_for_function("!$('petName').hidden", timeout=3000)
-        await page.tap('#petNameSkip'); await page.wait_for_timeout(200)
+        check('a hatched pet never named: no name call either (the pet is gone; Bubu hidden; nothing pops up)', o4 == [] and await page.evaluate(H + ".h2.popup") is None and await page.evaluate("$('bubuBtn').hidden && !$('bubuBtn').dataset.call && $('petName').hidden"), o4)
         await page.reload(); await page.wait_for_function("window.__grasp && __grasp.home2", timeout=8000); await page.wait_for_timeout(900)
         check('nothing due on open: no popup at all (the gift calendar waits for a round)', await page.evaluate(OPEN) == [] and await page.evaluate(H + ".h2.popup") is None)
         await page.evaluate("h2.rounds = 1; goHome()"); await page.wait_for_function(G + ".shown", timeout=4000); await page.wait_for_timeout(400)

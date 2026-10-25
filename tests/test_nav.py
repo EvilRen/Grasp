@@ -217,17 +217,17 @@ async def main():
         check('...Back from the game: the start screen', await page.evaluate("!__grasp.route.of(location.pathname)"))
         check('Back: no page errors', not errs, errs); await ctx.close()
 
-        # ===== 7. nothing pops up after Home: the waiting egg glows on Bubu; a tap opens it =====
+        # ===== 7. nothing pops up after Home; the pet is off (PET_OFF): an egg waiting opens nothing, glows nowhere; Bubu is hidden =====
         ctx, page, errs = await fresh(b, init="window.__graspPopups = true; window.__graspGiftAuto = true;" + prof(pet={'egg': True, 'pantry': 1}))
         await page.wait_for_timeout(500)
-        o = await page.evaluate("({ open: [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id), popup: __grasp.home2.h2.popup, call: $('bubuBtn').dataset.call })")
-        check('an egg waiting: no sheet opens by itself; Bubu glows instead', o['open'] == [] and o['popup'] == 'hatch' and o['call'] == 'hatch', o)
-        await page.tap('#bubuBtn'); await page.wait_for_function("!$('petRoom').hidden", timeout=3000)
-        check('...a tap on Bubu opens the egg\'s room', await page.evaluate("!$('bubuBtn').classList.contains('mbCall')"))
+        o = await page.evaluate("({ open: [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id), popup: __grasp.home2.h2.popup, call: $('bubuBtn').dataset.call || null, glow: [...document.querySelectorAll('.mbCall')].map(e => e.id), bubu: $('bubuBtn').hidden && !$('bubuBtn').offsetParent, petTab: $('petTab').hidden })")
+        check('an egg waiting: no sheet opens by itself, nothing glows; Bubu is hidden (no Pet tab)', o['open'] == [] and o['popup'] not in ('hatch', 'name') and o['call'] is None and o['glow'] == [] and o['bubu'] and o['petTab'], o)
+        r = await page.evaluate("({ ok: petOpenRoom(), room: $('petRoom').hidden, call: __grasp.nav.call('hatch'), glow: $('bubuBtn').classList.contains('mbCall') })")
+        check('...the pet room cannot open (petOpenRoom: false, #petRoom stays hidden); no call glows on Bubu', r == {'ok': False, 'room': True, 'call': None, 'glow': False}, r)
         await page.evaluate("__grasp.home2.tab('play')"); await page.wait_for_timeout(300)
         await page.evaluate("window.__graspGiftAuto = false; __grasp.home2.reset(); h2.rounds = 1; profile.pet.asked = false; profile.pet.hatched = true; saveProfile(); goHome()"); await page.wait_for_timeout(800)
-        o = await page.evaluate("({ open: [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id), call: $('bubuBtn').dataset.call, popup: __grasp.home2.h2.popup })")
-        check('back home with the pet\'s name not asked yet: no name sheet pops up; Bubu glows', o['open'] == [] and o['call'] == 'name', o)
+        o = await page.evaluate("({ open: [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id), call: $('bubuBtn').dataset.call || null, popup: __grasp.home2.h2.popup, bubu: $('bubuBtn').hidden, petTab: $('petTab').hidden })")
+        check('back home with the pet\'s name not asked yet: no name sheet pops up; nothing glows; Bubu still hidden', o['open'] == [] and o['call'] is None and o['popup'] != 'name' and o['bubu'] and o['petTab'], o)
         check('popups: no page errors', not errs, errs); await ctx.close()
 
         # ===== 8. Settings: the top bar's gear opens it with one tap (no parents' gate) =====

@@ -50,11 +50,11 @@ async def main():
         check('badges read on load', (await page.evaluate(BESTS))['slice'] == '★ 480')
         check('badges: no page errors', not errs, errs); await ctx.close()
 
-        # ---- menu B, phone + desktop, EN + HE: one screen (no scroll): the top bar (the gear, sound, Bubu, the coins), the age switch, the hero + Map, Smash · Slice, Arcade · Camera games, the dock; a tap plays ----
+        # ---- menu B, phone + desktop, EN + HE: one screen (no scroll): the top bar (the gear, sound, the coins; no Bubu), the age switch, the hero + Map, Smash · Slice, Arcade · Camera games, the dock; a tap plays ----
         LAY = """(() => { const r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; }, on = (q) => q.l >= 0 && q.t >= 0 && q.r <= innerWidth + 0.5 && q.b <= innerHeight + 0.5;
           const tiles = [...document.querySelectorAll('#start .mbGrid button')].filter(b => !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg, ...r(b), name: (b.querySelector('[data-i18n], b') || b).textContent.trim(), fs: Math.min(...[...b.querySelectorAll('b, span[data-i18n]')].filter(x => x.offsetParent).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
           const st = $('start'), tabs = [...document.querySelectorAll('#tabBar .tab')].filter(b => !b.hidden).map(b => ({ id: b.id, ...r(b) }));
-          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, tabs, allOn: tiles.every(on) && tabs.every(on), more: r($('settingsBtn')), pill: r($('metaPill')), h1: r($('bubuBtn')),
+          return { noScroll: document.documentElement.scrollHeight <= innerHeight && st.scrollHeight <= st.clientHeight + 1, tiles, tabs, allOn: tiles.every(on) && tabs.every(on), more: r($('settingsBtn')), pill: r($('metaPill')), bubu: { hid: $('bubuBtn').hidden, shown: !!$('bubuBtn').offsetParent },
             gone: ['metaRow', 'habitBar', 'flameBtn', 'giftBtn', 'strikeDiff', 'camBtn', 'eventBtn'].filter(id => { const e = document.getElementById(id) || document.querySelector('#start .' + id); return e && e.closest('#start') && e.offsetParent; }), link: !!document.querySelector('#start a.link') }; })()"""
         for mobile in (True, False):
             for he in (False, True):
@@ -64,7 +64,7 @@ async def main():
                 L = await page.evaluate(LAY)
                 check(tag + ': no scrolling at all; the hero + Map + Frenzy / Daily, Smash, Slice, Pop It, Spot it, the 4 camera games (navigation v2) and the dock on screen, >= 44 px, text >= 14 px', L['noScroll'] and L['allOn'] and len(L['tiles']) == 12 and all(t['h'] >= 44 and t['w'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and len(L['tabs']) == 2, L)  # (menu B: the dock: Shop, Events)
                 check(tag + ': gone from the start screen: the meta row, the flame / gift chips, the Easy / Normal toggle, Camera | Touch, the event banner, the Tremorti link', not L['gone'] and not L['link'], L['gone'])
-                check(tag + ': the top bar: the parents\' lock, Bubu and the coins pill (>= 44 px)', L['more']['w'] >= 44 and L['more']['h'] >= 44 and L['pill']['h'] >= 44 and L['h1']['h'] >= 44, L)
+                check(tag + ': the top bar: the parents\' lock and the coins pill (>= 44 px); Bubu is gone (hidden)', L['more']['w'] >= 44 and L['more']['h'] >= 44 and L['pill']['h'] >= 44 and L['bubu']['hid'] and not L['bubu']['shown'], L)
                 check(tag + ': smash badge: the stars of its stages', (await page.evaluate(BESTS))['smash'] == '★ 7')
                 check(tag + ': on a first visit Touch is the way to play (Camera | Touch now in the More sheet)', await page.evaluate("inputPref()") == 'mouse' and await page.evaluate("$('mouseBtn').getAttribute('aria-pressed')") == 'true')
                 await page.screenshot(path='tests/out/start2_' + ('phone_' if mobile else 'desktop_') + ('he' if he else 'en') + '.png')

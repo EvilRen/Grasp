@@ -67,9 +67,9 @@ async def main():
         # ---- the pixel ratio: capped at 2 (a dpr-3 phone draws at 2x, crisp, not 3x), 1x and 1.5x as they are; the dot grid drawn at the ratio ----
         for mobile, dsf, want in ((True, 3, 2), (False, 1, 1), (False, 1.5, 1.5)):
             ctx, page, errs = await fresh(b, mobile, dsf=dsf)
-            d = await page.evaluate(f"(() => {{ resize(); return {{ dpr: DPR, ss: SS, c: {G}.canvas(), grid: gridCanvas.width, pv: $('bubuCv').width, pvw: $('bubuCv').clientWidth }}; }})()")  # (menu B: no preview canvases; Bubu's sticker is drawn at the ratio)
+            d = await page.evaluate(f"(() => {{ resize(); return {{ dpr: DPR, ss: SS, c: {G}.canvas(), grid: gridCanvas.width }}; }})()")  # (menu B: no preview canvases; the pet is gone: no Bubu sticker)
             W_ = 360 if mobile else 1280
-            check(f'dpr {dsf}: the canvas draws at {want}x (capped at 2), sprites at the same scale, the dot grid and Bubu\'s sticker too', d['dpr'] == want and d['ss'] == want and d['c']['w'] == round(W_ * want) and d['c']['cw'] == W_ and d['grid'] == 32 * max(1, round(want)) and d['pvw'] > 20 and d['pv'] == round(d['pvw'] * want), d)
+            check(f'dpr {dsf}: the canvas draws at {want}x (capped at 2), sprites at the same scale, the dot grid too', d['dpr'] == want and d['ss'] == want and d['c']['w'] == round(W_ * want) and d['c']['cw'] == W_ and d['grid'] == 32 * max(1, round(want)), d)
             await ctx.close()
 
         # ---- the screen transition: a tile tap starts the game at once under an iris that opens from the tile and ends cleanly ----
