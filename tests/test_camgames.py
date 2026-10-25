@@ -3,7 +3,7 @@ exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # 360x740 and desktop, EN / HE) opens a picker; each game starts from it and from its own link (/drums, /bubbles, /paint, /stars); the camera prompt
 # when started by touch ("Play with touch" / "Turn on camera"); the corner pause menu; per game with the camera stub (window.__handFor, two hands
 # where it matters) and with touch / mouse: a drum strike plays the right pad and its sound (two hands, numHands 2), the backing beat, Follow the
-# light (the sequence, a wrong pad ends it, the card, no pet snack); bubbles pop (fingertips, taps), combos, golden ones, Calm (no timer, a treat),
+# light (the sequence, a wrong pad ends it, the card, a pet snack); bubbles pop (fingertips, taps), combos, golden ones, Calm (no timer, a treat),
 # the round's card; painting draws with a pinch, stops on an open hand, the palette by dwell / tap, the magic brushes, erase (fist shake / tap twice),
 # the PNG save (download / share); the basket follows the hand / finger, catches, bombs and clouds, the speed-up, the card. Screenshots:
 # tests/out/cam_*.png. State changes are polled (timing-independent).
@@ -75,7 +75,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required'])
 
-        # ---- the start screen: still one screen (phone + desktop, EN / HE, no pet corner (no Bubu), the flame hint); the tile; the picker ----
+        # ---- the start screen: still one screen (phone + desktop, EN / HE, with the pet corner and the flame hint); the tile; the picker ----
         for mobile in (True, False):
             for he in (False, True):
                 tag = ('phone ' if mobile else 'desktop ') + ('HE' if he else 'EN'); sfx = ('phone_' if mobile else 'desktop_') + ('he' if he else 'en')
@@ -84,7 +84,7 @@ async def main():
                 L = await page.evaluate(START)
                 inside = lambda q: q['l'] >= 0 and q['t'] >= 0 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5 and q['w'] > 0
                 chk(f'{tag}: the start screen has no scroll with the Camera games tile', L['noScroll'], L)
-                chk(f'{tag}: the hero, the tiles (Smash · Slice · Pop It · Spot it), the camera games\' row and the tab bar all on screen; no Bubu', len(L['tiles']) == 5 and L['bubu'] and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
+                chk(f'{tag}: the hero, the tiles (Smash · Slice · Pop It · Spot it), the camera games\' row and the tab bar all on screen; no Bubu on top', len(L['tiles']) == 5 and L['bubu'] and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
                 chk(f'{tag}: navigation v2: the camera games\' row under Smash · Slice · Pop It, above the dock, named, its camera drawing', L['cam']['t'] > L['lit']['b'] and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 1, L)
                 await page.screenshot(path=OUT + f'cam_start_{sfx}.png')
                 chk(f'{tag}: the row: four games, each its own sticker (>= 44 px), named, on screen (navigation v2: no picker sheet)', [c['cg'] for c in L['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c['lb'] and c['h'] >= 44 and c['w'] >= 44 and inside(c) for c in L['cards']), L['cards'])
@@ -142,7 +142,7 @@ async def main():
         await click_btn(page, 'beat'); await page.wait_for_function(f"!{CG}.drums.beat.on", timeout=3000)
         n1 = await page.evaluate(f"{CG}.drums.beat.n"); await page.wait_for_timeout(700)
         chk('drums: Beat off: it stops', await page.evaluate(f"{CG}.drums.beat.n") == n1)
-        # Follow the light: watch, copy, one longer; a wrong pad ends it (the card, the best, no snack: no pet)
+        # Follow the light: watch, copy, one longer; a wrong pad ends it (the card, the best, a snack)
         await page.evaluate("__grasp.pet.set({ pantry: 0 })")
         await click_btn(page, 'simon'); await page.wait_for_function(f"{CG}.simon.on && {CG}.simon.phase === 'show'", timeout=3000)
         chk('drums: Follow the light starts with a sequence of one, shown first', len(await page.evaluate(f"{CG}.simon.seq")) == 1)
@@ -159,7 +159,7 @@ async def main():
         await page.mouse.click(pads[wrong]['x'], pads[wrong]['y'])
         await page.wait_for_function(f"{CG}.drums.over && {CG}.drums.ui.buttons", timeout=4000); await page.wait_for_timeout(1300)
         card = await page.evaluate(f"(() => {{ const D = {CG}.drums; return {{ over: D.over, best: D.best, keys: Object.keys(D.ui.buttons), tag: D.ui.petTag && D.ui.petTag.n, stored: localStorage.getItem('drumsBest'), pantry: __grasp.pet.p.pantry }}; }})()")
-        chk('drums: a wrong pad ends it: the card (Play again / Home), the best (3); no pet snack, no pet tag, the pantry stays 0', card['over'] and card['best'] == 3 and card['stored'] == '3' and 'again' in card['keys'] and 'home' in card['keys'] and not card['tag'] and card['pantry'] == 0, card)
+        chk('drums: a wrong pad ends it: the card (Play again / Home), the best (3), a snack for the pet', card['over'] and card['best'] == 3 and card['stored'] == '3' and 'again' in card['keys'] and 'home' in card['keys'] and card['tag'] and card['pantry'] >= 1, card)
         await page.screenshot(path=OUT + 'cam_drums_card.png')
         a = await page.evaluate(f"{CG}.drums.ui.buttons.again"); await page.mouse.click(a['x'] + a['w'] / 2, a['y'] + a['h'] / 2)
         await page.wait_for_function(f"!{CG}.drums.over && {CG}.simon.on && {CG}.simon.seq.length === 1", timeout=3000)
@@ -242,16 +242,16 @@ async def main():
         f1 = await page.evaluate(f"JSON.stringify([Math.round({CG}.bubbles.left / 100), {CG}.bubbles.list.map(b => Math.round(b.y))])")
         chk('bubbles: the pause sheet freezes the clock and the bubbles', f0 == f1, [f0, f1])
         await page.tap('#resumeBtn'); await page.wait_for_function("!menu.open && !pause.on", timeout=3000)
-        # the round's end: stars, the best, the card, no snack
+        # the round's end: stars, the best, the card, a snack
         await page.evaluate("__grasp.pet.set({ pantry: 0 })"); await page.evaluate(f"{CG}.bubbles.score = 44; {CG}.end()")
         await page.wait_for_function(f"{CG}.bubbles.over && {CG}.bubbles.ui.buttons", timeout=4000); await page.wait_for_timeout(1400)
         c = await page.evaluate(f"(() => {{ const B = {CG}.bubbles; return {{ stars: B.starsN, row: B.ui.starsRow, best: B.best, stored: localStorage.getItem('bubblesBest'), keys: Object.keys(B.ui.buttons), tag: B.ui.petTag && B.ui.petTag.n, pantry: __grasp.pet.p.pantry }}; }})()")
-        chk('bubbles: time up: 2 stars for 44, the best kept, the card (Play again / Home); no pet snack, no pet tag, the pantry stays 0', c['stars'] == 2 and c['row'] == 2 and c['best'] == 44 and c['stored'] == '44' and 'again' in c['keys'] and 'home' in c['keys'] and not c['tag'] and c['pantry'] == 0, c)
+        chk('bubbles: time up: 2 stars for 44, the best kept, the card (Play again / Home) with the pet snack', c['stars'] == 2 and c['row'] == 2 and c['best'] == 44 and c['stored'] == '44' and 'again' in c['keys'] and 'home' in c['keys'] and c['tag'] and c['pantry'] >= 1, c)
         await page.screenshot(path=OUT + 'cam_bubbles_card.png')
         a = await page.evaluate(f"{CG}.bubbles.ui.buttons.again"); await page.touchscreen.tap(a['x'] + a['w'] / 2, a['y'] + a['h'] / 2)
         await page.wait_for_function(f"!{CG}.bubbles.over && {CG}.bubbles.score === 0 && {CG}.bubbles.left > 59000", timeout=3000)
         chk('bubbles: Play again: a fresh 60 s round', True)
-        # Calm: no timer, nothing ends; every 30 pops a treat (a party, no snack)
+        # Calm: no timer, nothing ends; every 30 pops a treat (a snack)
         await click_btn(page, 'calm', True); await page.wait_for_function(f"{CG}.bubbles.calm", timeout=3000)
         l0 = await page.evaluate(f"{CG}.bubbles.left"); await page.wait_for_timeout(700)
         chk('bubbles: Calm on: the clock does not run (and it is remembered)', await page.evaluate(f"{CG}.bubbles.left") == l0 and await page.evaluate("localStorage.getItem('bubblesCalm')") == '1')
@@ -259,7 +259,7 @@ async def main():
         await page.evaluate(f"{CG}.spawnBubble({{ x: 180, y: 400, r: 40, vy: 0, amp: 0, gold: false }})"); await page.touchscreen.tap(180, 400)
         await page.wait_for_function(f"{CG}.bubbles.treats === 1", timeout=3000)
         tr = await page.evaluate("({ pantry: __grasp.pet.p.pantry, toast: __grasp.toasts.slice(-1)[0].key })")
-        chk('bubbles: Calm: the 30th pop is a party ("Hooray"), no snack for a pet, the pantry stays 0', tr['pantry'] == 0 and tr['toast'] == 'bbHooray', tr)
+        chk('bubbles: Calm: the 30th pop is a party and a snack for the pet', tr['pantry'] >= 1 and tr['toast'] == 'cgSnack', tr)
         await page.evaluate(FRAMES); await page.screenshot(path=OUT + 'cam_bubbles_calm.png')
         await click_btn(page, 'calm', True); await page.wait_for_function(f"!{CG}.bubbles.calm", timeout=3000)
         chk('bubbles (touch): no page errors', not errs, errs); await ctx.close()
@@ -311,18 +311,18 @@ async def main():
         x, y = await btn(page, 'c2'); ink0 = await page.evaluate(f"{CG}.paint.ink")
         await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + 30, y); await page.mouse.up(); await page.wait_for_timeout(100)
         chk('paint: pressing on the palette picks (yellow), it does not paint', await page.evaluate(f"{CG}.paint.color") == 2 and await page.evaluate(f"{CG}.paint.ink") == ink0)
-        # the save: no share sheet here -> a PNG download (no snack: no pet)
+        # the save: no share sheet here -> a PNG download (+ a snack for a real drawing)
         await page.evaluate("__grasp.pet.set({ pantry: 0 })")
         async with page.expect_download(timeout=8000) as dl:
             await click_btn(page, 'save')
         d = await dl.value
         await page.wait_for_function(f"{CG}.paint.saved && {CG}.paint.saved.how", timeout=5000)
         sv = await page.evaluate(f"({{ s: {CG}.paint.saved, pantry: __grasp.pet.p.pantry, toast: __grasp.toasts.slice(-1)[0].key }})")
-        chk('paint: Save: a PNG download (grasp-drawing.png), "Saved", no pet snack, the pantry stays 0', d.suggested_filename == 'grasp-drawing.png' and sv['s']['how'] == 'download' and sv['s']['type'] == 'image/png' and sv['s']['size'] > 2000 and sv['pantry'] == 0 and sv['toast'] == 'pnSaved', sv)
+        chk('paint: Save: a PNG download (grasp-drawing.png), a snack for the pet the first time', d.suggested_filename == 'grasp-drawing.png' and sv['s']['how'] == 'download' and sv['s']['type'] == 'image/png' and sv['s']['size'] > 2000 and sv['pantry'] >= 1 and sv['toast'] == 'pnSavedSnack', sv)
         p0 = sv['pantry']
         async with page.expect_download(timeout=8000) as dl: await click_btn(page, 'save')
         await dl.value; await page.wait_for_timeout(300)
-        chk('paint: saving the same drawing again: "Saved" again, still no snack', await page.evaluate("__grasp.pet.p.pantry") == p0 and await page.evaluate("__grasp.toasts.slice(-1)[0].key") == 'pnSaved')
+        chk('paint: saving the same drawing again: no second snack', await page.evaluate("__grasp.pet.p.pantry") == p0 and await page.evaluate("__grasp.toasts.slice(-1)[0].key") == 'pnSaved')
         await page.evaluate("(() => { navigator.canShare = () => true; navigator.share = (o) => { window.__shared = { n: o.files.length, name: o.files[0].name, type: o.files[0].type }; return Promise.resolve(); }; return 1; })()")
         await click_btn(page, 'save'); await page.wait_for_function(f"window.__shared && {CG}.paint.saved.how === 'share'", timeout=5000)
         chk('paint: Save with a share sheet: the PNG goes to navigator.share', await page.evaluate("window.__shared") == {'n': 1, 'name': 'grasp-drawing.png', 'type': 'image/png'})
@@ -398,7 +398,7 @@ async def main():
         await page.evaluate("__grasp.pet.set({ pantry: 0 })"); await page.evaluate(f"{CG}.catcher.score = 85; {CG}.end()")
         await page.wait_for_function(f"{CG}.catcher.over && {CG}.catcher.ui.buttons", timeout=4000); await page.wait_for_timeout(1400)
         c = await page.evaluate(f"(() => {{ const C = {CG}.catcher; return {{ stars: C.starsN, best: C.best, stored: localStorage.getItem('starsBest'), keys: Object.keys(C.ui.buttons), tag: C.ui.petTag && C.ui.petTag.n, pantry: __grasp.pet.p.pantry, nb: C.ui.newBest }}; }})()")
-        chk('stars: time up: 3 stars for 85, a new best, the card; no pet snack, no pet tag, the pantry stays 0', c['stars'] == 3 and c['best'] == 85 and c['stored'] == '85' and c['nb'] and 'again' in c['keys'] and not c['tag'] and c['pantry'] == 0, c)
+        chk('stars: time up: 3 stars for 85, a new best, the card with the pet snack', c['stars'] == 3 and c['best'] == 85 and c['stored'] == '85' and c['nb'] and 'again' in c['keys'] and c['tag'] and c['pantry'] >= 1, c)
         await page.screenshot(path=OUT + 'cam_stars_card.png')
         h = await page.evaluate(f"{CG}.catcher.ui.buttons.home"); await page.mouse.click(h['x'] + h['w'] / 2, h['y'] + h['h'] / 2)
         await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)

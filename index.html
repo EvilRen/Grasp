@@ -129,7 +129,10 @@ body.home .chrome{ display:none; }
 /* Strike (body.minChrome): the toolbar folds into one round pause button; a tap opens it as a small sheet (Resume + the same buttons, labelled) over a veil */
 #pauseBtn, #resumeBtn, .chrome .lb, .chrome .mTitle{ display:none; }
 body.minChrome .chrome:not(.open){ padding:3px; background:rgba(14,19,40,.5); box-shadow:inset 0 0 0 1px rgba(241,233,218,.14); }
-body.minChrome .chrome:not(.open) > :not(#pauseBtn){ display:none; }
+body.minChrome .chrome:not(.open) > :not(#pauseBtn):not(#fsGameBtn){ display:none; }
+/* the owner, Oct 2026 ("the full screen button is missing here"): in a game, while not full screen, a round full screen sticker beside the corner one */
+#fsGameBtn{ display:none; } body.minChrome .chrome:not(.open) > #fsGameBtn:not([hidden]){ display:grid; place-items:center; width:48px; height:48px; padding:0; border-radius:50%; background:#fff; color:#1f9bd1 !important; border:2.5px solid #2a1f3d; box-shadow:0 3px 0 #2a1f3d, 0 6px 16px rgba(0,0,0,.35); }
+body.minChrome .chrome:not(.open) > #fsGameBtn svg{ width:22px; height:22px; } [dir=rtl] body.minChrome .chrome:not(.open) > #fsGameBtn, html[dir=rtl] body.minChrome .chrome:not(.open) > #fsGameBtn{ order:1; } /* (the corner sticker stays in the corner; this one beside it, inward) */
 body.minChrome .chrome:not(.open) #pauseBtn{ display:inline-flex; color:rgba(241,233,218,.85); }
 body.minChrome .chrome.open{ flex-direction:column; align-items:stretch; width:min(232px, calc(100vw - 24px)); padding:10px 8px 8px; gap:2px; border-radius:20px; z-index:9; background:rgba(18,24,50,.97); }
 body.minChrome .chrome.open .chip{ width:auto; height:46px; padding:0 14px; gap:12px; border-radius:12px; justify-content:flex-start; flex-direction:row; }
@@ -153,6 +156,8 @@ body.minChrome .chrome.open{ gap:16px !important; } /* (a11y: rows 16 px apart, 
 body.minChrome.navLittle .chrome.open #resetBtn{ display:none !important; } /* (Little ones: Resume + Home only) */
 body.minChrome .chrome:not(.open) #pauseBtn .pbSep{ display:block; width:2px; height:20px; background:rgba(42,31,61,.3); }
 body.minChrome .chrome:not(.open) #pauseBtn .pbHome{ display:block; width:22px; height:22px; }
+body.minChrome.homeOnly .chrome:not(.open) #pauseBtn > svg:not(.pbHome), body.minChrome.homeOnly .chrome:not(.open) #pauseBtn .pbSep{ display:none; } /* (nothing to pause: the house alone) */
+body.minChrome.homeOnly .chrome:not(.open) #pauseBtn{ padding:0 13px; } body.minChrome.homeOnly .chrome:not(.open) #pauseBtn .pbHome{ width:24px; height:24px; }
 body.minChrome .chrome.open #hudBtn[aria-pressed="true"]{ background:transparent; color:var(--saffron); }
 .chrome .chip.dwell{ background:rgba(255,194,75,.28); }
 #menuVeil{ position:fixed; inset:0; z-index:8; background:rgba(8,11,28,.55); touch-action:none; }
@@ -1324,6 +1329,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 <div id="hud" hidden></div>
 <div id="menuVeil" hidden></div><div id="menuDwell" hidden aria-hidden="true"></div>
 <div class="chrome" role="toolbar" data-i18n-aria="toolbarAria" aria-label="Game controls">
+  <button class="chip" id="fsGameBtn" type="button" hidden data-i18n-aria="fullOnAria" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
   <button class="chip" id="pauseBtn" type="button" aria-expanded="false" data-i18n-aria="pauseMenu" data-i18n-title="pauseMenu" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.3"/><rect x="13.5" y="5" width="4" height="14" rx="1.3"/></svg><i class="pbSep" aria-hidden="true"></i><svg class="pbHome" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg></button>
   <span class="mTitle" data-i18n="pausedTitle">Paused</span>
   <button class="chip" id="resumeBtn" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span class="lb" data-i18n="resume">Resume</span></button>
@@ -2406,6 +2412,7 @@ function applyLang() {
   root.lang = lang; root.dir = lang === 'he' ? 'rtl' : 'ltr'; document.title = t('title');
   document.querySelectorAll('[data-i18n]').forEach((el) => (el.textContent = t(el.dataset.i18n)));
   document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  try { if (mode !== 'none') navHomeSync(); } catch {} // (the corner sticker's name: Home where there is nothing to pause)
   document.querySelectorAll('[data-i18n-title]').forEach((el) => (el.title = t(el.dataset.i18nTitle)));
   document.querySelectorAll('.langBtn').forEach((b) => { b.querySelector('span').textContent = t('langName'); b.setAttribute('aria-label', t('langAria')); b.title = t('langAria'); });
   if (typeof onLangChange === 'function') onLangChange();
@@ -14820,7 +14827,11 @@ const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
 const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
-function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); if (!on) closeMenu(false); }
+function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); navHomeSync(); try { syncFullBtn(); } catch {} if (!on) closeMenu(false); }
+// the owner, Oct 2026 ("why do I need this pause button?"): where there is nothing to pause (the Little ones' games, Sand, both Pop Its, Paint,
+// Calm bubbles) the corner sticker is the house alone, and its tap goes home at once (no sheet); Strike, Smash, Slice... keep pause + the sheet
+function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint'; }
+function navHomeSync() { const on = navHomeOnly(); document.body.classList.toggle('homeOnly', on); $('pauseBtn').setAttribute('aria-label', t(on ? 'home' : 'pauseMenu')); $('pauseBtn').title = t(on ? 'home' : 'pauseMenu'); return on; }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
 function openMenu() {
   if (menu.open || mode === 'none' || !menuMode()) return false;
@@ -14851,7 +14862,7 @@ const nav = { log: [], pushes: 0 };
 function navGuardOk() { try { return !navigator.webdriver || window.__graspNavGuard === true; } catch { return true; } }
 function navRoomOf(m = gameMode) { return m === 'busy' || m === 'shapes' || m === 'sandbox' || (tgOn(m) && !(m === 'popit' && pi.flow === 'kid')) || (m === 'bubbles' && !!bubbles.calm) ? 'little' : 'big'; } // (the room a game belongs to: littleFlowSet's test)
 function navLittleNow() { return mode !== 'none' && navRoomOf() === 'little'; }
-$('pauseBtn').addEventListener('click', () => openMenu()); // (one tap, in both rooms)
+$('pauseBtn').addEventListener('click', () => { if (mode !== 'none' && navHomeSync()) { goHome(); return; } openMenu(); }); // (one tap, in both rooms: the sheet, or home where there is nothing to pause)
 const NAV_LAND_MS = 1200, NAV_LAND_R = 80;
 document.addEventListener('pointerdown', (e) => { // a11y: after Home, a late second tap near the Home button's spot does not start the sticker under it
   const now = performance.now(), H = nav.homeTap, guard = (navGuardOk() || tapGuardOn()) && mode === 'none' && H && now - nav.homeAt < NAV_LAND_MS && Math.hypot(e.clientX - H.x, e.clientY - H.y) <= NAV_LAND_R && !$('start').hidden;
@@ -15268,7 +15279,7 @@ function goHome() {
   if (!keepCam) { stopCamera(); try { landmarker && landmarker.close(); } catch {} landmarker = null; makeLandmarker = null; }
   homeCam.on = keepCam; homeCam.dwell = null; homeCam.wait = null;
   lastLandmarks = null; autoSwapped = false; lastTrackError = '';
-  mode = 'none'; gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; duelEnd(); $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
+  mode = 'none'; try { syncFullBtn(); } catch {} gesture = 'none'; cursor.present = false; cursor.history.length = 0; daily.on = daily.armed = false; adv.on = adv.armed = false; frenzy.on = frenzy.armed = false; duelEnd(); $('advMap').hidden = true; $('advDwell').hidden = true; $('smashMap').hidden = true; $('smDwell').hidden = true; smash.armed = null;
   hand2.seen = false; hand2.lm = null; hand2.samples.length = 0; lastLandmarks2 = null; camg.numHands = 1; hand.lm = null;
   hand.seen = false; hand.misses = 99; hand.pinch = false; hand.point = false; hand.pointVotes = 0; hand.fist = false; hand.fistVotes = 0; hand.lastT = null; hand.fx.reset(); hand.fy.reset(); resetHandCursor();
   ptr.touches.clear(); ptr.pinch = false; ptr.point = false; ptr.present = false;
@@ -15305,7 +15316,7 @@ function startGame(m) {
   if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   littleFlowSet(); // (phase 1: the Today panel hides the streak flame in the Little ones flow)
-  showHint();
+  showHint(); syncFullBtn(); // (not full screen: its sticker in the corner)
   if (!running) { running = true; lastFrame = performance.now(); requestAnimationFrame(frame); }
 }
 
@@ -15689,7 +15700,9 @@ window.__grasp.grip = { GRIP, grip, band: gripBand, on: gripOn }; // (the grip f
    bow tie / crown, unlocked by stage, one per slot). The end cards: 'Yum! +2 snacks' with the pet's face on the card's top edge (petCardTag).
    Hooks: __grasp.pet. */
 var PET_READY = false;
-const PET_OFF = true; // (the owner, Oct 2026: "take my animal off the top": no pet anywhere: no Bubu, no snacks, no pet room, no pet guest in Feed)
+const PET_OFF = false; // (true: no pet anywhere: no snacks, no pet room, no pet guest in Feed, the event's pet prizes in coins)
+// (the owner, Oct 2026: "take my animal off the top", then "bring the pet back, only at the bottom": Bubu's button on the start screen stays hidden;
+// the pet lives in the dock's Pet tab, between Shop and Events; what waits for it (the egg, its name) glows there)
 const PET_INK = '#1d2547';
 const petUi = { earn: null, raf: 0, last: 0, frames: 0, look: { x: 0, y: 0, at: -1e9 }, blinkAt: 0, blinkNext: 0, hopAt: -1e9, hopNext: 0, wigAt: -1e9, eatAt: -1e9, hatchAt: -1e9, evo: null,
   cracks: 0, crackAt: -1e9, awake: false, bubble: null, bubT: 0, said: [], skipped: [], log: [], tag: null, celebrations: 0, taps: 0, feeds: 0, refused: [], asked: 0, evoT: 0 };
@@ -17534,7 +17547,7 @@ function bubblesReset(now) {
   if (bubbles.calm) for (let i = 0; i < BUB.minCalm; i++) bubbleSpawn(now, { y: H * (0.3 + i * 0.14), x: W * (0.14 + ((i * 0.37) % 0.72)) }); // (Calm: five bubbles about from the start)
   else for (let i = 0; i < 3; i++) bubbleSpawn(now, { y: H * (0.55 + i * 0.15) });
 }
-function bubblesSetCalm(on, now = performance.now(), keep = true) { bubbles.calm = !!on; if (keep) try { localStorage.setItem('bubblesCalm', on ? '1' : '0'); } catch {} bubblesReset(now); } // (keep: the big kids' own Calm pill; Little ones' Calm bubbles is per start: navigation v2)
+function bubblesSetCalm(on, now = performance.now(), keep = true) { bubbles.calm = !!on; navHomeSync(); if (keep) try { localStorage.setItem('bubblesCalm', on ? '1' : '0'); } catch {} bubblesReset(now); } // (keep: the big kids' own Calm pill; Little ones' Calm bubbles is per start: navigation v2)
 function bubblesStoredCalm() { try { return localStorage.getItem('bubblesCalm') === '1'; } catch { return false; } }
 function bubbleSpawn(now, o = {}) {
   const B = bubbles, sc = bubbleScale() * (B.calm ? 1.22 : 1), r = o.r || (22 + Math.random() * 36) * sc;
@@ -20603,7 +20616,7 @@ function mbBubuDraw() {
 }
 function mbCall(kind) { // navigation v2: something waits (the gift, the egg, the pet's name): a glow and a bounce on its button instead of a popup
   if (PET_OFF && kind !== 'gift') return null;
-  mb.call = kind; const el = kind === 'gift' ? $('todayBtn') : $('bubuBtn'); el.classList.add('mbCall'); el.dataset.call = kind; mb.log.push('call:' + kind); return kind;
+  mb.call = kind; const el = kind === 'gift' ? $('todayBtn') : $('bubuBtn').hidden ? $('petTab') : $('bubuBtn'); el.classList.add('mbCall'); el.dataset.call = kind; mb.log.push('call:' + kind); return kind;
 }
 function mbCallClear(el) { el.classList.remove('mbCall'); delete el.dataset.call; mb.call = null; }
 function mbBubuTap() {
@@ -20649,13 +20662,14 @@ $('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted);
 /* --- full screen (the owner: Brave hides its own): a button on the start screen; the whole app stays full screen across games and home until the button again (or the phone's Back) --- */
 function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
 function fsCan() { const d = document.documentElement; return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(d.requestFullscreen || d.webkitRequestFullscreen); } // (no iPhone Safari: it has no full screen for pages; the button stays hidden there)
-function syncFullBtn() { const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
+function syncFullBtn() { const g = $('fsGameBtn'); if (g) g.hidden = !fsCan() || !!fsEl() || mode === 'none'; const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
 async function toggleFull() {
   const d = document.documentElement;
   try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); else await (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); } catch (e) { console.warn('[grasp] full screen', e); }
   syncFullBtn();
 }
 $('fullBtn').addEventListener('click', () => { audioInit(); sfx('click'); fsOptOut(!!fsEl()); toggleFull(); });
+$('fsGameBtn').addEventListener('click', () => { audioInit(); sfx('click'); fsOptOut(false); toggleFull(); }); // (in a game: on; leaving it is the browser's own back / swipe)
 /* --- full screen by itself in the games (the owner, Oct 2026): entering a game on a touch device goes full screen (the tap that opened it is
    still a user activation); if the browser said no (the activation was gone, e.g. after the camera's question), the next touch in the game does
    it. The button's "exit" keeps it off for the visit (sessionStorage). Not on a computer (a mouse), not in the installed app (already full). --- */
@@ -20682,7 +20696,7 @@ $('installBtn').addEventListener('click', () => h2More(false)); // (the browser'
 $('shReplay').addEventListener('click', () => h2ShareAct('replay'));
 $('shDuel').addEventListener('click', () => h2ShareAct('duel'));
 $('shCopy').addEventListener('click', () => h2ShareAct('copy'));
-document.querySelectorAll('#tabBar .tab').forEach((b) => b.addEventListener('click', () => { sfx('click'); if (b.dataset.call) mbCallClear(b); h2Tab(b.dataset.tab); }));
+document.querySelectorAll('#tabBar .tab').forEach((b) => b.addEventListener('click', () => { sfx('click'); const k = b.dataset.call; if (k) { mbCallClear(b); mb.log.push('tab:' + k); if (k === 'name' && petAskName()) return; } h2Tab(b.dataset.tab); })); // (the Pet tab glowing for the name: the name sheet)
 for (const id of ['moreSheet', 'shareSheet']) {
   const P = $(id), close = () => (id === 'shareSheet' ? h2ShareClose() : id === 'moreSheet' ? h2More(false) : h2Pick(id, false));
   P.querySelector('.xBtn').addEventListener('click', close);

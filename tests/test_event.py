@@ -206,7 +206,7 @@ async def main():
         await page.screenshot(path=OUT + 'event_claim_fly.png')
         await page.wait_for_function("document.querySelector('.evTier[data-i=\"1\"]').dataset.st === 'got'", timeout=3000)
         c1 = await page.evaluate("[__grasp.profile.coins, __grasp.pet.p.pantry]")
-        check('tapping a ready tier: the chest shakes, confetti and coins fly, then it shows its prize with a check (no pet: its 2 snacks paid as +10 coins, the pantry stays 0)', c1[0] - c0[0] == 10 and c1[1] == c0[1] == 0, [c0, c1])
+        check('tapping a ready tier: the chest shakes, confetti and snacks fly, then it shows its prize with a check (+2 snacks in the pet\'s box)', c1[1] - c0[1] == 2 and c1[0] == c0[0], [c0, c1])
         await page.click('.evTier[data-i="3"]'); await page.wait_for_function("document.querySelector('.evTier[data-i=\"3\"]').dataset.st === 'got'", timeout=3000)
         q = await page.evaluate("[__grasp.event.x.stickers, document.querySelector('.evStk[data-ev=cows]').classList.contains('got')]")
         check('the sticker tier: the Stampede Cow sticker, on the shelf', q[0] == ['cows'] and q[1], q)
@@ -223,23 +223,25 @@ async def main():
         q = await page.evaluate(f"{EV}.state")
         check('next Monday: the next event, a fresh track (0 points, nothing to claim: last week\'s leftovers are gone)', q['id'] != 'cows' and q['pts'] == 0 and q['got'] == [] and q['claimable'] == [] and q['left'] == 7, q)
         await page.evaluate(f"__grasp.setDate('2026-10-10'); {EV}.force('cows')")
-        # the whole track: <= 150 coins, the snack and hat tiers paid in coins (no pet), the edition ball; exclusives once (the next edition: coins instead, a new ball)
+        # the whole track: <= 150 coins, snacks, the hat, the edition ball; exclusives once (the next edition: snacks instead, a new ball)
         q = await page.evaluate(f"""(() => {{ const T = {EV}.cfg.track, coins = T.reduce((a, t) => a + (t.coins || 0), 0); const c0 = __grasp.profile.coins, s0 = __grasp.pet.p.pantry;
           {EV}.points(900); for (let i = 0; i < 12; i++) {{ {EV}.claim(i); {EV}.claimMs(0); }} const st = {EV}.state;
           return {{ coins, earned: __grasp.profile.coins - c0, snacks: __grasp.pet.p.pantry - s0, x: JSON.parse(JSON.stringify({EV}.x)), done: st.done, ed: st.ed, ball: __grasp.profile.unlocked.filter((u) => u.startsWith('evb_')), item: ITEMS.find((i) => i.id === 'evb_cows_' + st.ed) }}; }})()""")
         check('the economy: the track holds 140 coins a week (<= 150), missions pay only points', q['coins'] == 140 and q['coins'] <= 150, q)
-        check('a whole week claimed: exactly 225 coins (140 + the snack tiers 10 + 15 + 20 + the hat tier 25 + 15 for the sticker already won), no snacks, no hat, the edition ball as a Shop item', q['done'] and q['earned'] == 140 + 10 + 15 + 20 + 25 + 15 and q['snacks'] == 0 and q['x']['hats'] == [] and q['ball'] == ['evb_cows_%d' % q['ed']] and q['item'] and q['item']['type'] == 'ball', q)
+        check('a whole week claimed: exactly 140 coins, 2 + 3 + 4 snacks (+3 for the sticker already won), the cowboy hat, the edition ball as a Shop item', q['done'] and q['earned'] == 140 and q['snacks'] == 12 and q['x']['hats'] == ['cowboy'] and q['ball'] == ['evb_cows_%d' % q['ed']] and q['item'] and q['item']['type'] == 'ball', q)
         ed1 = q['ed']
         await page.evaluate("__grasp.setDate('2026-11-16')")  # six weeks later: Cow Stampede again, the next edition
-        q = await page.evaluate(f"""(() => {{ const s = {EV}.state, s0 = __grasp.pet.p.pantry; {EV}.points(900); const p3 = {EV}.prize(3), p6 = {EV}.prize(6), p11 = {EV}.prize(11); for (let i = 0; i < 12; i++) {{ if (i !== 3) {EV}.claim(i); }} const a = __grasp.pet.p.pantry, c = __grasp.profile.coins; {EV}.claim(3);
-          return {{ id: s.id, ed: s.ed, p3, p6, p11, dup: __grasp.pet.p.pantry - a, dupCoins: __grasp.profile.coins - c, x: JSON.parse(JSON.stringify({EV}.x)), balls: __grasp.profile.unlocked.filter((u) => u.startsWith('evb_')) }}; }})()""")
+        q = await page.evaluate(f"""(() => {{ const s = {EV}.state, s0 = __grasp.pet.p.pantry; {EV}.points(900); const p3 = {EV}.prize(3), p6 = {EV}.prize(6), p11 = {EV}.prize(11); for (let i = 0; i < 12; i++) {{ if (i !== 3) {EV}.claim(i); }} const a = __grasp.pet.p.pantry; {EV}.claim(3);
+          return {{ id: s.id, ed: s.ed, p3, p6, p11, dup: __grasp.pet.p.pantry - a, x: JSON.parse(JSON.stringify({EV}.x)), balls: __grasp.profile.unlocked.filter((u) => u.startsWith('evb_')) }}; }})()""")
         check('six weeks later the same event, the next edition', q['id'] == 'cows' and q['ed'] == ed1 + 1, q)
-        check('exclusives once: the sticker already owned turns into 15 coins (no snacks), the hat tier pays 25 coins; the new edition ball is new', q['p3'] == {'coins': 15} and q['p6'] == {'coins': 25} and q['dup'] == 0 and q['dupCoins'] == 15 and q['p11']['ball'] == 'cows_%d' % q['ed'] and len(q['balls']) == 2 and q['x']['stickers'] == ['cows'] and q['x']['hats'] == [], q)
-        # no pet: no Pet tab, no wardrobe, no hat; the ball in the Shop
+        check('exclusives once: the sticker and the hat already owned turn into 3 snacks; the new edition ball is new', q['p3'] == {'snacks': 3, 'dup': 'sticker'} and q['p6'] == {'snacks': 3, 'dup': 'hat'} and q['p11']['ball'] == 'cows_%d' % q['ed'] and len(q['balls']) == 2 and q['x']['stickers'] == ['cows'] and q['x']['hats'] == ['cowboy'], q)
+        # the hat in the wardrobe, the ball in the Shop
         await page.evaluate(f"{EV}.close(); __grasp.setDate('2026-10-10'); {EV}.force('cows')")
-        await page.evaluate("__grasp.home2.tab('pet')"); await page.wait_for_timeout(400)
-        q = await page.evaluate("[$('petTab').hidden, $('petRoom').hidden, __grasp.pet.p.head]")
-        check('no pet: the Pet tab stays hidden, no pet room opens, no hat worn', q[0] and q[1] and q[2] != 'cowboy', q)
+        await page.evaluate("__grasp.home2.tab('pet')"); await page.wait_for_function("!$('petRoom').hidden", timeout=3000); await page.wait_for_timeout(400)
+        await page.click('#petItems .pitem[data-id=cowboy]'); hat = await page.evaluate("__grasp.pet.p.head")
+        check('the cowboy hat shows in the wardrobe and the pet wears it', hat == 'cowboy', hat)
+        await page.wait_for_timeout(300); await page.screenshot(path=OUT + 'event_pet_hat.png')
+        await page.keyboard.press('Escape'); await page.wait_for_function("$('petRoom').hidden", timeout=3000)
         await page.click('#collectionBtn'); await page.wait_for_function("!$('collection').hidden", timeout=3000)
         q = await page.evaluate("(() => { const t = [...document.querySelectorAll('#ctypes .tile')].filter((x) => x.dataset.id.startsWith('evb_')); return t.map((x) => [x.dataset.id, x.className, x.querySelector('.nm').textContent]); })()")
         check('the Shop: both edition balls owned (Equip), named "Cow Stampede ball #n"', len(q) == 2 and all('locked' not in c and n.startswith('Cow Stampede ball #') for _, c, n in q), q)
