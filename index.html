@@ -130,7 +130,7 @@ body.home .chrome{ display:none; }
 #pauseBtn, #resumeBtn, .chrome .lb, .chrome .mTitle{ display:none; }
 body.minChrome .chrome:not(.open){ padding:3px; background:rgba(14,19,40,.5); box-shadow:inset 0 0 0 1px rgba(241,233,218,.14); }
 body.minChrome .chrome:not(.open) > :not(#pauseBtn):not(#fsGameBtn){ display:none; }
-/* the owner, Oct 2026 ("the full screen button is missing here"): in a game, while not full screen, a round full screen sticker beside the corner one */
+/* the owner, Oct 2026 ("the full screen button is missing here"): in a game on a touch device, while not full screen, a round full screen sticker beside the corner one (a computer has F11) */
 #fsGameBtn{ display:none; } body.minChrome .chrome:not(.open) > #fsGameBtn:not([hidden]){ display:grid; place-items:center; width:48px; height:48px; padding:0; border-radius:50%; background:#fff; color:#1f9bd1 !important; border:2.5px solid #2a1f3d; box-shadow:0 3px 0 #2a1f3d, 0 6px 16px rgba(0,0,0,.35); }
 body.minChrome .chrome:not(.open) > #fsGameBtn svg{ width:22px; height:22px; } [dir=rtl] body.minChrome .chrome:not(.open) > #fsGameBtn, html[dir=rtl] body.minChrome .chrome:not(.open) > #fsGameBtn{ order:1; } /* (the corner sticker stays in the corner; this one beside it, inward) */
 body.minChrome .chrome:not(.open) #pauseBtn{ display:inline-flex; color:rgba(241,233,218,.85); }
@@ -20662,7 +20662,7 @@ $('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted);
 /* --- full screen (the owner: Brave hides its own): a button on the start screen; the whole app stays full screen across games and home until the button again (or the phone's Back) --- */
 function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
 function fsCan() { const d = document.documentElement; return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(d.requestFullscreen || d.webkitRequestFullscreen); } // (no iPhone Safari: it has no full screen for pages; the button stays hidden there)
-function syncFullBtn() { const g = $('fsGameBtn'); if (g) g.hidden = !fsCan() || !!fsEl() || mode === 'none'; const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
+function syncFullBtn() { const g = $('fsGameBtn'); if (g) g.hidden = !fsCan() || !!fsEl() || mode === 'none' || !matchMedia('(pointer: coarse)').matches; const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
 async function toggleFull() {
   const d = document.documentElement;
   try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); else await (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); } catch (e) { console.warn('[grasp] full screen', e); }

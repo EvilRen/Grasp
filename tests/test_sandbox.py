@@ -50,7 +50,11 @@ def check(name, cond, extra=''):
 check.fails = 0
 async def menu_click(page, sel, tap=False):  # every game: the toolbar is one pause button whose sheet holds the toolbar's own buttons (Restart, Sound, Language, Stats, Home); on the start screen a plain click
     if await page.evaluate("document.body.classList.contains('minChrome') && mode !== 'none' && !menu.open"):
-        await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn')); await page.wait_for_function("menu.open", timeout=4000)
+        if await page.evaluate("navHomeSync()"):  # (nothing to pause, e.g. Sandbox: the corner sticker is the house alone, one tap goes home; the sheet only by openMenu())
+            if sel == '#homeBtn': await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn')); return
+            await page.evaluate("openMenu()")
+        else: await (page.tap('#pauseBtn') if tap else page.click('#pauseBtn'))
+        await page.wait_for_function("menu.open", timeout=4000)
     await (page.tap(sel) if tap else page.click(sel))
 
 async def boot(b, mobile):

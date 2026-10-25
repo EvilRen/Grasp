@@ -101,7 +101,7 @@ async def main():
             check(tag + ' phone: the Sandbox\'s hint toast at the top (panel fix: clear of the things on the floor), inside the screen, with the mode icon at the start edge',
                   h['show'] and h['op'] == '1' and h['icon'] and h['top'] >= 64 and h['bottom'] < h['H'] * 0.45 and h['left'] >= 0 and h['right'] <= h['W'] and ((h['icLeft'] > h['txLeft']) if he else (h['icLeft'] < h['txLeft'])) and len(h['text']) > 10, h)
             await page.screenshot(path='tests/out/chrome_phone_' + tag + '.png')
-            await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)
+            await page.evaluate("navHomeSync() ? openMenu() : null") or await page.click('#pauseBtn'); await page.wait_for_function("menu.open && pause.on", timeout=4000)  # (Sandbox: the corner is the house alone; its sheet by openMenu())
             titles = await page.evaluate("[...document.querySelectorAll('.chrome .chip')].filter(b => b.getBoundingClientRect().width > 0).map(b => b.title || b.getAttribute('aria-label') || b.textContent.trim())")
             check(tag + ' phone: every sheet button is labelled in the current language', all(titles) and (('בית' in titles) if he else ('Home' in titles)) and (('המשך' in titles) if he else ('Resume' in titles)), titles)  # (navigation v2: Sound / Stats live in the Settings now)
             await page.evaluate("closeMenu(true); toggleHud()"); await page.wait_for_timeout(300)
