@@ -175,7 +175,7 @@ async def main():
             hb = await page.evaluate("({ cls: document.body.classList.contains('homeOnly'), lbl: $('pauseBtn').getAttribute('aria-label'), vis: [...$('pauseBtn').querySelectorAll('svg')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.getAttribute('class')) })")
             check(tg + ': Busy Board (nothing to pause): the corner sticker is the house alone, labelled Home', hb['cls'] and hb['lbl'] == ('בית' if he else 'Home') and hb['vis'] == ['pbHome'], hb)
             await page.tap('#pauseBtn'); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=3000)
-            check(tg + ': ...one tap on it: home at once (no sheet)', await page.evaluate("!menu.open && !document.body.classList.contains('homeOnly')")); await page.wait_for_timeout(450)
+            check(tg + ': ...one tap on it: home at once (no sheet)', await page.evaluate("!menu.open && !__grasp.route.of(location.pathname)")); await page.wait_for_timeout(450)
             await page.tap('#start .stk[data-mode="busy"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'busy'", timeout=8000); await page.wait_for_timeout(600)
             # the browser's Back inside a toddler game: like Big kids: the pause sheet first, then Home
             await page.evaluate("history.back()"); await page.wait_for_function("menu.open", timeout=4000); await page.wait_for_timeout(200)
