@@ -66,7 +66,7 @@ async def free_tests(b, he):
     check(tag + ': /popit opens Pop It at once (touch), Free mode, the little ones\' flow', ok and await page.evaluate("pi.mode === 'free' && pi.flow === 'little' && !pi.over"), await page.evaluate("[mode, gameMode, location.pathname]"))
     ok = await wait(page, "__grasp.tg.demoOn() && __grasp.tg.said.length > 0", 4000); w = await said(page)
     check(tag + ': first play: the demo finger + <= 3 words, voiced', ok and len(w[0].replace('!', '').split()) <= 3 and w[0] == ('מפוצצים בועות!' if he else 'Pop the bubbles!'), w)
-    check(tag + ': the pause button is the way out (minChrome)', await page.evaluate("document.body.classList.contains('minChrome') && !$('pauseBtn').hidden"))
+    check(tag + ': the corner sticker is the way out (minChrome)', await page.evaluate("document.body.classList.contains('minChrome') && !$('pauseBtn').hidden"))
     bs = await bubbles(page)
     sq = await page.evaluate("({ bw: pi.L.bw, rows: pi.L.U.rows })"); pitch = sq["bw"] * 0.9 / 4; W0, H0 = await page.evaluate("[innerWidth, innerHeight]")
     check(tag + ': the square board: 4 columns of large bubbles (r = 0.45 x pitch, pitch = board width x 0.9 / 4: ~35 px at 390 px), as many rows as the height holds (the owner: more rows; 7 at 390 x 844), each >= 44 px across', len(bs) == 4 * sq['rows'] and 4 <= sq['rows'] <= 8 and (sq['rows'] >= 6 or W0 > H0) and all(abs(q['r'] - 0.45 * pitch) < 0.6 for q in bs) and 30 <= bs[0]['r'] <= 40 and min(q['r'] for q in bs) * 2 >= 44, (len(bs), sq, bs[0]['r']))
@@ -118,11 +118,11 @@ async def free_tests(b, he):
     check(tag + ': the flip lands: a thump with a little sparkle (pi_land), a stronger vibration (30 ms), no screen flash', 'pi_land' in ld['snd'] and 30 in ld['ms'] and ld['flash'] == 0, ld)
     r = await page.evaluate("({ side: pi.side, flips: profile.popit.flips, prog: profile.popit.prog, left: __grasp.popit.left(), n: pi.L.bubbles.length })")
     check(tag + ': after the flip every bubble is up again (the other side: the board mirrored); the flip counted', ok and r['side'] != side0 and r['flips'] == 1 and r['prog'] == 1 and r['left'] == r['n'], r)
-    # the pause menu, Home
-    await page.tap('#pauseBtn'); ok = await wait(page, "menu.open", 3000)
-    check(tag + ': the pause menu opens', ok)
-    await page.click('#homeBtn'); ok = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
-    check(tag + ': Home from the pause menu leaves; the address is / again', ok and await page.evaluate("location.pathname") == '/')
+    # the house in the corner: one tap, home
+    r = await page.evaluate("({ homeOnly: document.body.classList.contains('homeOnly'), label: $('pauseBtn').getAttribute('aria-label'), home: t('home') })")
+    check(tag + ': nothing to pause: the corner sticker is the house alone (homeOnly, label Home)', r['homeOnly'] and r['label'] == r['home'], r)
+    await page.tap('#pauseBtn'); ok = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
+    check(tag + ': one tap on the house goes home at once (no sheet); the address is / again', ok and not await page.evaluate("menu.open") and await page.evaluate("location.pathname") == '/', await page.evaluate("[mode, gameMode, menu.open, location.pathname]"))
     check(tag + ': the profile keeps the flips', await page.evaluate("JSON.parse(localStorage.getItem('grasp.profile')).popit.flips") == 1)
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 

@@ -1,9 +1,9 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # Menu B "Sticker Book" (the parent's pick, Oct 2026): the start screen as a sticker book. One sticker template for every game; the Big kids room
-# (Bubu, the Settings gear, the sound, the coins; the age switch; the Strike hero + Map; Smash, Slice, Arcade, Camera games; the dock: Shop, Pet, Events);
+# (the Settings gear, the sound, full screen, the coins (Bubu hidden: the pet lives in the dock's Pet tab); the age switch; the Strike hero + Map; Smash, Slice, Arcade, Camera games; the dock: Shop, Pet, Events);
 # the Little ones room (4 huge stickers a page, swiped sideways, dots, RTL-correct; a sticker says its name, then opens its game); the Arcade and
 # Camera games sheets (stickers, 2 a row); the gear opens the settings in one tap (the owner removed the parents' gate on purpose);
-# every press squashes + boings with a blip pitched per game, the idle wiggle, Bubu's jump + "Hi!", reduced motion, the Sound setting; the
+# every press squashes + boings with a blip pitched per game, the idle wiggle, reduced motion, the Sound setting; the
 # layout (no scroll at 360x740 / 390x844 / 1280x800, EN / HE; targets >= 44 px; labels >= 14 px); the camera's dwell on the stickers; the double-tap
 # guard on the room switch; Pop It (another branch) only when its mode exists. Screenshots: tests/out/menub_*.png.
 OUT = 'tests/out/'
@@ -46,7 +46,7 @@ def layout_ok(tag, L, need=()):
     if need: check(tag + ': shows ' + ', '.join(need), all(k in ids for k in need), ids)
     return L
 
-BIG = ('settingsBtn', 'startSound', 'bubuBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
+BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
 LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'lilPopit']]
 
 async def page_of(page):
@@ -66,7 +66,8 @@ async def main():
             bx = {x['id']: x for x in L['btns']}
             check(tg + ': RTL in Hebrew, LTR in English', L['dir'] == ('rtl' if he else 'ltr'))
             lock, coins = bx['settingsBtn'], bx['metaPill']
-            check(tg + ': the top bar: the gear at the ' + ('right (RTL)' if he else 'left') + ', Bubu in the middle, the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])) and abs((bx['bubuBtn']['l'] + bx['bubuBtn']['r']) / 2 - L['W'] / 2) < 6, [lock, coins, bx['bubuBtn']])
+            check(tg + ': the top bar: the gear at the ' + ('right (RTL)' if he else 'left') + ', the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])), [lock, coins])
+            check(tg + ': Bubu hidden (not in the top bar; the pet lives in the dock\'s Pet tab)', 'bubuBtn' not in bx and await page.evaluate("$('bubuBtn').hidden && $('bubuBtn').getBoundingClientRect().width === 0"), list(bx))
             hero = bx['heroPlay']; grid = [bx[k] for k in ('smash', 'slice', 'bigPopit')]; cams = [bx[k] for k in ('drums', 'bubbles', 'paint', 'stars')]
             check(tg + ': the Strike hero is the widest sticker, above the grid; Smash / Slice / Pop It / Spot it big (>= 70 x 150 px: four a row since spot the difference)', hero['w'] > 2.4 * max(g['w'] for g in grid) and hero['b'] <= min(g['t'] for g in grid) and all(g['w'] >= 70 and g['h'] >= 150 for g in grid), [hero, grid])
             check(tg + ': 3 a row: Smash / Slice / Pop It side by side, the 4 camera games in one row under them', max(g['t'] for g in grid) - min(g['t'] for g in grid) < 12 and max(c['t'] for c in cams) - min(c['t'] for c in cams) < 12 and min(c['t'] for c in cams) > max(g['b'] for g in grid), [grid, cams])
@@ -155,9 +156,10 @@ async def main():
                 check('Little ones > ' + k + ': says "' + name + '", then plays', said and said[-1] == name, said[-3:])
                 await home()
         check('back home after a toddler game: still the Little ones room', await page.evaluate("$('start').dataset.room === 'little' && !$('littlePick').hidden"))
-        await page.tap('#bubuBtn'); await page.wait_for_timeout(150)
-        bu = await page.evaluate(f"({{ jump: $('bubuBtn').classList.contains('jump'), say: $('bubuSay').textContent, show: $('bubuSay').classList.contains('show'), said: {M}.mb.said.map(x => x.text), st: $('bubuBtn').dataset.stage, anim: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName }})")
-        check('Bubu (the hatched pet, drawn from the pet system): a tap = a jump + "Hi!" (shown; less talking: a giggle, not said)', bu['jump'] and bu['show'] and bu['say'] == 'Hi!' and 'Hi!' not in bu['said'] and bu['st'] != '0' and bu['anim'] == 'mbJump', bu)
+        await page.evaluate(f"{M}.room('big')"); await page.wait_for_timeout(300)
+        bu = await page.evaluate("({ bubu: $('bubuBtn').hidden, w: $('bubuBtn').getBoundingClientRect().width, tab: !$('petTab').hidden })")
+        check('Bubu hidden even with a hatched pet (the pet lives in the dock\'s Pet tab)', bu['bubu'] and bu['w'] == 0 and bu['tab'], bu)
+        await page.evaluate(f"{M}.room('little')"); await page.wait_for_timeout(300)
         # Pop It (merged): its sticker shows in Little ones (page 3) and in Big kids
         await page.evaluate("window.routeOpen = (m) => { window.__opened = m; return true; }; __grasp.menub.page(2, true)"); await page.wait_for_timeout(300)
         pi = await page.evaluate(f"({{ lil: !$('lilPopit').hidden, big: !$('bigPopit').hidden, feat: {M}.feat('popit'), pages: {M}.mb.pages, seen: !!$('lilPopit').closest('.mbPg') }})")
@@ -230,15 +232,15 @@ async def main():
         w1 = await page.evaluate(f"{M}.mb.wig")
         k = await page.evaluate(f"{M}.wiggle()")
         check('the idle wiggle: a random sticker every ~2 s (' + str(w1 - w0) + ' in 4.3 s)', 1 <= w1 - w0 <= 3 and k and await page.evaluate("!!document.querySelector('#start .stk.mbWiggle')"), [w0, w1, k])
-        mo = await page.evaluate("({ bg: getComputedStyle($('start'), '::before').animationName, bob: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName })")
-        check('the background drifts, Bubu bobs, the ▶ pulses', mo == {'bg': 'mbBg', 'bob': 'mbBob', 'go': 'mbPulse'}, mo)
+        mo = await page.evaluate("({ bg: getComputedStyle($('start'), '::before').animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName })")
+        check('the background drifts, the ▶ pulses', mo == {'bg': 'mbBg', 'go': 'mbPulse'}, mo)
+        check('Bubu hidden', await page.evaluate("$('bubuBtn').hidden"))
         check('motion: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b, rm='reduce')
         await page.wait_for_timeout(2300)
-        rm = await page.evaluate(f"({{ wig: {M}.mb.wig, w: {M}.wiggle(), bg: getComputedStyle($('start'), '::before').animationName, bob: getComputedStyle($('bubuBtn').querySelector('.bb')).animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName }})")
-        check('reduced motion: no wiggle, no drifting background, no bob, no pulse', rm['wig'] == 0 and rm['w'] is None and rm['bg'] == 'none' and rm['bob'] == 'none' and rm['go'] == 'none', rm)
-        await page.tap('#bubuBtn'); await page.wait_for_timeout(100)
-        check('reduced motion: Bubu still says "Hi!" (no jump)', await page.evaluate("$('bubuSay').classList.contains('show') && !$('bubuBtn').classList.contains('jump')"))
+        rm = await page.evaluate(f"({{ wig: {M}.mb.wig, w: {M}.wiggle(), bg: getComputedStyle($('start'), '::before').animationName, go: getComputedStyle($('heroPlay').querySelector('.go')).animationName }})")
+        check('reduced motion: no wiggle, no drifting background, no pulse', rm['wig'] == 0 and rm['w'] is None and rm['bg'] == 'none' and rm['go'] == 'none', rm)
+        check('reduced motion: Bubu hidden', await page.evaluate("$('bubuBtn').hidden"))
         check('reduced motion: no page errors', not errs, errs); await ctx.close()
 
         # ===== 6. phase 1 guarantees on the new screen: the double-tap guard on the room switch; the camera's dwell selects stickers =====
@@ -270,8 +272,8 @@ async def main():
         for he in (False, True):
             tg = 'HE' if he else 'EN'
             ctx, page, errs = await fresh(b, he, w=320, h=700); await page.wait_for_timeout(700)
-            r = await page.evaluate("(() => { const a = $('fullBtn').getBoundingClientRect(), e = $('bubuBtn').getBoundingClientRect(); return { hid: $('fullBtn').hidden, w: a.width, gap: Math.max(e.left - a.right, a.left - e.right), lbl: $('fullBtn').getAttribute('aria-label') }; })()")
-            check(tg + ': the full screen button shows on the start screen (44 px, clear of Bubu at 320 px), "' + r['lbl'] + '"', not r['hid'] and r['w'] >= 44 and r['gap'] >= 2 and r['lbl'] == ('מסך מלא' if he else 'Full screen'), r)
+            r = await page.evaluate("(() => { const a = $('fullBtn').getBoundingClientRect(); const gaps = ['settingsBtn', 'startSound', 'metaPill'].map(id => { const e = $(id).getBoundingClientRect(); return Math.max(e.left - a.right, a.left - e.right); }); return { hid: $('fullBtn').hidden, w: a.width, gap: Math.min(...gaps), bubu: $('bubuBtn').hidden, lbl: $('fullBtn').getAttribute('aria-label') }; })()")
+            check(tg + ': the full screen button shows on the start screen (44 px, clear of the gear, the sound and the coins at 320 px; Bubu hidden), "' + r['lbl'] + '"', not r['hid'] and r['w'] >= 44 and r['gap'] >= 2 and r['bubu'] and r['lbl'] == ('מסך מלא' if he else 'Full screen'), r)
             await page.tap('#fullBtn'); await page.wait_for_timeout(500)
             r = await page.evaluate("({ fs: !!document.fullscreenElement, p: $('fullBtn').getAttribute('aria-pressed'), lbl: $('fullBtn').getAttribute('aria-label') })")
             check(tg + ': one tap: full screen, the button now says "' + r['lbl'] + '"', r['fs'] and r['p'] == 'true' and r['lbl'] == ('יציאה ממסך מלא' if he else 'Exit full screen'), r)

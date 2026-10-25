@@ -1,6 +1,6 @@
 exec(open('tests/test_toddler.py').read().split('# ---------------- Animal sounds')[0])
 # Sand (/sand, the Little ones): a tray of kinetic sand, touch only, finger only (v2: the owner, "too pixelated, only the finger, glow in the dark"). Its link and sticker open it (EN / HE, no page errors, the demo finger + <= 3
-# words, the pause menu is the way out); the finger digs a groove and the sand piles up on its sides (the volume stays); a touch leaves a
+# words, the house in the corner is the way out: one tap, home); the finger digs a groove and the sand piles up on its sides (the volume stays); a touch leaves a
 # fingerprint; retracing a groove digs to the tray's floor; a mold turns out a raised shape and its button again picks the next shape (its name
 # said); the rake leaves four grooves; the roller evens a mound; the knife cuts thin and deep; a colour pours a mound of that colour and the
 # finger smears it; two fingers dig at once; Home and back = a fresh flat tray; the sand's hiss plays only while the finger moves;
@@ -74,8 +74,9 @@ async def mechanics(b):
     check('the smooth button: a bar sweeps down the tray (under way after 0.35 s) and the sand is fresh again, no glow left', mid and await page.evaluate(flat) and await page.evaluate(f"{S}.sa.glow.every(v => v === 0)") and 'whoosh' in await snd(page))
     # Home and back: a fresh tray
     await stroke(page, [(cx - 60, cy), (cx + 60, cy)], 8)
-    await page.evaluate("goHome()"); await page.wait_for_timeout(400); await page.evaluate("__grasp.setGameMode('sand'); strikeStart('mouse')"); await wait(page, "gameMode === 'sand' && mode === 'mouse'", 8000); await page.wait_for_timeout(300)
-    check('Home and back (the Little ones pause sheet has no Restart): a fresh tray', await page.evaluate(flat))
+    await page.tap('#pauseBtn'); home = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
+    await page.evaluate("__grasp.setGameMode('sand'); strikeStart('mouse')"); await wait(page, "gameMode === 'sand' && mode === 'mouse'", 8000); await page.wait_for_timeout(300)
+    check('Home (one tap on the house in the corner) and back: a fresh tray', home and await page.evaluate(flat))
     # cheap: only the changed part is shaded; at night only what glows is redrawn
     await stroke(page, [(cx - 30, cy), (cx + 30, cy)], 6); cells = await page.evaluate(f"{S}.sa.lastCells || 0"); allc = await page.evaluate(f"{S}.sa.GW * {S}.sa.GH"); ms = await page.evaluate(f"{S}.sa.shadeMs")
     check('the shading is cheap: only the changed part is redrawn (%d of %d cells), %.1f ms' % (cells, allc, ms), 0 < cells < allc * 0.4 and ms < 25, [cells, allc, ms])

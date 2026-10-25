@@ -3,7 +3,7 @@ import os, math
 # The Little ones games (toddlers 1.5-4): Animal sounds (/animals), Colors (/colors, + the camera's "Show me something red!"), Peekaboo (/peekaboo),
 # Feed the animal (/feed), Giant puzzle (/puzzle). For each: it loads by its link with no page errors in EN and HE (390 x 844, a phone) and from its
 # Little ones tile; the first-play demo finger + <= 3 words is voiced; a right tap / drag moves the game on; a wrong one never fails (no buzzer,
-# nothing lost, the game goes on); a double tap counts once; the pause button is the way out. Colors' camera: a frame coloured red (injected
+# nothing lost, the game goes on); a double tap counts once; the house in the corner is the way out (one tap, home). Colors' camera: a frame coloured red (injected
 # through the debug hook, the real analysis) is found after ~1 s held; a grey frame never is; no camera = the "camera is resting" card + touch play.
 # Screenshots: tests/out/toddler_<game>_{en,he}.png (+ a few extra moments).
 PORT = int(os.environ.get('GRASP_PORT', '8765')); BASE = 'http://localhost:%d' % PORT
@@ -40,7 +40,7 @@ async def said(page): return [s['text'] for s in await page.evaluate(f"{T}.said"
 async def snd(page): return await page.evaluate(f"{T}.snd.slice()")
 
 async def link_tests(b, game, he, extra=None):
-    """the game's own link: it starts at once (touch), the demo finger + its words (voiced), the pause button, no page errors"""
+    """the game's own link: it starts at once (touch), the demo finger + its words (voiced), the house in the corner (one tap: home), no page errors"""
     tag = game + ' ' + ('HE' if he else 'EN')
     ctx, page, errs = await page_for(b, '/' + game, he)
     ok = await wait(page, f"mode === 'mouse' && gameMode === '{game}' && $('start').hidden")
@@ -48,13 +48,13 @@ async def link_tests(b, game, he, extra=None):
     ok = await wait(page, f"{T}.demoOn() && {T}.said.length > 0", 4000)
     words = await said(page)
     check(tag + ': first play: the demo finger and <= 3 words, voiced', ok and len(words[0].replace('!', '').split()) <= 3, words)
-    check(tag + ': the pause button is the way out (minChrome, nothing else on the canvas)', await page.evaluate("document.body.classList.contains('minChrome') && !$('pauseBtn').hidden"))
+    check(tag + ': the corner sticker is the way out (minChrome, nothing else on the canvas)', await page.evaluate("document.body.classList.contains('minChrome') && !$('pauseBtn').hidden"))
     r = extra and await extra(page, tag)
     await page.wait_for_timeout(400); await page.screenshot(path=OUT + 'toddler_%s_%s.png' % (game, 'he' if he else 'en'))
-    await page.tap('#pauseBtn'); ok = await wait(page, "menu.open", 3000)
-    check(tag + ': the pause menu opens', ok)
-    await page.click('#homeBtn'); ok = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
-    check(tag + ': Home from the pause menu leaves; the address is / again', ok and await page.evaluate("location.pathname") == '/')
+    r = await page.evaluate("({ homeOnly: document.body.classList.contains('homeOnly'), label: $('pauseBtn').getAttribute('aria-label'), home: t('home') })")
+    check(tag + ': nothing to pause: the corner sticker is the house alone (homeOnly, label Home)', r['homeOnly'] and r['label'] == r['home'], r)
+    await page.tap('#pauseBtn'); ok = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
+    check(tag + ': one tap on the house goes home at once (no sheet); the address is / again', ok and not await page.evaluate("menu.open") and await page.evaluate("location.pathname") == '/', await page.evaluate("[mode, gameMode, menu.open, location.pathname]"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
 # ---------------- Animal sounds ----------------
