@@ -62,7 +62,7 @@ async def main():
                 ctx, page, errs = await fresh(b, mobile, he, "localStorage.setItem('grasp.profile', JSON.stringify({ v: 1, xpv: 2, smash: { stars: { 1: 3, 2: 3, 3: 1 }, unlocked: 4 } })); if (!sessionStorage.getItem('pv')) { sessionStorage.setItem('pv', '1'); localStorage.removeItem('inputPref'); }")
                 await page.wait_for_timeout(1300)  # entrance done
                 L = await page.evaluate(LAY)
-                check(tag + ': no scrolling at all; the hero + Map + Frenzy / Daily, Smash, Slice, Pop It, the 4 camera games (navigation v2) and the dock on screen, >= 44 px, text >= 14 px', L['noScroll'] and L['allOn'] and len(L['tiles']) == 11 and all(t['h'] >= 44 and t['w'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and len(L['tabs']) == 2, L)  # (menu B: the dock: Shop, Events)
+                check(tag + ': no scrolling at all; the hero + Map + Frenzy / Daily, Smash, Slice, Pop It, Spot it, the 4 camera games (navigation v2) and the dock on screen, >= 44 px, text >= 14 px', L['noScroll'] and L['allOn'] and len(L['tiles']) == 12 and all(t['h'] >= 44 and t['w'] >= 44 and t['fs'] >= 14 for t in L['tiles']) and len(L['tabs']) == 2, L)  # (menu B: the dock: Shop, Events)
                 check(tag + ': gone from the start screen: the meta row, the flame / gift chips, the Easy / Normal toggle, Camera | Touch, the event banner, the Tremorti link', not L['gone'] and not L['link'], L['gone'])
                 check(tag + ': the top bar: the parents\' lock, Bubu and the coins pill (>= 44 px)', L['more']['w'] >= 44 and L['more']['h'] >= 44 and L['pill']['h'] >= 44 and L['h1']['h'] >= 44, L)
                 check(tag + ': smash badge: the stars of its stages', (await page.evaluate(BESTS))['smash'] == '★ 7')

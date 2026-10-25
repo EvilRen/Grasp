@@ -1228,8 +1228,9 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 #start.mb.intro .stk, #start.mb.intro .mbChip, #start.mb.intro .mbAgeB, #start.mb.intro .mbBubu, #start.mb.intro .mbDockB{ animation:mbIn .45s cubic-bezier(.3,1.5,.5,1) both; animation-delay:calc(var(--i,0) * 55ms); }
 @keyframes mbIn{ from{ opacity:0; transform:rotate(var(--rot,0deg)) translateY(4cqw) scale(.55); } }
 /* the big kids' room: the Strike hero (+ the Map), then Smash · Slice · Arcade · Camera games, then the dock */
-.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:auto minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
-.mbGrid .stk{ --icS:min(20cqw, 17cqh); }
+.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; grid-template-rows:auto minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
+.mbGrid .stk{ --icS:min(16cqw, 16cqh); } /* (four stickers a row since spot the difference) */
+.mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
 .mbMode{ display:flex; align-items:center; gap:1cqw; min-height:44px; min-width:0; padding:.3cqw 3cqw .3cqw 1.2cqw; border-radius:99px; font-size:max(14px,3.9cqw); font-weight:700; line-height:1.1; }
@@ -1388,6 +1389,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button type="button" class="stk wig" data-mode="smash" aria-pressed="false"><span class="ic" data-ic="smash"></span><span class="lb" data-i18n="modeSmash">Smash</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" data-mode="slice" aria-pressed="false"><span class="ic" data-ic="slice"></span><span class="lb" data-i18n="modeSlice">Slice</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" id="bigPopit" data-k="popit" data-feat="popit"><span class="ic" data-ic="popit"></span><span class="lb" data-i18n="mbPopit">Pop It</span></button>
+        <button type="button" class="stk wig" data-mode="spot" aria-pressed="false"><span class="ic" data-ic="spot"></span><span class="lb" data-i18n="modeSpot">Spot it</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <div class="mbCam" id="camGamesBtn" data-k="camera" role="group" data-i18n-aria="camGames" aria-label="Camera games">
           <span class="mbCamT"><span class="ic" data-ic="camera"></span><span class="lb" data-i18n="camGames">Camera games</span></span>
           <span class="mbCamRow"><button type="button" class="stk wig" data-cg="drums" data-i18n-aria="modeDrums" aria-label="Air Drums"><span class="ic" data-ic="drums"></span><span class="lb" data-i18n="cgsDrums">Drums</span></button><button type="button" class="stk wig" data-cg="bubbles" data-i18n-aria="modeBubbles" aria-label="Bubble Pop"><span class="ic" data-ic="bubbles"></span><span class="lb" data-i18n="cgsBubbles">Bubbles</span></button><button type="button" class="stk wig" data-cg="paint" data-i18n-aria="modePaint" aria-label="Air Painting"><span class="ic" data-ic="paint"></span><span class="lb" data-i18n="cgsPaint">Paint</span></button><button type="button" class="stk wig" data-cg="stars" data-i18n-aria="modeStars" aria-label="Catch the Stars"><span class="ic" data-ic="stars"></span><span class="lb" data-i18n="cgsStars">Stars</span></button></span>
@@ -2337,6 +2339,7 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   modeFeed: 'Feed me', gm_feed: 'feed', descFeed: 'A hungry animal with a big open mouth: give it the food it wants (drag it, or tap it and then the animal). Five good bites: a burp!',
   tgd_feed: 'Feed me!', feWants: 'The {a} wants a {f}!', feWantsPet: '{a} wants a {f}!', feYum: 'Yummy!', feYuck: 'Yuck!', feBurp: 'Burp! Excuse me!',
   fd_carrot: 'Carrot', fd_bone: 'Bone', fd_fish: 'Fish', fd_banana: 'Banana', fd_apple: 'Apple', fd_snack: 'Cookie',
+  modeSpot: 'Spot it', gm_spot: 'spot the difference', descSpot: 'Two pictures, a few differences: tap them. 3, then 5, then 7.', spFind: 'Find {n} differences!', spDone: 'Well spotted!', spNext: 'Next', spMissL: 'misses', spHintL: 'hints', spTimeL: 'seconds', spLvl1: 'Easy', spLvl2: 'Medium', spLvl3: 'Hard', spLoading: 'Loading the pictures…', spErr: "The pictures didn't load. Check the connection, then try again.",
   modeSand: 'Sand', gm_sand: 'sand', descSand: 'A tray of soft sand: dig with your fingers, smooth it flat again, and switch on the glow in the dark.', tgd_sand: 'Dig and squish!',
   modePuzzle: 'Puzzle', gm_puzzle: 'puzzle', descPuzzle: 'A giant puzzle: 2, then 3, then 4 big pieces. Drag each one to its place (or tap it, then its place); the picture comes alive.',
   tgd_puzzle: 'Drag the piece!', pzDone: 'Hooray! A {p}!', pz_car: 'car', pz_cow: 'cow', pz_duck: 'duck', pz_boat: 'boat',
@@ -2355,6 +2358,7 @@ Object.assign(I18N.he, {
   modeFeed: 'מאכילים', gm_feed: 'מאכילים', descFeed: 'חיה רעבה עם פה פתוח: תנו לה את האוכל שהיא רוצה (גררו אותו, או הקישו עליו ואז על החיה). חמישה ביסים טובים: גרפס!',
   tgd_feed: 'תאכילו אותי!', feWants: 'ה{a} רוצה {f}!', feWantsPet: '{a} רוצה {f}!', feYum: 'יאמי!', feYuck: 'איכס!', feBurp: 'גרעפס! סליחה!',
   fd_carrot: 'גזר', fd_bone: 'עצם', fd_fish: 'דג', fd_banana: 'בננה', fd_apple: 'תפוח', fd_snack: 'עוגייה',
+  modeSpot: 'הבדלים', gm_spot: 'מצא את ההבדלים', descSpot: 'שתי תמונות, כמה הבדלים: מקישים עליהם. 3, אחר כך 5, ואחר כך 7.', spFind: 'מצאו {n} הבדלים!', spDone: 'עין חדה!', spNext: 'הבא', spMissL: 'טעויות', spHintL: 'רמזים', spTimeL: 'שניות', spLvl1: 'קל', spLvl2: 'בינוני', spLvl3: 'קשה', spLoading: 'טוען את התמונות…', spErr: 'התמונות לא נטענו. בדקו את החיבור ונסו שוב.',
   modeSand: 'חול קינטי', gm_sand: 'חול קינטי', descSand: 'ארגז של חול רך: חופרים באצבעות, מחליקים מחדש, ומדליקים זוהר בחושך.', tgd_sand: 'חופרים באצבע!',
   modePuzzle: 'פאזל', gm_puzzle: 'פאזל', descPuzzle: 'פאזל ענק: 2, אחר כך 3 ואחר כך 4 חלקים גדולים. גררו כל חלק למקום שלו (או הקישו עליו ואז על המקום); התמונה מתעוררת לחיים.',
   tgd_puzzle: 'גוררים את החלק!', pzDone: 'הידד! {p}!', pz_car: 'מכונית', pz_cow: 'פרה', pz_duck: 'ברווז', pz_boat: 'סירה',
@@ -2791,6 +2795,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (mode !== 'none' && gameMode === 'strike' && strike.chest && !strike.over && (e.button === 0 || e.pointerType === 'touch') && chestAt(e.clientX, e.clientY)) { e.preventDefault(); openChest(strike.chest, performance.now()); return; } // a tap on the boss chest opens it
   if (mode === 'mouse' && gameMode === 'smash' && !smash.over && smash.phase === 'play' && !pause.on && !menu.open && (e.button === 0 || e.pointerType === 'touch') && smash.taps.length < 6) smash.taps.push({ x: e.clientX, y: e.clientY }); // Smash: a tap is a punch right there
   if (mode !== 'none' && cgOn() && cgPtrDown(e)) { e.preventDefault(); return; } // the camera games: a canvas button, else a tap queued for the game
+  if (mode !== 'none' && gameMode === 'spot') { e.preventDefault(); spotDown(e); return; } // spot the difference: a tap
   if (mode !== 'none' && tgOn()) { e.preventDefault(); tgPtrDown(e); return; } // the Little ones games: one finger drives
   if (mode !== 'mouse') return;
   e.preventDefault();
@@ -2941,7 +2946,7 @@ function frameBody(now) {
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
-  const noPhysics = gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
+  const noPhysics = gameMode === 'spot' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -2956,7 +2961,7 @@ function frameBody(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt); fxTick(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (gameMode === 'spot') { spotTick(now); renderSpot(now); } else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
   if (fxp.n) fxDraw(); // (a mode that drew no particles this frame: the pool on top)
   gfx3dSync();
   fdTick(now); drawFingerDemo(now); // (phase 1: the first-time instruction fingers)
@@ -11457,7 +11462,7 @@ function navCardButtons(main, extra, bx, by, bw, bh, sh, rtl) { // navigation v2
   else B.home = { x: bx, y, w: bw, h: sh };
   return B;
 }
-function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : cgOn() ? cgState() : null; } // the mode that owns a round-over card
+function endState() { return gameMode === 'strike' ? strike : gameMode === 'smash' ? smash : gameMode === 'slice' ? slice : gameMode === 'shapes' ? shapes : gameMode === 'spot' ? spot : cgOn() ? cgState() : null; } // the mode that owns a round-over card
 function endCardAt(px, py) { // which card button (if any) is under a screen point
   const E = endState(), B = E && E.over && E.ui.buttons; if (!B) return null;
   for (const k in B) { const r = B[k]; if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return k; }
@@ -11481,7 +11486,7 @@ function endCardAction(key, now) {
   if (key === 'home') return goHome();
   if (key === 'shop') { goHome(); openPanel('collection'); return; } // the end card's Shop: the start screen with the shop open
   if (key === 'easy' || key === 'normal') return setStrikeDiff(key);
-  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes(); else if (cgOn()) cgRestart(now);
+  if (gameMode === 'strike') resetStrike(now); else if (gameMode === 'smash') { if (engine) resetSmash(now); } else if (gameMode === 'slice') resetSlice(); else if (gameMode === 'shapes') resetShapes(); else if (gameMode === 'spot') spotStart(); else if (cgOn()) cgRestart(now); // (spot: Next = the next puzzle)
 }
 function endCardTick(now) { // hover, dwell and the wave-to-restart, for whichever mode's round just ended (not while a NEW UNLOCKED card is up)
   if (!$('shareSheet').hidden) { const E0 = endState(); E0.ui.hover = E0.ui.dwell = null; h2ShareDwellTick(now); return; } // (home2: the Share sheet over the card)
@@ -11554,7 +11559,7 @@ function drawEndCard(now, E, o) { // o: { score, best, bestText, stats: [[value,
   } else ui.strip = null;
   const bw = cw - 40, bx = x0 + 20, by = y0 + BY, bh = 54, sh = 46, sy2 = by + bh + 10; // Play again: the big, pulsing one; Home (+ Map) under it; Share under those
   ui.buttons = navCardButtons('again', shr ? 'share' : o.map ? 'map' : null, bx, by, bw, bh, sh, rtl); // (navigation v2: Play again (big), then Home | Share or Map; at most 3)
-  const label = { again: t('playAgainBtn'), home: t('home'), map: t('mapBtn'), share: t('shareBtn') }; ui.labels = Object.fromEntries(Object.keys(ui.buttons).map((q) => [q, label[q]]));
+  const label = { again: o.againLabel || t('playAgainBtn'), home: t('home'), map: t('mapBtn'), share: t('shareBtn') }; ui.labels = Object.fromEntries(Object.keys(ui.buttons).map((q) => [q, label[q]]));
   for (const key in ui.buttons) {
     const r = ui.buttons[key], hot = ui.hover === key, mx = r.x + r.w / 2, my = r.y + r.h / 2, pri = key === 'again';
     let bk = hot ? 1.04 : 1;
@@ -13376,6 +13381,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
       if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
       if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= ADV_WN))].sort((x, y) => x - y); }
+    if (p.spot !== undefined) d.spot = spValidate(p.spot); // (spot the difference: the solved puzzles' stars)
     if (p.popit !== undefined) d.popit = piValidate(p.popit); // (Pop It: its boards, bests and flips)
     if (p.pet !== undefined) d.pet = petValidate(p.pet, d.evx.hats); // the pet: every field checked (see petValidate)
     advSyncWorlds(d); albumSync(d);
@@ -14409,7 +14415,7 @@ function startWorld(n, how) { // play Strike from world n's first level (n: an u
 function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel); Smash its map (Free play or a stage)
   if (gameMode === 'strike' && !daily.armed) { openAdvMap({ how }); return; }
   if (gameMode === 'smash') { openSmashMap({ how }); return; }
-  if (tgOn()) { fallbackToMouse([]); return; } // (the Little ones games play by touch; Colors opens its own camera for its camera activity)
+  if (tgOn() || gameMode === 'spot') { fallbackToMouse([]); return; } // (the Little ones games and spot the difference play by touch; Colors opens its own camera for its camera activity)
   if (how === 'camera') enableCamera(); else fallbackToMouse([]);
 }
 /* --- Strike Adventure: the saga map. A full-screen overlay: a winding path from the bottom up, 40 numbered stops in five world bands (each in its
@@ -14757,7 +14763,7 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (typeof text !== 'string' && mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash') && fdStart(gameMode)) return; // (phase 1: the first time: the finger instead of the how-to toast)
   if (fdActive()) { if (typeof text === 'string') fd.q = text; hideHint(); return; } // (phase 1: one instruction at a time: a tip waits for the finger)
-  if (tgOn() && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way)
+  if ((tgOn() || gameMode === 'spot') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull back, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
@@ -14805,13 +14811,13 @@ function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHu
 function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (gameMode === 'spot') spotStart({ s: spot.sc, l: spot.lvl }); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
 
 /* ---------------- Strike: the toolbar folds into one pause button (body.minChrome). A tap (or a camera dwell) pauses the game and opens
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit']; // every game: the toolbar is the one pause button in play
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); if (!on) closeMenu(false); }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
@@ -15294,7 +15300,7 @@ function startGame(m) {
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
-  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   littleFlowSet(); // (phase 1: the Today panel hides the streak flame in the Little ones flow)
   showHint();
@@ -19771,7 +19777,7 @@ window.__grasp.popit = { PI, pi, boards: PI_BOARDS, shapes: PI_SHAPES, ids: PI_I
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
 const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
 function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
@@ -20076,6 +20082,116 @@ const SA_GAME = { reset: saReset, tick: saTick, render: saRender, down: saDown, 
 window.__grasp.sand = { SA, sa, shade: () => saShade(), layout: () => (saLayout(true), sa.L), night: (on) => (saNight(on), sa.night),
   at: (x, y) => sa.h[saIdx(x, y)], glowAt: (x, y) => sa.glow[saIdx(x, y)], colAt: (x, y) => { const u = saIdx(x, y) * 3; return [sa.hue[u], sa.hue[u + 1], sa.hue[u + 2]]; }, sum() { let s = 0; for (let k = 0; k < sa.h.length; k++) s += sa.h[k]; return s; },
   get snd() { return { on: !!sa.snd, lv: sa.sndLv }; } };
+/* ---------------- Spot the difference (/spot, Big kids; Oct 2026: the audience asked for it). Two pictures, the original and a changed one (one
+   above the other on a phone, side by side when the screen is wide; the original first in reading order); a tap on a difference, in either
+   picture, rings it in both. Three levels: 3, then 5, then 7 differences (every scene on level 1 first, then on 2, then on 3: one tap on the
+   sticker plays the next puzzle). The pictures and the answer key come from tools/spot_make.py (assets/spot/spot.json: per scene the original
+   a.webp, the changed l1-l3.webp, each difference's hit circle x, y, r as fractions; SPOT_V busts the offline cache when they change). A wrong
+   tap: a small red cross (counted, never a fail); the bulb: one difference glows round its spot for a moment. Stars by mistakes and hints, a
+   few coins, the shared card (Next / Home). Played by touch. Hooks: __grasp.spot. ---------------- */
+const SPOT_V = 1;
+const SP = { url: '/assets/spot/', hintMs: 2600, hintCool: 6000, crossMs: 700, doneMs: 900, coins: [0, 3, 4, 6], slop: 14 };
+const spot = { data: null, loading: null, startId: 0, sc: null, lvl: 1, key: '', imgA: null, imgB: null, ready: false, err: null, found: [], foundAt: [], miss: 0, hints: 0,
+  hint: null, hintAt: -1e9, crosses: [], doneAt: 0, over: false, overAt: 0, starsN: 0, coins: 0, secs: 0, t0: 0, ui: { buttons: null, hover: null, dwell: null }, L: null, lkey: '', log: [] };
+function spP() { if (!profile.spot || typeof profile.spot !== 'object') profile.spot = { solved: {} }; if (!profile.spot.solved || typeof profile.spot.solved !== 'object') profile.spot.solved = {}; return profile.spot; }
+function spValidate(v) { const out = { solved: {} }; if (v && typeof v === 'object' && v.solved && typeof v.solved === 'object') for (const k in v.solved) { const n = Math.round(+v.solved[k]); if (/^[\w-]{1,12}:[123]$/.test(k) && n >= 1 && n <= 3) out.solved[k] = n; } return out; }
+function spLoad() {
+  if (spot.data) return Promise.resolve(spot.data); if (spot.loading) return spot.loading;
+  spot.loading = fetch(SP.url + 'spot.json?v=' + SPOT_V).then((r) => { if (!r.ok) throw new Error('spot.json ' + r.status); return r.json(); })
+    .then((d) => { if (!d || !Array.isArray(d.scenes) || !d.scenes.length) throw new Error('no scenes'); spot.data = d; return d; })
+    .catch((e) => { spot.loading = null; throw e; });
+  return spot.loading;
+}
+function spOrder() { const out = []; for (let l = 1; l <= 3; l++) for (const s of spot.data.scenes) out.push({ s, l }); return out; } // (level 1 of every scene, then 2, then 3)
+function spNextPuzzle() { const P = spP(), list = spOrder(); return list.find((q) => !P.solved[q.s.id + ':' + q.l]) || list[Math.floor(Math.random() * list.length)]; } // (all solved: any one again)
+function spDiffs() { return spot.sc ? spot.sc.levels[spot.lvl - 1].diffs : []; }
+async function spotStart(pz) {
+  const id = ++spot.startId; Object.assign(spot, { over: false, ready: false, err: null, found: [], foundAt: [], miss: 0, hints: 0, hint: null, hintAt: -1e9, crosses: [], doneAt: 0, starsN: 0, coins: 0, lkey: '' });
+  spot.ui = { buttons: null, hover: null, dwell: null };
+  try { await spLoad(); } catch (e) { if (id === spot.startId) { spot.err = 'load'; spot.log.push('err:load'); } return; }
+  if (id !== spot.startId) return;
+  const q = pz && pz.s ? pz : spNextPuzzle(); spot.sc = q.s; spot.lvl = q.l; spot.key = q.s.id + ':' + q.l;
+  const ld = (src) => new Promise((ok, no) => { const im = new Image(); im.decoding = 'async'; im.onload = () => ok(im); im.onerror = () => no(new Error(src)); im.src = src + '?v=' + SPOT_V; });
+  try {
+    const [a, b] = await Promise.all([ld(SP.url + q.s.id + '/' + q.s.a), ld(SP.url + q.s.id + '/' + q.s.levels[q.l - 1].img)]); if (id !== spot.startId) return;
+    spot.imgA = a; spot.imgB = b; spot.ready = true; spot.t0 = performance.now(); spot.log.push('start:' + spot.key);
+  } catch { if (id === spot.startId) { spot.err = 'img'; spot.log.push('err:img'); } }
+}
+/* the layout: the two pictures as big as fit between the pause button and the bottom row (the found dots, the level, the bulb) */
+function spLayout() {
+  const key = W + 'x' + H + '|' + lang + '|' + (spot.sc ? spot.sc.id : ''); if (spot.lkey === key && spot.L) return spot.L; spot.lkey = key;
+  const top = cgTopY(), bot = 84, ar = spot.sc ? spot.sc.h / spot.sc.w : 0.75, wide = W > H * 1.05, rtl = lang === 'he', gap = 10; let A, B;
+  if (wide) { const w = Math.min((W - 24 - gap) / 2, (H - top - bot - 8) / ar), h = w * ar, y = top + Math.max(0, (H - top - bot - h) / 2), xl = W / 2 - gap / 2 - w, xr = W / 2 + gap / 2;
+    A = { x: rtl ? xr : xl, y, w, h }; B = { x: rtl ? xl : xr, y, w, h }; } // (the original first in reading order)
+  else { const w = Math.min(W - 16, (H - top - bot - gap - 8) / 2 / ar), h = w * ar, x = (W - w) / 2, y0 = top + Math.max(0, (H - top - bot - 2 * h - gap) / 2); A = { x, y: y0, w, h }; B = { x, y: y0 + h + gap, w, h }; }
+  const hy = H - bot / 2 - 2, hint = { x: rtl ? 44 : W - 44, y: hy, r: 30 };
+  return (spot.L = { A, B, hint, hy, wide });
+}
+/* a tap: a difference (in either picture), the bulb, or a miss */
+function spotDown(e) {
+  if (!spot.ready || spot.over || spot.doneAt || pause.on || menu.open || !(e.button === 0 || e.pointerType === 'touch')) return;
+  const L = spLayout(), x = e.clientX, y = e.clientY, now = performance.now();
+  if (Math.hypot(x - L.hint.x, y - L.hint.y) <= L.hint.r + 12) { spHint(now); return; }
+  const R = [L.A, L.B].find((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h); if (!R) return;
+  const u = (x - R.x) / R.w, v = (y - R.y) / R.h, ar = R.h / R.w, D = spDiffs(), slop = SP.slop / R.w; let best = -1, bd = 1e9, near = false;
+  D.forEach((d, i) => { const dd = Math.hypot(u - d.x, (v - d.y) * ar) - (d.r + slop); if (spot.found.includes(i)) { if (dd <= 0) near = true; return; } if (dd < bd) { bd = dd; best = i; } });
+  if (best >= 0 && bd <= 0) return spFound(best, now);
+  if (near) return; // (a tap on one already found: nothing)
+  spot.miss++; spot.crosses.push({ x, y, t: now }); if (spot.crosses.length > 8) spot.crosses.shift(); spot.log.push('miss'); sfx('boop');
+}
+function spFound(i, now) {
+  spot.found.push(i); spot.foundAt[i] = now; spot.hint = null; spot.log.push('found:' + i);
+  const L = spLayout(), d = spDiffs()[i]; for (const R of [L.A, L.B]) { const px = R.x + d.x * R.w, py = R.y + d.y * R.h; fxSparkle(px, py, ['#ffd23f', '#ffffff', '#3ddc84'], 7, d.r * R.w); ring(px, py, 'rgba(255,255,255,0.9)', d.r * R.w * 1.6, 420, 4); }
+  sfx('chime'); if (spot.found.length >= spDiffs().length) { spot.doneAt = now; spFinish(now); }
+}
+function spFinish(now) {
+  const n = spDiffs().length; spot.secs = Math.round((now - spot.t0) / 1000);
+  spot.starsN = spot.hints === 0 && spot.miss <= 2 ? 3 : spot.hints <= 1 && spot.miss <= 5 ? 2 : 1;
+  const P = spP(), had = P.solved[spot.key] || 0; P.solved[spot.key] = Math.max(had, spot.starsN);
+  spot.coins = had ? 1 : SP.coins[spot.starsN]; saveProfile(); spot.log.push('done:' + spot.key + ':' + spot.starsN + ':' + n);
+}
+function spHint(now) {
+  if (now - spot.hintAt < SP.hintCool) { sfx('boop'); return; } const D = spDiffs(), left = D.map((d, i) => i).filter((i) => !spot.found.includes(i)); if (!left.length) return;
+  const i = left[Math.floor(Math.random() * left.length)], d = D[i], a = Math.random() * TAU, off = d.r * 0.8; // (round the spot, not on it: a hint, not the answer)
+  spot.hint = { i, x: d.x + Math.cos(a) * off, y: d.y + Math.sin(a) * off * (spot.sc.w / spot.sc.h), r: d.r * 2.4, t: now }; spot.hintAt = now; spot.hints++; spot.log.push('hint:' + i); sfx('tink');
+}
+function spotTick(now) {
+  if (spot.doneAt && !spot.over && now - spot.doneAt >= SP.doneMs) { spot.over = true; spot.overAt = now; roundStart(); if (spot.coins) addCoins(spot.coins); confetti(W / 2, H * 0.35, 90, 1.2); sfx('levelup'); }
+  if (spot.hint && now - spot.hint.t > SP.hintMs) spot.hint = null;
+}
+function spBg() { return makeSprite('spbg|' + W + 'x' + H, W, H, 0, 0, (g) => { const gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#2f2a6b'); gr.addColorStop(1, '#1c4a7a'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const r = rng(W + H * 7); g.fillStyle = 'rgba(255,255,255,0.05)'; for (let i = 0; i < 40; i++) { g.beginPath(); g.arc(r() * W, r() * H, 6 + r() * 30, 0, TAU); g.fill(); } }); }
+function renderSpot(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const bg = spBg(); ctx.drawImage(bg.c, 0, 0, W, H); resetView();
+  if (!spot.ready) { const tx = spot.err ? t('spErr') : t('spLoading'), sp = textSprite(tx, 20, '#ffffff', 'rgba(20,20,60,0.85)', 700), k = Math.min(1, (W - 32) / sp.tw); blit(sp, W / 2, H / 2, 0, k * (spot.err ? 1 : 1 + 0.03 * Math.sin(now / 200))); return; }
+  const L = spLayout(), D = spDiffs();
+  for (const [R, im] of [[L.A, spot.imgA], [L.B, spot.imgB]]) { // the pictures in white frames
+    resetView(); ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(R.x - 5, R.y - 5, R.w + 10, R.h + 10, 14); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.roundRect(R.x, R.y, R.w, R.h, 10); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(im, R.x, R.y, R.w, R.h); ctx.restore();
+  }
+  for (const i of spot.found) { const d = D[i], q = Math.min(1, (now - spot.foundAt[i]) / 260), sc = q < 1 ? 0.6 + 0.6 * ease(q) - 0.2 * Math.sin(q * Math.PI) : 1; // the found ones: a ring in both pictures
+    for (const R of [L.A, L.B]) { const px = R.x + d.x * R.w, py = R.y + d.y * R.h, rr = d.r * R.w * sc; resetView(); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.stroke(); ctx.lineWidth = 3.5; ctx.strokeStyle = '#22c55e'; ctx.stroke(); } }
+  if (spot.hint) { const h = spot.hint, q = (now - h.t) / SP.hintMs, a = Math.min(1, q * 6) * Math.min(1, (1 - q) * 4), pu = 1 + 0.08 * Math.sin(now / 120);
+    for (const R of [L.A, L.B]) { resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(R.x, R.y, R.w, R.h, 10); ctx.clip(); const px = R.x + h.x * R.w, py = R.y + h.y * R.h, rr = h.r * R.w * pu, gr = ctx.createRadialGradient(px, py, rr * 0.2, px, py, rr);
+      gr.addColorStop(0, 'rgba(255,230,120,' + (0.38 * a).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,230,120,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.fill();
+      ctx.lineWidth = 3; ctx.setLineDash([8, 8]); ctx.strokeStyle = 'rgba(255,214,80,' + (0.95 * a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(px, py, rr * 0.92, 0, TAU); ctx.stroke(); ctx.restore(); } }
+  for (let i = spot.crosses.length - 1; i >= 0; i--) { const c = spot.crosses[i], q = (now - c.t) / SP.crossMs; if (q >= 1) { spot.crosses.splice(i, 1); continue; } // a miss: a small red cross that fades
+    resetView(); ctx.save(); ctx.globalAlpha = 1 - q; ctx.translate(c.x, c.y); ctx.scale(0.8 + 0.4 * Math.min(1, q * 4), 0.8 + 0.4 * Math.min(1, q * 4)); ctx.lineCap = 'round'; ctx.lineWidth = 7; ctx.strokeStyle = '#ffffff'; for (const s of [1, -1]) { ctx.beginPath(); ctx.moveTo(-11, -11 * s); ctx.lineTo(11, 11 * s); ctx.stroke(); } ctx.lineWidth = 4; ctx.strokeStyle = '#ef4444'; for (const s of [1, -1]) { ctx.beginPath(); ctx.moveTo(-11, -11 * s); ctx.lineTo(11, 11 * s); ctx.stroke(); } ctx.restore(); }
+  { // the bottom row: a dot per difference, the level, the bulb
+    const n = D.length, rtl = lang === 'he', sp = Math.min(30, (W - 200) / Math.max(1, n)), x0 = W / 2 - sp * (n - 1) / 2;
+    for (let i = 0; i < n; i++) { const on = i < spot.found.length, x = x0 + (rtl ? n - 1 - i : i) * sp; resetView(); ctx.beginPath(); ctx.arc(x, L.hy, on ? 10 : 8, 0, TAU); ctx.fillStyle = on ? '#22c55e' : 'rgba(255,255,255,0.25)'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = on ? '#ffffff' : 'rgba(255,255,255,0.5)'; ctx.stroke(); }
+    const lv = textSprite(t('spLvl' + spot.lvl), 15, '#ffffff', null, 800), lx = rtl ? W - 18 - lv.tw / 2 : 18 + lv.tw / 2; blit(glassSprite(lv.tw + 22, 30, 15), lx - lv.tw / 2 - 12, L.hy - 16); blit(lv, lx, L.hy);
+    const H0 = L.hint, cool = Math.min(1, (now - spot.hintAt) / SP.hintCool), rdy = cool >= 1; resetView(); ctx.beginPath(); ctx.arc(H0.x, H0.y, H0.r, 0, TAU); ctx.fillStyle = rdy ? '#ffd23f' : 'rgba(255,255,255,0.25)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#2a1f3d'; ctx.stroke();
+    if (!rdy) { ctx.lineWidth = 4; ctx.strokeStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(H0.x, H0.y, H0.r - 2, -Math.PI / 2, -Math.PI / 2 + cool * TAU); ctx.stroke(); }
+    ctx.save(); ctx.translate(H0.x, H0.y); ctx.fillStyle = rdy ? '#ffffff' : 'rgba(255,255,255,0.7)'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, -4, 10, Math.PI * 0.8, Math.PI * 2.2); ctx.lineTo(4, 8); ctx.lineTo(-4, 8); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; ctx.fillRect(-4.5, 10, 9, 4); ctx.restore(); // (a bulb)
+    spot.ui.hintBtn = H0;
+  }
+  const since = now - spot.t0; if (since < 2200 && !spot.found.length) { const a = Math.min(1, since / 250) * Math.min(1, (2200 - since) / 400), sp = textSprite(t('spFind', { n: D.length }), 26, '#ffffff', 'rgba(40,30,90,0.92)', 800), k = Math.min(1, (W - 24) / sp.tw);
+    blit(sp, W / 2, L.wide ? L.A.y + L.A.h / 2 : L.B.y - 5, 0, k * (1 + 0.04 * Math.sin(now / 200)), a); }
+  drawParticles(); drawRings(now);
+  if (spot.over) drawEndCard(now, spot, { stars: spot.starsN, title: t('spDone'), score: LRM + D.length + '/' + D.length, stats: [[spot.miss, 'spMissL'], [spot.hints, 'spHintL'], [spot.secs, 'spTimeL']], againLabel: t('spNext') });
+}
+window.__grasp.spot = { SP, spot, load: spLoad, start: (id, l) => spotStart(id ? { s: spot.data.scenes.find((s) => s.id === id), l: l || 1 } : null), diffs: spDiffs, layout: () => (spot.lkey = '', spLayout()), next: spNextPuzzle, profile: spP };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
    Chrome) or on iOS (a small "Add to Home Screen" how-to sheet); never shown in the installed app; a dismissal snoozes the start-screen chip
@@ -20316,7 +20432,7 @@ function h2Sync() {
    Pop It (built on another branch) shows only when its mode exists here (mbFeat). Hooks: __grasp.menub. */
 const MB_COL = { strike: '#ff7a52', big: '#ff7a52', smash: '#9a7bff', slice: '#2cc4ae', arcade: '#ff5d97', camera: '#4a8dff', little: '#ffc233', frenzy: '#ffa23a', daily: '#ff6b88', endless: '#45a8ff',
   drums: '#ff6b6b', bubbles: '#52cdf2', paint: '#b88aff', stars: '#5468ff', busy: '#f6a75c', shapes: '#ff7a7a', sandbox: '#f8c94c', calm: '#9ad4ee', animals: '#94d870', colors: '#ffb0b0', peekaboo: '#7fcf6a',
-  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', shop: '#ff8fab', events: '#56c8f0', pet: '#3fd68f', map: '#ffd166' };
+  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', shop: '#ff8fab', events: '#56c8f0', pet: '#3fd68f', map: '#ffd166' };
 const MB_ROT = ['-1.6deg', '1.4deg', '1.1deg', '-1.3deg'], MB_INK = '#2a1f3d', MB_SAY_MS = 400, MB_WIG_MS = 2000;
 const MB_PENT = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 const mb = { room: 'big', page: 0, pages: 0, sayUntil: 0, log: [], said: [], blips: [], wig: 0, wigLast: null, pressed: null, pressAt: -1e9, bubuKey: '', feats: {} };
@@ -20347,6 +20463,7 @@ const MB_ICONS = {
   feed: [['e', 34, 26, 7, 18, '#ffffff'], ['e', 52, 24, 7, 18, '#ffffff'], ['e', 34, 28, 3, 11, '!#ffb3c6'], ['e', 52, 26, 3, 11, '!#ffb3c6'], ['c', 43, 58, 24, '#ffffff'], ['c', 35, 54, 3.5, '!#1e2a3a'], ['c', 51, 54, 3.5, '!#1e2a3a'], ['e', 43, 68, 5, 6, '!#c2185b'], ['p', 'M68 40 L90 52 L64 88 Z', '#ff8a1f'], ['l', 'M80 44 L86 28', '!#3fae4f', 4], ['l', 'M82 46 L96 40', '!#3fae4f', 4]],
   puzzle: [['p', 'M14 30 H40 A10 10 0 1 1 60 30 H86 V52 A10 10 0 1 0 86 72 V88 H14 Z', '#ff7eb6'], ['star', 46, 62, 13, '#ffd23f']],
   sand: [['r', 8, 22, 84, 64, 14, '#3aa7e0'], ['r', 15, 29, 70, 50, 9, '#ecc892'], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#b98a4e', 6], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#ff6fd8', 2.5], ['c', 76, 18, 9, '#5b4bd6'], ['c', 79, 15, 6, '!#ecc892']],
+  spot: [['r', 6, 14, 42, 34, 6, '#ffffff'], ['r', 10, 18, 34, 26, 3, '#7cc8ff'], ['c', 22, 32, 6, '#ffd23f'], ['r', 52, 14, 42, 34, 6, '#ffffff'], ['r', 56, 18, 34, 26, 3, '#7cc8ff'], ['c', 82, 34, 6, '#ff4f64'], ['c', 52, 70, 18, '#e9f6ff'], ['l', 'M64 82 L80 96', '#2a1f3d', 7]],
   popit: [['r', 10, 10, 80, 80, 22, '#b07cff'], ['c', 30, 30, 8, '#ff4f64'], ['c', 50, 30, 8, '#ff4f64'], ['c', 70, 30, 8, '#ff4f64'], ['c', 30, 50, 8, '#ffd23f'], ['c', 50, 50, 8, '#ffd23f'], ['c', 70, 50, 8, '#ffd23f'], ['c', 30, 70, 8, '#5cd16e'], ['c', 50, 70, 8, '#5cd16e'], ['c', 70, 70, 8, '#5cd16e']],
   little: [['r', 6, 58, 30, 30, 6, '#3ec5ff'], ['star', 21, 73, 8, '!#ffffff'], ['e', 62, 68, 28, 18, '#ffd23f'], ['c', 72, 42, 14, '#ffd23f'], ['p', 'M84 40 L98 44 L84 49 Z', '#ff8a1f'], ['c', 75, 38, 2.8, '!#1e2a3a'], ['e', 56, 66, 12, 7, '#f5c000']],
   map: [['p', 'M8 24 L34 14 L66 24 L92 14 V76 L66 86 L34 76 L8 86 Z', '#fff3d6'], ['l', 'M34 14 V76', '!#d9c49a', 2], ['l', 'M66 24 V86', '!#d9c49a', 2], ['l', 'M18 70 Q34 50 50 58 T78 34', '!#ff4f64', 3], ['star', 78, 32, 8, '#ffd23f']],

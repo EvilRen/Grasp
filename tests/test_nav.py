@@ -93,11 +93,12 @@ async def main():
             tg = 'HE' if he else 'EN'
             ctx, page, errs = await fresh(b, he)
             bad = []
-            for m in ['strike', 'smash', 'slice', 'sandbox', 'busy', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit']:
+            for m in ['strike', 'smash', 'slice', 'sandbox', 'busy', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']:
                 if m == 'strike': await page.evaluate(f"{A}.start(1, 'mouse')")
                 elif m == 'smash': await page.evaluate("__grasp.setGameMode('smash'); smashStageStart(1, 'mouse')")
                 else: await page.evaluate(f"__grasp.setGameMode('{m}'); strikeStart('mouse')")
                 await page.wait_for_function("mode !== 'none'", timeout=8000); await page.wait_for_timeout(250)
+                if m == 'spot': await page.wait_for_function("__grasp.spot.spot.ready", timeout=15000)
                 await page.evaluate("openMenu()"); await page.wait_for_timeout(120)
                 sh = await page.evaluate(SHEET)
                 want = ['resumeBtn', 'homeBtn'] if m in ('sandbox', 'busy', 'shapes', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit') else ['resumeBtn', 'homeBtn', 'resetBtn'] + (['menuMap'] if m in ('strike', 'smash') else [])  # (Little ones: Resume + Home only)
