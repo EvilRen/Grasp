@@ -1202,6 +1202,10 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 #start.mb[data-room="little"] .mbAgeB[aria-pressed="true"]{ background:#2fae7f; }
 /* the rooms */
 .mbRoom{ flex:1; min-height:0; display:flex; flex-direction:column; }
+/* the owner, Oct 2026 ("why doesn't Little ones slide sideways?"): the two rooms sit side by side in one swiper: a swipe (or the switch) slides between them */
+.mbRooms{ flex:1; min-height:0; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; }
+.mbRooms::-webkit-scrollbar{ display:none; }
+.mbRooms > .mbRoom{ flex:0 0 100%; min-width:0; scroll-snap-align:start; scroll-snap-stop:always; }
 .mbRoom[hidden]{ display:none; }
 /* the sticker: one template for every game */
 .stk{ --c:#ffd166; --rot:0deg; --icS:25cqw; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1cqw; width:100%; height:100%; min-width:0; min-height:44px; margin:0; padding:2.4cqw 1.5cqw 2.4cqw;
@@ -1239,6 +1243,18 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 .mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
+/* the owner, Oct 2026 ("Strike with every button apart"): one card: Strike's ways to play are a strip inside its bottom (pick one; Play plays it); the Map a button at its end */
+#heroModes{ position:absolute; z-index:2; inset-inline:3.4cqw; bottom:3cqw; margin:0; gap:1cqw; padding:1cqw; border-radius:99px; background:rgba(42,31,61,.26); justify-content:stretch; }
+.mbSeg{ flex:1 1 0; min-width:0; min-height:max(40px,10.5cqw); margin:0; padding:0 1cqw; border:0; border-radius:99px; background:transparent; color:#fff; font:700 max(13px,3.7cqw)/1.1 var(--mbF); display:flex; align-items:center; justify-content:center; gap:.8cqw; cursor:pointer; white-space:nowrap; }
+.mbSeg[hidden]{ display:none; }
+.mbSeg .ic, .mbSeg .mbMeta, .mbSeg .mbSub{ display:none !important; }
+.mbSeg .lb{ overflow:hidden; text-overflow:ellipsis; }
+.mbSeg[aria-pressed="true"]:not(.heroMap){ background:#fff; color:var(--mbInk); box-shadow:0 max(2px,.6cqw) 0 rgba(42,31,61,.4); }
+.mbSeg.heroMap{ flex:0 0 auto; padding:0 2.4cqw 0 1.6cqw; background:#ffd23f; color:var(--mbInk); }
+.mbSeg.heroMap .ic{ display:block !important; } .mbSeg.heroMap .ic svg{ width:max(20px,5.4cqw); height:max(20px,5.4cqw); display:block; }
+.mbSeg.heroMap .best, .mbSeg.heroMap .newDot{ display:none !important; }
+#heroPlay.stk.hero{ padding-bottom:calc(max(40px,10.5cqw) + 8.6cqw); }
+#heroModes .mbSeg.dailyBtn{ flex:1 1 0; display:flex; gap:.8cqw; padding:0 1cqw; border:0; border-radius:99px; background:transparent; color:#fff; text-align:center; box-shadow:none; } #heroModes .mbSeg.dailyBtn[aria-pressed="true"]{ background:#fff; color:var(--mbInk); box-shadow:0 max(2px,.6cqw) 0 rgba(42,31,61,.4); } /* (the old Daily button's own look stays out of the strip) */
 .mbMode{ display:flex; align-items:center; gap:1cqw; min-height:44px; min-width:0; padding:.3cqw 3cqw .3cqw 1.2cqw; border-radius:99px; font-size:max(14px,3.9cqw); font-weight:700; line-height:1.1; }
 .mbMode[hidden]{ display:none; }
 .mbMode .ic svg{ width:max(28px,7.4cqw); height:max(28px,7.4cqw); }
@@ -1280,7 +1296,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mbDockB .bang{ position:absolute; top:-1.2cqw; inset-inline-end:calc(50% - max(25px,7.5cqw) - 6px); min-width:22px; height:22px; padding:0 5px; border-radius:11px; background:#ff3b30; color:#fff; border:2px solid #fff; font-size:14px; font-weight:800; line-height:18px; animation:gbounce 1.6s ease-in-out infinite; }
 .mbDockB .bang[hidden]{ display:none; }
 /* the Little ones' room: 4 huge stickers a page (2 x 2), swipe sideways, dots */
-.mbPager{ flex:1; min-height:0; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; }
+.mbPager{ flex:1; min-height:0; display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:auto; } /* (its first page's swipe back carries on to Big kids) */
 .mbPager::-webkit-scrollbar{ display:none; }
 .mbPg{ flex:0 0 100%; min-width:0; scroll-snap-align:start; scroll-snap-stop:always; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:6cqw 6cqw; padding:5cqw 6.5cqw 3cqw; container-type:size; }
 .mbPg .stk{ --icS:min(35cqw, 25cqh); }
@@ -1383,15 +1399,17 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
       <button class="mbAgeB" id="bigBtn" type="button" data-k="big" aria-pressed="true"><span class="ic" data-ic="strike"></span><span data-i18n="mbBig">Big kids</span></button>
       <button class="mbAgeB" id="littleBtn" type="button" data-k="little" aria-pressed="false"><span class="ic" data-ic="little"></span><span data-i18n="mbLittle">Little ones</span></button>
     </div>
+    <div class="mbRooms" id="mbRooms">
     <div class="mbRoom mbBig" id="bigRoom">
       <div class="mbGrid" id="mbGrid" role="group" data-i18n-aria="modesAria" aria-label="Game mode">
         <div class="mbHeroW" id="hero">
           <button type="button" class="stk hero wig" id="heroPlay" data-k="strike"><span class="ic" data-ic="strike"></span><span class="htx"><b id="heroLbl">Strike</b><span class="rib" id="heroSub"></span></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg></span></button>
-          <button type="button" class="mbChip mbMap heroMap" data-mode="strike" data-k="map" aria-pressed="false" data-i18n-aria="heroMapAria" aria-label="Adventure map"><span class="ic" data-ic="map"></span><span class="lb" data-i18n="mapBtn">Map</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
           <div class="mbModes" id="heroModes" role="group" data-i18n-aria="heroModesAria" aria-label="More ways to play Strike">
-            <button type="button" class="mbChip mbMode" id="frenzyChip" data-k="frenzy"><span class="ic" data-ic="frenzy"></span><span class="lb" data-i18n="frenzy">Frenzy</span><small class="mbSub" id="frenzyChipSub" hidden></small></button>
-            <button type="button" class="mbChip mbMode dailyBtn" id="dailyBtn" data-k="daily"><span class="ic" data-ic="daily"></span><span class="lb" data-i18n="dailyShort">Daily</span><span class="mbMeta" hidden><span class="dTx"><small><span class="dDate"></span> · <span class="dMod"></span></small></span><span class="dStreak"><b>0</b></span><span class="dNew"></span></span></button>
-            <button type="button" class="mbChip mbMode" id="endlessChip" data-k="endless" hidden><span class="ic" data-ic="endless"></span><span class="lb" data-i18n="endless">Endless</span></button>
+            <button type="button" class="mbSeg" id="heroAdv" data-k="adv" aria-pressed="true"><span class="lb"></span></button>
+            <button type="button" class="mbSeg" id="frenzyChip" aria-pressed="false" data-k="frenzy"><span class="ic" data-ic="frenzy"></span><span class="lb" data-i18n="frenzy">Frenzy</span><small class="mbSub" id="frenzyChipSub" hidden></small></button>
+            <button type="button" class="mbSeg dailyBtn" id="dailyBtn" aria-pressed="false" data-k="daily"><span class="ic" data-ic="daily"></span><span class="lb" data-i18n="dailyShort">Daily</span><span class="mbMeta" hidden><span class="dTx"><small><span class="dDate"></span> · <span class="dMod"></span></small></span><span class="dStreak"><b>0</b></span><span class="dNew"></span></span></button>
+            <button type="button" class="mbSeg" id="endlessChip" aria-pressed="false" data-k="endless" hidden><span class="ic" data-ic="endless"></span><span class="lb" data-i18n="endless">Endless</span></button>
+            <button type="button" class="mbSeg heroMap" data-mode="strike" data-k="map" aria-pressed="false" data-i18n-aria="heroMapAria" aria-label="Adventure map"><span class="ic" data-ic="map"></span><span class="lb" data-i18n="mapBtn">Map</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
           </div>
         </div>
         <button type="button" class="stk wig" data-mode="smash" aria-pressed="false"><span class="ic" data-ic="smash"></span><span class="lb" data-i18n="modeSmash">Smash</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
@@ -1405,7 +1423,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
       </div>
       <nav class="mbDock" id="tabBar" data-i18n-aria="tabsAria" aria-label="Menu"><button type="button" class="tab mbDockB" id="collectionBtn" data-tab="shop" data-k="shop"><span class="rd"><span class="ic" data-ic="shop"></span></span><span class="dl" data-i18n="collection">Shop</span><span class="sc" hidden></span><span class="dot" hidden></span></button><button type="button" class="tab mbDockB" id="petTab" data-tab="pet" data-k="pet" hidden><span class="rd"><canvas id="petTabCv" aria-hidden="true"></canvas></span><span class="dl" data-i18n="tabPet">Pet</span><span class="bang" hidden>!</span></button><button type="button" class="tab mbDockB" id="todayBtn" data-tab="today" data-k="events"><span class="rd"><span class="ic" data-ic="events"></span></span><span class="dl" data-i18n="tabToday">Events</span><span class="dot" hidden></span></button></nav>
     </div>
-    <div class="mbRoom mbLittle" id="littlePick" hidden role="group" data-i18n-aria="littleAria" aria-label="Little ones">
+    <div class="mbRoom mbLittle" id="littlePick" role="group" data-i18n-aria="littleAria" aria-label="Little ones">
       <div class="mbPager" id="mbPager">
         <button type="button" class="stk wig" data-mode="busy" aria-pressed="false"><span class="ic" data-ic="busy"></span><span class="lb" data-i18n="modeBusy">Busy Board</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" data-mode="shapes" aria-pressed="false"><span class="ic" data-ic="shapes"></span><span class="lb" data-i18n="modeShapes">Shapes</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
@@ -1420,6 +1438,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button type="button" class="stk wig tgTile" id="lilPopit" data-k="popit" data-feat="popit" hidden><span class="ic" data-ic="popit"></span><span class="lb" data-i18n="mbPopit">Pop It</span></button>
       </div>
       <div class="mbDots" id="mbDots"></div>
+    </div>
     </div>
   </div>
     <ul class="checks" id="checks" hidden style="--i:8">
@@ -20312,7 +20331,7 @@ function h2Hero() { // the hero sticker: "Strike" + a ribbon with the Adventure'
   $('heroLbl').textContent = t('modeStrike'); $('heroSub').textContent = t('mbStageN', { n });
   b.style.setProperty('--wc', WP.accent); b.dataset.n = String(n); b.dataset.world = String(w); b.dataset.started = String(started);
   const aria = started ? t('heroGo', { n }) + ', ' + t('worldN', { n: w }) + ' · ' + t('wn_' + w) : t('heroPlay') + ': ' + t('modeStrike') + ', ' + t('mbStageN', { n });
-  b.setAttribute('aria-label', aria);
+  b.setAttribute('aria-label', aria); try { heroModeSync(); } catch {} // (the strip: the picked way to play names the ribbon)
   return { n, w, started, label: $('heroLbl').textContent, sub: $('heroSub').textContent, aria };
 }
 function h2HeroPlay() { // the hero's tap: straight into the current stage (the remembered input; the camera games ask for the camera themselves)
@@ -20466,7 +20485,7 @@ function h2ShareDwellTick(now) { // camera: a point / pinch / fist held 600 ms o
 }
 function h2Sync() {
   h2Hero(); h2PetTab(); h2TodayDot(); h2SyncTabs(); h2SyncMore();
-  $('endlessChip').hidden = $('advEndless').hidden = !h2World2();
+  $('endlessChip').hidden = $('advEndless').hidden = !h2World2(); try { heroModeSync(); } catch {}
   $('metaPill').classList.toggle('noLv', !h2RoadOn());
   mbSync();
 }
@@ -20581,10 +20600,20 @@ function mbWiggleTick() {
 }
 setInterval(mbWiggleTick, MB_WIG_MS);
 /* --- the rooms: Big kids / Little ones (remembered); the Little ones' pages --- */
+function mbRoomsGo(r, instant) { // slides the swiper to a room (Big kids first, Little ones beside it, in reading order)
+  const R = $('mbRooms'), w = R.clientWidth; if (!w) return false; const left = (document.documentElement.dir === 'rtl' ? -1 : 1) * (r === 'little' ? w : 0);
+  if (Math.abs(R.scrollLeft - left) < 2) return true; const smooth = !instant && !gfxReduced(); if (smooth) mb.swiping = true;
+  try { R.scrollTo({ left, behavior: smooth ? 'smooth' : 'instant' }); } catch { R.scrollLeft = left; } return true;
+}
+function mbRoomsNow() { const R = $('mbRooms'), w = R.clientWidth || 1; return Math.abs(R.scrollLeft) > w / 2 ? 'little' : 'big'; }
+$('mbRooms').addEventListener('scroll', () => { // a swipe: the room it settles on (the switch follows)
+  mb.swiping = true; clearTimeout(mb.roomsT); mb.roomsT = setTimeout(() => { mb.swiping = false; const r = mbRoomsNow(); if (r !== mb.room && mode === 'none') { audioInit(); sfx('click'); mbRoom(r, 'swipe'); mb.log.push('swipe:' + r); } }, 90);
+}, { passive: true });
 function mbRoomGet() { try { return localStorage.getItem('grasp.room') === 'little' ? 'little' : 'big'; } catch { return 'big'; } }
 function mbRoom(r, quiet) {
   r = r === 'little' ? 'little' : 'big'; const was = mb.room; mb.room = r;
-  $('start').dataset.room = r; $('bigRoom').hidden = r !== 'big'; $('littlePick').hidden = r !== 'little';
+  $('start').dataset.room = r; $('bigRoom').inert = r !== 'big'; $('littlePick').inert = r !== 'little'; // (both rooms stay in the swiper; the one off screen takes no focus)
+  if (quiet !== 'swipe') mbRoomsGo(r, quiet || was === r); // (the switch: the swiper slides there; a swipe is already there)
   $('bigBtn').setAttribute('aria-pressed', String(r === 'big')); $('littleBtn').setAttribute('aria-pressed', String(r === 'little'));
   try { localStorage.setItem('grasp.room', r); } catch {}
   if (r === 'little' && was !== r) { mbGoPage(0, true); }
@@ -20645,11 +20674,12 @@ function mbBubuTap() {
 }
 /* --- layout: the tab sheets open above the dock (its height = --tabH); the pickers' odd sticker sits centred --- */
 function mbLayout() {
-  const d = $('tabBar'), on = !$('start').hidden && !$('bigRoom').hidden, top = on ? d.getBoundingClientRect().top : 0;
+  const d = $('tabBar'), on = !$('start').hidden && mb.room !== 'little', top = on ? d.getBoundingClientRect().top : 0;
+  if (!mb.swiping && !$('start').hidden) mbRoomsGo(mb.room, true); // (the swiper on its room: after a resize, a return home)
   document.documentElement.style.setProperty('--tabH', (on && top > 0 ? Math.max(0, Math.round(innerHeight - top)) : 0) + 'px');
   for (const G of document.querySelectorAll('.mbPick')) { const live = [...G.querySelectorAll(':scope > .stk')].filter((el) => !el.hidden); live.forEach((el, i) => { el.classList.toggle('mbSolo', live.length % 2 === 1 && i === live.length - 1); el.style.setProperty('--rot', MB_ROT[i % 4]); }); }
 }
-window.addEventListener('resize', () => { mbLayout(); const P = $('mbPager'); if (mb.room === 'little' && P.clientWidth) P.scrollLeft = (document.documentElement.dir === 'rtl' ? -1 : 1) * mb.page * P.clientWidth; });
+window.addEventListener('resize', () => { mbLayout(); mbRoomsGo(mb.room, true); const P = $('mbPager'); if (mb.room === 'little' && P.clientWidth) P.scrollLeft = (document.documentElement.dir === 'rtl' ? -1 : 1) * mb.page * P.clientWidth; });
 function mbSoon() { if (!mb.raf) mb.raf = requestAnimationFrame(() => { mb.raf = 0; mbBubuDraw(); mbLayout(); }); }
 function mbSync() { // (from h2Sync: the coins, a new day, a pet change, the language)
   for (const el of document.querySelectorAll('#bigRoom [data-feat]')) el.hidden = !mbFeat(el.dataset.feat);
@@ -20661,7 +20691,7 @@ function mbSync() { // (from h2Sync: the coins, a new day, a pet change, the lan
 function mbInit() {
   for (const el of document.querySelectorAll('[data-ic]')) el.innerHTML = mbIco(el.dataset.ic);
   for (const el of document.querySelectorAll('.stk')) el.style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
-  [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].forEach((el, i) => el.style.setProperty('--rot', MB_ROT[i % 4])); $('heroPlay').style.setProperty('--rot', '-1deg');
+  [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].forEach((el, i) => el.style.setProperty('--rot', MB_ROT[i % 4])); $('heroPlay').style.setProperty('--rot', '0deg'); // (straight: its strip sits inside it)
   for (const el of document.querySelectorAll('.mbDockB')) el.querySelector('.rd').style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
   mbPages(); mbRoom(mbRoomGet(), true); mbSync();
   [...$('mbTop').querySelectorAll('button'), $('bigBtn'), $('littleBtn')].forEach((el, i) => el.style.setProperty('--i', String(Math.min(i, 3)))); // (the entrance's order: the top, then the rooms' stickers)
@@ -20674,7 +20704,7 @@ $('bigBtn').addEventListener('click', () => mbRoom('big'));
 $('littleBtn').addEventListener('click', () => mbRoom('little'));
 $('lilPopit').addEventListener('click', () => mbLittleGo($('lilPopit'), () => mbOpenFeat('popit')));
 /* --- wiring --- */
-$('heroPlay').addEventListener('click', h2HeroPlay);
+$('heroPlay').addEventListener('click', heroPlayGo);
 $('moreSound').addEventListener('click', () => { setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); });
 $('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted); h2SyncMore(); if (!muted) sfx('click'); }); // (phase 1: the start screen's top bar: sound in one tap)
 /* --- full screen (the owner: Brave hides its own): a button on the start screen; the whole app stays full screen across games and home until the button again (or the phone's Back) --- */
@@ -20705,9 +20735,19 @@ syncFullBtn();
 $('moreHud').addEventListener('click', () => { setHudPref(!hudPref()); h2SyncMore(); sfx('click'); });
 $('moreVoice').addEventListener('click', (e) => { const b = e.target.closest('.segBtn'); if (!b) return; setVoice(b.dataset.v); h2SyncMore(); sfx('click'); }); // (Voice: Names · All · Off; profile.grippy follows)
 $('calmBtn').addEventListener('click', () => mbLittleGo($('calmBtn'), h2Calm)); // (menu B: its name out loud, then Calm bubbles)
-$('frenzyChip').addEventListener('click', h2Frenzy); // (navigation v2: the Arcade is gone: Strike's modes are chips under its hero, each plays at once)
-$('dailyBtn').addEventListener('click', h2Daily);
-$('endlessChip').addEventListener('click', h2Endless);
+// the owner, Oct 2026 ("Strike with every button apart"): one card: its strip picks the way to play (remembered), the card's Play plays it; the Map plays nothing, it opens
+const HERO_SEG = { adv: 'heroAdv', frenzy: 'frenzyChip', daily: 'dailyBtn', endless: 'endlessChip' };
+function heroModeGet() { let m = 'adv'; try { m = localStorage.getItem('grasp.heroMode') || 'adv'; } catch {} if (!HERO_SEG[m] || $(HERO_SEG[m]).hidden) m = 'adv'; return m; }
+function heroModeSet(m) { if (!HERO_SEG[m]) return null; audioInit(); sfx('click'); try { localStorage.setItem('grasp.heroMode', m); } catch {} mb.log.push('heroMode:' + m); return heroModeSync(); }
+function heroModeSync() {
+  const m = heroModeGet(), b = $('heroPlay'), n = advCurrent(); $('heroAdv').querySelector('.lb').textContent = t('mbStageN', { n });
+  for (const k in HERO_SEG) $(HERO_SEG[k]).setAttribute('aria-pressed', String(k === m));
+  if (m !== 'adv') { const lb = $(HERO_SEG[m]).querySelector('.lb').textContent; $('heroSub').textContent = lb; b.setAttribute('aria-label', t('heroPlay') + ': ' + t('modeStrike') + ' · ' + lb); }
+  $('hero').dataset.mode = m; return m;
+}
+function heroPlayGo() { const m = heroModeGet(); mb.log.push('heroPlay:' + m); return m === 'frenzy' ? h2Frenzy() : m === 'daily' ? h2Daily() : m === 'endless' ? h2Endless() : h2HeroPlay(); }
+for (const k in HERO_SEG) $(HERO_SEG[k]).addEventListener('click', () => heroModeSet(k));
+try { h2Hero(); } catch {}
 $('bigPopit').addEventListener('click', piBig); // (Pop It in Big kids: straight into Free play; its modes stay in its corner button)
 $('todayGift').addEventListener('click', () => { audioInit(); sfx('click'); openGifts(false); });
 $('installBtn').addEventListener('click', () => h2More(false)); // (the browser's prompt / the iOS how-to, not over the More sheet)
