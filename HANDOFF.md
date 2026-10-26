@@ -414,6 +414,10 @@ Code: the JS block `Pop It` just before the direct links (after the Little ones 
 - `drawDemoFinger` draws no hand any more: a glowing dot (white, orange rim, yellow core) where the finger goes, a ring on each tap. Every demo uses it (the Little ones' demos, Shapes, Strike's serve, Slice, Smash, Pop It's reveal).
 - The dock: the icon's box was wider than its drawing (off to one side): `.mbDockB .rd > .ic` is a centred grid now. The Pet tab draws the pet into a scratch canvas and `h2FitCenter` centres its visible pixels and fills the circle (the pet used to stand on the icon's floor); the Pet circle is light lilac (`MB_COL.pet`), a green dragon on green was hard to see.
 
+## Strike: one card + the rooms swipe (Oct 2026, the owner: "Strike with every button apart"; "why doesn't Little ones slide sideways?")
+- Strike is ONE card: `#heroModes` is a strip inside the hero sticker's bottom (absolute over its extra bottom padding; the hero no longer tilts): `#heroAdv` (Stage N) · `#frenzyChip` · `#dailyBtn` · `#endlessChip` (once unlocked) pick the way to play (`heroModeSet`, remembered in `grasp.heroMode`); the card's Play (`#heroPlay` -> `heroPlayGo`) plays the picked one; the ribbon names it. The Map (`.heroMap`, a yellow button at the strip's end) opens the Adventure map at once.
+- The rooms: `#mbRooms` holds `#bigRoom` and `#littlePick` side by side (scroll-snap); a swipe settles on a room (`mbRoom(r, 'swipe')`, the switch follows); the switch slides there (`mbRoomsGo`, smooth). Neither room is `hidden` any more: the one off screen is `inert`. The Little ones' own pager chains: a swipe back on its first page carries on to Big kids.
+
 ## Updates by themselves (Oct 2026, the owner saw an old version's pause button after a deploy: the "New version" toast went unnoticed)
 - `pwaShowUpdate` -> `pwaAutoSoon()`: a new version (a new index.html, or a waiting sw.js) takes over by itself at a quiet moment: the start screen, nothing open over it (`pwaQuiet`). In a game it waits; `goHome` tries again. Tests: only with `window.__graspAutoUpdate = true` (test_pwa checks the start screen, the game and Home).
 
