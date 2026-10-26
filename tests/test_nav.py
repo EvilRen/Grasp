@@ -253,8 +253,8 @@ async def main():
         for he in (False, True):
             tg = 'HE' if he else 'EN'
             ctx, page, errs = await fresh(b, he)
-            g = await page.evaluate("({ gate: !!document.getElementById('gate'), lock: !!document.getElementById('lockBtn'), aria: $('settingsBtn').getAttribute('aria-label'), ico: !!$('settingsBtn').querySelector('svg[data-ico=\"gear\"]') })")
-            check(tg + ': the gear (labelled Settings) replaces the lock; no gate sheet in the page', not g['gate'] and not g['lock'] and g['ico'] and g['aria'] == ('הגדרות' if he else 'Settings'), g)
+            g = await page.evaluate("({ gate: !!document.getElementById('gate'), lock: !!document.getElementById('lockBtn') && getComputedStyle($('lockBtn')).display !== 'none', aria: $('settingsBtn').getAttribute('aria-label'), ico: !!$('settingsBtn').querySelector('svg[data-ico=\"gear\"]') })")
+            check(tg + ': the gear (labelled Settings), no gate sheet; the Little ones lock (the owner, Oct 2026) not shown in Big kids', not g['gate'] and not g['lock'] and g['ico'] and g['aria'] == ('הגדרות' if he else 'Settings'), g)
             await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=1000)
             check(tg + ': one tap: the settings (Stats lives there)', await page.evaluate("!!$('moreHud').offsetParent && $('settingsBtn').getAttribute('aria-expanded') === 'true'"))
             await page.tap('#moreSheet .xBtn'); await page.wait_for_timeout(300)

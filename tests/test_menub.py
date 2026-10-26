@@ -222,7 +222,7 @@ async def main():
 
         # ===== 4. Settings: the gear opens it with one tap (the owner removed the parents' gate on purpose) =====
         ctx, page, errs = await fresh(b)
-        check('no parents\' gate in the page (no #gate, no lock)', await page.evaluate("!document.getElementById('gate') && !document.getElementById('lockBtn') && !document.querySelector('[data-ic=\"lock\"], .gateHold, .gateOpts')"))
+        check('no parents\' gate in the page (no #gate, no lock)', await page.evaluate("!document.getElementById('gate') && (!document.getElementById('lockBtn') || getComputedStyle($('lockBtn')).display === 'none') && !document.querySelector('[data-ic=\"lock\"], .gateHold, .gateOpts')"))
         await page.tap('#settingsBtn'); await page.wait_for_timeout(400)
         check('one tap on the gear: the settings sheet (language, touch / camera, sound, voice, install, Tremorti)', await page.evaluate("!$('moreSheet').hidden && !!$('tremortiLink') && $('settingsBtn').getAttribute('aria-expanded') === 'true'"))
         await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
