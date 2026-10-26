@@ -142,6 +142,20 @@ async def main():
         await ready(page); await page.wait_for_function("__grasp.pwa.state.version.startsWith('v2-')", timeout=15000)
         q = await page.evaluate("(async () => ({ v: __grasp.pwa.state.version, ks: await caches.keys() }))()")
         check('tapped: the new worker takes over, the page reloads; the old version\'s cache is deleted', q['v'] == 'v2-' + v1 and ('grasp-shell-' + v1) not in q['ks'] and ('grasp-shell-v2-' + v1) in q['ks'], [v1, q])
+        # by itself (the owner: the phone kept running an old version; the toast went unnoticed): on the quiet start screen a new version
+        # takes over without a tap; in a game it waits for Home (real visitors only: tests ask with __graspAutoUpdate)
+        await page.add_init_script("window.__graspAutoUpdate = true")
+        open(os.path.join(SITE, 'index.html'), 'w').write(html.replace('</body>', '<script>window.__v3 = true;</script></body>'))
+        async with page.expect_navigation(timeout=20000):
+            await page.goto(BASE + '/'); await ready(page)  # (the cached page first; its background check finds v3 and the page reloads by itself)
+        await ready(page)
+        check('a new version on the quiet start screen: the page reloads by itself, no tap', await page.evaluate("!!window.__v3 && $('pwaUpdate').hidden"))
+        await page.evaluate("__grasp.setGameMode('slice')"); await page.evaluate(START_MOUSE); await page.wait_for_function("mode === 'mouse'", timeout=10000)
+        await page.evaluate("pwaShowUpdate('page')"); await page.wait_for_timeout(1500)
+        check('...in a game it never reloads mid-round', await page.evaluate("mode === 'mouse' && !!window.__v3 && __grasp.pwa.state.update"))
+        async with page.expect_navigation(timeout=10000): await page.evaluate("goHome()")
+        await ready(page)
+        check('...Home: then it takes over by itself', await page.evaluate("mode === 'none' && !$('start').hidden"))
         check('updates: no page errors', not errs, errs); await ctx.close()
 
         # ---- the Install chip: a stubbed beforeinstallprompt (Android / desktop Chrome) ----

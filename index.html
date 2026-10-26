@@ -15293,6 +15293,7 @@ function goHome() {
   if (fromGame) { const room = navRoomOf(); if (room !== mb.room) mbRoom(room, true); } // (navigation v2: Home = the room the game belongs to: Big kids or Little ones)
   $('start').hidden = false; document.body.classList.add('home');
   h2.acted = false; navCloseOverlays(); h2CloseSheets(); syncCamBtn(); startPreviews(); nav.homeAt = performance.now(); nav.homeTap = nav.lastDown; // (a11y: the landing guard)
+  try { if (PWA_READY && pwa.update) pwaAutoSoon(); } catch {} // (a new version waited for the game to end: it takes over now, on the start screen)
   requestAnimationFrame(() => setTimeout(() => { if (mode !== 'none') return; syncBests(); syncMeta(); if (!maybeNewCard() && !maybeAwayCard()) h2Popup(); }, 0)); // (perf: the bookkeeping after the first frame of the start screen) // (phase 1: 'While you were away' after a round; navigation v2: every other sheet closed first)
   routeHome(); // the address bar back to '/'
 }
@@ -20252,7 +20253,12 @@ async function pwaInstall(from) { // the chip: the browser's own install prompt,
 function pwaIosOpen() { if (typeof closeMenu === 'function' && menu.open) closeMenu(false); $('iosInstall').hidden = false; pwa.iosShown++; try { $('iosLater').focus({ preventScroll: true }); } catch {} return true; }
 function pwaIosClose(snooze) { const P = $('iosInstall'); if (P.hidden) return false; P.hidden = true; if (snooze) pwaSnooze(); pwaSync(); return true; }
 function pwaAllowed() { try { return 'serviceWorker' in navigator && window.isSecureContext && (!navigator.webdriver || window.__graspSW === true); } catch { return false; } }
-function pwaShowUpdate(why, w) { pwa.update = true; pwa.updateWhy = why; if (w) pwa.waiting = w; pwa.log.push('update:' + why); pwaSync(); }
+function pwaShowUpdate(why, w) { pwa.update = true; pwa.updateWhy = why; if (w) pwa.waiting = w; pwa.log.push('update:' + why); pwaSync(); pwaAutoSoon(); }
+// the owner, Oct 2026 ("why is there a pause button in the puzzle?": the phone still ran the old version; the "New version" toast had gone
+// unnoticed): a new version takes over by itself, but only at a quiet moment: on the start screen, nothing open over it (never in a game, a
+// card or a sheet); in a game it waits for Home
+function pwaQuiet() { try { return mode === 'none' && !$('start').hidden && !document.querySelector('.ov:not([hidden])') && !anyMapOpen() && !pwa.applying; } catch { return false; } }
+function pwaAutoSoon() { clearTimeout(pwa.autoT); if (!pwa.update || (navigator.webdriver && window.__graspAutoUpdate !== true)) return false; /* (tests: only when asked) */ pwa.autoT = setTimeout(() => { if (pwa.update && pwaQuiet()) { pwa.log.push('auto'); pwaApply(); } }, 600); return true; }
 function pwaApply() { // the toast's tap: a waiting worker takes over (then the page reloads), or just a reload for a new index.html
   pwa.applying = true; pwa.log.push('apply'); const w = pwa.waiting || (pwa.reg && pwa.reg.waiting);
   if (w) { w.postMessage({ type: 'skip' }); setTimeout(() => location.reload(), 3000); } else location.reload();
