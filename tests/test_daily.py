@@ -10,10 +10,10 @@ SEQ = """(() => { const g = __grasp, s = g.strike; g.startDaily(); s.setLevel(6)
   for (const w of s.walls) lay.push(w.kind + ':' + w.bricks.map(k => k.tnt ? 't' : k.hole ? 'h' : k.pu ? 'p' : '.').join(''));
   s.offerPerks(); const perks = s.perkOffer.slice(); s.pickPerk(0);
   return { kinds: kinds.slice(0, 12), lay, perks, mod: g.daily.modifier, date: g.daily.date, on: g.daily.on }; })()"""
-BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('frenzyChip').getBoundingClientRect(), n = b.querySelector('.dNew');  // (navigation v2: the Daily is a chip under the Strike hero, beside Frenzy)
+BTN = """(() => { const b = $('dailyBtn'), r = b.getBoundingClientRect(), m = $('frenzyChip').getBoundingClientRect(), n = b.querySelector('.dNew'), c = $('heroPlay').getBoundingClientRect();  // (one card: the Daily is a segment of the strip inside the Strike hero's bottom, beside Frenzy)
   return { label: b.querySelector('.lb').textContent, date: b.querySelector('.dDate').textContent, mod: b.querySelector('.dMod').textContent, modId: b.dataset.mod, streak: b.querySelector('.dStreak b').textContent,
     zero: b.querySelector('.dStreak').classList.contains('zero'), newShown: !n.hidden && n.getBoundingClientRect().width > 0, newText: n.textContent, played: b.dataset.played,
-    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#heroModes'),
+    inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, overlap: r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top, h: r.height, inSheet: !!b.closest('#heroModes') && r.left >= c.left - 1 && r.right <= c.right + 1 && r.top >= c.top - 1 && r.bottom <= c.bottom + 1,
     fits: (() => { const st = $('start'); return st.scrollHeight <= st.clientHeight + 1 && document.documentElement.scrollHeight <= innerHeight + 1; })() }; })()"""
 
 async def fresh(b, mobile=False, he=False, init='', date='2026-10-02'):
@@ -179,14 +179,18 @@ async def main():
                 mod_txt = await page.evaluate("t('mod_" + exp_mod + "')")
                 check(tag + ': Daily button: label, today\'s date, the modifier of the day', bt['label'] == ('יומי' if he else 'Daily') and bt['modId'] == exp_mod and bt['mod'] == mod_txt and bt['date'] and bt['date'] == await page.evaluate("shortDate('2026-10-02')"), bt)
                 check(tag + ': not played today: no NEW nag (home2: no red dots / badges except new rewards); streak 0', not bt['newShown'] and bt['streak'] == '0' and bt['played'] == 'false', bt)
-                check(tag + ': the Daily chip: under the Strike hero beside Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
+                check(tag + ': the Daily segment: in the strip inside the Strike card beside Frenzy, inside the screen, a big target; the start screen still fits', bt['inside'] and bt['inSheet'] and not bt['overlap'] and bt['h'] >= 44 and bt['fits'], bt)
                 if mobile:
                     await page.screenshot(path='tests/out/daily_button_' + ('he' if he else 'en') + '.png')
-                if mobile: await page.tap('#dailyBtn')  # (navigation v2: the chip starts today's run at once: no panel first)
+                if mobile: await page.tap('#dailyBtn')  # (one card: the segment only picks the Daily; the card's Play plays it)
                 else: await page.click('#dailyBtn')
+                pk = await page.evaluate("({ mode, on: " + D + ".on, pressed: [...document.querySelectorAll('#heroModes .mbSeg:not(.heroMap)')].filter(x => x.getAttribute('aria-pressed') === 'true').map(x => x.id), saved: localStorage.getItem('grasp.heroMode'), rib: $('heroSub').textContent, lb: $('dailyBtn').querySelector('.lb').textContent, start: !$('start').hidden })")
+                check(tag + ': a tap on the Daily segment only picks it (nothing starts): pressed alone, remembered, the ribbon names it', pk['mode'] == 'none' and not pk['on'] and pk['start'] and pk['pressed'] == ['dailyBtn'] and pk['saved'] == 'daily' and pk['rib'] == pk['lb'], pk)
+                if mobile: await page.tap('#heroPlay')
+                else: await page.click('#heroPlay')
                 await page.wait_for_function(D + ".on && " + S + ".ui.dailyBannerBox && " + S + ".ui.dailyBannerBox.a === 1 && Math.abs(" + S + ".ui.dailyBannerBox.x + " + S + ".ui.dailyBannerBox.w / 2 - innerWidth / 2) < 1", timeout=5000)  # slid in
                 bb = await page.evaluate(S + ".ui.dailyBannerBox")
-                check(tag + ': the Daily chip starts the daily at once (the panel stays shut); the pre-run banner (today\'s twist) shows inside the screen', await page.evaluate("$('daily').hidden") and await page.evaluate("mode") == 'mouse' and bb['x'] >= 0 and bb['x'] + bb['w'] <= await page.evaluate("innerWidth") + 1, bb)
+                check(tag + ': the card\'s Play starts the picked daily (the panel stays shut); the pre-run banner (today\'s twist) shows inside the screen', await page.evaluate("$('daily').hidden") and await page.evaluate("mode") == 'mouse' and bb['x'] >= 0 and bb['x'] + bb['w'] <= await page.evaluate("innerWidth") + 1, bb)
                 if mobile:
                     await page.wait_for_timeout(500)
                     await page.screenshot(path='tests/out/daily_banner_' + ('he' if he else 'en') + '.png')
@@ -197,11 +201,12 @@ async def main():
                 await page.wait_for_timeout(400)
                 bt = await page.evaluate(BTN)
                 check(tag + ': home after a daily: no NEW dot, streak 1, daily mode off', not bt['newShown'] and bt['streak'] == '1' and not bt['zero'] and bt['played'] == 'true' and not await page.evaluate(D + ".on"), bt)
+                check(tag + ': home after a daily: the Daily is still the picked way to play', await page.evaluate("$('dailyBtn').getAttribute('aria-pressed') === 'true' && localStorage.getItem('grasp.heroMode') === 'daily'"))
                 if mobile: await page.screenshot(path='tests/out/daily_button_played_' + ('he' if he else 'en') + '.png')
-                if mobile: await page.evaluate(START_MOUSE)
-                else: await page.evaluate(START_MOUSE)
+                if mobile: await page.tap('#heroAdv'); await page.tap('#heroPlay')  # (one card: pick the Stage again, then the card's Play)
+                else: await page.click('#heroAdv'); await page.click('#heroPlay')
                 await page.wait_for_timeout(300)
-                check(tag + ': the plain Play button afterwards is normal Strike, not the daily', not await page.evaluate(D + ".on") and await page.evaluate("gameMode") == 'strike')
+                check(tag + ': the Stage picked again, the card\'s Play afterwards is normal Strike, not the daily', not await page.evaluate(D + ".on") and await page.evaluate("gameMode") == 'strike' and await page.evaluate("mode") != 'none' and await page.evaluate("localStorage.getItem('grasp.heroMode')") == 'adv')
                 check(tag + ': no page errors (button / panel)', not errs, errs); await ctx.close()
 
         # ---- the mission, I18N ----

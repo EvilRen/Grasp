@@ -1410,7 +1410,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
             <button type="button" class="mbSeg" id="frenzyChip" aria-pressed="false" data-k="frenzy"><span class="ic" data-ic="frenzy"></span><span class="lb" data-i18n="frenzy">Frenzy</span><small class="mbSub" id="frenzyChipSub" hidden></small></button>
             <button type="button" class="mbSeg dailyBtn" id="dailyBtn" aria-pressed="false" data-k="daily"><span class="ic" data-ic="daily"></span><span class="lb" data-i18n="dailyShort">Daily</span><span class="mbMeta" hidden><span class="dTx"><small><span class="dDate"></span> · <span class="dMod"></span></small></span><span class="dStreak"><b>0</b></span><span class="dNew"></span></span></button>
             <button type="button" class="mbSeg" id="endlessChip" aria-pressed="false" data-k="endless" hidden><span class="ic" data-ic="endless"></span><span class="lb" data-i18n="endless">Endless</span></button>
-            <button type="button" class="mbSeg heroMap" data-mode="strike" data-k="map" aria-pressed="false" data-i18n-aria="heroMapAria" aria-label="Adventure map"><span class="ic" data-ic="map"></span><span class="lb" data-i18n="mapBtn">Map</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
+            <button type="button" class="mbSeg heroMap" data-mode="strike" data-k="map" data-i18n-aria="heroMapAria" aria-label="Adventure map"><span class="ic" data-ic="map"></span><span class="lb" data-i18n="mapBtn">Map</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
           </div>
         </div>
         <button type="button" class="stk wig" data-mode="smash" aria-pressed="false"><span class="ic" data-ic="smash"></span><span class="lb" data-i18n="modeSmash">Smash</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
@@ -14771,7 +14771,7 @@ function setGameMode(m) {
     if (m === 'smash' && mode !== 'none') resetSmash(performance.now());
   }
   clearTimeout(setGameMode.t); setGameMode.t = setTimeout(renderModeText, 0); // (perf: the legacy texts after the game is up: no start-screen layout on a game's start)
-  document.querySelectorAll('#start button[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+  document.querySelectorAll('#start button[data-mode]:not(.heroMap)').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m))); // (the hero's Map opens, it is never "the picked one")
   // (perf: no scrollCardIntoView: the Sticker Book's grid does not scroll)
   if (mode !== 'none') showHint();
 }
@@ -20744,6 +20744,7 @@ function heroModeSync() {
   const m = heroModeGet(), b = $('heroPlay'), n = advCurrent(); $('heroAdv').querySelector('.lb').textContent = t('mbStageN', { n });
   for (const k in HERO_SEG) $(HERO_SEG[k]).setAttribute('aria-pressed', String(k === m));
   if (m !== 'adv') { const lb = $(HERO_SEG[m]).querySelector('.lb').textContent; $('heroSub').textContent = lb; b.setAttribute('aria-label', t('heroPlay') + ': ' + t('modeStrike') + ' · ' + lb); }
+  else { $('heroSub').textContent = t('mbStageN', { n }); b.setAttribute('aria-label', t('heroGo', { n })); } // (back to the Adventure: its stage again)
   $('hero').dataset.mode = m; heroModesFit(); return m;
 }
 function heroModesFit() { // the strip on a narrow phone: every word whole (>= 14 px): first the stage's number goes (the ribbon shows it), then the Map keeps only its icon

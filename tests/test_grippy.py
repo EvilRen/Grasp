@@ -207,7 +207,7 @@ async def main():
                 tag = 'phone ' + ('he' if he else 'en') + ' ' + m
                 ctx, page, errs = await fresh(b, True, he, prof(coins=10, xp=175, missions=[('rounds', 2, 3), ('fruit', 0, 40), ('boss', 0, 1)]))
                 if m == 'daily':
-                    await page.evaluate("__grasp.setGameMode('strike')"); await page.tap('#dailyBtn')  # (navigation v2: the Daily chip plays at once)
+                    await page.evaluate("__grasp.setGameMode('strike')"); await page.tap('#dailyBtn'); await page.tap('#heroPlay')  # (one card: the Daily segment picks it, the card's Play plays it)
                     await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
                 else: await play(page, m, True)
                 await page.wait_for_timeout(300)

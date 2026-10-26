@@ -1,5 +1,5 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
-# Navigation v2 (the owner's "one way home" pass, Oct 2026): the Arcade dissolved (Strike's modes are chips under its hero, each plays at once;
+# Navigation v2 (the owner's "one way home" pass, Oct 2026): the Arcade dissolved (Strike's modes: since Oct 2026 a strip inside its one card: a mode only picks, the card's Play plays it, the Map opens at once;
 # Pop It has its own sticker; the camera games are a row of stickers); "a sticker plays" (Smash's sticker = its current stage; nothing pops up
 # after Home: what waits glows); one way home (the corner control = pause + house; the sheet: Resume, Home, Restart, Map (Strike / Smash), at most
 # 4 rows; every end card: the big button, then Home, then Map / Share: at most 3); Home = the room the game belongs to; one tap everywhere (the
@@ -46,11 +46,18 @@ async def main():
             ctx, page, errs = await fresh(b, he, init=prof(adv={'stars': stars(9), 'unlocked': 10}, worlds={'unlocked': 2, 'last': 1}))
             L = await page.evaluate("""(() => { const r = (e) => e.getBoundingClientRect(); const vis = [...$('bigRoom').querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg, w: r(b).width, h: r(b).height, l: r(b).left, rr: r(b).right, t: r(b).top, bb: r(b).bottom }));
               return { arcade: !!document.getElementById('arcadeBtn') || !!document.getElementById('arcadePick'), vis, W: innerWidth, H: innerHeight, noScroll: document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1,
-                chips: [...$('heroModes').querySelectorAll('button')].filter(b => !b.hidden).map(b => ({ id: b.id, lb: b.querySelector('.lb').textContent.trim(), ic: !!b.querySelector('.ic svg') })) }; })()""")
+                chips: [...$('heroModes').querySelectorAll('button')].filter(b => !b.hidden).map(b => { const q = r(b), lb = b.querySelector('.lb'), ic = b.querySelector('.ic svg'); return { id: b.id || b.dataset.k, lb: lb.offsetParent ? lb.textContent.trim() : '', ic: !!(ic && ic.getBoundingClientRect().width > 12), on: b.getAttribute('aria-pressed'),
+                  fs: Math.min(99, ...[...b.querySelectorAll('.lb')].filter(x => x.offsetParent && x.textContent.trim()).map(x => parseFloat(getComputedStyle(x).fontSize))), w: q.width, h: q.height, l: q.left, rr: q.right, t: q.top, bb: q.bottom }; }),
+                hero: (() => { const q = r($('heroPlay')); return { l: q.left, rr: q.right, t: q.top, bb: q.bottom }; })(), sub: $('heroSub').textContent }; })()""")
             ids = [x['id'] for x in L['vis']]
             check(tg + ': no Arcade (no sticker, no sheet)', not L['arcade'], ids)
-            check(tg + ': Big kids: the hero + Map, 3 mode chips (Frenzy, Daily, Endless), Smash, Slice, Pop It, 4 camera games, the dock', all(k in ids for k in ('heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'endlessChip', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')), ids)
-            check(tg + ': the chips: icon + one word each, at most 3', len(L['chips']) == 3 and all(c['ic'] and len(c['lb'].split()) == 1 for c in L['chips']), L['chips'])
+            check(tg + ': Big kids: the hero + its strip (Stage, Frenzy, Daily, Endless, Map), Smash, Slice, Pop It, 4 camera games, the dock', all(k in ids for k in ('heroPlay', 'heroAdv', 'strike', 'frenzyChip', 'dailyBtn', 'endlessChip', 'smash', 'slice', 'bigPopit', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')), ids)
+            ch = L['chips']; cid = [c['id'] for c in ch]; stage = ('שלב' if he else 'Stage')
+            check(tg + ': Strike is one card: its strip = Stage N, then 3 modes (Frenzy, Daily, Endless), then the Map; Stage N picked (the ribbon says it)', cid == ['heroAdv', 'frenzyChip', 'dailyBtn', 'endlessChip', 'map'] and [c['on'] for c in ch[:4]] == ['true', 'false', 'false', 'false'] and L['sub'] == stage + ' 10', [cid, L['sub']])
+            check(tg + ': the strip: one word a mode, "' + stage + '" (+ its number when it fits), the Map\'s icon (+ its word when it fits)', ch[0]['lb'] in (stage + ' 10', stage) and all(len(c['lb'].split()) == 1 for c in ch[1:4]) and ch[4]['ic'] and len(ch[4]['lb'].split()) <= 1, ch)
+            bad = [c for c in ch if c['w'] < 44 or c['h'] < 44 or c['fs'] < 14 or c['l'] < -0.5 or c['rr'] > L['W'] + 0.5 or c['bb'] > L['H'] + 0.5]
+            inside = all(c['l'] >= L['hero']['l'] - 0.5 and c['rr'] <= L['hero']['rr'] + 0.5 and c['t'] >= L['hero']['t'] and c['bb'] <= L['hero']['bb'] + 0.5 for c in ch) and max(c['t'] for c in ch) - min(c['t'] for c in ch) < 6
+            check(tg + ': the strip\'s buttons: each >= 44 x 44 px, text >= 14 px, on screen, in one row inside the hero card', not bad and inside, (bad, ch, L['hero']))
             small = [x for x in L['vis'] if x['w'] < 44 or x['h'] < 44]; off = [x for x in L['vis'] if x['l'] < -0.5 or x['rr'] > L['W'] + 0.5 or x['bb'] > L['H'] + 0.5]
             check(tg + ': every button >= 44 px and on screen, no page scroll', not small and not off and L['noScroll'], (small, off))
             await page.screenshot(path=OUT + 'nav_main_' + tg.lower() + '.png')
@@ -59,14 +66,21 @@ async def main():
 
         # ===== 2. the chips and the stickers play at once =====
         ctx, page, errs = await fresh(b, init=prof(adv={'stars': stars(9), 'unlocked': 10}, worlds={'unlocked': 2, 'last': 1}))
-        await page.tap('#frenzyChip'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
-        check('Frenzy chip: Frenzy plays at once (no sheet, no map)', await page.evaluate("$('advMap').hidden && !document.querySelector('.ov:not([hidden])') && location.pathname === '/frenzy'"))
+        PICK = "({ mode, start: !$('start').hidden, ov: [...document.querySelectorAll('.ov')].filter(o => !o.hidden).map(o => o.id), map: !$('advMap').hidden, on: [...document.querySelectorAll('#heroModes .mbSeg:not(.heroMap)')].filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.id), mem: localStorage.getItem('grasp.heroMode'), route: __grasp.route.of(location.pathname) || null })"
+        await page.tap('#frenzyChip'); await page.wait_for_timeout(300); pk = await page.evaluate(PICK)
+        check('Frenzy in the strip: only picked (no game, no sheet, no map, no new route)', pk['mode'] == 'none' and pk['start'] and pk['ov'] == [] and not pk['map'] and pk['on'] == ['frenzyChip'] and pk['mem'] == 'frenzy' and pk['route'] is None, pk)
+        await page.tap('#heroPlay'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
+        check('...the card\'s Play: Frenzy plays at once (no sheet, no map)', await page.evaluate("$('advMap').hidden && !document.querySelector('.ov:not([hidden])') && location.pathname === '/frenzy'"))
         await home(page)
-        await page.tap('#dailyBtn'); await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
-        check('Daily chip: today\'s run plays at once (no #daily panel)', await page.evaluate("$('daily').hidden && $('advMap').hidden"))
+        await page.tap('#dailyBtn'); await page.wait_for_timeout(300); pk = await page.evaluate(PICK)
+        check('Daily in the strip: only picked', pk['mode'] == 'none' and pk['ov'] == [] and pk['on'] == ['dailyBtn'] and pk['mem'] == 'daily', pk)
+        await page.tap('#heroPlay'); await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
+        check('...the card\'s Play: today\'s run plays at once (no #daily panel)', await page.evaluate("$('daily').hidden && $('advMap').hidden"))
         await home(page)
-        await page.tap('#endlessChip'); await page.wait_for_function("!$('worldMap').hidden", timeout=5000)
-        check('Endless chip (world 2): the world map; its own history entry', await page.evaluate("history.state && history.state.grasp === 'ov'"))
+        await page.tap('#endlessChip'); await page.wait_for_timeout(300); pk = await page.evaluate(PICK)
+        check('Endless in the strip: only picked (no world map yet)', pk['mode'] == 'none' and pk['ov'] == [] and pk['on'] == ['endlessChip'] and pk['mem'] == 'endless' and await page.evaluate("$('worldMap').hidden"), pk)
+        await page.tap('#heroPlay'); await page.wait_for_function("!$('worldMap').hidden", timeout=5000)
+        check('...the card\'s Play with Endless (world 2): the world map; its own history entry', await page.evaluate("history.state && history.state.grasp === 'ov'"))
         await page.evaluate("history.back()"); await page.wait_for_function("$('worldMap').hidden", timeout=4000)
         check('Back on the world map: it closes, the start screen stays', await page.evaluate("mode === 'none' && !$('start').hidden && !__grasp.route.of(location.pathname)"))
         await page.wait_for_timeout(450)
@@ -84,7 +98,7 @@ async def main():
         check('a camera game\'s sticker: plays at once (no picker sheet)', await page.evaluate("$('cgPick').hidden"))
         await home(page)
         await page.tap('.heroMap'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
-        check('the hero\'s Map chip: the Adventure map', True)
+        check('the hero\'s Map: the Adventure map at once (the picked mode stays Endless)', await page.evaluate("mode === 'none' && localStorage.getItem('grasp.heroMode') === 'endless' && $('endlessChip').getAttribute('aria-pressed') === 'true'"))
         await page.evaluate("closeAdvMap()"); await page.wait_for_timeout(400)
         check('chips / stickers: no page errors', not errs, errs); await ctx.close()
 
@@ -255,10 +269,11 @@ async def main():
         check('a Big kids game, Back: the pause sheet (still in the game, its entry pushed again)', await page.evaluate("mode === 'mouse' && location.pathname === '/slice'"))
         await page.evaluate("history.back()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
         check('...Back again (the sheet open): Home', True); await page.wait_for_timeout(450)
-        await page.tap('#littleBtn'); await page.wait_for_timeout(500)
+        await page.tap('#littleBtn'); await page.wait_for_function(f"{M}.mb.room === 'little' && !{M}.mb.swiping && Math.abs(Math.abs($('mbRooms').scrollLeft) - $('mbRooms').clientWidth) < 2 && $('bigRoom').inert && !$('littlePick').inert", timeout=3000); await page.wait_for_timeout(200)
         check('the Little ones room (a real visitor): its own history entry', await page.evaluate("history.state && history.state.grasp === 'room'"))
         await page.evaluate("history.back()"); await page.wait_for_timeout(500)
-        check('Back in the Little ones room: to Big kids (like Escape; no trap)', await page.evaluate(f"{M}.mb.room === 'big' && mode === 'none' && !$('start').hidden"))
+        await page.wait_for_function(f"!{M}.mb.swiping && Math.abs($('mbRooms').scrollLeft) < 2", timeout=3000)
+        check('Back in the Little ones room: to Big kids (like Escape; no trap; the swiper back on Big kids, Little ones inert)', await page.evaluate(f"{M}.mb.room === 'big' && mode === 'none' && !$('start').hidden && $('littlePick').inert && !$('bigRoom').inert"))
         check('QA Back: no page errors', not errs, errs); await ctx.close()
         ctx, page, errs = await fresh(b)
         await page.tap('#start .stk[data-mode="slice"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'slice'", timeout=8000); await page.wait_for_timeout(300)

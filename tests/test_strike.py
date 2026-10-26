@@ -8,8 +8,9 @@ PIX = "((x, y) => __grasp.strike.pixel(x, y))"
 GFX_READY = "['ready', 'failed'].includes(__grasp.strike.gfxInfo.state) || __grasp.strike.gfxInfo.want === '2d'"
 TO2D = "(async () => { await __grasp.setGfx('2d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"
 TO3D = "(async () => { if (!(window.__graspGfx && window.__graspGfx.mode === '2d')) await __grasp.setGfx('3d'); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); })()"  # the composited pixel: the WebGL layer (3D mode) under the 2D canvas; in 2D mode the 2D canvas pixel
-ROWS = "new Set([...document.querySelectorAll('#start .mbGrid > *')].map(b => { const q = b.getBoundingClientRect(); return Math.round((q.top + q.bottom) / 40); })).size"  # the hero, then Smash · Slice · Pop It, then the camera games row (navigation v2; by their centres: the stickers are tilted)
-FITS = "(() => { const bs = [...document.querySelectorAll('#start .mbGrid button')].filter(b => b.getBoundingClientRect().height > 0), tb = $('tabBar').getBoundingClientRect(), st = $('start'); return bs.length >= 11 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= tb.top + 1 && r.height >= 44; }) && tb.bottom <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1; })()"  # navigation v2 (no Arcade): the hero (play + map) with its mode chips (Frenzy, Daily; Endless from world 2), Smash · Slice · Pop It, the 4 camera games, the dock: one screen, no scroll
+ROWS = "new Set([...document.querySelectorAll('#start .mbGrid > *')].map(b => { const q = b.getBoundingClientRect(); return Math.round((q.top + q.bottom) / 40); })).size"  # the hero card (its strip inside it), then Smash · Slice · Pop It · Spot it, then the camera games row (navigation v2; by their centres: the stickers are tilted)
+FITS = "(() => { const bs = [...document.querySelectorAll('#start .mbGrid button')].filter(b => b.getBoundingClientRect().height > 0), tb = $('tabBar').getBoundingClientRect(), st = $('start'); return bs.length >= 11 && bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= tb.top + 1 && r.height >= 44; }) && tb.bottom <= innerHeight + 1 && st.scrollHeight <= st.clientHeight + 1; })()"  # navigation v2 (no Arcade): the hero card with its strip (Stage N, Frenzy, Daily, Endless from world 2, the Map), Smash · Slice · Pop It, the 4 camera games, the dock: one screen, no scroll
+CARD = "(() => { const c = $('heroPlay').getBoundingClientRect(), S = $('heroModes'), segs = [...S.querySelectorAll('button')].filter(b => !b.hidden), picks = segs.filter(b => !b.classList.contains('heroMap')); return { ids: segs.map(b => b.id || 'map'), inCard: segs.every(b => { const r = b.getBoundingClientRect(); return r.width > 0 && r.left >= c.left - 1 && r.right <= c.right + 1 && r.top >= c.top - 1 && r.bottom <= c.bottom + 1 && r.height >= 44; }), seg: segs.every(b => b.classList.contains('mbSeg') && !b.classList.contains('mbChip') && !b.classList.contains('mbMode') && !b.classList.contains('mbMap')), pressed: picks.filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.id), map: S.lastElementChild.matches('.heroMap[data-mode=strike]'), rot: getComputedStyle($('heroPlay')).getPropertyValue('--rot').trim() }; })()"  # one card: the strip (Stage N · Frenzy · Daily · the Map) inside the hero's bottom; one way to play picked; the hero straight
 FRAMES = "new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))"  # resolves once two more frames have been drawn (timing-independent on a slow machine)
 TOUCH_JS = """
 window.touchAt = (t, x, y) => document.getElementById('stage').dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0, buttons: 1 }));
@@ -22,6 +23,7 @@ async def miss(page):  # park the ball just past the player's plane with no hand
 async def miss_out(page, n):  # n misses, a serve apart
     for _ in range(n): await miss(page); await page.wait_for_timeout(900)
 
+def card_ok(c): return c['ids'][:3] == ['heroAdv', 'frenzyChip', 'dailyBtn'] and c['ids'][-1] == 'map' and c['inCard'] and c['seg'] and len(c['pressed']) == 1 and c['map'] and c['rot'] in ('0deg', '0')
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
@@ -29,8 +31,11 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
-        check('desktop: the hero (+ its chips), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
-        await page.click('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+        check('desktop: the hero (+ its strip), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
+        c = await page.evaluate(CARD); check('desktop: Strike is one card: its strip (Stage · Frenzy · Daily · Map, mbSeg) inside the straight hero, one way to play picked', card_ok(c), c)
+        await page.click('#start button[data-mode=strike]')
+        check('desktop: the Map opens the Adventure map at once', await page.evaluate("!$('advMap').hidden && mode === 'none'"))
+        await page.evaluate("$('advEndless').click()")
         check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
         check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'shapes' && MODE_NEXT.shapes === 'sandbox'"))
         cfg = await page.evaluate("({ zf: __grasp.CONFIG.STRIKE_Z_FAR, hz: __grasp.CONFIG.STRIKE_HIT_Z, base: __grasp.CONFIG.STRIKE_BASE_SPEED, max: __grasp.CONFIG.STRIKE_MAX_SPEED, lives: __grasp.CONFIG.STRIKE_LIVES, sup: __grasp.CONFIG.STRIKE_SUPER_SPEED })")
@@ -689,7 +694,7 @@ async def main():
         bt = await page.evaluate(f"{S}.ui.buttons")
         await page.mouse.click(bt['home']['x'] + bt['home']['w'] / 2, bt['home']['y'] + bt['home']['h'] / 2); await page.wait_for_timeout(300)
         badge = await page.evaluate("(() => { const b = document.querySelector('#start button[data-mode=strike] .best'); return { hidden: b.hidden || getComputedStyle(b).display === 'none', saved: localStorage.getItem('strikeLevelBest'), hero: $('heroLbl').textContent }; })()")
-        check('home2: the best level (8) is saved; the start screen shows the hero (the Adventure\'s next stage), no Endless badge', badge['hidden'] and badge['saved'] == '8' and badge['hero'] and await page.evaluate(FITS), badge)
+        check('home2: the best level (8) is saved; the start screen shows the hero (the Adventure\'s next stage), no best badge on its Map', badge['hidden'] and badge['saved'] == '8' and badge['hero'] and await page.evaluate(FITS), badge)
         await page.screenshot(path='tests/out/strike5_badge.png')
         check('levels + boss: no page errors', not errs, errs); await ctx.close()
 
@@ -719,9 +724,12 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
             if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: the hero (+ its chips), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and rows == 3, rows)
+            check(tag + ' phone: the hero (+ its strip), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and rows == 3, rows)
+            c = await page.evaluate(CARD); check(tag + ' phone: Strike is one card: its strip (Stage · Frenzy · Daily · Map, mbSeg, >= 44 px) inside the straight hero, one way to play picked', card_ok(c), c)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
-            await page.tap('#start button[data-mode=strike]'); await page.evaluate("$('advEndless').click()")
+            await page.tap('#start button[data-mode=strike]')
+            check(tag + ' phone: the Map opens the Adventure map at once', await page.evaluate("!$('advMap').hidden && mode === 'none'"))
+            await page.evaluate("$('advEndless').click()")
             check(tag + ' phone: strike description', await page.evaluate("$('modeDesc').textContent.includes(" + ("'מסדרון'" if he else "'corridor'") + ")"))
             await page.evaluate(START_MOUSE); await page.wait_for_timeout(900)
             st = await page.evaluate(STATE)

@@ -29,7 +29,7 @@ async def fresh(b, he=False, w=390, h=844, mobile=True, init='', rm=None, camera
 # every visible button on screen (the start screen, or an open sheet): its box, its text sizes; no page scroll
 LAYOUT = """((sel) => { const root = sel ? document.querySelector(sel) : $('start'), r = (e) => { const q = e.getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom, w: q.width, h: q.height }; };
   const pg = $('mbPager').getBoundingClientRect(), inView = (q, b) => b.closest('#mbPager') ? q.r > pg.left + 1 && q.l < pg.right - 1 : q.r > 1 && q.l < innerWidth - 1; // (the Little ones' other pages: scrolled out of the pager)
-  const btns = [...root.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden && !b.closest('[hidden]') && inView(r(b), b)).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg || b.dataset.k || b.dataset.pg || b.dataset.ans || b.className, ...r(b),
+  const btns = [...root.querySelectorAll('button')].filter(b => b.offsetParent && !b.hidden && !b.closest('[hidden]') && !b.closest('[inert]') && inView(r(b), b)).map(b => ({ id: b.id || b.dataset.mode || b.dataset.cg || b.dataset.k || b.dataset.pg || b.dataset.ans || b.className, ...r(b),
     fs: Math.min(99, ...[...b.querySelectorAll('b, span, small')].filter(x => x.offsetParent && x.textContent.trim() && getComputedStyle(x).display !== 'none' && !x.classList.contains('bang')).map(x => parseFloat(getComputedStyle(x).fontSize))) }));
   const st = $('start');
   return { btns, W: innerWidth, H: innerHeight, dir: document.documentElement.dir,
@@ -46,7 +46,10 @@ def layout_ok(tag, L, need=()):
     if need: check(tag + ': shows ' + ', '.join(need), all(k in ids for k in need), ids)
     return L
 
-BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
+BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'heroAdv', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
+# the rooms' swiper (#mbRooms): settled on the room mb.room names (the room off screen is inert)
+SETTLED = f"(() => {{ const R = $('mbRooms'), r = {M}.mb.room; return !{M}.mb.swiping && Math.abs(Math.abs(R.scrollLeft) - (r === 'little' ? R.clientWidth : 0)) < 2 && $('start').dataset.room === r && $('bigRoom').inert === (r !== 'big') && $('littlePick').inert === (r !== 'little'); }})()"
+def in_room(r): return f"{M}.mb.room === '{r}' && " + SETTLED
 LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'lilPopit']]
 
 async def page_of(page):
@@ -78,7 +81,7 @@ async def main():
             check(tg + ': the rounded type (Fredoka first, then a rounded stack)', st['font'].startswith('Fredoka'), st['font'])
             await page.screenshot(path=OUT + 'menub_main_%s.png' % lg)
             # Little ones: page 1, page 2
-            await page.tap('#littleBtn'); await page.wait_for_function("!$('littlePick').hidden && $('start').dataset.room === 'little'", timeout=3000); await page.wait_for_timeout(500)
+            await page.tap('#littleBtn'); await page.wait_for_function(in_room('little'), timeout=3000); await page.wait_for_timeout(500)
             L = layout_ok(tg + ' little p1', await page.evaluate(LAYOUT + "()"), ('busy', 'shapes', 'sandbox', 'calmBtn'))
             lb = {x['id']: x for x in L['btns']}
             check(tg + ': Little ones: 4 huge stickers (2 x 2, each >= 140 px), mint background, 3 dots', all(lb[k]['w'] >= 140 and lb[k]['h'] >= 180 for k in LITTLE[0]) and await page.evaluate("getComputedStyle($('start')).backgroundColor === 'rgb(166, 236, 208)' && document.querySelectorAll('#mbDots .mbDot').length === 3"), [lb.get(k) for k in LITTLE[0]])
@@ -92,9 +95,12 @@ async def main():
             check(tg + ': tapping the middle dot goes to page 2 (its stickers on screen), the middle dot lit', [d['on'] for d in ds] == [False, True, False] and p2['seen'] == LITTLE[1], [ds, p2])
             layout_ok(tg + ' little p2', await page.evaluate(LAYOUT + "()"), ('animals', 'colors', 'peekaboo', 'feed'))
             await page.screenshot(path=OUT + 'menub_little_p2_%s.png' % lg)
-            await page.tap('#bigBtn'); await page.wait_for_function("$('littlePick').hidden && !$('bigRoom').hidden", timeout=3000); await page.wait_for_timeout(400)
-            # (navigation v2: no Arcade or Camera games sheet: Strike's modes are chips under the hero, the camera games a row of stickers)
-            check(tg + ': Strike\'s Frenzy / Daily chips side by side under the hero', abs(bx['frenzyChip']['t'] - bx['dailyBtn']['t']) < 6 and bx['frenzyChip']['t'] >= hero['b'] - 2, [bx['frenzyChip'], bx['dailyBtn']])
+            await page.tap('#bigBtn'); await page.wait_for_function(in_room('big'), timeout=3000); await page.wait_for_timeout(400)
+            # (Strike is one card: its strip (Stage · Frenzy · Daily · Map) sits inside the hero's bottom, one row, in reading order; the camera games a row of stickers)
+            seg = [bx[k] for k in ('heroAdv', 'frenzyChip', 'dailyBtn', 'strike')]
+            inside = all(s['l'] >= hero['l'] - 0.5 and s['r'] <= hero['r'] + 0.5 and s['t'] >= hero['t'] + hero['h'] / 2 and s['b'] <= hero['b'] + 0.5 for s in seg)
+            order = all((seg[i]['l'] > seg[i + 1]['l']) if he else (seg[i]['l'] < seg[i + 1]['l']) for i in range(3))
+            check(tg + ': Strike is one card: its strip (Stage, Frenzy, Daily, Map) in one row inside the hero\'s bottom, in reading order', inside and order and max(s['t'] for s in seg) - min(s['t'] for s in seg) < 6, [hero, seg])
             # the settings: one tap on the gear
             await page.tap('#settingsBtn'); await page.wait_for_function("!$('moreSheet').hidden", timeout=1000); await page.wait_for_timeout(900)  # (after the sheet's spring-in)
             L = layout_ok(tg + ' settings', await page.evaluate(LAYOUT + "('#moreSheet')"), ('startLang', 'camBtn', 'mouseBtn', 'moreSound', 'voiceNames', 'voiceAll', 'voiceOff'))
@@ -109,7 +115,7 @@ async def main():
                     col = await page.evaluate("(() => { const q = $('mbCol').getBoundingClientRect(); return { l: q.left, r: q.right, w: q.width }; })()")
                     check(tg + ': a centred phone-width column (the stickers stay big)', abs(col['l'] + col['r'] - w) < 4 and 340 <= col['w'] <= 480, col)
                     if not he: await page.screenshot(path=OUT + 'menub_main_desktop_en.png')
-                await page.evaluate(f"{M}.room('little')"); await page.wait_for_timeout(400)
+                await page.evaluate(f"{M}.room('little')"); await page.wait_for_function(in_room('little'), timeout=3000); await page.wait_for_timeout(200)
                 for i in range(3):
                     await page.evaluate(f"{M}.page({i}, true)"); await page.wait_for_timeout(250)
                     layout_ok(tg + ' little p' + str(i + 1), await page.evaluate(LAYOUT + "()"), tuple(LITTLE[i]))
@@ -127,12 +133,18 @@ async def main():
         check('Smash: its current stage at once (navigation v2: the map is behind its Map buttons)', await page.evaluate("__grasp.smash.run === 'stage'")); await home()
         await page.tap('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000)
         check('Slice: starts at once', True); await home()
-        await page.tap('#frenzyChip'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
-        check('the Frenzy chip: plays at once', True); await home()
-        await page.tap('#dailyBtn'); await page.wait_for_function("__grasp.daily.on && mode === 'mouse'", timeout=8000)
-        check('the Daily chip: today\'s run at once (no panel)', await page.evaluate("$('daily').hidden")); await home()
-        await page.tap('#endlessChip'); await page.wait_for_function("mode === 'mouse' && gameMode === 'strike' && !__grasp.adventure.on && !__grasp.frenzy.on", timeout=8000)
-        check('the Endless chip (world 2): the old run', True); await home()
+        # Strike is one card: a mode in the strip only picks (pressed, remembered, the ribbon names it); the card's Play plays it
+        PICKED = "(() => {{ const P = [...document.querySelectorAll('#heroModes .mbSeg:not(.heroMap)')].filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.id || b.dataset.k); return {{ P, mem: localStorage.getItem('grasp.heroMode'), sub: $('heroSub').textContent, lb: $('{0}').querySelector('.lb').textContent, mode, start: !$('start').hidden }}; }})()"
+        for chip, m, want, nm in (('frenzyChip', 'frenzy', "__grasp.frenzy.on && mode === 'mouse'", 'Frenzy'), ('dailyBtn', 'daily', "__grasp.daily.on && mode === 'mouse' && $('daily').hidden", 'Daily (today\'s run, no panel)'),
+                                  ('endlessChip', 'endless', "mode === 'mouse' && gameMode === 'strike' && !__grasp.adventure.on && !__grasp.frenzy.on", 'Endless (world 2: the old run)'), ('heroAdv', 'adv', f"{A}.on && {A}.stage === 10 && mode === 'mouse'", 'Stage 10')):
+            await page.tap('#' + chip); await page.wait_for_timeout(300)
+            pk = await page.evaluate(PICKED.format(chip))
+            # (Stage N: the ribbon is checked back Home below: heroModeSet('adv') leaves the previous mode's name in the ribbon until h2Hero runs; reported)
+            check('the strip: ' + nm + ' only picks (pressed alone, remembered, the ribbon names it; no game yet)', pk['P'] == [chip] and pk['mem'] == m and (pk['sub'] == pk['lb'] or (m == 'adv' and pk['sub'].startswith(pk['lb']))) and pk['mode'] == 'none' and pk['start'], pk)
+            await page.tap('#heroPlay'); await page.wait_for_function(want + " && $('start').hidden", timeout=8000)
+            check('... then the card\'s Play plays ' + nm, True); await home()
+        pk = await page.evaluate(PICKED.format('heroAdv'))
+        check('back Home: Stage 10 still picked, the ribbon names it', pk['P'] == ['heroAdv'] and pk['mem'] == 'adv' and pk['sub'] == pk['lb'] == 'Stage 10', pk)
         for cg in ('drums', 'bubbles', 'paint', 'stars'):
             await page.evaluate("localStorage.setItem('cgTouchOk', '1'); __grasp.cg.touchOk = true")
             await page.tap('#camGamesBtn [data-cg=%s]' % cg); await page.wait_for_function(f"gameMode === '{cg}' && mode === 'mouse' && $('cgPick').hidden", timeout=8000)
@@ -155,7 +167,8 @@ async def main():
                 said = await page.evaluate(f"{M}.mb.said.map(x => x.text)")
                 check('Little ones > ' + k + ': says "' + name + '", then plays', said and said[-1] == name, said[-3:])
                 await home()
-        check('back home after a toddler game: still the Little ones room', await page.evaluate("$('start').dataset.room === 'little' && !$('littlePick').hidden"))
+        await page.wait_for_function(SETTLED, timeout=3000)
+        check('back home after a toddler game: still the Little ones room', await page.evaluate(f"$('start').dataset.room === 'little' && {M}.mb.room === 'little' && !$('littlePick').inert && $('bigRoom').inert"))
         await page.evaluate(f"{M}.room('big')"); await page.wait_for_timeout(300)
         bu = await page.evaluate("({ bubu: $('bubuBtn').hidden, w: $('bubuBtn').getBoundingClientRect().width, tab: !$('petTab').hidden })")
         check('Bubu hidden even with a hatched pet (the pet lives in the dock\'s Pet tab)', bu['bubu'] and bu['w'] == 0 and bu['tab'], bu)
@@ -191,7 +204,20 @@ async def main():
             await page.mouse.wheel(-sgn * 260, 0); await page.wait_for_function(f"{M}.mb.page === 0 && Math.abs($('mbPager').scrollLeft) < 2", timeout=4000)
             check(tg + ': ... and the other way back to page 1', (await page_of(page))['seen'] == LITTLE[0])
             await page.keyboard.press('Escape'); await page.wait_for_timeout(200)
-            check(tg + ': Escape: back to Big kids', await page.evaluate("$('start').dataset.room === 'big' && !$('bigRoom').hidden && localStorage.getItem('grasp.room') === 'big'"))
+            await page.wait_for_function(SETTLED, timeout=3000)
+            check(tg + ': Escape: back to Big kids', await page.evaluate(f"$('start').dataset.room === 'big' && {M}.mb.room === 'big' && !$('bigRoom').inert && localStorage.getItem('grasp.room') === 'big'"))
+            # the rooms swipe: #mbRooms holds both rooms side by side; a swipe to the Little ones side settles there (the switch follows); the switch slides back
+            SW = f"({{ room: {M}.mb.room, data: $('start').dataset.room, big: $('bigBtn').getAttribute('aria-pressed'), little: $('littleBtn').getAttribute('aria-pressed'), bigInert: $('bigRoom').inert, lilInert: $('littlePick').inert, hidden: $('bigRoom').hidden || $('littlePick').hidden, sl: $('mbRooms').scrollLeft, w: $('mbRooms').clientWidth, mem: localStorage.getItem('grasp.room'), log: {M}.mb.log.slice(-3) }})"
+            await page.evaluate(f"$('mbRooms').scrollBy({{ left: {sgn} * $('mbRooms').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(in_room('little'), timeout=3000)
+            sw = await page.evaluate(SW)
+            check(tg + ': a swipe ' + ('right (RTL)' if he else 'left') + ' on the rooms = Little ones (the switch follows: Little ones pressed; Big kids inert, neither hidden; remembered)', sw['room'] == 'little' and sw['data'] == 'little' and sw['little'] == 'true' and sw['big'] == 'false' and sw['bigInert'] and not sw['lilInert'] and not sw['hidden'] and (sw['sl'] < 0 if he else sw['sl'] > 0) and sw['mem'] == 'little' and 'swipe:little' in sw['log'], sw)
+            p0 = await page_of(page); check(tg + ': ... on its first page', p0['i'] == 0 and p0['seen'] == LITTLE[0], p0)
+            await page.tap('#bigBtn'); await page.wait_for_function(in_room('big'), timeout=4000)
+            sw = await page.evaluate(SW)
+            check(tg + ': the switch slides back to Big kids (Big kids pressed, Little ones inert, the swiper at its start)', sw['room'] == 'big' and sw['big'] == 'true' and sw['little'] == 'false' and sw['lilInert'] and not sw['bigInert'] and not sw['hidden'] and abs(sw['sl']) < 2 and sw['mem'] == 'big', sw)
+            await page.mouse.move(200, 600); await page.mouse.wheel(sgn * 300, 0)  # (a sideways trackpad swipe over Big kids: the swiper snaps to Little ones)
+            await page.wait_for_function(in_room('little'), timeout=4000)
+            check(tg + ': a sideways trackpad swipe over Big kids snaps to Little ones too', await page.evaluate("$('littleBtn').getAttribute('aria-pressed') === 'true'"))
             check(tg + ' paging: no page errors', not errs, errs); await ctx.close()
 
         # ===== 4. Settings: the gear opens it with one tap (the owner removed the parents' gate on purpose) =====
@@ -260,7 +286,7 @@ async def main():
         await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(300)
         r = await page.evaluate("(() => { const q = $('littleBtn').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")
         await page.evaluate(f"window.__handFor = () => handAt({r[0]}, {r[1]}, 0.8)")
-        await page.wait_for_function("!$('littlePick').hidden", timeout=8000)
+        await page.wait_for_function(in_room('little'), timeout=8000)
         check('camera: the hand held over "Little ones" switches the room', 'littleBtn' in await page.evaluate("__grasp.panelfix.homeCam.clicks"))
         r = await page.evaluate("(() => { const q = document.querySelector('#littlePick [data-mode=shapes]').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")
         await page.evaluate(f"window.__handFor = () => handAt({r[0]}, {r[1]}, 0.8)")

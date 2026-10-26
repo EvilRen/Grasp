@@ -117,8 +117,9 @@ async def main():
         await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(300)
         r = await page.evaluate("(() => { const q = $('littleBtn').getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; })()")
         await page.evaluate(f"window.__handFor = () => handAt({r[0]}, {r[1]}, 0.8)")
-        await page.wait_for_function("!$('littlePick').hidden", timeout=8000)
-        check('5 the home camera keeps the loop running: the hand held over "Little ones" still opens it', 'littleBtn' in await page.evaluate("__grasp.panelfix.homeCam.clicks") and await page.evaluate("running"))
+        await page.wait_for_function("mb.room === 'little'", timeout=8000)  # (the rooms swipe: neither room is hidden; mb.room says which one is shown)
+        rm = await page.evaluate("({ room: mb.room, data: $('start').dataset.room, pressed: $('littleBtn').getAttribute('aria-pressed'), bigInert: $('bigRoom').inert, littleInert: $('littlePick').inert, clicks: __grasp.panelfix.homeCam.clicks, running })")
+        check('5 the home camera keeps the loop running: the hand held over "Little ones" still opens it', 'littleBtn' in rm['clicks'] and rm['running'] and rm['data'] == 'little' and rm['pressed'] == 'true' and rm['bigInert'] and not rm['littleInert'], rm)
         check('5 camera: no page errors', not errs, errs); await ctx.close()
 
         # ===== 6. toddlers: a tap on nothing still answers (Sandbox, Busy Board, Shapes, Calm bubbles: the Little ones games' twinkle) =====
