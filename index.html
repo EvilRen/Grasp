@@ -1244,17 +1244,18 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
 /* the owner, Oct 2026 ("Strike with every button apart"): one card: Strike's ways to play are a strip inside its bottom (pick one; Play plays it); the Map a button at its end */
-#heroModes{ position:absolute; z-index:2; inset-inline:3.4cqw; bottom:3cqw; margin:0; gap:1cqw; padding:1cqw; border-radius:99px; background:rgba(42,31,61,.26); justify-content:stretch; }
-.mbSeg{ flex:1 1 0; min-width:0; min-height:max(40px,10.5cqw); margin:0; padding:0 1cqw; border:0; border-radius:99px; background:transparent; color:#fff; font:700 max(13px,3.7cqw)/1.1 var(--mbF); display:flex; align-items:center; justify-content:center; gap:.8cqw; cursor:pointer; white-space:nowrap; }
+#heroModes{ position:absolute; z-index:2; inset-inline:3cqw; bottom:3cqw; margin:0; gap:.6cqw; padding:.8cqw; border-radius:99px; background:rgba(42,31,61,.26); justify-content:stretch; }
+.mbSeg{ flex:1 1 0; min-width:0; min-height:max(44px,11.5cqw); margin:0; padding:0 .6cqw; border:0; border-radius:99px; background:transparent; color:#fff; font:700 max(14px,3.9cqw)/1.1 var(--mbF); display:flex; align-items:center; justify-content:center; gap:.8cqw; cursor:pointer; white-space:nowrap; }
 .mbSeg[hidden]{ display:none; }
 .mbSeg .ic, .mbSeg .mbMeta, .mbSeg .mbSub{ display:none !important; }
 .mbSeg .lb{ overflow:hidden; text-overflow:ellipsis; }
 .mbSeg[aria-pressed="true"]:not(.heroMap){ background:#fff; color:var(--mbInk); box-shadow:0 max(2px,.6cqw) 0 rgba(42,31,61,.4); }
-.mbSeg.heroMap{ flex:0 0 auto; padding:0 2.4cqw 0 1.6cqw; background:#ffd23f; color:var(--mbInk); }
+.mbSeg.heroMap{ flex:0 0 auto; padding:0 2cqw 0 1.4cqw; background:#ffd23f; color:var(--mbInk); }
 .mbSeg.heroMap .ic{ display:block !important; } .mbSeg.heroMap .ic svg{ width:max(20px,5.4cqw); height:max(20px,5.4cqw); display:block; }
 .mbSeg.heroMap .best, .mbSeg.heroMap .newDot{ display:none !important; }
-#heroPlay.stk.hero{ padding-bottom:calc(max(40px,10.5cqw) + 8.6cqw); }
-#heroModes .mbSeg.dailyBtn{ flex:1 1 0; display:flex; gap:.8cqw; padding:0 1cqw; border:0; border-radius:99px; background:transparent; color:#fff; text-align:center; box-shadow:none; } #heroModes .mbSeg.dailyBtn[aria-pressed="true"]{ background:#fff; color:var(--mbInk); box-shadow:0 max(2px,.6cqw) 0 rgba(42,31,61,.4); } /* (the old Daily button's own look stays out of the strip) */
+#heroModes .mbSeg{ flex:1 1 auto; min-width:44px; } #heroModes.compact .heroMap .lb{ display:none; } #heroModes.compact .heroMap{ min-width:44px; padding:0 1cqw; }
+#heroPlay.stk.hero{ padding-bottom:calc(max(44px,11.5cqw) + 8.6cqw); }
+#heroModes .mbSeg.dailyBtn{ flex:1 1 auto; display:flex; gap:.8cqw; padding:0 1cqw; border:0; border-radius:99px; background:transparent; color:#fff; text-align:center; box-shadow:none; } #heroModes .mbSeg.dailyBtn[aria-pressed="true"]{ background:#fff; color:var(--mbInk); box-shadow:0 max(2px,.6cqw) 0 rgba(42,31,61,.4); } /* (the old Daily button's own look stays out of the strip) */
 .mbMode{ display:flex; align-items:center; gap:1cqw; min-height:44px; min-width:0; padding:.3cqw 3cqw .3cqw 1.2cqw; border-radius:99px; font-size:max(14px,3.9cqw); font-weight:700; line-height:1.1; }
 .mbMode[hidden]{ display:none; }
 .mbMode .ic svg{ width:max(28px,7.4cqw); height:max(28px,7.4cqw); }
@@ -2412,12 +2413,12 @@ Object.assign(I18N.he, {
 });
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 Object.assign(I18N.en, { // menu B: the Sticker Book start screen (the rooms, Bubu)
-  mbBig: 'Big kids', mbLittle: 'Little ones', mbAgeAria: 'Who is playing?', mbStageN: 'Stage {n}', mbPopit: 'Pop It', mbPageN: 'Page {n}', mbHi: 'Hi!', mbBubuAria: '{n}: say hi',
+  mbBig: 'Big kids', mbLittle: 'Little ones', mbAgeAria: 'Who is playing?', mbStageN: 'Stage {n}', mbStageW: 'Stage', mbPopit: 'Pop It', mbPageN: 'Page {n}', mbHi: 'Hi!', mbBubuAria: '{n}: say hi',
   heroModesAria: 'More ways to play Strike', cgsDrums: 'Drums', cgsBubbles: 'Bubbles', cgsPaint: 'Paint', cgsStars: 'Stars', // (navigation v2: the Strike mode chips, the camera games' row)
   moreHud: 'Stats', moreHudSub: 'fps in games',
 });
 Object.assign(I18N.he, {
-  mbBig: 'גדולים', mbLittle: 'קטנטנים', mbAgeAria: 'מי משחק?', mbStageN: 'שלב {n}', mbPopit: 'פופ איט', mbPageN: 'עמוד {n}', mbHi: 'היי!', mbBubuAria: '{n}: להגיד שלום',
+  mbBig: 'גדולים', mbLittle: 'קטנטנים', mbAgeAria: 'מי משחק?', mbStageN: 'שלב {n}', mbStageW: 'שלב', mbPopit: 'פופ איט', mbPageN: 'עמוד {n}', mbHi: 'היי!', mbBubuAria: '{n}: להגיד שלום',
   heroModesAria: 'עוד דרכים לשחק במכה', cgsDrums: 'תופים', cgsBubbles: 'בועות', cgsPaint: 'ציור', cgsStars: 'כוכבים',
   moreHud: 'מדדים', moreHudSub: 'fps במשחקים',
 });
@@ -20679,7 +20680,7 @@ function mbLayout() {
   document.documentElement.style.setProperty('--tabH', (on && top > 0 ? Math.max(0, Math.round(innerHeight - top)) : 0) + 'px');
   for (const G of document.querySelectorAll('.mbPick')) { const live = [...G.querySelectorAll(':scope > .stk')].filter((el) => !el.hidden); live.forEach((el, i) => { el.classList.toggle('mbSolo', live.length % 2 === 1 && i === live.length - 1); el.style.setProperty('--rot', MB_ROT[i % 4]); }); }
 }
-window.addEventListener('resize', () => { mbLayout(); mbRoomsGo(mb.room, true); const P = $('mbPager'); if (mb.room === 'little' && P.clientWidth) P.scrollLeft = (document.documentElement.dir === 'rtl' ? -1 : 1) * mb.page * P.clientWidth; });
+window.addEventListener('resize', () => { mbLayout(); mbRoomsGo(mb.room, true); try { heroModesFit(); } catch {} const P = $('mbPager'); if (mb.room === 'little' && P.clientWidth) P.scrollLeft = (document.documentElement.dir === 'rtl' ? -1 : 1) * mb.page * P.clientWidth; });
 function mbSoon() { if (!mb.raf) mb.raf = requestAnimationFrame(() => { mb.raf = 0; mbBubuDraw(); mbLayout(); }); }
 function mbSync() { // (from h2Sync: the coins, a new day, a pet change, the language)
   for (const el of document.querySelectorAll('#bigRoom [data-feat]')) el.hidden = !mbFeat(el.dataset.feat);
@@ -20743,7 +20744,12 @@ function heroModeSync() {
   const m = heroModeGet(), b = $('heroPlay'), n = advCurrent(); $('heroAdv').querySelector('.lb').textContent = t('mbStageN', { n });
   for (const k in HERO_SEG) $(HERO_SEG[k]).setAttribute('aria-pressed', String(k === m));
   if (m !== 'adv') { const lb = $(HERO_SEG[m]).querySelector('.lb').textContent; $('heroSub').textContent = lb; b.setAttribute('aria-label', t('heroPlay') + ': ' + t('modeStrike') + ' · ' + lb); }
-  $('hero').dataset.mode = m; return m;
+  $('hero').dataset.mode = m; heroModesFit(); return m;
+}
+function heroModesFit() { // the strip on a narrow phone: every word whole (>= 14 px): first the stage's number goes (the ribbon shows it), then the Map keeps only its icon
+  const S = $('heroModes'), A = $('heroAdv').querySelector('.lb'), over = () => S.scrollWidth > S.clientWidth + 1 || [...S.querySelectorAll('.mbSeg:not([hidden]) .lb')].some((l) => l.clientWidth && l.scrollWidth > l.clientWidth + 1);
+  S.classList.remove('compact'); A.textContent = t('mbStageN', { n: advCurrent() }); if (!S.clientWidth) return 0;
+  if (!over()) return 0; A.textContent = t('mbStageW'); if (!over()) return 1; S.classList.add('compact'); return 2;
 }
 function heroPlayGo() { const m = heroModeGet(); mb.log.push('heroPlay:' + m); return m === 'frenzy' ? h2Frenzy() : m === 'daily' ? h2Daily() : m === 'endless' ? h2Endless() : h2HeroPlay(); }
 for (const k in HERO_SEG) $(HERO_SEG[k]).addEventListener('click', () => heroModeSet(k));
