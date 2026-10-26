@@ -1172,6 +1172,10 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 .mbChip{ position:relative; background:#fff; color:var(--mbInk); border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 max(3px,1cqw) 0 var(--mbInk); }
 .mbRnd{ width:max(44px,12cqw); height:max(44px,12cqw); border-radius:50%; display:grid; place-items:center; padding:0; }
 .mbRnd .ic svg{ width:max(26px,7.2cqw); height:max(26px,7.2cqw); }
+/* the owner, Oct 2026: in Little ones a lock at the top: locked, nothing leads back to Big kids (no swipe, the switch greyed, Back stays); one tap locks, one tap unlocks */
+#lockBtn svg{ width:max(24px,6.6cqw); height:max(24px,6.6cqw); } #lockBtn .lkShut{ display:none; } #lockBtn[aria-pressed="true"] .lkShut{ display:block; } #lockBtn[aria-pressed="true"] .lkOpen{ display:none; }
+#lockBtn[aria-pressed="true"]{ background:#2fae7f; color:#fff; } #lockBtn.nudge{ animation:lkNudge .5s; } @keyframes lkNudge{ 20%,60%{ transform:rotate(-14deg); } 40%,80%{ transform:rotate(14deg); } }
+#start.mb.locked #bigBtn{ opacity:.45; } #start.mb.locked .mbRooms{ overflow-x:hidden; touch-action:pan-y; }
 #startSound .off{ display:none; } #startSound[aria-pressed="false"] .on{ display:none; } #startSound[aria-pressed="false"] .off{ display:block; }
 #startSound[aria-pressed="false"]{ background:#ece8f2; }
 #fullBtn[hidden]{ display:none; } #fullBtn .off{ display:none; } #fullBtn[aria-pressed="true"] .on{ display:none; } #fullBtn[aria-pressed="true"] .off{ display:block; } /* (the full screen button: on the start screen, one tap in, one tap out) */
@@ -1391,6 +1395,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
       <div class="mbTopS">
         <button class="mbChip mbRnd" id="settingsBtn" type="button" aria-haspopup="dialog" aria-expanded="false" data-i18n-aria="moreTitle" aria-label="Settings"><span class="ic" data-ic="gear"></span></button>
         <button class="mbChip mbRnd" id="startSound" type="button" aria-pressed="true" aria-label="Sound on"><span class="ic on" data-ic="sndOn"></span><span class="ic off" data-ic="sndOff"></span></button>
+        <button class="mbChip mbRnd" id="lockBtn" type="button" aria-pressed="false" data-i18n-aria="lockOn" aria-label="Lock Little ones" hidden><svg class="lkOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 7.6-1.7"/></svg><svg class="lkShut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></svg></button>
       </div>
       <button class="mbBubu" id="bubuBtn" type="button" data-k="pet" aria-label="Bubu" hidden><span class="bb"><canvas id="bubuCv" aria-hidden="true"></canvas></span><span class="say" id="bubuSay" aria-hidden="true"></span></button>
       <div class="mbTopE"><button class="mbChip mbRnd" id="fullBtn" type="button" aria-pressed="false" aria-label="Full screen" hidden><span class="ic on" data-ic="fsOn"></span><span class="ic off" data-ic="fsOff"></span></button>
@@ -2413,12 +2418,12 @@ Object.assign(I18N.he, {
 });
 let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en' || v === 'he') return v; } catch {} return /^he|^iw/i.test(navigator.language || '') ? 'he' : 'en'; })();
 Object.assign(I18N.en, { // menu B: the Sticker Book start screen (the rooms, Bubu)
-  mbBig: 'Big kids', mbLittle: 'Little ones', mbAgeAria: 'Who is playing?', mbStageN: 'Stage {n}', mbStageW: 'Stage', mbPopit: 'Pop It', mbPageN: 'Page {n}', mbHi: 'Hi!', mbBubuAria: '{n}: say hi',
+  mbBig: 'Big kids', mbLittle: 'Little ones', mbAgeAria: 'Who is playing?', mbStageN: 'Stage {n}', mbStageW: 'Stage', lockOn: 'Lock Little ones (no way back to Big kids)', lockOff: 'Unlock: Big kids again', mbPopit: 'Pop It', mbPageN: 'Page {n}', mbHi: 'Hi!', mbBubuAria: '{n}: say hi',
   heroModesAria: 'More ways to play Strike', cgsDrums: 'Drums', cgsBubbles: 'Bubbles', cgsPaint: 'Paint', cgsStars: 'Stars', // (navigation v2: the Strike mode chips, the camera games' row)
   moreHud: 'Stats', moreHudSub: 'fps in games',
 });
 Object.assign(I18N.he, {
-  mbBig: 'גדולים', mbLittle: 'קטנטנים', mbAgeAria: 'מי משחק?', mbStageN: 'שלב {n}', mbStageW: 'שלב', mbPopit: 'פופ איט', mbPageN: 'עמוד {n}', mbHi: 'היי!', mbBubuAria: '{n}: להגיד שלום',
+  mbBig: 'גדולים', mbLittle: 'קטנטנים', mbAgeAria: 'מי משחק?', mbStageN: 'שלב {n}', mbStageW: 'שלב', lockOn: 'נעילת הקטנטנים (אי אפשר לחזור לגדולים)', lockOff: 'שחרור הנעילה: אפשר לחזור לגדולים', mbPopit: 'פופ איט', mbPageN: 'עמוד {n}', mbHi: 'היי!', mbBubuAria: '{n}: להגיד שלום',
   heroModesAria: 'עוד דרכים לשחק במכה', cgsDrums: 'תופים', cgsBubbles: 'בועות', cgsPaint: 'ציור', cgsStars: 'כוכבים',
   moreHud: 'מדדים', moreHudSub: 'fps במשחקים',
 });
@@ -14914,8 +14919,9 @@ function navRoomPush() { // the Little ones room (a real visitor): an entry unde
   if (!navGuardOk() || route.applying || !navOnStart() || mb.room !== 'little' || routeOf(location.pathname)) return false;
   try { if (history.state && (history.state.grasp === 'room' || history.state.grasp === 'ov')) return false; history.pushState({ grasp: 'room' }, '', location.pathname + location.search); nav.pushes++; route.log.push('push:room'); return true; } catch { return false; }
 }
-function navRoomBack() { // Back in the Little ones room: to Big kids (one step, no trap)
+function navRoomBack() { // Back in the Little ones room: to Big kids (one step, no trap); locked: it stays (the entry is put back)
   if (!navGuardOk() || mb.room !== 'little') return false;
+  if (mbLocked()) { nav.log.push('back:locked'); mbLockNudge(); setTimeout(navRoomPush, 0); return true; }
   nav.log.push('back:room'); mbRoom('big'); return true;
 }
 function navBackOverlay() { const o = navTopOverlay(); if (!o) return null; o[1](); nav.log.push('back:' + o[0]); if (o[0] === 'petRoom' || o[0] === 'collection' || o[0] === 'today') { if (H2_READY) h2SyncTabs(); } if (navTopOverlay()) navOvPush(); return o[0]; }
@@ -20631,8 +20637,17 @@ $('mbRooms').addEventListener('scroll', () => { // a swipe: the room it settles 
   mb.swiping = true; clearTimeout(mb.roomsT); mb.roomsT = setTimeout(() => { mb.swiping = false; const r = mbRoomsNow(); if (r !== mb.room && mode === 'none') { audioInit(); sfx('click'); mbRoom(r, 'swipe'); mb.log.push('swipe:' + r); } }, 90);
 }, { passive: true });
 function mbRoomGet() { try { return localStorage.getItem('grasp.room') === 'little' ? 'little' : 'big'; } catch { return 'big'; } }
+function mbLocked() { try { return localStorage.getItem('grasp.littleLock') === '1'; } catch { return !!mb.lockMem; } }
+function mbLockSync() {
+  const on = mbLocked(), b = $('lockBtn'); b.hidden = mb.room !== 'little'; b.setAttribute('aria-pressed', String(on));
+  b.setAttribute('aria-label', t(on ? 'lockOff' : 'lockOn')); b.title = b.getAttribute('aria-label'); $('start').classList.toggle('locked', on && mb.room === 'little'); $('bigBtn').setAttribute('aria-disabled', String(on && mb.room === 'little')); return on;
+}
+function mbLockSet(on) { mb.lockMem = on; try { if (on) localStorage.setItem('grasp.littleLock', '1'); else localStorage.removeItem('grasp.littleLock'); } catch {} mb.log.push('lock:' + (on ? 'on' : 'off')); return mbLockSync(); }
+function mbLockNudge() { const b = $('lockBtn'); b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); sfx('whiff'); mb.log.push('lock:nudge'); }
 function mbRoom(r, quiet) {
-  r = r === 'little' ? 'little' : 'big'; const was = mb.room; mb.room = r;
+  r = r === 'little' ? 'little' : 'big';
+  if (r === 'big' && mb.room === 'little' && quiet !== true && mbLocked()) { mbLockNudge(); mbRoomsGo('little', true); return 'little'; } // (locked: no way back to Big kids by the switch, a swipe, Back or Escape; a game's Home (quiet) still lands where its game lives)
+  const was = mb.room; mb.room = r;
   $('start').dataset.room = r; $('bigRoom').inert = r !== 'big'; $('littlePick').inert = r !== 'little'; // (both rooms stay in the swiper; the one off screen takes no focus)
   if (quiet !== 'swipe') mbRoomsGo(r, quiet || was === r); // (the switch: the swiper slides there; a swipe is already there)
   $('bigBtn').setAttribute('aria-pressed', String(r === 'big')); $('littleBtn').setAttribute('aria-pressed', String(r === 'little'));
@@ -20640,7 +20655,7 @@ function mbRoom(r, quiet) {
   if (r === 'little' && was !== r) { mbGoPage(0, true); }
   if (was !== r) { screenChanged('room:' + r); mb.log.push('room:' + r); }
   if (r === 'little') navRoomPush(); // (navigation v2: Back in Little ones goes to Big kids)
-  h2SheetsOff(); mbLayout(); return r;
+  h2SheetsOff(); mbLayout(); mbLockSync(); return r;
 }
 function mbPages() { // the Little ones' stickers (what this build has) in pages of 4; the dots under them
   const P = $('mbPager'), all = [...P.querySelectorAll('.stk')];
@@ -20722,6 +20737,15 @@ function mbInit() {
 $('settingsBtn').addEventListener('click', () => { audioInit(); h2More(true); }); // (one tap: the owner removed the parents' gate on purpose)
 $('bubuBtn').addEventListener('click', mbBubuTap);
 $('bigBtn').addEventListener('click', () => mbRoom('big'));
+$('lockBtn').addEventListener('click', () => { audioInit(); sfx('click'); mbLockSet(!mbLocked()); });
+// the Little ones' pager on its first page: a swipe back goes on to Big kids (Brave does not pass the swipe from the inner pager to the rooms' swiper)
+{ let T = null; const P = $('mbPager');
+  P.addEventListener('touchstart', (e) => { const q = e.touches[0]; T = e.touches.length === 1 ? { x: q.clientX, y: q.clientY, page: mb.page, at: performance.now() } : null; }, { passive: true });
+  P.addEventListener('touchend', (e) => {
+    const q = e.changedTouches[0]; if (!T || !q || mb.room !== 'little' || mode !== 'none') { T = null; return; }
+    const dx = (q.clientX - T.x) * (document.documentElement.dir === 'rtl' ? -1 : 1), dy = q.clientY - T.y, quick = performance.now() - T.at < 900;
+    if (T.page === 0 && mb.page === 0 && mbPageNow() === 0 && dx > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && quick) { mb.log.push('pager:back'); mbRoom('big'); }
+    T = null; }, { passive: true }); }
 $('littleBtn').addEventListener('click', () => mbRoom('little'));
 $('lilPopit').addEventListener('click', () => mbLittleGo($('lilPopit'), () => mbOpenFeat('popit')));
 /* --- wiring --- */
