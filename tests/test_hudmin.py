@@ -62,7 +62,7 @@ async def main():
             check(tag + ' phone: the HUD is one slim row (hearts + walls pill) on the button\'s row, clear of it', L['parts'] == ['hearts', 'walls'] and L['hearts'] == 3 and layout_ok(L), L)
             check(tag + ' phone: the walls pill reads "0/4" (Adventure stage 1)', L['pill'] and L['pill']['text'].endswith('0/4') and L['adv'] and L['adv']['text'] == L['pill']['text'], L['pill'])
             check(tag + ' phone: no NEXT card, progress line, wall pips, streak chip or perk badges', L['next'] is None and L['prog'] is None and L['pips'] is None and L['streak'] is None and L['perks'] == 0, L)
-            check(tag + ' phone: the serve prompt ("Pull back, then flick!" + ring) still shows', L['waiting'] and L['serve'] and L['serve']['ty'] > L['hud']['y'] + L['hud']['h'], L['serve'])
+            check(tag + ' phone: the serve prompt ("Pull, then flick!" + ring) still shows', L['waiting'] and L['serve'] and L['serve']['ty'] > L['hud']['y'] + L['hud']['h'], L['serve'])
             hc = L['heartsRow']['x'] + L['heartsRow']['w'] / 2; pc = L['pill']['x'] + L['pill']['w'] / 2
             check(tag + ' phone: mirrored in Hebrew (hearts at the start side, the pill at the end side)', (pc < hc) if he else (pc > hc), [hc, pc, L['dir']])
             await page.screenshot(path=f'tests/out/hud_min_{tag.lower()}.png')

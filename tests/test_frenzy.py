@@ -123,7 +123,7 @@ async def main():
         check('the next miss ends the run: 65 hits in a row, top speed x3.9, NEW RECORD! (the first run), the best saved', m2['over'] and r and r['hits'] == 65 and abs(r['top'] - 3.9) < 1e-6 and r['record'] and m2['newBest'] and m2['prof']['best'] == 65 and abs(m2['prof']['top'] - 3.9) < 1e-6 and m2['prof']['runs'] == 1, m2)
         await page.wait_for_timeout(700)
         cd = await page.evaluate(f"({{ btn: Object.keys({S}.ui.buttons || {{}}), best: {S}.ui.bestLine, ribbon: !!{S}.ui.ribbon, sfx: __sfx.includes('record') }})")
-        check('the card: NEW RECORD!, the ribbon, Play again / Home / Share, the record fanfare', 'share' in cd['btn'] and 'again' in cd['btn'] and 'home' in cd['btn'] and cd['best'] == 'NEW RECORD!' and cd['ribbon'] and cd['sfx'], cd)
+        check('the card: the NEW BEST ribbon alone (no second "NEW RECORD!" pill), Play again / Home / Share, the record fanfare', 'share' in cd['btn'] and 'again' in cd['btn'] and 'home' in cd['btn'] and cd['best'] is None and cd['ribbon'] and cd['sfx'], cd)
         await page.screenshot(path='tests/out/frenzy_card_en.png')
         sh = await page.evaluate(f"(async () => {{ try {{ Object.defineProperty(navigator, 'share', {{ configurable: true, value: undefined }}); }} catch (e) {{}} const w = []; try {{ navigator.clipboard.writeText = async (x) => {{ w.push(x); }}; }} catch (e) {{}} const r = await {F}.share(); return {{ r, text: {F}.lastShare, w }}; }})()")
         check('Share: a ready line "Grasp Frenzy ⚡ 65 hits in a row · top speed ×3.9"', sh['text'] == 'Grasp Frenzy ⚡ 65 hits in a row · top speed ×3.9', sh)
