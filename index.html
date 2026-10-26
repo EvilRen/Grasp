@@ -13421,7 +13421,10 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     for (const it of ITEMS) if (it.level && it.level <= d.level && !d.unlocked.includes(it.id)) d.unlocked.push(it.id);
     d.tickets = Math.min(9, d.tickets | 0);
     if (!d.habit.first) d.habit.first = '2000-01-01'; // (phase 1: a stored profile without the field is an old player's)
-  } catch {}
+  } catch (e) { // (something in the stored profile broke the load: keep the original aside before anything saves over it)
+    console.error('[grasp] profile load failed', e);
+    try { const raw = localStorage.getItem(PROFILE_KEY); if (raw && !localStorage.getItem(PROFILE_KEY + '.bak')) localStorage.setItem(PROFILE_KEY + '.bak', raw); } catch {}
+  }
   return d;
 }
 let profile = loadProfile();
@@ -15127,6 +15130,22 @@ async function enableCamera() {
 }
 
 function stopCamera() { if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; }
+// the camera's guard (the owner, Oct 2026: "suddenly the camera doesn't work in Brave": the prompt, then black): while a game plays by the camera, a
+// picture that stops (the track ended / muted, or the video's clock frozen for 2 s, e.g. after full screen came or went) gets the camera again
+const camDog = { last: -1, still: 0, restarts: 0, busy: false, log: [] };
+async function camRestart(why) {
+  if (camDog.busy || camDog.restarts >= 3) return false; camDog.busy = true; camDog.restarts++; camDog.log.push('restart:' + why); console.warn('[grasp] camera restart', why);
+  try { stopCamera(); await startCamera(); camDog.log.push('ok'); return true; } catch (e) { camDog.log.push('fail:' + (e && e.name)); return false; } finally { camDog.busy = false; camDog.last = -1; camDog.still = 0; }
+}
+setInterval(() => {
+  if (mode !== 'camera' || document.hidden || !stream || camDog.busy || (navigator.webdriver && window.__graspCamDog !== true)) { camDog.last = -1; camDog.still = 0; if (mode !== 'camera') camDog.restarts = 0; return; }
+  const tr = stream.getVideoTracks()[0];
+  if (!tr || tr.readyState === 'ended') { camRestart('ended'); return; }
+  if (video.paused) video.play().catch(() => {});
+  const ct = video.currentTime; camDog.still = ct === camDog.last && !pause.on ? camDog.still + 1 : 0; camDog.last = ct;
+  if (camDog.still >= 2 || (tr.muted && camDog.still >= 1)) camRestart(tr.muted ? 'muted' : 'frozen');
+}, 1000);
+document.addEventListener('fullscreenchange', () => { if (mode === 'camera') setTimeout(() => { if (video.paused) video.play().catch(() => {}); }, 300); }); // (a full screen change can pause the picture)
 
 function fallbackToMouse(failures) {
   homeCamOff(false); stopCamera(); landmarker = null; lastLandmarks = null;
@@ -15321,7 +15340,7 @@ $('homeBtn').addEventListener('click', () => goHome()); // (navigation v2: Home 
 
 let running = false, loopStops = 0;
 function startGame(m) {
-  fsAuto('start'); // (a game: full screen by itself on a phone)
+  if (m !== 'camera' && !cgOn() && inputPref() !== 'camera') fsAuto('start'); // (a game: full screen by itself on a phone; never with the camera: Brave showed only black when full screen came with the camera's start (the owner, Oct 2026))
   if (!$('start').hidden || !$('advMap').hidden || !$('smashMap').hidden) xfadeStart('in'); // (graphics pass: an iris onto the game from the start screen or a map)
   fxClear();
   mode = m;
@@ -20312,6 +20331,7 @@ $('iosInstall').addEventListener('pointerdown', (e) => { if (e.target === $('ios
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pwaIosClose(true)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 PWA_READY = true; pwaSync(); pwaListen();
 if (document.readyState === 'complete') pwaRegister(); else window.addEventListener('load', pwaRegister, { once: true });
+window.__grasp.camDog = { camDog, restart: camRestart }; // (the camera's guard: tests set window.__graspCamDog = true)
 window.__grasp.pwa = { pwa, get state() { return { allowed: pwa.allowed, can: pwaCan(), deferred: !!pwa.deferred, standalone: pwaStandalone(), ios: pwaIos(), snoozed: pwaSnoozed(), update: pwa.update, why: pwa.updateWhy, version: pwa.version, prompted: pwa.prompted, iosShown: pwa.iosShown,
   chip: !$('installBtn').hidden, menu: !$('menuInstall').hidden, toast: !$('pwaUpdate').hidden, controlled: !!(navigator.serviceWorker && navigator.serviceWorker.controller), log: pwa.log.slice() }; },
   allowed: pwaAllowed, register: pwaRegister, install: pwaInstall, sync: pwaSync, showUpdate: pwaShowUpdate, apply: pwaApply, iosOpen: pwaIosOpen, iosClose: pwaIosClose, snooze: pwaSnooze };
@@ -20711,7 +20731,7 @@ $('startSound').addEventListener('click', () => { audioInit(); setMuted(!muted);
 /* --- full screen (the owner: Brave hides its own): a button on the start screen; the whole app stays full screen across games and home until the button again (or the phone's Back) --- */
 function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
 function fsCan() { const d = document.documentElement; return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(d.requestFullscreen || d.webkitRequestFullscreen); } // (no iPhone Safari: it has no full screen for pages; the button stays hidden there)
-function syncFullBtn() { const g = $('fsGameBtn'); if (g) g.hidden = !fsCan() || !!fsEl() || mode === 'none' || !matchMedia('(pointer: coarse)').matches; const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
+function syncFullBtn() { const g = $('fsGameBtn'); if (g) g.hidden = !fsCan() || !!fsEl() || mode === 'none' || mode === 'camera' || cgOn() || !matchMedia('(pointer: coarse)').matches; /* (not with the camera, nor in the camera games: Brave showed black) */ const q = $('fullBtn'); if (!q) return; q.hidden = !fsCan(); const on = !!fsEl(); q.setAttribute('aria-pressed', String(on)); q.setAttribute('aria-label', t(on ? 'fullOffAria' : 'fullOnAria')); q.title = q.getAttribute('aria-label'); }
 async function toggleFull() {
   const d = document.documentElement;
   try { if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document); else await (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); } catch (e) { console.warn('[grasp] full screen', e); }
@@ -20730,7 +20750,7 @@ function fsAuto(why) {
   try { const p = (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); if (p && p.then) p.then(() => { fsA.want = false; fsA.log.push('on:' + why); syncFullBtn(); }, () => fsA.log.push('later:' + why)); } catch { fsA.log.push('later:' + why); }
   return true;
 }
-document.addEventListener('pointerup', (e) => { if (e.isTrusted && fsA.want && mode !== 'none') fsAuto('tap'); }, true);
+document.addEventListener('pointerup', (e) => { if (e.isTrusted && fsA.want && mode !== 'none' && mode !== 'camera') fsAuto('tap'); }, true);
 document.addEventListener('fullscreenchange', syncFullBtn); document.addEventListener('webkitfullscreenchange', syncFullBtn);
 syncFullBtn();
 $('moreHud').addEventListener('click', () => { setHudPref(!hudPref()); h2SyncMore(); sfx('click'); });
