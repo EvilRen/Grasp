@@ -36,7 +36,7 @@ async def main():
         await page.click('#start button[data-mode=strike]')
         check('desktop: the Map opens the Adventure map at once', await page.evaluate("!$('advMap').hidden && mode === 'none'"))
         await page.evaluate("$('advEndless').click()")
-        check('menu shows strike selected + description', await page.evaluate("document.querySelector('[data-mode=strike]').getAttribute('aria-pressed')==='true' && $('modeDesc').textContent.includes('corridor')"))
+        check('menu shows strike selected + description', await page.evaluate("gameMode === 'strike' && !document.querySelector('.heroMap').hasAttribute('aria-pressed') && $('modeDesc').textContent.includes('corridor')"))
         check('mode cycle includes strike', await page.evaluate("MODE_NEXT.busy === 'strike' && MODE_NEXT.strike === 'shapes' && MODE_NEXT.shapes === 'sandbox'"))
         cfg = await page.evaluate("({ zf: __grasp.CONFIG.STRIKE_Z_FAR, hz: __grasp.CONFIG.STRIKE_HIT_Z, base: __grasp.CONFIG.STRIKE_BASE_SPEED, max: __grasp.CONFIG.STRIKE_MAX_SPEED, lives: __grasp.CONFIG.STRIKE_LIVES, sup: __grasp.CONFIG.STRIKE_SUPER_SPEED })")
         check('CONFIG has the strike constants', all(v > 0 for v in cfg.values()) and cfg['hz'] < cfg['zf'] and cfg['base'] < cfg['max'], cfg)
