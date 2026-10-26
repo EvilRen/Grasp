@@ -1170,6 +1170,7 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 .mbTopS{ display:flex; gap:2.4cqw; justify-self:start; }
 .mbTopE{ display:flex; gap:2.4cqw; justify-self:end; align-items:center; min-width:0; } /* (the full screen button + the coins) */
 .mbChip{ position:relative; background:#fff; color:var(--mbInk); border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 max(3px,1cqw) 0 var(--mbInk); }
+.mbChip[hidden]{ display:none !important; } /* (a hidden chip stays hidden: the lock outside Little ones, the full screen button where there is none) */
 .mbRnd{ width:max(44px,12cqw); height:max(44px,12cqw); border-radius:50%; display:grid; place-items:center; padding:0; }
 .mbRnd .ic svg{ width:max(26px,7.2cqw); height:max(26px,7.2cqw); }
 /* the owner, Oct 2026: in Little ones a lock at the top: locked, nothing leads back to Big kids (no swipe, the switch greyed, Back stays); one tap locks, one tap unlocks */
@@ -3034,13 +3035,14 @@ function makeSprite(key, w, h, ox, oy, draw) {
   sp = { c, w, h, ox, oy }; SPRITES.set(key, sp); if (previews.drawing) previews.keys.add(key); return sp;
 }
 function blit(sp, x, y, ang = 0, k = 1, alpha = 1, flip = 1) {
+  const vs = view.s || 1; if (vs !== 1) { x = view.ox + (x - view.ox) * vs; y = view.oy + (y - view.oy) * vs; k *= vs; }
   const c = Math.cos(ang) * k * DPR, s = Math.sin(ang) * k * DPR;
   ctx.setTransform(c * flip, s * flip, -s, c, (x + view.x) * DPR, (y + view.y) * DPR);
   if (alpha !== 1) ctx.globalAlpha = alpha;
   ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
   if (alpha !== 1) ctx.globalAlpha = 1;
 }
-function resetView() { ctx.setTransform(DPR, 0, 0, DPR, view.x * DPR, view.y * DPR); }
+function resetView() { const vs = view.s || 1; if (vs === 1) { ctx.setTransform(DPR, 0, 0, DPR, view.x * DPR, view.y * DPR); return; } ctx.setTransform(DPR * vs, 0, 0, DPR * vs, (view.x + view.ox * (1 - vs)) * DPR, (view.y + view.oy * (1 - vs)) * DPR); } // (view.s: a card shrunk to fit a short screen, round (view.ox, view.oy))
 function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
 function mix(h, to, k) { const a = /^#/.test(h) ? hexRgb(h) : [200, 200, 200]; return 'rgb(' + a.map((v, i) => Math.round(v + (to[i] - v) * k)).join(',') + ')'; }
 const lighten = (h, k) => mix(h, [255, 255, 255], k), darken = (h, k) => mix(h, [10, 14, 32], k);
@@ -3187,6 +3189,7 @@ function bgSprite(kind, wo) {
   });
 }
 function beginFrame(kind, now) {
+  view.s = 1; // (a card's shrink never outlives its frame)
   const k = (now - shake.t) / shake.ms;
   if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); view.x = Math.sin(now * 0.11) * a; view.y = Math.cos(now * 0.17) * a; }
   else view.x = view.y = 0;
@@ -4873,8 +4876,8 @@ function smStarHint(r) { // the line under the stars: how they came, and how to 
 function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
   const E = smash, ui = E.ui, r = E.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear, acc = SMASH_ACCENT[r.scene];
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
-  const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16, (H - ch) / 2) + (1 - e) * 26;
-  view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
+  const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN, cx = W / 2, x0 = cx - cw / 2, cs = Math.min(1, (H - top - 10) / (ch + 24)), coy = (top + H) / 2, y0 = (cs < 1 ? coy - ch / 2 : Math.max(top + 16, (H - ch) / 2)) + (1 - e) * 26;
+  view.x = view.y = 0; view.s = cs; view.ox = cx; view.oy = coy; resetView(); ctx.save(); ctx.globalAlpha = e; // (a short screen: the card shrunk to fit, like the shared card)
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const ts = bigTextSprite(clear ? t('stageClear') : t('soClose'), 34); blit(ts, cx, y0 + 46, 0, Math.min(1, (cw - 30) / Math.max(1, ts.w - 34)));
   blit(textSprite(t('stageN', { n: r.n }) + '  ·  ' + t('sc_' + r.scene), 14, acc, null, 700), cx, y0 + 84);
@@ -4918,6 +4921,8 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
   E.ui.againLine = null; if (now - E.overAt > 1000 && mode === 'camera') { const al = t(againKey(clear ? 'advWaveNext' : 'advWaveRetry')); E.ui.againLine = al; blit(textSprite(al, 13, 'rgba(241,233,218,0.65)', null, 500), cx, y0 + ch + 24, 0, 1, 0.6 + 0.4 * Math.sin(now / 300)); }
   ctx.restore();
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
+  if (cs < 1) for (const key in ui.buttons || {}) { const r = ui.buttons[key]; ui.buttons[key] = { ...r, x: cx + (r.x - cx) * cs, y: coy + (r.y - coy) * cs, w: r.w * cs, h: r.h * cs }; }
+  view.s = 1; resetView();
 }
 function renderSmash(now) {
   const k = (now - shake.t) / shake.ms; let vx = 0, vy = 0;
@@ -9859,8 +9864,8 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
   const fin = clear && r.n >= ADV_N, shr = clear && (!!r.record || !!r.boss) && navShareOk(), skip = false; // (navigation v2: no 'Skip to stage 4' chip: at most 3 buttons on a card) // (phase 1: Share only on a record or a boss; the last stage's card is the ending; a 3-star stage 1 / 2: 'Skip to stage 4')
   const DB = 0, DU = duel.on && duel.link ? 64 : 0; // (Challenge a friend: its button under the others; a duel: the WIN / LOSE panel above the card)
-  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC + DB, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + 16 + DU, (H - ch - DU) / 2 + DU) + (1 - e) * 26;
-  view.x = view.y = 0; resetView(); ctx.save(); ctx.globalAlpha = e;
+  const stk = clear && r.sticker ? 84 : 0, HN = clear ? 24 : 0, SC = clear && r.score !== undefined ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + stk + HN + SC + DB, cx = W / 2, x0 = cx - cw / 2, cs = Math.min(1, (H - top - 10) / (ch + DU + 24)), coy = (top + H) / 2, y0 = (cs < 1 ? coy - (ch + DU) / 2 + DU : Math.max(top + 16 + DU, (H - ch - DU) / 2 + DU)) + (1 - e) * 26;
+  view.x = view.y = 0; view.s = cs; view.ox = cx; view.oy = coy; resetView(); ctx.save(); ctx.globalAlpha = e; // (a short screen: the card shrunk to fit)
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
   const acc = WORLDS[(clear ? r.world : adv.world) - 1].accent;
   const title = fin ? t('theEnd') : clear ? (r.boss ? t('worldClear', { n: r.world }) : t('stageClear')) : t('soClose'), ts = bigTextSprite(title, 34);
@@ -9939,6 +9944,8 @@ function drawAdvCard(now) { // the stage's card: cleared (stars flying in one by
   ctx.restore();
   if (DU) drawDuelPanel(now, x0, y0 - DU, cw, rtl); else ui.duelCard = null;
   if (ui.dwell && cursor.present) { const q = Math.min(1, (now - ui.dwell.t) / 400); resetView(); ctx.lineCap = 'round'; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,194,75,0.25)'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#ffc24b'; ctx.beginPath(); ctx.arc(cursor.x, cursor.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * q); ctx.stroke(); }
+  if (cs < 1) for (const key in ui.buttons || {}) { const r = ui.buttons[key]; ui.buttons[key] = { ...r, x: cx + (r.x - cx) * cs, y: coy + (r.y - coy) * cs, w: r.w * cs, h: r.h * cs }; }
+  view.s = 1; resetView();
 }
 function finalWallTick(now) { // the last wall of a level: flagged 'final' (a glowing, pulsing outline; 'Final wall!'), a bit tougher from level 2 (+1 hp on a third of its bricks)
   if (strike.boss || strike.progress !== strike.goal - 1 || (adv.on && adv.phase !== 'play')) return;
@@ -11544,7 +11551,8 @@ function drawEndCard(now, E, o) { // o: { score, best, bestText, stats: [[value,
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
   const du = !!o.duel && E === strike, DUp = du && duel.on && duel.link ? 64 : 0, shr = h2CardShare(E, o) && navShareOk() && (!!E.ui.newBest || (E === strike && (strike.bosses > 0 || daily.on))); // (a duel: the WIN / LOSE panel above the card; phase 1: Share only on a record or a boss; the daily always: sharing the day's result is its point)
   const nst = (o.stats || []).length ? 1 : 0, OY = 14, SY = nst ? 54 : 0, DS = dly ? 60 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380);
-  const BY = 186 + SY + DS + OY, ch = BY + 54 + 10 + 46 + 18, cx = W / 2, x0 = cx - cw / 2, y0 = Math.max(top + (dly ? 40 : 84) + DUp, (H - ch - DUp) / 2 + DUp) + (1 - e) * 26;
+  const BY = 186 + SY + DS + OY, ch = BY + 54 + 10 + 46 + 18, cx = W / 2, x0 = cx - cw / 2, cs = Math.min(1, (H - top - 10) / (ch + DUp + 24)), coy = (top + H) / 2, y0 = (cs < 1 ? coy - (ch + DUp) / 2 + DUp : Math.max(top + (dly ? 40 : 84) + DUp, (H - ch - DUp) / 2 + DUp)) + (1 - e) * 26;
+  view.s = cs; view.ox = cx; view.oy = coy; // (the QA sweep: in landscape the card ran off the bottom, its buttons out of reach: a short screen shrinks the whole card to fit)
   view.x = 0; view.y = gfxReduced() || k >= 1 ? 0 : 26 * (1 - (1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2))); resetView(); // (graphics pass: the card springs up into place, a little overshoot; its hit boxes stay where it lands)
   ctx.save(); ctx.globalAlpha = e; // everything on the card fades and rises in
   blit(glassSprite(cw, ch, 22, true), x0 - 1, y0 - 1); ui.card = { x: x0, y: y0, w: cw, h: ch };
@@ -11614,6 +11622,8 @@ function drawEndCard(now, E, o) { // o: { score, best, bestText, stats: [[value,
   ctx.restore();
   if (DUp) drawDuelPanel(now, x0, y0 - DUp, cw, rtl); else if (E === strike) strike.ui.duelCard = null;
   drawCardDwell(now, ui);
+  if (cs < 1) for (const key in ui.buttons || {}) { const r = ui.buttons[key]; ui.buttons[key] = { ...r, x: cx + (r.x - cx) * cs, y: coy + (r.y - coy) * cs, w: r.w * cs, h: r.h * cs }; } // (the taps land where the shrunk buttons are)
+  view.s = 1; resetView();
 }
 function drawCardDwell(now, ui) { // a point / pinch / fist held on a button: a ring fills over 400 ms
   if (!(ui.dwell && cursor.present)) return;
