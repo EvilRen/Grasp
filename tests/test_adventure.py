@@ -8,7 +8,7 @@ A = "__grasp.adventure"; S = "__grasp.strike"; P = "__grasp.profile"
 TOASTS = "__grasp.toasts.map(t => t.text)"
 MAP = """(() => { const M = $('advMap'), sc = $('advScroll'), r = sc.getBoundingClientRect(), nodes = [...M.querySelectorAll('.anode')].map(b => { const q = b.getBoundingClientRect(), d = b.querySelector('.disc').getBoundingClientRect();
     return { n: +b.dataset.n, stars: +b.dataset.stars, on: b.querySelectorAll('.st svg.on').length, locked: b.classList.contains('locked'), lock: !!b.querySelector('.disc svg rect'), cur: b.classList.contains('cur'), boss: b.classList.contains('boss'),
-      crown: !!b.querySelector('.mark'), hand: !!b.querySelector('canvas.hand'), anim: getComputedStyle(b.querySelector('.disc')).animationName, x: q.left + q.width / 2, y: q.top + q.height / 2, dw: d.width, l: q.left, rt: q.right, text: b.querySelector('.disc').textContent }; });
+      crown: !!b.querySelector('.mark'), hand: !!b.querySelector('.pin'), anim: getComputedStyle(b.querySelector('.disc')).animationName, x: q.left + q.width / 2, y: q.top + q.height / 2, dw: d.width, l: q.left, rt: q.right, text: b.querySelector('.disc').textContent }; });
   const cur = nodes.find(n => n.cur), bands = [...M.querySelectorAll('.aband')].map(e => ({ w: +e.dataset.world, name: e.querySelector('.asign b').textContent }));
   return { shown: !M.hidden, nodes, bands, cur: cur ? cur.n : 0, curIn: !!cur && cur.y > r.top && cur.y < r.bottom, total: $('advStarTotal').textContent.replace(/\\s+/g, ' ').trim(), title: $('advTitle').textContent, endless: $('advEndless').textContent,
     noX: sc.scrollWidth <= sc.clientWidth + 1 && document.documentElement.scrollWidth <= innerWidth + 1 && nodes.every(n => n.l >= -1 && n.rt <= innerWidth + 1), dir: document.documentElement.dir,
@@ -181,7 +181,7 @@ async def main():
             nd = {n['n']: n for n in m['nodes']}
             check(name + ': the Strike tile opens the map (64 stops, 8 world bands named, the game not started)', m['shown'] and len(m['nodes']) == 64 and [x['w'] for x in m['bands']] == [1, 2, 3, 4, 5, 6, 7, 8] and await page.evaluate("mode") == 'none', len(m['nodes']))
             check(name + ': stars under each stop as saved, numbers on the open ones, locks on the rest', [nd[n]['on'] for n in range(1, 13)] == [3, 3, 2, 1, 3, 2, 3, 3, 2, 1, 3, 0] and nd[5]['text'] == '5' and all(nd[n]['locked'] and nd[n]['lock'] for n in range(13, 65)) and not any(nd[n]['locked'] for n in range(1, 13)))
-            check(name + ': the current stop (12) pulses, with the hand on it, scrolled into view', m['cur'] == 12 and nd[12]['hand'] and nd[12]['anim'] == 'apulse' and m['curIn'], [m['cur'], nd[12]['anim'], m['curIn']])
+            check(name + ': the current stop (12) pulses, with the marker (a glowing dot, no hand) on it, scrolled into view', m['cur'] == 12 and nd[12]['hand'] and nd[12]['anim'] == 'apulse' and m['curIn'], [m['cur'], nd[12]['anim'], m['curIn']])
             check(name + ': boss stops (8, 16 ...) are bigger, with a crown', all(nd[n]['boss'] and nd[n]['crown'] for n in (8, 16, 24, 32, 40, 48, 56, 64)) and nd[8]['dw'] > nd[7]['dw'] * 1.15, [nd[8]['dw'], nd[7]['dw']])
             check(name + ': the star total in the header (26 / 192)', m['total'].replace(' ', '') == '26/192', m['total'])
             check(name + ': no sideways scroll, every stop inside the screen, Back and Endless reachable', m['noX'] and m['back']['w'] >= 44 and m['endBtn'], m['noX'])

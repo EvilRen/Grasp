@@ -1,6 +1,6 @@
 exec(open('tests/test_sandbox.py').read().split('async def boot')[0])
 # The player serve (Breakout-style): at the round's start, at each level's start (after the release beat / perk pick) and after a miss, the ball
-# waits in front of the player ('Pull back, then flick!') with the level's timers frozen, following the hand / finger / mouse (x, a little of y).
+# waits in front of the player ('Pull, then flick!') with the level's timers frozen, following the hand / finger / mouse (x, a little of y).
 # A tap does nothing and a swipe through it does not serve: pull back (down >= 6% of the screen; a charge ring tightens), then a fast flick up
 # launches it with the flick's speed tier (soft / medium / hard / SUPER) and a gentle sideways aim; a flick with no pull-back or a slow drift up
 # does not. Mouse (with / without the button), touch (synthetic pointer events, released or not) and the camera stub. Never a guest; the daily's
@@ -55,8 +55,8 @@ async def main():
         await page.wait_for_function(f"{S}.waiting", timeout=4000)
         w0 = await page.evaluate(f"({{ z: {S}.ball.z, dir: {S}.ball.dir, n: {S}.balls.length, sc: {S}.ballScreen(), ui: {S}.ui.serve, meter: {S}.ui.meterTop, hitZ: __grasp.CONFIG.STRIKE_HIT_Z, serves: {S}.serves, guest: {S}.ball.guest, beats: {S}.beats }})")
         await frames(page, 2); ui = await page.evaluate(f"{S}.ui.serve")
-        check("round start: one ball waiting at the near plane (in the hit window), low on the screen above the power meter; 'Pull back, then flick!' over it",
-              w0['n'] == 1 and w0['dir'] == 0 and 0 < w0['z'] <= w0['hitZ'] and w0['sc']['y'] > 800 * 0.55 and w0['sc']['y'] + w0['sc']['r'] <= w0['meter'] + 2 and ui and ui['text'] == 'Pull back, then flick!' and ui['ty'] < w0['sc']['y'] and w0['guest'] is None, [w0, ui])
+        check("round start: one ball waiting at the near plane (in the hit window), low on the screen above the power meter; 'Pull, then flick!' over it",
+              w0['n'] == 1 and w0['dir'] == 0 and 0 < w0['z'] <= w0['hitZ'] and w0['sc']['y'] > 800 * 0.55 and w0['sc']['y'] + w0['sc']['r'] <= w0['meter'] + 2 and ui and ui['text'] == 'Pull, then flick!' and ui['ty'] < w0['sc']['y'] and w0['guest'] is None, [w0, ui])
         await page.wait_for_timeout(1500)
         w1 = await page.evaluate(f"({{ waiting: {S}.waiting, z: {S}.ball.z, dir: {S}.ball.dir, serves: {S}.serves, beats: {S}.beats, score: {S}.score }})")
         check('1.5 s later it is still waiting (no automatic serve, no heartbeat)', w1['waiting'] and w1['dir'] == 0 and w1['serves'] == w0['serves'] and w1['beats'] == w0['beats'] and w1['score'] == 0, w1)
@@ -268,7 +268,7 @@ async def main():
             sc = await page.evaluate(f"{S}.ballScreen()")
             c3 = max([await page.evaluate(f"{S}.pixel3d({sc['x'] + dx * sc['r']}, {sc['y'] + dy * sc['r']})") for dx, dy in ((0, 0), (-0.4, 0.3), (0.4, 0.3), (0, 0.5), (-0.5, -0.2))], key=lambda c: c[0] - c[2])  # (the most saturated of a few points: the near ball catches a bright highlight)
             ui = await page.evaluate(f"{S}.ui.serve")
-            check('3D: the waiting ball is drawn (the coral 3D ball at ballScreen()), with the prompt over it', c3[0] > 150 and c3[0] > c3[2] + 40 and ui and ui['text'] == 'Pull back, then flick!', [c3, sc, ui])
+            check('3D: the waiting ball is drawn (the coral 3D ball at ballScreen()), with the prompt over it', c3[0] > 150 and c3[0] > c3[2] + 40 and ui and ui['text'] == 'Pull, then flick!', [c3, sc, ui])
             await page.screenshot(path='tests/out/serve_wait_3d.png')
             await page.evaluate(f"{S}.playerServe('hard')"); await page.wait_for_timeout(300)
             check('3D: served, it flies away', await page.evaluate(f"{S}.ball.dir === -1 && {S}.ball.z > 100"))

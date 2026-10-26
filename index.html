@@ -486,13 +486,16 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .anode.cur .st{ margin-top:7px; }
 .anode.cur .disc{ animation:apulse 1.1s ease-in-out infinite; }
 .anode.cur .disc::after{ content:''; position:absolute; inset:-9px; border-radius:50%; border:3px solid var(--saffron); animation:wpulse 1.1s ease-in-out infinite; }
-.anode .hand{ position:absolute; top:-40px; inset-inline-start:46px; width:46px; height:46px; pointer-events:none; animation:abob 1.1s ease-in-out infinite; filter:drop-shadow(0 3px 3px rgba(0,0,0,.5)); }
+.anode .pin{ position:absolute; top:-46px; left:50%; width:30px; height:38px; margin-left:-15px; pointer-events:none; animation:apin 1.1s ease-in-out infinite; } /* the current stop's marker: a glowing dot with a little point down to the stop (the owner: no drawn hands; like drawDemoFinger's dot) */
+.anode .pin::before{ content:''; position:absolute; left:4px; top:0; width:22px; height:22px; box-sizing:border-box; border-radius:50%; border:3.5px solid #ffb02e; background:radial-gradient(circle, #ffc94a 0 30%, rgba(255,255,255,.95) 34%); box-shadow:0 0 10px 4px rgba(255,236,150,.55), 0 0 22px 9px rgba(255,236,150,.25); }
+.anode .pin::after{ content:''; position:absolute; left:8px; top:22px; border-left:7px solid transparent; border-right:7px solid transparent; border-top:10px solid #ffb02e; filter:drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+.anode.boss .pin{ top:-66px; } /* (above the boss's crown) */
 .anode.pop .disc{ animation:apop .7s cubic-bezier(.2,1.6,.4,1) both; }
 .anode.shake{ animation:shake .4s; }
 .anode:not(.locked):hover .disc{ transform:scale(1.07); }
 .anode.dwell .disc{ transform:scale(1.12); }
 @keyframes apulse{ 0%,100%{ transform:scale(1.12); } 50%{ transform:scale(1.22); } }
-@keyframes abob{ 0%,100%{ transform:translateY(0) rotate(-8deg); } 50%{ transform:translateY(-6px) rotate(4deg); } }
+@keyframes apin{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
 @keyframes apop{ 0%{ transform:scale(.3); filter:brightness(2.2); } 60%{ transform:scale(1.35); } 100%{ transform:scale(1.12); filter:none; } }
 .amFoot{ flex:none; position:relative; z-index:3; display:flex; justify-content:center; padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 12px); background:linear-gradient(rgba(22,29,61,.94),#161d3d); box-shadow:0 -1px 0 var(--line); }
 .amFoot{ gap:10px; align-items:center; }
@@ -515,7 +518,7 @@ html[dir="rtl"] .amBack svg{ transform:scaleX(-1); }
 .amEndless small{ font-size:11px; color:var(--muted); font-weight:600; }
 .amFrenzy{ box-shadow:inset 0 0 0 1.5px rgba(255,138,61,.75), 0 0 14px rgba(255,138,61,.25); background:linear-gradient(135deg,rgba(255,194,75,.14),rgba(255,90,40,.14)); }
 .amRank[hidden]{ display:none; }
-.amTheme{ flex:none; min-height:44px; min-width:44px; padding:4px 12px 4px 5px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px var(--tc,rgba(241,233,218,.4)); color:var(--bone); display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; }
+.amTheme{ flex:none; min-height:44px; min-width:44px; padding:4px 12px 4px 5px; border-radius:999px; background:rgba(241,233,218,.07); box-shadow:inset 0 0 0 1.5px var(--tc,rgba(241,233,218,.4)); color:var(--bone); display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:800; }
 .amTheme canvas{ width:34px; height:34px; border-radius:50%; flex:none; }
 .amFrenzy small{ white-space:nowrap; }
 .amFrenzy svg{ stroke:#ff8a3d; fill:rgba(255,194,75,.35); stroke-linejoin:round; }
@@ -1139,7 +1142,7 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 .shRow[hidden]{ display:none; } .shRow:disabled{ opacity:.55; }
 /* the Adventure map's header: Easy / Normal (moved from the start screen), big enough to tap */
 .amHead .diff{ margin:0 4px; padding:3px; display:inline-flex; flex:none; }
-.amHead .diff button{ min-height:44px; padding:0 12px; font-size:14px; }
+.amHead .diff button{ min-height:44px; min-width:44px; padding:0 12px; font-size:14px; }
 @media (max-width:520px){ .amHead{ flex-wrap:wrap; row-gap:6px; } .amHead::after{ content:''; order:8; flex-basis:100%; height:0; } .amHead .diff{ order:9; margin:0 auto; } } /* (a phone: Easy / Normal on its own row under the header's buttons) */
 .amEndless[hidden], .amAlbum[hidden]{ display:none !important; }
 #moreSheet #startLang{ position:static; top:auto; left:auto; right:auto; }
@@ -1927,7 +1930,7 @@ const I18N = {
     tm_boss: 'Beat a boss for the mission', tm_strikeLevel: 'Reach level {g} in Strike for the mission', tm_rounds: '{n} more rounds for the mission', tm_rounds1: '1 more round for the mission',
     tm_combo: 'One ×3 combo for the mission', tm_close: '{n} more "Close one!" hits for the mission', tm_close1: '1 more "Close one!" hit for the mission', tm_daily: "Play today's daily for the mission",
     // pacing step 2: the road (unlocks by player level), worlds, the boss chest, the NEW UNLOCKED card and the in-run spotlight
-    hitToStart: 'Pull back, then flick!', flickNow: 'Now flick it up!', tipFlick: 'To serve: pull the ball down toward you, then flick up fast. A faster flick = a harder serve!', dailyShort: 'Daily', segCam: 'Camera', segTouch: 'Touch', inputAria: 'Play with',
+    hitToStart: 'Pull, then flick!', flickNow: 'Now flick it up!', tipFlick: 'To serve: pull the ball down toward you, then flick up fast. A faster flick = a harder serve!', dailyShort: 'Daily', segCam: 'Camera', segTouch: 'Touch', inputAria: 'Play with',
     road: 'Road', roadTitle: 'The Road', roadSub: 'Every run earns XP. Level up to unlock new walls, power-ups, perks and friends.', roadHidden: '???', roadNow: 'You are here',
     rd_brick: 'Brick walls + ball', rd_glass: 'Glass walls', rd_pu_big: 'Big ball', rd_perks1: 'Perks', rd_steel: 'Steel walls', rd_pu_slow: 'Slow-mo', rd_cow: 'Flying cow', rd_curve: 'Curving balls', rd_pu_multi: 'Multi-ball', rd_perks2: 'More perks',
     rd_holed: 'Walls with holes', rd_pu_fire: 'Fireball', rd_monkey: 'Flying monkey', rd_moving: 'Moving walls', rd_perks3: 'Even more perks', rd_tnt: 'TNT walls', rd_pu_life: 'Extra life', rd_wobble: 'Wobbly balls', rd_w5set: 'Volcano skins', rd_legend: 'Legend hand',
@@ -2073,7 +2076,7 @@ const I18N = {
     tm_walls: 'עוד {n} קירות למשימה', tm_walls1: 'עוד קיר אחד למשימה', tm_powerups: 'עוד {n} חיזוקים למשימה', tm_powerups1: 'עוד חיזוק אחד למשימה',
     tm_boss: 'נצחו בוס כדי להשלים את המשימה', tm_strikeLevel: 'הגיעו לשלב {g} בסטרייק כדי להשלים את המשימה', tm_rounds: 'עוד {n} סיבובים למשימה', tm_rounds1: 'עוד סיבוב אחד למשימה',
     tm_combo: 'קומבו ‎×3 אחד למשימה', tm_close: 'עוד {n} מכות "היה קרוב!" למשימה', tm_close1: 'עוד מכת "היה קרוב!" אחת למשימה', tm_daily: 'שחקו באתגר היומי כדי להשלים את המשימה',
-    hitToStart: 'משכו אחורה וזרקו קדימה!', flickNow: 'עכשיו זרקו למעלה!', tipFlick: 'כדי להגיש: משכו את הכדור למטה אליכם ואז הניפו מהר למעלה. הנפה מהירה יותר = הגשה חזקה יותר!', dailyShort: 'יומי', segCam: 'מצלמה', segTouch: 'מגע', inputAria: 'לשחק עם',
+    hitToStart: 'מושכים ומעיפים!', flickNow: 'עכשיו זרקו למעלה!', tipFlick: 'כדי להגיש: משכו את הכדור למטה אליכם ואז הניפו מהר למעלה. הנפה מהירה יותר = הגשה חזקה יותר!', dailyShort: 'יומי', segCam: 'מצלמה', segTouch: 'מגע', inputAria: 'לשחק עם',
     road: 'הדרך', roadTitle: 'הדרך', roadSub: 'כל משחק נותן XP. עלו רמה כדי לפתוח קירות, חיזוקים, כוחות וחברים חדשים.', roadHidden: '???', roadNow: 'אתם כאן',
     rd_brick: 'קירות לבנים וכדור', rd_glass: 'קירות זכוכית', rd_pu_big: 'כדור ענק', rd_perks1: 'כוחות', rd_steel: 'קירות פלדה', rd_pu_slow: 'הילוך איטי', rd_cow: 'פרה מעופפת', rd_curve: 'כדורים מתעקלים', rd_pu_multi: 'כדורים כפולים', rd_perks2: 'עוד כוחות',
     rd_holed: 'קירות עם חורים', rd_pu_fire: 'כדור אש', rd_monkey: 'קוף מעופף', rd_moving: 'קירות זזים', rd_perks3: 'ועוד כוחות', rd_tnt: 'קירות TNT', rd_pu_life: 'לב נוסף', rd_wobble: 'כדורי זיגזג', rd_w5set: 'מראות הר געש', rd_legend: 'יד האגדה',
@@ -3441,11 +3444,11 @@ const SLICE_GRACE_MS = 2000, SLICE_FIRST_LIVES = 5, SLICE_PHONE = { r: 1.22, g: 
 let sliceRounds = 0; // rounds played this session
 function slicePhone() { return Math.min(W, H) < 600; }
 function sliceScale() { const ph = slicePhone(); return { g: CONFIG.SLICE_GRAVITY * H / 800 * (ph ? SLICE_PHONE.g : 1), r: Math.max(28, Math.min(60, Math.min(W, H) * 0.085)) * (ph ? SLICE_PHONE.r : 1) }; }
-function resetSlice() {
+function resetSlice(again) { // again: the pause sheet's Restart replays the same round with the same hearts (the first round's 5 stay 5; not counted as a new round)
   slice.fruits.length = slice.halves.length = slice.stains.length = slice.floaters.length = slice.blade.length = slice.cuts.length = 0;
   try { slice.best = Math.max(slice.best, +localStorage.getItem('sliceBest') || 0); } catch {}
   slice.score = 0; slice.missed = 0; slice.last = null; slice.nextSpawn = performance.now() + SLICE_GRACE_MS;
-  slice.lives = slice.maxLives = mode !== 'none' && sliceRounds === 0 && !window.__graspSlice3 ? SLICE_FIRST_LIVES : SLICE_LIVES; if (mode !== 'none') sliceRounds++; /* (a round in play: picking the tile on the start screen deals one too) */ slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
+  slice.lives = slice.maxLives = again && mode !== 'none' && slice.maxLives ? slice.maxLives : mode !== 'none' && sliceRounds === 0 && !window.__graspSlice3 ? SLICE_FIRST_LIVES : SLICE_LIVES; if (mode !== 'none' && !(again && sliceRounds)) sliceRounds++; /* (a round in play: picking the tile on the start screen deals one too) */ slice.over = false; slice.bestCombo = 0; slice.spawned = 0; slice.lastBomb = 0; slice.bombEvery = 6; slice.bombs = slice.bombsHit = slice.bombsAvoided = 0; slice.flash = -1e9;
   slice.combo.n = 0; slice.combo.t = -1e9; roundStart(); if (mode !== 'none') sfx('go'); grippySay('start'); // (less talking: the start is a sound; the line only under Voice: All)
   const ui = slice.ui; ui.heartLost = ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
 }
@@ -9377,7 +9380,7 @@ function aimSpot(a) { // the landing point folded back into the corridor (a ball
   const r = ballR(); return { x: fold(a.x, L + r, R - r), y: fold(a.y, T + r, B - r), z: a.z };
 }
 /* --- the player serve: at the round's start, each level's start (after the release / the perk pick) and after a miss, the ball waits in front of
-   the player (bobbing, following the hand / finger / mouse: its x and a little of its y, inside the corridor's near end; 'Pull back, then flick!');
+   the player (bobbing, following the hand / finger / mouse: its x and a little of its y, inside the corridor's near end; 'Pull, then flick!');
    the level's clock, the heartbeat, the boss and the power-up timers wait with it. A tap does nothing and a swipe through it does not serve: the
    player pulls back (the hand / finger moves down, toward the player, >= PULL_MIN of the screen height; a ring round the ball tightens as it charges)
    then flicks up fast. The flick's peak speed (gate FLICK_GATE) gives the usual tiers (soft / medium / hard / SUPER) and a gentle aim from its
@@ -11127,7 +11130,7 @@ function ticketSprite() { // the Golden ticket: a gold stub with notched ends, a
     g.save(); g.translate(14, 2); g.scale(1.3, 1.3); g.fillStyle = '#ff6f59'; g.beginPath(); g.moveTo(0, 8); g.bezierCurveTo(-14, -2, -6, -12, 0, -5); g.bezierCurveTo(6, -12, 14, -2, 0, 8); g.fill(); g.restore();
   });
 }
-function drawServePrompt(now) { // the waiting serve ball: a soft pulsing glow ring round it and 'Pull back, then flick!' above it; the pull's charge: a ring that tightens round the ball, a band to the finger, then arrows up
+function drawServePrompt(now) { // the waiting serve ball: a soft pulsing glow ring round it and 'Pull, then flick!' above it; the pull's charge: a ring that tightens round the ball, a band to the finger, then arrows up
   const ui = strike.ui, b = strike.waiting && strike.balls[0]; ui.serve = null; if (!b || !b.wait || strike.over) return;
   const sc = ballScreen(b), p = 0.5 + 0.5 * Math.sin(now * 0.006), a = Math.min(1, (now - strike.waitSince) / 300), P = strike.pull || { c: 0, armed: false }, c = P.c || 0;
   resetView(); ctx.save(); ctx.globalAlpha = a; const gr = ctx.createRadialGradient(sc.x, sc.y, sc.r * 0.9, sc.x, sc.y, sc.r * (1.7 + 0.25 * p)); gr.addColorStop(0, 'rgba(255,214,120,0.45)'); gr.addColorStop(1, 'rgba(255,214,120,0)');
@@ -11566,7 +11569,7 @@ function drawEndCard(now, E, o) { // o: { score, best, bestText, stats: [[value,
   { // the best: a small chip under the score (a record: gold, pulsing)
     const rec = !dly && ui.newBest && (o.share || frenzy.on && E === strike), bt = dly ? t('dailyBest', { n: dly.best }) + '  ·  ' + t('attemptsN', { n: dly.attempts }) : o.bestText || t('best', { n: o.best });
     const bs = textSprite(bt, 13, rec ? '#ffd36b' : 'rgba(241,233,218,0.8)', null, rec ? 800 : 600), bw = Math.min(cw - 40, bs.tw + 26), bh = 26, by0 = y0 + 152 + OY - bh / 2, pk = rec ? 1 + 0.06 * Math.sin(now / 160) : 1;
-    if (!dly && !o.bestText && (!o.best || o.best === o.score)) { ui.bestLine = ui.bestChip = null; } else { // (game feel: no 'Best 0', no best that only repeats the score)
+    if (!dly && ((!o.bestText && (!o.best || o.best === o.score)) || rec || (ui.newBest && o.bestText === t('newRecord')))) { ui.bestLine = ui.bestChip = null; } /* (a new best: the ribbon alone says it; never a second 'new record' pill) */ else { // (game feel: no 'Best 0', no best that only repeats the score)
     blit(glassSprite(bw, bh, 13), cx - bw / 2 - 1, by0 - 1); if (rec) { resetView(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,211,107,0.85)'; ctx.beginPath(); ctx.roundRect(cx - bw / 2, by0, bw, bh, 13); ctx.stroke(); }
     blit(bs, cx, by0 + bh / 2, 0, Math.min(1, (bw - 14) / bs.tw) * pk); ui.bestLine = bt; ui.bestChip = { x: cx - bw / 2, y: by0, w: bw, h: bh, rec: !!rec }; }
   }
@@ -12075,7 +12078,7 @@ function renderStrike(now) {
   }
   if (strike.over && adv.on && adv.result) { if (!strike.perkOffer) drawAdvCard(now); else strike.ui.buttons = null; drawStrikeHand(now); } // an Adventure stage's card (v5: under the run-power cards, hidden)
   else if (strike.over && frenzy.on && frenzy.result) { // Frenzy: hits in a row, the top speed, NEW RECORD! and Share
-    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? t('newRecord') : t('frenzyBest', { n: F.best }), stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true, duel: true, map: true });
+    const F = frenzy.result; drawEndCard(now, strike, { title: t('frenzyOver'), score: F.hits, bestText: F.record ? null : t('frenzyBest', { n: F.best }), /* (a record: the corner ribbon says it once; no 'New record!' pill too) */ stats: [[F.hits, 'frenzyHits'], [LRM + '×' + F.top.toFixed(1), 'topSpeed'], [F.walls, 'walls']], again: 'playAgainWave', share: true, duel: true, map: true });
     drawStrikeHand(now);
   }
   else if (strike.over) { // the hand stays on top so it can aim at the buttons
@@ -14504,7 +14507,7 @@ function renderAdvMap() {
     const ss = document.createElement('span'); ss.className = 'st'; ss.innerHTML = [0, 1, 2].map((i) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (i < st ? ' class="on"' : '') + '>' + ADV_STAR_SVG + '</svg>').join('');
     b.append(disc, ss);
     const rk = advBestRank(n); if (rk >= 0) { const g = document.createElement('span'); g.className = 'rk'; g.dataset.rank = RANKS[rk]; g.style.setProperty('--rc', RANK_COL[rk]); g.style.setProperty('--rg', rankCss(rk)); disc.appendChild(g); b.dataset.rank = RANKS[rk]; } // v4: the stage's best rank, a small gem on the stop
-    if (n === cur && open) { const c = document.createElement('canvas'); c.className = 'hand'; c.width = c.height = Math.round(56 * SS); c.setAttribute('aria-hidden', 'true'); const it = ITEMS.find((q) => q.type === 'hand' && q.skin === skinOf('hand')); if (it) drawItemPreview(c.getContext('2d'), it); b.appendChild(c); }
+    if (n === cur && open) { const c = document.createElement('span'); c.className = 'pin'; c.setAttribute('aria-hidden', 'true'); b.appendChild(c); } // (you are here: a bouncing glowing dot, no hand)
     b.setAttribute('aria-label', t('stageN', { n }) + (P.boss ? ' · ' + t('advBoss') : '') + ' · ' + (open ? t('advStarsN', { n: st }) : t('advLockedAria')) + (rk >= 0 ? ' · ' + t('rankAria', { r: t('rk_' + RANKS[rk]) }) : ''));
     if (!open) b.setAttribute('aria-disabled', 'true');
     b.addEventListener('click', () => advNodeTap(n, b));
@@ -14814,7 +14817,7 @@ function showHint(text) { // toast: the mode's icon at the start edge, slides up
   if (fdActive()) { if (typeof text === 'string') fd.q = text; hideHint(); return; } // (phase 1: one instruction at a time: a tip waits for the finger)
   if ((tgOn() || gameMode === 'spot') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
-  if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull back, then flick!': no how-to toast at the start)
+  if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
   const src = (gameMode !== 'strike' && document.querySelector('#start button[data-mode="' + gameMode + '"] .ic svg, #camGamesBtn [data-cg="' + gameMode + '"] .ic svg')) || (cgOn() ? document.querySelector('#camGamesBtn .ic svg') : null); // (menu B: the game's sticker)
   hintEl.querySelector('.ic').replaceChildren(src ? src.cloneNode(true) : '');
@@ -14860,7 +14863,7 @@ function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHu
 function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (gameMode === 'spot') spotStart({ s: spot.sc, l: spot.lvl }); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(true); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (gameMode === 'spot') spotStart({ s: spot.sc, l: spot.lvl }); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
 
 /* ---------------- Strike: the toolbar folds into one pause button (body.minChrome). A tap (or a camera dwell) pauses the game and opens
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
@@ -17584,7 +17587,7 @@ function renderDrums(now) {
   // the hands: a glowing ball each (both hands when two are tracked)
   for (const p of camg.ptrs) if (p.hand) cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 15);
   // the top row: Beat + Follow the light, or (Simon) Stop + the status pill
-  const ty = cgTopY(), h = 40;
+  const ty = cgTopY(), h = 44; // (the chips: a 44 px touch target)
   if (!D.over) {
     if (S.on) {
       const sw = 96; const msg = S.msg === 'drYourTurn' ? t('drYourTurn', { i: S.i, n: S.seq.length }) : t(S.msg || 'drWatch');
@@ -17706,7 +17709,7 @@ function renderBubbles(now) {
     if (p.hand) { for (const q of p.tips.slice(0, 5)) { resetView(); ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, TAU); ctx.fill(); } cgHandMark(p, CG_HAND_COL[p.id] || CG_HAND_COL.h0, now, 9); }
     else if (p.down) cgHandMark(p, 'rgba(255,255,255,0.8)', now, 10);
   }
-  const ty = cgTopY(), h = 40;
+  const ty = cgTopY(), h = 44; // (the chips: a 44 px touch target)
   if (!B.over) {
     const cw = Math.min(124, W * 0.34), info = B.calm ? t('bbPoppedN', { n: B.popped }) : LRM + cgSecs(B.left) + '  ·  ★ ' + B.score, sp = textSprite(info, 16, '#fff8ec', null, 700), pw = sp.tw + 30, tot = cw + 10 + pw, x0 = (W - tot) / 2;
     if (!B.little) cgChip('calm', rtl ? x0 + pw + 10 : x0, ty, cw, h, t('bbCalm'), { on: B.calm, col: '#7bed9f', icon: (g, cx, cy, on) => { g.fillStyle = on ? '#123d24' : '#7bed9f'; g.beginPath(); g.ellipse(cx, cy + 1, 7, 5, 0, Math.PI, 0); g.fill(); g.beginPath(); g.arc(cx + 7, cy - 1, 2.6, 0, TAU); g.fill(); g.fillRect(cx - 6, cy + 1, 3, 3); g.fillRect(cx + 3, cy + 1, 3, 3); } });
@@ -17744,9 +17747,13 @@ function paintReset(now) {
   P.panel = paintPanelLayout(); roundStart();
 }
 function paintPanelLayout() {
-  const gap = 5, s = Math.max(34, Math.min(52, (W - 24 - gap * 7) / 8)), pw = s * 8 + gap * 7, ph = s * 2 + gap, x0 = (W - pw) / 2, y0 = H - ph - 12, rtl = lang === 'he';
+  // every button at least 44 x 44 (a touch target): a phone too narrow for 8 of them with 5 px gaps and the 8 px rim (e.g. 390 or 360 wide)
+  // closes the gaps (the tools' tiles and the swatches keep their own inset, so they still look apart) and narrows the rim to 4 px
+  let gap = 5, pad = 8, s = Math.min(52, (W - 24 - gap * 7) / 8);
+  if (s < 44) { pad = 4; gap = Math.max(0, Math.min(5, Math.floor((W - 2 * pad - 44 * 8) / 7))); s = Math.max(34, Math.min(44, (W - 2 * pad - gap * 7) / 8)); }
+  const pw = s * 8 + gap * 7, ph = s * 2 + gap, x0 = (W - pw) / 2, y0 = H - ph - 4 - pad, rtl = lang === 'he';
   const cell = (row, i) => ({ x: x0 + (rtl ? 7 - i : i) * (s + gap), y: y0 + row * (s + gap), w: s, h: s });
-  return { x: x0 - 8, y: y0 - 8, w: pw + 16, h: ph + 16, s, cell };
+  return { x: x0 - pad, y: y0 - pad, w: pw + 2 * pad, h: ph + 2 * pad, s, cell };
 }
 const PAINT_TOOLS = ['s0', 's1', 's2', 'rainbow', 'sparkle', 'mirror', 'trash', 'save'];
 function paintInPanel(x, y) { const L = paint.panel; return !!L && y >= L.y - 8 && x >= L.x - 8 && x <= L.x + L.w + 8; }
@@ -19743,8 +19750,8 @@ function piPanel(x, y, w, h, r = 26) { resetView(); ctx.save(); ctx.shadowColor 
 function piVeil(a) { resetView(); ctx.fillStyle = 'rgba(40,20,70,' + a.toFixed(3) + ')'; ctx.fillRect(-20, -20, W + 40, H + 40); }
 function piPill(id, x, y, w, h, label, col, icon) {
   resetView(); ctx.save(); ctx.shadowColor = 'rgba(40,20,70,0.3)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); const gr = ctx.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, pc(col, 0.25)); gr.addColorStop(1, col); ctx.fillStyle = gr; ctx.fill(); ctx.restore();
-  ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x + h * 0.25, y + 4, w - h * 0.5, h * 0.3, h * 0.15); ctx.fill(); ctx.restore();
-  const fs = Math.round(h * 0.42), ic = icon ? h * 0.5 : 0, gap = ic ? 8 : 0, tw = Math.min(w - 24 - ic - gap, textSprite(label, fs, '#ffffff', 'rgba(40,20,70,0.35)', 800).tw), tot = tw + ic + gap, rtl = lang === 'he', x0 = x + w / 2 - tot / 2;
+  const fs = Math.round(h * 0.42), gh = Math.max(3, Math.min(h * 0.3, h / 2 - fs * 0.55 - 6)); ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x + h * 0.25, y + 3, w - h * 0.5, gh, gh / 2); ctx.fill(); ctx.restore(); // the gloss: a thin stripe along the top edge, above the label (it used to run over the words)
+  const ic = icon ? h * 0.5 : 0, gap = ic ? 8 : 0, tw = Math.min(w - 24 - ic - gap, textSprite(label, fs, '#ffffff', 'rgba(40,20,70,0.35)', 800).tw), tot = tw + ic + gap, rtl = lang === 'he', x0 = x + w / 2 - tot / 2;
   if (icon) icon(rtl ? x0 + tot - ic / 2 : x0 + ic / 2, y + h / 2, ic);
   piTx(label, fs, '#ffffff', rtl ? x0 + tw / 2 : x0 + ic + gap + tw / 2, y + h / 2, { glow: 'rgba(40,20,70,0.35)', maxW: tw });
   pi.ui.push({ id, x, y, w, h });
@@ -19794,9 +19801,9 @@ function piOverlay(now) {
       const best = piP().best[pi.board]; if (best) piTx(t('piBest', { s: (best / 1000).toFixed(1) }), 14, ink, hx, topY + 56, { glow: glowC, w: 700 });
       if (!R.on && !R.done && !tgDemoOn()) piTx(t('piStart'), 20, ink, hx, side ? topY + 84 : L.by - 2 > topY + 70 ? L.by - 14 : H - 22, { glow: glowC, k: pulse });
     } else if (pi.mode === 'color' && pi.color.target) {
-      const r = 24, sp = piBubbleSprite(pi.color.target, r, false, L.fx), b = 1 + 0.06 * Math.sin(now / 220); resetView(); ctx.save(); ctx.beginPath(); ctx.arc(hx, topY, r * 1.45, 0, TAU); ctx.fillStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.85)'; ctx.fill(); ctx.restore(); ctx.drawImage(sp.c, hx - sp.ox * b, topY - sp.oy * b, sp.w * b, sp.h * b);
-      if (pi.color.okAt) { resetView(); ctx.save(); ctx.strokeStyle = '#3ccf7c'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(hx - 9, topY + 1); ctx.lineTo(hx - 2, topY + 9); ctx.lineTo(hx + 11, topY - 8); ctx.stroke(); ctx.restore(); }
-      pi.ui.push({ id: 'swatch', x: hx, y: topY, r: r * 1.45 });
+      const r = 24, sp = piBubbleSprite(pi.color.target, r, false, L.fx), b = 1 + 0.06 * Math.sin(now / 220); const sy = side ? topY : Math.max(topY, cr.y + r * 1.45); /* (a phone: the swatch's white circle starts level with the corner stickers' tops, never cut off by the screen's top edge) */ resetView(); ctx.save(); ctx.beginPath(); ctx.arc(hx, sy, r * 1.45, 0, TAU); ctx.fillStyle = dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.85)'; ctx.fill(); ctx.restore(); ctx.drawImage(sp.c, hx - sp.ox * b, sy - sp.oy * b, sp.w * b, sp.h * b);
+      if (pi.color.okAt) { resetView(); ctx.save(); ctx.strokeStyle = '#3ccf7c'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(hx - 9, sy + 1); ctx.lineTo(hx - 2, sy + 9); ctx.lineTo(hx + 11, sy - 8); ctx.stroke(); ctx.restore(); }
+      pi.ui.push({ id: 'swatch', x: hx, y: sy, r: r * 1.45 });
     } else if (pi.mode === 'simon') {
       const S = pi.simon, n = S.seq.length, gap = Math.min(26, (W - 160) / Math.max(1, n)), x0 = hx - (n - 1) * gap / 2;
       for (let i = 0; i < n; i++) { const done = S.phase === 'input' ? i < S.idx : S.phase === 'ok', act = S.phase === 'show' && i === S.shown; resetView(); ctx.save(); ctx.beginPath(); ctx.arc(x0 + (lang === 'he' ? n - 1 - i : i) * gap, topY, act ? 10 : 8, 0, TAU); ctx.fillStyle = done ? '#3ccf7c' : act ? '#ffd23f' : dark ? 'rgba(255,255,255,0.3)' : 'rgba(58,29,79,0.22)'; ctx.fill(); ctx.restore(); }
@@ -19821,7 +19828,7 @@ function piOverlay(now) {
     return;
   }
   if (o.kind === 'shelf') {
-    piVeil(0.5 * a); const P = piP(), cols = W >= 700 ? 5 : W >= 520 ? 4 : 3, pw = Math.min(W - 20, cols * 150 + 30), cw = (pw - 24) / cols, ts = Math.min(cw - 10, 140), rows = Math.ceil(PI_IDS.length / cols), cellH = ts + 30, ph = Math.min(H - tgTop() - 10, 76 + rows * cellH + 10), px = (W - pw) / 2, py = Math.max(tgTop() - 4, (H - ph) / 2) + (1 - ease(a)) * 30, rtl = lang === 'he';
+    piVeil(0.5 * a); const P = piP(), cols = W >= 700 ? 5 : W >= 520 ? 4 : 3, pw = Math.min(W - 20, cols * 150 + 30), cw = (pw - 24) / cols, ts = Math.min(cw - 10, 140), rows = Math.ceil(PI_IDS.length / cols), nm = (id) => { const s0 = t('pib_' + id), sp = s0.indexOf(' '); return textSprite(s0, 14, '#3a1d4f', null, 700).tw <= cw - 4 || sp < 0 ? [s0] : [s0.slice(0, sp), s0.slice(sp + 1)]; }, wrap = PI_IDS.some((id) => P.got.includes(id) && nm(id).length > 1), cellH = ts + (wrap ? 46 : 30), /* (the names at 14 px: one too wide for its column goes on two lines, the rows a line taller) */ ph = Math.min(H - tgTop() - 10, 76 + rows * cellH + 10), px = (W - pw) / 2, py = Math.max(tgTop() - 4, (H - ph) / 2) + (1 - ease(a)) * 30, rtl = lang === 'he';
     o.box = { x: px, y: py, w: pw, h: ph }; piPanel(px, py, pw, ph);
     piTx(t('piBoards', { n: P.got.length, m: PI_IDS.length }), 24, '#3a1d4f', px + pw / 2, py + 34, { glow: null, maxW: pw - 120 });
     const xs = { x: rtl ? px + 34 : px + pw - 34, y: py + 34 }; resetView(); ctx.save(); ctx.beginPath(); ctx.arc(xs.x, xs.y, 22, 0, TAU); ctx.fillStyle = '#efe4ff'; ctx.fill(); ctx.strokeStyle = '#3a1d4f'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(xs.x - 7, xs.y - 7); ctx.lineTo(xs.x + 7, xs.y + 7); ctx.moveTo(xs.x + 7, xs.y - 7); ctx.lineTo(xs.x - 7, xs.y + 7); ctx.stroke(); ctx.restore(); pi.ui.push({ id: 'close', x: xs.x, y: xs.y, r: 22 });
@@ -19829,7 +19836,7 @@ function piOverlay(now) {
     PI_IDS.forEach((id, k) => { const r = Math.floor(k / cols), c0 = k % cols, c = rtl ? cols - 1 - c0 : c0, x = px + 12 + c * cw + cw / 2, y = py + 70 + (r * cellH + ts / 2) * sch, s = Math.round(ts * sch), got = P.got.includes(id), cur = id === pi.board;
       resetView(); ctx.save(); ctx.beginPath(); ctx.roundRect(x - s / 2, y - s / 2, s, s, 18); ctx.fillStyle = cur ? '#fff1c4' : got ? '#f4efff' : '#e4e1ee'; ctx.fill(); if (cur) { ctx.lineWidth = 4; ctx.strokeStyle = '#ffb020'; ctx.stroke(); } ctx.restore();
       const sp = piMiniSprite(id, Math.round(s * 0.92), !got); resetView(); ctx.drawImage(sp.c, x - sp.w / 2, y - sp.h / 2, sp.w, sp.h);
-      if (!got) piLock(x, y, s * 0.3); else { piTx(t('pib_' + id), 13, '#3a1d4f', x, y + s / 2 + 12 * sch, { glow: null, maxW: cw - 4, w: 700 }); if (P.fresh === id) { resetView(); ctx.fillStyle = '#ff4f64'; ctx.beginPath(); ctx.arc(x + s / 2 - 8, y - s / 2 + 8, 7, 0, TAU); ctx.fill(); } pi.ui.push({ id: 'board:' + id, x: x - s / 2, y: y - s / 2, w: s, h: s }); } });
+      if (!got) piLock(x, y, s * 0.3); else { nm(id).forEach((ln, j) => piTx(ln, 14, '#3a1d4f', x, y + s / 2 + (12 + j * 16) * sch, { glow: null, maxW: cw - 4, w: 700 })); if (P.fresh === id) { resetView(); ctx.fillStyle = '#ff4f64'; ctx.beginPath(); ctx.arc(x + s / 2 - 8, y - s / 2 + 8, 7, 0, TAU); ctx.fill(); } pi.ui.push({ id: 'board:' + id, x: x - s / 2, y: y - s / 2, w: s, h: s }); } });
     return;
   }
   if (o.kind === 'reveal') {
