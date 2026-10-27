@@ -144,6 +144,8 @@ async def main():
             await page.evaluate("$('advBack').click()"); await page.wait_for_timeout(900)
             o = await page.evaluate(OPEN)
             check('day 1, a round finished: no gift calendar (the first day has none)', 'gifts' not in o and await page.evaluate(G + ".shown") is False, o)
+            eg = await page.evaluate("(() => { const b = $('petTab'), c = $('petTabCv'); if (b.hidden || petStage() !== 0) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 24) n++; return n / (d.length / 4); })()")
+            if eg is not None: check('the Pet tab shows the egg, filling its circle (the owner: \"why is the pet empty? if it\'s an egg show an egg\")', eg > 0.3, eg)
             if await page.evaluate("$('petTab').dataset.call === 'hatch'"):  # (navigation v2: the egg earned on stage 1 waits behind the Pet tab's glow (Bubu is off the top); the child taps it)
                 await page.wait_for_timeout(1300); await page.tap('#petTab'); await page.wait_for_function("!$('petRoom').hidden", timeout=4000)
             await page.evaluate("__grasp.home2.closeSheets(); __grasp.setDate('2026-10-03')"); await reload(page)

@@ -20460,19 +20460,19 @@ function h2PetTab() { // the Pet tab: hidden until the egg is earned; a '!' unti
   const P = petP(), on = h2PetOn(), b = $('petTab'); b.hidden = !on; b.querySelector('.bang').hidden = !(on && !P.hatched && !P.eggSeen);
   b.setAttribute('aria-label', t('tabPet') + (on ? ': ' + (P.hatched ? petName() : t('petEggName')) : ''));
   if (!on) return;
-  const img = petSnapshot(44, 'idle', { why: 'home', load: mode === 'none' && !$('start').hidden }); // (the 3D dragon once ready: it loads only after the start screen has been idle a moment, never on a game's start-up)
+  const img = petStage() === 0 ? null : petSnapshot(44, 'idle', { why: 'home', fill: true, load: mode === 'none' && !$('start').hidden }); // (the egg: always the 2D drawing, crisp and outlined (the 3D egg came out a pale speck: "why is the pet empty?"); a pet framed to fill) (the 3D dragon once ready: it loads only after the start screen has been idle a moment, never on a game's start-up)
   const key = [petStage(), P.color, P.head, P.eyes, P.neck, petUi.cracks, SS, img ? '3d' : ''].join('|'), cv = $('petTabCv'); if (cv.dataset.k === key) return; cv.dataset.k = key;
   const S = 44, k = Math.round(S * SS); cv.width = cv.height = k; const g = cv.getContext('2d'); g.setTransform(SS, 0, 0, SS, 0, 0); g.clearRect(0, 0, S, S);
   const src = document.createElement('canvas'); src.width = src.height = k; const sg = src.getContext('2d'); sg.setTransform(SS, 0, 0, SS, 0, 0);
   if (img) sg.drawImage(img, 0, 0, S, S);
   else { const st = petStage(), R = 19 * PET_SCALE.corner[st]; sg.save(); sg.translate(S / 2, S - 2 - R * 0.9 - 1); drawPetArt(sg, R, { stage: st, color: P.color, head: P.head, eyes: P.eyes, neck: P.neck, mood: 'happy', t: 0, cracks: petUi.cracks }); sg.restore(); }
-  h2FitCenter(g, src, S); // (the owner: "the icons aren't in the circles' middle": the pet stood on the icon's floor; now its drawing, wherever it is, is centred)
+  h2FitCenter(g, src, S, petStage() === 0 ? 0.78 : 0.62); // (the owner: "why is the pet empty? if it's an egg show an egg": the 3D egg came out a speck; the egg fills the circle, a pet is never under 62 %) (the owner: "the icons aren't in the circles' middle": the pet stood on the icon's floor; now its drawing, wherever it is, is centred)
 }
-function h2FitCenter(g, src, S) { // draws src (a square canvas) into g's S x S box: its visible pixels' box centred (at its own size)
+function h2FitCenter(g, src, S, min = 0) { // draws src (a square canvas) into g's S x S box: its visible pixels' box centred (at its own size; grown to min of the box if smaller)
   const k = src.width; let x0 = k, y0 = k, x1 = -1, y1 = -1;
   try { const d = src.getContext('2d').getImageData(0, 0, k, k).data; for (let y = 0; y < k; y++) for (let x = 0; x < k; x++) if (d[(y * k + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } catch { x1 = -1; }
   if (x1 < x0) { g.drawImage(src, 0, 0, S, S); return false; }
-  const w = x1 - x0 + 1, h = y1 - y0 + 1, f = Math.min(S / k, S * 0.9 / w, S * 0.9 / h); // (its own size: a grown pet stays bigger; only shrunk if it would spill)
+  const w = x1 - x0 + 1, h = y1 - y0 + 1, f = Math.min(Math.max(S / k, S * min / Math.max(w, h)), S * 0.9 / w, S * 0.9 / h); // (its own size: a grown pet stays bigger; only shrunk if it would spill; a speck grown to min)
   g.drawImage(src, x0, y0, w, h, (S - w * f) / 2, (S - h * f) / 2, w * f, h * f); return true;
 }
 /* --- the Today panel (Events): the weekly event, the daily gift, the day's missions, the play streak (quiet, here only) --- */
