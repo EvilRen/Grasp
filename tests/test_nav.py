@@ -191,12 +191,9 @@ async def main():
             await page.tap('#pauseBtn'); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=3000)
             check(tg + ': ...one tap on it: home at once (no sheet)', await page.evaluate("!menu.open && !__grasp.route.of(location.pathname)")); await page.wait_for_timeout(450)
             await page.tap('#start .stk[data-mode="busy"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'busy'", timeout=8000); await page.wait_for_timeout(600)
-            # the browser's Back inside a toddler game: like Big kids: the pause sheet first, then Home
-            await page.evaluate("history.back()"); await page.wait_for_function("menu.open", timeout=4000); await page.wait_for_timeout(200)
-            bk = await page.evaluate("({ mode, open: menu.open, path: location.pathname, log: __grasp.route.log.slice(-3) })")
-            check(tg + ': Back inside Busy Board: the pause sheet (still in the game, its entry pushed again)', bk['mode'] == 'mouse' and bk['open'] and bk['path'] == '/busy' and 'guard:busy' in bk['log'], bk)
-            await page.evaluate("history.back()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
-            check(tg + ': ...Back again (the sheet open): home (Little ones)', await page.evaluate(f"!__grasp.route.of(location.pathname) && {M}.mb.room === 'little'")); await page.wait_for_timeout(450)
+            # the browser's Back inside a toddler game: home at once, like its corner sticker (the QA sweep: nothing to pause there, no sheet)
+            await page.evaluate("history.back()"); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000); await page.wait_for_timeout(200)
+            check(tg + ': Back inside Busy Board: home at once (Little ones; no pause sheet)', await page.evaluate(f"!menu.open && !__grasp.route.of(location.pathname) && {M}.mb.room === 'little'")); await page.wait_for_timeout(450)
             # the coin pill hidden in Little ones; Big kids is one tap
             check(tg + ': Little ones: the coin pill is out of reach', await page.evaluate("getComputedStyle($('metaPill')).visibility === 'hidden'"))
             await page.tap('#bigBtn'); await page.wait_for_function(f"{M}.mb.room === 'big'", timeout=1000)
