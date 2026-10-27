@@ -1704,7 +1704,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.0.2';
+const APP_VERSION = '1.0.3';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -8625,6 +8625,7 @@ function bounceOffWall(b, w) { // a soft ball comes straight back off the wall i
   b.tx = clamp(b.x + (strikeRand('serve') - 0.5) * (R - L) * 0.25 * dr, (L + r) * fx, (R - r) * fx); b.ty = clamp(b.y + (strikeRand('serve') - 0.5) * (B - T) * 0.25 * dr, (T + r) * fy, (B - r) * fy);
   const q = b.z / Z; b.x0 = (b.x - b.tx * (1 - q)) / q; b.y0 = (b.y - b.ty * (1 - q)) / q; // so the incoming drift passes through the ball's current spot
   b.speed = strike.pace * (b.guest ? GUEST_SPD : 1);
+  if (b === strike.balls[0]) guestPitch(b, performance.now()); // (a launch toward the player like the far end's: the owner, Cow Stampede: "I didn't have any cows": in an Adventure stage the ball always comes back off a wall, never the far end, so the guests' serve count stayed at 1)
 }
 function spawnDebris(w, k, b, tier) { // one or two fragments per brick (a glass pane: 3-5 fine sparkling shards), flung off the wall toward the camera, tumbling and fading
   const c = brickCell(w, k.col, k.row), kick = { soft: 0.5, medium: 0.8, hard: 1.1, super: 1.5 }[tier], glass = w.kind === 'glass', n = glass ? 3 + Math.floor(Math.random() * 3) : Math.random() < 0.5 ? 2 : 1;
