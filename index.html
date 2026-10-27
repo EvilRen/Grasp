@@ -1331,6 +1331,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mbOv .mbSheet .xBtn{ width:44px; height:44px; background:var(--mbInk); color:#fff; }
 .mbOv .mbSheet .xBtn svg{ stroke-width:3; }
 .mbOv .mbSheet button{ font-family:var(--mbF); }
+.mbOv .mbSheet .lsNote{ margin:4px 0 10px; padding:8px 12px; border-radius:12px; background:#ffe3d6; border:2px solid #ff8a3d; font-size:14px; font-weight:700; line-height:1.35; }
 /* the copyright line (like the owner's other games): faint, under the dock; What's New: once a version, after an update */
 #menuFoot{ position:fixed; left:0; right:0; bottom:calc(2px + env(safe-area-inset-bottom,0px)); z-index:1; text-align:center; font:700 11px/1 var(--mbF); letter-spacing:.5px; color:var(--mbInk); opacity:.45; pointer-events:none; }
 #start.mb.intro #menuFoot{ animation:mbIn .45s ease-out both; animation-delay:.4s; }
@@ -1496,6 +1497,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 <div class="ov h2Ov mbOv" id="moreSheet" hidden role="dialog" aria-modal="true" aria-labelledby="moreT">
   <div class="sheet mbSheet moreSheet">
     <header><h2 id="moreT" data-i18n="moreTitle">Settings</h2><button class="xBtn" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <p class="lsNote" id="lsNote" hidden data-i18n="lsBlocked">This browser is blocking saving: progress won't be kept after you close the page.</p>
     <div class="moreRows">
       <div class="moreRow langRow"><span class="mIc"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg></span><span class="mLb" data-i18n="moreLang">Language</span><button class="langBtn mVal" id="startLang" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3C9.5 5.6 8.2 8.6 8.2 12s1.3 6.4 3.8 9"/></svg><span></span></button></div>
       <div class="moreRow camRow"><span class="mLb" data-i18n="morePlayWith">Play with</span><div class="actions seg" role="group" data-i18n-aria="inputAria" aria-label="Play with">
@@ -1702,7 +1704,16 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
+/* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
+   lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
+   for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
+const LS_ERR = (() => { try { const k = '__graspLS'; localStorage.setItem(k, '1'); const ok = localStorage.getItem(k) === '1'; localStorage.removeItem(k); return ok ? '' : 'readback'; } catch (e) { return (e && e.name) || 'blocked'; } })();
+if (LS_ERR) for (const name of ['localStorage', 'sessionStorage']) { // (an in-memory Storage of the same shape)
+  const mem = new Map(), S = { getItem: (k) => (mem.has(String(k)) ? mem.get(String(k)) : null), setItem: (k, v) => { mem.set(String(k), String(v)); }, removeItem: (k) => { mem.delete(String(k)); }, clear: () => mem.clear(), key: (i) => [...mem.keys()][i] ?? null, get length() { return mem.size; } };
+  let ok = true; if (name === 'sessionStorage') try { window.sessionStorage.setItem('__graspSS', '1'); window.sessionStorage.removeItem('__graspSS'); } catch { ok = false; } else ok = false;
+  if (!ok) try { Object.defineProperty(window, name, { value: S, configurable: true, writable: true }); } catch {}
+}
 /* ============================================================
    TUNING CONSTANTS: start here if pinch or throw feels off
    ============================================================ */
@@ -2453,12 +2464,12 @@ let lang = (() => { try { const v = localStorage.getItem('lang'); if (v === 'en'
 Object.assign(I18N.en, { // menu B: the Sticker Book start screen (the rooms, Bubu)
   mbBig: 'Big kids', mbLittle: 'Little ones', mbAgeAria: 'Who is playing?', mbStageN: 'Stage {n}', mbStageW: 'Stage', lockOn: 'Lock Little ones (no way back to Big kids)', lockOff: 'Unlock: Big kids again', mbPopit: 'Pop It', mbPageN: 'Page {n}', mbHi: 'Hi!', mbBubuAria: '{n}: say hi',
   heroModesAria: 'More ways to play Strike', cgsDrums: 'Drums', cgsBubbles: 'Bubbles', cgsPaint: 'Paint', cgsStars: 'Stars', // (navigation v2: the Strike mode chips, the camera games' row)
-  moreHud: 'Stats', moreHudSub: 'fps in games',
+  moreHud: 'Stats', moreHudSub: 'fps in games', lsBlocked: 'This browser is blocking saving: progress won\u2019t be kept after you close the page.',
 });
 Object.assign(I18N.he, {
   mbBig: 'גדולים', mbLittle: 'קטנטנים', mbAgeAria: 'מי משחק?', mbStageN: 'שלב {n}', mbStageW: 'שלב', lockOn: 'נעילת הקטנטנים (אי אפשר לחזור לגדולים)', lockOff: 'שחרור הנעילה: אפשר לחזור לגדולים', mbPopit: 'פופ איט', mbPageN: 'עמוד {n}', mbHi: 'היי!', mbBubuAria: '{n}: להגיד שלום',
   heroModesAria: 'עוד דרכים לשחק במכה', cgsDrums: 'תופים', cgsBubbles: 'בועות', cgsPaint: 'ציור', cgsStars: 'כוכבים',
-  moreHud: 'מדדים', moreHudSub: 'fps במשחקים',
+  moreHud: 'מדדים', moreHudSub: 'fps במשחקים', lsBlocked: 'הדפדפן חוסם שמירה: ההתקדמות לא תישמר אחרי שסוגרים את הדף.',
 });
 /* What's New: the notes of the release they were written for (wnFor; tests/test_whatsnew.py fails a feature release x.Y.0 that ships without new ones) */
 Object.assign(I18N.en, {
@@ -20556,6 +20567,7 @@ function tapsDebug() {
   }, true);
   const tp = tapg.log.push.bind(tapg.log); tapg.log.push = (x) => { add('guard ' + x); return tp(x); };
   const mp = mb.log.push.bind(mb.log); mb.log.push = (x) => { add('mb ' + x); return mp(x); };
+  add('storage: ' + (LS_ERR ? 'BLOCKED (' + LS_ERR + '): kept in memory' : 'ok') + ' · keys ' + localStorage.length);
   add('taps log v' + APP_VERSION + ' · ' + innerWidth + 'x' + innerHeight + ' · ' + navigator.userAgent.replace(/^.*\) /, '').slice(0, 60));
   return true;
 }
@@ -20931,7 +20943,7 @@ window.__grasp.menub = { mb, COL: MB_COL, ICONS: MB_ICONS, ico: mbIco, room: mbR
   wiggle: mbWiggleTick, bubu: mbBubuTap, bubuDraw: mbBubuDraw, layout: mbLayout, sync: mbSync, SAY_MS: MB_SAY_MS };
 window.__grasp.nav = { nav, guardOk: navGuardOk, roomOf: navRoomOf, littleNow: navLittleNow,
   list: navOvList, top: navTopOverlay, closeAll: navCloseOverlays, back: navBackOverlay, onStart: navOnStart, mapRow: navMapRow, cardButtons: navCardButtons, shareOk: navShareOk, call: mbCall };
-tapsDebug(); wnBoot(); syncGrippyBtn(); if (!routeBoot() && !maybeNewCard() && !pwaOpenParam()) h2Popup(); // a game's path: straight into it; else the day's gift calendar (a real visitor's first open of the day); a NEW UNLOCKED card not seen yet (the tab closed before it showed)
+$('lsNote').hidden = !LS_ERR; tapsDebug(); wnBoot(); syncGrippyBtn(); if (!routeBoot() && !maybeNewCard() && !pwaOpenParam()) h2Popup(); // a game's path: straight into it; else the day's gift calendar (a real visitor's first open of the day); a NEW UNLOCKED card not seen yet (the tab closed before it showed)
 </script>
 </body>
 </html>
