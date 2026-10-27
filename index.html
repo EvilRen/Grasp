@@ -14913,7 +14913,7 @@ function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); navHomeSync(); try { syncFullBtn(); } catch {} if (!on) closeMenu(false); }
 // the owner, Oct 2026 ("why do I need this pause button?"): where there is nothing to pause (the Little ones' games, Sand, both Pop Its, Paint,
 // Calm bubbles) the corner sticker is the house alone, and its tap goes home at once (no sheet); Strike, Smash, Slice... keep pause + the sheet
-function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint'; }
+function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint' || (m === 'bubbles' && !!bubbles.calm); } // (Calm bubbles from the camera games is the big kids' since the QA sweep; it still has nothing to pause)
 function navHomeSync() { const on = navHomeOnly(); document.body.classList.toggle('homeOnly', on); $('pauseBtn').setAttribute('aria-label', t(on ? 'home' : 'pauseMenu')); $('pauseBtn').title = t(on ? 'home' : 'pauseMenu'); return on; }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
 function openMenu() {
