@@ -69,8 +69,8 @@ async def main():
         b = await p.chromium.launch(args=['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream'])
         # ---------------- desktop, mouse ----------------
         ctx, page, errs = await fresh(b)
-        await page.click('#start button[data-mode=smash]'); await page.wait_for_function("mode === 'mouse' && __grasp.smash.run === 'stage'", timeout=8000)  # (navigation v2: the sticker plays the current stage)
-        check('the Smash sticker: its current stage at once (no map)', await page.evaluate("$('smashMap').hidden && location.pathname === '/smash'"))
+        await page.evaluate("setGameMode('smash'); smashStageStart(smashCurrent(), 'mouse')"); await page.wait_for_function("mode === 'mouse' && __grasp.smash.run === 'stage'", timeout=8000)  # (Oct 2026: the sticker plays the Tower; the old stages, reached here directly, stay in the code)
+        check('the old stages: its current stage, no map', await page.evaluate("$('smashMap').hidden"))
         await page.evaluate("goHome()"); await page.wait_for_timeout(400); await page.evaluate("openSmashMap({ how: 'mouse' })"); await page.wait_for_function("__grasp.sm.mapOpen", timeout=5000)  # (its map: the Map buttons, /smash)
         mp = await page.evaluate("""(() => { const n = [...document.querySelectorAll('#smList .smNode')]; return { path: location.pathname, mode, title: $('smTitle').textContent, free: $('smashFree').getBoundingClientRect().height > 60, nodes: n.length,
           cur: n.filter(b => b.classList.contains('cur')).map(b => b.dataset.n), locked: n.filter(b => b.classList.contains('locked')).length, scenes: [...document.querySelectorAll('#smList .smScene')].map(s => s.dataset.scene), total: $('smStarTotal').textContent.trim() }; })()""")

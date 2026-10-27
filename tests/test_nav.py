@@ -92,7 +92,7 @@ async def main():
         await home(page)
         check('Home from Pop It (Big kids): back in Big kids', await page.evaluate(f"{M}.mb.room") == 'big')
         await page.tap('#start .stk[data-mode="smash"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'smash'", timeout=8000)
-        check('Smash sticker: its current stage at once (no map)', await page.evaluate("$('smashMap').hidden && __grasp.smash.run === 'stage'"))
+        check('Smash sticker: the Tower at once (no map)', await page.evaluate("$('smashMap').hidden && __grasp.smash.run === 'tower'"))
         await home(page)
         await page.tap('#camGamesBtn [data-cg="paint"]'); await page.wait_for_function("mode === 'mouse' && gameMode === 'paint'", timeout=8000)
         check('a camera game\'s sticker: plays at once (no picker sheet)', await page.evaluate("$('cgPick').hidden"))

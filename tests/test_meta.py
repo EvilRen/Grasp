@@ -203,7 +203,7 @@ async def main():
         check('equipping mid-game switches the sprite', any(k.startswith('strikeBall|classic|') for k in await page.evaluate(KEYS + "('strikeBall|')")))
         await page.evaluate("(() => { const s = __grasp.strike; s.walls.forEach(w => (w.left = 0)); s.setBallZ(100, 640, 400); strikeHit(s.ball, performance.now(), 'hard'); })()"); await page.wait_for_timeout(200)  # (the walls stand aside: the hit ball flies on down the corridor)
         check('fire trail sheds embers behind the returning ball', await page.evaluate("particles.some(p => p.color === '#ff8a3d' || p.color === '#ffe07a')"))
-        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(200); await play(page, 'smash'); await page.mouse.move(640, 500); await page.mouse.down(); await page.wait_for_timeout(150); await page.mouse.up()
+        await menu_click(page, '#homeBtn'); await page.wait_for_timeout(200); await page.evaluate("setGameMode('smash'); smashFreeStart('mouse')"); await page.wait_for_timeout(700); await page.mouse.move(640, 500); await page.mouse.down(); await page.wait_for_timeout(150); await page.mouse.up()
         check('smash draws the mint glove', await page.evaluate(KEYS + "('glove|')") == ['glove|mint'])
         await menu_click(page, '#homeBtn'); await page.wait_for_timeout(200); await play(page, 'slice'); await page.evaluate("parkFruit(640, 400)"); await drag(page, 400, 880, 400)
         check('slice draws the neon katana', await page.evaluate(KEYS + "('katana|')") == ['katana|neon'])

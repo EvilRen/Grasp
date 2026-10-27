@@ -41,7 +41,8 @@ async def run(b, he):
     await page.evaluate("$('restartBtn') ? $('restartBtn').click() : $('resetBtn').click()"); await page.wait_for_timeout(900)
     check(tag + ': Restart: the same tower again, from the start', await page.evaluate("!menu.open && tower.plan.n === 2 && tower.taps === 0 && !smash.over"))
     await page.evaluate("goHome()"); ok = await wait(page, "mode === 'none' && !$('start').hidden", 4000)
-    check(tag + ': Home: the start screen, the sticker shows the tower reached', ok and await page.evaluate("document.querySelector('#start button[data-mode=\"smash\"] .best').textContent.includes('1')"))
+    ok = ok and await wait(page, "document.querySelector('#start button[data-mode=\"smash\"] .best').textContent.includes('1')", 3000)
+    check(tag + ': Home: the start screen, the sticker shows the tower reached', ok, await page.evaluate("document.querySelector('#start button[data-mode=\"smash\"] .best').textContent"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
 async def materials(b):

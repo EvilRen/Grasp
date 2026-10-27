@@ -130,7 +130,7 @@ async def main():
         await page.tap('#start button[data-mode=strike]'); await page.wait_for_function("!$('advMap').hidden", timeout=5000)
         check('Map: the Adventure map', await page.evaluate("advMapOpen() && mode === 'none'")); await home()
         await page.tap('#start button[data-mode=smash]'); await page.wait_for_function("gameMode === 'smash' && mode === 'mouse' && $('smashMap').hidden", timeout=8000)
-        check('Smash: its current stage at once (navigation v2: the map is behind its Map buttons)', await page.evaluate("__grasp.smash.run === 'stage'")); await home()
+        check('Smash: the Tower at once (Oct 2026: the tower is Smash; no map, no stages)', await page.evaluate("__grasp.smash.run === 'tower'")); await home()
         await page.tap('#start button[data-mode=slice]'); await page.wait_for_function("gameMode === 'slice' && mode === 'mouse'", timeout=8000)
         check('Slice: starts at once', True); await home()
         # Strike is one card: a mode in the strip only picks (pressed, remembered, the ribbon names it); the card's Play plays it

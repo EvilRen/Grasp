@@ -103,7 +103,7 @@ async def main():
         await page.click('#smBack'); await page.wait_for_function("mode === 'none' && !$('start').hidden", timeout=4000)
         check('Back on the map over a game: home', await page.evaluate("!__grasp.sm.mapOpen"))
         await page.evaluate("syncBests()")
-        check('the Smash tile shows the stars won in its stages', await page.evaluate("document.querySelector('#start button[data-mode=smash] .best').textContent") == '★ ' + str(await page.evaluate(SM + ".total")))
+        check('the Smash tile no longer shows the old stages\' stars (the tower reached instead)', '★' not in await page.evaluate("document.querySelector('#start button[data-mode=smash] .best').textContent"))
         await page.reload(); await page.wait_for_timeout(600)
         check('progress and stars survive a reload', await page.evaluate("__grasp.profile.smash.stars['1'] === 3 && __grasp.profile.smash.stars['20'] >= 1 && __grasp.profile.smash.unlocked === 20"))
         check('stages desktop: no page errors', not errs, errs); await ctx.close()

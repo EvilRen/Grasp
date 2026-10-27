@@ -1703,7 +1703,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.0.5';
+const APP_VERSION = '1.1.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2473,13 +2473,13 @@ Object.assign(I18N.he, {
 /* What's New: the notes of the release they were written for (wnFor; tests/test_whatsnew.py fails a feature release x.Y.0 that ships without new ones) */
 Object.assign(I18N.en, {
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.0.0',
-  wn: ['\uD83D\uDD12 A lock for Little ones: one tap at the top keeps them in their room', '\uD83D\uDC49 Swipe between Big kids and Little ones, and back, in every browser', '\u270B A finger resting on the screen no longer blocks taps', '\uD83D\uDCF1 End-of-game cards fit a phone lying sideways', '\uD83C\uDFA8 Bigger buttons in Paint, Pop It and the Map'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.1.0',
+  wn: ['\uD83C\uDFF0 A new Smash: blast the tower off the table! Every tap is a boom', '\uD83D\uDC51 A different king on every tower, and glass, TNT and stone join in', '\u26A1 Big kids \u2194 Little ones switches fast', '\uD83D\uDC04 Event cows come in Adventure stages too', '\uD83D\uDCBE If your browser blocks saving, Settings says so'],
 });
 Object.assign(I18N.he, {
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.0.0',
-  wn: ['\uD83D\uDD12 מנעול לקטנטנים: לחיצה אחת למעלה, והם נשארים בחדר שלהם', '\uD83D\uDC48 מחליקים בין גדולים לקטנטנים, גם חזרה, בכל דפדפן', '\u270B אצבע שנחה על המסך כבר לא חוסמת לחיצות', '\uD83D\uDCF1 מסכי סוף המשחק נכנסים גם כשהטלפון שוכב', '\uD83C\uDFA8 כפתורים גדולים יותר בציור, בפופ איט ובמפה'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.1.0',
+  wn: ['\uD83C\uDFF0 ריסוק חדש: מפוצצים את המגדל מהשולחן! כל נגיעה היא בום', '\uD83D\uDC51 מלך אחר בכל מגדל, ומצטרפים זכוכית, TNT ואבן', '\u26A1 המעבר בין גדולים לקטנטנים מהיר', '\uD83D\uDC04 פרות האירוע מגיעות גם בשלבי ההרפתקה', '\uD83D\uDCBE אם הדפדפן חוסם שמירה, ההגדרות אומרות את זה'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -20903,17 +20903,17 @@ setInterval(mbWiggleTick, MB_WIG_MS);
 /* --- the rooms: Big kids / Little ones (remembered); the Little ones' pages --- */
 function mbRoomsGo(r, instant) { // slides the swiper to a room (Big kids first, Little ones beside it, in reading order)
   const R = $('mbRooms'), w = R.clientWidth; if (!w) return false; const left = (document.documentElement.dir === 'rtl' ? -1 : 1) * (r === 'little' ? w : 0);
-  cancelAnimationFrame(mb.slideRaf); R.style.scrollSnapType = '';
+  cancelAnimationFrame(mb.slideRaf); R.style.scrollSnapType = ''; mb.sliding = false;
   if (Math.abs(R.scrollLeft - left) < 2) return true; const smooth = !instant && !gfxReduced();
   if (!smooth) { try { R.scrollTo({ left, behavior: 'instant' }); } catch { R.scrollLeft = left; } return true; }
   // (the owner: "why does the switch take so long?": the browser's own smooth scroll crawled on the phone; a 260 ms slide of our own, the snap off while it runs)
-  mb.swiping = true; const from = R.scrollLeft, t0 = performance.now(), MS = 260; R.style.scrollSnapType = 'none'; mb.log.push('slide:' + r);
-  const tick = (now) => { const t = Math.min(1, (now - t0) / MS), e = 1 - Math.pow(1 - t, 3); R.scrollLeft = from + (left - from) * e; if (t < 1) { mb.slideRaf = requestAnimationFrame(tick); return; } R.style.scrollSnapType = ''; R.scrollLeft = left; };
+  mb.swiping = true; mb.sliding = true; const from = R.scrollLeft, t0 = performance.now(), MS = 260; R.style.scrollSnapType = 'none'; mb.log.push('slide:' + r);
+  const tick = (now) => { const t = Math.min(1, (now - t0) / MS), e = 1 - Math.pow(1 - t, 3); R.scrollLeft = from + (left - from) * e; if (t < 1) { mb.slideRaf = requestAnimationFrame(tick); return; } R.style.scrollSnapType = ''; R.scrollLeft = left; setTimeout(() => { mb.sliding = false; mb.swiping = false; }, 120); }; // (its own scroll events are not a swipe: a late frame read half way read as a swipe back)
   mb.slideRaf = requestAnimationFrame(tick); return true;
 }
 function mbRoomsNow() { const R = $('mbRooms'), w = R.clientWidth || 1; return Math.abs(R.scrollLeft) > w / 2 ? 'little' : 'big'; }
 $('mbRooms').addEventListener('scroll', () => { // a swipe: the room it settles on (the switch follows)
-  mb.swiping = true; clearTimeout(mb.roomsT); mb.roomsT = setTimeout(() => { mb.swiping = false; const r = mbRoomsNow(); if (r !== mb.room && mode === 'none') { audioInit(); sfx('click'); mbRoom(r, 'swipe'); mb.log.push('swipe:' + r); } }, 90);
+  if (mb.sliding) return; mb.swiping = true; clearTimeout(mb.roomsT); mb.roomsT = setTimeout(() => { mb.swiping = false; const r = mbRoomsNow(); if (r !== mb.room && mode === 'none') { audioInit(); sfx('click'); mbRoom(r, 'swipe'); mb.log.push('swipe:' + r); } }, 90);
 }, { passive: true });
 function mbRoomGet() { try { return localStorage.getItem('grasp.room') === 'little' ? 'little' : 'big'; } catch { return 'big'; } }
 function mbLocked() { try { return localStorage.getItem('grasp.littleLock') === '1'; } catch { return !!mb.lockMem; } }
