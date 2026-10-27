@@ -2472,10 +2472,12 @@ Object.assign(I18N.he, {
 });
 /* What's New: the notes of the release they were written for (wnFor; tests/test_whatsnew.py fails a feature release x.Y.0 that ships without new ones) */
 Object.assign(I18N.en, {
+  twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
   wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.0.0',
   wn: ['\uD83D\uDD12 A lock for Little ones: one tap at the top keeps them in their room', '\uD83D\uDC49 Swipe between Big kids and Little ones, and back, in every browser', '\u270B A finger resting on the screen no longer blocks taps', '\uD83D\uDCF1 End-of-game cards fit a phone lying sideways', '\uD83C\uDFA8 Bigger buttons in Paint, Pop It and the Map'],
 });
 Object.assign(I18N.he, {
+  twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
   wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.0.0',
   wn: ['\uD83D\uDD12 מנעול לקטנטנים: לחיצה אחת למעלה, והם נשארים בחדר שלהם', '\uD83D\uDC48 מחליקים בין גדולים לקטנטנים, גם חזרה, בכל דפדפן', '\u270B אצבע שנחה על המסך כבר לא חוסמת לחיצות', '\uD83D\uDCF1 מסכי סוף המשחק נכנסים גם כשהטלפון שוכב', '\uD83C\uDFA8 כפתורים גדולים יותר בציור, בפופ איט ובמפה'],
 });
@@ -3026,7 +3028,7 @@ function frameBody(now) {
   if (mode !== 'none' && profile.road.cards.length && $('newCard').hidden) maybeNewCard(); // a level-up's NEW UNLOCKED card, once the round-over card is up
 
   // poker (sandbox) and fist (smash) are static circles dragged along the cursor path each step
-  const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && cursor.present && !smash.over && smash.phase === 'play' && punchGesture()]];
+  const probes = [[poker, gameMode === 'sandbox' && gesture === 'point'], [fist, gameMode === 'smash' && smash.run !== 'tower' && cursor.present && !smash.over && smash.phase === 'play' && punchGesture()]];
   for (const [b, on] of probes) { b.collisionFilter.mask = on ? 0xFFFFFFFF : 0; b.plugin.from = { ...b.position }; b.plugin.to = on ? { x: cursor.x, y: cursor.y } : { x: -500, y: -500 }; }
   if (gameMode === 'smash' && mode !== 'none') smashTick(now, dt); // the clock stops on the start screen
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
@@ -3898,7 +3900,7 @@ const SMASH_STAR3 = 0.4, SMASH_STAR2 = 0.15, SMASH_HURRY_S = 10; // stars by the
 const SMASH_CLEAR_MS = 1500, SMASH_OUT_MS = 450, SMASH_IN_MS = 600, SMASH_BANNER_MS = 1400, SMASH_BOSS_MS = 1300; // (SMASH_BOSS_MS: the boss's final explosion before 'Smashed!')
 const SMC = { FLOOR: 0x0001, OBJ: 0x0002, BACK: 0x0004, DEB: 0x0008 }; // collision categories: the screen's walls, the scene's things, the wall scene's treasure layer, debris
 const smash = {
-  run: 'free', scene: 'wall', variant: 1, n: 0, sceneNo: 0, oid: 0, // run: 'free' | 'stage'; n: the stage in a stage run; sceneNo: scenes played in this free run
+  run: 'tower', scene: 'wall', variant: 1, n: 0, sceneNo: 0, oid: 0, // run: 'free' | 'stage'; n: the stage in a stage run; sceneNo: scenes played in this free run
   phase: 'play', phaseAt: 0, // 'play' | 'scroll' (on to the next wave / the boss) | 'boom' (the boss blowing up) | 'clear' ('Smashed!') | 'out' / 'in' (the next scene slides) | 'card' (a stage's card)
   objs: [], pieces: [], pool: new Map(), heard: {}, tiles: [], fx: [], floaters: [], taps: [], queue: [], cascade: [], snd: [], trk: { smash: 0, brick: 0, car: 0, wall: 0 }, trkAt: 0,
   total: 0, done: 0, meter: 0, shown: 0, things: 0, broke: {}, endAt: Infinity, startAt: 0, armAt: 0, timeMs: 0, plan: null, clearLeft: 0,
@@ -4924,7 +4926,8 @@ function smStarHint(r) { // the line under the stars: how they came, and how to 
   if (r.stars === 3) return t('smStarsPerfect', { n: r.left });
   return t(r.stars === 2 ? 'smStars2' : 'smStars1', { n: r.left, m: r.star3 });
 }
-function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
+function drawSmashCard(now) {
+  if (smash.result && smash.result.tower) { const r = smash.result; return drawEndCard(now, smash, { title: t(r.stars === 3 ? 'twPerfect' : 'twDone'), stars: r.stars, score: t('twN', { n: r.n }), best: 0, stats: [[r.taps, 'twTaps']], againLabel: t('twNext'), again: 'playAgainWave' }); } // (the tower's card: stars by taps, Next tower) // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
   const E = smash, ui = E.ui, r = E.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear, acc = SMASH_ACCENT[r.scene];
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
   const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN, cx = W / 2, x0 = cx - cw / 2, cs = Math.min(1, (H - top - 10) / (ch + 24)), coy = (top + H) / 2, y0 = (cs < 1 ? coy - ch / 2 : Math.max(top + 16, (H - ch) / 2)) + (1 - e) * 26;
@@ -4976,6 +4979,7 @@ function drawSmashCard(now) { // a stage's card: cleared (stars flying in, the l
   view.s = 1; resetView();
 }
 function renderSmash(now) {
+  if (smash.run === 'tower') return renderTower(now);
   const k = (now - shake.t) / shake.ms; let vx = 0, vy = 0;
   if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); vx = Math.sin(now * 0.11) * a; vy = Math.cos(now * 0.17) * a; }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0c1026'; ctx.fillRect(0, 0, W, H);
@@ -4994,7 +4998,7 @@ function renderSmash(now) {
 }
 
 /* --- runs: free play (scene after scene, no clock) and stages (a scene against the clock, 1-3 stars) --- */
-function clearSmash() { if (!engine) return; smClearWorld(); smash.floaters.length = 0; engine.enableSleeping = false; smash.phase = 'play'; smash.over = false; } // leaving Smash for another game
+function clearSmash() { if (!engine) return; smClearWorld(); twClear(); smash.floaters.length = 0; engine.enableSleeping = false; smash.phase = 'play'; smash.over = false; } // leaving Smash for another game
 function resetSmash(now) { // a fresh start of what the map armed, else the same again (Restart, Play again)
   if (!engine) return;
   if (held) dropHeld();
@@ -5004,7 +5008,7 @@ function resetSmash(now) { // a fresh start of what the map armed, else the same
   const run = a ? a.run : smash.run, n = a && a.n ? a.n : smash.n;
   smash.over = false; smash.overAt = 0; smash.result = null; smash.prev = null; smash.punching = false; smash.lastTick = -1; smash.hurry = false; smash.banner = smash.tag = null; smash.slide = 0;
   const ui = smash.ui; ui.buttons = ui.hover = ui.dwell = ui.ribbon = null; ui.newBest = false;
-  if (run === 'stage' && n) smStageBegin(n, now); else smFreeBegin(now, !a && smash.run === 'free' && smash.objs.length > 0);
+  if (run === 'tower') towerBegin(now); else if (run === 'stage' && n) { twClear(); smStageBegin(n, now); } else { twClear(); smFreeBegin(now, !a && smash.run === 'free' && smash.objs.length > 0); } // (the tower: Smash's way to play since Oct 2026)
   if (mode !== 'none') sfx('go'); grippySay('start');
 }
 function smFreeBegin(now, same) {
@@ -5100,6 +5104,7 @@ function smOffTick(now) {
 }
 function smashTick(now, dt) {
   tickFloaters(smash.floaters, dt);
+  if (smash.run === 'tower') { menuTick(now); if (smash.over) { endCardTick(now); return; } if (pause.on || menu.open) { smash.taps.length = 0; return; } towerTick(now, dt); return; }
   if (smashMapOpen()) { smashMapTick(now); return; } // the stage map over the game (from a stage card): everything waits
   menuTick(now); // the pause button (and its sheet) by a held gesture
   if (smash.over) { smash.prev = null; smash.punching = false; endCardTick(now); return; } // a stage's card: buttons by tap / dwell, a wave elsewhere: next / try again
@@ -5147,7 +5152,151 @@ function smashTick(now, dt) {
   smash.meter = smMeter();
   if (smash.seg === 'wave' && smash.meter >= CONFIG.SMASH_CLEAR) smScrollStart(now); // most of the wave smashed: on to the next part of the scene (or the boss)
 }
+/* --- Tower (the owner, Oct 2026: Smash "isn't fun, it isn't clear what to do"; from the smash lab he picked direction A): knock every block off
+   the table. A tap is a blast where the finger lands (the blocks in TW.R fly away from it). The towers grow (twPlan), new materials join
+   (planks from tower 2, glass from 3, TNT from 5, stone from 7), a different king sits on top of each (TW_KINGS); stars by taps (par: 3, par + 2: 2).
+   Coins, XP and the pet's snacks through roundDone; profile.tower { n: the next tower, top: the furthest }. It is Smash's way to play now
+   (smash.run === 'tower': the sticker, /smash and Restart); the old free play and stages stay in the code, unreached. Hooks: __grasp.tower --- */
+const TW = { R: 115, boom: 15, up: 6, tnt: 1.5, settleMs: 500 }; // (tuned with a simple player tapping the lowest block: 1-7 taps a tower through 12)
+const TW_KINGS = [{ id: 'grump', col: '#ffcf56' }, { id: 'robot', col: '#c3cfdf' }, { id: 'slime', col: '#7fe0a0' }, { id: 'cat', col: '#ffa860' }, { id: 'monster', col: '#c9a2ff' }];
+const TW_COLS = ['#ff7a4a', '#8fd3ff', '#c9b6ff', '#3fd68f', '#ff8fc8', '#ffcf56'];
+const tower = { plan: null, blocks: [], table: null, taps: 0, u: 36, mood: 'grumpy', moodAt: 0, kingOff: false, leftAt: 0, demo: true, log: [], layoutW: 0 };
+function twPlan(n) {
+  const cols = Math.min(4, 2 + Math.floor(n / 3)), rows = Math.min(8, 3 + Math.floor((n + 1) / 2)), mats = ['box'];
+  if (n >= 2) mats.push('plank'); if (n >= 3) mats.push('glass'); if (n >= 5) mats.push('tnt'); if (n >= 7) mats.push('stone');
+  return { n, cols, rows, mats, par: Math.max(2, Math.round(cols * rows / 8) + 1), king: TW_KINGS[(n - 1) % TW_KINGS.length] };
+}
+function twRand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function smashTowerStart(how) { // the sticker / the hero: the next tower at once
+  closeSmashMap(true); smash.armed = { run: 'tower' };
+  if (gameMode !== 'smash') setGameMode('smash');
+  if (mode === 'none') { audioInit(); if (how === 'camera') enableCamera(); else fallbackToMouse([]); }
+  else { hideHint(); unpauseGame(); resetSmash(performance.now()); }
+  return true;
+}
+function towerBegin(now) {
+  smash.run = 'tower'; smash.n = 0; smash.plan = null; smash.endAt = Infinity; smash.phase = 'play'; smash.phaseAt = smash.startAt = now; smash.over = false; smash.result = null;
+  smClearWorld(); twClear(); particles.length = 0; rings.length = 0; if (engine) engine.enableSleeping = false;
+  if (walls.length === 4) M.Composite.remove(world, walls.slice(1)); // (no ceiling, no side walls while the tower stands: what is blasted may fly off the screen; the floor stays)
+  const P = tower.plan = twPlan(profile.tower.n), rnd = twRand(P.n * 7919 + 13), { Bodies, Composite } = M;
+  const u = tower.u = Math.round(Math.max(26, Math.min(46, W / 10.5, H / 17))), gap = u * 1.22, towerW = (P.cols - 1) * gap + u;
+  const tw = Math.min(W - 40, towerW + u * 2.6), ty = Math.round(H * 0.74), cx = W / 2;
+  tower.table = { x: cx, y: ty, w: tw, body: Bodies.rectangle(cx, ty + 14, tw, 28, { isStatic: true, friction: 0.45, label: 'twTable' }) };
+  const bs = []; let top = ty; let tnt = 0;
+  const pickMat = (r) => { const m = P.mats; if (m.includes('tnt') && tnt < 1 + Math.floor(P.n / 6) && r > 0 && r < P.rows - 1 && rnd() < 0.22) { tnt++; return 'tnt'; } if (m.includes('glass') && rnd() < 0.24) return 'glass'; if (m.includes('stone') && rnd() < 0.18) return 'stone'; return 'box'; };
+  for (let r = 0; r < P.rows; r++) {
+    if (P.mats.includes('plank') && r % 2 === 1 && P.cols > 1) { for (let c = 0; c + 1 < P.cols; c += 2) { const b = Bodies.rectangle(cx - towerW / 2 + u / 2 + (c + 0.5) * gap, top - u * 0.25, gap + u * 0.9, u * 0.5, { friction: 0.8, density: 0.002, chamfer: { radius: 4 } }); b.tw = { mat: 'plank', col: '#d79a5a' }; bs.push(b); } if (P.cols % 2) { const b = Bodies.rectangle(cx + towerW / 2 - u / 2, top - u * 0.25, u, u * 0.5, { friction: 0.8, density: 0.002, chamfer: { radius: 4 } }); b.tw = { mat: 'plank', col: '#d79a5a' }; bs.push(b); } top -= u * 0.5; continue; } // (planks two columns long: a long one jammed between the table and the screen's side)
+    for (let c = 0; c < P.cols; c++) { const mat = pickMat(r), b = Bodies.rectangle(cx - towerW / 2 + u / 2 + c * gap, top - u / 2, u, u, { friction: 0.8, density: mat === 'stone' ? 0.006 : 0.0018, chamfer: { radius: 5 } }); b.tw = { mat, col: mat === 'tnt' ? '#e8412f' : mat === 'glass' ? 'rgba(170,225,255,0.78)' : mat === 'stone' ? '#9aa3b5' : TW_COLS[(r + c) % TW_COLS.length] }; bs.push(b); }
+    top -= u;
+  }
+  const k = Bodies.rectangle(cx, top - u * 0.72, u * 1.45, u * 1.45, { friction: 0.8, density: 0.0015, chamfer: { radius: 9 } }); k.tw = { mat: 'king', col: P.king.col }; bs.push(k);
+  tower.blocks = bs; Composite.add(world, [tower.table.body, ...bs]);
+  tower.taps = 0; tower.kingOff = false; tower.leftAt = 0; tower.mood = 'grumpy'; tower.layoutW = W; tower.log.push('tower:' + P.n);
+  smash.banner = { t: now, title: t('twN', { n: P.n }), sub: '', line: '' };
+}
+function twClear() { if (world && walls.length === 4) for (const w of walls.slice(1)) if (!world.bodies.includes(w)) M.Composite.add(world, w); if (tower.table && world) M.Composite.remove(world, tower.table.body); for (const b of tower.blocks) if (!b.tw.gone && world) M.Composite.remove(world, b); tower.blocks = []; tower.table = null; }
+function twOnTable(b) { const T = tower.table; return !b.tw.gone && b.position.y < T.y + 4 && Math.abs(b.position.x - T.x) < T.w / 2 + tower.u * 0.3; }
+function twLeft() { return tower.table ? tower.blocks.reduce((n, b) => n + (twOnTable(b) ? 1 : 0), 0) : 0; }
+function twBlast(x, y, R, k, now, from) { // every block in R flies away from (x, y); glass in it shatters, TNT in it goes off a moment later
+  let n = 0;
+  for (const b of tower.blocks) {
+    if (b.tw.gone || b === from) continue; const dx = b.position.x - x, dy = b.position.y - y, d = Math.hypot(dx, dy); if (d > R) continue;
+    n++; const T = tower.table, near = d < tower.u * 1.1, f = near ? 1 : 1 - d / R, m = b.tw.mat === 'stone' ? 0.5 : 1, mag = (TW.boom * f + 4) * k * m; let nx = dx / (d || 1), ny = dy / (d || 1);
+    if (T && Math.abs(dx) < tower.u * 0.4) { nx = (b.position.x < T.x ? -1 : 1) * 0.8; ny = -0.6; } // (a tap right on a block, or straight under it: it flies toward the nearer edge of the table, not just up)
+    if (b.tw.mat === 'glass') { twShatter(b, now); continue; }
+    if (b.tw.mat === 'tnt' && !b.tw.fuse) b.tw.fuse = now + 140;
+    M.Body.setVelocity(b, { x: b.velocity.x + nx * mag, y: b.velocity.y + ny * mag - TW.up * f * k * m }); M.Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.5 * f);
+  }
+  return n;
+}
+function twShatter(b, now) { b.tw.gone = true; M.Composite.remove(world, b); fxShards(b.position.x, b.position.y, ['#cdeeff', '#ffffff', '#9fdcff'], 12, 0, -1, 0.45); sfx('glass'); track('smash', 1); tower.log.push('glass'); }
+function twBoom(b, now) { // TNT: a bigger blast of its own (and the TNT near it goes off too, a chain)
+  b.tw.gone = true; M.Composite.remove(world, b); const x = b.position.x, y = b.position.y;
+  twBlast(x, y, TW.R * TW.tnt, 1.25, now, b); fxImpact(x, y, '#ff8a3d', 1); fxShards(x, y, ['#ff5c3a', '#ffcf56', '#2a1f3d'], 14, 0, -1, 0.6); sfx('tnt'); shakeScreen(9); track('smash', 1); tower.log.push('tnt');
+}
+function towerTap(x, y, now) {
+  if (!tower.taps) hideHint(); tower.taps++; tower.demo = false; tower.log.push('tap');
+  const n = twBlast(x, y, TW.R, 1, now); fxImpact(x, y, n ? '#ffcf56' : '#fff6d6', n ? 0.8 : 0.35); sfx(n ? 'thump' : 'whiff'); shakeScreen(n ? 5 : 1.5);
+  if (n) { tower.mood = 'dizzy'; tower.moodAt = now; }
+}
+function towerTick(now, dt) {
+  for (const tp of smash.taps) towerTap(tp.x, tp.y, now); smash.taps.length = 0;
+  for (const b of tower.blocks) {
+    if (b.tw.gone) continue;
+    if (b.tw.fuse && now >= b.tw.fuse) { twBoom(b, now); continue; }
+    if (b.tw.mat === 'tnt' && b.speed > 13 && !b.tw.fuse) b.tw.fuse = now + 60; // (knocked hard: it goes off)
+    if (b.tw.mat === 'glass' && b.speed > 11) { twShatter(b, now); continue; }
+    if (!b.tw.off && !twOnTable(b)) { b.tw.off = true; track('smash', 1); if (b.tw.mat === 'king' && !tower.kingOff) { tower.kingOff = true; sfx('giggle'); smash.floaters.push({ x: b.position.x, y: b.position.y - tower.u, text: '👑', big: true, life: 1.2 }); } }
+    if (b.position.y > H + 200 || b.position.x < -300 || b.position.x > W + 300) { b.tw.gone = true; M.Composite.remove(world, b); }
+  }
+  if (now - tower.moodAt > 1100) tower.mood = 'grumpy';
+  const left = twLeft();
+  if (left > 0) { tower.leftAt = 0; return; }
+  if (!tower.leftAt) tower.leftAt = now;
+  if (now - tower.leftAt >= TW.settleMs) towerDone(now);
+}
+function towerDone(now) {
+  const P = tower.plan, taps = Math.max(1, tower.taps), stars = taps <= P.par ? 3 : taps <= P.par + 2 ? 2 : 1, T = profile.tower;
+  T.n = P.n + 1; T.top = Math.max(T.top, T.n); saveProfile();
+  const coins = 2 + stars; addCoins(coins); meta.roundXp = 0; roundDone(0, 10 + 4 * stars, { star: stars === 3 });
+  smash.result = { tower: true, clear: true, n: P.n, stars, taps, par: P.par, coins };
+  smash.phase = 'card'; smash.over = true; smash.overAt = now + 250; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null;
+  sfx('fanfare'); confetti(W * 0.3, H * 0.3, 50, 1.3); confetti(W * 0.7, H * 0.3, 50, 1.3); tower.log.push('done:' + stars);
+}
+function towerNext() { smash.armed = { run: 'tower' }; resetSmash(performance.now()); }
+function twResize() { if (tower.table && Math.abs(W - tower.layoutW) > tower.layoutW * 0.15 && mode !== 'none' && !smash.over) towerBegin(performance.now()); } // (a phone turned: the same tower, laid out afresh; the address bar coming and going changes only H: kept)
+function twFace(x, y, s, P, mood) { // the king: an original face per king, grumpy, or dizzy when the blast shook him
+  ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#2a1f3d'; ctx.strokeStyle = '#2a1f3d'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(2.5, s * 0.06);
+  const id = P.king.id, ex = s * 0.2, ey = -s * 0.06;
+  if (id === 'cat') { for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * s * 0.42, -s * 0.36); ctx.lineTo(k * s * 0.3, -s * 0.66); ctx.lineTo(k * s * 0.12, -s * 0.44); ctx.closePath(); ctx.fillStyle = P.king.col; ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#2a1f3d'; }
+  if (id === 'monster') { for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * s * 0.32, -s * 0.42); ctx.quadraticCurveTo(k * s * 0.5, -s * 0.7, k * s * 0.22, -s * 0.72); ctx.lineTo(k * s * 0.2, -s * 0.44); ctx.closePath(); ctx.fillStyle = '#fff6d6'; ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#2a1f3d'; }
+  if (id === 'robot') { ctx.beginPath(); ctx.moveTo(0, -s * 0.44); ctx.lineTo(0, -s * 0.66); ctx.stroke(); ctx.beginPath(); ctx.arc(0, -s * 0.7, s * 0.07, 0, TAU); ctx.fillStyle = '#ff5c3a'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; }
+  if (id === 'grump') { ctx.beginPath(); ctx.moveTo(-s * 0.3, -s * 0.42); ctx.lineTo(-s * 0.2, -s * 0.66); ctx.lineTo(0, -s * 0.48); ctx.lineTo(s * 0.2, -s * 0.66); ctx.lineTo(s * 0.3, -s * 0.42); ctx.closePath(); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; }
+  if (id === 'slime') { ctx.fillStyle = '#6fd090'; ctx.beginPath(); ctx.ellipse(-s * 0.18, s * 0.46, s * 0.06, s * 0.12, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#2a1f3d'; }
+  if (mood === 'dizzy') { for (const k of [-1, 1]) { const qx = k * ex, d = s * 0.08; ctx.beginPath(); ctx.moveTo(qx - d, ey - d); ctx.lineTo(qx + d, ey + d); ctx.moveTo(qx + d, ey - d); ctx.lineTo(qx - d, ey + d); ctx.stroke(); } ctx.beginPath(); ctx.ellipse(0, s * 0.2, s * 0.11, s * 0.09, 0, 0, TAU); ctx.fill(); }
+  else if (id === 'robot') { for (const k of [-1, 1]) ctx.fillRect(k * ex - s * 0.08, ey - s * 0.06, s * 0.16, s * 0.12); ctx.fillRect(-s * 0.16, s * 0.18, s * 0.32, s * 0.06); }
+  else { for (const k of [-1, 1]) { ctx.beginPath(); ctx.arc(k * ex, ey, s * 0.065, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.moveTo(k * (ex + s * 0.15), ey - s * 0.2); ctx.lineTo(k * (ex - s * 0.1), ey - s * 0.13); ctx.stroke(); } ctx.beginPath(); ctx.arc(0, s * 0.3, s * 0.13, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
+  ctx.restore();
+}
+function renderTower(now) {
+  const k = (now - shake.t) / shake.ms; let vx = 0, vy = 0;
+  if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); vx = Math.sin(now * 0.11) * a; vy = Math.cos(now * 0.17) * a; }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9fdcff'); g.addColorStop(1, '#e6f6ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  view.x = vx; view.y = vy; resetView();
+  const T = tower.table, u = tower.u, INK = '#2a1f3d', gy = H - Math.max(18, H * 0.04);
+  ctx.fillStyle = '#9ad97a'; ctx.fillRect(-20, gy, W + 40, H - gy + 20); ctx.fillStyle = '#7cc45c'; for (let x = -10; x < W + 20; x += 20) { ctx.beginPath(); ctx.arc(x, gy + 2, 11, Math.PI, 0); ctx.fill(); }
+  if (T) { // the table: legs to the grass, a wooden top
+    ctx.lineWidth = 3.5; ctx.strokeStyle = INK; ctx.lineJoin = 'round'; const x0 = T.x - T.w / 2;
+    for (const lx of [x0 + 16, x0 + T.w - 32]) { ctx.fillStyle = '#b87a45'; ctx.fillRect(lx, T.y + 26, 16, gy - T.y - 24); ctx.strokeRect(lx, T.y + 26, 16, gy - T.y - 24); }
+    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(x0, T.y + 4, T.w, 28, 8); ctx.fill(); ctx.fillStyle = '#d79a5a'; ctx.beginPath(); ctx.roundRect(x0, T.y, T.w, 28, 8); ctx.fill(); ctx.stroke();
+  }
+  for (const b of tower.blocks) {
+    if (b.tw.gone) continue; const v = b.vertices, m = b.tw.mat;
+    ctx.beginPath(); ctx.moveTo(v[0].x, v[0].y); for (let i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y); ctx.closePath();
+    ctx.fillStyle = b.tw.col; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+    ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle);
+    if (m === 'king') twFace(0, 0, u * 1.45, tower.plan, tower.mood);
+    else if (m === 'tnt') { ctx.fillStyle = '#fff6d6'; ctx.font = '800 ' + Math.round(u * 0.32) + 'px Fredoka, Rubik, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TNT', 0, 1); if (b.tw.fuse) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 30); ctx.fillStyle = '#ffcf56'; ctx.beginPath(); ctx.arc(0, -u * 0.5, u * 0.14, 0, TAU); ctx.fill(); } }
+    else if (m === 'glass') { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-u * 0.25, -u * 0.2); ctx.lineTo(-u * 0.05, -u * 0.32); ctx.moveTo(-u * 0.28, 0); ctx.lineTo(u * 0.05, -u * 0.22); ctx.stroke(); }
+    else if (m === 'stone') { ctx.fillStyle = 'rgba(42,31,61,0.25)'; for (const [px, py, r] of [[-0.2, -0.15, 0.06], [0.18, 0.1, 0.08], [-0.05, 0.22, 0.05]]) { ctx.beginPath(); ctx.arc(px * u, py * u, r * u, 0, TAU); ctx.fill(); } }
+    else if (m === 'plank') { ctx.strokeStyle = 'rgba(42,31,61,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-u, -u * 0.06); ctx.lineTo(u * 0.6, -u * 0.06); ctx.stroke(); }
+    else { ctx.globalAlpha = 0.35; ctx.fillStyle = '#ffffff'; ctx.fillRect(-u * 0.3, -u * 0.34, u * 0.22, u * 0.12); }
+    ctx.restore();
+  }
+  drawParticles(); drawRings(now); drawFloaters(smash.floaters);
+  view.x = view.y = 0; resetView();
+  if (mode !== 'none' && tower.plan && !smash.over) { // the HUD: the tower's number and what is left on the table, under the corner row
+    const y = Math.max(40, Math.round(chromeRow.bottom) + 26), left = twLeft();
+    twPill(W / 2, y, t('twN', { n: tower.plan.n }) + '  ·  ' + t('twLeft', { n: left }));
+    if (tower.demo && now - smash.phaseAt > 700 && T) { const ph = ((now - smash.phaseAt - 700) % 1600) / 1600, p = { x: T.x, y: T.y - u * 1.4 }; drawDemoFinger(p, ph < 0.3 ? ph / 0.3 : 0, 1, ph < 0.45 ? (ph - 0.3) / 0.15 : -1, 1); }
+  }
+  drawCoinPill(now);
+  if (smash.over && smash.result) drawSmashCard(now);
+}
+function twPill(x, y, text) { const f = 17; ctx.font = '700 ' + f + 'px Fredoka, Rubik, sans-serif'; const w = ctx.measureText(text).width + 30, h = 36; ctx.fillStyle = '#2a1f3d'; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2 + 3, w, h, h / 2); ctx.fill(); ctx.fillStyle = '#fffdf6'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1); ctx.textBaseline = 'alphabetic'; }
 function smashResize() { // the screen changed: sprites redrawn at the new resolution; a big change (a phone turned) lays the scene out afresh
+  if (smash.run === 'tower') { twResize(); return; }
   for (const o of smash.objs) o.sp = null; for (const b of smash.pieces) b.plugin.sp = null; for (const list of smash.pool.values()) for (const b of list) b.plugin.sp = null;
   if (!smash.objs.length && !smash.tiles.length) return;
   for (const T of smash.tiles) smTileDraw(T);
@@ -11573,6 +11722,7 @@ function endCardAction(key, now) {
     if (key === 'skip') return advSkip4(); // (phase 1: a 3-star stage 1 / 2: straight to stage 4)
     if (key === 'next') return advNext(); if (key === 'retry') return advStart(adv.n); if (key === 'map') return openAdvMap(adv.result.n >= ADV_N && adv.result.clear ? { from: ADV_N } : {});
   }
+  if (gameMode === 'smash' && smash.run === 'tower' && smash.result && key === 'again') return towerNext(); // (the tower's card: the next tower)
   if (gameMode === 'smash' && smash.run === 'stage' && smash.result) { // a Smash stage's card: Next / Play again / Map (a fail: Try again / Map; a wave: next after a clear, a retry after a fail)
     if (key === 'again') key = smash.result.clear ? 'next' : 'retry';
     if (key === 'next') return smashNext(); if (key === 'retry') return smashStageStart(smash.n); if (key === 'map') return openSmashMap({});
@@ -13430,7 +13580,7 @@ function piValidate(raw) { // only known boards, sane numbers; anything else fal
 function defaultProfile() {
   return { v: PROFILE_V, xpv: XP_CURVE, coins: 0, xp: 0, level: 1, road: { got: ['brick', 'cow'], fresh: [], cards: [] }, worlds: { unlocked: 1, last: 1 }, tickets: 0, unlocked: ['ball_classic', 'hand_classic', 'blade_steel', 'trail_none'], equipped: { ball: 'classic', hand: 'classic', blade: 'steel', trail: 'none' },
     missions: { date: '', list: [] }, stats: { bricks: 0, fruit: 0, cars: 0, bosses: 0, rounds: 0, powerups: 0, walls: 0, smashed: 0 }, daily: {}, grippy: true, tips: [],
-    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, starter: false, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
+    upg: {}, themes: ['classic'], theme: 'classic', /* themes: the Strike themes owned (classic always), theme: the equipped one */ frenzy: { best: 0, top: 1, runs: 0 }, tower: { n: 1, top: 1 }, /* the Tower (Smash): the next tower, the furthest reached */ starter: false, duelName: '', duelAsked: false, /* Challenge a friend: the name on the links (optional), asked once */ adv: { stars: {}, unlocked: 1, open: [], seen: [], best: {} }, smash: { stars: {}, unlocked: 1 }, album: { got: [], fresh: [], pages: [] }, // album: the stickers earned (stage numbers), the ones not looked at yet, the world pages whose bonus is paid
     habit: { gift: { day: 0, date: '' }, play: [], flame: { date: '', n: 0 }, stages: { date: '', n: 0, claimed: false }, starChests: [], seen: '', first: '' }, pet: petDefault(), event: evDefault(), evx: { stickers: [], hats: [], balls: [] }, evAway: null, popit: piDefault() }; // habit: the 7-day gift calendar (the last day opened 1..7, on which date), the dates a round was finished (the play streak), the streak the flame last showed, today's Adventure stage clears and their chest, the star chests claimed (their thresholds) // adv: Strike Adventure: the best stars per stage, the furthest stage open in a row, stages open past a gap (a world opened in Endless), the wall kinds it has spotlit // tips: the onboarding tips Grippy has given ('serve', 'pu', 'perk', 'guest'); grippy: the commentator on / off; daily: { 'YYYY-MM-DD': { best, attempts, level } }
 }
 function loadProfile() { // whatever is stored is merged over the defaults, so a missing or broken field never breaks the game
@@ -13463,6 +13613,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
     if (Array.isArray(p.themes)) d.themes = [...new Set(['classic'].concat(p.themes.filter((id) => THEME_IDS.includes(id))))]; // Strike themes: only known ids, classic always owned; the equipped one must be owned
     if (typeof p.theme === 'string' && d.themes.includes(p.theme)) d.theme = p.theme;
     if (p.upg && typeof p.upg === 'object') for (const k of Object.keys(ECONOMY.upgrades)) { const v = p.upg[k]; if (Number.isInteger(v) && v > 0) d.upg[k] = Math.min(ECONOMY.upgrades[k].length, v); } // v5: permanent upgrade levels (0..the track's max)
+    if (p.tower && typeof p.tower === 'object') { const a = p.tower; if (Number.isFinite(a.n)) d.tower.n = Math.max(1, Math.min(9999, a.n | 0)); d.tower.top = Math.max(d.tower.n, Number.isFinite(a.top) ? Math.min(9999, a.top | 0) : 1); }
     if (p.smash && typeof p.smash === 'object') { const a = p.smash, A = d.smash; // Smash stages: the best stars per stage (1-3), the furthest stage open
       if (a.stars && typeof a.stars === 'object') for (const k of Object.keys(a.stars)) { const n = +k, v = a.stars[k]; if (Number.isInteger(n) && n >= 1 && n <= SMASH_N && Number.isInteger(v) && v >= 1 && v <= 3) A.stars[n] = v; }
       if (Number.isFinite(a.unlocked)) A.unlocked = Math.max(1, Math.min(SMASH_N, a.unlocked | 0));
@@ -14853,6 +15004,7 @@ function renderModeText() {
   document.querySelectorAll('#strikeDiff button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.diff === strike.diff)));
 }
 function hintText() {
+  if (gameMode === 'smash' && smash.run === 'tower') return t('hintTower');
   const how = mode === 'camera' ? 'Cam' : matchMedia('(pointer: coarse)').matches ? 'Touch' : 'Mouse';
   return t({ sandbox: 'hintSand', slice: 'hintSlice', smash: 'hintSmash', busy: 'hintBusy', strike: 'hintStrike', shapes: 'hintShapes', drums: 'hintDrums', bubbles: 'hintBubbles', paint: 'hintPaint', stars: 'hintStars' }[gameMode] + how);
 }
@@ -14979,7 +15131,7 @@ document.addEventListener('pointerdown', (e) => { // a11y: after Home, a late se
   nav.lastDown = { x: e.clientX, y: e.clientY, t: now };
   if (!guard || !e.isTrusted) return; nav.landEaten = (nav.landEaten || 0) + 1; nav.log.push('land:eaten'); e.stopImmediatePropagation(); e.preventDefault(); clickGuard(e);
 }, true);
-function navMapRow() { return mode !== 'none' && (gameMode === 'strike' || gameMode === 'smash'); } // (the pause sheet's Map: the games with a map)
+function navMapRow() { return mode !== 'none' && (gameMode === 'strike' || (gameMode === 'smash' && smash.run !== 'tower')); } // (the pause sheet's Map: the games with a map)
 $('menuMap').addEventListener('click', () => { if (!navMapRow()) return; closeMenu(false); nav.log.push('map:' + gameMode); if (gameMode === 'strike') openAdvMap({}); else openSmashMap({}); });
 /* the overlays, topmost first: [id, its closer] (cgCam: goHome closes it through cgLeave as well) */
 function navOvList() { return [['replay', rpClose], ['duelName', () => { if ($('duelName').hidden) return false; $('duelName').hidden = true; duel.asking = null; return true; }], ['shareSheet', h2ShareClose], ['moreSheet', () => h2More(false)], ['wnSheet', wnClose], ['cgCam', cgAskClose], ['cgPick', cgClosePick], ['iosInstall', () => pwaIosClose()],
@@ -15641,7 +15793,7 @@ function renderHints() { // the selected mode's gestures as an icon row under it
 }
 function syncBests() { // best scores on the Slice / Smash / Strike cards; Strike's 'New!' dot while something unlocked on the road waits for its first run
   { const d = document.querySelector('#start button[data-mode="strike"] .newDot'); if (d) d.hidden = true; } // (home2: no 'new' dots on the tiles)
-  { const n = smashStarTotal(), el = document.querySelector('#start button[data-mode="smash"] .best'); if (el) { el.hidden = !n; el.textContent = n ? '★ ' + n : ''; el.title = n ? t('advStarsN', { n }) : ''; } } // Smash: the stars of its stages
+  { const n = profile.tower.top - 1, el = document.querySelector('#start button[data-mode="smash"] .best'); if (el) { el.hidden = !n; el.textContent = n ? '🏰 ' + n : ''; el.title = n ? t('advStarsN', { n }) : ''; } } // Smash: the stars of its stages
   for (const m of ['slice', 'strike']) {
     let v = 0, lv = 0; try { v = +localStorage.getItem(m + 'Best') || 0; if (m === 'strike') lv = +localStorage.getItem('strikeLevelBest') || 0; } catch {}
     const el = document.querySelector('#start button[data-mode="' + m + '"] .best'); if (!el) continue; el.hidden = (!v && !lv) || m === 'strike'; // Strike: best score and best level ('★ 120 · L5'; home2: not on the hero's Map button)
@@ -20552,6 +20704,7 @@ function wnOpen() { wnFill(); $('wnSheet').hidden = false; wn.due = false; try {
 function wnClose() { const S = $('wnSheet'); if (S.hidden) return false; S.hidden = true; wn.log.push('close'); return true; }
 $('wnBtn').addEventListener('click', () => { audioInit(); sfx('click'); wnClose(); });
 $('wnSheet').addEventListener('click', (e) => { if (e.target === $('wnSheet')) wnClose(); }); // (a tap on the veil closes it too)
+window.__grasp.tower = { tower, plan: twPlan, start: () => smashTowerStart('mouse'), tap: (x, y) => towerTap(x, y, performance.now()), left: twLeft, next: towerNext, get profile() { return profile.tower; } };
 window.__grasp.wn = { wn, boot: wnBoot, open: wnOpen, close: wnClose, notes: wnNotes };
 /* --- ?taps: an on-screen log of every touch, the tap guard and the start screen's picks (the owner's phone: "Frenzy and Daily change nothing",
    and no browser here shows it). Only with ?taps in the address; it never takes a tap. --- */
@@ -20810,7 +20963,7 @@ function mbLittleGo(b, go) { // a Little ones sticker: its name out loud, and th
   if (said) mb.sayUntil = performance.now() + MB_SAY_MS + 70 * Array.from(name).length; // (about how long the name takes)
   go(); return true;
 }
-function mbModeGo(m, b) { if (mode === 'none') h2CloseSheets(); setGameMode(m); if (mode !== 'none' || physicsError) return false; audioInit(); if (m === 'smash' && !(b && b.classList.contains('mbMap'))) return smashStageStart(smashCurrent(), inputPref()); strikeStart(inputPref()); return true; } // (navigation v2: a sticker plays: Smash's sticker = its current stage at once, like Strike's hero; the maps sit behind Map buttons) // a game's sticker: it starts at once with the remembered input
+function mbModeGo(m, b) { if (mode === 'none') h2CloseSheets(); setGameMode(m); if (mode !== 'none' || physicsError) return false; audioInit(); if (m === 'smash' && !(b && b.classList.contains('mbMap'))) return smashTowerStart(inputPref()); /* (the owner, Oct 2026: the tower is Smash now) */ strikeStart(inputPref()); return true; } // (navigation v2: a sticker plays: Smash's sticker = its current stage at once, like Strike's hero; the maps sit behind Map buttons) // a game's sticker: it starts at once with the remembered input
 /* --- Bubu: the pet (or its egg) drawn once into its sticker, bobbing by CSS; a tap: a jump and "Hi!" --- */
 function mbBubuDraw() {
   const cv = $('bubuCv'), w = cv.clientWidth, h = cv.clientHeight; if (!w || !h || !PET_READY) return false;
