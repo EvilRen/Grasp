@@ -1703,7 +1703,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2472,14 +2472,16 @@ Object.assign(I18N.he, {
 });
 /* What's New: the notes of the release they were written for (wnFor; tests/test_whatsnew.py fails a feature release x.Y.0 that ships without new ones) */
 Object.assign(I18N.en, {
+  twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.1.0',
-  wn: ['\uD83C\uDFF0 A new Smash: blast the tower off the table! Every tap is a boom', '\uD83D\uDC51 A different king on every tower, and glass, TNT and stone join in', '\u26A1 Big kids \u2194 Little ones switches fast', '\uD83D\uDC04 Event cows come in Adventure stages too', '\uD83D\uDCBE If your browser blocks saving, Settings says so'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.2.0',
+  wn: ['\uD83D\uDCA5 A bigger boom in Smash: a flash, a shock wave, the world holds its breath', '\uD83D\uDC22 The last block flies off in slow motion', '\uD83C\uDF0D A new world every 5 towers: kitchen, picnic, castle, space and candy land', '\uD83C\uDFF0 Shapes that change: castles, sky towers, walls and pyramids', '\uD83D\uDC51 The giant king on every 5th tower, with 3 hearts'],
 });
 Object.assign(I18N.he, {
+  twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.1.0',
-  wn: ['\uD83C\uDFF0 ריסוק חדש: מפוצצים את המגדל מהשולחן! כל נגיעה היא בום', '\uD83D\uDC51 מלך אחר בכל מגדל, ומצטרפים זכוכית, TNT ואבן', '\u26A1 המעבר בין גדולים לקטנטנים מהיר', '\uD83D\uDC04 פרות האירוע מגיעות גם בשלבי ההרפתקה', '\uD83D\uDCBE אם הדפדפן חוסם שמירה, ההגדרות אומרות את זה'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.2.0',
+  wn: ['\uD83D\uDCA5 בום חזק יותר בריסוק: הבזק, גל הדף ורגע שהכול עוצר', '\uD83D\uDC22 הקובייה האחרונה עפה בהילוך איטי', '\uD83C\uDF0D עולם חדש כל 5 מגדלים: מטבח, פיקניק, טירה, חלל וארץ הממתקים', '\uD83C\uDFF0 צורות שמתחלפות: טירות, גורדי שחקים, חומות ופירמידות', '\uD83D\uDC51 המלך הענק בכל מגדל חמישי, עם 3 לבבות'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -3034,7 +3036,7 @@ function frameBody(now) {
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
-  const noPhysics = gameMode === 'spot' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
+  const noPhysics = (gameMode === 'smash' && smash.run === 'tower' && performance.now() < tower.stopUntil) || gameMode === 'spot' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -4927,7 +4929,7 @@ function smStarHint(r) { // the line under the stars: how they came, and how to 
   return t(r.stars === 2 ? 'smStars2' : 'smStars1', { n: r.left, m: r.star3 });
 }
 function drawSmashCard(now) {
-  if (smash.result && smash.result.tower) { const r = smash.result; return drawEndCard(now, smash, { title: t(r.stars === 3 ? 'twPerfect' : 'twDone'), stars: r.stars, score: t('twN', { n: r.n }), best: 0, stats: [[r.taps, 'twTaps']], againLabel: t('twNext'), again: 'playAgainWave' }); } // (the tower's card: stars by taps, Next tower) // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
+  if (smash.result && smash.result.tower) { const r = smash.result; return drawEndCard(now, smash, { title: t(r.stars === 3 ? 'twPerfect' : 'twDone'), stars: r.stars, score: r.boss ? '👑' : t('twN', { n: r.n }), best: 0, stats: [[r.taps, 'twTaps']], againLabel: t('twNext'), again: 'playAgainWave' }); } // (the tower's card: stars by taps, Next tower) // a stage's card: cleared (stars flying in, the line on how to get 3, coins, XP; Next / Play again / Map) or not ('So close! 73% smashed'; Try again / Map)
   const E = smash, ui = E.ui, r = E.result, rtl = lang === 'he', k = Math.min(1, (now - E.overAt) / 380), e = 1 - Math.pow(1 - k, 3), clear = r.clear, acc = SMASH_ACCENT[r.scene];
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = 'rgba(10,14,32,' + (0.72 * e).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H);
   const HN = clear ? 24 : 0, top = Math.max(64, Math.round(chromeRow.bottom)), cw = Math.min(W - 32, 380), ch = (clear ? 372 : 352) + HN, cx = W / 2, x0 = cx - cw / 2, cs = Math.min(1, (H - top - 10) / (ch + 24)), coy = (top + H) / 2, y0 = (cs < 1 ? coy - ch / 2 : Math.max(top + 16, (H - ch) / 2)) + (1 - e) * 26;
@@ -5153,18 +5155,30 @@ function smashTick(now, dt) {
   if (smash.seg === 'wave' && smash.meter >= CONFIG.SMASH_CLEAR) smScrollStart(now); // most of the wave smashed: on to the next part of the scene (or the boss)
 }
 /* --- Tower (the owner, Oct 2026: Smash "isn't fun, it isn't clear what to do"; from the smash lab he picked direction A): knock every block off
-   the table. A tap is a blast where the finger lands (the blocks in TW.R fly away from it). The towers grow (twPlan), new materials join
-   (planks from tower 2, glass from 3, TNT from 5, stone from 7), a different king sits on top of each (TW_KINGS); stars by taps (par: 3, par + 2: 2).
-   Coins, XP and the pet's snacks through roundDone; profile.tower { n: the next tower, top: the furthest }. It is Smash's way to play now
-   (smash.run === 'tower': the sticker, /smash and Restart); the old free play and stages stay in the code, unreached. Hooks: __grasp.tower --- */
-const TW = { R: 115, boom: 15, up: 6, tnt: 1.5, settleMs: 500 }; // (tuned with a simple player tapping the lowest block: 1-7 taps a tower through 12)
+   the table. A tap is a blast where the finger lands (the blocks in TW.R fly away from it). The towers grow, new materials join (planks from
+   tower 2, glass from 3, TNT from 5, stone from 7), a different king sits on top of each (TW_KINGS); stars by taps (tower.par: 3, par + 2: 2).
+   v2 (the owner: "not fun enough": too easy, not enough boom, the same every time; he kept tap = blast, no tools): every blast flashes, rings,
+   dusts, rumbles and freezes the world for a beat (hit-stop); the last block off = a slow-motion finale ("BOOM!!", the camera leans in); a world
+   every 5 towers (TW_WORLDS: kitchen, picnic, castle, space with low gravity, candy) and a shape per tower (TW_SHAPES); every 5th tower the
+   giant king on a fort: 3 hearts, only a blast close to him takes one; till then he hardly moves. Coins, XP and the pet's snacks through
+   roundDone; profile.tower { n: the next tower, top: the furthest }. Smash's way to play (smash.run === 'tower'). Hooks: __grasp.tower --- */
+const TW = { R: 115, boom: 15, up: 6, tnt: 1.5, slowMs: 1300, stopMs: 70, kingR: 0.8 };
 const TW_KINGS = [{ id: 'grump', col: '#ffcf56' }, { id: 'robot', col: '#c3cfdf' }, { id: 'slime', col: '#7fe0a0' }, { id: 'cat', col: '#ffa860' }, { id: 'monster', col: '#c9a2ff' }];
 const TW_COLS = ['#ff7a4a', '#8fd3ff', '#c9b6ff', '#3fd68f', '#ff8fc8', '#ffcf56'];
-const tower = { plan: null, blocks: [], table: null, taps: 0, u: 36, mood: 'grumpy', moodAt: 0, kingOff: false, leftAt: 0, demo: true, log: [], layoutW: 0 };
+const TW_WORLDS = [
+  { id: 'kitchen', sky: ['#bfe9ff', '#eaf8ff'], ground: '#c98b50', top: '#d79a5a', legs: true, g: 1 },
+  { id: 'picnic', sky: ['#9fdcff', '#e6f6ff'], ground: '#8fd16f', top: '#ff7a7a', legs: true, cloth: true, g: 1 },
+  { id: 'castle', sky: ['#ffd7a8', '#fff1dc'], ground: '#a7b0c2', top: '#8e98ab', rock: true, g: 1 },
+  { id: 'space', sky: ['#1d1846', '#3b2f7a'], ground: '#5d548f', top: '#8b7fc7', rock: true, stars: true, g: 0.5 },
+  { id: 'candy', sky: ['#ffd1ec', '#fff0f8'], ground: '#ff9fcf', top: '#ffe0a8', legs: true, icing: true, g: 1 }];
+const TW_SHAPES = ['stack', 'pyramid', 'castle', 'sky', 'wall'];
+const tower = { plan: null, blocks: [], table: null, taps: 0, u: 36, par: 2, mood: 'grumpy', moodAt: 0, kingOff: false, demo: true, log: [], layoutW: 0, flash: 0, stopUntil: 0, slowAt: 0, focus: null, banner: 0 };
 function twPlan(n) {
-  const cols = Math.min(4, 2 + Math.floor(n / 3)), rows = Math.min(8, 3 + Math.floor((n + 1) / 2)), mats = ['box'];
+  const boss = n % 5 === 0, world = TW_WORLDS[Math.floor((n - 1) / 5) % TW_WORLDS.length], size = Math.min(4, 1 + Math.floor((n - 1) / 3)), mats = ['box'];
   if (n >= 2) mats.push('plank'); if (n >= 3) mats.push('glass'); if (n >= 5) mats.push('tnt'); if (n >= 7) mats.push('stone');
-  return { n, cols, rows, mats, par: Math.max(2, Math.round(cols * rows / 8) + 1), king: TW_KINGS[(n - 1) % TW_KINGS.length] };
+  const shape = boss ? 'fort' : n <= 2 ? 'stack' : TW_SHAPES[(n - 1 - Math.floor(n / 5)) % TW_SHAPES.length]; // (the shapes in turn, the giant's forts skipped: castle, sky, wall, stack, pyramid, ...)
+  const cols = Math.min(4, 2 + Math.floor(n / 3)), rows = Math.min(8, 3 + Math.floor((n + 1) / 2));
+  return { n, boss, world, shape, size, cols, rows, mats, king: TW_KINGS[(n - 1) % TW_KINGS.length], kingHp: boss ? 3 : 0, par: Math.max(2, Math.round(cols * rows / 8) + 1) };
 }
 function twRand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 function smashTowerStart(how) { // the sticker / the hero: the next tower at once
@@ -5178,49 +5192,82 @@ function towerBegin(now) {
   smash.run = 'tower'; smash.n = 0; smash.plan = null; smash.endAt = Infinity; smash.phase = 'play'; smash.phaseAt = smash.startAt = now; smash.over = false; smash.result = null;
   smClearWorld(); twClear(); particles.length = 0; rings.length = 0; if (engine) engine.enableSleeping = false;
   if (walls.length === 4) M.Composite.remove(world, walls.slice(1)); // (no ceiling, no side walls while the tower stands: what is blasted may fly off the screen; the floor stays)
-  const P = tower.plan = twPlan(profile.tower.n), rnd = twRand(P.n * 7919 + 13), { Bodies, Composite } = M;
-  const u = tower.u = Math.round(Math.max(26, Math.min(46, W / 10.5, H / 17))), gap = u * 1.22, towerW = (P.cols - 1) * gap + u;
-  const tw = Math.min(W - 40, towerW + u * 2.6), ty = Math.round(H * 0.74), cx = W / 2;
+  const P = tower.plan = twPlan(profile.tower.n), rnd = twRand(P.n * 7919 + 13), { Bodies, Composite } = M, S = P.size;
+  const rowsOf = { stack: P.rows, pyramid: 3 + S, castle: 4 + S, sky: 6 + S * 2, wall: 2 + Math.ceil(S / 2), fort: 4 + S }[P.shape] + (P.boss ? 3 : 2);
+  const u = tower.u = Math.round(Math.max(22, Math.min(44, W / 10.5, (H * 0.6) / rowsOf))), gap = u * 1.22, ty = Math.round(H * 0.74), cx = W / 2;
+  if (engine) engine.gravity.y = P.world.g;
+  const bs = []; let tnt = 0, kx = cx, top = ty;
+  const pickMat = (r, rows) => { const m = P.mats; if (m.includes('tnt') && tnt < 1 + Math.floor(P.n / 6) && r > 0 && r < rows - 1 && rnd() < 0.22) { tnt++; return 'tnt'; } if (m.includes('glass') && rnd() < 0.24) return 'glass'; if (m.includes('stone') && rnd() < 0.18) return 'stone'; return 'box'; };
+  const box = (x, y, mat, w = u, h = u) => { const b = Bodies.rectangle(x, y, w, h, { friction: 0.8, density: mat === 'stone' ? 0.006 : 0.0018, chamfer: { radius: Math.min(w, h) * 0.13 } }); b.tw = { mat, col: mat === 'tnt' ? '#e8412f' : mat === 'glass' ? 'rgba(170,225,255,0.78)' : mat === 'stone' ? '#9aa3b5' : mat === 'plank' ? '#d79a5a' : TW_COLS[Math.floor(rnd() * TW_COLS.length)], w, h }; bs.push(b); return b; };
+  const col = (x, rows, y0) => { let y = y0; for (let r = 0; r < rows; r++) { box(x, y - u / 2, pickMat(r, rows)); y -= u; } return y; }; // (a solid column: planks lying in side-by-side columns made them lean)
+  let spanW = u;
+  if (P.shape === 'stack') { const c = P.cols, tw0 = (c - 1) * gap + u; spanW = tw0;
+    for (let r = 0; r < P.rows; r++) {
+      if (P.mats.includes('plank') && r % 2 === 1 && c > 1) { for (let i = 0; i + 1 < c; i += 2) box(cx - tw0 / 2 + u / 2 + (i + 0.5) * gap, top - u * 0.25, 'plank', gap + u * 0.9, u * 0.5); if (c % 2) box(cx + tw0 / 2 - u / 2, top - u * 0.25, 'plank', u, u * 0.5); top -= u * 0.5; continue; }
+      for (let i = 0; i < c; i++) box(cx - tw0 / 2 + u / 2 + i * gap, top - u / 2, pickMat(r, P.rows)); top -= u; } }
+  else if (P.shape === 'pyramid') { const base = 3 + S; spanW = base * u * 1.04; for (let r = 0; r < base; r++) { const n2 = base - r; for (let i = 0; i < n2; i++) box(cx + (i - (n2 - 1) / 2) * u * 1.04, top - u / 2, pickMat(r, base)); top -= u; } }
+  else if (P.shape === 'sky') { const rows = 6 + S * 2; spanW = u * 2.1; let y = ty; for (let r = 0; r < rows; r++) { if (P.mats.includes('plank') && r % 3 === 2) { box(cx, y - u * 0.25, 'plank', u * 2.3, u * 0.5); y -= u * 0.5; continue; } box(cx - u * 0.53, y - u / 2, pickMat(r, rows)); box(cx + u * 0.53, y - u / 2, pickMat(r, rows)); y -= u; } top = y; }
+  else if (P.shape === 'wall') { const c = 4 + S, rows = 2 + Math.ceil(S / 2); spanW = c * u * 1.02; let t2 = ty; for (let i = 0; i < c; i++) t2 = Math.min(t2, col(cx + (i - (c - 1) / 2) * u * 1.02, rows, ty)); top = t2; }
+  else { // castle / fort: two towers, a bridge, the king in the middle on it
+    const off = u * (1.6 + S * 0.3), rows = 4 + S; spanW = off * 2 + u * 3.2;
+    const t1 = col(cx - off, rows, ty), t2 = col(cx + off, rows, ty); col(cx - off - u * 1.05, rows - 1, ty); col(cx + off + u * 1.05, rows - 1, ty);
+    const by = Math.min(t1, t2), th = P.boss ? u * 0.8 : u * 0.5; box(cx, by - th / 2, 'plank', off * 2 + u * 1.2, th); top = by - th; }
+  const ks = P.boss ? u * 2.4 : u * 1.45, k = Bodies.rectangle(kx, top - ks / 2 - 1, ks, ks, { friction: 0.8, density: 0.0015, chamfer: { radius: ks * 0.16 } }); k.tw = { mat: 'king', col: P.boss ? '#ff9f43' : P.king.col, w: ks, h: ks, hp: P.kingHp }; bs.push(k);
+  const tw = Math.min(W - 30, spanW + u * 2.6);
   tower.table = { x: cx, y: ty, w: tw, body: Bodies.rectangle(cx, ty + 14, tw, 28, { isStatic: true, friction: 0.45, label: 'twTable' }) };
-  const bs = []; let top = ty; let tnt = 0;
-  const pickMat = (r) => { const m = P.mats; if (m.includes('tnt') && tnt < 1 + Math.floor(P.n / 6) && r > 0 && r < P.rows - 1 && rnd() < 0.22) { tnt++; return 'tnt'; } if (m.includes('glass') && rnd() < 0.24) return 'glass'; if (m.includes('stone') && rnd() < 0.18) return 'stone'; return 'box'; };
-  for (let r = 0; r < P.rows; r++) {
-    if (P.mats.includes('plank') && r % 2 === 1 && P.cols > 1) { for (let c = 0; c + 1 < P.cols; c += 2) { const b = Bodies.rectangle(cx - towerW / 2 + u / 2 + (c + 0.5) * gap, top - u * 0.25, gap + u * 0.9, u * 0.5, { friction: 0.8, density: 0.002, chamfer: { radius: 4 } }); b.tw = { mat: 'plank', col: '#d79a5a' }; bs.push(b); } if (P.cols % 2) { const b = Bodies.rectangle(cx + towerW / 2 - u / 2, top - u * 0.25, u, u * 0.5, { friction: 0.8, density: 0.002, chamfer: { radius: 4 } }); b.tw = { mat: 'plank', col: '#d79a5a' }; bs.push(b); } top -= u * 0.5; continue; } // (planks two columns long: a long one jammed between the table and the screen's side)
-    for (let c = 0; c < P.cols; c++) { const mat = pickMat(r), b = Bodies.rectangle(cx - towerW / 2 + u / 2 + c * gap, top - u / 2, u, u, { friction: 0.8, density: mat === 'stone' ? 0.006 : 0.0018, chamfer: { radius: 5 } }); b.tw = { mat, col: mat === 'tnt' ? '#e8412f' : mat === 'glass' ? 'rgba(170,225,255,0.78)' : mat === 'stone' ? '#9aa3b5' : TW_COLS[(r + c) % TW_COLS.length] }; bs.push(b); }
-    top -= u;
-  }
-  const k = Bodies.rectangle(cx, top - u * 0.72, u * 1.45, u * 1.45, { friction: 0.8, density: 0.0015, chamfer: { radius: 9 } }); k.tw = { mat: 'king', col: P.king.col }; bs.push(k);
   tower.blocks = bs; Composite.add(world, [tower.table.body, ...bs]);
-  tower.taps = 0; tower.kingOff = false; tower.leftAt = 0; tower.mood = 'grumpy'; tower.layoutW = W; tower.log.push('tower:' + P.n);
-  smash.banner = { t: now, title: t('twN', { n: P.n }), sub: '', line: '' };
+  tower.par = Math.max(1, Math.round(bs.length / 12)) + (P.boss ? 3 : 0); // (3 stars take a smart tap: the owner found it too easy)
+  tower.taps = 0; tower.kingOff = false; tower.mood = 'grumpy'; tower.layoutW = W; tower.flash = 0; tower.stopUntil = 0; tower.slowAt = 0; tower.focus = null; tower.banner = P.boss ? now : 0; tower.log.push('tower:' + P.n);
+  if (engine) engine.timing.timeScale = 1;
+  if (P.boss) sfx('roar');
 }
-function twClear() { if (world && walls.length === 4) for (const w of walls.slice(1)) if (!world.bodies.includes(w)) M.Composite.add(world, w); if (tower.table && world) M.Composite.remove(world, tower.table.body); for (const b of tower.blocks) if (!b.tw.gone && world) M.Composite.remove(world, b); tower.blocks = []; tower.table = null; }
+function twClear() {
+  if (world && walls.length === 4) for (const w of walls.slice(1)) if (!world.bodies.includes(w)) M.Composite.add(world, w);
+  if (engine) { engine.gravity.y = 1; engine.timing.timeScale = 1; }
+  if (tower.table && world) M.Composite.remove(world, tower.table.body); for (const b of tower.blocks) if (!b.tw.gone && world) M.Composite.remove(world, b); tower.blocks = []; tower.table = null;
+}
 function twOnTable(b) { const T = tower.table; return !b.tw.gone && b.position.y < T.y + 4 && Math.abs(b.position.x - T.x) < T.w / 2 + tower.u * 0.3; }
 function twLeft() { return tower.table ? tower.blocks.reduce((n, b) => n + (twOnTable(b) ? 1 : 0), 0) : 0; }
-function twBlast(x, y, R, k, now, from) { // every block in R flies away from (x, y); glass in it shatters, TNT in it goes off a moment later
+function twKing() { return tower.blocks.find((b) => b.tw.mat === 'king'); }
+function twBlast(x, y, R, k, now, from) { // every block in R flies away from (x, y); glass in it shatters, TNT in it goes off a moment later; the giant king: a heart
   let n = 0;
   for (const b of tower.blocks) {
-    if (b.tw.gone || b === from) continue; const dx = b.position.x - x, dy = b.position.y - y, d = Math.hypot(dx, dy); if (d > R) continue;
-    n++; const T = tower.table, near = d < tower.u * 1.1, f = near ? 1 : 1 - d / R, m = b.tw.mat === 'stone' ? 0.5 : 1, mag = (TW.boom * f + 4) * k * m; let nx = dx / (d || 1), ny = dy / (d || 1);
-    if (T && Math.abs(dx) < tower.u * 0.4) { nx = (b.position.x < T.x ? -1 : 1) * 0.8; ny = -0.6; } // (a tap right on a block, or straight under it: it flies toward the nearer edge of the table, not just up)
+    if (b.tw.gone || b === from) continue; const dx = b.position.x - x, dy = b.position.y - y, d = Math.hypot(dx, dy); if (d > R + (b.tw.mat === 'king' ? b.tw.w * 0.4 : 0)) continue;
+    n++; const T = tower.table, near = d < tower.u * 1.1, f = near ? 1 : Math.max(0, 1 - d / R), big = b.tw.mat === 'king' && b.tw.hp > 0;
+    if (big) { if (d < R * TW.kingR + b.tw.w * 0.4 && !b.tw.hitBy) { b.tw.hitBy = now; twKingHurt(b, now); } } // (one heart a blast, only from close by)
+    const m = (b.tw.mat === 'stone' ? 0.5 : 1) * (big ? 0.12 : 1), mag = (TW.boom * f + 4) * k * m; let nx = dx / (d || 1), ny = dy / (d || 1);
+    if (T && Math.abs(dx) < tower.u * 0.4 && !big) { nx = (b.position.x < T.x ? -1 : 1) * 0.8; ny = -0.6; } // (a tap right on a block, or straight under it: it flies toward the nearer edge of the table, not just up)
     if (b.tw.mat === 'glass') { twShatter(b, now); continue; }
     if (b.tw.mat === 'tnt' && !b.tw.fuse) b.tw.fuse = now + 140;
-    M.Body.setVelocity(b, { x: b.velocity.x + nx * mag, y: b.velocity.y + ny * mag - TW.up * f * k * m }); M.Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.5 * f);
+    M.Body.setVelocity(b, { x: b.velocity.x + nx * mag, y: b.velocity.y + ny * mag - TW.up * f * k * m }); M.Body.setAngularVelocity(b, b.angularVelocity + (Math.random() - 0.5) * 0.5 * f * (big ? 0.2 : 1));
   }
+  for (const b of tower.blocks) if (b.tw.hitBy && b.tw.hitBy !== now) b.tw.hitBy = 0;
   return n;
+}
+function twKingHurt(b, now) { // the giant king loses a heart; with none left he is a block like any other
+  b.tw.hp--; b.tw.ouch = now; sfx('roar'); shakeScreen(8); tower.flash = Math.max(tower.flash, 0.4); tower.log.push('king:' + b.tw.hp);
+  smash.floaters.push({ x: b.position.x, y: b.position.y - b.tw.h, text: b.tw.hp > 0 ? '💔' : t('twWobble'), big: true, life: 1.2 });
+  if (b.tw.hp <= 0) M.Body.setVelocity(b, { x: (b.position.x < W / 2 ? -1 : 1) * 3, y: -4 });
 }
 function twShatter(b, now) { b.tw.gone = true; M.Composite.remove(world, b); fxShards(b.position.x, b.position.y, ['#cdeeff', '#ffffff', '#9fdcff'], 12, 0, -1, 0.45); sfx('glass'); track('smash', 1); tower.log.push('glass'); }
 function twBoom(b, now) { // TNT: a bigger blast of its own (and the TNT near it goes off too, a chain)
   b.tw.gone = true; M.Composite.remove(world, b); const x = b.position.x, y = b.position.y;
-  twBlast(x, y, TW.R * TW.tnt, 1.25, now, b); fxImpact(x, y, '#ff8a3d', 1); fxShards(x, y, ['#ff5c3a', '#ffcf56', '#2a1f3d'], 14, 0, -1, 0.6); sfx('tnt'); shakeScreen(9); track('smash', 1); tower.log.push('tnt');
+  twBlast(x, y, TW.R * TW.tnt, 1.25, now, b); twBang(x, y, 1.3, now); fxShards(x, y, ['#ff5c3a', '#ffcf56', '#2a1f3d'], 14, 0, -1, 0.6); sfx('tnt'); track('smash', 1); tower.log.push('tnt');
+}
+function twBang(x, y, k, now) { // the boom: a flash, two shock rings, sparks and dust, a rumble, the world held for a beat
+  tower.flash = Math.max(tower.flash, 0.45 * k); tower.stopUntil = now + TW.stopMs * k; shakeScreen(6 * k);
+  ring(x, y, 'rgba(255,255,255,0.9)', 140 * k, 380, 8); ring(x, y, 'rgba(255,207,86,0.85)', 220 * k, 520, 5);
+  fxImpact(x, y, '#ffcf56', Math.min(1, 0.7 * k)); fxDust(x, y, Math.round(7 * k));
+  try { navigator.vibrate && navigator.vibrate(Math.round(30 * k)); } catch {}
 }
 function towerTap(x, y, now) {
-  if (!tower.taps) hideHint(); tower.taps++; tower.demo = false; tower.log.push('tap');
-  const n = twBlast(x, y, TW.R, 1, now); fxImpact(x, y, n ? '#ffcf56' : '#fff6d6', n ? 0.8 : 0.35); sfx(n ? 'thump' : 'whiff'); shakeScreen(n ? 5 : 1.5);
-  if (n) { tower.mood = 'dizzy'; tower.moodAt = now; }
+  if (tower.slowAt) return; if (!tower.taps) hideHint(); tower.taps++; tower.demo = false; tower.log.push('tap');
+  const n = twBlast(x, y, TW.R * (1 - Math.min(0.22, (tower.plan.n - 1) * 0.015)), 1, now); // (the blast's reach shrinks a little, tower by tower)
+  if (n) { twBang(x, y, 1, now); sfx('boom'); sfx('thump'); tower.mood = 'dizzy'; tower.moodAt = now; } else { fxImpact(x, y, '#fff6d6', 0.35); sfx('whiff'); shakeScreen(1.5); }
 }
 function towerTick(now, dt) {
   for (const tp of smash.taps) towerTap(tp.x, tp.y, now); smash.taps.length = 0;
+  tower.flash = Math.max(0, tower.flash - dt / 600);
   for (const b of tower.blocks) {
     if (b.tw.gone) continue;
     if (b.tw.fuse && now >= b.tw.fuse) { twBoom(b, now); continue; }
@@ -5230,30 +5277,33 @@ function towerTick(now, dt) {
     if (b.position.y > H + 200 || b.position.x < -300 || b.position.x > W + 300) { b.tw.gone = true; M.Composite.remove(world, b); }
   }
   if (now - tower.moodAt > 1100) tower.mood = 'grumpy';
-  const left = twLeft();
-  if (left > 0) { tower.leftAt = 0; return; }
-  if (!tower.leftAt) tower.leftAt = now;
-  if (now - tower.leftAt >= TW.settleMs) towerDone(now);
+  if (tower.slowAt) { const q = (now - tower.slowAt) / TW.slowMs; if (q >= 1) { if (engine) engine.timing.timeScale = 1; towerDone(now); } return; }
+  if (twLeft() > 0) return;
+  // the last block off: the slow-motion finale (the camera leans in on the king, or the last block)
+  tower.slowAt = now; if (engine) engine.timing.timeScale = 0.25; const f = twKing() || tower.blocks[tower.blocks.length - 1];
+  tower.focus = f ? { x: Math.max(W * 0.25, Math.min(W * 0.75, f.position.x)), y: Math.max(H * 0.25, Math.min(H * 0.8, f.position.y)) } : { x: W / 2, y: H / 2 };
+  sfx('boom'); tower.flash = 0.6; smash.floaters.push({ x: W / 2, y: H * 0.34, text: t('twBoom'), big: true, life: 1.4 }); tower.log.push('slow');
 }
 function towerDone(now) {
-  const P = tower.plan, taps = Math.max(1, tower.taps), stars = taps <= P.par ? 3 : taps <= P.par + 2 ? 2 : 1, T = profile.tower;
-  T.n = P.n + 1; T.top = Math.max(T.top, T.n); saveProfile();
-  const coins = 2 + stars; addCoins(coins); meta.roundXp = 0; roundDone(0, 10 + 4 * stars, { star: stars === 3 });
-  smash.result = { tower: true, clear: true, n: P.n, stars, taps, par: P.par, coins };
+  const P = tower.plan, taps = Math.max(1, tower.taps), stars = taps <= tower.par ? 3 : taps <= tower.par + 2 ? 2 : 1, T = profile.tower;
+  T.n = P.n + 1; T.top = Math.max(T.top, T.n); saveProfile(); tower.slowAt = 0; tower.focus = null;
+  const coins = 2 + stars + (P.boss ? 5 : 0); addCoins(coins); meta.roundXp = 0; roundDone(0, 10 + 4 * stars + (P.boss ? 10 : 0), { star: stars === 3, boss: P.boss });
+  smash.result = { tower: true, clear: true, n: P.n, boss: P.boss, stars, taps, par: tower.par, coins };
   smash.phase = 'card'; smash.over = true; smash.overAt = now + 250; hideHint(); const ui = smash.ui; ui.dwell = ui.hover = ui.buttons = null;
   sfx('fanfare'); confetti(W * 0.3, H * 0.3, 50, 1.3); confetti(W * 0.7, H * 0.3, 50, 1.3); tower.log.push('done:' + stars);
 }
 function towerNext() { smash.armed = { run: 'tower' }; resetSmash(performance.now()); }
 function twResize() { if (tower.table && Math.abs(W - tower.layoutW) > tower.layoutW * 0.15 && mode !== 'none' && !smash.over) towerBegin(performance.now()); } // (a phone turned: the same tower, laid out afresh; the address bar coming and going changes only H: kept)
-function twFace(x, y, s, P, mood) { // the king: an original face per king, grumpy, or dizzy when the blast shook him
+function twFace(x, y, s, P, mood) { // the king: an original face per king, grumpy, scared when hurt, or dizzy when the blast shook him
   ctx.save(); ctx.translate(x, y); ctx.fillStyle = '#2a1f3d'; ctx.strokeStyle = '#2a1f3d'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(2.5, s * 0.06);
   const id = P.king.id, ex = s * 0.2, ey = -s * 0.06;
   if (id === 'cat') { for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * s * 0.42, -s * 0.36); ctx.lineTo(k * s * 0.3, -s * 0.66); ctx.lineTo(k * s * 0.12, -s * 0.44); ctx.closePath(); ctx.fillStyle = P.king.col; ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#2a1f3d'; }
   if (id === 'monster') { for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * s * 0.32, -s * 0.42); ctx.quadraticCurveTo(k * s * 0.5, -s * 0.7, k * s * 0.22, -s * 0.72); ctx.lineTo(k * s * 0.2, -s * 0.44); ctx.closePath(); ctx.fillStyle = '#fff6d6'; ctx.fill(); ctx.stroke(); } ctx.fillStyle = '#2a1f3d'; }
   if (id === 'robot') { ctx.beginPath(); ctx.moveTo(0, -s * 0.44); ctx.lineTo(0, -s * 0.66); ctx.stroke(); ctx.beginPath(); ctx.arc(0, -s * 0.7, s * 0.07, 0, TAU); ctx.fillStyle = '#ff5c3a'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; }
-  if (id === 'grump') { ctx.beginPath(); ctx.moveTo(-s * 0.3, -s * 0.42); ctx.lineTo(-s * 0.2, -s * 0.66); ctx.lineTo(0, -s * 0.48); ctx.lineTo(s * 0.2, -s * 0.66); ctx.lineTo(s * 0.3, -s * 0.42); ctx.closePath(); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; }
+  if (id === 'grump' || P.boss) { ctx.beginPath(); ctx.moveTo(-s * 0.3, -s * 0.42); ctx.lineTo(-s * 0.2, -s * 0.66); ctx.lineTo(0, -s * 0.48); ctx.lineTo(s * 0.2, -s * 0.66); ctx.lineTo(s * 0.3, -s * 0.42); ctx.closePath(); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; }
   if (id === 'slime') { ctx.fillStyle = '#6fd090'; ctx.beginPath(); ctx.ellipse(-s * 0.18, s * 0.46, s * 0.06, s * 0.12, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#2a1f3d'; }
   if (mood === 'dizzy') { for (const k of [-1, 1]) { const qx = k * ex, d = s * 0.08; ctx.beginPath(); ctx.moveTo(qx - d, ey - d); ctx.lineTo(qx + d, ey + d); ctx.moveTo(qx + d, ey - d); ctx.lineTo(qx - d, ey + d); ctx.stroke(); } ctx.beginPath(); ctx.ellipse(0, s * 0.2, s * 0.11, s * 0.09, 0, 0, TAU); ctx.fill(); }
+  else if (mood === 'scared') { for (const k of [-1, 1]) { ctx.beginPath(); ctx.arc(k * ex, ey, s * 0.09, 0, TAU); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; ctx.beginPath(); ctx.arc(k * ex, ey, s * 0.04, 0, TAU); ctx.fill(); } ctx.beginPath(); ctx.ellipse(0, s * 0.24, s * 0.09, s * 0.12, 0, 0, TAU); ctx.fill(); }
   else if (id === 'robot') { for (const k of [-1, 1]) ctx.fillRect(k * ex - s * 0.08, ey - s * 0.06, s * 0.16, s * 0.12); ctx.fillRect(-s * 0.16, s * 0.18, s * 0.32, s * 0.06); }
   else { for (const k of [-1, 1]) { ctx.beginPath(); ctx.arc(k * ex, ey, s * 0.065, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.moveTo(k * (ex + s * 0.15), ey - s * 0.2); ctx.lineTo(k * (ex - s * 0.1), ey - s * 0.13); ctx.stroke(); } ctx.beginPath(); ctx.arc(0, s * 0.3, s * 0.13, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
   ctx.restore();
@@ -5261,40 +5311,51 @@ function twFace(x, y, s, P, mood) { // the king: an original face per king, grum
 function renderTower(now) {
   const k = (now - shake.t) / shake.ms; let vx = 0, vy = 0;
   if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); vx = Math.sin(now * 0.11) * a; vy = Math.cos(now * 0.17) * a; }
+  const P = tower.plan, Wd = P ? P.world : TW_WORLDS[0], INK = '#2a1f3d';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#9fdcff'); g.addColorStop(1, '#e6f6ff'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  view.x = vx; view.y = vy; resetView();
-  const T = tower.table, u = tower.u, INK = '#2a1f3d', gy = H - Math.max(18, H * 0.04);
-  ctx.fillStyle = '#9ad97a'; ctx.fillRect(-20, gy, W + 40, H - gy + 20); ctx.fillStyle = '#7cc45c'; for (let x = -10; x < W + 20; x += 20) { ctx.beginPath(); ctx.arc(x, gy + 2, 11, Math.PI, 0); ctx.fill(); }
-  if (T) { // the table: legs to the grass, a wooden top
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, Wd.sky[0]); g.addColorStop(1, Wd.sky[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (Wd.stars) { ctx.fillStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 46; i++) ctx.fillRect((i * 97) % W, (i * 53) % (H * 0.62), 2, 2); }
+  view.x = vx; view.y = vy;
+  if (tower.slowAt && tower.focus) { const q = Math.min(1, (now - tower.slowAt) / 450); view.s = 1 + 0.18 * (1 - Math.pow(1 - q, 3)); view.ox = tower.focus.x; view.oy = tower.focus.y; } // (the finale: the camera leans in)
+  resetView();
+  const T = tower.table, u = tower.u, gy = H - Math.max(18, H * 0.04);
+  ctx.fillStyle = Wd.ground; ctx.fillRect(-W, gy, W * 3, H - gy + 40); ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-W, gy); ctx.lineTo(W * 2, gy); ctx.stroke();
+  if (Wd.id === 'kitchen' || Wd.id === 'picnic') { ctx.fillStyle = Wd.id === 'picnic' ? '#7cc45c' : '#b97a40'; for (let x = -10; x < W + 20; x += 20) { ctx.beginPath(); ctx.arc(x, gy + 2, Wd.id === 'picnic' ? 11 : 4, Math.PI, 0); ctx.fill(); } }
+  if (T) { // the table: legs (kitchen, picnic, candy) or a rock under it (castle, space)
     ctx.lineWidth = 3.5; ctx.strokeStyle = INK; ctx.lineJoin = 'round'; const x0 = T.x - T.w / 2;
-    for (const lx of [x0 + 16, x0 + T.w - 32]) { ctx.fillStyle = '#b87a45'; ctx.fillRect(lx, T.y + 26, 16, gy - T.y - 24); ctx.strokeRect(lx, T.y + 26, 16, gy - T.y - 24); }
-    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(x0, T.y + 4, T.w, 28, 8); ctx.fill(); ctx.fillStyle = '#d79a5a'; ctx.beginPath(); ctx.roundRect(x0, T.y, T.w, 28, 8); ctx.fill(); ctx.stroke();
+    if (Wd.legs) for (const lx of [x0 + 16, x0 + T.w - 32]) { ctx.fillStyle = '#b87a45'; ctx.fillRect(lx, T.y + 26, 16, gy - T.y - 24); ctx.strokeRect(lx, T.y + 26, 16, gy - T.y - 24); }
+    else { ctx.fillStyle = Wd.top; ctx.beginPath(); ctx.moveTo(x0 + 10, T.y + 26); ctx.lineTo(x0 + 34, gy); ctx.lineTo(x0 + T.w - 34, gy); ctx.lineTo(x0 + T.w - 10, T.y + 26); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(x0, T.y + 4, T.w, 28, 8); ctx.fill(); ctx.fillStyle = Wd.top; ctx.beginPath(); ctx.roundRect(x0, T.y, T.w, 28, 8); ctx.fill(); ctx.stroke();
+    if (Wd.cloth) { ctx.fillStyle = '#ffffff'; for (let x = x0 + 8; x < x0 + T.w - 12; x += 22) ctx.fillRect(x, T.y + 4, 11, 10); }
+    if (Wd.icing) { ctx.fillStyle = '#ff8fc8'; for (let x = x0 + 12; x < x0 + T.w - 12; x += 26) { ctx.beginPath(); ctx.arc(x + 8, T.y + 27, 8, 0, Math.PI); ctx.fill(); } }
   }
   for (const b of tower.blocks) {
     if (b.tw.gone) continue; const v = b.vertices, m = b.tw.mat;
     ctx.beginPath(); ctx.moveTo(v[0].x, v[0].y); for (let i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y); ctx.closePath();
-    ctx.fillStyle = b.tw.col; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+    ctx.fillStyle = b.tw.col; ctx.fill(); ctx.lineWidth = m === 'king' ? 4 : 3; ctx.strokeStyle = INK; ctx.stroke();
     ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle);
-    if (m === 'king') twFace(0, 0, u * 1.45, tower.plan, tower.mood);
+    if (m === 'king') { const hurt = b.tw.ouch && now - b.tw.ouch < 600; if (hurt) ctx.translate(Math.sin(now * 0.09) * 3, 0); twFace(0, 0, b.tw.w, P, tower.slowAt || !twOnTable(b) ? 'dizzy' : hurt || Math.abs(b.angularVelocity) > 0.06 ? 'scared' : tower.mood); }
     else if (m === 'tnt') { ctx.fillStyle = '#fff6d6'; ctx.font = '800 ' + Math.round(u * 0.32) + 'px Fredoka, Rubik, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TNT', 0, 1); if (b.tw.fuse) { ctx.globalAlpha = 0.6 + 0.4 * Math.sin(now / 30); ctx.fillStyle = '#ffcf56'; ctx.beginPath(); ctx.arc(0, -u * 0.5, u * 0.14, 0, TAU); ctx.fill(); } }
     else if (m === 'glass') { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-u * 0.25, -u * 0.2); ctx.lineTo(-u * 0.05, -u * 0.32); ctx.moveTo(-u * 0.28, 0); ctx.lineTo(u * 0.05, -u * 0.22); ctx.stroke(); }
     else if (m === 'stone') { ctx.fillStyle = 'rgba(42,31,61,0.25)'; for (const [px, py, r] of [[-0.2, -0.15, 0.06], [0.18, 0.1, 0.08], [-0.05, 0.22, 0.05]]) { ctx.beginPath(); ctx.arc(px * u, py * u, r * u, 0, TAU); ctx.fill(); } }
-    else if (m === 'plank') { ctx.strokeStyle = 'rgba(42,31,61,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-u, -u * 0.06); ctx.lineTo(u * 0.6, -u * 0.06); ctx.stroke(); }
+    else if (m === 'plank') { ctx.strokeStyle = 'rgba(42,31,61,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-b.tw.w * 0.4, -b.tw.h * 0.12); ctx.lineTo(b.tw.w * 0.3, -b.tw.h * 0.12); ctx.stroke(); }
     else { ctx.globalAlpha = 0.35; ctx.fillStyle = '#ffffff'; ctx.fillRect(-u * 0.3, -u * 0.34, u * 0.22, u * 0.12); }
     ctx.restore();
+    if (m === 'king' && P.boss && b.tw.hp > 0 && !tower.slowAt) { ctx.font = Math.round(u * 0.6) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; for (let i = 0; i < P.kingHp; i++) ctx.fillText(i < b.tw.hp ? '❤️' : '🤍', b.position.x + (i - (P.kingHp - 1) / 2) * u * 0.72, b.position.y - b.tw.h * 0.95); ctx.textBaseline = 'alphabetic'; }
   }
   drawParticles(); drawRings(now); drawFloaters(smash.floaters);
-  view.x = view.y = 0; resetView();
-  if (mode !== 'none' && tower.plan && !smash.over) { // the HUD: the tower's number and what is left on the table, under the corner row
+  view.s = 1; view.x = view.y = 0; resetView();
+  if (tower.flash > 0) { ctx.fillStyle = 'rgba(255,253,240,' + Math.min(0.6, tower.flash).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
+  if (mode !== 'none' && P && !smash.over) { // the HUD: the tower (or the giant king), its world and what is left on the table, under the corner row
     const y = Math.max(40, Math.round(chromeRow.bottom) + 26), left = twLeft();
-    twPill(W / 2, y, t('twN', { n: tower.plan.n }) + '  ·  ' + t('twLeft', { n: left }));
+    twPill(W / 2, y, (P.boss ? '👑 ' + t('twBoss') : t('twN', { n: P.n })) + '  ·  ' + t('tw_' + Wd.id) + '  ·  ' + t('twLeft', { n: left }));
+    if (tower.banner && now - tower.banner < 2200) { ctx.globalAlpha = Math.min(1, (2200 - (now - tower.banner)) / 400); twPill(W / 2, y + 54, t('twBossHint'), '#ff9f43'); ctx.globalAlpha = 1; }
     if (tower.demo && now - smash.phaseAt > 700 && T) { const ph = ((now - smash.phaseAt - 700) % 1600) / 1600, p = { x: T.x, y: T.y - u * 1.4 }; drawDemoFinger(p, ph < 0.3 ? ph / 0.3 : 0, 1, ph < 0.45 ? (ph - 0.3) / 0.15 : -1, 1); }
   }
   drawCoinPill(now);
   if (smash.over && smash.result) drawSmashCard(now);
 }
-function twPill(x, y, text) { const f = 17; ctx.font = '700 ' + f + 'px Fredoka, Rubik, sans-serif'; const w = ctx.measureText(text).width + 30, h = 36; ctx.fillStyle = '#2a1f3d'; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2 + 3, w, h, h / 2); ctx.fill(); ctx.fillStyle = '#fffdf6'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1); ctx.textBaseline = 'alphabetic'; }
+function twPill(x, y, text, bg = '#fffdf6') { const f = 17; ctx.font = '700 ' + f + 'px Fredoka, Rubik, sans-serif'; const w = Math.min(W - 24, ctx.measureText(text).width + 30), h = 36; ctx.fillStyle = '#2a1f3d'; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2 + 3, w, h, h / 2); ctx.fill(); ctx.fillStyle = bg; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#2a1f3d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + 1, w - 24); ctx.textBaseline = 'alphabetic'; }
 function smashResize() { // the screen changed: sprites redrawn at the new resolution; a big change (a phone turned) lays the scene out afresh
   if (smash.run === 'tower') { twResize(); return; }
   for (const o of smash.objs) o.sp = null; for (const b of smash.pieces) b.plugin.sp = null; for (const list of smash.pool.values()) for (const b of list) b.plugin.sp = null;
