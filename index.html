@@ -1286,6 +1286,12 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 .stk.hero #heroLbl{ font-size:max(24px,8.6cqw); font-weight:700; line-height:1; color:#fff; -webkit-text-stroke:max(1.5px,.55cqw) var(--mbInk); paint-order:stroke fill; overflow-wrap:anywhere; }
 .stk.hero .rib{ background:#ffd23f; border:max(1.5px,.6cqw) solid var(--mbInk); border-radius:2cqw; padding:.5cqw 2.4cqw; font-size:max(14px,4.2cqw); font-weight:700; line-height:1.2; white-space:nowrap; }
 .stk.hero .go{ position:relative; flex:none; width:max(48px,15cqw); height:max(48px,15cqw); border-radius:50%; display:grid; place-items:center; background:#3fd68f; border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 max(3px,1cqw) 0 var(--mbInk); animation:mbPulse 1.3s ease-in-out infinite; }
+.stk.hero .go::after{ content:""; position:absolute; inset:calc(-1 * max(2px,.8cqw)); border-radius:50%; border:max(3px,1cqw) solid #3fd68f; opacity:0; pointer-events:none; }
+/* (the owner: "why don't Frenzy and Daily work?": a pick in the strip only picks; now the Play button jumps and sends rings until it is tapped) */
+#hero.picked .stk.hero .go{ animation:heroGoJump .6s cubic-bezier(.3,1.6,.5,1) both, mbPulse 1.1s ease-in-out .6s infinite; }
+#hero.picked .stk.hero .go::after{ animation:heroGoPing 1.1s ease-out .25s infinite; }
+@keyframes heroGoJump{ 0%{ transform:scale(1); } 35%{ transform:scale(1.45) rotate(-8deg); } 70%{ transform:scale(.92); } 100%{ transform:scale(1); } }
+@keyframes heroGoPing{ from{ opacity:.95; transform:scale(1); } to{ opacity:0; transform:scale(2); } }
 .stk.hero .go svg{ width:50%; height:50%; margin-left:9%; fill:#fff; stroke:var(--mbInk); stroke-width:1.8; stroke-linejoin:round; }
 .mbMap{ position:absolute; top:-3.6cqw; inset-inline-end:-2cqw; z-index:2; display:flex; align-items:center; gap:1cqw; min-height:44px; padding:.4cqw 2.6cqw .4cqw 1.2cqw; border-radius:99px; font-size:max(14px,3.9cqw); font-weight:700; --rot:4deg; transform:rotate(var(--rot)); transition:transform .42s cubic-bezier(.34,1.56,.64,1); }
 html[dir="rtl"] .mbMap{ --rot:-4deg; }
@@ -1353,7 +1359,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #moreSheet .moreRow.hbInstall svg{ color:#ff6b4a; }
 #moreHud small{ font-size:14px; font-weight:500; opacity:.7; }
 /* calm and slow devices: no idle motion */
-@media (prefers-reduced-motion: reduce){ .mbCall, #start.mb, #start.mb::before, #start.mb.intro *, .mbBubu .bb, .stk.hero .go, .mbWiggle, .mbBo, .mbBubu.jump .bb, .mbDockB .bang{ animation:none !important; } .stk, .mbMap, .mbDockB .rd{ transition:none; } .mbPager{ scroll-behavior:auto; } }
+@media (prefers-reduced-motion: reduce){ .mbCall, #start.mb, #start.mb::before, #start.mb.intro *, .mbBubu .bb, .stk.hero .go, #hero.picked .stk.hero .go, #hero.picked .stk.hero .go::after, .mbWiggle, .mbBo, .mbBubu.jump .bb, .mbDockB .bang{ animation:none !important; } .stk, .mbMap, .mbDockB .rd{ transition:none; } .mbPager{ scroll-behavior:auto; } }
 body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, body.gfx0 #start.mb, body.gfxCalm #start.mb::before, body.gfx0 #start.mb::before{ animation:none; }
 #hint .ic svg.mbI{ width:30px; height:30px; margin:-4px 0; stroke:none; fill:none; } /* (the how-to toast shows the game's sticker drawing) */
 </style>
@@ -20869,7 +20875,7 @@ $('calmBtn').addEventListener('click', () => mbLittleGo($('calmBtn'), h2Calm)); 
 // the owner, Oct 2026 ("Strike with every button apart"): one card: its strip picks the way to play (remembered), the card's Play plays it; the Map plays nothing, it opens
 const HERO_SEG = { adv: 'heroAdv', frenzy: 'frenzyChip', daily: 'dailyBtn', endless: 'endlessChip' };
 function heroModeGet() { let m = 'adv'; try { m = localStorage.getItem('grasp.heroMode') || 'adv'; } catch {} if (!HERO_SEG[m] || $(HERO_SEG[m]).hidden) m = 'adv'; return m; }
-function heroModeSet(m) { if (!HERO_SEG[m]) return null; audioInit(); sfx('click'); try { localStorage.setItem('grasp.heroMode', m); } catch {} mb.log.push('heroMode:' + m); return heroModeSync(); }
+function heroModeSet(m) { if (!HERO_SEG[m]) return null; audioInit(); sfx('click'); try { localStorage.setItem('grasp.heroMode', m); } catch {} mb.log.push('heroMode:' + m); const r = heroModeSync(), h = $('hero'); h.classList.remove('picked'); void h.offsetWidth; h.classList.add('picked'); return r; } // (picked: the Play button jumps and calls)
 function heroModeSync() {
   const m = heroModeGet(), b = $('heroPlay'), n = advCurrent(); $('heroAdv').querySelector('.lb').textContent = t('mbStageN', { n });
   for (const k in HERO_SEG) $(HERO_SEG[k]).setAttribute('aria-pressed', String(k === m));
@@ -20882,7 +20888,7 @@ function heroModesFit() { // the strip on a narrow phone: every word whole (>= 1
   S.classList.remove('compact'); A.textContent = t('mbStageN', { n: advCurrent() }); if (!S.clientWidth) return 0;
   if (!over()) return 0; A.textContent = t('mbStageW'); if (!over()) return 1; S.classList.add('compact'); return 2;
 }
-function heroPlayGo() { const m = heroModeGet(); mb.log.push('heroPlay:' + m); return m === 'frenzy' ? h2Frenzy() : m === 'daily' ? h2Daily() : m === 'endless' ? h2Endless() : h2HeroPlay(); }
+function heroPlayGo() { const m = heroModeGet(); mb.log.push('heroPlay:' + m); $('hero').classList.remove('picked'); return m === 'frenzy' ? h2Frenzy() : m === 'daily' ? h2Daily() : m === 'endless' ? h2Endless() : h2HeroPlay(); }
 for (const k in HERO_SEG) $(HERO_SEG[k]).addEventListener('click', () => heroModeSet(k));
 try { h2Hero(); } catch {}
 $('bigPopit').addEventListener('click', piBig); // (Pop It in Big kids: straight into Free play; its modes stay in its corner button)

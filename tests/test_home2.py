@@ -138,7 +138,10 @@ async def main():
         PK = "({ mode, start: !$('start').hidden, on: [...document.querySelectorAll('#heroModes .mbSeg:not(.heroMap)')].filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.id), sub: $('heroSub').textContent, mem: localStorage.getItem('grasp.heroMode') })"
         await page.tap('#frenzyChip'); await page.wait_for_timeout(300); pk = await page.evaluate(PK)
         check('the Frenzy chip only picks Frenzy (pressed, the ribbon says Frenzy, remembered; no game yet)', pk['mode'] == 'none' and pk['start'] and pk['on'] == ['frenzyChip'] and pk['sub'] == 'Frenzy' and pk['mem'] == 'frenzy', pk)
+        pl = await page.evaluate("(() => { const g = document.querySelector('#heroPlay .go'); return { picked: $('hero').classList.contains('picked'), anim: getComputedStyle(g).animationName, ring: getComputedStyle(g, '::after').animationName }; })()")
+        check('...and the Play button calls (it jumps, rings go out of it; the owner: \"why don\'t Frenzy and Daily work?\")', pl['picked'] and 'heroGoJump' in pl['anim'] and pl['ring'] == 'heroGoPing', pl)
         await page.tap('#heroPlay'); await page.wait_for_function("__grasp.frenzy.on && mode === 'mouse'", timeout=8000)
+        check('...the card\'s Play: Frenzy starts (the call stops)', not await page.evaluate("$('hero').classList.contains('picked')"))
         check('...the card\'s Play: Frenzy starts', await page.evaluate("location.pathname") == '/frenzy')
         await page.evaluate("goHome()"); await page.wait_for_timeout(450)
         check('back Home: Frenzy still picked', (await page.evaluate(PK))['on'] == ['frenzyChip'])
