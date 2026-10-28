@@ -1490,7 +1490,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkTick .tkI{ width:14px; height:14px; stroke-width:3; }
 #tachles .tkDone{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--neonB); }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
-#tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; padding-top:6px; } #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
+#tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:.4; } #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
 #tachles .tkHandW{ overflow-x:auto; overflow-y:hidden; margin:0 -16px; scrollbar-width:none; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; } #tachles .tkHandW::-webkit-scrollbar{ display:none; }
 #tachles .tkHand{ display:flex; gap:0; padding:30px calc(50vw - 105px) 18px; width:max-content; }
 #tachles .tkHC{ width:210px; min-height:220px; margin-inline:-18px; flex:none; font:inherit; cursor:pointer; justify-content:flex-start; scroll-snap-align:center; transform-origin:50% 120%; transition:box-shadow .15s; box-shadow:0 10px 24px rgba(0,0,0,.6); }
@@ -1935,7 +1935,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.9';
+const APP_VERSION = '1.7.10';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21809,7 +21809,7 @@ window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: q
    groups he agreed to drop: anything sexualizing minors, sexual or criminal claims about real named people; plus new cards) ships with the app.
    Three ways to play: one phone passed round (a "pass to X" screen hides each hand), against bots, or each on their own phone (a room code;
    PeerJS's public broker only connects the phones, no database; the host's phone runs the game). Drawn in the DOM (#tachles). Hooks: __grasp.tk. ---------------- */
-const TK_V = 2, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
+const TK_V = 3, TK_SWAPS = 3, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
    avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
@@ -21852,7 +21852,7 @@ const TKS = {
     waitHost: '⏳ מחכים שהמארח יתחיל את המשחק...', winScore: 'נקודות לניצחון', timer: 'זמן לסבב', hand: 'קלפים ביד', noTimer: 'בלי',
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
-    round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
+    round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', swap: 'החלף ({n})', swapD: 'זורק את כל היד ומקבל קלפים חדשים. 3 פעמים במשחק', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
     judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
     kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
@@ -21868,7 +21868,7 @@ const TKS = {
     waitHost: '⏳ Waiting for the host to start...', winScore: 'Points to win', timer: 'Round time', hand: 'Hand size', noTimer: 'Off',
     kickQ: 'Kick {n} out of the room?', cancel: 'Cancel', kick: 'Kick', leaveQh: 'Close the room?', leaveQ: 'Leave the room?', leaveDh: 'Every player goes back home and the room closes.', leaveD: 'You go back home. The room carries on without you.',
     leaveQl: 'End the game?', leaveDl: 'The scores are cleared and you go back to the menu.', end: 'End',
-    round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', pickN: 'Pick {n}', noCards: 'No cards in hand',
+    round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', swap: 'Swap ({n})', swapD: 'Throw your whole hand away for new cards. 3 times a game', pickN: 'Pick {n}', noCards: 'No cards in hand',
     judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
     kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
@@ -21883,9 +21883,15 @@ const TK = (() => {
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   function newGame(deck, players, o) {
     o = o || {};
-    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, score: 0, hand: [], on: true })), target: o.target || 5, handN: o.hand || 7, timer: o.timer || 0,
+    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, score: 0, hand: [], on: true, swaps: TK_SWAPS })), target: o.target || 5, handN: o.hand || 7, timer: o.timer || 0,
       judge: Math.floor(Math.random() * players.length) - 1, round: 0, wd: [], bd: [], black: null, subs: {}, order: [], phase: 'pick', last: null, winner: null, seq: 0, roundAt: 0, revealAt: 0 };
+    const first = (n, seen) => { const S = new Set(seen || []), all = Array.from({ length: n }, (_, i) => i); return shuffle(all.filter((i) => S.has(i))).concat(shuffle(all.filter((i) => !S.has(i)))); }; // (cards not seen yet on these phones come first: popped from the end)
+    g.wd = first(deck.w.length, o.seenW); g.bd = first(deck.b.length, o.seenB);
     startRound(g); return g;
+  }
+  function swap(g, pid) { // "swap cards" (3 a game): the whole hand out, a fresh one in
+    const p = g.players.find((q) => q.id === pid); if (!p || g.phase !== 'pick' || g.subs[pid] || g.players[g.judge].id === pid || !(p.swaps > 0)) return false;
+    const old = p.hand; p.hand = []; while (p.hand.length < Math.max(g.handN, pickOf(g))) p.hand.push(drawW(g)); g.wd.unshift(...shuffle(old)); p.swaps--; g.seq++; return true; // (the old ones go to the bottom of the pile)
   }
   function drawW(g) { if (!g.wd.length) { const held = new Set(g.players.flatMap((p) => p.hand).concat(Object.values(g.subs).flat())); g.wd = shuffle(g.deck.w.map((_, i) => i).filter((i) => !held.has(i))); } return g.wd.pop(); }
   function drawB(g) { if (!g.bd.length) g.bd = shuffle(g.deck.b.map((_, i) => i)); return g.bd.pop(); }
@@ -21927,13 +21933,13 @@ const TK = (() => {
   function view(g, pid) { // what one player may see
     const me = g.players.find((p) => p.id === pid), J = g.players[g.judge], now = Date.now(), nm = (id) => { const p = g.players.find((q) => q.id === id); return p ? p.name : null; };
     return { seq: g.seq, phase: g.phase, round: g.round, target: g.target, black: g.deck.b[g.black], judge: J.id, judgeName: J.name, me: pid,
-      hand: me ? me.hand.map((i) => g.deck.w[i]) : [], mine: !!(me && g.subs[pid]), pick: pickOf(g), timer: g.timer,
+      hand: me ? me.hand.map((i) => g.deck.w[i]) : [], swaps: me ? me.swaps || 0 : 0, mine: !!(me && g.subs[pid]), pick: pickOf(g), timer: g.timer,
       left: g.timer && g.phase === 'pick' ? Math.max(0, g.timer * 1000 - (now - g.roundAt)) : 0, revLeft: g.phase === 'reveal' ? Math.max(0, tkRevealMs() - (now - g.revealAt)) : 0,
       subs: g.phase === 'pick' ? null : g.order.map((id) => g.subs[id].map((i) => g.deck.w[i])), win: g.last ? g.last.k : -1,
       players: g.players.map((p) => ({ id: p.id, name: p.name, score: p.score, bot: p.bot, on: p.on, sent: !!g.subs[p.id] })),
       waiting: needs(g).map((p) => p.name), last: g.last && { name: g.last.pid ? nm(g.last.pid) : null, cards: g.last.cards.map((i) => g.deck.w[i]), black: g.deck.b[g.last.black] }, winner: g.winner && nm(g.winner) };
   }
-  return { newGame, startRound, submit, judge, skip, force, next, botMove, view, needs };
+  return { newGame, startRound, submit, swap, judge, skip, force, next, botMove, view, needs };
 })();
 /* the phones: one hosts (runs TK), the others send their moves. PeerJS (its public broker connects the phones; WebRTC after that); tests use a
    BroadcastChannel (?tkbus=bc) with the same calls */
@@ -21954,7 +21960,7 @@ const TKNET = {
   },
 };
 /* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
-const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7 }, myName: '', passTo: null, net: null, conns: new Map(), code: '', log: [],
+const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7 }, myName: '', passTo: null, net: null, conns: new Map(), peerSeen: {}, code: '', log: [],
   botT: 0, err: '', lobby: [], lobbyView: null, lobbySet: null, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
 function tkStore(v) { try { if (v) localStorage.setItem('grasp.tk', JSON.stringify(v)); else return JSON.parse(localStorage.getItem('grasp.tk') || '{}'); } catch { return {}; } }
 async function tkLoad() { if (tk.deck) return tk.deck; const r = await fetch('/assets/tachles/deck.json?v=' + TK_V); if (!r.ok) throw new Error('deck'); tk.deck = await r.json(); return tk.deck; }
@@ -21991,12 +21997,14 @@ function tkTick() { // 4 times a second: the round ring and the next-round count
   const r = $('tkTimer'); if (r && tk.view) r.outerHTML = tkRing(tk.view);
   const n = $('tkNextN'); if (n) n.textContent = tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - now) / 1000)) });
 }
-function tkNewGame(players) { tk.g = TK.newGame(tk.deck, players, { target: tk.set.target, hand: tk.set.hand, timer: tk.mode === 'local' ? 0 : tk.set.timer }); tk.sel = []; tk.tease = null; tk.passTo = null; tk.scr = 'game'; tk.log.push('game:' + players.length); tkPush(); }
+function tkNewGame(players) { const S = new Set(tkSeenList()); for (const p of players) for (const x of tk.peerSeen[p.id] || []) S.add(x); // (what this phone and the guests' phones have seen goes last)
+  const at = (arr, f) => arr.map((c, i) => S.has(tkHash(f(c))) ? i : -1).filter((i) => i >= 0);
+  tk.g = TK.newGame(tk.deck, players, { target: tk.set.target, hand: tk.set.hand, timer: tk.mode === 'local' ? 0 : tk.set.timer, seenW: at(tk.deck.w, (c) => c), seenB: at(tk.deck.b, (c) => c[0]) }); tk.sel = []; tk.tease = null; tk.passTo = null; tk.scr = 'game'; tk.log.push('game:' + players.length); tkPush(); }
 function tkAct(a) { // a move by the player on this phone: to the engine (it runs here) or to the host
   const g = tk.g; tk.log.push('act:' + a.t);
   if (tk.mode === 'guest') { tk.net.send(a); tk.sel = []; return; }
   const pid = a.pid || tk.me;
-  if (a.t === 'pick') TK.submit(g, pid, a.idx); else if (a.t === 'judge') TK.judge(g, pid, a.k); else if (a.t === 'skip') TK.skip(g, a.who);
+  if (a.t === 'pick') TK.submit(g, pid, a.idx); else if (a.t === 'swap') TK.swap(g, pid); else if (a.t === 'judge') TK.judge(g, pid, a.k); else if (a.t === 'skip') TK.skip(g, a.who);
   tk.sel = []; tkPush();
 }
 function tkAgain() { // "New game": back to the room with the same players (the original's reset to the lobby)
@@ -22146,7 +22154,7 @@ function tkGameHtml(v) {
         '<button class="tkP tkW tkLg" data-a="iam:' + tkEsc(who) + '">' + tks('imN', { n: tkEsc(nm) }) + '</button></div></div>'; }
     if (who) v = TK.view(g, who);
   }
-  const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick';
+  tkSeenMark(v); const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick';
   const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
   let h = '<div class="tkWrap2 tkGame">' + tkTop(tkLeaveLabel(), tks('round', { n: v.round }), right) + tkScoresHtml(v, local ? who : v.me) + '<div class="tkCenter">' +
     '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b></span></div>' +
@@ -22167,7 +22175,18 @@ function tkGameHtml(v) {
     '<div class="tkDots">' + v.hand.map((c, i) => '<i data-to="' + i + '" class="' + (tk.sel.includes(i) ? 'on' : '') + '"></i>').join('') + '</div><p class="tkSwipe">' + tks('swipe') + '</p></div>' : '<p class="tkDim tkC tkSm">' + tks('noCards') + '</p>';
   return h + '</div>';
 }
-function tkSendHtml(v) { const ok = tk.sel.length === v.pick; return '<div class="tkSendRow"><button class="tkP tkSend" data-a="send"' + (ok ? '' : ' disabled') + '>' + tki('send') + (ok ? tks('submit') : tks('pickMore', { n: v.pick - tk.sel.length })) + '</button></div>'; }
+/* the cards seen on this phone (localStorage grasp.tkSeen, short hashes of the text): a new game deals the unseen ones first; once almost all of
+   one kind were seen, that kind starts over */
+function tkHash(t) { let h = 5381; for (let i = 0; i < t.length; i++) h = (h * 33 + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function tkSeenList() { try { const a = JSON.parse(localStorage.getItem('grasp.tkSeen') || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } }
+function tkSeenMark(v) {
+  if (!v || !tk.deck || v.seq === tk.seenSeq) return; tk.seenSeq = v.seq;
+  const cards = [].concat(v.hand || [], (v.subs || []).flat(), v.last ? v.last.cards : []), blacks = [v.black && v.black[0]].filter(Boolean);
+  const S = new Set(tkSeenList()), n0 = S.size; for (const c of cards.concat(blacks)) S.add(tkHash(c)); if (S.size === n0) return;
+  for (const [arr, f] of [[tk.deck.w, (c) => c], [tk.deck.b, (c) => c[0]]]) { const hs = arr.map((c) => tkHash(f(c))); if (hs.filter((h) => S.has(h)).length > arr.length * 0.85) hs.forEach((h) => S.delete(h)); }
+  try { localStorage.setItem('grasp.tkSeen', JSON.stringify([...S])); } catch {}
+}
+function tkSendHtml(v) { const ok = tk.sel.length === v.pick; return '<div class="tkSendRow">' + (v.hand.length ? '<button class="tkS tkSwap" data-a="swap"' + (v.swaps > 0 ? '' : ' disabled') + ' title="' + tks('swapD') + '">' + tki('reset') + tks('swap', { n: v.swaps }) + '</button>' : '') + '<button class="tkP tkSend" data-a="send"' + (ok ? '' : ' disabled') + '>' + tki('send') + (ok ? tks('submit') : tks('pickMore', { n: v.pick - tk.sel.length })) + '</button></div>'; }
 function tkWinHtml(v) { // the original's WinScreen: the trophy, the winner's avatar, a podium with medals, the rest below
   const R = v.players.slice().sort((a, b) => b.score - a.score), w = R[0], me = tk.mode === 'local' ? null : v.me, runs = tk.mode !== 'guest';
   return '<div class="tkWrap tkMidY"><div class="tkCard tkPad7 tkGlow tkWin"><div class="tkC">' + tki('trophy', 'tkBigT') + '<p class="tkDim tkSm">' + tks('winner') + '</p>' + tkAv(w.name, 88, 'big') + '<h1 class="tkNeon tkH1s">' + tkEsc(w.name) + '</h1><p class="tkDim">' + tks('wonWith', { n: w.score }) + '</p></div>' +
@@ -22219,6 +22238,7 @@ function tkClick(e) {
   else if (a.startsWith('iam:')) { tk.passTo = a.slice(4) + ':' + tk.g.round + ':' + tk.g.phase; tk.sel = []; }
   else if (a.startsWith('card:')) { const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
     if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > cr.width * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
+  else if (a === 'swap') { const v = tkCurView(); if (v.swaps > 0) { const W0 = document.querySelector('#tachles .tkHandW'); if (W0) W0.scrollLeft = 0; return tkAct({ t: 'swap', pid: v.me }); } }
   else if (a === 'send') { const v = tkCurView(); if (tk.sel.length === v.pick) return tkAct({ t: 'pick', idx: tk.sel.slice(), pid: v.me }); }
   else if (a.startsWith('judge:')) { const v = tkCurView(); return tkAct({ t: 'judge', k: +a.slice(6), pid: v.me }); }
   else if (a === 'again') tkAgain();
@@ -22240,12 +22260,12 @@ async function tkHost(name) {
 function tkGone(id) { tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
 function tkFromGuest(c, m) {
   const id = c.peer || c.id; if (!m || typeof m !== 'object') return;
-  if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 20); tk.conns.set(id, c);
+  if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 20); tk.conns.set(id, c); if (Array.isArray(m.seen)) tk.peerSeen[id] = m.seen.slice(0, 4000);
     if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p) { p.on = true; tkPush(); return; } }
     if (!tk.lobby.some((p) => p.id === id)) { if (tk.lobby.length >= TK_MAXP) { try { c.send({ t: 'full' }); } catch {} tk.conns.delete(id); return; } tk.lobby.push({ id, name }); }
     if (tk.g) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} tkRender(); } else tkLobbyPush(); return; }
   if (m.t === 'bye') return tkGone(id);
-  if (!tk.g || !tk.conns.has(id)) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); tkPush();
+  if (!tk.g || !tk.conns.has(id)) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'swap') TK.swap(tk.g, id); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); tkPush();
 }
 function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} } tkRender(); }
 async function tkJoin(name) {
@@ -22256,7 +22276,7 @@ async function tkJoin(name) {
       else if (m.t === 'view') { tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
       tkRender(); }, () => { if (tk.mode === 'guest' && tk.net) out('closed'); });
-    tk.net.send({ t: 'hello', name }); tk.log.push('join:' + tk.code);
+    tk.net.send({ t: 'hello', name, seen: tkSeenList() }); tk.log.push('join:' + tk.code);
     setTimeout(() => { if (tk.busy && tk.mode === 'guest' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
 }

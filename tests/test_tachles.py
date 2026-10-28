@@ -64,6 +64,14 @@ async def gate_and_bots(b, he):
             cov = await page.evaluate("((top) => { const T = $('tachles'); [T, ...T.querySelectorAll('*')].forEach((e) => { if (e.scrollHeight > e.clientHeight + 2 && !e.classList.contains('tkHandW')) e.scrollTop = top ? 0 : e.scrollHeight; }); const s = document.querySelector('#tachles [data-a=\"send\"]'), r = s.getBoundingClientRect(), x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(x && s.contains(x)); })(%d)" % top)
             check(tag + ': the submit button is never under the cards (scrolled to the ' + ('top' if top else 'bottom') + ')', cov)
         await page.screenshot(path=OUT + 'tachles_hand_%s.png' % tag.lower())
+        h0 = await page.evaluate(f"{TKH}.tk.view.hand.join('|')")
+        check(tag + ': a "החלף (3)" button next to Submit', (await page.inner_text('#tachles [data-a="swap"]')).strip() == 'החלף (3)')
+        await click(page, '#tachles [data-a="swap"]'); await page.wait_for_timeout(200)
+        h1 = await page.evaluate(f"{TKH}.tk.view.hand"); check(tag + ': swap: a whole new hand, the pick cleared, 2 swaps left', not set(h1) & set(h0.split('|')) and len(h1) == 6 and await page.evaluate(f"{TKH}.tk.sel") == [] and await page.evaluate(f"{TKH}.tk.view.swaps") == 2, h1)
+        for _ in range(2): await click(page, '#tachles [data-a="swap"]')
+        check(tag + ': after 3 swaps the button is off', await page.locator('#tachles [data-a="swap"][disabled]').count() == 1)
+        seen = await page.evaluate("JSON.parse(localStorage.getItem('grasp.tkSeen') || '[]').length")
+        check(tag + ': the cards shown are remembered on this phone (4 hands + the question)', seen >= 4 * 6, seen)
     else: await page.screenshot(path=OUT + 'tachles_czar_%s.png' % tag.lower())
     shot = False
     for k in range(300):
@@ -89,6 +97,10 @@ async def rules(b):
       g = T.newGame(d, [{{ id: 'a', name: 'A' }}, {{ id: 'b', name: 'B' }}, {{ id: 'c', name: 'C' }}], {{ timer: 30 }}); const q = g.players.find((x, i) => i !== g.judge);
       out.early = T.force(g); T.submit(g, q.id, Array.from({{ length: d.b[g.black][1] }}, (_, i) => i)); out.forced = T.force(g); out.phase3 = g.phase; out.subs3 = g.order.length;
       return out; }})()""")
+    sf = await page.evaluate(f"""(() => {{ const T = {TKH}.TK, d = {TKH}.tk.deck, seenW = Array.from({{ length: d.w.length - 20 }}, (_, i) => i), seenB = Array.from({{ length: d.b.length - 3 }}, (_, i) => i);
+      const g = T.newGame(d, [{{ id: 'a', name: 'A' }}, {{ id: 'b', name: 'B' }}], {{ target: 3, hand: 7, seenW, seenB }}); const fresh = g.players.flatMap((p) => p.hand).filter((i) => i >= d.w.length - 20).length;
+      return {{ fresh, black: g.black >= d.b.length - 3 }}; }})()""")
+    check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)
     check('rules: no page errors', not errs, errs); await ctx.close()
@@ -153,7 +165,7 @@ async def deck(b):
     ctx, page, errs = await page_for(b, '/tachles', True, init="sessionStorage.setItem('grasp.tk18', '1');"); await page.wait_for_timeout(1200)
     d = await page.evaluate(f"{TKH}.tk.deck")
     bad = [c for c in d['w'] + [x[0] for x in d['b']] if any(k in c for k in ('פדופיל', 'הסבא שמשפץ', 'תינוק עם זין', 'הזין של הרב עובדיה', 'יואב גלנט שמכניס'))]
-    check('the deck: 100+ black and 400 white cards, without the two dropped groups', len(d['b']) >= 100 and len(d['w']) >= 400 and not bad, [len(d['b']), len(d['w']), bad])
+    check('the deck: 240+ black and 950+ white cards, without the two dropped groups', len(d['b']) >= 240 and len(d['w']) >= 950 and not bad, [len(d['b']), len(d['w']), bad])
     await ctx.close()
 
 async def settings_way(b):
