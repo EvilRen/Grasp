@@ -1516,7 +1516,11 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkSub{ position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; min-width:min(180px,42vw); max-width:220px; flex:1 1 160px; border-radius:16px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; transition:border-color .15s, transform .15s, opacity .2s; touch-action:manipulation; }
 #tachles .tkSub[disabled]{ cursor:default; } #tachles .tkSub.can:active{ transform:scale(.98); border-color:var(--neon); }
 #tachles .tkSub.win{ background:rgba(168,85,247,.15); border-color:var(--neon); box-shadow:0 0 24px rgba(168,85,247,.55); } #tachles .tkSub.lose{ opacity:.5; }
-#tachles .tkSub .tkFace{ min-height:96px; pointer-events:none; padding:14px; justify-content:flex-start; } #tachles .tkSub .tkFace p{ font-size:14px; }
+#tachles .tkSub .tkFace{ min-height:96px; pointer-events:none; padding:14px; justify-content:flex-start; } #tachles .tkSub .tkFace p{ font-size:15px; line-height:1.45; }
+#tachles .tkSubs .tkSub{ flex:1 1 100%; max-width:28rem; min-width:0; } #tachles .tkSub.stag{ animation:tkDeal .5s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes tkDeal{ from{ opacity:0; transform:translateY(18px) scale(.94); } to{ opacity:1; transform:none; } }
+#tachles .tkBlackC mark{ background:rgba(168,85,247,.28); color:#fff; border-radius:8px; padding:0 6px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+#tachles .tkSent mark{ background:rgba(168,85,247,.14); color:#6b21a8; font-weight:900; border-radius:6px; padding:0 4px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 #tachles .tkTrophy{ position:absolute; top:-12px; inset-inline-end:-12px; width:36px; height:36px; border-radius:50%; background:#facc15; color:#000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(250,204,21,.7); pointer-events:none; }
 #tachles .tkPass .tkDim{ margin-bottom:4px; } #tachles .tkPass .tkFaint{ margin:4px 0 28px; }
 /* the end */
@@ -1944,7 +1948,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.11';
+const APP_VERSION = '1.7.12';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21828,7 +21832,7 @@ const TK_PACKS = [['s', '🍆', 'סקס', 'איברים, פורנו ומה שק�
   ['x', '🍺', 'סמים ושתייה', 'אלכוהול, סמים והחלטות גרועות'], ['c', '⭐', 'סלבס ואנשים אמיתיים', 'אנשים אמיתיים, בשמם'], ['h', '🕯️', 'השואה וטרור', 'השואה, נאצים וטרור. הכי רגיש'],
   ['e', '🎭', 'גזענות ועדות', 'סטריאוטיפים של עדות, וגזענים'], ['f', '🍲', 'משפחה ואוכל', 'אמא, סבתא, חמות וארוחות שישי'], ['t', '📱', 'טכנולוגיה ורשתות', 'אפליקציות, טיקטוק, סטארט-אפים וטלוויזיה'],
   ['i', '🇮🇱', 'יומיום ישראלי', 'בירוקרטיה, פקקים, ים ושכנים']];
-const TK_V = 4, TK_SWAPS = 3, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
+const TK_V = 4, TK_SWAPS = 3, TK_STAG = 700, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
    avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
@@ -22007,7 +22011,7 @@ function tkPush() {
   tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
-  if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 : 900 + Math.random() * 2600); }
+  if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 + g.order.length * TK_STAG : 900 + Math.random() * 2600); } /* (a bot czar reads them all first) */
 function tkTick() { // 4 times a second: the round ring and the next-round count; on the phone that runs the game, the clock and the banner
   const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now();
   if (g && tk.mode !== 'guest') {
@@ -22037,6 +22041,11 @@ function tkAgain() { // "New game": back to the room with the same players (the 
 /* the screens */
 function tkEsc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function tkCard(t) { return tkEsc(t).split('___').join('<u>______</u>'); }
+function tkFill(t, ans) { // the whole sentence (the owner: the laugh is in reading it whole): the answers in the blanks, an empty blank stays a line; a question without a blank: the answer under it
+  const parts = tkEsc(t).split('___'); ans = ans || [];
+  if (parts.length === 1) return parts[0] + (ans.length ? '<br><mark>' + ans.map(tkEsc).join(' ') + '</mark>' : '');
+  return parts.map((q, i) => i === 0 ? q : (ans[i - 1] != null ? '<mark>' + tkEsc(String(ans[i - 1]).replace(/[.!]+$/, '')) + '</mark>' : '<u>______</u>') + q).join('');
+}
 function tkRing(v) { // the original's RoundTimer: a ring that empties, red and pulsing in the last 15 s
   if (!v.timer || !tk.dl) return '<span id="tkTimer"></span>';
   const rem = Math.max(0, Math.ceil((tk.dl - Date.now()) / 1000)), C = 2 * Math.PI * 18, fr = Math.max(0, Math.min(1, rem / v.timer)), urg = rem <= 15 && rem > 0;
@@ -22165,10 +22174,10 @@ function tkStatusHtml(v) { // the original's SubmissionStatus: a chip per answer
   return '<div class="tkStatus">' + tkTeaseFor(v, out) + '<div class="tkChips">' + el.map((p) => '<span class="tkChip' + (p.sent ? ' ok' : '') + '">' + (p.sent ? '<span class="tkTick">' + tki('check') + '</span>' : tkAv(p.name, 24, 'pulse')) + '<small>' + tkEsc(p.name) + '</small></span>').join('') + '</div></div>';
 }
 function tkSubsHtml(v, canPick) { // the answers as white cards: the czar taps one; after the pick, the winner glows with a trophy and the rest fade
-  const done = v.phase === 'reveal';
-  return '<div class="tkSubs">' + v.subs.map((cs, k) => { const win = done && k === v.win, lose = done && k !== v.win;
-    return '<button class="tkSub' + (win ? ' win' : lose ? ' lose' : '') + (canPick ? ' can' : '') + '" data-a="' + (canPick ? 'judge:' + k : '') + '"' + (canPick ? '' : ' disabled') + '>' +
-      cs.map((c, i) => '<div class="tkFace tkWhiteC">' + (cs.length > 1 ? '<em>' + (i + 1) + '</em>' : '') + '<p>' + tkEsc(c) + '</p></div>').join('') + (win ? '<span class="tkTrophy">' + tki('trophy') + '</span>' : '') + '</button>'; }).join('') + '</div>';
+  const done = v.phase === 'reveal', key = v.round + ':' + v.black[0]; if (tk.subsKey !== key) { tk.subsKey = key; tk.subsAt = Date.now(); } const el = Date.now() - tk.subsAt;
+  return '<div class="tkSubs">' + v.subs.map((cs, k) => { const win = done && k === v.win, lose = done && k !== v.win, d = k * TK_STAG - el; // (the answers come in one after another, like the czar reading them out)
+    return '<button class="tkSub' + (win ? ' win' : lose ? ' lose' : '') + (canPick ? ' can' : '') + (!done && d > -500 ? ' stag" style="animation-delay:' + d + 'ms' : '') + '" data-a="' + (canPick ? 'judge:' + k : '') + '"' + (canPick ? '' : ' disabled') + '>' +
+      '<div class="tkFace tkWhiteC tkSent"><p>' + tkFill(v.black[0], cs) + '</p></div>' + (win ? '<span class="tkTrophy">' + tki('trophy') + '</span>' : '') + '</button>'; }).join('') + '</div>';
 }
 function tkGameHtml(v) {
   const g = tk.g, local = tk.mode === 'local', humans = local ? g.players.filter((p) => !p.bot) : null;
@@ -22185,7 +22194,7 @@ function tkGameHtml(v) {
   const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
   let h = '<div class="tkWrap2 tkGame">' + tkTop(tkLeaveLabel(), tks('round', { n: v.round }), right) + tkScoresHtml(v, local ? who : v.me) + '<div class="tkCenter">' +
     '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b></span></div>' +
-    '<div class="tkFace tkBlackC"><p>' + tkCard(v.black[0]) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>';
+    '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : playing && !czar && !sent && (who || !local) && tk.sel.length ? tkFill(v.black[0], tk.sel.map((i) => v.hand[i])) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>';
   if (v.phase === 'reveal') h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div>' +
     '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p></div>' + tkSubsHtml(v, false);
   else if (v.phase === 'judge') h += '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar);

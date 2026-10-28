@@ -60,6 +60,8 @@ async def gate_and_bots(b, he):
         check(tag + ': a tap on a side card brings it to the middle (not picked yet)', await page.evaluate(f"{TKH}.tk.sel.length") == 0 and await page.evaluate("document.querySelectorAll('#tachles .tkDots i')[1].classList.contains('cur')"))
         q = await page.evaluate("(() => { const r = document.querySelectorAll('#tachles .tkHC')[1].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
         await page.mouse.click(q[0], q[1]); await page.wait_for_timeout(200); check(tag + ': a tap on the middle card picks it', await page.evaluate(f"{TKH}.tk.sel") == [1])
+        fill = await page.evaluate(f"(() => {{ const m = document.querySelector('#tachles .tkBlackC mark'), c = {TKH}.tk.view.hand[1]; return [m ? m.textContent : null, c]; }})()")
+        check(tag + ': the picked card shows inside the question, as one whole sentence', fill[0] and fill[1].startswith(fill[0].split(' ')[0]) and fill[0].rstrip('.') == fill[1].rstrip('.!'), fill)
         for top in (1, 0):
             cov = await page.evaluate("((top) => { const T = $('tachles'); [T, ...T.querySelectorAll('*')].forEach((e) => { if (e.scrollHeight > e.clientHeight + 2 && !e.classList.contains('tkHandW')) e.scrollTop = top ? 0 : e.scrollHeight; }); const s = document.querySelector('#tachles [data-a=\"send\"]'), r = s.getBoundingClientRect(), x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(x && s.contains(x)); })(%d)" % top)
             check(tag + ': the submit button is never under the cards (scrolled to the ' + ('top' if top else 'bottom') + ')', cov)
@@ -77,7 +79,10 @@ async def gate_and_bots(b, he):
     for k in range(300):
         v = await view(page)
         if v['phase'] == 'over': break
-        if v['phase'] == 'reveal' and not shot: await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
+        if v['phase'] == 'reveal' and not shot:
+            mk = await page.evaluate("[document.querySelectorAll('#tachles .tkSub').length, document.querySelectorAll('#tachles .tkSub .tkSent mark').length, document.querySelectorAll('#tachles .tkBlackC mark').length, document.querySelectorAll('#tachles .tkSub.stag').length]")
+            await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
+            check(tag + ': the reveal: every answer is a whole sentence (the question with the answer marked in it), all at once; the winner\'s sentence in the question card', mk[0] >= 1 and mk[1] >= mk[0] and mk[2] >= 1 and mk[3] == 0, mk)
         if not await step_local(page): await page.wait_for_timeout(80)
     await page.wait_for_timeout(200); v = await view(page)
     check(tag + ': the game played to the end (3 points), round after round on its own; the win screen (trophy, podium, New game)', v['phase'] == 'over' and max(v['players']) == 3 and await page.locator('#tachles .tkMedal').count() == 3 and await page.locator('#tachles [data-a="again"]').count() == 1, v)
