@@ -162,11 +162,31 @@ async def settings_way(b):
     check('the row stays after a reload', await page.evaluate("!$('tkOpen').hidden"))
     check('settings: no page errors', not errs, errs); await ctx.close()
 
+async def write_card(b):
+    # write your own card (the owner: Evil Apples' wildcards; to his email for approval): a black one with two blanks is sent (FormSubmit, mocked here)
+    ctx, page, errs = await page_for(b, '/tachles', True, init="window.__graspNoAutoFs = true; sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu'", 6000)
+    sent = []
+    async def fs(route):
+        sent.append(route.request.post_data); await route.fulfill(status=200, content_type='application/json', body='{"success":"true"}')
+    await page.route('https://formsubmit.co/**', fs)
+    await click(page, '#tachles [data-a="m:write"]'); check('the menu: "write your own card" opens the writer (answer / question)', (await view(page))['scr'] == 'write' and await page.locator('#tkWrT').count() == 1)
+    await click(page, '#tachles [data-a="wr:b"]'); await page.fill('#tkWrT', 'מה עשה ___ עם ___?'); await page.wait_for_timeout(100)
+    check('a question with two blanks says "pick 2"', '2' in await page.inner_text('#tkWrN'))
+    await page.screenshot(path=OUT + 'tachles_write_he.png')
+    await click(page, '#tachles [data-a="wr:send"]'); await page.wait_for_timeout(500)
+    import json as _j
+    d = _j.loads(sent[0]) if sent else {}
+    check('sent for approval: the card and its deck line, a thank-you, listed as waiting', d.get('text') == 'מה עשה ___ עם ___?' and _j.loads(d.get('json', 'null')) == ['מה עשה ___ עם ___?', 2] and await page.locator('#tachles .tkOk').count() == 1 and len(await page.evaluate("JSON.parse(localStorage.getItem('grasp.tkMine'))")) == 1, d)
+    await page.screenshot(path=OUT + 'tachles_write_sent_he.png')
+    await click(page, '#tachles [data-a="wr:w"]'); await page.fill('#tkWrT', 'x'); await click(page, '#tachles [data-a="wr:send"]')
+    check('too short: not sent', len(sent) == 1 and await page.locator('#tachles .tkErr').count() == 1)
+    check('write: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await rules(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await write_card(b); await rules(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
