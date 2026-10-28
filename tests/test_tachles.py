@@ -35,7 +35,7 @@ async def gate_and_bots(b, he):
     await click(page, '#tachles [data-a="shuffle"]'); n2 = await page.input_value('#tkMe'); check(tag + ': shuffle: another nickname', n2 != nick, [nick, n2])
     await page.fill('#tkMe', 'Dana'); await click(page, '#tachles [data-a="go:bots"]')
     L = await page.evaluate(f"{TKH}.tk.lobby.map((p) => p.name)")
-    check(tag + ': a room with you and two bots ("בוט <snack>"), avatars, Add bot, Settings, Start', (await view(page))['scr'] == 'lobby' and len(L) == 3 and all(x.startswith('בוט ') for x in L[1:]) and await page.locator('#tachles .tkPl .tkAv').count() == 3 and await page.locator('#tachles [data-a="start"]').count() == 1, L)
+    check(tag + ': a room with you and two bots ("BOT-<snack>"), avatars, Add bot, Settings, Start', (await view(page))['scr'] == 'lobby' and len(L) == 3 and all(x.startswith('BOT-') for x in L[1:]) and await page.locator('#tachles .tkPl .tkAv').count() == 3 and await page.locator('#tachles [data-a="start"]').count() == 1, L)
     for i in range(2): await click(page, '#tachles [data-a="addBot"]')
     check(tag + ': four bots at most (the button says so)', await page.evaluate(f"{TKH}.tk.lobby.length") == 5 and await page.locator('#tachles [data-a="addBot"][disabled]').count() == 1)
     await click(page, '#tachles [data-a^="kick:"] >> nth=0'); check(tag + ': a kick asks first', await page.locator('#tachles .tkModal [data-a="kickOk"]').count() == 1)
