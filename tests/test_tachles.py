@@ -93,11 +93,25 @@ async def deck(b):
     check('the deck: 100+ black and 400 white cards, without the two dropped groups', len(d['b']) >= 100 and len(d['w']) >= 400 and not bad, [len(d['b']), len(d['w']), bad])
     await ctx.close()
 
+async def settings_way(b):
+    # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
+    ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
+    await page.tap('#settingsBtn'); await page.wait_for_timeout(400)
+    check('Settings: the version at the bottom, no Tachles row yet', await page.evaluate("$('moreVer').textContent.includes(APP_VERSION) && $('tkOpen').hidden"))
+    for i in range(7): await page.tap('#moreVer'); await page.wait_for_timeout(90)
+    check('7 quick taps on the version: the "🔞 תכל׳ס" row shows', await page.evaluate("!$('tkOpen').hidden && localStorage.getItem('grasp.tkShow') === '1'"))
+    await page.screenshot(path=OUT + 'tachles_settings_he.png')
+    await page.tap('#tkOpen'); ok = await wait(page, "gameMode === 'tachles' && !$('tachles').hidden", 5000)
+    check('the row opens Tachles (behind the 18+ gate)', ok and await page.evaluate(f"{TKH}.tk.scr") == 'gate')
+    await page.evaluate("goHome()"); await page.wait_for_timeout(400); await page.reload(); await page.wait_for_timeout(900)
+    check('the row stays after a reload', await page.evaluate("!$('tkOpen').hidden"))
+    check('settings: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await pass_round(b); await online(b); await deck(b)
+        await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
