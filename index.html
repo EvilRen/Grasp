@@ -1484,11 +1484,15 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #tachles .tkDone{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--neonB); }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
 #tachles .tkSend{ margin-top:4px; }
-#tachles .tkHandW{ overflow-x:auto; margin:0 -16px; padding-bottom:16px; scrollbar-width:none; } #tachles .tkHandW::-webkit-scrollbar{ display:none; }
-#tachles .tkHand{ display:flex; gap:12px; padding:22px 16px 8px; width:max-content; }
-#tachles .tkHC{ width:190px; min-height:170px; flex:none; font:inherit; cursor:pointer; transition:transform .15s, box-shadow .15s; justify-content:flex-start; }
-#tachles .tkHC p{ font-size:16px; padding-top:4px; }
-#tachles .tkHC.on{ transform:translateY(-12px); box-shadow:0 0 0 2px var(--neon), 0 0 28px rgba(168,85,247,.55); }
+#tachles .tkHandW{ overflow-x:auto; overflow-y:hidden; margin:0 -16px; scrollbar-width:none; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; } #tachles .tkHandW::-webkit-scrollbar{ display:none; }
+#tachles .tkHand{ display:flex; gap:0; padding:30px calc(50vw - 105px) 18px; width:max-content; }
+#tachles .tkHC{ width:210px; min-height:220px; margin-inline:-18px; flex:none; font:inherit; cursor:pointer; justify-content:flex-start; scroll-snap-align:center; transform-origin:50% 120%; transition:box-shadow .15s; box-shadow:0 10px 24px rgba(0,0,0,.6); }
+#tachles .tkHC p{ font-size:18px; padding-top:4px; }
+#tachles .tkHC.on{ box-shadow:0 0 0 3px var(--neon), 0 0 30px rgba(168,85,247,.6); }
+#tachles .tkHN{ position:absolute; bottom:10px; inset-inline-start:14px; font-size:11px; font-weight:800; color:#aaa; letter-spacing:.05em; }
+#tachles .tkDots{ display:flex; justify-content:center; gap:6px; margin-top:2px; } #tachles .tkDots i{ width:8px; height:8px; border-radius:50%; background:#3a3a3a; cursor:pointer; } #tachles .tkDots i.cur{ background:#fff; transform:scale(1.25); } #tachles .tkDots i.on{ background:var(--neon); box-shadow:0 0 8px var(--neon); }
+#tachles .tkSwipe{ text-align:center; font-size:12px; color:var(--faint); margin:6px 0 4px; }
+#tachles .tkHandBox{ position:sticky; bottom:0; z-index:3; margin:0 -16px; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 4px); background:linear-gradient(rgba(10,10,10,0), rgba(10,10,10,.92) 22%); } /* (the hand stays at the bottom of the screen, like cards held: the owner, from Evil Apples) */
 #tachles .tkHC em, #tachles .tkSub em{ position:absolute; top:-8px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:var(--neon); color:#fff; font-style:normal; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(168,85,247,.7); }
 #tachles .tkSub em{ position:static; width:20px; height:20px; font-size:12px; margin-bottom:4px; box-shadow:none; }
 #tachles .tkBanner{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:4px; } #tachles .tkBanner > div{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; } #tachles .tkBanner .tkI{ width:20px; height:20px; }
@@ -1496,7 +1500,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #tachles .tkSub{ position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; min-width:min(180px,42vw); max-width:220px; flex:1 1 160px; border-radius:16px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; transition:border-color .15s, transform .15s, opacity .2s; touch-action:manipulation; }
 #tachles .tkSub[disabled]{ cursor:default; } #tachles .tkSub.can:active{ transform:scale(.98); border-color:var(--neon); }
 #tachles .tkSub.win{ background:rgba(168,85,247,.15); border-color:var(--neon); box-shadow:0 0 24px rgba(168,85,247,.55); } #tachles .tkSub.lose{ opacity:.5; }
-#tachles .tkSub .tkFace{ min-height:120px; pointer-events:none; padding:14px; } #tachles .tkSub .tkFace p{ font-size:14px; }
+#tachles .tkSub .tkFace{ min-height:96px; pointer-events:none; padding:14px; justify-content:flex-start; } #tachles .tkSub .tkFace p{ font-size:14px; }
 #tachles .tkTrophy{ position:absolute; top:-12px; inset-inline-end:-12px; width:36px; height:36px; border-radius:50%; background:#facc15; color:#000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(250,204,21,.7); pointer-events:none; }
 #tachles .tkPass .tkDim{ margin-bottom:4px; } #tachles .tkPass .tkFaint{ margin:4px 0 28px; }
 /* the end */
@@ -1534,6 +1538,11 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #powderLv .pwLv{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; border-radius:16px; border:2.5px solid #2a1f3d; background:#fff5d6; font-family:inherit; color:#2a1f3d; cursor:pointer; }
 #powderLv .pwLv b{ font-size:30px; font-weight:400; } #powderLv .pwLv span{ font-size:13px; font-weight:700; line-height:1.15; } #powderLv .pwLv i{ font-style:normal; color:#f5a623; font-size:14px; } #powderLv .pwLv i em{ font-style:normal; color:#ddd; }
 #powderLv .pwLv.lock{ opacity:.55; }
+#powderLv .pwMap{ width:min(520px,100%); } #powderLv .pwLvGrid.g5{ grid-template-columns:repeat(5,1fr); gap:6px; } #powderLv .pwLv.sm{ padding:6px 2px; border-radius:12px; } #powderLv .pwLv.sm b{ font-size:22px; } #powderLv .pwLv.sm i{ font-size:11px; }
+#powderLv .pwDiffs{ display:flex; gap:6px; justify-content:center; } #powderLv .pwD{ flex:1; min-height:38px; border-radius:19px; border:2.5px solid #2a1f3d; background:#fff5d6; font:700 15px var(--mbF); color:#2a1f3d; cursor:pointer; } #powderLv .pwD.on{ background:#ffd23f; }
+#powderLv .pwWorlds{ display:flex; flex:none; gap:6px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none; } #powderLv .pwMap > *{ flex:none; } #powderLv .pwWorlds::-webkit-scrollbar{ display:none; }
+#powderLv .pwW{ flex:none; width:96px; display:flex; flex-direction:column; align-items:center; gap:1px; padding:6px 4px; border-radius:14px; border:2.5px solid #2a1f3d; background:#fff5d6; font-family:inherit; color:#2a1f3d; cursor:pointer; }
+#powderLv .pwW b{ font-size:24px; font-weight:400; } #powderLv .pwW span{ font-size:12px; font-weight:700; white-space:nowrap; } #powderLv .pwW i{ font-style:normal; font-size:11px; color:#c8860b; } #powderLv .pwW.on{ background:#ffd23f; } #powderLv .pwW.lock{ opacity:.55; }
 .wnSheet .wnEmoji{ font-size:56px; line-height:1; animation:mbIn .5s cubic-bezier(.3,1.5,.5,1) both; }
 .mbOv .wnSheet h2{ font-size:26px; font-weight:700; margin:0; }
 .wnSheet .wnV{ font-size:13px; font-weight:700; opacity:.6; letter-spacing:1px; }
@@ -1919,7 +1928,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.6.7';
+const APP_VERSION = '1.7.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2698,14 +2707,14 @@ Object.assign(I18N.he, {
 Object.assign(I18N.en, {
   twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.6.0',
-  wn: ['\uD83C\uDFD6\uFE0F New game: Sand Lab! Pour sand and watch it fall and pile up', '\uD83C\uDFA8 Colors: rainbow sand, just for fun', '\u2697\uFE0F Lab: water, fire, lava, ice, plants, acid and boom powder that react', '\u2B50 9 challenges: fill the cup, put out the fire, make a cloud and more', '\uD83D\uDCF1 The home screen fits better with the browser bars showing'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.7.0',
+  wn: ['\u2B50 Sand Lab: 500 new challenges in 10 worlds, easy / normal / hard', '\uD83D\uDCF1 Sand Lab: tilt the phone and the sand falls that way; push sand with your finger', '\uD83C\uDFA8 Mix it: the board fills by itself, and every thing has its own colour', '\u2694\uFE0F Quest: a short how-to and a guided first fight'],
 });
 Object.assign(I18N.he, {
   twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.6.0',
-  wn: ['\uD83C\uDFD6\uFE0F משחק חדש: מעבדת חול! שופכים חול ורואים אותו נופל ונערם', '\uD83C\uDFA8 צבעים: חול בצבעי הקשת, סתם בשביל הכיף', '\u2697\uFE0F מעבדה: מים, אש, לבה, קרח, צמחים, חומצה ואבק נפץ שמגיבים זה לזה', '\u2B50 9 אתגרים: למלא את הכוס, לכבות את השריפה, לעשות ענן ועוד', '\uD83D\uDCF1 מסך הבית נכנס טוב יותר כשסרגלי הדפדפן מוצגים'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.7.0',
+  wn: ['\u2B50 מעבדת חול: 500 אתגרים חדשים ב־10 עולמות, קל / רגיל / קשה', '\uD83D\uDCF1 מעבדת חול: מטים את הטלפון והחול נופל לשם, ודוחפים חול באצבע', '\uD83C\uDFA8 מערבבים: הלוח מתמלא לבד, ולכל דבר צבע משלו', '\u2694\uFE0F מסע: הסבר קצר וקרב ראשון מודרך'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -21799,9 +21808,10 @@ const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then
    avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
 const TK_SNACKS = { he: ['במבה', 'ביסלי', 'עמבה', 'אפרופו', 'פיצוחים', 'פסק זמן', 'קליק', 'דובונים', 'קרמבו', 'אגוזים', 'צ׳יפס', 'פיתה', 'פלאפל', 'גזוז', 'בורקס', 'מסטיק', 'שוקו', 'במבי', 'אגוזי מלך', 'גלידה', 'סברס', 'עוגיות', 'פופקורן', 'עוגה', 'ופלים', 'גלעין', 'תות', 'מנגו', 'לימונדה', 'תפוז', 'אבטיח'],
   en: ['Bamba', 'Bissli', 'Popcorn', 'Falafel', 'Pita', 'Burekas', 'Krembo', 'Gummy', 'Waffle', 'Mango', 'Lemonade', 'Pretzel', 'Donut', 'Cookie', 'Nachos', 'Churro', 'Melon', 'Toffee'] };
-const tkSn = () => { const s = TK_SNACKS[lang] || TK_SNACKS.he; return s[Math.floor(Math.random() * s.length)]; };
+const TK_LANG = 'he'; // (Tachles is Hebrew whatever the app's language: its deck is Hebrew; the owner, on an English phone: "why part English, part Hebrew", and the RTL)
+const tkSn = () => { const s = TK_SNACKS[TK_LANG]; return s[Math.floor(Math.random() * s.length)]; };
 function tkNick() { return tkSn() + ' ' + (1 + Math.floor(Math.random() * 99)); }
-function tkBotNick(taken) { let n = ''; for (let k = 0; k < 30; k++) { n = 'BOT-' + tkSn(); if (!taken.includes(n)) break; } return n; }
+function tkBotNick(taken) { let n = ''; for (let k = 0; k < 30; k++) { n = 'בוט ' + tkSn(); if (!taken.includes(n)) break; } return n; } // (Hebrew: "BOT-" read backwards in RTL)
 const TK_AV = [['#a855f7', '#d946ef'], ['#ec4899', '#f43f5e'], ['#06b6d4', '#3b82f6'], ['#10b981', '#059669'], ['#f59e0b', '#ef4444'], ['#8b5cf6', '#6366f1'],
   ['#14b8a6', '#0d9488'], ['#f97316', '#fb923c'], ['#84cc16', '#65a30d'], ['#e11d48', '#be123c'], ['#0ea5e9', '#2563eb'], ['#d946ef', '#a855f7']];
 function tkAv(name, size, cls) {
@@ -21845,7 +21855,7 @@ const TKS = {
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'ממתינים לאחרים...', waitSubs: 'ממתין להגשות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר {n} נוספים', pickN: 'בחר {n}', noCards: 'אין קלפים ביד',
     judgeNow: 'בחר את התשובה הטובה ביותר', czarPicking: 'הקיסר בוחר זוכה...', wonRound: 'זכה בסבב:', nobody: 'אף אחד לא ניצח את הסבב', nextIn: 'סבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'ממתינים שהמארח יתחיל סבב חדש...', home: 'חזור לדף הבית',
-    kicked: 'הוצאת מהחדר על ידי המארח', closed: 'המארח סגר את החדר', pass: 'מעבירים את הטלפון ל־', imN: 'אני {n}', passD: 'שאף אחד אחר לא יציץ', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
+    kicked: 'הוצאת מהחדר על ידי המארח', closed: 'המארח סגר את החדר', pass: 'מעבירים את הטלפון ל־', swipe: 'מחליקים לצדדים לעוד קלפים · נוגעים בקלף כדי לבחור', imN: 'אני {n}', passD: 'שאף אחד אחר לא יציץ', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
   en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
     gateOk: "I'm over 18 - let's go", gateFine: 'By entering you confirm you are an adult and accept the content.', back: 'Back', resetGate: 'Back to the opening screen',
     create: 'Create a new room', join: 'Join a room', bots: 'Play against bots', local: 'One phone, pass it round', or: 'or without internet',
@@ -21859,9 +21869,9 @@ const TKS = {
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', pickN: 'Pick {n}', noCards: 'No cards in hand',
     judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
-    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', imN: "I'm {n}", passD: 'No peeking, everyone else', addP: 'Add a player', name: 'Player {n}', skip: 'Skip {n}', connecting: 'Connecting...' },
+    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', swipe: 'Swipe for more cards · tap a card to pick it', imN: "I'm {n}", passD: 'No peeking, everyone else', addP: 'Add a player', name: 'Player {n}', skip: 'Skip {n}', connecting: 'Connecting...' },
 };
-function tks(k, v) { let s = (TKS[lang] || TKS.he)[k] || TKS.he[k] || k; if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]); return s; }
+function tks(k, v) { let s = TKS[TK_LANG][k] || TKS.he[k] || k; if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]); return s; }
 /* the rules (pure; the phone that runs the game calls them): the original's flow. The czar turns round; everyone else answers from a hand of
    3-10 cards; with a single answerer two random "decoy" answers join (no point if the czar picks one); the czar's pick takes the point, a
    4.5 s banner, then the next round on its own; the round clock (30 s-3 min): when it runs out, whoever answered goes to the czar */
@@ -22003,7 +22013,7 @@ function tkLeaveLabel() { return tk.mode === 'host' ? tks('leaveHost') : tk.mode
 function tkNickRow(v) { return '<div class="tkNick">' + '<span id="tkAvBox">' + tkAv(v || '?', 48) + '</span><input id="tkMe" maxlength="20" placeholder="' + tks('nick') + '" value="' + tkEsc(v) + '"><button class="tkIcon" data-a="shuffle" title="' + tks('randNick') + '" aria-label="' + tks('randNick') + '">' + tki('shuffle') + '</button></div>'; }
 function tkForm(f) { tk.form = f; tk.scr = 'form'; tk.err = ''; if (!tk.myName) tk.myName = tkNick(); }
 function tkRender() {
-  const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr, he = lang === 'he'; el.dir = he ? 'rtl' : 'ltr';
+  const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr; el.dir = 'rtl'; el.lang = 'he';
   const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
   if (tk.err === 'deck') h = '<div class="tkWrap"><div class="tkCard tkPad tkC"><p class="tkDim">' + tks('netErr') + '</p></div></div>';
   else if (s === 'gate') h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad8 tkC tkGlow"><div class="tkEmoji">🔞</div><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p class="tkDim tkLh">' + tks('gateD') + '<br>' + tks('gateD2') + '</p>' +
@@ -22023,7 +22033,13 @@ function tkRender() {
   else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
   const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + tkModalHtml() + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
-  const hs2 = el.querySelector('.tkHandW'); if (hs2 && hx) hs2.scrollLeft = hx;
+  const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
+}
+function tkFan() { // the hand, held: the card in the middle straight and in front, the others tilting and sinking away (and a dot each, the middle one white)
+  const W0 = document.querySelector('#tachles .tkHandW'); if (!W0) return; const r0 = W0.getBoundingClientRect(), mid = r0.left + r0.width / 2, cards = W0.querySelectorAll('.tkHC'); let best = 0, bd = 1e9;
+  cards.forEach((c, i) => { const r = c.getBoundingClientRect(), d = (r.left + r.width / 2 - mid) / r.width, a = Math.min(2.2, Math.abs(d)); if (Math.abs(d) < bd) { bd = Math.abs(d); best = i; }
+    c.style.transform = 'translateY(' + (a * 26 - (c.classList.contains('on') ? 18 : 0)).toFixed(1) + 'px) rotate(' + (Math.max(-2.2, Math.min(2.2, d)) * 9).toFixed(1) + 'deg) scale(' + (1 - Math.min(1, a) * 0.12).toFixed(3) + ')'; c.style.zIndex = String(100 - Math.round(a * 10)); });
+  document.querySelectorAll('#tachles .tkDots i').forEach((e, i) => e.classList.toggle('cur', i === best));
 }
 function tkStepper(k, label, val, dn, up) { return '<div class="tkStep"><span class="tkDim">' + label + '</span><span class="tkStepC"><button class="tkRnd" data-a="' + k + '-"' + (dn ? '' : ' disabled') + ' aria-label="-">' + tki('minus') + '</button><b>' + val + '</b><button class="tkRnd" data-a="' + k + '+"' + (up ? '' : ' disabled') + ' aria-label="+">' + tki('plus') + '</button></span></div>'; }
 function tkModalHtml() {
@@ -22068,7 +22084,7 @@ function tkScoresHtml(v, me) { return '<div class="tkCard tkScores">' + v.player
   '<span class="tkScN"><small>' + tkEsc(p.name) + '</small><b>' + p.score + '</b></span></div>').join('') + '</div>'; }
 function tkTeaseFor(v, holdouts) { // a stable line for the one still choosing (picked once per round and player)
   if (holdouts.length !== 1) return ''; const key = v.round + '|' + holdouts[0].id;
-  if (!tk.tease || tk.tease.key !== key) { const L = TK_TEASE[lang] || TK_TEASE.he; tk.tease = { key, line: L[Math.floor(Math.random() * L.length)] }; }
+  if (!tk.tease || tk.tease.key !== key) { const L = TK_TEASE[TK_LANG]; tk.tease = { key, line: L[Math.floor(Math.random() * L.length)] }; }
   return '<p class="tkTease">' + tkEsc(tk.tease.line).split('{name}').join(tkEsc(holdouts[0].name)) + '</p>';
 }
 function tkStatusHtml(v) { // the original's SubmissionStatus: a chip per answerer, a pulsing avatar until they answer, then a green tick
@@ -22108,8 +22124,9 @@ function tkGameHtml(v) {
     else h += '<button class="tkP tkSend" data-a="send"' + (tk.sel.length === v.pick ? '' : ' disabled') + '>' + tki('send') + (tk.sel.length === v.pick ? tks('submit') : tks('pickMore', { n: v.pick - tk.sel.length })) + '</button>';
   }
   h += '</div>';
-  if (playing && !czar && !sent && (who || !local)) h += v.hand.length ? '<div class="tkHandW"><div class="tkHand">' + v.hand.map((c, i) => { const k = tk.sel.indexOf(i);
-    return '<button class="tkFace tkWhiteC tkHC' + (k >= 0 ? ' on' : '') + '" data-a="card:' + i + '"><p>' + tkEsc(c) + '</p>' + (k >= 0 && v.pick > 1 ? '<em>' + (k + 1) + '</em>' : '') + '</button>'; }).join('') + '</div></div>' : '<p class="tkDim tkC tkSm">' + tks('noCards') + '</p>';
+  if (playing && !czar && !sent && (who || !local)) h += v.hand.length ? '<div class="tkHandBox"><div class="tkHandW"><div class="tkHand">' + v.hand.map((c, i) => { const k = tk.sel.indexOf(i);
+    return '<button class="tkFace tkWhiteC tkHC' + (k >= 0 ? ' on' : '') + '" data-a="card:' + i + '"><p>' + tkEsc(c) + '</p>' + (k >= 0 && v.pick > 1 ? '<em>' + (k + 1) + '</em>' : '') + '<small class="tkHN">' + (i + 1) + '/' + v.hand.length + '</small></button>'; }).join('') + '</div></div>' +
+    '<div class="tkDots">' + v.hand.map((c, i) => '<i data-to="' + i + '" class="' + (tk.sel.includes(i) ? 'on' : '') + '"></i>').join('') + '</div><p class="tkSwipe">' + tks('swipe') + '</p></div>' : '<p class="tkDim tkC tkSm">' + tks('noCards') + '</p>';
   return h + '</div>';
 }
 function tkWinHtml(v) { // the original's WinScreen: the trophy, the winner's avatar, a podium with medals, the rest below
@@ -22122,6 +22139,7 @@ function tkWinHtml(v) { // the original's WinScreen: the trophy, the winner's av
 }
 function tkSkipHtml(v) { if (tk.mode !== 'host') return ''; const g = tk.g; return '<div class="tkSkips">' + TK.needs(g).filter((p) => !p.bot && p.id !== tk.me).map((p) => '<button class="tkS tkSm" data-a="skip:' + tkEsc(p.id) + '">' + tks('skip', { n: tkEsc(p.name) }) + '</button>').join('') + '</div>'; }
 function tkClick(e) {
+  const dot = e.target.closest('[data-to]'); if (dot) { const c = document.querySelectorAll('#tachles .tkHC')[+dot.dataset.to]; if (c) c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; }
   const b = e.target.closest('[data-a]'); if (!b || b.disabled) return; const a = b.dataset.a; if (!a) { e.stopPropagation(); return; } sfx('click');
   const nameOf = () => { const x = $('tkMe'); return (x && x.value.trim().slice(0, 20)) || ''; };
   if (a === 'gate') { try { sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('grasp.tk18', '1'); } catch {} tk.scr = 'menu'; if (tk.code) tkForm('join'); }
@@ -22153,7 +22171,8 @@ function tkClick(e) {
   else if (a === 'goLocal') { tkReadNames(); const names = tk.names.map((n, i) => n.trim() || tks('name', { n: i + 1 })); if (names.length + tk.botsL < 2 || !tk.deck) return; tkSave(); tk.mode = 'local'; tk.me = null;
     tkNewGame(names.map((n, i) => ({ id: 'p' + i, name: n })).concat(Array.from({ length: tk.botsL }, (_, i) => ({ id: 'b' + i, name: tkBotNick(names), bot: true })))); return; }
   else if (a.startsWith('iam:')) { tk.passTo = a.slice(4) + ':' + tk.g.round + ':' + tk.g.phase; tk.sel = []; }
-  else if (a.startsWith('card:')) { const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i); if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
+  else if (a.startsWith('card:')) { const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
+    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > cr.width * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
   else if (a === 'send') { const v = tkCurView(); if (tk.sel.length === v.pick) return tkAct({ t: 'pick', idx: tk.sel.slice(), pid: v.me }); }
   else if (a.startsWith('judge:')) { const v = tkCurView(); return tkAct({ t: 'judge', k: +a.slice(6), pid: v.me }); }
   else if (a === 'again') tkAgain();
@@ -22230,10 +22249,10 @@ PW_MATS[9][2] = '🧪';
 const PWS = {
   en: { colors: 'Colors', lab: 'Lab', chal: 'Challenges', clear: 'Clear', retry: 'Retry', levels: 'Levels', next: 'Next', done: 'Done!', lost: 'Try again!', size: 'Brush',
     sand: 'Sand', water: 'Water', stone: 'Stone', wood: 'Wood', fire: 'Fire', oil: 'Oil', lava: 'Lava', ice: 'Ice', plant: 'Plant', acid: 'Acid', boom: 'Boom powder', erase: 'Eraser', rainbow: 'Rainbow',
-    lvT: 'Challenges', lock: 'Finish the one before', woodLeft: 'Save the wood!', tilt: 'Tilt the phone' },
+    lvT: 'Challenges', lock: 'Finish the one before', woodLeft: 'Save the wood!', tilt: 'Tilt the phone', easy: 'Easy', normal: 'Normal', hard: 'Hard', lostAmmo: 'The bucket ran out!' },
   he: { colors: 'צבעים', lab: 'מעבדה', chal: 'אתגרים', clear: 'ניקוי', retry: 'שוב', levels: 'שלבים', next: 'הבא', done: 'הצלחתם!', lost: 'עוד פעם!', size: 'מכחול',
     sand: 'חול', water: 'מים', stone: 'אבן', wood: 'עץ', fire: 'אש', oil: 'שמן', lava: 'לבה', ice: 'קרח', plant: 'צמח', acid: 'חומצה', boom: 'אבק נפץ', erase: 'מחק', rainbow: 'קשת',
-    lvT: 'אתגרים', lock: 'קודם מסיימים את הקודם', woodLeft: 'תצילו את העץ!', tilt: 'הטיית הטלפון' },
+    lvT: 'אתגרים', lock: 'קודם מסיימים את הקודם', woodLeft: 'תצילו את העץ!', tilt: 'הטיית הטלפון', easy: 'קל', normal: 'רגיל', hard: 'קשה', lostAmmo: 'נגמר החומר בדלי!' },
 };
 function pws(k) { return (PWS[lang] || PWS.en)[k] || PWS.en[k] || k; }
 /* the grid */
@@ -22330,11 +22349,13 @@ function pwLayout(keep) {
 }
 function pwToolType() { if (pw.mode === 'colors') return pw.tool === 'erase' ? -1 : PWT.CSAND; const m = PW_MATS.find((q) => q[0] === pw.tool); return m ? m[1] : PWT.SAND; }
 function pwPour(cx, cy) { // one brush stamp at a cell
-  const G = pw.g, r = pw.size, ty = pwToolType(), still = ty === PWT.STONE || ty === PWT.WOOD || ty === PWT.ICE || ty === PWT.PLANT || ty === -1, R = Math.random;
+  const G = pw.g, r = pw.size, ty = pwToolType(), still = ty === PWT.STONE || ty === PWT.WOOD || ty === PWT.ICE || ty === PWT.PLANT || ty === -1, R = Math.random, L = pw.mode === 'chal' && pw.lv, pz = L && L.pz;
+  if (pw.ammoN && pw.used >= pw.ammoN && ty !== -1) return; // (the bucket is empty)
   const p = ty === PWT.FIRE ? 0.35 : PWK[ty] === 2 ? 0.45 : 0.4, col = pw.tool === 'rainbow' ? 8 + ((pw.hue >> 1) & 63) : pw.col;
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + dy * dy > r * r + 1) continue; const x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= G.w || y >= G.h) continue; const i = y * G.w + x;
+    if (pz && (x < pz[0] * G.w || x > pz[2] * G.w || y < pz[1] * G.h || y > pz[3] * G.h)) continue; // (a level's pour zone)
     if (ty === -1) { G.t[i] = 0; continue; } if (ty === PWT.FIRE && G.t[i]) { const tj = G.t[i]; if (tj === PWT.BOOM) pwExplode(G, x, y); else if ((tj === PWT.WOOD || tj === PWT.OIL || tj === PWT.PLANT) && R() < 0.2) pwSet(G, i, PWT.FIRE, 40 + R() * 40); continue; } // (the fire brush lights what it touches)
-    if (still) { if (G.t[i] === 0 || PWK[G.t[i]] !== 3) pwSet(G, i, ty); continue; }
+    if (still) { if (G.t[i] === 0 || PWK[G.t[i]] !== 3) { pwSet(G, i, ty); if (pw.ammoN) pw.used++; } continue; }
     if (G.t[i] === 0 && R() < p) { pwSet(G, i, ty, ty === PWT.CSAND ? col : null); pw.used = (pw.used || 0) + 1; } }
 }
 function pwInput() { // every finger: a line of stamps from where it was (pours), or, for a finger that came down on sand or water, a shove along its way
@@ -22387,31 +22408,169 @@ const PW_LV = [
     build: (b) => { b(0.38, 0.12, 0.62, 0.15, PWT.WOOD); b(0.38, 0.15, 0.41, 0.4, PWT.WOOD); b(0.59, 0.15, 0.62, 0.4, PWT.WOOD); b(0.38, 0.4, 0.62, 0.43, PWT.WOOD); b(0.41, 0.15, 0.59, 0.4, PWT.WATER); b(0.35, 0.75, 0.38, 0.98, PWT.STONE); b(0.62, 0.75, 0.65, 0.98, PWT.STONE); b(0.35, 0.95, 0.65, 0.98, PWT.STONE); },
     goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.4) },
 ];
+/* 500 more challenges (the owner, Oct 2026: "I want 500 more of these, it's really fun"; "maybe levels?"): 10 worlds of 50 after the 9 made by hand,
+   made by a generator (the same level every time: a seeded dice per level), easy / normal / hard (profile.powder.diff). Each kind of level knows
+   the moves that win it (L.sol: [tool, x, y, frames, x2 (a sweep)]); tests/test_powder_levels.py plays every level with them (pwBot). Harder
+   further on: smaller cups, cups on pillars, lids to burn or melt first, more fires and blocks, a pour zone (pour only inside the dashed box),
+   a bucket (only so much to pour). */
+const PW_WORLDS = [
+  { id: 'beach', e: '🏖️', en: 'Beach', he: 'חוף', mix: { fill_sand: 6, reach: 4 } },
+  { id: 'river', e: '💧', en: 'River', he: 'נהר', mix: { fill_water: 5, melt: 3, grow: 2 } },
+  { id: 'fire', e: '🔥', en: 'Fire', he: 'אש', mix: { ext: 5, burn: 5 } },
+  { id: 'garden', e: '🌱', en: 'Garden', he: 'גינה', mix: { grow: 5, ext: 2, fill_water: 3 } },
+  { id: 'ice', e: '🧊', en: 'Ice', he: 'קרח', mix: { melt: 5, boom: 5 } },
+  { id: 'volcano', e: '🌋', en: 'Volcano', he: 'הר געש', mix: { cloud: 5, stone: 3, burn: 2 } },
+  { id: 'lab', e: '🧪', en: 'Lab', he: 'מעבדה', mix: { acid: 6, fill_oil: 2, stone: 2 } },
+  { id: 'boom', e: '💥', en: 'Boom', he: 'פיצוצים', mix: { boom: 6, burn: 4 } },
+  { id: 'oil', e: '🛢️', en: 'Oil', he: 'שמן', mix: { fill_oil: 4, burn: 4, ext: 2 } },
+  { id: 'all', e: '🌈', en: 'Everything', he: 'הכול', mix: { fill_sand: 1, fill_water: 1, reach: 1, ext: 1, burn: 1, melt: 1, grow: 1, cloud: 1, boom: 1, acid: 1, stone: 1, fill_oil: 1 } },
+];
+const PW_PER = 50, PW_N0 = PW_LV.length, PW_TOTAL = PW_N0 + PW_WORLDS.length * PW_PER;
+const PW_FN = { fill_sand: ['🥤', 'Fill the cup', 'ממלאים את הכוס'], fill_water: ['🫗', 'Water in the cup', 'מים לכוס'], fill_oil: ['🛢️', 'Oil in the cup', 'שמן לכוס'], reach: ['⭐', 'Reach the star', 'מגיעים לכוכב'],
+  ext: ['🚒', 'Put out the fires', 'מכבים את האש'], burn: ['🔥', 'Burn the wood', 'שורפים את העץ'], melt: ['🧊', 'Melt the ice dam', 'ממיסים את הסכר'], grow: ['🌻', 'Grow a garden', 'מגדלים גינה'],
+  cloud: ['☁️', 'Make a cloud', 'עושים ענן'], boom: ['💥', 'Break the ice', 'שוברים את הקרח'], acid: ['🧪', 'Free the water', 'משחררים את המים'], stone: ['🪨', 'Make stone', 'עושים אבן'] };
+function pwRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const pwClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* the kinds: each returns the level's look (build), goal, tools and its winning moves */
+const PW_FAM = {
+  fill(R, D, mat) {
+    const ty = mat === 'water' ? PWT.WATER : mat === 'oil' ? PWT.OIL : PWT.SAND, cw = 0.32 - 0.14 * D - 0.04 * R(), ch = 0.24 + 0.1 * R(), t = 0.03;
+    const cx = 0.15 + cw / 2 + R() * (0.7 - cw), up = D > 0.3 && R() < 0.55 ? 0.08 + 0.22 * D * R() : 0, by = 0.98 - up, x0 = cx - cw / 2, x1 = cx + cw / 2, top = by - ch;
+    const lid = D > 0.4 && R() < 0.45 && mat !== 'oil' ? (R() < 0.6 || mat === 'water' ? PWT.WOOD : PWT.ICE) : 0, liq = ty !== PWT.SAND, tools = [mat === 'water' ? 'water' : mat === 'oil' ? 'oil' : 'sand'], sol = [];
+    if (lid === PWT.WOOD) { tools.push('fire'); sol.push(['fire', cx, top - 0.03, 50, null, 160]); }
+    if (lid === PWT.ICE) { tools.push('lava'); sol.push(['lava', cx, top - 0.12, 40, null, 260]); }
+    if (D > 0.55 && R() < 0.5) tools.push(['stone', 'wood', 'plant'][Math.floor(R() * 3)]); // (a tool that does not help)
+    sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 900]);
+    return { tools, z: [x0 + t, top + 0.08, x1 - t, by - t], pour: 1, need: (cw - 2 * t) * (ch - 0.08) * (liq ? 1.5 : 0.85),
+      build: (b) => { b(x0, top, x0 + t, by, PWT.STONE); b(x1 - t, top, x1, by, PWT.STONE); b(x0, by - t, x1, by, PWT.STONE); if (up) b(cx - 0.05, by, cx + 0.05, 1, PWT.STONE); if (lid) b(x0, top - 0.025, x1, top, lid); },
+      goal: (c) => c.zone[ty] / (c.zn * (liq ? 0.6 : 0.8)), sol };
+  },
+  reach(R, D) {
+    const sx = 0.2 + R() * 0.6, sy = 0.62 - 0.38 * D - 0.08 * R(), z = [sx - 0.05, sy - 0.03, sx + 0.05, sy + 0.03], sol = [];
+    for (let y = 0.97; y > sy + 0.03; y -= 0.025) sol.push(['stone', sx - 0.015, y, 3], ['stone', sx + 0.015, y, 3]);
+    sol.push(['sand', sx, sy - 0.12, 300]);
+    return { tools: ['sand', 'stone'], z, reach: 1, noPz: 1, need: 0.04 + 0.05 * (0.98 - sy), build: () => {}, goal: (c) => (c.zone[PWT.SAND] > 0 ? 1 : c.high), sol };
+  },
+  ext(R, D) {
+    const n = 1 + Math.floor(D * 2.6 + R() * 0.8), blocks = [], sol = [], gap = 1 / n;
+    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.12 + 0.1 * R()), x = gap * k + (gap - w) / 2 + (R() - 0.5) * (gap - w) * 0.6, h = 0.08 + 0.12 * R(), y = 0.98 - h; blocks.push([x, y, x + w, 0.98]); sol.push(['water', x + w / 2, y - 0.14, 30]); }
+    const roof = D > 0.5 ? blocks.filter(() => R() < 0.5) : [];
+    sol.push(...sol.map((s) => s.slice())); // (twice over)
+    return { tools: ['water'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: null, wood: 1, noAmmo: 1,
+      build: (b) => { for (const [a, y, c, d] of blocks) { b(a, y, c, d, PWT.WOOD); b(a + (c - a) * 0.4, y - 0.02, a + (c - a) * 0.6, y, PWT.FIRE); } for (const [a, y, c] of roof) b(a - 0.02, y - 0.2, a + (c - a) * 0.45, y - 0.185, PWT.STONE); },
+      goal: (c) => (c.all[PWT.FIRE] === 0 && c.t > 1.5 ? 1 : 0.99 * (1 - Math.min(1, c.all[PWT.FIRE] / 400))), lose: (c, L) => c.all[PWT.WOOD] < L.wood0 * (0.12 + 0.12 * D), sol };
+  },
+  burn(R, D) {
+    const n = 2 + Math.floor(D * 3 * R() + D), blocks = [], sol = [], gap = 1 / n, oil = R() < 0.5;
+    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.6, 0.08 + 0.1 * R()), x = gap * k + (gap - w) / 2, h = 0.1 + 0.25 * R(), y = 0.98 - h; blocks.push([x, y, x + w, 0.98]); if (oil) sol.push(['oil', x + w / 2, y - 0.06, 12]); sol.push(['fire', x + w / 2, y + h / 2, 25]); }
+    const roofs = D > 0.4 ? blocks.filter(() => R() < 0.5) : [];
+    return { tools: ['fire'].concat(oil ? ['oil'] : []), z: null, wood: 1, noAmmo: 1,
+      build: (b) => { for (const [a, y, c, d] of blocks) b(a, y, c, d, PWT.WOOD); for (const [a, y, c] of roofs) b(a - 0.015, y - 0.02, c + 0.015, y, PWT.STONE); },
+      goal: (c, L) => (1 - c.all[PWT.WOOD] / Math.max(1, L.wood0)) / 0.97, sol };
+  },
+  melt(R, D) {
+    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sh = 0.5 + 0.1 * R(), dx = 0.5 + 0.08 * R(), lavaOnly = false, fireOnly = D > 0.5 && R() < 0.5; // (lava alone seals the dam: lava on water leaves stone)
+    const tools = lavaOnly ? ['lava'] : fireOnly ? ['fire'] : ['fire', 'lava'], sol = []; // (melt: also the goal, a third of the basin)
+    if (tools.includes('fire')) sol.push(['fire', X(dx + 0.065), sh - 0.2, 120, null, 20, sh + 0.03]);
+    else sol.push(['lava', X(dx + 0.025), sh - 0.32, 50, null, 200]);
+    const R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
+    const zone = R4(0.72, 0.8, 0.93, 0.95);
+    return { tools, z: zone, noAmmo: 1,
+      build: (b) => { const B = (a, y0, c, y1, ty) => { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], ty); };
+        B(0.05, sh + 0.05, 0.76, sh + 0.08, PWT.STONE); B(0.02, sh - 0.25, 0.05, sh + 0.08, PWT.STONE); B(dx, sh - 0.22, dx + 0.05, sh + 0.05, PWT.ICE); B(0.05, sh - 0.14, dx, sh + 0.05, PWT.WATER);
+        B(0.69, 0.75, 0.72, 0.98, PWT.STONE); B(0.93, 0.75, 0.96, 0.98, PWT.STONE); B(0.69, 0.95, 0.96, 0.98, PWT.STONE); },
+      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.3), sol, solRepeat: 1 };
+  },
+  grow(R, D) {
+    const n = 2 + Math.floor(R() * 3), fy = 0.86 - 0.04 * R(), seeds = [], sol = [];
+    for (let k = 0; k < n; k++) { const x = (k + 0.5) / n + (R() - 0.5) * 0.08; seeds.push(x); sol.push(['water', x, 0.2, 60]); }
+    return { tools: ['water'], z: null, noAmmo: D < 0.5, solRepeat: 1, need: 0.06 + 0.04 * D,
+      build: (b) => { b(0, fy, 1, 1, PWT.SAND); for (const x of seeds) b(x - 0.01, fy - 0.03, x + 0.01, fy, PWT.PLANT); if (D > 0.4) b(0.45, fy - 0.06, 0.55, fy, PWT.STONE); },
+      goal: (c) => c.all[PWT.PLANT] / (c.n * (0.03 + 0.012 * D)), sol };
+  },
+  cloud(R, D) {
+    const n = 1 + Math.floor(R() * 2 + D), pools = [], sol = [], gap = 1 / n;
+    for (let k = 0; k < n; k++) { const w = gap * (0.6 + 0.25 * R()), x = gap * k + (gap - w) / 2, d = 0.1 + 0.06 * R(); pools.push([x, w, d]); sol.push(['water', x + 0.05, 0.4, 70, x + w - 0.05]); }
+    return { tools: ['water'], z: null, hot: 1, noAmmo: 1, solRepeat: 1,
+      build: (b) => { for (const [x, w, d] of pools) { b(x, 0.98 - d - 0.03, x + 0.03, 0.98, PWT.STONE); b(x + w - 0.03, 0.98 - d - 0.03, x + w, 0.98, PWT.STONE); b(x, 0.95, x + w, 0.98, PWT.STONE); b(x + 0.03, 0.95 - d, x + w - 0.03, 0.95, PWT.LAVA); } },
+      goal: (c) => c.all[PWT.STEAM] / (c.n * (0.02 + 0.016 * D)), sol };
+  },
+  boom(R, D) {
+    const n = 1 + Math.floor(R() * 2 + D * 1.5), ice = [], sol = [], gap = 0.86 / n;
+    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.07 + 0.06 * R()), x = 0.07 + gap * k + (gap - w) / 2, h = 0.08 + 0.12 * R(); ice.push([x, 0.95 - h, x + w, 0.95]); sol.push(['boom', x + w / 2, 0.3, 45, null, 90]); } // (let the powder settle on the ice, then light it)
+    for (const [a, y, c] of ice) sol.push(['fire', (a + c) / 2, y - 0.03, 15, null, 30]);
+    return { tools: ['boom', 'fire'], z: null, noAmmo: 1, solRepeat: 1,
+      build: (b) => { b(0.04, 0.6, 0.07, 0.98, PWT.STONE); b(0.93, 0.6, 0.96, 0.98, PWT.STONE); b(0.04, 0.95, 0.96, 0.98, PWT.STONE); for (const [a, y, c, d] of ice) b(a, y, c, d, PWT.ICE); },
+      goal: (c, L) => (1 - c.all[PWT.ICE] / Math.max(1, L.ice0)) / 0.85, sol };
+  },
+  acid(R, D) {
+    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sy = 0.42 + 0.12 * R(), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
+    return { tools: ['acid'], z: R4(0.66, 0.84, 0.92, 0.95), noAmmo: 1, solRepeat: 1, // (a little acid: too much eats the water too)
+      build: (b) => { const B = (a, y0, c, y1, ty) => { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], ty); };
+        B(0.08, sy, 0.66, sy + 0.03, PWT.STONE); B(0.12, sy - 0.2, 0.15, sy, PWT.WOOD); B(0.45, sy - 0.2, 0.48, sy, PWT.WOOD); B(0.15, sy - 0.16, 0.45, sy, PWT.WATER);
+        B(0.63, 0.8, 0.66, 0.98, PWT.STONE); B(0.92, 0.8, 0.95, 0.98, PWT.STONE); B(0.63, 0.95, 0.95, 0.98, PWT.STONE); },
+      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.12), sol: [['acid', X(0.53), sy - 0.04, 10, null, 400]] };
+  },
+  stone(R, D) {
+    const x0 = 0.1 + 0.2 * R(), x1 = x0 + 0.45 + 0.15 * R(), d = 0.12 + 0.06 * R();
+    return { tools: ['lava'].concat(D > 0.5 ? ['sand'] : []), z: [x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95], noAmmo: 1, solRepeat: 1,
+      build: (b) => { b(x0, 0.95 - d - 0.04, x0 + 0.03, 0.98, PWT.STONE); b(x1 - 0.03, 0.95 - d - 0.04, x1, 0.98, PWT.STONE); b(x0, 0.95, x1, 0.98, PWT.STONE); b(x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95, PWT.WATER); },
+      goal: (c) => (c.zone[PWT.STONE]) / (c.zn * (0.06 + 0.04 * D)), sol: [['lava', x0 + 0.06, 0.3, 90, x1 - 0.06]] };
+  },
+};
+function pwDiffK(D, diff) { return diff === 'easy' ? D * 0.5 : diff === 'hard' ? Math.min(1, D * 1.1 + 0.2) : D; }
+function pwGen(k, diff) {
+  const key = k + ':' + diff; if (!pw.gen) pw.gen = new Map(); if (pw.gen.has(key)) return pw.gen.get(key);
+  const j = k - PW_N0, w = Math.floor(j / PW_PER), i = j % PW_PER, W0 = PW_WORLDS[w], R = pwRng(9173 + k * 7919), fams = Object.entries(W0.mix), tot = fams.reduce((s, f) => s + f[1], 0);
+  let fam = fams[0][0], r = R() * tot; for (const [f, n] of fams) { if ((r -= n) < 0) { fam = f; break; } } if (i < fams.length) fam = fams[i][0]; // (each kind once first)
+  const D = pwDiffK(pwClamp(w / 9 * 0.55 + i / 49 * 0.45, 0, 1), diff), [base, mat] = fam.split('_'), L = PW_FAM[base](R, D, mat), F = PW_FN[fam];
+  Object.assign(L, { id: 'g' + k, k, world: w, n: i + 1, fam, D, e: F[0], en: F[1] + ' ' + (i + 1), he: F[2] + ' ' + (i + 1), s3: Math.round(22 + 20 * D) });
+  if (!L.noPz && D > 0.3 && R() < D * 0.8) { const xs = L.sol.flatMap((s) => (s[4] != null ? [s[1], s[4]] : [s[1]])), ys = L.sol.flatMap((s) => (s[6] != null ? [s[2], s[6]] : [s[2]])), m = 0.12 - 0.06 * D;
+    L.pz = [pwClamp(Math.min(...xs) - m, 0, 1), 0, pwClamp(Math.max(...xs) + m, 0, 1), pwClamp(Math.max(...ys) + m, 0.25, 1)]; }
+  if (L.need && !L.noAmmo && D > 0.4 && R() < 0.4 + 0.5 * D) L.ammo = L.need * (2.6 - 1.2 * D);
+  pw.gen.set(key, L); return L;
+}
+function pwLevelAt(k) { return k < PW_N0 ? PW_LV[k] : pwGen(k, pwP().diff || 'normal'); }
+function pwIdAt(k) { return k < PW_N0 ? PW_LV[k].id : 'g' + k; }
+function pwWorldOf(k) { return k < PW_N0 ? 0 : 1 + Math.floor((k - PW_N0) / PW_PER); }
+function pwWorldRange(w) { return w === 0 ? [0, PW_N0] : [PW_N0 + (w - 1) * PW_PER, PW_N0 + w * PW_PER]; }
+function pwOpen(k) { const P = pwP(); return k === 0 || !!P.stars[pwIdAt(k - 1)]; }
+/* tests: play a level with its own moves (no drawing, the real rules): won within 60 s of game time and within its bucket? */
+function pwBot(k, diff) {
+  const P = pwP(), d0 = P.diff; P.diff = diff || 'normal'; pwStartLevel(k); pw.bot = true; const L = pw.lv, G = pw.g; let f = 0, hold = 0, won = false, lost = false, best = 0;
+  const tick = () => { for (let s = 0; s < pw.steps; s++) pwStep(G); f++; pw.botT = f / 60; if (f % 6 === 0) { const c = pwCount(), p = Math.max(0, Math.min(1, L.goal(c, L))); best = Math.max(best, p); if (L.lose && L.lose(c, L)) lost = true; hold = p >= 1 ? hold + 6 : 0; if (hold >= 42) won = true; } };
+  const play = () => { for (const [tool, x, y, n, x2, wait, y2] of L.sol) { pw.tool = tool; pw.size = 4; for (let q = 0; q < n && !won && !lost && f < 3600; q++) { const xx = x2 != null ? x + (x2 - x) * (q / n) : x, yy = y2 != null ? y + (y2 - y) * (q / n) : y; pwPour(Math.round(xx * G.w), Math.round(yy * G.h)); tick(); if (hold > 0 && L.sol[L.sol.length - 1][0] === tool) break; }
+      for (let q = 0; q < (wait || 0) && !won && !lost && f < 3600; q++) tick(); } };
+  play(); while (!won && !lost && f < 3600) { if (L.solRepeat) play(); else tick(); }
+  const out = { k, id: L.id, fam: L.fam, won, lost, secs: Math.round(f / 6) / 10, best: Math.round(best * 100) / 100, used: pw.used || 0, ammo: pw.ammoN || 0 };
+  pw.bot = false; pw.botT = null; P.diff = d0; return out;
+}
 function pwP() { if (!profile.powder || typeof profile.powder !== 'object') profile.powder = { stars: {}, mode: 'colors' }; if (!profile.powder.stars) profile.powder.stars = {}; return profile.powder; }
-function pwValidate(v) { const o = { stars: {}, mode: 'colors' }; if (v && typeof v === 'object') { if (['colors', 'lab', 'chal'].includes(v.mode)) o.mode = v.mode; if (v.stars && typeof v.stars === 'object') for (const k in v.stars) { const n = Math.round(+v.stars[k]); if (/^[a-z]{2,10}$/.test(k) && n >= 1 && n <= 3) o.stars[k] = n; } } return o; }
+function pwValidate(v) { const o = { stars: {}, mode: 'colors', diff: 'normal' }; if (v && typeof v === 'object') { if (['colors', 'lab', 'chal'].includes(v.mode)) o.mode = v.mode; if (['easy', 'normal', 'hard'].includes(v.diff)) o.diff = v.diff; if (v.stars && typeof v.stars === 'object') for (const k in v.stars) { const n = Math.round(+v.stars[k]); if ((/^[a-z]{2,10}$/.test(k) || /^g\d{1,4}$/.test(k)) && n >= 1 && n <= 3) o.stars[k] = n; } } return o; }
 function pwBuild() { // the level's shapes into a clean grid
   const G = pw.g, L = pw.lv; G.t.fill(0); G.ex.fill(0);
   const b = (x0, y0, x1, y1, ty) => { for (let y = Math.floor(y0 * G.h); y < Math.min(G.h, Math.ceil(y1 * G.h)); y++) for (let x = Math.floor(x0 * G.w); x < Math.min(G.w, Math.ceil(x1 * G.w)); x++) pwSet(G, y * G.w + x, ty); };
   L.build(b); let w = 0, ic = 0; for (let i = 0; i < G.n; i++) { if (G.t[i] === PWT.WOOD) w++; if (G.t[i] === PWT.ICE) ic++; } L.wood0 = w; L.ice0 = ic;
-  pw.won = 0; pw.lost = 0; pw.t0 = performance.now(); pw.holdAt = 0; pw.prog = 0; pw.used = 0;
+  pw.won = 0; pw.lost = 0; pw.t0 = performance.now(); pw.holdAt = 0; pw.prog = 0; pw.used = 0; pw.ammoN = L.ammo ? Math.round(L.ammo * G.n) : 0; pw.upAt = pw.t0; pw.lostWhy = '';
 }
 function pwCount() { // what the goals look at
   const G = pw.g, L = pw.lv, all = new Uint32Array(16), zone = new Uint32Array(16); let zn = 0, high = 0;
   for (let i = 0; i < G.n; i++) all[G.t[i]]++;
   if (L.z) { const [a, b, c, d] = L.z, x0 = Math.floor(a * G.w), y0 = Math.floor(b * G.h), x1 = Math.ceil(c * G.w), y1 = Math.ceil(d * G.h); for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { zone[G.t[y * G.w + x]]++; zn++; } }
-  if (L.id === 'star') { for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === PWT.SAND) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))) * 0.98; break; } } }
-  return { all, zone, zn, high, n: G.n, t: (performance.now() - pw.t0) / 1000 };
+  if (L.id === 'star' || L.reach) { for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === PWT.SAND) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))) * 0.98; break; } } }
+  return { all, zone, zn, high, n: G.n, t: pw.bot ? pw.botT : (performance.now() - pw.t0) / 1000 };
 }
 function pwCheck(now) {
-  const L = pw.lv; if (!L || pw.won || pw.lost) return; const c = pwCount(); pw.prog = Math.max(0, Math.min(1, L.goal(c, L)));
-  if (L.lose && L.lose(c, L)) { pw.lost = now; sfx('boing'); pw.log.push('lost:' + L.id); pwBarSync(); return; }
+  const L = pw.lv; if (!L || pw.won || pw.lost) return; const c = pwCount(), p0 = pw.prog; pw.prog = Math.max(0, Math.min(1, L.goal(c, L))); if (pw.prog > p0 + 0.005) pw.upAt = now;
+  const dry = pw.ammoN && pw.used >= pw.ammoN && now - pw.upAt > 6000 && pw.prog < 1; // (the bucket is empty and nothing moves on)
+  if ((L.lose && L.lose(c, L)) || dry) { pw.lost = now; pw.lostWhy = dry ? 'ammo' : 'wood'; sfx('boing'); pw.log.push('lost:' + L.id + ':' + pw.lostWhy); pwBarSync(); return; }
   if (pw.prog >= 1) { if (!pw.holdAt) pw.holdAt = now; else if (now - pw.holdAt > 700) pwWin(now, c); } else pw.holdAt = 0;
 }
 function pwWin(now, c) {
-  const L = pw.lv, s = (now - pw.t0) / 1000, stars = s < 25 ? 3 : s < 60 ? 2 : 1, P = pwP(), had = P.stars[L.id] || 0; P.stars[L.id] = Math.max(had, stars); saveProfile();
+  const L = pw.lv, s = (now - pw.t0) / 1000, s3 = L.s3 || 25, stars = s < s3 ? 3 : s < s3 * 2.4 ? 2 : 1, P = pwP(), had = P.stars[L.id] || 0; P.stars[L.id] = Math.max(had, stars); saveProfile();
   pw.won = now; pw.stars = stars; pw.secs = Math.round(s); addCoins(had ? 1 : [0, 3, 4, 6][stars]); confetti(W / 2, H * 0.3, 90, 1.2); sfx('levelup'); pw.log.push('won:' + L.id + ':' + stars); pwBarSync();
 }
-function pwStartLevel(k) { pw.lvl = k; pw.lv = PW_LV[k]; pw.tool = pw.lv.tools[0]; pw.mode = 'chal'; $('powderLv').hidden = true; pwLayout(); pwBuild(); pwBarSync(); pw.log.push('level:' + pw.lv.id); }
+function pwStartLevel(k) { pw.lvl = k; pw.lv = pwLevelAt(k); pw.tool = pw.lv.tools[0]; pw.mode = 'chal'; $('powderLv').hidden = true; pwLayout(); pwBuild(); pwBarSync(); pw.log.push('level:' + pw.lv.id); }
 /* the bar under the grid (DOM) and the level list */
 function pwBarSync() {
   const B = $('powderBar'); if (!B) return; const he = lang === 'he', P = pwP(); B.dir = he ? 'rtl' : 'ltr';
@@ -22425,13 +22584,23 @@ function pwBarSync() {
     '<button class="pwA pwTilt' + (pwTiltOn() ? ' on' : '') + '" data-pw="tilt" aria-label="' + pws('tilt') + '">' + (pwTiltOn() ? '📱' : '🔒') + '</button>';
   B.innerHTML = '<div class="pwRow">' + modes + '</div><div class="pwRow pwTools">' + tools + '</div><div class="pwRow">' + size + acts + '</div>';
   const V = $('powderLv'); if (pw.won || pw.lost) { const L = pw.lv; V.hidden = false; V.innerHTML = '<div class="pwCard"><div class="pwBig">' + (pw.won ? '⭐'.repeat(pw.stars) + '<span class="pwDim">' + '⭐'.repeat(3 - pw.stars) + '</span>' : '😅') + '</div><h2>' + (pw.won ? pws('done') : pws('lost')) + '</h2>' +
-    (pw.won ? '<p>' + L.e + ' ' + (he ? L.he : L.en) + ' · ' + pw.secs + 's</p>' : '<p>' + pws('woodLeft') + '</p>') + '<div class="pwRow">' + (pw.won && pw.lvl < PW_LV.length - 1 ? '<button class="pwA hot" data-pw="lv:' + (pw.lvl + 1) + '">' + pws('next') + '</button>' : '') + '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button></div></div>'; }
+    (pw.won ? '<p>' + L.e + ' ' + (he ? L.he : L.en) + ' · ' + pw.secs + 's</p>' : '<p>' + pws(pw.lostWhy === 'ammo' ? 'lostAmmo' : 'woodLeft') + '</p>') + '<div class="pwRow">' + (pw.won && pw.lvl < PW_TOTAL - 1 ? '<button class="pwA hot" data-pw="lv:' + (pw.lvl + 1) + '">' + pws('next') + '</button>' : '') + '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button></div></div>'; }
   else if (!pw.listOpen) V.hidden = true;
   requestAnimationFrame(() => pwLayout());
 }
-function pwLevels() { const V = $('powderLv'), P = pwP(), he = lang === 'he'; pw.listOpen = true; V.hidden = false; V.dir = he ? 'rtl' : 'ltr';
-  V.innerHTML = '<div class="pwCard"><h2>⭐ ' + pws('lvT') + '</h2><div class="pwLvGrid">' + PW_LV.map((L, k) => { const open = k === 0 || P.stars[PW_LV[k - 1].id], s = P.stars[L.id] || 0;
-    return '<button class="pwLv' + (open ? '' : ' lock') + '" data-pw="' + (open ? 'lv:' + k : 'locked') + '"><b>' + (open ? L.e : '🔒') + '</b><span>' + (k + 1) + '. ' + (he ? L.he : L.en) + '</span><i>' + '★'.repeat(s) + '<em>' + '★'.repeat(3 - s) + '</em></i></button>'; }).join('') + '</div></div>'; }
+function pwLevels(w) { // the map: easy / normal / hard, the worlds (the 9 made by hand, then 10 of 50), the levels of one world
+  const V = $('powderLv'), P = pwP(), he = lang === 'he'; pw.listOpen = true; V.hidden = false; V.dir = he ? 'rtl' : 'ltr';
+  if (w == null) { let k = 0; while (k < PW_TOTAL - 1 && P.stars[pwIdAt(k)]) k++; w = pw.mapW != null ? pw.mapW : pwWorldOf(k); } pw.mapW = w;
+  const sum = (ww) => { const [a, b] = pwWorldRange(ww); let n = 0; for (let k = a; k < b; k++) n += P.stars[pwIdAt(k)] || 0; return n; };
+  const diff = ['easy', 'normal', 'hard'].map((d) => '<button class="pwD' + ((P.diff || 'normal') === d ? ' on' : '') + '" data-pw="d:' + d + '">' + pws(d) + '</button>').join('');
+  const worlds = [{ e: '⭐', en: 'First steps', he: 'צעדים ראשונים' }].concat(PW_WORLDS).map((W0, ww) => { const [a, b] = pwWorldRange(ww), open = pwOpen(a);
+    return '<button class="pwW' + (ww === w ? ' on' : '') + (open ? '' : ' lock') + '" data-pw="w:' + ww + '"><b>' + (open ? W0.e : '🔒') + '</b><span>' + (he ? W0.he : W0.en) + '</span><i>★ ' + sum(ww) + '/' + (b - a) * 3 + '</i></button>'; }).join('');
+  const [a, b] = pwWorldRange(w); let lv = '';
+  for (let k = a; k < b; k++) { const open = pwOpen(k), s = P.stars[pwIdAt(k)] || 0, L = k < PW_N0 ? PW_LV[k] : null, e = L ? L.e : PW_FN[pwGen(k, P.diff || 'normal').fam][0];
+    lv += '<button class="pwLv' + (open ? '' : ' lock') + (w ? ' sm' : '') + '" data-pw="' + (open ? 'lv:' + k : 'locked') + '"><b>' + (open ? e : '🔒') + '</b><span>' + (L ? (k + 1) + '. ' + (he ? L.he : L.en) : (k - a + 1)) + '</span><i>' + '★'.repeat(s) + '<em>' + '★'.repeat(3 - s) + '</em></i></button>'; }
+  V.innerHTML = '<div class="pwCard pwMap"><h2>⭐ ' + pws('lvT') + '</h2><div class="pwDiffs">' + diff + '</div><div class="pwWorlds">' + worlds + '</div><div class="pwLvGrid' + (w ? ' g5' : '') + '">' + lv + '</div></div>';
+  const on = V.querySelector('.pwW.on'); if (on) try { on.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch {}
+}
 function pwClick(e) {
   const b = e.target.closest('[data-pw]'); if (!b) return; const a = b.dataset.pw; sfx('click'); const P = pwP();
   if (a.startsWith('m:')) { const m = a.slice(2); if (m === 'chal') { pwLevels(); return; } pw.mode = m; P.mode = m; saveProfile(); pw.lv = null; pw.won = 0; pw.lost = 0; pw.listOpen = false; pw.tool = m === 'colors' ? 'col' : 'sand'; pw.g.t.fill(0); }
@@ -22442,6 +22611,8 @@ function pwClick(e) {
   else if (a === 'tilt') { const on = !pwTiltOn(); try { localStorage.setItem('grasp.pwTilt', on ? '1' : '0'); } catch {} if (!on) pw.gk = 0; pwMotionAsk(); toast(on ? 'pwTiltOn' : 'pwTiltOff', null, on ? 'check' : 'star'); }
   else if (a === 'retry') { pw.listOpen = false; pwStartLevel(pw.lvl); return; }
   else if (a === 'levels') { pwLevels(); return; }
+  else if (a.startsWith('w:')) { pwLevels(+a.slice(2)); return; }
+  else if (a.startsWith('d:')) { P.diff = a.slice(2); saveProfile(); pwLevels(pw.mapW); return; }
   else if (a.startsWith('lv:')) { pw.listOpen = false; P.mode = 'chal'; saveProfile(); pwStartLevel(+a.slice(3)); return; }
   else if (a === 'locked') { toast('pwLocked', null, 'star'); return; }
   pwBarSync();
@@ -22467,20 +22638,22 @@ function pwMotionAsk() { // iOS asks once, on a touch
 }
 window.addEventListener('devicemotion', pwMotion);
 function renderPowder(now) {
-  if (!pw.g) pwLayout(false); pwLayout(); pwGravity(); if (!pw.won && !pw.lost) pwInput(); pw.booms = 0;
+  if (pw.bot) return; if (!pw.g) pwLayout(false); pwLayout(); pwGravity(); if (!pw.won && !pw.lost) pwInput(); pw.booms = 0;
   for (let s = 0; s < pw.steps; s++) pwStep(pw.g);
   if (pw.booms && now - pw.boomAt > 250) { pw.boomAt = now; sfx('boom'); shakeScreen(6); }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0b0912'; ctx.fillRect(0, 0, W, H); pwDraw();
   if (pw.lv) { const L = pw.lv, G = pw.g; if ((++pw.fc & 7) === 0) pwCheck(now); // (every 8th frame; pw.g.f moves 2 a frame)
     if (L.z) { const [a, b, c, d] = L.z; resetView(); ctx.save(); ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(255,214,80,' + (0.55 + 0.3 * Math.sin(now / 250)).toFixed(2) + ')'; const x = pw.x0 + Math.floor(a * G.w) * pw.cs, y = pw.top + Math.floor(b * G.h) * pw.cs; ctx.strokeRect(x, y, (Math.ceil(c * G.w) - Math.floor(a * G.w)) * pw.cs, (Math.ceil(d * G.h) - Math.floor(b * G.h)) * pw.cs); ctx.restore();
-      if (L.id === 'star') { resetView(); ctx.font = '28px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⭐', pw.x0 + (a + c) / 2 * G.w * pw.cs, pw.top + (b + d) / 2 * G.h * pw.cs); } }
+      if (L.id === 'star' || L.reach) { resetView(); ctx.font = '28px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⭐', pw.x0 + (a + c) / 2 * G.w * pw.cs, pw.top + (b + d) / 2 * G.h * pw.cs); } }
     const tx = L.e + ' ' + (lang === 'he' ? L.he : L.en), sp = textSprite(tx, 17, '#ffffff', 'rgba(20,14,40,0.9)', 800), x0 = 16 + Math.min(sp.tw, W - 150) / 2 + 4, bw = Math.min(160, W * 0.35); // (the left: the corner buttons sit on the right)
+    if (L.pz) { const [a, b, c, d] = L.pz; resetView(); ctx.save(); ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(120,200,255,0.75)'; ctx.fillStyle = 'rgba(120,200,255,0.06)'; const x = pw.x0 + a * G.w * pw.cs, y = pw.top + b * G.h * pw.cs, w = (c - a) * G.w * pw.cs, h = (d - b) * G.h * pw.cs; ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h); ctx.restore(); } // (pour only in here)
+    if (pw.ammoN) { const q = Math.max(0, 1 - pw.used / pw.ammoN), bw2 = Math.min(160, W * 0.35); resetView(); ctx.font = '16px ' + MX_EMOJI; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('🪣', 14, cgTopY() + 26); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.roundRect(36, cgTopY() + 20, bw2 - 20, 12, 6); ctx.fill(); ctx.fillStyle = q > 0.2 ? '#5ab8ff' : '#ff5a6e'; ctx.beginPath(); ctx.roundRect(36, cgTopY() + 20, Math.max(6, (bw2 - 20) * q), 12, 6); ctx.fill(); } // (the bucket: what is left to pour)
     blit(sp, x0, cgTopY() - 20, 0, Math.min(1, (W - 150) / sp.tw)); const bx = 16; resetView(); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.roundRect(bx, cgTopY() - 2, bw, 12, 6); ctx.fill(); ctx.fillStyle = '#3ddc84'; ctx.beginPath(); ctx.roundRect(bx, cgTopY() - 2, Math.max(12, bw * (pw.prog || 0)), 12, 6); ctx.fill();
   }
   drawParticles(); drawRings(now);
 }
 $('powderBar').addEventListener('click', pwClick); $('powderLv').addEventListener('click', pwClick);
-window.__grasp.pw = { pw, PWT, PW_LV, step: () => pwStep(pw.g), pour: pwPour, level: pwStartLevel, check: () => pwCheck(performance.now() + 1e6), count: pwCount, layout: pwLayout };
+window.__grasp.pw = { pw, PWT, PW_LV, PW_TOTAL, PW_N0, bot: pwBot, gen: pwGen, levelAt: pwLevelAt, step: () => pwStep(pw.g), pour: pwPour, level: pwStartLevel, check: () => pwCheck(performance.now() + 1e6), count: pwCount, layout: pwLayout };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
    Chrome) or on iOS (a small "Add to Home Screen" how-to sheet); never shown in the installed app; a dismissal snoozes the start-screen chip

@@ -13,7 +13,8 @@ async def step_local(page):
     n = await page.locator('#tachles .tkHC').count()
     if n:
         need = await page.evaluate(f"{TKH}.tk.view ? (({TKH}.tk.mode === 'local' && {TKH}.tk.g) ? {TKH}.TK.view({TKH}.tk.g, 'x').pick : {TKH}.tk.view.pick) : 1")
-        for i in range(need): await click(page, '#tachles .tkHC >> nth=%d' % i)
+        await page.evaluate(f"{TKH}.tk.sel = []")
+        for i in range(need): await page.evaluate("document.querySelectorAll('#tachles .tkHC')[%d].scrollIntoView({ inline: 'center', block: 'nearest' })" % i); await page.wait_for_timeout(120); await click(page, '#tachles .tkHC >> nth=%d' % i)
         await click(page, '#tachles [data-a="send"]'); return True
     return False
 FAST = "window.__graspNoAutoFs = true; window.__tkFast = true; window.__tkReveal = 250;"
@@ -34,7 +35,7 @@ async def gate_and_bots(b, he):
     await click(page, '#tachles [data-a="shuffle"]'); n2 = await page.input_value('#tkMe'); check(tag + ': shuffle: another nickname', n2 != nick, [nick, n2])
     await page.fill('#tkMe', 'Dana'); await click(page, '#tachles [data-a="go:bots"]')
     L = await page.evaluate(f"{TKH}.tk.lobby.map((p) => p.name)")
-    check(tag + ': a room with you and two bots ("BOT-<snack>"), avatars, Add bot, Settings, Start', (await view(page))['scr'] == 'lobby' and len(L) == 3 and all(x.startswith('BOT-') for x in L[1:]) and await page.locator('#tachles .tkPl .tkAv').count() == 3 and await page.locator('#tachles [data-a="start"]').count() == 1, L)
+    check(tag + ': a room with you and two bots ("בוט <snack>"), avatars, Add bot, Settings, Start', (await view(page))['scr'] == 'lobby' and len(L) == 3 and all(x.startswith('בוט ') for x in L[1:]) and await page.locator('#tachles .tkPl .tkAv').count() == 3 and await page.locator('#tachles [data-a="start"]').count() == 1, L)
     for i in range(2): await click(page, '#tachles [data-a="addBot"]')
     check(tag + ': four bots at most (the button says so)', await page.evaluate(f"{TKH}.tk.lobby.length") == 5 and await page.locator('#tachles [data-a="addBot"][disabled]').count() == 1)
     await click(page, '#tachles [data-a^="kick:"] >> nth=0'); check(tag + ': a kick asks first', await page.locator('#tachles .tkModal [data-a="kickOk"]').count() == 1)
@@ -47,7 +48,14 @@ async def gate_and_bots(b, he):
     v = await view(page); check(tag + ': the game: round 1, the scores strip (avatars, a crown on the czar), the black card', v['scr'] == 'game' and len(v['players']) == 3 and v['round'] == 1 and await page.locator('#tachles .tkScores .tkAv').count() == 3 and await page.locator('#tachles .tkScores .tkCrown').count() == 1 and await page.locator('#tachles .tkBlackC').count() == 1, v)
     if await page.evaluate(f"{TKH}.tk.view.judge !== 'h'"):
         check(tag + ': a hand of 6 cards in a row, the round clock ring', await page.locator('#tachles .tkHC').count() == 6 and await page.locator('#tachles #tkTimer svg').count() == 1)
-        await click(page, '#tachles .tkHC >> nth=0'); await page.screenshot(path=OUT + 'tachles_hand_%s.png' % tag.lower())
+        await page.evaluate("document.querySelectorAll('#tachles .tkHC')[2].scrollIntoView({ inline: 'center', block: 'nearest' })"); await page.wait_for_timeout(300)
+        check(tag + ': the hand is held: the middle card straight, the others tilted; a dot each, the middle one marked', await page.evaluate("(() => { const c = [...document.querySelectorAll('#tachles .tkHC')]; return c[2].style.transform.includes('rotate(0') && !c[0].style.transform.includes('rotate(0') && document.querySelectorAll('#tachles .tkDots i').length === c.length && document.querySelectorAll('#tachles .tkDots i')[2].classList.contains('cur'); })()"))
+        q = await page.evaluate("(() => { const r = document.querySelectorAll('#tachles .tkHC')[1].getBoundingClientRect(), m = document.querySelectorAll('#tachles .tkHC')[2].getBoundingClientRect(), x = r.left < m.left ? Math.min(r.right, m.left) - 15 : Math.max(r.left, m.right) + 15; return [x, r.top + r.height / 2]; })()")
+        await page.mouse.click(q[0], q[1]); await page.wait_for_timeout(600)
+        check(tag + ': a tap on a side card brings it to the middle (not picked yet)', await page.evaluate(f"{TKH}.tk.sel.length") == 0 and await page.evaluate("document.querySelectorAll('#tachles .tkDots i')[1].classList.contains('cur')"))
+        q = await page.evaluate("(() => { const r = document.querySelectorAll('#tachles .tkHC')[1].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+        await page.mouse.click(q[0], q[1]); await page.wait_for_timeout(200); check(tag + ': a tap on the middle card picks it', await page.evaluate(f"{TKH}.tk.sel") == [1])
+        await page.screenshot(path=OUT + 'tachles_hand_%s.png' % tag.lower())
     else: await page.screenshot(path=OUT + 'tachles_czar_%s.png' % tag.lower())
     shot = False
     for k in range(300):

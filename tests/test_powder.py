@@ -78,10 +78,27 @@ async def tilt_push(b):
     check('on empty space the finger still pours', (await count(page, 14)) > c0)
     check('tilt / push: no page errors', not errs, errs); await ctx.close()
 
+async def levels_map(b):
+    # 500 more (10 worlds of 50): the map (easy / normal / hard, the worlds, the levels); a generated level opens with its goal, tools, maybe a pour zone and a bucket
+    ctx, page, errs = await page_for(b, '/powder', True, init="window.__graspNoAutoFs = true;"); await wait(page, f"!!{PWH}.pw.g && !$('powderBar').hidden", 6000)
+    await page.click('#powderBar [data-pw="m:chal"]'); await page.wait_for_timeout(300)
+    check('the map: easy / normal / hard and 11 worlds (the first steps + 10 of 50)', await page.locator('#powderLv .pwD').count() == 3 and await page.locator('#powderLv .pwW').count() == 11)
+    await page.screenshot(path=OUT + 'powder_map.png')
+    await page.evaluate(f"(() => {{ const P = profile.powder; for (let k = 0; k < 9; k++) P.stars[{PWH}.PW_LV[k].id] = 3; P.stars.g9 = 2; }})()")
+    await page.click('#powderLv [data-pw="w:1"]'); await page.wait_for_timeout(200)
+    check('world 1: 50 levels, the first two open (one done), the rest locked', await page.locator('#powderLv .pwLv').count() == 50 and await page.locator('#powderLv .pwLv.lock').count() == 48)
+    await page.screenshot(path=OUT + 'powder_world1.png')
+    await page.click('#powderLv [data-pw="d:hard"]'); await page.wait_for_timeout(150); check('the difficulty is kept', await page.evaluate("profile.powder.diff") == 'hard')
+    await page.click('#powderLv [data-pw="lv:10"]'); await page.wait_for_timeout(400)
+    L = await page.evaluate(f"(() => {{ const L = {PWH}.pw.lv; return {{ id: L.id, fam: L.fam, tools: L.tools, D: L.D }}; }})()")
+    check('a generated level opens (its tools in the bar)', L['id'] == 'g10' and await page.locator('#powderBar .pwT').count() == len(L['tools']), L)
+    await page.screenshot(path=OUT + 'powder_gen.png')
+    await page.evaluate("profile.powder.diff = 'normal'"); check('levels map: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
-        await tilt_push(b)
+        await tilt_push(b); await levels_map(b)
         for he in (True, False): await run(b, he)
         await b.close()
     print('FAILURES:', check.fails)

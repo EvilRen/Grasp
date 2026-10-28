@@ -39,8 +39,8 @@ async def run(b, he):
         check(tag + ': a card picked: the finger moves to the monster ("2. now tap the monster")', await page.evaluate(f"{QT}.quest.coach") == 2)
         m0 = (await st(page))['mons']; mp = await page.evaluate(f"(() => {{ const m = {QT}.quest.f.mons.find((q) => q.hp > 0); return [m._x, m._y]; }})()"); await page.mouse.click(mp[0], mp[1]); await page.wait_for_timeout(400)
         s = await st(page); check(tag + ': tap a card, tap a monster: it is played (energy spent, the monster hurt)', s['en'] < 3 + 1 and (sum(s['mons']) < sum(m0) or s['over']), [m0, s])
-        await page.evaluate(f"{QT}.quest.f.en = 0"); await page.wait_for_timeout(250); await page.screenshot(path=OUT + 'quest_coach3_%s.png' % tag.lower())
-        check(tag + ': out of energy: the finger points at End turn', await page.evaluate(f"{QT}.quest.coach") == 3)
+        await page.evaluate(f"{QT}.quest.f.en = 0; {QT}.quest.f.hand = {QT}.quest.f.hand.filter((id) => {QT}.QC.cardOf(id).c > 0)"); await page.wait_for_timeout(250) # (a 0-cost card would still get the finger); await page.screenshot(path=OUT + 'quest_coach3_%s.png' % tag.lower())
+        check(tag + ': out of energy: the finger points at End turn', await page.evaluate(f"{QT}.quest.coach") == 3, await page.evaluate(f"(() => {{ const q = {QT}.quest; return [q.coach, q.sel, q.f && q.f.over, q.f && q.f.en, q.busyUntil - performance.now(), q.f && q.f.hand.length]; }})()"))
     # play the fight out with the hooks
     for k in range(40):
         s = await st(page)
