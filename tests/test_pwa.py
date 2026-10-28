@@ -99,7 +99,7 @@ async def main():
         own.stop(); await ctx.set_offline(True)
         await page.goto(BASE + '/'); await ready(page); await page.wait_for_timeout(500)
         q = await page.evaluate("({ matter: !!window.Matter, start: !$('start').hidden, tiles: document.querySelectorAll('#start .mbGrid button').length, adv: !!document.querySelector('#heroModes > #heroAdv'), ev: document.querySelector('#eventBtn .evName').textContent, online: navigator.onLine })")
-        check('offline: / loads from the cache (Matter.js too), the start screen with its tiles (navigation v2: 14 buttons in the grid: Spot it, + the Stage segment of the Strike card\'s strip) and the event banner', q['matter'] and q['start'] and q['tiles'] == 14 and q['adv'] and q['ev'] and q['online'] is False, q)
+        check('offline: / loads from the cache (Matter.js too), the start screen with its tiles (navigation v2: 16 buttons in the grid: Spot it, Mix it, Quest, + the Stage segment of the Strike card\'s strip) and the event banner', q['matter'] and q['start'] and q['tiles'] == 16 and q['adv'] and q['ev'] and q['online'] is False, q)
         await page.screenshot(path=OUT + 'pwa_offline_start.png')
         await page.goto(BASE + '/strike'); await ready(page)
         await page.wait_for_function("!$('advMap').hidden", timeout=10000)

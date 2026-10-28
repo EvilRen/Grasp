@@ -84,7 +84,7 @@ async def main():
                 L = await page.evaluate(START)
                 inside = lambda q: q['l'] >= 0 and q['t'] >= 0 and q['r'] <= L['W'] + 0.5 and q['b'] <= L['H'] + 0.5 and q['w'] > 0
                 chk(f'{tag}: the start screen has no scroll with the Camera games tile', L['noScroll'], L)
-                chk(f'{tag}: the hero, the tiles (Smash · Slice · Pop It · Spot it), the camera games\' row and the tab bar all on screen; no Bubu on top', len(L['tiles']) == 5 and L['bubu'] and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
+                chk(f'{tag}: the hero, the tiles (Smash · Slice · Pop It / Spot it · Mix it · Quest), the camera games\' row and the tab bar all on screen; no Bubu on top', len(L['tiles']) == 7 and L['bubu'] and all(inside(q) for q in L['tiles']) and inside(L['cam']) and inside(L['tab']), L)
                 chk(f'{tag}: navigation v2: the camera games\' row under Smash · Slice · Pop It, above the dock, named, its camera drawing', L['cam']['t'] > L['lit']['b'] and L['cam']['b'] <= L['tab']['t'] and L['label'] == ('משחקי מצלמה' if he else 'Camera games') and L['labelFits'] and L['icons'] == 1, L)
                 await page.screenshot(path=OUT + f'cam_start_{sfx}.png')
                 chk(f'{tag}: the row: four games, each its own sticker (>= 44 px), named, on screen (navigation v2: no picker sheet)', [c['cg'] for c in L['cards']] == ['drums', 'bubbles', 'paint', 'stars'] and all(c['lb'] and c['h'] >= 44 and c['w'] >= 44 and inside(c) for c in L['cards']), L['cards'])

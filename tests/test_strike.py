@@ -31,7 +31,7 @@ async def main():
         ctx = await b.new_context(viewport={'width':1280,'height':800}); page = await ctx.new_page(); await routes(page); errs=[]
         page.on('pageerror', lambda e: errs.append(str(e))); await page.add_init_script(INIT)
         await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
-        check('desktop: the hero (+ its strip), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and await page.evaluate(ROWS) == 3)
+        check('desktop: the hero (+ its strip), Smash · Slice · Pop It / Spot it · Mix it · Quest, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and await page.evaluate(ROWS) == 4)
         c = await page.evaluate(CARD); check('desktop: Strike is one card: its strip (Stage · Frenzy · Daily · Map, mbSeg) inside the straight hero, one way to play picked', card_ok(c), c)
         await page.click('#start button[data-mode=strike]')
         check('desktop: the Map opens the Adventure map at once', await page.evaluate("!$('advMap').hidden && mode === 'none'"))
@@ -724,7 +724,7 @@ async def main():
             await page.goto('http://localhost:8765/index.html'); await page.wait_for_timeout(1200); await page.evaluate(LEGACY)  # (menu B: after the stickers' entrance)
             if he: await page.evaluate("$('startLang').click()"); await page.wait_for_timeout(100)
             rows = await page.evaluate(ROWS)
-            check(tag + ' phone: the hero (+ its strip), Smash · Slice · Pop It, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and rows == 3, rows)
+            check(tag + ' phone: the hero (+ its strip), Smash · Slice · Pop It / Spot it · Mix it · Quest, the camera games row and the dock fit on one screen (navigation v2)', await page.evaluate(FITS) and rows == 4, rows)
             c = await page.evaluate(CARD); check(tag + ' phone: Strike is one card: its strip (Stage · Frenzy · Daily · Map, mbSeg, >= 44 px) inside the straight hero, one way to play picked', card_ok(c), c)
             await page.screenshot(path='tests/out/strike_start_' + tag + '.png')
             await page.tap('#start button[data-mode=strike]')
