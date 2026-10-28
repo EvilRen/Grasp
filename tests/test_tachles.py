@@ -161,7 +161,11 @@ async def online(b):
     await click(host, '#tachles [data-a^="kick:"] >> nth=2'); await click(host, '#tachles [data-a="kickOk"]'); await host.wait_for_timeout(300)
     check('online: the host kicks a guest: three left, the kicked phone is back at the menu with a toast', await host.evaluate(f"{TKH}.tk.lobby.length") == 3 and (await view(g3))['scr'] == 'menu' and await g3.locator('#tachles .tkToast').count() == 1)
     await g3.screenshot(path=OUT + 'tachles_kicked_he.png')
+    await click(g3, '#tachles [data-a="m:screen"]'); await g3.fill('#tkCode', code); await click(g3, '#tachles [data-a="go:screen"]'); await g3.wait_for_timeout(500)
+    check('TV: the kicked phone joins as a shared screen: the big code, the players, no player added', await g3.locator('#tachles .tkTV .tkTvCode').count() == 1 and await g3.locator('#tachles .tkTvPl .tkChip').count() == 3 and await host.evaluate(f"{TKH}.tk.lobby.length") == 3 and 'מסך משותף מחובר' in await host.inner_text('#tachles .tkTvHint'))
+    await g3.set_viewport_size({'width': 1280, 'height': 720}); await g3.screenshot(path=OUT + 'tachles_tv_lobby.png')
     await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(400); pages = [host, g1, g2]
+    check('TV: the game on the screen: the question card, the scores, the answer chips, no hand', await g3.locator('#tachles .tkTV .tkBlackC').count() == 1 and await g3.locator('#tachles .tkTV .tkScores').count() == 1 and await g3.locator('#tachles .tkHC').count() == 0)
     vs = [await view(p) for p in pages]; check('online: the host starts: every phone in the game, round 1', all(v['scr'] == 'game' and v['round'] == 1 for v in vs), vs)
     hands = [await p.evaluate(f"{TKH}.tk.view.hand.join('|')") for p in pages]; check('online: each phone sees only its own hand (three different hands)', len(set(hands)) == 3, [h[:30] for h in hands])
     J = await host.evaluate(f"{TKH}.tk.view.judge"); pick = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") != J]
@@ -176,6 +180,8 @@ async def online(b):
         await host.wait_for_timeout(150)
     v = await view(host); check('online: everyone answers, the czar picks: a point, every phone sees the trophy on the winning answer', v['phase'] == 'reveal' and sum(v['players']) == 1 and (await view(g2))['phase'] == 'reveal' and await g2.locator('#tachles .tkSub.win .tkTrophy').count() == 1, [v, await view(g2)])
     await g2.screenshot(path=OUT + 'tachles_online_reveal_he.png')
+    check('TV: the reveal on the screen: the winning sentence in the question card and every answer as a sentence', await g3.locator('#tachles .tkTV .tkBlackC mark').count() >= 1 and await g3.locator('#tachles .tkTV .tkSub .tkSent').count() >= 2)
+    await g3.screenshot(path=OUT + 'tachles_tv_reveal.png')
     await host.wait_for_timeout(1900); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
     await click(host, '#tachles [data-a="leave"]'); check('online: Close room asks first', await host.locator('#tachles .tkModal [data-a="leaveOk"]').count() == 1)
     await host.screenshot(path=OUT + 'tachles_leave_he.png')

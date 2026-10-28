@@ -1459,6 +1459,12 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkMoT{ margin:4px 0 10px; } #tachles .tkMoments{ display:flex; flex-direction:column; gap:8px; text-align:start; }
 #tachles .tkMoment{ background:var(--el); border:1px solid var(--bd); border-radius:14px; padding:12px 14px 8px; } #tachles .tkMoment p{ font-size:15px; font-weight:700; line-height:1.45; }
 #tachles .tkMoment mark{ background:rgba(168,85,247,.28); color:#fff; border-radius:6px; padding:0 4px; } #tachles .tkMoF{ display:flex; align-items:center; justify-content:space-between; margin-top:4px; } #tachles .tkMoF small{ color:var(--neonB); font-weight:700; font-size:12px; }
+#tachles .tkTV{ position:relative; width:min(72rem,100%); margin:0 auto; padding:24px 20px 40px; display:flex; flex-direction:column; align-items:center; gap:18px; }
+#tachles .tkTvX{ position:absolute; top:10px; inset-inline-end:10px; opacity:.6; } #tachles .tkTvTop{ display:flex; align-items:center; gap:14px; font-size:20px; } #tachles .tkTvL{ font-size:clamp(16px,2vw,24px); text-align:center; }
+#tachles .tkTvCode{ font-size:clamp(64px,12vw,160px); } #tachles .tkTvPl{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:18px 0; } #tachles .tkTvPl small{ font-size:18px; }
+#tachles .tkTV .tkBlackC{ width:100%; max-width:60rem; } #tachles .tkTV .tkBlackC p{ font-size:clamp(26px,4.4vw,60px); } #tachles .tkTV .tkScores{ width:100%; max-width:60rem; }
+#tachles .tkTV .tkSubs{ max-width:72rem; } #tachles .tkTV .tkSubs .tkSub{ flex:1 1 calc(50% - 12px); max-width:none; } #tachles .tkTV .tkSub .tkFace p{ font-size:clamp(16px,2.2vw,28px); } #tachles .tkTV .tkMoments{ width:100%; max-width:60rem; }
+#tachles .tkTvHint{ margin:-2px 0 10px; } #tachles .tkTV .tkScores, #tachles .tkTV .tkCzar, #tachles .tkTV .tkBanner, #tachles .tkTV .tkChips{ zoom:1.5; }
 #tachles .tkLvls{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
 #tachles .tkLv{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; border-radius:14px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; font-weight:800; font-size:14px; }
 #tachles .tkLv b{ font-size:24px; } #tachles .tkLv.on{ border-color:var(--neon); background:rgba(168,85,247,.16); box-shadow:0 0 18px rgba(168,85,247,.4); } #tachles .tkLv[disabled]{ opacity:.75; } #tachles .tkLv.on[disabled]{ opacity:1; }
@@ -1955,7 +1961,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.14';
+const APP_VERSION = '1.7.15';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21883,7 +21889,7 @@ const TKS = {
     newRoom: 'חדר חדש', joinRoom: 'הצטרפות לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
     errNick: 'בחר כינוי', errCode: 'קוד החדר הוא 4 אותיות באנגלית', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', loading: 'טוען...',
     leaveHost: 'סגור חדר', leave: 'עזוב חדר', leaveG: 'עזוב', roomCode: 'קוד החדר', shareHint: 'שתף את הקוד או את הקישור', copyLink: 'העתק קישור', copied: 'הועתק!', share: 'שתף', shareTxt: "בוא לשחק ת'כלס. קוד החדר: {c}",
-    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'אי אפשר להוסיף עוד בוטים', settings: 'הגדרות', roomSet: 'הגדרות החדר', styleT: 'סגנון הערב', likes: 'אוהב', shareIt: 'שתף', moments: 'רגעי הערב', packsB: 'חבילות: {n} מתוך {m}', cardsN: '{n} קלפים', packsT: 'חבילות', packsD: 'כבה נושא שלא מתאים לחבורה, והקלפים שלו לא יופיעו. כל קלף בלי נושא רגיש תמיד במשחק.', pkAllOn: 'הדלק הכול', pkAllOff: 'כבה הכול', fewCards: 'מעט מדי קלפים: הדלק עוד חבילות', start: 'התחל משחק', needMore: 'צריך עוד שחקן אחד',
+    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'אי אפשר להוסיף עוד בוטים', settings: 'הגדרות', roomSet: 'הגדרות החדר', tvB: 'מסך משותף (טלוויזיה)', tvT: 'מסך משותף', tvD: 'פתח את ת\'כלס בטלוויזיה או במחשב, הקש את קוד החדר מהטלפון של המארח, והמסך הגדול יציג את הלוח לכולם. כל אחד משחק מהטלפון שלו.', tvGo: 'חבר מסך', tvJoin: 'כנסו מהטלפון ל-{u}, ״הצטרף לחדר״, והקישו:', tvHint: '📺 יש טלוויזיה? פתחו בה ת\'כלס ← מסך משותף ← הקוד', tvOn: 'מסך משותף מחובר', styleT: 'סגנון הערב', likes: 'אוהב', shareIt: 'שתף', moments: 'רגעי הערב', packsB: 'חבילות: {n} מתוך {m}', cardsN: '{n} קלפים', packsT: 'חבילות', packsD: 'כבה נושא שלא מתאים לחבורה, והקלפים שלו לא יופיעו. כל קלף בלי נושא רגיש תמיד במשחק.', pkAllOn: 'הדלק הכול', pkAllOff: 'כבה הכול', fewCards: 'מעט מדי קלפים: הדלק עוד חבילות', start: 'התחל משחק', needMore: 'צריך עוד שחקן אחד',
     waitHost: '⏳ מחכים שהמארח יתחיל את המשחק...', winScore: 'נקודות לניצחון', timer: 'זמן לסבב', hand: 'קלפים ביד', noTimer: 'בלי',
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
@@ -22000,7 +22006,7 @@ const TKNET = {
   },
 };
 /* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
-const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7 }, myName: '', passTo: null, net: null, conns: new Map(), peerSeen: {}, code: '', log: [],
+const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7 }, myName: '', passTo: null, net: null, conns: new Map(), screens: new Map(), board: null, peerSeen: {}, code: '', log: [],
   botT: 0, err: '', lobby: [], lobbyView: null, lobbySet: null, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
 function tkStore(v) { try { if (v) localStorage.setItem('grasp.tk', JSON.stringify(v)); else return JSON.parse(localStorage.getItem('grasp.tk') || '{}'); } catch { return {}; } }
 async function tkLoad() { if (tk.deck) return tk.deck; const r = await fetch('/assets/tachles/deck.json?v=' + TK_V); if (!r.ok) throw new Error('deck'); tk.deck = await r.json(); return tk.deck; }
@@ -22011,19 +22017,19 @@ function tkStart() {
   const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7, lvl: [1, 2, 3].includes(st.lvl) ? st.lvl : 2, off: Array.isArray(st.off) ? st.off.filter((k) => TK_PACKS.some((q) => q[0] === k)) : [] }; tk.myName = S.me || '';
   if (!document.getElementById('tkFont')) { const l = document.createElement('link'); l.id = 'tkFont'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap'; document.head.appendChild(l); }
   let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
-  const room = new URLSearchParams(location.search).get('room'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
-  tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm('join'); tk.log.push('start:' + tk.scr);
+  const Q = new URLSearchParams(location.search), room = Q.get('room') || Q.get('screen'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
+  tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm(Q.get('screen') ? 'screen' : 'join'); tk.log.push('start:' + tk.scr);
   clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
 function tkStop() { const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
-function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); }
-function tkNetBye() { try { if (tk.mode === 'host') for (const [, c] of tk.conns) c.send({ t: 'closed' }); else if (tk.mode === 'guest' && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
+function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); tk.screens.clear(); }
+function tkNetBye() { try { if (tk.mode === 'host') for (const [, c] of [...tk.conns, ...tk.screens]) c.send({ t: 'closed' }); else if ((tk.mode === 'guest' || tk.mode === 'screen') && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
 function tkSave() { tkStore({ names: tk.names, set: tk.set, me: tk.myName }); }
 function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkRender, 4600); }
 /* the phone that runs the game: every change goes to every phone (each its own view) and the bots move */
 function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
-  const g = tk.g; if (!g) return; if (tk.mode === 'host') for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} }
+  const g = tk.g; if (!g) return; if (tk.mode === 'host') { for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} } tkBoardPush(); }
   tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
@@ -22084,14 +22090,15 @@ function tkRender() {
     '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' +
     '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
     '<p class="tkFaint tkXs tkC tkOr">' + tks('or') + '</p><div class="tkTwo"><button class="tkS" data-a="m:bots">' + tki('bot') + tks('bots') + '</button><button class="tkS" data-a="m:local">' + tki('phone') + tks('local') + '</button></div></div>' +
-    '<button class="tkS tkW tkWrite" data-a="m:write">✍️ ' + tks('write') + '</button><p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p><button class="tkExit" data-a="home">' + tks('exit') + '</button></div>';
-  else if (s === 'form') { const f = tk.form, T = { create: ['newRoom', 'mkRoom', 'mkRoomL'], join: ['joinRoom', 'joinGo', 'joinGoL'], bots: ['botsT', 'goRoom', 'goRoom'] }[f];
-    h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad7"><button class="tkBack" data-a="menu">' + tki('back', 'lflip') + '<span>' + tks('back') + '</span></button><h2 class="tkH2">' + tks(T[0]) + '</h2>' + tkNickRow(tk.myName) +
-      (f === 'join' ? '<input id="tkCode" class="tkCodeIn" maxlength="4" placeholder="ABCD" dir="ltr" autocomplete="off" value="' + tkEsc(tk.code) + '">' : '') +
+    '<button class="tkS tkW tkWrite" data-a="m:write">✍️ ' + tks('write') + '</button><button class="tkS tkW tkWrite" data-a="m:screen">📺 ' + tks('tvB') + '</button><p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p><button class="tkExit" data-a="home">' + tks('exit') + '</button></div>';
+  else if (s === 'form') { const f = tk.form, T = { create: ['newRoom', 'mkRoom', 'mkRoomL'], join: ['joinRoom', 'joinGo', 'joinGoL'], bots: ['botsT', 'goRoom', 'goRoom'], screen: ['tvT', 'tvGo', 'joinGoL'] }[f];
+    h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad7"><button class="tkBack" data-a="menu">' + tki('back', 'lflip') + '<span>' + tks('back') + '</span></button><h2 class="tkH2">' + tks(T[0]) + '</h2>' + (f === 'screen' ? '<p class="tkDim tkLh tkMb">' + tks('tvD') + '</p>' : tkNickRow(tk.myName)) +
+      (f === 'join' || f === 'screen' ? '<input id="tkCode" class="tkCodeIn" maxlength="4" placeholder="ABCD" dir="ltr" autocomplete="off" value="' + tkEsc(tk.code) + '">' : '') +
       (tk.err ? '<div class="tkErr">' + tkEsc(tk.err) + '</div>' : '') + '<button class="tkP tkW tkLg" data-a="go:' + f + '"' + (tk.busy ? ' disabled' : '') + '>' + tks(tk.busy ? T[2] : T[1]) + '</button></div></div>'; }
   else if (s === 'setLocal') h = tkLocalHtml();
   else if (s === 'write') h = tkWriteHtml();
   else if (s === 'lobby') h = tkLobbyHtml();
+  else if (s === 'board') h = tkBoardHtml();
   else if (s === 'game' && tk.view) h = tk.view.phase === 'over' ? tkWinHtml(tk.view) : tkGameHtml(tk.view);
   else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
   const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
@@ -22156,6 +22163,7 @@ function tkLobbyHtml() {
   const me = tk.mode === 'guest' ? tk.guestId : 'h';
   let h = '<div class="tkWrap2">' + tkTop(tk.mode === 'host' ? tks('leaveHost') : tk.mode === 'guest' ? tks('leave') : tks('back'), '<span class="tkFaint">' + tks('title') + '</span>');
   if (online) h += '<div class="tkCard tkPad7 tkGlow tkMb"><p class="tkDim tkSm tkC">' + tks('roomCode') + '</p><div class="tkNeon tkCodeBig" dir="ltr">' + tkEsc(tk.code) + '</div><p class="tkDim tkSm tkC">' + (tk.netMsg ? tkEsc(tk.netMsg) : tks('shareHint')) + '</p>' +
+    (tk.mode === 'host' ? '<p class="tkFaint tkXs tkC tkTvHint">' + (tk.screens.size ? '📺 ' + tks('tvOn') : tks('tvHint')) + '</p>' : '') +
     '<div class="tkTwo"><button class="tkS tkSm" data-a="copy">' + (Date.now() - tk.copied < 2000 ? tki('check', 'neonI') + '<span class="tkNeonC">' + tks('copied') + '</span>' : tki('copy') + tks('copyLink')) + '</button><button class="tkP tkSm" data-a="share">' + tki('share') + tks('share') + '</button></div></div>';
   h += '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">' + tks('players') + ' <span class="tkDim tkSm">(' + list.length + ')</span></h2><div class="tkCol8">' + list.map((p) => {
     const isMe = p.id === me, isHost = p.id === 'h';
@@ -22305,6 +22313,9 @@ function tkClick(e) {
     if (w === 'w' || w === 'b') tk.wr.ty = w; else if (w === 'blank') tk.wr.text = (tk.wr.text.trimEnd() + ' ___ ').trimStart(); else if (w === 'send') return tkWriteSend(); }
   else if (a === 'm:local') { tk.mode = 'local'; tk.scr = 'setLocal'; tk.botsL = tk.botsL || 0; }
   else if (a === 'shuffle') { tk.myName = tkNick(); const x = $('tkMe'); if (x) { x.value = tk.myName; $('tkAvBox').innerHTML = tkAv(tk.myName, 48); } return; }
+  else if (a === 'go:screen') { const c = $('tkCode'); if (c) tk.code = c.value.trim().toUpperCase(); if (tk.code.length !== 4) tk.err = tks('errCode'); else return tkScreen(); }
+  else if (a === 'm:screen') tkForm('screen');
+  else if (a === 'tvExit') { tkNetBye(); tkNetClose(); tk.board = null; tk.mode = null; tk.scr = 'menu'; }
   else if (a.startsWith('go:')) { const f = a.slice(3), nm = nameOf(); tk.myName = nm; const c = $('tkCode'); if (c) tk.code = c.value.trim().toUpperCase();
     if (!nm) tk.err = tks('errNick'); else if (f === 'join' && tk.code.length !== 4) tk.err = tks('errCode');
     else { tk.err = ''; tkSave(); if (f === 'create') return tkHost(nm); if (f === 'join') return tkJoin(nm);
@@ -22355,9 +22366,10 @@ async function tkHost(name) {
   try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => tkGone(c.peer || c.id)); }, () => { tk.netMsg = tks('netErr'); tkRender(); }); tk.netMsg = ''; tk.log.push('host:' + tk.code); }
   catch { tk.netMsg = tks('netErr'); } tkRender();
 }
-function tkGone(id) { tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
+function tkGone(id) { if (tk.screens.delete(id)) { tkRender(); return; } tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
 function tkFromGuest(c, m) {
   const id = c.peer || c.id; if (!m || typeof m !== 'object') return;
+  if (m.t === 'screen') { tk.screens.set(id, c); tk.log.push('tv'); tkBoardPush(); tkRender(); return; }
   if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 20); tk.conns.set(id, c); if (Array.isArray(m.seen)) tk.peerSeen[id] = m.seen.slice(0, 4000);
     if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p) { p.on = true; tkPush(); return; } }
     if (!tk.lobby.some((p) => p.id === id)) { if (tk.lobby.length >= TK_MAXP) { try { c.send({ t: 'full' }); } catch {} tk.conns.delete(id); return; } tk.lobby.push({ id, name }); }
@@ -22365,7 +22377,36 @@ function tkFromGuest(c, m) {
   if (m.t === 'bye') return tkGone(id);
   if (!tk.g || !tk.conns.has(id)) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'swap') TK.swap(tk.g, id); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); tkPush();
 }
-function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} } tkRender(); }
+function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} } tkBoardPush(); tkRender(); }
+/* the shared screen (the owner: a TV shows the board, the phones are the hands, like Jackbox): a phone or a TV browser joins the room as a screen (no player);
+   the host sends it what everyone may see: the room, then the game as seen by nobody in it (no hand) */
+function tkBoardPush() { if (tk.mode !== 'host' || !tk.screens.size) return; const v = tk.g ? { scr: 'game', v: TK.view(tk.g, '~tv') } : { scr: 'lobby', code: tk.code, list: tk.lobby, set: tk.set };
+  for (const [, c] of tk.screens) { try { c.send({ t: 'board', v }); } catch {} } }
+async function tkScreen() {
+  tk.mode = 'screen'; tk.busy = true; tk.err = ''; tkRender();
+  const out = (k) => { tkNetClose(); tk.board = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
+  try { tk.net = await TKNET.join(tk.code, (m) => {
+      if (m.t === 'board') { tk.board = m.v; tk.scr = 'board'; tk.busy = false; if (m.v.v) tkSeen(m.v.v); }
+      else if (m.t === 'closed') return out('closed');
+      tkRender(); }, () => { if (tk.mode === 'screen' && tk.net) out('closed'); });
+    tk.net.send({ t: 'screen' }); tk.log.push('screen:' + tk.code);
+    setTimeout(() => { if (tk.busy && tk.mode === 'screen' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
+  catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
+}
+function tkBoardHtml() {
+  const B = tk.board; if (!B) return ''; let h = '<div class="tkTV"><button class="tkExit tkTvX" data-a="tvExit">' + tks('exit') + '</button>';
+  if (B.scr === 'lobby') return h + '<div class="tkC"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkTvL">' + tks('tvJoin', { u: location.host + '/tachles' }) + '</p><div class="tkNeon tkCodeBig tkTvCode" dir="ltr">' + tkEsc(B.code) + '</div>' +
+    '<div class="tkTvPl">' + (B.list || []).map((p) => '<div class="tkChip">' + tkAv(p.name, 40) + '<small>' + tkEsc(p.name) + '</small></div>').join('') + '</div><p class="tkFaint tkTvL">' + tks('waitHost') + '</p></div></div>';
+  const v = B.v;
+  if (v.phase === 'over') return h + '<div class="tkC">' + tki('trophy', 'tkBigT') + '<p class="tkDim">' + tks('winner') + '</p><h1 class="tkNeon tkH0">' + tkEsc(v.winner || '') + '</h1></div>' + tkScoresHtml(v, null) + tkMomentsHtml(v) + '</div>';
+  h += '<div class="tkTvTop"><span class="tkFaint">' + tks('round', { n: v.round }) + '</span>' + (v.phase === 'pick' ? tkRing(v) : '') + '</div>' + tkScoresHtml(v, null) +
+    '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b></span></div>' +
+    '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>';
+  if (v.phase === 'pick') h += tkStatusHtml(v);
+  else if (v.phase === 'judge') h += '<p class="tkDim tkTvL">' + tks('czarPicking') + '</p>' + tkSubsHtml(v, false);
+  else h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div></div>' + tkSubsHtml(v, false);
+  return h + '</div>';
+}
 async function tkJoin(name) {
   tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender();
   const out = (k) => { tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
