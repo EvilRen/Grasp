@@ -92,11 +92,43 @@ async def sticker(b):
     check('HE: the sticker opens it in one tap', ok)
     check('sticker: no page errors', not errs, errs); await ctx.close()
 
+async def pool(b):
+    # the pool (the owner, Oct 2026: "at least 30 versions per picture"): every scene 30+ differences; each game a new mix of 3 / 5 / 7 that do
+    # not touch (big ones on level 1), half of them mirrored; the changed picture really differs inside every circle and nowhere else; Restart
+    # keeps the mix, the next game brings another
+    ctx, page, errs, ok = await spot_page(b)
+    n = await page.evaluate(f"Object.fromEntries({SP}.spot.data.scenes.map((s) => [s.id, (s.pool || []).length]))")
+    check('every scene has a pool of 30+ differences', all(v >= 30 for v in n.values()), n)
+    r = await page.evaluate(f"""(() => {{ const out = {{}}; for (const s of {SP}.spot.data.scenes) for (const l of [1, 2, 3]) {{ const seen = new Set(); let bad = 0, big = 0;
+      for (let k = 0; k < 40; k++) {{ const P = {SP}.pick(s, l); if (P.length !== [3, 5, 7][l - 1]) bad++; if (l === 1 && P.filter((p) => p.t === 1).length >= 2 && P.every((p) => p.t <= 2)) big++;
+        P.forEach((a, i) => P.forEach((c, j) => {{ if (j > i && Math.hypot(a.x - c.x, (a.y - c.y) * s.h / s.w) < a.r + c.r) bad++; }})); seen.add(P.map((p) => p.id).sort().join()); }}
+      out[s.id + ':' + l] = [seen.size, bad, big]; }} return out; }})()""")
+    check('40 picks per scene and level: the right count, never two circles touching, 25+ different mixes (x2 mirrored)', all(v[1] == 0 and v[0] >= 25 for v in r.values()), {k: v for k, v in r.items() if v[1] or v[0] < 25})
+    check('level 1 picks the big ones (2 big + 1 medium in most picks)', all(v[2] >= 30 for k, v in r.items() if k.endswith(':1')), {k: v for k, v in r.items() if k.endswith(':1') and v[2] < 30})
+    sid = await page.evaluate(f"{SP}.spot.data.scenes[3].id")
+    for flip in ('false', 'true'):
+        await page.evaluate(f"{SP}.start('{sid}', 3, {{ flip: {flip} }})"); await wait(page, f"{SP}.spot.ready && {SP}.spot.lvl === 3", 8000)
+        q = await page.evaluate(f"""(() => {{ const S = {SP}.spot, w = S.imgA.width, h = S.imgA.height, a = S.imgA.getContext('2d').getImageData(0, 0, w, h).data, c = S.imgB.getContext('2d').getImageData(0, 0, w, h).data;
+          const D = S.diffs, ins = D.map(() => 0), dif = (i) => Math.abs(a[i] - c[i]) + Math.abs(a[i + 1] - c[i + 1]) + Math.abs(a[i + 2] - c[i + 2]); let out = 0;
+          for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {{ const i = (y * w + x) * 4, k = D.findIndex((d) => Math.hypot(x / w - d.x, (y / h - d.y) * h / w) <= d.r * 1.05); if (dif(i) > 30) {{ if (k < 0) out++; else ins[k]++; }} }}
+          return {{ flip: S.flip, mix: S.log[S.log.length - 1].includes(':mix:'), ins, out, n: D.length }}; }})()""")
+        check('a mix (%s): 7 differences, the changed picture differs inside every circle (%s) and not outside (%d px)' % ('mirrored' if flip == 'true' else 'as drawn', q['ins'], q['out']), q['mix'] and q['n'] == 7 and str(q['flip']).lower() == flip and min(q['ins']) >= 15 and q['out'] < 60, q)
+    await page.screenshot(path=OUT + 'spot_mix.png')
+    ids = await page.evaluate(f"{SP}.spot.last.ids.join()")
+    await page.tap('#pauseBtn'); await wait(page, "menu.open", 3000); await page.click('#resetBtn'); await wait(page, f"{SP}.spot.ready && !menu.open", 6000)
+    check('Restart: the same mix again', await page.evaluate(f"{SP}.spot.last.ids.join()") == ids)
+    await page.evaluate(f"{SP}.start('{sid}', 3)"); await wait(page, f"{SP}.spot.ready", 8000)
+    check('a new game of the same puzzle: another mix', await page.evaluate(f"{SP}.spot.last.ids.join()") != ids)
+    D = await page.evaluate(f"{SP}.diffs()")
+    for i in range(len(D)): await tapat(page, *(await diff_pt(page, i, 'B' if i % 2 else 'A')))
+    check('a mix is played like any puzzle: all found, 3 stars', await wait(page, f"{SP}.spot.over", 4000) and await page.evaluate(f"{SP}.spot.starsN") == 3)
+    check('pool: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (False, True): await play(b, he)
-        await levels(b); await wide(b); await sticker(b)
+        await levels(b); await pool(b); await wide(b); await sticker(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())

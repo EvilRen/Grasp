@@ -33,6 +33,7 @@ def ellipse_mask(cx, cy, rx, ry, feather=0):
     return m
 
 def shape_mask(e, cx, cy, rx, ry, feather=0):
+    if e.get('_mask') is not None: return cv2.GaussianBlur(e['_mask'], (0, 0), feather) if feather else e['_mask']  # (tools/spot_pool.py: an object's own outline)
     if e.get('shape') != 'rect': return ellipse_mask(cx, cy, rx, ry, feather)
     m = np.zeros((OUT_H, OUT_W), np.uint8); x0, x1 = round((cx - rx) * OUT_W), round((cx + rx) * OUT_W); y0, y1 = round((cy - ry) * OUT_H), round((cy + ry) * OUT_H)
     r = max(2, min(x1 - x0, y1 - y0) // 4); cv2.rectangle(m, (x0 + r, y0), (x1 - r, y1), 255, -1); cv2.rectangle(m, (x0, y0 + r), (x1, y1 - r), 255, -1)

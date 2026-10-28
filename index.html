@@ -1703,7 +1703,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.3.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2474,14 +2474,14 @@ Object.assign(I18N.he, {
 Object.assign(I18N.en, {
   twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.2.0',
-  wn: ['\uD83D\uDCA5 A bigger boom in Smash: a flash, a shock wave, the world holds its breath', '\uD83D\uDC22 The last block flies off in slow motion', '\uD83C\uDF0D A new world every 5 towers: kitchen, picnic, castle, space and candy land', '\uD83C\uDFF0 Shapes that change: castles, sky towers, walls and pyramids', '\uD83D\uDC51 The giant king on every 5th tower, with 3 hearts'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.3.0',
+  wn: ['\uD83D\uDD0D Spot it: a new game every time, more than 30 differences hidden in every picture', '\uD83C\uDF82 5 new pictures: a birthday party, a playground, sports day, a magic forest and hero city', '\uD83E\uDE9E Sometimes the pictures come mirrored, so nothing is ever the same', '\uD83D\uDD01 Restart keeps the same differences, Next brings new ones'],
 });
 Object.assign(I18N.he, {
   twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.2.0',
-  wn: ['\uD83D\uDCA5 בום חזק יותר בריסוק: הבזק, גל הדף ורגע שהכול עוצר', '\uD83D\uDC22 הקובייה האחרונה עפה בהילוך איטי', '\uD83C\uDF0D עולם חדש כל 5 מגדלים: מטבח, פיקניק, טירה, חלל וארץ הממתקים', '\uD83C\uDFF0 צורות שמתחלפות: טירות, גורדי שחקים, חומות ופירמידות', '\uD83D\uDC51 המלך הענק בכל מגדל חמישי, עם 3 לבבות'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.3.0',
+  wn: ['\uD83D\uDD0D הבדלים: משחק חדש בכל פעם, יותר מ־30 הבדלים מחכים בכל תמונה', '\uD83C\uDF82 5 תמונות חדשות: מסיבת יום הולדת, גן שעשועים, יום ספורט, יער קסום ועיר גיבורים', '\uD83E\uDE9E לפעמים התמונות מגיעות הפוכות, כך ששום משחק לא חוזר על עצמו', '\uD83D\uDD01 "מההתחלה" משאיר את אותם הבדלים, "הבא" מביא חדשים'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -15126,7 +15126,7 @@ function toggleHud() { hudEl.hidden = !hudEl.hidden; if (!hudEl.hidden) updateHu
 function syncHudBtn() { $('hudBtn').setAttribute('aria-pressed', String(!hudEl.hidden)); }
 window.addEventListener('keydown', (e) => { if (e.key === 'd' || e.key === 'D') toggleHud(); });
 $('hudBtn').addEventListener('click', toggleHud);
-$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(true); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (gameMode === 'spot') spotStart({ s: spot.sc, l: spot.lvl }); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
+$('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetSlice(true); else if (gameMode === 'busy') resetBusy(); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'shapes') { if (!shapes.over) buildShapesLevel(shapes.level, performance.now()); } else if (gameMode === 'smash') { if (engine) resetSmash(performance.now()); } else if (cgOn()) cgRestart(performance.now()); else if (gameMode === 'spot') spotStart({ s: spot.sc, l: spot.lvl, same: true }); else if (tgOn()) tgReset(gameMode); else if (engine) spawnObjects(); });
 
 /* ---------------- Strike: the toolbar folds into one pause button (body.minChrome). A tap (or a camera dwell) pauses the game and opens
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
@@ -20463,11 +20463,16 @@ window.__grasp.sand = { SA, sa, shade: () => saShade(), layout: () => (saLayout(
    sticker plays the next puzzle). The pictures and the answer key come from tools/spot_make.py (assets/spot/spot.json: per scene the original
    a.webp, the changed l1-l3.webp, each difference's hit circle x, y, r as fractions; SPOT_V busts the offline cache when they change). A wrong
    tap: a small red cross (counted, never a fail); the bulb: one difference glows round its spot for a moment. Stars by mistakes and hints, a
-   few coins, the shared card (Next / Home). Played by touch. Hooks: __grasp.spot. ---------------- */
-const SPOT_V = 3;
-const SP = { url: '/assets/spot/', hintMs: 2600, hintCool: 6000, crossMs: 700, doneMs: 900, coins: [0, 3, 4, 6], slop: 14 };
+   few coins, the shared card (Next / Home). Played by touch. Hooks: __grasp.spot.
+   The pool (the owner, Oct 2026: "at least 30 versions per picture"): a scene with a "pool" (30+ checked differences, tools/spot_pool.py, each an
+   RGBA patch in its atlas p.webp) is played as a new mix every time: spPick takes 3 / 5 / 7 that do not touch (2 big + 1 medium on level 1,
+   big, medium and small on 2 and 3; the ones played lately last), spCompose lays them on the original, and half the time both pictures are
+   mirrored. Without a pool (or if the atlas fails) the fixed l1-l3 pictures play as before. ---------------- */
+const SPOT_V = 4;
+const SP = { url: '/assets/spot/', hintMs: 2600, hintCool: 6000, crossMs: 700, doneMs: 900, coins: [0, 3, 4, 6], slop: 14, mix: { 1: [2, 1, 0], 2: [2, 2, 1], 3: [2, 2, 3] }, gap: 0.012, minPool: 12 };
 const spot = { data: null, loading: null, startId: 0, sc: null, lvl: 1, key: '', imgA: null, imgB: null, ready: false, err: null, found: [], foundAt: [], miss: 0, hints: 0,
-  hint: null, hintAt: -1e9, crosses: [], doneAt: 0, over: false, overAt: 0, starsN: 0, coins: 0, secs: 0, t0: 0, ui: { buttons: null, hover: null, dwell: null }, L: null, lkey: '', log: [] };
+  hint: null, hintAt: -1e9, crosses: [], doneAt: 0, over: false, overAt: 0, starsN: 0, coins: 0, secs: 0, t0: 0, ui: { buttons: null, hover: null, dwell: null }, L: null, lkey: '', log: [],
+  diffs: null, flip: false, recent: {}, mixes: 0, last: null };
 function spP() { if (!profile.spot || typeof profile.spot !== 'object') profile.spot = { solved: {} }; if (!profile.spot.solved || typeof profile.spot.solved !== 'object') profile.spot.solved = {}; return profile.spot; }
 function spValidate(v) { const out = { solved: {} }; if (v && typeof v === 'object' && v.solved && typeof v.solved === 'object') for (const k in v.solved) { const n = Math.round(+v.solved[k]); if (/^[\w-]{1,12}:[123]$/.test(k) && n >= 1 && n <= 3) out.solved[k] = n; } return out; }
 function spLoad() {
@@ -20479,17 +20484,47 @@ function spLoad() {
 }
 function spOrder() { const out = []; for (let l = 1; l <= 3; l++) for (const s of spot.data.scenes) out.push({ s, l }); return out; } // (level 1 of every scene, then 2, then 3)
 function spNextPuzzle() { const P = spP(), list = spOrder(); return list.find((q) => !P.solved[q.s.id + ':' + q.l]) || list[Math.floor(Math.random() * list.length)]; } // (all solved: any one again)
-function spDiffs() { return spot.sc ? spot.sc.levels[spot.lvl - 1].diffs : []; }
+function spDiffs() { return spot.diffs || (spot.sc ? spot.sc.levels[spot.lvl - 1].diffs : []); }
+/* the pool: n differences that do not touch, by size for the level (1 big, 2 medium, 3 small; short of a size: any), the recent ones last */
+function spPick(sc, l) {
+  const n = [3, 5, 7][l - 1], want = SP.mix[l].slice(), ar = sc.h / sc.w, rec = spot.recent[sc.id] || [], P = sc.pool.slice();
+  for (let i = P.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [P[i], P[j]] = [P[j], P[i]]; }
+  P.sort((a, b) => rec.includes(a.id) - rec.includes(b.id));
+  const out = [], free = (p) => !out.includes(p) && out.every((q) => Math.hypot(p.x - q.x, (p.y - q.y) * ar) >= p.r + q.r + SP.gap);
+  for (let t = 1; t <= 3; t++) for (const p of P) { if (!want[t - 1]) break; if (p.t === t && free(p)) { out.push(p); want[t - 1]--; } }
+  for (const p of P) { if (out.length >= n) break; if (free(p)) out.push(p); }
+  spot.recent[sc.id] = rec.filter((id) => !out.some((p) => p.id === id)).concat(out.map((p) => p.id)).slice(-Math.floor(sc.pool.length * 0.6));
+  return out;
+}
+/* the two pictures: the original, and the original with the picked patches laid on (both mirrored when flip) */
+function spCompose(a, atlas, picks, flip) {
+  const w = a.naturalWidth || a.width, h = a.naturalHeight || a.height, mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  const A = mk(), B = mk(), ga = A.getContext('2d'), gb = B.getContext('2d');
+  for (const g of [ga, gb]) { if (flip) { g.translate(w, 0); g.scale(-1, 1); } g.drawImage(a, 0, 0, w, h); }
+  for (const p of picks) { const [ax, ay, pw, ph] = p.p; gb.drawImage(atlas, ax, ay, pw, ph, p.o[0], p.o[1], pw, ph); }
+  return { A, B, diffs: picks.map((p) => ({ x: flip ? 1 - p.x : p.x, y: p.y, r: p.r, id: p.id, t: p.t, do: p.do })) };
+}
 async function spotStart(pz) {
-  const id = ++spot.startId; Object.assign(spot, { over: false, ready: false, err: null, found: [], foundAt: [], miss: 0, hints: 0, hint: null, hintAt: -1e9, crosses: [], doneAt: 0, starsN: 0, coins: 0, lkey: '' });
+  const id = ++spot.startId; Object.assign(spot, { over: false, ready: false, err: null, found: [], foundAt: [], miss: 0, hints: 0, hint: null, hintAt: -1e9, crosses: [], doneAt: 0, starsN: 0, coins: 0, lkey: '', diffs: null, flip: false });
   spot.ui = { buttons: null, hover: null, dwell: null };
   try { await spLoad(); } catch (e) { if (id === spot.startId) { spot.err = 'load'; spot.log.push('err:load'); } return; }
   if (id !== spot.startId) return;
   const q = pz && pz.s ? pz : spNextPuzzle(); spot.sc = q.s; spot.lvl = q.l; spot.key = q.s.id + ':' + q.l;
   const ld = (src) => new Promise((ok, no) => { const im = new Image(); im.decoding = 'async'; im.onload = () => ok(im); im.onerror = () => no(new Error(src)); im.src = src + '?v=' + SPOT_V; });
+  const pool = q.s.pool && q.s.atlas && q.s.pool.length >= SP.minPool && !(pz && pz.fixed);
   try {
+    if (pool) {
+      try {
+        const [a, at] = await Promise.all([ld(SP.url + q.s.id + '/' + q.s.a), ld(SP.url + q.s.id + '/' + q.s.atlas)]); if (id !== spot.startId) return;
+        const same = pz && pz.same && spot.last && spot.last.key === spot.key ? spot.last : null; // (Restart: the same mix again)
+        const flip = same ? same.flip : pz && typeof pz.flip === 'boolean' ? pz.flip : Math.random() < 0.5, picks = same ? same.ids.map((i) => q.s.pool.find((p) => p.id === i)).filter(Boolean) : spPick(q.s, q.l);
+        spot.last = { key: spot.key, flip, ids: picks.map((p) => p.id) };
+        if (picks.length === [3, 5, 7][q.l - 1]) { const C = spCompose(a, at, picks, flip); spot.imgA = C.A; spot.imgB = C.B; spot.diffs = C.diffs; spot.flip = flip; spot.mixes++;
+          spot.ready = true; spot.t0 = performance.now(); spot.log.push('start:' + spot.key + ':mix:' + picks.map((p) => p.id).join(',') + (flip ? ':flip' : '')); return; }
+      } catch {} if (id !== spot.startId) return; // (no atlas: the fixed pictures)
+    }
     const [a, b] = await Promise.all([ld(SP.url + q.s.id + '/' + q.s.a), ld(SP.url + q.s.id + '/' + q.s.levels[q.l - 1].img)]); if (id !== spot.startId) return;
-    spot.imgA = a; spot.imgB = b; spot.ready = true; spot.t0 = performance.now(); spot.log.push('start:' + spot.key);
+    spot.imgA = a; spot.imgB = b; spot.diffs = null; spot.ready = true; spot.t0 = performance.now(); spot.log.push('start:' + spot.key);
   } catch { if (id === spot.startId) { spot.err = 'img'; spot.log.push('err:img'); } }
 }
 /* the layout: the two pictures as big as fit between the pause button and the bottom row (the found dots, the level, the bulb) */
@@ -20566,7 +20601,7 @@ function renderSpot(now) {
   drawParticles(); drawRings(now);
   if (spot.over) drawEndCard(now, spot, { stars: spot.starsN, title: t('spDone'), score: LRM + D.length + '/' + D.length, stats: [[spot.miss, 'spMissL'], [spot.hints, 'spHintL'], [spot.secs, 'spTimeL']], againLabel: t('spNext') });
 }
-window.__grasp.spot = { SP, spot, load: spLoad, start: (id, l) => spotStart(id ? { s: spot.data.scenes.find((s) => s.id === id), l: l || 1 } : null), diffs: spDiffs, layout: () => (spot.lkey = '', spLayout()), next: spNextPuzzle, profile: spP };
+window.__grasp.spot = { SP, spot, load: spLoad, start: (id, l, o) => spotStart(id ? { s: spot.data.scenes.find((s) => s.id === id), l: l || 1, ...(o || {}) } : null), pick: spPick, diffs: spDiffs, layout: () => (spot.lkey = '', spLayout()), next: spNextPuzzle, profile: spP };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
    Chrome) or on iOS (a small "Add to Home Screen" how-to sheet); never shown in the installed app; a dismissal snoozes the start-screen chip
