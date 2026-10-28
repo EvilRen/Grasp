@@ -1935,7 +1935,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.7';
+const APP_VERSION = '1.7.8';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22057,10 +22057,10 @@ const TK_MAIL = 'https://formsubmit.co/ajax/bennyankri@gmail.com';
 function tkMine(v) { try { if (v) localStorage.setItem('grasp.tkMine', JSON.stringify(v.slice(-30))); else return JSON.parse(localStorage.getItem('grasp.tkMine') || '[]'); } catch { return []; } }
 const tkBlanks = (t) => Math.min(3, (t.match(/_{2,}/g) || []).length);
 function tkWriteHtml() {
-  const W0 = tk.wr || (tk.wr = { ty: 'w', text: '' }), black = W0.ty === 'b', n = tkBlanks(W0.text), today = new Date().toISOString().slice(0, 10), left = 5 - tkMine().filter((m) => m.d === today).length;
+  const W0 = tk.wr || (tk.wr = { ty: 'b', text: '' }) /* (the question first, then the answer: the owner) */, black = W0.ty === 'b', n = tkBlanks(W0.text), today = new Date().toISOString().slice(0, 10), left = 5 - tkMine().filter((m) => m.d === today).length;
   const mine = tkMine().slice(-5).reverse();
   return '<div class="tkWrap2">' + tkTop(tks('back'), '<span class="tkFaint">' + tks('title') + '</span>') + '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">✍️ ' + tks('write') + '</h2><p class="tkDim tkSm tkMb">' + tks('writeD') + '</p>' +
-    '<div class="tkTwo tkMb"><button class="' + (black ? 'tkS' : 'tkP') + '" data-a="wr:w">' + tks('wrWhite') + '</button><button class="' + (black ? 'tkP' : 'tkS') + '" data-a="wr:b">' + tks('wrBlack') + '</button></div>' +
+    '<div class="tkTwo tkMb"><button class="' + (black ? 'tkP' : 'tkS') + '" data-a="wr:b">' + tks('wrBlack') + '</button><button class="' + (black ? 'tkS' : 'tkP') + '" data-a="wr:w">' + tks('wrWhite') + '</button></div>' +
     '<div class="tkFace ' + (black ? 'tkBlackC' : 'tkWhiteC') + ' tkWrCard"><textarea id="tkWrT" maxlength="140" rows="4" placeholder="' + tks(black ? 'wrPhB' : 'wrPhW') + '">' + tkEsc(W0.text) + '</textarea>' + (black ? '<span class="tkPickL" id="tkWrN">' + (n > 1 ? tks('pickN', { n }) : '') + '</span>' : '') + '</div>' +
     (black ? '<button class="tkS tkSm tkMt" data-a="wr:blank">+ ___ ' + tks('wrBlank') + '</button>' : '') +
     (tk.wrMsg ? '<div class="' + (tk.wrMsg === 'wrSent' ? 'tkOk' : 'tkErr') + ' tkMt">' + tks(tk.wrMsg) + '</div>' : '') +
