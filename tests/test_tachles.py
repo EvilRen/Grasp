@@ -88,6 +88,13 @@ async def gate_and_bots(b, he):
     await page.wait_for_timeout(200); v = await view(page)
     check(tag + ': the game played to the end (3 points), round after round on its own; the win screen (trophy, podium, New game)', v['phase'] == 'over' and max(v['players']) == 3 and await page.locator('#tachles .tkMedal').count() == 3 and await page.locator('#tachles [data-a="again"]').count() == 1, v)
     await page.screenshot(path=OUT + 'tachles_over_%s.png' % tag.lower())
+    check(tag + ': the evening\'s moments: the winning sentences (the answer marked), a share button on each', await page.locator('#tachles .tkMoment').count() >= 3 and await page.locator('#tachles .tkMoment mark').count() >= 3 and await page.locator('#tachles .tkMoment [data-a^="shr:"]').count() >= 3)
+    await page.evaluate("navigator.canShare = () => true; navigator.share = (d) => { const r = new FileReader(); r.onload = () => { window.__shot = r.result; }; r.readAsDataURL(d.files[0]); window.__shared = d.files[0].size; return Promise.resolve(); }; 1")
+    await click(page, '#tachles .tkMoment [data-a^="shr:"] >> nth=0'); await page.wait_for_timeout(800)
+    sz = await page.evaluate("window.__shared || 0"); check(tag + ': share: a picture of the sentence goes to the share sheet', sz > 20000, sz)
+    if tag == 'HE':
+        import base64; d64 = await page.evaluate("window.__shot || ''")
+        if d64: open(OUT + 'tachles_share.png', 'wb').write(base64.b64decode(d64.split(',')[1]))
     await click(page, '#tachles [data-a="again"]'); check(tag + ': New game: back to the room, the same players', (await view(page))['scr'] == 'lobby' and await page.evaluate(f"{TKH}.tk.lobby.length") == 3)
     await page.evaluate("goHome()"); await page.wait_for_timeout(500)
     check(tag + ': Home: the sheet goes, the corner buttons are back', await page.evaluate("$('tachles').hidden && mode === 'none' && !document.body.classList.contains('tkOn')"))
