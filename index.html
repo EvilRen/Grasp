@@ -1246,8 +1246,11 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 #start.mb.intro .stk, #start.mb.intro .mbChip, #start.mb.intro .mbAgeB, #start.mb.intro .mbBubu, #start.mb.intro .mbDockB{ animation:mbIn .45s cubic-bezier(.3,1.5,.5,1) both; animation-delay:calc(var(--i,0) * 55ms); }
 @keyframes mbIn{ from{ opacity:0; transform:rotate(var(--rot,0deg)) translateY(4cqw) scale(.55); } }
 /* the big kids' room: the Strike hero (+ the Map), then Smash · Slice · Arcade · Camera games, then the dock */
-.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; grid-template-rows:auto minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
-.mbGrid .stk{ --icS:min(16cqw, 16cqh); } /* (four stickers a row since spot the difference) */
+.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:auto minmax(0,1fr) minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
+.mbGrid .stk{ --icS:min(16cqw, 13cqh); } /* (three stickers a row, two rows, since Mix: each spans 2 of the 6 columns; a short last row sits in the middle) */
+.mbGrid > .stk{ grid-column:span 2; }
+.mbGrid > .stk.mbMid{ grid-column:2 / span 2; }
+.mbGrid > .stk.mbMid + .stk{ grid-column:4 / span 2; }
 .mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
@@ -1336,6 +1339,21 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #menuFoot{ position:fixed; left:0; right:0; bottom:calc(2px + env(safe-area-inset-bottom,0px)); z-index:1; text-align:center; font:700 11px/1 var(--mbF); letter-spacing:.5px; color:var(--mbInk); opacity:.45; pointer-events:none; }
 #start.mb.intro #menuFoot{ animation:mbIn .45s ease-out both; animation-delay:.4s; }
 .mbOv .wnSheet{ display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; max-height:calc(100dvh - 32px); overflow-y:auto; }
+.mbOv .mxBook{ display:flex; flex-direction:column; gap:8px; width:min(520px,100%); max-height:calc(100dvh - 32px); }
+.mxBook header{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.mxBook header small{ font-size:15px; opacity:.6; }
+.mxTabs{ display:flex; gap:6px; overflow-x:auto; padding:2px 2px 6px; flex:none; scrollbar-width:thin; }
+.mxTab{ flex:none; display:flex; flex-direction:column; align-items:center; min-width:52px; padding:4px 6px; border:2px solid var(--mbInk); border-radius:14px; background:#fff6d6; cursor:pointer; }
+.mxTab.on{ background:#ff8a3d; color:#fff; }
+.mxTab .e{ font-size:24px; line-height:1.1; } .mxTab .n{ font-size:11px; font-weight:800; direction:ltr; }
+.mxCatT{ font-size:18px; font-weight:800; }
+.mxGrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:6px; overflow-y:auto; min-height:120px; flex:1; padding:2px; }
+.mxCell{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border:2px solid var(--mbInk); border-radius:14px; background:#fff; cursor:pointer; font-family:var(--mbF); }
+.mxCell .e{ position:relative; font-size:30px; line-height:1.1; } .mxCell .e i{ position:absolute; right:-8px; bottom:-4px; font-size:14px; font-style:normal; }
+.mxCell .n{ font-size:12px; font-weight:700; line-height:1.15; text-align:center; overflow-wrap:anywhere; }
+.mxCell.no{ background:#e9e4f2; border-style:dashed; cursor:default; } .mxCell.no .e{ color:#9b8fb5; font-weight:800; }
+.mxCell.on{ background:#fff0a8; }
+.mxInfo{ margin:0; min-height:2.6em; font-size:14px; font-weight:700; line-height:1.35; }
 .wnSheet .wnEmoji{ font-size:56px; line-height:1; animation:mbIn .5s cubic-bezier(.3,1.5,.5,1) both; }
 .mbOv .wnSheet h2{ font-size:26px; font-weight:700; margin:0; }
 .wnSheet .wnV{ font-size:13px; font-weight:700; opacity:.6; letter-spacing:1px; }
@@ -1443,6 +1461,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button type="button" class="stk wig" data-mode="slice" aria-pressed="false"><span class="ic" data-ic="slice"></span><span class="lb" data-i18n="modeSlice">Slice</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" id="bigPopit" data-k="popit" data-feat="popit"><span class="ic" data-ic="popit"></span><span class="lb" data-i18n="mbPopit">Pop It</span></button>
         <button type="button" class="stk wig" data-mode="spot" aria-pressed="false"><span class="ic" data-ic="spot"></span><span class="lb" data-i18n="modeSpot">Spot it</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
+        <button type="button" class="stk wig" data-mode="mix" aria-pressed="false"><span class="ic" data-ic="mix"></span><span class="lb" data-i18n="modeMix">Mix it</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <div class="mbCam" id="camGamesBtn" data-k="camera" role="group" data-i18n-aria="camGames" aria-label="Camera games">
           <span class="mbCamT"><span class="ic" data-ic="camera"></span><span class="lb" data-i18n="camGames">Camera games</span></span>
           <span class="mbCamRow"><button type="button" class="stk wig" data-cg="drums" data-i18n-aria="modeDrums" aria-label="Air Drums"><span class="ic" data-ic="drums"></span><span class="lb" data-i18n="cgsDrums">Drums</span></button><button type="button" class="stk wig" data-cg="bubbles" data-i18n-aria="modeBubbles" aria-label="Bubble Pop"><span class="ic" data-ic="bubbles"></span><span class="lb" data-i18n="cgsBubbles">Bubbles</span></button><button type="button" class="stk wig" data-cg="paint" data-i18n-aria="modePaint" aria-label="Air Painting"><span class="ic" data-ic="paint"></span><span class="lb" data-i18n="cgsPaint">Paint</span></button><button type="button" class="stk wig" data-cg="stars" data-i18n-aria="modeStars" aria-label="Catch the Stars"><span class="ic" data-ic="stars"></span><span class="lb" data-i18n="cgsStars">Stars</span></button></span>
@@ -1511,6 +1530,15 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
       <button class="moreRow hbInstall" id="installBtn" type="button" hidden data-i18n-aria="pwaInstallAria" data-i18n-title="pwaInstallAria" aria-label="Install Grasp as an app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v10M7.5 9.5 12 14l4.5-4.5"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg><span class="lb" data-i18n="pwaInstall">Install app</span></button>
       <a class="moreRow link" href="/tremorti/" id="tremortiLink"><span class="mIc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12h3l2-5 3 10 3-8 2 5 1.5-2h4.5"/></svg></span><span class="mLb" data-i18n="tremortiLink">Tremorti · tremor meter</span></a>
     </div>
+  </div>
+</div>
+<div class="ov h2Ov mbOv" id="mixBook" hidden role="dialog" aria-modal="true" aria-labelledby="mxBookT">
+  <div class="sheet mbSheet mxBook">
+    <header><h2 id="mxBookT"><span data-i18n="mxBook">The book</span> <small id="mxBookN" dir="ltr"></small></h2><button class="xBtn" id="mxBookX" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="mxTabs" id="mxTabs"></div>
+    <div class="mxCatT" id="mxCatT"></div>
+    <div class="mxGrid" id="mxGrid"></div>
+    <p class="mxInfo" id="mxInfo" aria-live="polite"></p>
   </div>
 </div>
 <div class="ov h2Ov mbOv" id="wnSheet" hidden role="dialog" aria-modal="true" aria-labelledby="wnT">
@@ -1703,7 +1731,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2415,6 +2443,7 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   modeFeed: 'Feed me', gm_feed: 'feed', descFeed: 'A hungry animal with a big open mouth: give it the food it wants (drag it, or tap it and then the animal). Five good bites: a burp!',
   tgd_feed: 'Feed me!', feWants: 'The {a} wants a {f}!', feWantsPet: '{a} wants a {f}!', feYum: 'Yummy!', feYuck: 'Yuck!', feBurp: 'Burp! Excuse me!',
   fd_carrot: 'Carrot', fd_bone: 'Bone', fd_fish: 'Fish', fd_banana: 'Banana', fd_apple: 'Apple', fd_snack: 'Cookie',
+  modeMix: 'Mix it', gm_mix: 'mix it', descMix: 'Drag one thing onto another: two of the same merge, two different make something new. More than 350 to find.', mxCoach: 'Drag one onto the other!', mxFull: 'The board is full: join or bin some!', mxNew: 'New!', mxCount: '{n} of {all} found', mxFrom: 'made from', mxInto: 'makes', mxBook: 'The book', mxErr: "Mix didn't load. Check the connection.",
   modeSpot: 'Spot it', gm_spot: 'spot the difference', descSpot: 'Two pictures, a few differences: tap them. 3, then 5, then 7.', spFind: 'Find {n} differences!', spDone: 'Well spotted!', spNext: 'Next', spMissL: 'misses', spHintL: 'hints', spTimeL: 'seconds', spLvl1: 'Easy', spLvl2: 'Medium', spLvl3: 'Hard', spLoading: 'Loading the pictures…', spErr: "The pictures didn't load. Check the connection, then try again.",
   modeSand: 'Sand', gm_sand: 'sand', descSand: 'A tray of soft sand: dig with your fingers, smooth it flat again, and switch on the glow in the dark.', tgd_sand: 'Dig and squish!',
   modePuzzle: 'Puzzle', gm_puzzle: 'puzzle', descPuzzle: 'A giant puzzle: 2, then 3, then 4 big pieces. Drag each one to its place (or tap it, then its place); the picture comes alive.',
@@ -2434,6 +2463,7 @@ Object.assign(I18N.he, {
   modeFeed: 'מאכילים', gm_feed: 'מאכילים', descFeed: 'חיה רעבה עם פה פתוח: תנו לה את האוכל שהיא רוצה (גררו אותו, או הקישו עליו ואז על החיה). חמישה ביסים טובים: גרפס!',
   tgd_feed: 'תאכילו אותי!', feWants: 'ה{a} רוצה {f}!', feWantsPet: '{a} רוצה {f}!', feYum: 'יאמי!', feYuck: 'איכס!', feBurp: 'גרעפס! סליחה!',
   fd_carrot: 'גזר', fd_bone: 'עצם', fd_fish: 'דג', fd_banana: 'בננה', fd_apple: 'תפוח', fd_snack: 'עוגייה',
+  modeMix: 'מערבבים', gm_mix: 'מערבבים', descMix: 'גוררים דבר אחד על אחר: שניים זהים מתאחדים, שניים שונים יוצרים משהו חדש. יותר מ־350 לגלות.', mxCoach: 'גררו אחד על השני!', mxFull: 'הלוח מלא: חברו או זרקו לפח!', mxNew: 'חדש!', mxCount: 'נמצאו {n} מתוך {all}', mxFrom: 'עשוי מ', mxInto: 'יוצר', mxBook: 'הספר', mxErr: 'המשחק לא נטען. בדקו את החיבור.',
   modeSpot: 'הבדלים', gm_spot: 'מצא את ההבדלים', descSpot: 'שתי תמונות, כמה הבדלים: מקישים עליהם. 3, אחר כך 5, ואחר כך 7.', spFind: 'מצאו {n} הבדלים!', spDone: 'עין חדה!', spNext: 'הבא', spMissL: 'טעויות', spHintL: 'רמזים', spTimeL: 'שניות', spLvl1: 'קל', spLvl2: 'בינוני', spLvl3: 'קשה', spLoading: 'טוען את התמונות…', spErr: 'התמונות לא נטענו. בדקו את החיבור ונסו שוב.',
   modeSand: 'חול קינטי', gm_sand: 'חול קינטי', descSand: 'ארגז של חול רך: חופרים באצבעות, מחליקים מחדש, ומדליקים זוהר בחושך.', tgd_sand: 'חופרים באצבע!',
   modePuzzle: 'פאזל', gm_puzzle: 'פאזל', descPuzzle: 'פאזל ענק: 2, אחר כך 3 ואחר כך 4 חלקים גדולים. גררו כל חלק למקום שלו (או הקישו עליו ואז על המקום); התמונה מתעוררת לחיים.',
@@ -2474,14 +2504,14 @@ Object.assign(I18N.he, {
 Object.assign(I18N.en, {
   twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.3.0',
-  wn: ['\uD83D\uDD0D Spot it: a new game every time, more than 30 differences hidden in every picture', '\uD83C\uDF82 5 new pictures: a birthday party, a playground, sports day, a magic forest and hero city', '\uD83E\uDE9E Sometimes the pictures come mirrored, so nothing is ever the same', '\uD83D\uDD01 Restart keeps the same differences, Next brings new ones'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.4.0',
+  wn: ['\uD83E\uDDEA New game: Mix it! Drag one thing onto another and see what you make', '\uD83D\uDCA7 Two of the same join into the next thing: puddle, pond, lake, sea', '\uD83D\uDD25 Two different ones make something new: water and fire make steam', '\uD83D\uDCD6 More than 350 things to find, all kept in your book', '\uD83D\uDCA1 Stuck? The bulb gives a hint. Orders at the top pay coins'],
 });
 Object.assign(I18N.he, {
   twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.3.0',
-  wn: ['\uD83D\uDD0D הבדלים: משחק חדש בכל פעם, יותר מ־30 הבדלים מחכים בכל תמונה', '\uD83C\uDF82 5 תמונות חדשות: מסיבת יום הולדת, גן שעשועים, יום ספורט, יער קסום ועיר גיבורים', '\uD83E\uDE9E לפעמים התמונות מגיעות הפוכות, כך ששום משחק לא חוזר על עצמו', '\uD83D\uDD01 "מההתחלה" משאיר את אותם הבדלים, "הבא" מביא חדשים'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.4.0',
+  wn: ['\uD83E\uDDEA משחק חדש: מערבבים! גוררים דבר אחד על אחר ורואים מה יוצא', '\uD83D\uDCA7 שניים זהים מתאחדים לדבר הבא: שלולית, בריכה, אגם, ים', '\uD83D\uDD25 שניים שונים יוצרים משהו חדש: מים ואש עושים אדים', '\uD83D\uDCD6 יותר מ־350 דברים לגלות, וכולם נשמרים בספר שלכם', '\uD83D\uDCA1 נתקעתם? הנורה נותנת רמז. ההזמנות למעלה משלמות מטבעות'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -2886,6 +2916,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (mode === 'mouse' && gameMode === 'smash' && !smash.over && smash.phase === 'play' && !pause.on && !menu.open && (e.button === 0 || e.pointerType === 'touch') && smash.taps.length < 6) smash.taps.push({ x: e.clientX, y: e.clientY }); // Smash: a tap is a punch right there
   if (mode !== 'none' && cgOn() && cgPtrDown(e)) { e.preventDefault(); return; } // the camera games: a canvas button, else a tap queued for the game
   if (mode !== 'none' && gameMode === 'spot') { e.preventDefault(); spotDown(e); return; } // spot the difference: a tap
+  if (mode !== 'none' && gameMode === 'mix') { e.preventDefault(); mixDown(e); return; } // Mix: a press picks a thing up
   if (mode !== 'none' && tgOn()) { e.preventDefault(); tgPtrDown(e); return; } // the Little ones games: one finger drives
   if (mode !== 'mouse') return;
   e.preventDefault();
@@ -2899,6 +2930,7 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'none' && tgOn()) { tgPtrMove(e); return; }
+  if (mode !== 'none' && gameMode === 'mix') { mixMove(e); return; }
   if (mode !== 'mouse') return;
   if (gameMode === 'shapes') shapesPtrMove(e);
   if (e.pointerType === 'touch') { if (ptr.touches.has(e.pointerId)) { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); recomputeTouch(); } return; }
@@ -2906,6 +2938,7 @@ window.addEventListener('pointermove', (e) => {
 });
 const endPointer = (e) => {
   if (mode !== 'none' && tgOn()) { tgPtrUp(e, e.type === 'pointercancel'); return; }
+  if (mode !== 'none' && gameMode === 'mix') { mixUp(e, e.type === 'pointercancel'); return; }
   if (mode !== 'mouse') return;
   if (gameMode === 'shapes') shapesPtrUp(e, e.type === 'pointercancel');
   if (e.pointerType === 'touch') { ptr.touches.delete(e.pointerId); ptr.lastUp = performance.now(); recomputeTouch(); return; }
@@ -3036,7 +3069,7 @@ function frameBody(now) {
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
-  const noPhysics = (gameMode === 'smash' && smash.run === 'tower' && performance.now() < tower.stopUntil) || gameMode === 'spot' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
+  const noPhysics = (gameMode === 'smash' && smash.run === 'tower' && performance.now() < tower.stopUntil) || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -3051,7 +3084,7 @@ function frameBody(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt); fxTick(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (gameMode === 'spot') { spotTick(now); renderSpot(now); } else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (gameMode === 'spot') { spotTick(now); renderSpot(now); } else if (gameMode === 'mix') { mixTick(now); renderMix(now); } else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
   if (fxp.n) fxDraw(); // (a mode that drew no particles this frame: the pool on top)
   gfx3dSync();
   fdTick(now); drawFingerDemo(now); // (phase 1: the first-time instruction fingers)
@@ -13691,6 +13724,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
       if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
       if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= ADV_WN))].sort((x, y) => x - y); }
+    if (p.mix !== undefined) d.mix = mxValidate(p.mix); // (Mix: what was found, the board, the orders)
     if (p.spot !== undefined) d.spot = spValidate(p.spot); // (spot the difference: the solved puzzles' stars)
     if (p.popit !== undefined) d.popit = piValidate(p.popit); // (Pop It: its boards, bests and flips)
     if (p.pet !== undefined) d.pet = petValidate(p.pet, d.evx.hats); // the pet: every field checked (see petValidate)
@@ -14729,7 +14763,7 @@ function startWorld(n, how) { // play Strike from world n's first level (n: an u
 function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel); Smash its map (Free play or a stage)
   if (gameMode === 'strike' && !daily.armed) { openAdvMap({ how }); return; }
   if (gameMode === 'smash') { openSmashMap({ how }); return; }
-  if (tgOn() || gameMode === 'spot') { fallbackToMouse([]); return; } // (the Little ones games and spot the difference play by touch; Colors opens its own camera for its camera activity)
+  if (tgOn() || gameMode === 'spot' || gameMode === 'mix') { fallbackToMouse([]); return; } // (the Little ones games and spot the difference play by touch; Colors opens its own camera for its camera activity)
   if (how === 'camera') enableCamera(); else fallbackToMouse([]);
 }
 /* --- Strike Adventure: the saga map. A full-screen overlay: a winding path from the bottom up, 40 numbered stops in five world bands (each in its
@@ -15078,7 +15112,7 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (typeof text !== 'string' && mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash') && fdStart(gameMode)) return; // (phase 1: the first time: the finger instead of the how-to toast)
   if (fdActive()) { if (typeof text === 'string') fd.q = text; hideHint(); return; } // (phase 1: one instruction at a time: a tip waits for the finger)
-  if ((tgOn() || gameMode === 'spot') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
+  if ((tgOn() || gameMode === 'spot' || gameMode === 'mix') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
@@ -15132,12 +15166,12 @@ $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetS
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']; // every game: the toolbar is the one pause button in play
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); navHomeSync(); try { syncFullBtn(); } catch {} if (!on) closeMenu(false); }
 // the owner, Oct 2026 ("why do I need this pause button?"): where there is nothing to pause (the Little ones' games, Sand, both Pop Its, Paint,
 // Calm bubbles) the corner sticker is the house alone, and its tap goes home at once (no sheet); Strike, Smash, Slice... keep pause + the sheet
-function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint' || (m === 'bubbles' && !!bubbles.calm); } // (Calm bubbles from the camera games is the big kids' since the QA sweep; it still has nothing to pause)
+function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint' || m === 'mix' || (m === 'bubbles' && !!bubbles.calm); } // (Calm bubbles from the camera games is the big kids' since the QA sweep; it still has nothing to pause)
 function navHomeSync() { const on = navHomeOnly(); document.body.classList.toggle('homeOnly', on); $('pauseBtn').setAttribute('aria-label', t(on ? 'home' : 'pauseMenu')); $('pauseBtn').title = t(on ? 'home' : 'pauseMenu'); return on; }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
 function openMenu() {
@@ -15607,6 +15641,7 @@ function homeCamTick(now) {
   if (q >= 1) { homeCam.dwell = null; homeCam.wait = btn; homeCam.clicks.push(btn.id || btn.dataset.mode || btn.dataset.cg || btn.dataset.n || btn.className); audioInit(); btn.click(); }
 }
 function goHome() {
+  if (gameMode === 'mix') { mxBookClose(); if (mixS.ready) mxSave(true); } // (Mix: the board is kept as it is)
   const fromGame = mode !== 'none'; // (a Home with no game running (the start screen, a map over it) keeps the room the player is in)
   voiceStop();
   if (held) dropHeld();
@@ -15655,7 +15690,7 @@ function startGame(m) {
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
-  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (gameMode === 'mix') mixStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   littleFlowSet(); // (phase 1: the Today panel hides the streak flame in the Little ones flow)
   showHint(); syncFullBtn(); // (not full screen: its sticker in the corner)
@@ -20150,7 +20185,7 @@ window.__grasp.popit = { PI, pi, boards: PI_BOARDS, shapes: PI_SHAPES, ids: PI_I
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
 const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
 function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
@@ -20602,6 +20637,268 @@ function renderSpot(now) {
   if (spot.over) drawEndCard(now, spot, { stars: spot.starsN, title: t('spDone'), score: LRM + D.length + '/' + D.length, stats: [[spot.miss, 'spMissL'], [spot.hints, 'spHintL'], [spot.secs, 'spTimeL']], againLabel: t('spNext') });
 }
 window.__grasp.spot = { SP, spot, load: spLoad, start: (id, l, o) => spotStart(id ? { s: spot.data.scenes.find((s) => s.id === id), l: l || 1, ...(o || {}) } : null), pick: spPick, diffs: spDiffs, layout: () => (spot.lkey = '', spLayout()), next: spNextPuzzle, profile: spP };
+/* ---------------- Mix (/mix, Big kids; the owner, Oct 2026: "a game with 350 things you join into one", the merge board and the discovery game in
+   one, for the whole family). A board of 48 cells (6 x 8 upright, 8 x 6 wide); four sources at the bottom (water, fire, earth, air): a tap drops
+   one on the board, a drag puts it where it is dropped (or straight onto another thing). Drag a thing onto another: two of the same merge into
+   the next (plant + plant = tree), two different ones make something new by recipe (water + fire = steam); both are used up and the result
+   takes the target's cell. No recipe: the two wobble, nothing is lost. Something never made before: the New! card (its name, what made it,
+   a coin), and it goes in the book (a sheet: every category, found ones with their names, the rest as ?). Three orders at the top ask for
+   things already found: drag one onto its order for coins. The bulb names two found things that make something not found yet. While a board
+   thing is dragged the bulb is a bin. Content: tools/mix_items.txt -> tools/mix_build.py -> assets/mix/mix.json (MIX_V busts the cache).
+   Saved in profile.mix { found, board, orders }. Played by touch. Hooks: __grasp.mix. ---------------- */
+const MIX_V = 1;
+const MX = { url: '/assets/mix/', n: 48, hintCool: 12000, hintMs: 6500, newMs: 2600, dragPx: 9, saveMs: 700, orders: 3, spawnMs: 260, popMs: 380, noMs: 420 };
+const MX_PAL = ['#bfe3ff', '#ffd6a8', '#c8f2c2', '#ffc8d6', '#e2d2ff', '#fff0a8', '#b8f0ea', '#ffd0bf', '#d6e6ff', '#f2d8b8', '#d8f7a8', '#f5c8f0', '#c2d0ff', '#ffe0c2', '#c8ecd8', '#ead8ff', '#fde2a0', '#cfe8f0'];
+const mixS = { data: null, loading: null, ready: false, err: null, items: new Map(), rec: new Map(), cats: [], found: new Set(), board: [], orders: [], drag: null, fx: [], newQ: [], newCard: null,
+  hint: null, hintAt: -1e9, L: null, lkey: '', log: [], saveAt: 0, label: null, coach: true, made: 0 };
+function mxKey(a, b) { return a < b ? a + '|' + b : b + '|' + a; }
+function mxP() { if (!profile.mix || typeof profile.mix !== 'object') profile.mix = { found: [], board: [], orders: [] }; return profile.mix; }
+function mxValidate(v) { // (shapes only: the ids are checked against the content once it has loaded)
+  const id = (x) => typeof x === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(x), out = { found: [], board: [], orders: [] };
+  if (v && typeof v === 'object') { if (Array.isArray(v.found)) out.found = v.found.filter(id).slice(0, 600); if (Array.isArray(v.board)) out.board = v.board.slice(0, 48).map((x) => (id(x) ? x : ''));
+    if (Array.isArray(v.orders)) out.orders = v.orders.filter(id).slice(0, 3); } // (plain numbers: loadProfile runs before MX is defined)
+  return out;
+}
+function mxLoad() {
+  if (mixS.data) return Promise.resolve(mixS.data); if (mixS.loading) return mixS.loading;
+  mixS.loading = fetch(MX.url + 'mix.json?v=' + MIX_V).then((r) => { if (!r.ok) throw new Error('mix.json ' + r.status); return r.json(); }).then((d) => {
+    if (!d || !Array.isArray(d.items) || !d.items.length) throw new Error('no items');
+    mixS.data = d; mixS.items = new Map(d.items.map((it, i) => [it.id, Object.assign(it, { i })])); mixS.cats = d.cats; mixS.rec = new Map(d.r.map(([a, b, c]) => [mxKey(a, b), c]));
+    mixS.catCol = new Map(d.cats.map((c, i) => [c.id, MX_PAL[i % MX_PAL.length]])); return d;
+  }).catch((e) => { mixS.loading = null; throw e; });
+  return mixS.loading;
+}
+async function mixStart() {
+  mixS.ready = false; mixS.err = null; mixS.drag = null; mixS.newCard = null; mixS.newQ = []; mixS.fx = []; mixS.hint = null; mixS.label = null; mixS.lkey = '';
+  try { await mxLoad(); } catch { mixS.err = 'load'; mixS.log.push('err:load'); return; }
+  const P = mxP(), ok = (x) => mixS.items.has(x);
+  mixS.found = new Set(P.found.filter(ok)); for (const b of mixS.data.base) mixS.found.add(b);
+  mixS.board = Array.from({ length: MX.n }, (_, i) => (ok(P.board[i]) ? P.board[i] : ''));
+  mixS.orders = P.orders.filter((x) => ok(x) && mixS.found.has(x)).map((id) => ({ id, coins: mxReward(id), t: 0 }));
+  mixS.coach = mixS.found.size <= mixS.data.base.length;
+  if (mixS.coach && !mixS.board.some(Boolean)) { mixS.board[MX.n - 9] = 'water'; mixS.board[MX.n - 10] = 'fire'; } // (the first time: two things to join, a finger shows how)
+  mxFillOrders(performance.now()); mixS.ready = true; mixS.t0 = performance.now(); mixS.log.push('start:' + mixS.found.size); mxSave(true);
+}
+function mxSave(now) { const P = mxP(); P.found = [...mixS.found]; P.board = mixS.board.slice(); P.orders = mixS.orders.map((o) => o.id); if (now) { mixS.saveAt = 0; saveProfile(); } else mixS.saveAt = performance.now(); }
+function mxItem(id) { return mixS.items.get(id); }
+function mxName(id) { const it = mxItem(id); return it ? (lang === 'he' ? it.he : it.en) : ''; }
+function mxReward(id) { const it = mxItem(id); return 1 + Math.min(5, Math.ceil(((it && it.d) || 1) / 2)); }
+/* orders: things already found (not the base four), not on the list twice, the easier ones more often */
+function mxFillOrders(now) {
+  const pool = [...mixS.found].filter((id) => !mixS.data.base.includes(id) && !mixS.orders.some((o) => o.id === id));
+  while (mixS.orders.length < MX.orders && pool.length) {
+    pool.sort((a, b) => mxItem(a).d - mxItem(b).d); const k = Math.floor(Math.pow(Math.random(), 1.6) * pool.length), id = pool.splice(k, 1)[0];
+    mixS.orders.push({ id, coins: mxReward(id), t: now });
+  }
+}
+/* the layout: the orders row, the board (as big as fits), the bottom bar (the sources, the book, the bulb) */
+function mxLayout() {
+  const key = W + 'x' + H + '|' + lang; if (mixS.lkey === key && mixS.L) return mixS.L; mixS.lkey = key;
+  const top = cgTopY(), wide = W > H * 1.05, cols = wide ? 8 : 6, rows = wide ? 6 : 8, rtl = lang === 'he';
+  const oh = Math.min(70, Math.max(56, H * 0.075)), bh = Math.min(104, Math.max(84, H * 0.11));
+  const aw = W - 16, ah = H - top - oh - bh - 18, cs = Math.floor(Math.min(aw / cols, ah / rows, 92)), bw = cs * cols, bhh = cs * rows;
+  const bx = (W - bw) / 2, by = top + oh + 6 + Math.max(0, (ah - bhh) / 2);
+  const ow = Math.min(120, (Math.min(W, 520) - 32) / 3), orders = [0, 1, 2].map((i) => { const x = W / 2 + (i - 1) * (ow + 8) * (rtl ? -1 : 1); return { x: x - ow / 2, y: top + 2, w: ow, h: oh - 8 }; });
+  const barW = Math.min(W - 16, 560), r = Math.min(34, barW / 13), cy = H - bh / 2 - 4, slots = 6, sx = (W - barW) / 2;
+  const at = (k) => ({ x: sx + barW * ((rtl ? slots - 1 - k : k) + 0.5) / slots, y: cy, r });
+  const src = mixS.data ? mixS.data.base.map((id, k) => Object.assign(at(k), { id })) : [];
+  return (mixS.L = { cols, rows, cs, bx, by, bw, bh: bhh, orders, src, book: at(4), bulb: at(5), wide, top });
+}
+function mxCellXY(i) { const L = mxLayout(), c = i % L.cols, r = Math.floor(i / L.cols), rtl = lang === 'he'; return { x: L.bx + ((rtl ? L.cols - 1 - c : c) + 0.5) * L.cs, y: L.by + (r + 0.5) * L.cs }; }
+function mxCellAt(x, y) { const L = mxLayout(); if (x < L.bx || y < L.by || x >= L.bx + L.bw || y >= L.by + L.bh) return -1; let c = Math.floor((x - L.bx) / L.cs); const r = Math.floor((y - L.by) / L.cs); if (lang === 'he') c = L.cols - 1 - c; return r * L.cols + c; }
+function mxFree(near) { // an empty cell, the nearest to a point (or the bottom middle)
+  const L = mxLayout(), p = near || { x: W / 2, y: L.by + L.bh }; let best = -1, bd = 1e9;
+  for (let i = 0; i < MX.n; i++) if (!mixS.board[i]) { const q = mxCellXY(i), d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; best = i; } }
+  return best;
+}
+function mxHit(x, y) {
+  const L = mxLayout(), inC = (q, pad = 8) => Math.hypot(x - q.x, y - q.y) <= q.r + pad;
+  if (inC(L.bulb)) return { k: 'bulb' }; if (inC(L.book)) return { k: 'book' };
+  for (const s of L.src) if (inC(s)) return { k: 'src', id: s.id, s };
+  for (let i = 0; i < L.orders.length; i++) { const o = L.orders[i]; if (x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h) return { k: 'order', i }; }
+  const c = mxCellAt(x, y); if (c >= 0) return { k: 'cell', i: c };
+  return null;
+}
+/* input: a press picks up a thing (a source gives a new one), a move drags it, a release drops it */
+function mixDown(e) {
+  if (!mixS.ready || pause.on || menu.open || !(e.button === 0 || e.pointerType === 'touch') || (mixS.drag && mixS.drag.pid !== e.pointerId)) return;
+  const now = performance.now(), x = e.clientX, y = e.clientY;
+  if (mixS.newCard) { if (now - mixS.newCard.t > 350) mxNewClose(now); return; }
+  const h = mxHit(x, y); if (!h) return;
+  if (h.k === 'bulb') { mxHint(now); return; }
+  if (h.k === 'book') { mxBookOpen(); return; }
+  if (h.k === 'order') { const o = mixS.orders[h.i]; if (o) mixS.label = { id: o.id, x: L0(h.i).x + L0(h.i).w / 2, y: L0(h.i).y + L0(h.i).h + 14, t: now }; return; }
+  if (h.k === 'src') { mixS.drag = { pid: e.pointerId, src: h.id, id: h.id, x, y, x0: x, y0: y, moved: false, t: now }; sfx('click'); return; }
+  if (h.k === 'cell' && mixS.board[h.i]) mixS.drag = { pid: e.pointerId, from: h.i, id: mixS.board[h.i], x, y, x0: x, y0: y, moved: false, t: now };
+}
+function L0(i) { return mxLayout().orders[i]; }
+function mixMove(e) { const d = mixS.drag; if (!d || d.pid !== e.pointerId) return; d.x = e.clientX; d.y = e.clientY; if (!d.moved && Math.hypot(d.x - d.x0, d.y - d.y0) > MX.dragPx) d.moved = true; }
+function mixUp(e, cancel) {
+  const d = mixS.drag; if (!d || d.pid !== e.pointerId) return; mixS.drag = null; const now = performance.now();
+  if (cancel) return;
+  if (!d.moved) { // a tap: a source drops one on the board; a thing on the board says its name
+    if (d.src) mxSpawn(d.src, now); else { const q = mxCellXY(d.from); mixS.label = { id: d.id, x: q.x, y: q.y - mxLayout().cs * 0.62, t: now }; mixS.fx.push({ k: 'wig', i: d.from, t: now }); sfx('tink'); }
+    return;
+  }
+  const h = mxHit(d.x, d.y);
+  if (h && h.k === 'bulb' && d.from !== undefined) { mixS.board[d.from] = ''; mixS.fx.push({ k: 'poof', x: mxLayout().bulb.x, y: mxLayout().bulb.y, t: now }); sfx('whoosh'); mixS.log.push('bin:' + d.id); mxSave(); return; }
+  if (h && h.k === 'order') { const o = mixS.orders[h.i]; if (o && o.id === d.id && d.from !== undefined) return mxDeliver(h.i, d.from, now); mixS.fx.push({ k: 'no', x: d.x, y: d.y, t: now }); sfx('boop'); return; }
+  if (!h || h.k !== 'cell') return; // (dropped nowhere: it stays where it was)
+  const i = h.i, there = mixS.board[i];
+  if (i === d.from) return;
+  if (!there) { if (d.from !== undefined) mixS.board[d.from] = ''; mixS.board[i] = d.id; mixS.fx.push({ k: 'land', i, t: now }); sfx('pop'); mxSave(); mixS.log.push('move:' + i); return; }
+  mxCombine(d.id, d.from, i, now);
+}
+/* two things meet: a recipe (or a merge of two of the same) makes the next thing in the target's cell */
+function mxCombine(a, from, i, now) {
+  const b = mixS.board[i], c = mixS.rec.get(mxKey(a, b));
+  if (!c) { mixS.fx.push({ k: 'no', i, t: now }); if (from !== undefined) mixS.fx.push({ k: 'wig', i: from, t: now }); sfx('boing'); mixS.log.push('no:' + a + '+' + b); return false; }
+  if (from !== undefined) mixS.board[from] = ''; mixS.board[i] = c; mixS.made++;
+  const q = mxCellXY(i); mixS.fx.push({ k: 'pop', i, t: now, a, b }); ring(q.x, q.y, 'rgba(255,255,255,0.9)', mxLayout().cs * 0.9, 380, 4); fxSparkle(q.x, q.y, ['#ffd23f', '#ffffff', '#7cc8ff'], 6, mxLayout().cs * 0.5);
+  mixS.log.push('make:' + a + '+' + b + '=' + c); if (mixS.hint && (mixS.hint.c === c)) mixS.hint = null;
+  if (!mixS.found.has(c)) mxDiscover(c, a, b, now); else sfx('chime');
+  mixS.coach = false; mxSave(); return c;
+}
+function mxDiscover(c, a, b, now) {
+  mixS.found.add(c); mixS.newQ.push({ id: c, a, b }); addCoins(1, true); mixS.log.push('new:' + c);
+  if (!mixS.newCard) mxNewNext(now); mxFillOrders(now); mxSave(true);
+}
+function mxNewNext(now) { const q = mixS.newQ.shift(); if (!q) { mixS.newCard = null; return; } mixS.newCard = Object.assign(q, { t: now }); sfx('fanfare'); confetti(W / 2, H * 0.38, 70, 1); }
+function mxNewClose(now) { mixS.newCard = null; mxNewNext(now); }
+function mxSpawn(id, now) {
+  const L = mxLayout(), s = L.src.find((q) => q.id === id), i = mxFree(s); if (i < 0) { mixS.fx.push({ k: 'full', t: now }); sfx('boop'); mixS.log.push('full'); return -1; }
+  mixS.board[i] = id; mixS.fx.push({ k: 'fly', i, id, x: s.x, y: s.y, t: now }); sfx('pop'); mxSave(); mixS.log.push('spawn:' + id + ':' + i); return i;
+}
+function mxDeliver(k, from, now) {
+  const o = mixS.orders[k]; mixS.board[from] = ''; addCoins(o.coins); const r = L0(k); confetti(r.x + r.w / 2, r.y + r.h / 2, 30, 0.6); sfx('coin');
+  mixS.fx.push({ k: 'paid', x: r.x + r.w / 2, y: r.y + r.h / 2, n: o.coins, t: now }); mixS.orders.splice(k, 1); mixS.log.push('order:' + o.id + ':' + o.coins); mxFillOrders(now); mxSave(true);
+}
+/* the bulb: two found things that make one not found yet (the nearest to the base first) */
+function mxHint(now) {
+  if (now - mixS.hintAt < MX.hintCool) { sfx('boop'); return null; }
+  let best = null; for (const [k, c] of mixS.rec) { if (mixS.found.has(c)) continue; const [a, b] = k.split('|'); if (!mixS.found.has(a) || !mixS.found.has(b)) continue; const d = mxItem(c).d; if (!best || d < best.d || (d === best.d && Math.random() < 0.3)) best = { a, b, c, d }; }
+  if (!best) { sfx('boop'); return null; }
+  mixS.hint = Object.assign(best, { t: now }); mixS.hintAt = now; sfx('tink'); mixS.log.push('hint:' + best.a + '+' + best.b); return mixS.hint;
+}
+function mixTick(now) {
+  if (mixS.saveAt && now - mixS.saveAt > MX.saveMs) mxSave(true);
+  if (mixS.newCard && now - mixS.newCard.t > MX.newMs + 400 && mixS.newQ.length) mxNewClose(now); // (a queue: the next one after a while)
+  if (mixS.hint && now - mixS.hint.t > MX.hintMs) mixS.hint = null;
+  if (mixS.label && now - mixS.label.t > 1400) mixS.label = null;
+  mixS.fx = mixS.fx.filter((f) => now - f.t < 900);
+}
+/* drawing */
+const MX_EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
+function mxTile(id, s) { // a thing: its emoji on a rounded tile in its category's colour (and its badge in the corner)
+  const it = mxItem(id), S = Math.round(s); return makeSprite('mxt|' + id + '|' + S, S + 6, S + 8, (S + 6) / 2, (S + 6) / 2, (g) => {
+    const r = S * 0.24, col = (it && mixS.catCol.get(it.c)) || '#ffffff';
+    g.fillStyle = 'rgba(42,31,61,0.28)'; g.beginPath(); g.roundRect(-S / 2, -S / 2 + 3, S, S, r); g.fill();
+    g.fillStyle = col; g.strokeStyle = '#2a1f3d'; g.lineWidth = Math.max(2, S * 0.045); g.beginPath(); g.roundRect(-S / 2, -S / 2, S, S, r); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.45)'; g.beginPath(); g.roundRect(-S / 2 + S * 0.08, -S / 2 + S * 0.06, S * 0.84, S * 0.22, r * 0.6); g.fill();
+    if (!it) return; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = Math.round(S * 0.6) + 'px ' + MX_EMOJI; g.fillText(it.e, 0, S * 0.04);
+    if (it.b) { g.font = Math.round(S * 0.32) + 'px ' + MX_EMOJI; g.fillText(it.b, S * 0.3, S * 0.3); }
+  });
+}
+function mxBg() { return makeSprite('mxbg|' + W + 'x' + H, W, H, 0, 0, (g) => { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#5b3fa8'); gr.addColorStop(1, '#2b6fa8'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const r = rng(W * 3 + H); g.fillStyle = 'rgba(255,255,255,0.05)'; for (let i = 0; i < 46; i++) { g.beginPath(); g.arc(r() * W, r() * H, 4 + r() * 26, 0, TAU); g.fill(); } }); }
+function mxBtn(q, col, draw, dim) { resetView(); ctx.save(); ctx.globalAlpha = dim ? 0.55 : 1; ctx.fillStyle = 'rgba(42,31,61,0.35)'; ctx.beginPath(); ctx.arc(q.x, q.y + 4, q.r, 0, TAU); ctx.fill(); ctx.fillStyle = col; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, TAU); ctx.fill(); ctx.stroke(); draw(); ctx.restore(); }
+function mxEmoji(e, x, y, s) { ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); }
+function renderMix(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.drawImage(mxBg().c, 0, 0, W, H); resetView();
+  if (!mixS.ready) { const sp = textSprite(mixS.err ? t('mxErr') : t('spLoading'), 20, '#ffffff', 'rgba(20,20,60,0.85)', 700); blit(sp, W / 2, H / 2, 0, Math.min(1, (W - 32) / sp.tw)); return; }
+  const L = mxLayout(), cs = L.cs, d = mixS.drag, dragging = d && d.moved;
+  // the board
+  resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(L.bx - 6, L.by - 6, L.bw + 12, L.bh + 12, 18); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'; for (let i = 0; i < MX.n; i++) { const q = mxCellXY(i); ctx.beginPath(); ctx.roundRect(q.x - cs * 0.44, q.y - cs * 0.44, cs * 0.88, cs * 0.88, cs * 0.2); ctx.fill(); }
+  const fxOf = (k, i) => mixS.fx.find((f) => f.k === k && f.i === i);
+  const target = dragging ? mxHit(d.x, d.y) : null;
+  for (let i = 0; i < MX.n; i++) {
+    const id = mixS.board[i]; if (!id) continue; const q = mxCellXY(i); let k = 1, a = 1, ang = 0, x = q.x, y = q.y;
+    if (d && d.from === i && d.moved) a = 0.25;
+    const fl = fxOf('fly', i); if (fl) { const p = Math.min(1, (now - fl.t) / MX.spawnMs), e = ease(p); x = fl.x + (q.x - fl.x) * e; y = fl.y + (q.y - fl.y) * e - Math.sin(p * Math.PI) * cs * 0.8; k = 0.6 + 0.4 * e; }
+    const po = fxOf('pop', i); if (po) { const p = Math.min(1, (now - po.t) / MX.popMs); k *= p < 1 ? 0.5 + 0.75 * Math.sin(p * Math.PI * 0.75) + 0.25 * p : 1; }
+    const la = fxOf('land', i); if (la) { const p = Math.min(1, (now - la.t) / 240); k *= 1 + 0.12 * Math.sin(p * Math.PI); }
+    const wg = fxOf('wig', i) || fxOf('no', i); if (wg) { const p = Math.min(1, (now - wg.t) / MX.noMs); ang = Math.sin(p * Math.PI * 5) * 0.22 * (1 - p); }
+    if (target && target.k === 'cell' && target.i === i && i !== d.from) { // a known meeting glows (two of the same, or a pair made before); an unknown one only lifts: finding out is the game
+      const c = mixS.rec.get(mxKey(d.id, id)), known = c && (d.id === id || mixS.found.has(c)); resetView(); ctx.fillStyle = known ? 'rgba(120,255,160,0.55)' : 'rgba(255,255,255,0.35)';
+      ctx.beginPath(); ctx.roundRect(q.x - cs * 0.52, q.y - cs * 0.52, cs * 1.04, cs * 1.04, cs * 0.26); ctx.fill(); k *= 1.08;
+    }
+    if (mixS.hint && (id === mixS.hint.a || id === mixS.hint.b)) { const pu = 0.5 + 0.5 * Math.sin(now / 160); resetView(); ctx.strokeStyle = 'rgba(255,214,80,' + (0.5 + 0.5 * pu).toFixed(2) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(q.x - cs * 0.5, q.y - cs * 0.5, cs, cs, cs * 0.25); ctx.stroke(); }
+    blit(mxTile(id, cs * 0.84), x, y, ang, k, a);
+  }
+  // the orders
+  for (let k = 0; k < L.orders.length; k++) {
+    const r = L.orders[k], o = mixS.orders[k]; if (!o) continue; resetView(); ctx.fillStyle = '#fff6d6'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(r.x, r.y, r.w, r.h, 16); ctx.fill(); ctx.stroke();
+    if (!o) continue; const s = Math.min(r.h - 10, r.w * 0.45), ok = dragging && d.id === o.id && d.from !== undefined;
+    if (ok) { ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 5; ctx.stroke(); }
+    const ix = r.x + (lang === 'he' ? r.w - s / 2 - 8 : s / 2 + 8), cx = r.x + (lang === 'he' ? (r.w - s - 8) / 2 : s + 8 + (r.w - s - 8) / 2);
+    blit(mxTile(o.id, s), ix, r.y + r.h / 2, 0, ok ? 1.1 : 1); const ct = textSprite('+' + o.coins, Math.round(r.h * 0.34), '#2a1f3d', null, 800); blit(ct, cx + 6, r.y + r.h / 2); resetView(); ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(cx - ct.tw / 2 - 4, r.y + r.h / 2, r.h * 0.13, 0, TAU); ctx.fill(); ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  // the bottom bar: the sources, the book, the bulb (a bin while a board thing is dragged)
+  for (const s of L.src) mxBtn(s, mixS.catCol.get(mxItem(s.id).c) || '#ffffff', () => mxEmoji(mxItem(s.id).e, s.x, s.y + 1, s.r * 1.1), dragging && d.from !== undefined);
+  mxBtn(L.book, '#ffd6a8', () => { mxEmoji('📖', L.book.x, L.book.y, L.book.r * 1.05); });
+  { const nt = textSprite(mixS.found.size + '/' + mixS.data.items.length, 13, '#ffffff', 'rgba(20,20,60,0.9)', 800); blit(nt, L.book.x, L.book.y + L.book.r + 10); }
+  const bin = dragging && d.from !== undefined, cool = Math.min(1, (now - mixS.hintAt) / MX.hintCool);
+  mxBtn(L.bulb, bin ? (target && target.k === 'bulb' ? '#ff6b6b' : '#ffb3b3') : cool >= 1 ? '#ffd23f' : 'rgba(255,255,255,0.35)', () => {
+    mxEmoji(bin ? '🗑️' : '💡', L.bulb.x, L.bulb.y, L.bulb.r * 1.05);
+    if (!bin && cool < 1) { ctx.lineWidth = 4; ctx.strokeStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(L.bulb.x, L.bulb.y, L.bulb.r - 2, -Math.PI / 2, -Math.PI / 2 + cool * TAU); ctx.stroke(); }
+  });
+  // the hint: "a + b = ?" over the bar
+  if (mixS.hint) { const h = mixS.hint, q = (now - h.t) / MX.hintMs, al = Math.min(1, q * 8) * Math.min(1, (1 - q) * 5), s = 46, y = L.bulb.y - L.bulb.r - s * 0.95, rtl = lang === 'he', X = (v) => W / 2 + v * s * (rtl ? -1 : 1);
+    resetView(); ctx.globalAlpha = al; ctx.fillStyle = 'rgba(42,31,61,0.9)'; ctx.beginPath(); ctx.roundRect(W / 2 - s * 2.5, y - s * 0.66, s * 5, s * 1.32, 18); ctx.fill(); ctx.globalAlpha = 1;
+    blit(mxTile(h.a, s), X(-1.75), y, 0, 1, al); blit(textSprite('+', 28, '#ffffff', null, 800), X(-0.85), y, 0, 1, al); blit(mxTile(h.b, s), X(0.05), y, 0, 1, al); blit(textSprite('= ?', 28, '#ffd23f', null, 800), X(1.45), y, 0, 1, al); }
+  // the first time: a finger shows the way (drag one onto the other)
+  if (mixS.coach && !d) { const ids = [MX.n - 9, MX.n - 10].filter((i) => mixS.board[i]); if (ids.length === 2) { const A = mxCellXY(ids[0]), B = mxCellXY(ids[1]), p = (now % 1800) / 1800, e = ease(Math.min(1, p * 1.4));
+    resetView(); ctx.globalAlpha = Math.min(1, p * 5) * Math.min(1, (1 - p) * 5); mxEmoji('👆', A.x + (B.x - A.x) * e + cs * 0.15, A.y + (B.y - A.y) * e + cs * 0.45, cs * 0.6); ctx.globalAlpha = 1;
+    const sp = textSprite(t('mxCoach'), 20, '#ffffff', 'rgba(40,30,90,0.92)', 800); blit(sp, W / 2, L.orders[0].y + L.orders[0].h / 2, 0, Math.min(1, (W - 24) / sp.tw)); } }
+  // a name, the fx
+  if (mixS.label) { const l = mixS.label, a = Math.min(1, (1400 - (now - l.t)) / 250), sp = textSprite(mxName(l.id), 17, '#2a1f3d', null, 800); resetView(); ctx.globalAlpha = a; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 2.5;
+    const lx = Math.max(sp.tw / 2 + 14, Math.min(W - sp.tw / 2 - 14, l.x)); ctx.beginPath(); ctx.roundRect(lx - sp.tw / 2 - 10, l.y - 15, sp.tw + 20, 30, 15); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1; blit(sp, lx, l.y, 0, 1, a); }
+  for (const f of mixS.fx) { const p = (now - f.t) / 900;
+    if (f.k === 'no' && f.x !== undefined) { resetView(); ctx.globalAlpha = 1 - p; mxEmoji('❌', f.x, f.y - 20, 26); ctx.globalAlpha = 1; }
+    if (f.k === 'poof') { resetView(); ctx.globalAlpha = 1 - p; mxEmoji('💨', f.x, f.y - 30 - p * 30, 34); ctx.globalAlpha = 1; }
+    if (f.k === 'paid') { const sp = textSprite('+' + f.n, 26, '#ffd23f', 'rgba(20,20,60,0.9)', 800); blit(sp, f.x, f.y + 30 + p * 26, 0, 1, 1 - p); }
+    if (f.k === 'full') { const sp = textSprite(t('mxFull'), 20, '#ffffff', 'rgba(170,40,60,0.95)', 800); blit(sp, W / 2, L.by + L.bh / 2, 0, Math.min(1, (W - 24) / sp.tw), Math.min(1, (1 - p) * 3)); }
+  }
+  // the dragged thing, over everything but the New! card
+  if (dragging) blit(mxTile(d.id, cs * 0.84), d.x, d.y - (d.src ? 0 : 6), 0, 1.15);
+  drawParticles(); drawRings(now);
+  if (mixS.newCard) mxDrawNew(now);
+}
+function mxDrawNew(now) { // the New! card: the thing big, its name, what made it, the count
+  const n = mixS.newCard, p = Math.min(1, (now - n.t) / 320), s = Math.min(150, W * 0.36), cy = H * 0.42;
+  resetView(); ctx.fillStyle = 'rgba(20,14,40,' + (0.62 * p).toFixed(2) + ')'; ctx.fillRect(0, 0, W, H);
+  const cw = Math.min(W - 32, 360), ch = s + 190; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(W / 2 - cw / 2, cy - ch / 2, cw, ch, 26); ctx.fill(); ctx.stroke();
+  const k = p < 1 ? 0.4 + 0.75 * Math.sin(p * Math.PI * 0.8) : 1 + 0.03 * Math.sin(now / 240);
+  blit(textSprite(t('mxNew'), 26, '#ff8a3d', null, 800), W / 2, cy - ch / 2 + 30); blit(mxTile(n.id, s), W / 2, cy - ch / 2 + 54 + s / 2, 0, k);
+  const nm = textSprite(mxName(n.id), 28, '#2a1f3d', null, 800); blit(nm, W / 2, cy - ch / 2 + 78 + s, 0, Math.min(1, (cw - 24) / nm.tw));
+  const fr = textSprite(mxName(n.a) + '  +  ' + mxName(n.b), 16, '#6b5a8a', null, 700); blit(fr, W / 2, cy - ch / 2 + 112 + s, 0, Math.min(1, (cw - 24) / fr.tw));
+  blit(textSprite(t('mxCount', { n: mixS.found.size, all: mixS.data.items.length }), 15, '#2a1f3d', null, 800), W / 2, cy + ch / 2 - 26);
+}
+/* the book: a sheet over the game (every category: the found ones by name, the rest as ?; a tap on a found one says what makes it and what it makes) */
+function mxBookOpen(cat) {
+  const S = $('mixBook'); if (!S || !mixS.data) return; mixS.bookCat = cat || mixS.bookCat || mixS.cats[0].id; mxBookFill(); S.hidden = false; mixS.log.push('book'); sfx('click');
+}
+function mxBookClose() { const S = $('mixBook'); if (S) S.hidden = true; }
+function mxBookFill(sel) {
+  const tabs = $('mxTabs'), grid = $('mxGrid'), info = $('mxInfo'); $('mxBookN').textContent = t('mxCount', { n: mixS.found.size, all: mixS.data.items.length });
+  tabs.innerHTML = ''; for (const c of mixS.cats) { const all = mixS.data.items.filter((it) => it.c === c.id), f = all.filter((it) => mixS.found.has(it.id)).length, b = document.createElement('button');
+    b.type = 'button'; b.className = 'mxTab' + (c.id === mixS.bookCat ? ' on' : ''); b.innerHTML = '<span class="e"></span><span class="n"></span>'; b.firstChild.textContent = c.e; b.lastChild.textContent = f + '/' + all.length;
+    b.setAttribute('aria-label', (lang === 'he' ? c.he : c.en) + ' ' + f + '/' + all.length); b.addEventListener('click', () => { mixS.bookCat = c.id; mxBookFill(); }); tabs.appendChild(b); }
+  const cat = mixS.cats.find((c) => c.id === mixS.bookCat); $('mxCatT').textContent = cat ? (lang === 'he' ? cat.he : cat.en) : '';
+  grid.innerHTML = ''; for (const it of mixS.data.items.filter((q) => q.c === mixS.bookCat)) { const f = mixS.found.has(it.id), b = document.createElement('button'); b.type = 'button'; b.className = 'mxCell' + (f ? '' : ' no') + (sel === it.id ? ' on' : '');
+    b.innerHTML = '<span class="e"></span><span class="n"></span>'; b.firstChild.textContent = f ? it.e : '?'; b.lastChild.textContent = f ? (lang === 'he' ? it.he : it.en) : '';
+    if (f && it.b) { const bd = document.createElement('i'); bd.textContent = it.b; b.firstChild.appendChild(bd); }
+    if (f) b.addEventListener('click', () => mxBookFill(it.id)); else b.disabled = true; grid.appendChild(b); }
+  info.textContent = ''; if (sel) { const from = [...mixS.rec].filter(([k, c]) => c === sel && k.split('|').every((x) => mixS.found.has(x))).map(([k]) => k.split('|').map((x) => mxItem(x).e + ' ' + mxName(x)).join(' + '));
+    const into = [...mixS.rec].filter(([k, c]) => k.split('|').includes(sel) && mixS.found.has(c)).map(([, c]) => mxItem(c).e + ' ' + mxName(c));
+    info.textContent = mxItem(sel).e + ' ' + mxName(sel) + (from.length ? ' — ' + t('mxFrom') + ': ' + from.slice(0, 3).join(' · ') : '') + (into.length ? '. ' + t('mxInto') + ': ' + into.slice(0, 6).join(', ') : ''); }
+}
+function mixClear() { mixS.board = mixS.board.map(() => ''); mixS.coach = false; mxSave(true); mixS.log.push('clear'); }
+$('mxBookX').addEventListener('click', () => { sfx('click'); mxBookClose(); });
+$('mixBook').addEventListener('click', (e) => { if (e.target === $('mixBook')) mxBookClose(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('mixBook').hidden) mxBookClose(); });
+window.__grasp.mix = { MX, mix: mixS, load: mxLoad, start: mixStart, combine: (a, b) => mixS.rec.get(mxKey(a, b)) || null, spawn: (id) => mxSpawn(id, performance.now()), layout: () => (mixS.lkey = '', mxLayout()), cellXY: mxCellXY, hint: () => { mixS.hintAt = -1e9; return mxHint(performance.now()); }, profile: mxP, book: mxBookOpen, clear: mixClear };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
    Chrome) or on iOS (a small "Add to Home Screen" how-to sheet); never shown in the installed app; a dismissal snoozes the start-screen chip
@@ -20895,7 +21192,7 @@ function h2Sync() {
    Pop It (built on another branch) shows only when its mode exists here (mbFeat). Hooks: __grasp.menub. */
 const MB_COL = { strike: '#ff7a52', big: '#ff7a52', smash: '#9a7bff', slice: '#2cc4ae', arcade: '#ff5d97', camera: '#4a8dff', little: '#ffc233', frenzy: '#ffa23a', daily: '#ff6b88', endless: '#45a8ff',
   drums: '#ff6b6b', bubbles: '#52cdf2', paint: '#b88aff', stars: '#5468ff', busy: '#f6a75c', shapes: '#ff7a7a', sandbox: '#f8c94c', calm: '#9ad4ee', animals: '#94d870', colors: '#ffb0b0', peekaboo: '#7fcf6a',
-  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
+  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', mix: '#ffc27a', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
 const MB_ROT = ['-1.6deg', '1.4deg', '1.1deg', '-1.3deg'], MB_INK = '#2a1f3d', MB_SAY_MS = 400, MB_WIG_MS = 2000;
 const MB_PENT = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 const mb = { room: 'big', page: 0, pages: 0, sayUntil: 0, log: [], said: [], blips: [], wig: 0, wigLast: null, pressed: null, pressAt: -1e9, bubuKey: '', feats: {} };
@@ -20926,6 +21223,7 @@ const MB_ICONS = {
   feed: [['e', 34, 26, 7, 18, '#ffffff'], ['e', 52, 24, 7, 18, '#ffffff'], ['e', 34, 28, 3, 11, '!#ffb3c6'], ['e', 52, 26, 3, 11, '!#ffb3c6'], ['c', 43, 58, 24, '#ffffff'], ['c', 35, 54, 3.5, '!#1e2a3a'], ['c', 51, 54, 3.5, '!#1e2a3a'], ['e', 43, 68, 5, 6, '!#c2185b'], ['p', 'M68 40 L90 52 L64 88 Z', '#ff8a1f'], ['l', 'M80 44 L86 28', '!#3fae4f', 4], ['l', 'M82 46 L96 40', '!#3fae4f', 4]],
   puzzle: [['p', 'M14 30 H40 A10 10 0 1 1 60 30 H86 V52 A10 10 0 1 0 86 72 V88 H14 Z', '#ff7eb6'], ['star', 46, 62, 13, '#ffd23f']],
   sand: [['r', 8, 22, 84, 64, 14, '#3aa7e0'], ['r', 15, 29, 70, 50, 9, '#ecc892'], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#b98a4e', 6], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#ff6fd8', 2.5], ['c', 76, 18, 9, '#5b4bd6'], ['c', 79, 15, 6, '!#ecc892']],
+  mix: [['r', 6, 50, 36, 36, 10, '#7cc8ff'], ['p', 'M24 56 Q33 68 33 74 A9 9 0 0 1 15 74 Q15 68 24 56 Z', '!#ffffff'], ['r', 58, 50, 36, 36, 10, '#ffb347'], ['p', 'M76 55 Q86 66 85 75 A9 9 0 0 1 67 75 Q66 66 76 55 Z', '!#ff4f64'], ['l', 'M26 44 Q32 26 44 24', '!#2a1f3d', 5], ['l', 'M74 44 Q68 26 56 24', '!#2a1f3d', 5], ['star', 50, 22, 16, '#ffd23f']],
   spot: [['r', 6, 14, 42, 34, 6, '#ffffff'], ['r', 10, 18, 34, 26, 3, '#7cc8ff'], ['c', 22, 32, 6, '#ffd23f'], ['r', 52, 14, 42, 34, 6, '#ffffff'], ['r', 56, 18, 34, 26, 3, '#7cc8ff'], ['c', 82, 34, 6, '#ff4f64'], ['c', 52, 70, 18, '#e9f6ff'], ['l', 'M64 82 L80 96', '#2a1f3d', 7]],
   popit: [['r', 10, 10, 80, 80, 22, '#b07cff'], ['c', 30, 30, 8, '#ff4f64'], ['c', 50, 30, 8, '#ff4f64'], ['c', 70, 30, 8, '#ff4f64'], ['c', 30, 50, 8, '#ffd23f'], ['c', 50, 50, 8, '#ffd23f'], ['c', 70, 50, 8, '#ffd23f'], ['c', 30, 70, 8, '#5cd16e'], ['c', 50, 70, 8, '#5cd16e'], ['c', 70, 70, 8, '#5cd16e']],
   little: [['r', 6, 58, 30, 30, 6, '#3ec5ff'], ['star', 21, 73, 8, '!#ffffff'], ['e', 62, 68, 28, 18, '#ffd23f'], ['c', 72, 42, 14, '#ffd23f'], ['p', 'M84 40 L98 44 L84 49 Z', '#ff8a1f'], ['c', 75, 38, 2.8, '!#1e2a3a'], ['e', 56, 66, 12, 7, '#f5c000']],
@@ -21104,7 +21402,7 @@ function mbSync() { // (from h2Sync: the coins, a new day, a pet change, the lan
 function mbInit() {
   for (const el of document.querySelectorAll('[data-ic]')) el.innerHTML = mbIco(el.dataset.ic);
   for (const el of document.querySelectorAll('.stk')) el.style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
-  [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].forEach((el, i) => el.style.setProperty('--rot', MB_ROT[i % 4])); $('heroPlay').style.setProperty('--rot', '0deg'); // (straight: its strip sits inside it)
+  { const live = [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].filter((el) => !el.hidden); live.forEach((el, i) => { el.style.setProperty('--rot', MB_ROT[i % 4]); el.classList.toggle('mbMid', live.length % 3 === 2 && i === live.length - 2); }); } // (three a row; two left over sit in the middle) $('heroPlay').style.setProperty('--rot', '0deg'); // (straight: its strip sits inside it)
   for (const el of document.querySelectorAll('.mbDockB')) el.querySelector('.rd').style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
   mbPages(); mbRoom(mbRoomGet(), true); mbSync();
   [...$('mbTop').querySelectorAll('button'), $('bigBtn'), $('littleBtn')].forEach((el, i) => el.style.setProperty('--i', String(Math.min(i, 3)))); // (the entrance's order: the top, then the rooms' stickers)

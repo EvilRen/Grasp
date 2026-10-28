@@ -46,7 +46,7 @@ def layout_ok(tag, L, need=()):
     if need: check(tag + ': shows ' + ', '.join(need), all(k in ids for k in need), ids)
     return L
 
-BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'heroAdv', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
+BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn', 'heroPlay', 'heroAdv', 'strike', 'frenzyChip', 'dailyBtn', 'smash', 'slice', 'bigPopit', 'spot', 'mix', 'drums', 'bubbles', 'paint', 'stars', 'collectionBtn', 'todayBtn')  # (navigation v2: no Arcade; Strike's mode chips; Pop It; the camera games' row)
 # the rooms' swiper (#mbRooms): settled on the room mb.room names (the room off screen is inert)
 SETTLED = f"(() => {{ const R = $('mbRooms'), r = {M}.mb.room; return !{M}.mb.swiping && Math.abs(Math.abs(R.scrollLeft) - (r === 'little' ? R.clientWidth : 0)) < 2 && $('start').dataset.room === r && $('bigRoom').inert === (r !== 'big') && $('littlePick').inert === (r !== 'little'); }})()"
 def in_room(r): return f"{M}.mb.room === '{r}' && " + SETTLED
@@ -71,9 +71,9 @@ async def main():
             lock, coins = bx['settingsBtn'], bx['metaPill']
             check(tg + ': the top bar: the gear at the ' + ('right (RTL)' if he else 'left') + ', the coins at the other end', ((lock['l'] > coins['l']) if he else (lock['l'] < coins['l'])), [lock, coins])
             check(tg + ': Bubu hidden (not in the top bar; the pet lives in the dock\'s Pet tab)', 'bubuBtn' not in bx and await page.evaluate("$('bubuBtn').hidden && $('bubuBtn').getBoundingClientRect().width === 0"), list(bx))
-            hero = bx['heroPlay']; grid = [bx[k] for k in ('smash', 'slice', 'bigPopit')]; cams = [bx[k] for k in ('drums', 'bubbles', 'paint', 'stars')]
-            check(tg + ': the Strike hero is the widest sticker, above the grid; Smash / Slice / Pop It / Spot it big (>= 70 x 150 px: four a row since spot the difference)', hero['w'] > 2.4 * max(g['w'] for g in grid) and hero['b'] <= min(g['t'] for g in grid) and all(g['w'] >= 70 and g['h'] >= 150 for g in grid), [hero, grid])
-            check(tg + ': 3 a row: Smash / Slice / Pop It side by side, the 4 camera games in one row under them', max(g['t'] for g in grid) - min(g['t'] for g in grid) < 12 and max(c['t'] for c in cams) - min(c['t'] for c in cams) < 12 and min(c['t'] for c in cams) > max(g['b'] for g in grid), [grid, cams])
+            hero = bx['heroPlay']; grid = [bx[k] for k in ('smash', 'slice', 'bigPopit')]; low = sorted([bx[k] for k in ('spot', 'mix')], key=lambda q: q['l']); cams = [bx[k] for k in ('drums', 'bubbles', 'paint', 'stars')]
+            check(tg + ': the Strike hero is the widest sticker, above the grid; Smash / Slice / Pop It, then Spot it / Mix it in the middle under them (>= 90 x 100 px: three a row since Mix)', hero['w'] > 2.4 * max(g['w'] for g in grid) and hero['b'] <= min(g['t'] for g in grid) and all(g['w'] >= 90 and g['h'] >= 100 for g in grid + low) and min(l['t'] for l in low) > max(g['b'] for g in grid) - 4 and abs((low[0]['l'] + low[1]['r']) / 2 - (grid[0]['l'] + grid[2]['r']) / 2) < 6, [hero, grid, low])
+            check(tg + ': 3 a row: Smash / Slice / Pop It side by side, the 4 camera games in one row under them', max(g['t'] for g in grid) - min(g['t'] for g in grid) < 12 and max(c['t'] for c in cams) - min(c['t'] for c in cams) < 12 and min(c['t'] for c in cams) > max(g['b'] for g in grid + low), [grid, cams])
             st = await page.evaluate("""(() => { const s = [...document.querySelectorAll('#start .stk, .mbOv .stk')]; const cs = (e) => getComputedStyle(e); return { n: s.length,
               ink: s.every(e => cs(e).borderTopColor === 'rgb(42, 31, 61)'), edge: s.every(e => cs(e).boxShadow.startsWith('rgb(255, 255, 255)')), svg: s.every(e => e.querySelector('.ic svg.mbI')), canvas: document.querySelectorAll('#start .stk canvas, .mbOv .stk canvas').length,
               cols: new Set(s.map(e => cs(e).backgroundColor)).size, font: cs($('heroLbl')).fontFamily }; })()""")
