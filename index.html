@@ -1248,8 +1248,15 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 /* the big kids' room: the Strike hero (+ the Map), then Smash · Slice · Arcade · Camera games, then the dock */
 .mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:auto minmax(0,1fr) minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
 .mbGrid .stk{ --icS:min(16cqw, 13cqh); } /* (three stickers a row, two rows, since Mix: each spans 2 of the 6 columns; a short last row sits in the middle) */
-.mbGrid > .stk{ grid-column:span 2; }
+.mbGrid > .stk{ grid-column:span 2; container-type:size; --icS:min(48cqw, max(22px, calc(100cqh - 30px))); } /* (each sticker measures itself: on a short screen (a browser's bars showing) the icon shrinks and the label stays inside) */
 .mbGrid > .stk.mbMid{ grid-column:2 / span 2; }
+@media (max-height: 780px){ /* (a short screen: the browser's bars showing on a phone, a laptop: the hero and the camera row give the stickers room) */
+  .stk.hero{ --icS:min(21cqw, 17cqh); min-height:0; padding-top:1.6cqw; }
+  #heroPlay.stk.hero{ padding-bottom:calc(max(44px,11.5cqw) + 5cqw); }
+  .stk.hero #heroLbl{ font-size:max(22px,7.4cqw); }
+  .mbCamRow .stk{ --icS:min(10cqw, 7cqh); padding:.8cqw 0; }
+  .mbGrid{ gap:3.2cqw 4.4cqw; padding-top:2.6cqw; }
+}
 .mbGrid > .stk.mbMid + .stk{ grid-column:4 / span 2; }
 .mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
@@ -1301,7 +1308,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mbMap .ic svg{ width:max(26px,7cqw); height:max(26px,7cqw); }
 .mbMap .best, .mbMap .newDot{ display:none !important; }
 /* the dock: Shop · Pet (once earned) · Events, round stickers; a red dot = something new */
-.mbDock{ display:flex; justify-content:space-evenly; align-items:flex-end; gap:2cqw; padding:1.6cqw 6cqw 3.4cqw; }
+.mbDock{ display:flex; justify-content:space-evenly; align-items:flex-end; gap:2cqw; padding:1.6cqw 6cqw max(18px,3.4cqw); } /* (room for the copyright line under the labels) */
 .mbDockB{ position:relative; display:flex; flex-direction:column; align-items:center; gap:.8cqw; min-width:max(64px,20cqw); padding:0; background:none; color:var(--mbInk); font-size:max(14px,3.9cqw); font-weight:700; line-height:1.1; }
 .mbDockB[hidden]{ display:none; }
 .mbDockB .rd{ --c:#ff8fab; width:max(50px,15cqw); height:max(50px,15cqw); border-radius:50%; display:grid; place-items:center; background:var(--c); border:max(2px,.8cqw) solid var(--mbInk); box-shadow:0 0 0 max(3px,1.2cqw) #fff, 0 max(4px,1.6cqw) 0 max(3px,1.2cqw) rgba(42,31,61,.28); transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
@@ -1773,7 +1780,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
