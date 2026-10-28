@@ -1919,7 +1919,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.6.6';
+const APP_VERSION = '1.6.7';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21000,26 +21000,27 @@ function mixTick(now) {
 const MX_EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
 /* a colour per thing (the owner, Oct 2026: "the colours here are not clear": all the elements were one pale blue): the emoji's own main colour (its
    pixels, the saturated ones weighing most), as a strong tile; pale or grey emoji (air, cloud, ghost) get a darker slate so they stand out */
-const MX_COLS = { water: 'hsl(205,90%,80%)', fire: 'hsl(28,95%,78%)', earth: 'hsl(110,70%,76%)', air: '#7f8fb8' };
+const MX_COLS = { water: 205, fire: 22, earth: 120, air: -1 }; // (a hue; -1: a pale thing, on slate)
 function mxCol(id) {
   if (!mixS.itemCol) mixS.itemCol = new Map(); const C = mixS.itemCol; if (C.has(id)) return C.get(id); const it = mxItem(id); if (!it) return '#ffffff';
-  let col = MX_COLS[id];
+  let col = MX_COLS[id] != null ? (MX_COLS[id] < 0 ? { fill: '#5d6b8f', ring: '#8d9bc0' } : { fill: '#ffffff', ring: 'hsl(' + MX_COLS[id] + ',85%,55%)' }) : null;
   if (!col) { try { const n = 28, cv = document.createElement('canvas'); cv.width = cv.height = n; const g = cv.getContext('2d', { willReadFrequently: true }); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '24px ' + MX_EMOJI; g.fillText(it.e, n / 2, n / 2 + 1);
       const px = g.getImageData(0, 0, n, n).data; let hx = 0, hy = 0, wt = 0, ls = 0, ln = 0;
       for (let i = 0; i < px.length; i += 4) { if (px[i + 3] < 140) continue; const r = px[i] / 255, gg = px[i + 1] / 255, b = px[i + 2] / 255, mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 2, d = mx - mn; ls += l; ln++;
         if (d < 0.12) continue; const sat = d / (1 - Math.abs(2 * l - 1) || 1); let h = mx === r ? ((gg - b) / d) % 6 : mx === gg ? (b - r) / d + 2 : (r - gg) / d + 4; h *= Math.PI / 3; const w = sat * sat; hx += Math.cos(h) * w; hy += Math.sin(h) * w; wt += w; }
       const L = ln ? ls / ln : 0.5, strong = ln && wt / ln > 0.12;
-      if (!strong) col = L > 0.6 ? '#6f7fa6' : '#c9d3e6'; // (grey / white things on slate; dark grey ones on a light tile)
-      else { const h = ((Math.atan2(hy, hx) * 180 / Math.PI) + 360) % 360; col = 'hsl(' + h.toFixed(0) + ',88%,80%)'; } // (a light tint of its colour: the emoji stays clear on it)
-    } catch { col = (mixS.catCol && mixS.catCol.get(it.c)) || '#ffffff'; } }
-  C.set(id, col); return col;
+      if (!strong) col = L > 0.6 ? { fill: '#5d6b8f', ring: '#8d9bc0' } : { fill: '#ffffff', ring: '#9aa3b5' }; // (grey / white things on slate; dark grey ones on white)
+      else { const h = ((Math.atan2(hy, hx) * 180 / Math.PI) + 360) % 360; col = { fill: '#ffffff', ring: 'hsl(' + h.toFixed(0) + ',85%,55%)' }; } // (white, so the emoji stands out; a thick ring in its colour)
+    } catch { col = { fill: '#ffffff', ring: (mixS.catCol && mixS.catCol.get(it.c)) || '#cccccc' }; } }
+  C.set(id, col); return col; // { fill, ring }
 }
 function mxTile(id, s) { // a thing: its emoji on a rounded tile in its own colour (and its badge in the corner)
   const it = mxItem(id), S = Math.round(s); return makeSprite('mxt|' + id + '|' + S, S + 6, S + 8, (S + 6) / 2, (S + 6) / 2, (g) => {
-    const r = S * 0.24, col = it ? mxCol(id) : '#ffffff';
-    g.fillStyle = 'rgba(42,31,61,0.28)'; g.beginPath(); g.roundRect(-S / 2, -S / 2 + 3, S, S, r); g.fill();
-    g.fillStyle = col; g.strokeStyle = '#2a1f3d'; g.lineWidth = Math.max(2, S * 0.045); g.beginPath(); g.roundRect(-S / 2, -S / 2, S, S, r); g.fill(); g.stroke();
-    g.fillStyle = 'rgba(255,255,255,0.45)'; g.beginPath(); g.roundRect(-S / 2 + S * 0.08, -S / 2 + S * 0.06, S * 0.84, S * 0.22, r * 0.6); g.fill();
+    const r = S * 0.24, col = it ? mxCol(id) : { fill: '#ffffff', ring: '#cccccc' }, rw = Math.max(3, S * 0.085);
+    g.fillStyle = 'rgba(42,31,61,0.35)'; g.beginPath(); g.roundRect(-S / 2, -S / 2 + 3, S, S, r); g.fill();
+    g.fillStyle = col.ring; g.beginPath(); g.roundRect(-S / 2, -S / 2, S, S, r); g.fill(); // (the ring: the thing's colour)
+    g.fillStyle = col.fill; g.beginPath(); g.roundRect(-S / 2 + rw, -S / 2 + rw, S - 2 * rw, S - 2 * rw, Math.max(2, r - rw)); g.fill();
+    g.strokeStyle = '#2a1f3d'; g.lineWidth = Math.max(2, S * 0.04); g.beginPath(); g.roundRect(-S / 2, -S / 2, S, S, r); g.stroke();
     if (!it) return; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = Math.round(S * 0.6) + 'px ' + MX_EMOJI; g.fillText(it.e, 0, S * 0.04);
     if (it.b) { g.font = Math.round(S * 0.32) + 'px ' + MX_EMOJI; g.fillText(it.b, S * 0.3, S * 0.3); }
   });
@@ -21061,7 +21062,7 @@ function renderMix(now) {
   }
   // the bottom bar: the book, the next thing on its way (a ring fills; the board fills by itself), the bulb (a bin while a board thing is dragged)
   { const N = L.next, nid = mixS.nextId, full = mixS.board.every(Boolean), q = full ? 0 : Math.max(0, Math.min(1, 1 - (mixS.autoAt - now) / (window.__mxAutoMs || MX.autoMs)));
-    mxBtn(N, nid ? mxCol(nid) : '#ffffff', () => { if (nid) { ctx.globalAlpha = full ? 0.35 : 0.5 + 0.5 * q; mxEmoji(mxItem(nid).e, N.x, N.y + 1, N.r * (0.8 + 0.3 * q)); ctx.globalAlpha = 1; }
+    mxBtn(N, nid ? mxCol(nid).fill : '#ffffff', () => { if (nid) { ctx.globalAlpha = full ? 0.35 : 0.5 + 0.5 * q; mxEmoji(mxItem(nid).e, N.x, N.y + 1, N.r * (0.8 + 0.3 * q)); ctx.globalAlpha = 1; }
       ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = full ? 'rgba(255,255,255,0.5)' : '#ffd23f'; ctx.beginPath(); ctx.arc(N.x, N.y, N.r - 3, -Math.PI / 2, -Math.PI / 2 + (full ? 1 : q) * TAU); ctx.stroke(); ctx.lineCap = 'butt'; }, full);
     const nt = textSprite(full ? t('mxFullS') : t('mxNext'), 13, '#ffffff', 'rgba(20,20,60,0.9)', 800); blit(nt, N.x, N.y + N.r + 10); }
   mxBtn(L.book, '#ffd6a8', () => { mxEmoji('📖', L.book.x, L.book.y, L.book.r * 1.05); });
