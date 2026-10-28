@@ -81,8 +81,14 @@ async def gate_and_bots(b, he):
         v = await view(page)
         if v['phase'] == 'over': break
         if v['phase'] == 'reveal' and not shot:
-            mk = await page.evaluate("[document.querySelectorAll('#tachles .tkSub').length, document.querySelectorAll('#tachles .tkSub .tkSent mark').length, document.querySelectorAll('#tachles .tkBlackC mark').length, document.querySelectorAll('#tachles .tkSub.stag').length]")
+            await page.evaluate(f"{TKH}.tk.g.revealAt = Date.now() + 4000")
+            mk = await page.evaluate("[document.querySelectorAll('#tachles .tkSub').length, document.querySelectorAll('#tachles .tkSub .tkSent mark').length, document.querySelectorAll('#tachles .tkBlackC mark').length, document.querySelectorAll('#tachles .tkSubW.stag').length]")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
+            if tag == 'HE':
+                rxs = await page.locator('#tachles .tkRx').count(); n0 = len([x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')])
+                if rxs: await page.click('#tachles .tkRx button >> nth=2'); await page.wait_for_timeout(100)
+                fx = [x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')]
+                check(tag + ': live reactions: a row of 😂👏💨🥴🤮🔥 under the others\' answers (not your own); a tap plays the fart and flies 💨 up', rxs >= 1 and len(fx) > n0 and fx[-1] == 'fx:fart' and await page.locator('#tachles .tkFly').count() >= 1, [rxs, fx[-3:]])
             check(tag + ': the reveal: every answer is a whole sentence (the question with the answer marked in it), all at once; the winner\'s sentence in the question card', mk[0] >= 1 and mk[1] >= mk[0] and mk[2] >= 1 and mk[3] == 0, mk)
         if not await step_local(page): await page.wait_for_timeout(80)
     await page.wait_for_timeout(200); v = await view(page)
@@ -120,6 +126,11 @@ async def rules(b):
         T.botMove(h); if (h.subs.b && h.subs.b[0] === sx) picks++; }}
       return {{ wins, picks }}; }})()""")
     check('bots with taste: a "סוטה ומגעיל" bot czar picks the sex answer over a plain one, and answers with it (20 of 20)', tz['wins'] == 20 and tz['picks'] == 20, tz)
+    cr = await page.evaluate(f"""(() => {{ const T = {TKH}.TK, d = {TKH}.tk.deck, g = T.newGame(d, ['a', 'b', 'c', 'd'].map((id) => ({{ id, name: id.toUpperCase() }})), {{ hand: 5 }});
+      g.judge = 0; g.black = d.b.findIndex((b) => b[1] === 1); g.phase = 'pick'; g.subs = {{}}; g.order = []; for (const id of ['b', 'c', 'd']) T.submit(g, id, [0]);
+      const kc = g.order.indexOf('c'), kb = g.order.indexOf('b'); const own = T.react(g, 'c', kc); T.react(g, 'b', kc); T.react(g, 'd', kc); T.react(g, 'a', kb); T.judge(g, 'a', kb);
+      return {{ own, b: g.players[1].score, c: g.players[2].score, crowd: g.last.crowd }}; }})()""")
+    check('reactions: never on your own answer; the most-reacted answer the czar did not pick gets a crowd point (and the czar\'s pick its point)', cr == {'own': False, 'b': 1, 'c': 1, 'crowd': 'c'}, cr)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)
@@ -202,7 +213,7 @@ async def style_packs(b):
     await click(page, '#tachles [data-a="m:bots"]')
     check('style: the room shows "סגנון הערב" with 3 levels, 🟠 גס on by default, and a packs button', await page.locator('#tachles .tkLv').count() == 3 and await page.locator('#tachles .tkLv.on').inner_text() == '🟠\nגס' and await page.locator('#tachles [data-a="packs"]').count() == 1)
     await click(page, '#tachles [data-a="lvl:1"]'); check('style: 🟢 קליל picked, its warning line shown', await page.evaluate(f"{TKH}.tk.set.lvl") == 1 and 'ההורים' in await page.inner_text('#tachles .tkLvD'))
-    await click(page, '#tachles [data-a="packs"]'); check('packs: a sheet of 13 packs, each with ⚠️ a warning and a card count, all on', await page.locator('#tachles .tkPk').count() == 13 and await page.locator('#tachles .tkPk.on').count() == 13 and await page.locator('#tachles .tkPk small:has-text("⚠️")').count() == 13)
+    await click(page, '#tachles [data-a="packs"]'); check('packs: a sheet of 13 packs, each with ⚠️ a warning and a card count, all on', await page.locator('#tachles .tkPacks .tkPk').count() == 13 and await page.locator('#tachles .tkPacks .tkPk.on').count() == 13 and await page.locator('#tachles .tkPk small:has-text("⚠️")').count() == 13)
     await page.screenshot(path=OUT + 'tachles_packs.png')
     await click(page, '#tachles [data-a="pkAll"]'); await click(page, '#tachles .tkMHead [data-a="mclose"]')
     n0 = await page.inner_text('#tachles [data-a="packs"]')
@@ -213,7 +224,15 @@ async def style_packs(b):
     await click(page, '#tachles [data-a="packs"]'); await click(page, '#tachles [data-a="pkAll"]'); await click(page, '#tachles [data-a="pk:s"]'); await click(page, '#tachles [data-a="pk:f"]'); await click(page, '#tachles .tkMHead [data-a="mclose"]')
     check('packs: sex and family off, saved', await page.evaluate(f"{TKH}.tk.set.off.slice().sort().join('')") == 'fs' and await page.evaluate("JSON.parse(localStorage.getItem('grasp.tk')).set.lvl") == 1)
     await page.screenshot(path=OUT + 'tachles_style.png')
+    await click(page, '#tachles [data-a="own"]'); await page.fill('#tkOwnIn', 'המנגל של אבי ביום העצמאות'); await click(page, '#tachles [data-a="ownAdd"]')
+    check('in-jokes: "🤫 הבדיחות שלנו": added, the button counts it', await page.evaluate(f"{TKH}.tk.own.h") == ['המנגל של אבי ביום העצמאות.'])
+    await click(page, '#tachles .tkMHead [data-a="mclose"]'); check('in-jokes: the room shows "(1)"', 'הבדיחות שלנו (1)' in await page.inner_text('#tachles [data-a="own"]'))
     await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(300)
+    gc = await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g, d = g.deck, names = g.players.map((p) => p.name), j = d.w.indexOf('המנגל של אבי ביום העצמאות.');
+      const nb = d.b.map((b, i) => i).filter((i) => i >= {TKH}.tk.deck.b.length), early = g.bd.slice(-60).filter((i) => i >= {TKH}.tk.deck.b.length).length;
+      const inHand = g.players.some((p) => p.hand.includes(j)), soon = inHand || g.wd.slice(-45).includes(j);
+      return {{ named: nb.length > 0 && nb.every((i) => names.some((n) => d.b[i][0].includes(n))), early, soon }}; }})()""")
+    check('the group\'s cards: questions with the players\' names (those the style lets in), several among the first draws; the in-joke dealt early', gc['named'] and gc['early'] >= 2 and gc['soon'], gc)
     r = await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g, d = g.deck, ws = g.players.flatMap((p) => p.hand).concat(g.wd), bs = g.bd.concat([g.black]);
       const bad = (m) => +m[0] > 1 || m.includes('s', 1) || m.includes('f', 1); return {{ n: ws.length, badW: ws.filter((i) => bad(d.wm[i])).length, badB: bs.filter((i) => bad(d.bm[i])).length }}; }})()""")
     check('style: the game at 🟢 without sex and family: every card in the hands, the pile and the questions passes', r['n'] > 50 and r['badW'] == 0 and r['badB'] == 0, r)
