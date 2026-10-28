@@ -15,7 +15,7 @@ async def state(page): return await page.evaluate(f"(() => {{ const m = {MX}.mix
 
 async def run(b, he):
     tag = 'HE' if he else 'EN'
-    ctx, page, errs = await page_for(b, '/', he, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
+    ctx, page, errs = await page_for(b, '/', he, init="window.__graspNoAutoFs = true; window.__mxAutoMs = 1e9;"); await page.wait_for_timeout(700)
     await page.tap('#bigRoom [data-mode=mix]'); ok = await wait(page, f"gameMode === 'mix' && {MX}.mix.ready", 8000); await page.wait_for_timeout(500)
     s = await state(page); n0 = await page.evaluate(f"{MX}.mix.data.items.length")
     check(tag + ': the sticker opens Mix; the first time: the base four found, two things on the board, the finger', ok and len(s['found']) == 4 and sum(1 for x in s['board'] if x) == 2 and await page.evaluate(f"{MX}.mix.coach"), s)
@@ -67,6 +67,17 @@ async def run(b, he):
         check('HE: the board reads right to left (cell 0 on the right)', q0[0] > q5[0], [q0, q5])
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
+async def auto(b):
+    # the owner: "the game should make the things by itself": a basic thing lands on the board every 3 s (here 0.3 s) until it is full
+    ctx, page, errs = await page_for(b, '/mix', True, init="window.__graspNoAutoFs = true; window.__mxAutoMs = 300;"); await wait(page, f"{MX}.mix.ready", 8000)
+    n0 = sum(1 for x in (await state(page))['board'] if x); await page.wait_for_timeout(2000); s = await state(page); n1 = sum(1 for x in s['board'] if x)
+    base = await page.evaluate(f"{MX}.mix.data.base")
+    check('by itself: new basic things land on the board, nothing tapped', n1 >= n0 + 3 and any(l.startswith('auto:') for l in s['log']), [n0, n1, s['log']])
+    await page.screenshot(path=OUT + 'mix_auto.png')
+    await page.evaluate(f"(() => {{ const m = {MX}.mix; for (let i = 0; i < m.board.length; i++) if (!m.board[i]) m.board[i] = 'water'; }})()"); await page.wait_for_timeout(900)
+    check('a full board: nothing more lands, nothing lost', all((await state(page))['board']))
+    check('auto: no page errors', not errs, errs); await ctx.close()
+
 async def content(b):
     ctx, page, errs = await page_for(b, '/mix', False, init="window.__graspNoAutoFs = true;"); await wait(page, f"{MX}.mix.ready", 8000)
     r = await page.evaluate(f"""(() => {{ const m = {MX}.mix, d = m.data, reach = new Set(d.base); let more = true;
@@ -80,6 +91,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (False, True): await run(b, he)
+        await auto(b)
         await content(b)
         await b.close()
     print('FAILURES:', check.fails)

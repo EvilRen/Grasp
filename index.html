@@ -1918,7 +1918,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.6.2';
+const APP_VERSION = '1.6.3';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -20849,7 +20849,7 @@ window.__grasp.spot = { SP, spot, load: spLoad, start: (id, l, o) => spotStart(i
    thing is dragged the bulb is a bin. Content: tools/mix_items.txt -> tools/mix_build.py -> assets/mix/mix.json (MIX_V busts the cache).
    Saved in profile.mix { found, board, orders }. Played by touch. Hooks: __grasp.mix. ---------------- */
 const MIX_V = 1;
-const MX = { url: '/assets/mix/', n: 48, hintCool: 12000, hintMs: 6500, newMs: 2600, dragPx: 9, saveMs: 700, orders: 3, spawnMs: 260, popMs: 380, noMs: 420 };
+const MX = { url: '/assets/mix/', n: 48, hintCool: 12000, hintMs: 6500, newMs: 2600, dragPx: 9, saveMs: 700, orders: 3, spawnMs: 260, popMs: 380, noMs: 420, autoMs: 3000 };
 const MX_PAL = ['#bfe3ff', '#ffd6a8', '#c8f2c2', '#ffc8d6', '#e2d2ff', '#fff0a8', '#b8f0ea', '#ffd0bf', '#d6e6ff', '#f2d8b8', '#d8f7a8', '#f5c8f0', '#c2d0ff', '#ffe0c2', '#c8ecd8', '#ead8ff', '#fde2a0', '#cfe8f0'];
 const mixS = { data: null, loading: null, ready: false, err: null, items: new Map(), rec: new Map(), cats: [], found: new Set(), board: [], orders: [], drag: null, fx: [], newQ: [], newCard: null,
   hint: null, hintAt: -1e9, L: null, lkey: '', log: [], saveAt: 0, label: null, coach: true, made: 0 };
@@ -20871,7 +20871,7 @@ function mxLoad() {
   return mixS.loading;
 }
 async function mixStart() {
-  mixS.ready = false; mixS.err = null; mixS.drag = null; mixS.newCard = null; mixS.newQ = []; mixS.fx = []; mixS.hint = null; mixS.label = null; mixS.lkey = '';
+  mixS.ready = false; mixS.err = null; mixS.drag = null; mixS.newCard = null; mixS.newQ = []; mixS.fx = []; mixS.hint = null; mixS.label = null; mixS.lkey = ''; mixS.autoAt = 0;
   try { await mxLoad(); } catch { mixS.err = 'load'; mixS.log.push('err:load'); return; }
   const P = mxP(), ok = (x) => mixS.items.has(x);
   mixS.found = new Set(P.found.filter(ok)); for (const b of mixS.data.base) mixS.found.add(b);
@@ -20971,6 +20971,12 @@ function mxSpawn(id, now) {
   const L = mxLayout(), s = L.src.find((q) => q.id === id), i = mxFree(s); if (i < 0) { mixS.fx.push({ k: 'full', t: now }); sfx('boop'); mixS.log.push('full'); return -1; }
   mixS.board[i] = id; mixS.fx.push({ k: 'fly', i, id, x: s.x, y: s.y, t: now }); sfx('pop'); mxSave(); mixS.log.push('spawn:' + id + ':' + i); return i;
 }
+function mxAuto(now) { // the board fills by itself (the owner, Oct 2026: "the game should make the things by itself"): a basic thing every 3 s while there is room
+  if (!mixS.autoAt || now < mixS.autoAt) { if (!mixS.autoAt) mixS.autoAt = now + (window.__mxAutoMs || MX.autoMs); return; } mixS.autoAt = now + (window.__mxAutoMs || MX.autoMs);
+  const B = $('mixBook'); if (mixS.newCard || (mixS.drag && mixS.drag.moved) || (B && !B.hidden) || pause.on) return;
+  const base = mixS.data.base, id = base[Math.floor(Math.random() * base.length)], L = mxLayout(), s = L.src.find((q) => q.id === id), i = mxFree(s); if (i < 0) return;
+  mixS.board[i] = id; mixS.fx.push({ k: 'fly', i, id, x: s.x, y: s.y, t: now }); sfx('tink'); mxSave(); mixS.log.push('auto:' + id + ':' + i);
+}
 function mxDeliver(k, from, now) {
   const o = mixS.orders[k]; mixS.board[from] = ''; addCoins(o.coins); const r = L0(k); confetti(r.x + r.w / 2, r.y + r.h / 2, 30, 0.6); sfx('coin');
   mixS.fx.push({ k: 'paid', x: r.x + r.w / 2, y: r.y + r.h / 2, n: o.coins, t: now }); mixS.orders.splice(k, 1); mixS.log.push('order:' + o.id + ':' + o.coins); mxFillOrders(now); mxSave(true);
@@ -21008,7 +21014,7 @@ function mxEmoji(e, x, y, s) { ctx.textAlign = 'center'; ctx.textBaseline = 'mid
 function renderMix(now) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.drawImage(mxBg().c, 0, 0, W, H); resetView();
   if (!mixS.ready) { const sp = textSprite(mixS.err ? t('mxErr') : t('spLoading'), 20, '#ffffff', 'rgba(20,20,60,0.85)', 700); blit(sp, W / 2, H / 2, 0, Math.min(1, (W - 32) / sp.tw)); return; }
-  const L = mxLayout(), cs = L.cs, d = mixS.drag, dragging = d && d.moved;
+  mxAuto(now); const L = mxLayout(), cs = L.cs, d = mixS.drag, dragging = d && d.moved;
   // the board
   resetView(); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(L.bx - 6, L.by - 6, L.bw + 12, L.bh + 12, 18); ctx.fill(); ctx.stroke();
   ctx.fillStyle = 'rgba(255,255,255,0.08)'; for (let i = 0; i < MX.n; i++) { const q = mxCellXY(i); ctx.beginPath(); ctx.roundRect(q.x - cs * 0.44, q.y - cs * 0.44, cs * 0.88, cs * 0.88, cs * 0.2); ctx.fill(); }
