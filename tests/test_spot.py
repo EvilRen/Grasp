@@ -87,7 +87,7 @@ async def sticker(b):
     ctx, page, errs = await page_for(b, '/', True)
     await page.wait_for_timeout(600); lb = await page.evaluate("document.querySelector('#bigRoom [data-mode=spot] .lb').textContent")
     r = await page.evaluate("(() => [...document.querySelectorAll('#bigRoom .mbGrid > .stk')].map((b) => { const q = b.getBoundingClientRect(), l = b.querySelector('.lb').getBoundingClientRect(); return { w: q.width, h: q.height, lh: l.height, top: q.top }; }))()")
-    check('HE: Big kids: three stickers a row, two rows (Smash, Slice, Pop It / "' + lb + '", Mix, Quest), each label on one line', len(r) == 6 and max(q['top'] for q in r[:3]) - min(q['top'] for q in r[:3]) < 6 and max(q['top'] for q in r[3:]) - min(q['top'] for q in r[3:]) < 6 and r[3]['top'] > r[0]['top'] + 60 and all(q['lh'] < 34 for q in r) and lb == 'הבדלים', r)
+    check('HE: Big kids: four stickers a row, two rows (Smash, Slice, Pop It, "' + lb + '" / Mix, Quest, Sand Lab), each label on one line', len(r) == 7 and max(q['top'] for q in r[:4]) - min(q['top'] for q in r[:4]) < 6 and max(q['top'] for q in r[4:]) - min(q['top'] for q in r[4:]) < 6 and r[4]['top'] > r[0]['top'] + 60 and all(q['lh'] < 34 for q in r) and lb == 'הבדלים', r)
     await page.tap('#bigRoom [data-mode=spot]'); ok = await wait(page, "gameMode === 'spot' && mode === 'mouse' && __grasp.spot.spot.ready", 15000)
     check('HE: the sticker opens it in one tap', ok)
     check('sticker: no page errors', not errs, errs); await ctx.close()

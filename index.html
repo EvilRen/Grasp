@@ -1246,10 +1246,9 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 #start.mb.intro .stk, #start.mb.intro .mbChip, #start.mb.intro .mbAgeB, #start.mb.intro .mbBubu, #start.mb.intro .mbDockB{ animation:mbIn .45s cubic-bezier(.3,1.5,.5,1) both; animation-delay:calc(var(--i,0) * 55ms); }
 @keyframes mbIn{ from{ opacity:0; transform:rotate(var(--rot,0deg)) translateY(4cqw) scale(.55); } }
 /* the big kids' room: the Strike hero (+ the Map), then Smash · Slice · Arcade · Camera games, then the dock */
-.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(6,1fr); grid-template-rows:auto minmax(0,1fr) minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
+.mbGrid{ flex:1; min-height:0; display:grid; grid-template-columns:repeat(24,minmax(0,1fr)); column-gap:0 !important; grid-template-rows:auto minmax(0,1fr) minmax(0,1fr) auto; gap:4.6cqw 4.4cqw; padding:4.4cqw 5.5cqw 2cqw; container-type:size; }
 .mbGrid .stk{ --icS:min(16cqw, 13cqh); } /* (three stickers a row, two rows, since Mix: each spans 2 of the 6 columns; a short last row sits in the middle) */
-.mbGrid > .stk{ grid-column:span 2; container-type:size; --icS:min(48cqw, max(22px, calc(100cqh - 30px))); } /* (each sticker measures itself: on a short screen (a browser's bars showing) the icon shrinks and the label stays inside) */
-.mbGrid > .stk.mbMid{ grid-column:2 / span 2; }
+.mbGrid > .stk{ grid-column:span 6; margin-inline:2.2cqw; container-type:size; --icS:min(48cqw, max(22px, calc(100cqh - 30px))); } /* (each sticker measures itself: on a short screen (a browser's bars showing) the icon shrinks and the label stays inside) */
 @media (max-height: 780px){ /* (a short screen: the browser's bars showing on a phone, a laptop: the hero and the camera row give the stickers room) */
   .stk.hero{ --icS:min(21cqw, 17cqh); min-height:0; padding-top:1.6cqw; }
   #heroPlay.stk.hero{ padding-bottom:calc(max(44px,11.5cqw) + 5cqw); }
@@ -1257,7 +1256,6 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
   .mbCamRow .stk{ --icS:min(10cqw, 7cqh); padding:.8cqw 0; }
   .mbGrid{ gap:3.2cqw 4.4cqw; padding-top:2.6cqw; }
 }
-.mbGrid > .stk.mbMid + .stk{ grid-column:4 / span 2; }
 .mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
@@ -1398,6 +1396,31 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #tachles .tkSub{ font:inherit; text-align:start; background:#fff; color:#111; border:3px solid #fff; border-radius:14px; padding:14px; font-size:17px; line-height:1.4; cursor:pointer; }
 #tachles .tkSub b{ color:#e2245a; } #tachles .tkSub[disabled]{ cursor:default; opacity:.92; }
 #tachles .tkWin{ display:flex; flex-direction:column; gap:12px; text-align:center; }
+/* Sand Lab: the tool bar under the grid, the level list / result card */
+#powderBar{ position:fixed; left:0; right:0; bottom:0; z-index:4; display:flex; flex-direction:column; gap:6px; padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px); background:#1b1630; border-top:2px solid #2e2650; font-family:var(--mbF); color:#fff; }
+#powderBar[hidden], #powderLv[hidden]{ display:none; }
+#powderBar .pwRow{ display:flex; gap:6px; align-items:center; justify-content:center; }
+#powderBar .pwTools{ justify-content:flex-start; overflow-x:auto; scrollbar-width:none; padding:2px; } #powderBar .pwTools::-webkit-scrollbar{ display:none; }
+#powderBar button{ font:inherit; color:#fff; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+#powderBar .pwM{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:40px; border-radius:20px; border:2px solid #3b3266; background:#241d42; font-size:15px; font-weight:700; }
+#powderBar .pwM.on{ background:#ffd23f; border-color:#ffd23f; color:#2a1f3d; }
+#powderBar .pwT{ flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; width:56px; height:56px; border-radius:14px; border:2px solid #3b3266; background:#241d42; padding:0; }
+#powderBar .pwT b{ font-size:24px; line-height:1; font-weight:400; } #powderBar .pwT small{ font-size:10.5px; font-weight:700; white-space:nowrap; margin-top:2px; }
+#powderBar .pwT.on{ border-color:#ffd23f; box-shadow:0 0 0 2px #ffd23f; }
+#powderBar .pwC{ background:var(--c); border-radius:50%; width:46px; height:46px; margin:5px 2px; }
+#powderBar .pwC.rb{ background:conic-gradient(#ff4f64,#ffd23f,#3ddc84,#3ec5ff,#b07cff,#ff4f64); }
+#powderBar .pwS{ width:44px; height:40px; border-radius:12px; border:2px solid #3b3266; background:#241d42; display:grid; place-items:center; }
+#powderBar .pwS i{ display:block; border-radius:50%; background:#fff; } #powderBar .pwS.on{ border-color:#ffd23f; }
+#powderBar .pwA, #powderLv .pwA{ min-height:40px; padding:0 14px; border-radius:20px; border:2px solid #3b3266; background:#241d42; font-size:15px; font-weight:700; color:#fff; }
+#powderLv{ position:fixed; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(8,6,16,.6); font-family:var(--mbF); color:#2a1f3d; }
+#powderLv .pwCard{ width:min(440px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#fff; border:3px solid #2a1f3d; border-radius:24px; box-shadow:0 6px 0 #2a1f3d; padding:16px; text-align:center; display:flex; flex-direction:column; gap:10px; }
+#powderLv h2{ margin:0; font-size:24px; } #powderLv p{ margin:0; font-size:16px; font-weight:600; } #powderLv .pwBig{ font-size:40px; } #powderLv .pwDim{ opacity:.25; }
+#powderLv .pwRow{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+#powderLv .pwA{ background:#fff5d6; color:#2a1f3d; border-color:#2a1f3d; font-family:inherit; cursor:pointer; } #powderLv .pwA.hot{ background:#3ddc84; }
+#powderLv .pwLvGrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+#powderLv .pwLv{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; border-radius:16px; border:2.5px solid #2a1f3d; background:#fff5d6; font-family:inherit; color:#2a1f3d; cursor:pointer; }
+#powderLv .pwLv b{ font-size:30px; font-weight:400; } #powderLv .pwLv span{ font-size:13px; font-weight:700; line-height:1.15; } #powderLv .pwLv i{ font-style:normal; color:#f5a623; font-size:14px; } #powderLv .pwLv i em{ font-style:normal; color:#ddd; }
+#powderLv .pwLv.lock{ opacity:.55; }
 .wnSheet .wnEmoji{ font-size:56px; line-height:1; animation:mbIn .5s cubic-bezier(.3,1.5,.5,1) both; }
 .mbOv .wnSheet h2{ font-size:26px; font-weight:700; margin:0; }
 .wnSheet .wnV{ font-size:13px; font-weight:700; opacity:.6; letter-spacing:1px; }
@@ -1508,6 +1531,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button type="button" class="stk wig" data-mode="spot" aria-pressed="false"><span class="ic" data-ic="spot"></span><span class="lb" data-i18n="modeSpot">Spot it</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" data-mode="mix" aria-pressed="false"><span class="ic" data-ic="mix"></span><span class="lb" data-i18n="modeMix">Mix it</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <button type="button" class="stk wig" data-mode="quest" aria-pressed="false"><span class="ic" data-ic="quest"></span><span class="lb" data-i18n="modeQuest">Quest</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
+        <button type="button" class="stk wig" data-mode="powder" aria-pressed="false"><span class="ic" data-ic="powder"></span><span class="lb" data-i18n="modePowder">Sand Lab</span><span class="best" hidden></span><span class="newDot" hidden></span></button>
         <div class="mbCam" id="camGamesBtn" data-k="camera" role="group" data-i18n-aria="camGames" aria-label="Camera games">
           <span class="mbCamT"><span class="ic" data-ic="camera"></span><span class="lb" data-i18n="camGames">Camera games</span></span>
           <span class="mbCamRow"><button type="button" class="stk wig" data-cg="drums" data-i18n-aria="modeDrums" aria-label="Air Drums"><span class="ic" data-ic="drums"></span><span class="lb" data-i18n="cgsDrums">Drums</span></button><button type="button" class="stk wig" data-cg="bubbles" data-i18n-aria="modeBubbles" aria-label="Bubble Pop"><span class="ic" data-ic="bubbles"></span><span class="lb" data-i18n="cgsBubbles">Bubbles</span></button><button type="button" class="stk wig" data-cg="paint" data-i18n-aria="modePaint" aria-label="Air Painting"><span class="ic" data-ic="paint"></span><span class="lb" data-i18n="cgsPaint">Paint</span></button><button type="button" class="stk wig" data-cg="stars" data-i18n-aria="modeStars" aria-label="Catch the Stars"><span class="ic" data-ic="stars"></span><span class="lb" data-i18n="cgsStars">Stars</span></button></span>
@@ -1581,6 +1605,8 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
   </div>
 </div>
 <div id="tachles" hidden></div>
+<div id="powderBar" hidden></div>
+<div id="powderLv" hidden></div>
 <div class="ov h2Ov mbOv" id="mixBook" hidden role="dialog" aria-modal="true" aria-labelledby="mxBookT">
   <div class="sheet mbSheet mxBook">
     <header><h2 id="mxBookT"><span data-i18n="mxBook">The book</span> <small id="mxBookN" dir="ltr"></small></h2><button class="xBtn" id="mxBookX" type="button" data-i18n-aria="close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
@@ -1780,7 +1806,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.5.3';
+const APP_VERSION = '1.6.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2493,6 +2519,7 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   tgd_feed: 'Feed me!', feWants: 'The {a} wants a {f}!', feWantsPet: '{a} wants a {f}!', feYum: 'Yummy!', feYuck: 'Yuck!', feBurp: 'Burp! Excuse me!',
   fd_carrot: 'Carrot', fd_bone: 'Bone', fd_fish: 'Fish', fd_banana: 'Banana', fd_apple: 'Apple', fd_snack: 'Cookie',
   tkCopied: 'Link copied', modeTachles: 'Tachles', gm_tachles: 'tachles',
+  modePowder: 'Sand Lab', gm_powder: 'sand lab', descPowder: 'Pour sand, water, fire and lava and watch them fall, flow, burn and mix.', pwLocked: 'Finish the one before first',
   modeQuest: 'Quest', gm_quest: 'quest', descQuest: 'A card adventure: pick a hero, choose doors, beat monsters with your deck.',
   modeMix: 'Mix it', gm_mix: 'mix it', descMix: 'Drag one thing onto another: two of the same merge, two different make something new. More than 350 to find.', mxCoach: 'Drag one onto the other!', mxFull: 'The board is full: join or bin some!', mxNew: 'New!', mxCount: '{n} of {all} found', mxFrom: 'made from', mxInto: 'makes', mxBook: 'The book', mxErr: "Mix didn't load. Check the connection.",
   modeSpot: 'Spot it', gm_spot: 'spot the difference', descSpot: 'Two pictures, a few differences: tap them. 3, then 5, then 7.', spFind: 'Find {n} differences!', spDone: 'Well spotted!', spNext: 'Next', spMissL: 'misses', spHintL: 'hints', spTimeL: 'seconds', spLvl1: 'Easy', spLvl2: 'Medium', spLvl3: 'Hard', spLoading: 'Loading the pictures…', spErr: "The pictures didn't load. Check the connection, then try again.",
@@ -2515,6 +2542,7 @@ Object.assign(I18N.he, {
   tgd_feed: 'תאכילו אותי!', feWants: 'ה{a} רוצה {f}!', feWantsPet: '{a} רוצה {f}!', feYum: 'יאמי!', feYuck: 'איכס!', feBurp: 'גרעפס! סליחה!',
   fd_carrot: 'גזר', fd_bone: 'עצם', fd_fish: 'דג', fd_banana: 'בננה', fd_apple: 'תפוח', fd_snack: 'עוגייה',
   tkCopied: 'הקישור הועתק', modeTachles: 'תכל׳ס', gm_tachles: 'תכל׳ס',
+  modePowder: 'מעבדת חול', gm_powder: 'מעבדת חול', descPowder: 'שופכים חול, מים, אש ולבה ורואים אותם נופלים, זורמים, בוערים ומתערבבים.', pwLocked: 'קודם מסיימים את השלב הקודם',
   modeQuest: 'מסע', gm_quest: 'מסע', descQuest: 'הרפתקת קלפים: בוחרים גיבור, בוחרים דלתות, מנצחים מפלצות עם החפיסה.',
   modeMix: 'מערבבים', gm_mix: 'מערבבים', descMix: 'גוררים דבר אחד על אחר: שניים זהים מתאחדים, שניים שונים יוצרים משהו חדש. יותר מ־350 לגלות.', mxCoach: 'גררו אחד על השני!', mxFull: 'הלוח מלא: חברו או זרקו לפח!', mxNew: 'חדש!', mxCount: 'נמצאו {n} מתוך {all}', mxFrom: 'עשוי מ', mxInto: 'יוצר', mxBook: 'הספר', mxErr: 'המשחק לא נטען. בדקו את החיבור.',
   modeSpot: 'הבדלים', gm_spot: 'מצא את ההבדלים', descSpot: 'שתי תמונות, כמה הבדלים: מקישים עליהם. 3, אחר כך 5, ואחר כך 7.', spFind: 'מצאו {n} הבדלים!', spDone: 'עין חדה!', spNext: 'הבא', spMissL: 'טעויות', spHintL: 'רמזים', spTimeL: 'שניות', spLvl1: 'קל', spLvl2: 'בינוני', spLvl3: 'קשה', spLoading: 'טוען את התמונות…', spErr: 'התמונות לא נטענו. בדקו את החיבור ונסו שוב.',
@@ -2557,14 +2585,14 @@ Object.assign(I18N.he, {
 Object.assign(I18N.en, {
   twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.5.0',
-  wn: ['\u2694\uFE0F New game: Quest! A card adventure with a hero and a deck', '\uD83D\uDEAA Choose your door: fights, treasure, a shop, a camp fire or a mystery', '\uD83D\uDC09 Beat the Troll King, the Dragon and the Mothership in space', '\u23F1\uFE0F Short, Normal or Epic: 5 minutes or a long adventure', '\uD83E\uDD16 Win once and the Robot hero joins you'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.6.0',
+  wn: ['\uD83C\uDFD6\uFE0F New game: Sand Lab! Pour sand and watch it fall and pile up', '\uD83C\uDFA8 Colors: rainbow sand, just for fun', '\u2697\uFE0F Lab: water, fire, lava, ice, plants, acid and boom powder that react', '\u2B50 9 challenges: fill the cup, put out the fire, make a cloud and more', '\uD83D\uDCF1 The home screen fits better with the browser bars showing'],
 });
 Object.assign(I18N.he, {
   twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.5.0',
-  wn: ['\u2694\uFE0F משחק חדש: מסע! הרפתקת קלפים עם גיבור וחפיסה', '\uD83D\uDEAA בוחרים דלת: קרבות, אוצר, חנות, מדורה או תעלומה', '\uD83D\uDC09 מנצחים את מלך הטרולים, הדרקון וספינת האם בחלל', '\u23F1\uFE0F קצר, רגיל או אפי: 5 דקות או הרפתקה ארוכה', '\uD83E\uDD16 ניצחון אחד והגיבור הרובוט מצטרף'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.6.0',
+  wn: ['\uD83C\uDFD6\uFE0F משחק חדש: מעבדת חול! שופכים חול ורואים אותו נופל ונערם', '\uD83C\uDFA8 צבעים: חול בצבעי הקשת, סתם בשביל הכיף', '\u2697\uFE0F מעבדה: מים, אש, לבה, קרח, צמחים, חומצה ואבק נפץ שמגיבים זה לזה', '\u2B50 9 אתגרים: למלא את הכוס, לכבות את השריפה, לעשות ענן ועוד', '\uD83D\uDCF1 מסך הבית נכנס טוב יותר כשסרגלי הדפדפן מוצגים'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -2971,7 +2999,8 @@ canvas.addEventListener('pointerdown', (e) => {
   if (mode !== 'none' && gameMode === 'spot') { e.preventDefault(); spotDown(e); return; } // spot the difference: a tap
   if (mode !== 'none' && gameMode === 'mix') { e.preventDefault(); mixDown(e); return; }
   if (mode !== 'none' && gameMode === 'quest') { e.preventDefault(); questDown(e); return; }
-  if (mode !== 'none' && gameMode === 'tachles') return; // (Tachles: its own DOM) // Quest: a tap on a button / a card / a monster // Mix: a press picks a thing up
+  if (mode !== 'none' && gameMode === 'tachles') return; // (Tachles: its own DOM)
+  if (mode !== 'none' && gameMode === 'powder') { e.preventDefault(); powderDown(e); return; } // Sand Lab: a finger pours // Quest: a tap on a button / a card / a monster // Mix: a press picks a thing up
   if (mode !== 'none' && tgOn()) { e.preventDefault(); tgPtrDown(e); return; } // the Little ones games: one finger drives
   if (mode !== 'mouse') return;
   e.preventDefault();
@@ -2986,6 +3015,7 @@ canvas.addEventListener('pointerdown', (e) => {
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'none' && tgOn()) { tgPtrMove(e); return; }
   if (mode !== 'none' && gameMode === 'mix') { mixMove(e); return; }
+  if (mode !== 'none' && gameMode === 'powder') { powderMove(e); return; }
   if (mode !== 'mouse') return;
   if (gameMode === 'shapes') shapesPtrMove(e);
   if (e.pointerType === 'touch') { if (ptr.touches.has(e.pointerId)) { ptr.touches.set(e.pointerId, { x: e.clientX, y: e.clientY }); recomputeTouch(); } return; }
@@ -2994,6 +3024,7 @@ window.addEventListener('pointermove', (e) => {
 const endPointer = (e) => {
   if (mode !== 'none' && tgOn()) { tgPtrUp(e, e.type === 'pointercancel'); return; }
   if (mode !== 'none' && gameMode === 'mix') { mixUp(e, e.type === 'pointercancel'); return; }
+  if (mode !== 'none' && gameMode === 'powder') { powderUp(e); return; }
   if (mode !== 'mouse') return;
   if (gameMode === 'shapes') shapesPtrUp(e, e.type === 'pointercancel');
   if (e.pointerType === 'touch') { ptr.touches.delete(e.pointerId); ptr.lastUp = performance.now(); recomputeTouch(); return; }
@@ -3124,7 +3155,7 @@ function frameBody(now) {
   else if (gameMode !== 'strike' && mode !== 'none') menuTick(now); // (Strike and Smash run it in their own tick, after their maps)
 
   acc += dt;
-  const noPhysics = (gameMode === 'smash' && smash.run === 'tower' && performance.now() < tower.stopUntil) || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
+  const noPhysics = (gameMode === 'smash' && smash.run === 'tower' && performance.now() < tower.stopUntil) || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles' || gameMode === 'powder' || gameMode === 'slice' || gameMode === 'busy' || gameMode === 'strike' || gameMode === 'shapes' || cgOn() || tgOn() || pause.on; // the world freezes while the hand is missing
   const steps = noPhysics ? 0 : Math.min(4, Math.floor(acc / STEP));
   if (noPhysics) acc = 0;
   for (let i = 0; i < steps; i++) {
@@ -3139,7 +3170,7 @@ function frameBody(now) {
   acc = steps === 4 ? 0 : acc - steps * STEP;
 
   updateParticles(dt); fxTick(dt);
-  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (gameMode === 'spot') { spotTick(now); renderSpot(now); } else if (gameMode === 'mix') { mixTick(now); renderMix(now); } else if (gameMode === 'quest') renderQuest(now); else if (gameMode === 'tachles') renderTachles(); else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
+  if (gameMode === 'slice') { sliceTick(now, dt); renderSlice(now); } else if (gameMode === 'smash') renderSmash(now); else if (gameMode === 'busy') { busyTick(now, dt); renderBusy(now); } else if (gameMode === 'strike') { strikeTick(now, dt); renderStrike(now); } else if (gameMode === 'shapes') { shapesTick(now, dt); renderShapes(now); } else if (cgOn()) { cgTick(now, dt); cgRender(now); } else if (gameMode === 'spot') { spotTick(now); renderSpot(now); } else if (gameMode === 'mix') { mixTick(now); renderMix(now); } else if (gameMode === 'quest') renderQuest(now); else if (gameMode === 'tachles') renderTachles(); else if (gameMode === 'powder') renderPowder(now); else if (tgOn()) { tgTick(now, dt); tgRender(now); } else render(now);
   if (fxp.n) fxDraw(); // (a mode that drew no particles this frame: the pool on top)
   gfx3dSync();
   fdTick(now); drawFingerDemo(now); // (phase 1: the first-time instruction fingers)
@@ -13779,6 +13810,7 @@ function loadProfile() { // whatever is stored is merged over the defaults, so a
       if (Array.isArray(a.got)) d.album.got = [...new Set(a.got.filter(ok))].sort((x, y) => x - y);
       if (Array.isArray(a.fresh)) d.album.fresh = [...new Set(a.fresh.filter((n) => d.album.got.includes(n)))];
       if (Array.isArray(a.pages)) d.album.pages = [...new Set(a.pages.filter((w) => Number.isInteger(w) && w >= 1 && w <= ADV_WN))].sort((x, y) => x - y); }
+    if (p.powder !== undefined) d.powder = pwValidate(p.powder); // (Sand Lab: stars, the last mode)
     if (p.quest !== undefined) d.quest = qValidate(p.quest); // (Quest: the run in progress, wins, bests, heroes)
     if (p.mix !== undefined) d.mix = mxValidate(p.mix); // (Mix: what was found, the board, the orders)
     if (p.spot !== undefined) d.spot = spValidate(p.spot); // (spot the difference: the solved puzzles' stars)
@@ -14819,7 +14851,7 @@ function startWorld(n, how) { // play Strike from world n's first level (n: an u
 function strikeStart(how) { // the start screen's tiles: Strike opens the Adventure map (Endless on it plays the old run; the daily has its own panel); Smash its map (Free play or a stage)
   if (gameMode === 'strike' && !daily.armed) { openAdvMap({ how }); return; }
   if (gameMode === 'smash') { openSmashMap({ how }); return; }
-  if (tgOn() || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles') { fallbackToMouse([]); return; } // (the Little ones games and spot the difference play by touch; Colors opens its own camera for its camera activity)
+  if (tgOn() || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles' || gameMode === 'powder') { fallbackToMouse([]); return; } // (the Little ones games and spot the difference play by touch; Colors opens its own camera for its camera activity)
   if (how === 'camera') enableCamera(); else fallbackToMouse([]);
 }
 /* --- Strike Adventure: the saga map. A full-screen overlay: a winding path from the bottom up, 40 numbered stops in five world bands (each in its
@@ -15168,7 +15200,7 @@ function hintBottom() { // px from the bottom edge: above Strike's power meter a
 function showHint(text) { // toast: the mode's icon at the start edge, slides up, holds 4 s, fades (text: a one-time onboarding tip instead of the mode's how-to)
   if (typeof text !== 'string' && mode !== 'none' && (gameMode === 'slice' || gameMode === 'smash') && fdStart(gameMode)) return; // (phase 1: the first time: the finger instead of the how-to toast)
   if (fdActive()) { if (typeof text === 'string') fd.q = text; hideHint(); return; } // (phase 1: one instruction at a time: a tip waits for the finger)
-  if ((tgOn() || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
+  if ((tgOn() || gameMode === 'spot' || gameMode === 'mix' || gameMode === 'quest' || gameMode === 'tachles' || gameMode === 'powder') && typeof text !== 'string') { hideHint(); return; } // (the Little ones games: nothing to read; the demo finger shows the way; spot the difference says it on its own banner)
   if (gameMode === 'strike' && strike.perkOffer) return; // never over the perk cards
   if (gameMode === 'strike' && typeof text !== 'string') { hideHint(); return; } // (panel fix: Strike's one serve instruction is the line over the ball, 'Pull, then flick!': no how-to toast at the start)
   hintEl.querySelector('.tx').textContent = typeof text === 'string' ? text : hintText();
@@ -15222,12 +15254,12 @@ $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetS
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles']; // every game: the toolbar is the one pause button in play
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); navHomeSync(); try { syncFullBtn(); } catch {} if (!on) closeMenu(false); }
 // the owner, Oct 2026 ("why do I need this pause button?"): where there is nothing to pause (the Little ones' games, Sand, both Pop Its, Paint,
 // Calm bubbles) the corner sticker is the house alone, and its tap goes home at once (no sheet); Strike, Smash, Slice... keep pause + the sheet
-function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint' || m === 'mix' || m === 'quest' || m === 'tachles' || (m === 'bubbles' && !!bubbles.calm); } // (Calm bubbles from the camera games is the big kids' since the QA sweep; it still has nothing to pause)
+function navHomeOnly(m = gameMode) { return navRoomOf(m) === 'little' || m === 'popit' || m === 'paint' || m === 'mix' || m === 'quest' || m === 'tachles' || m === 'powder' || (m === 'bubbles' && !!bubbles.calm); } // (Calm bubbles from the camera games is the big kids' since the QA sweep; it still has nothing to pause)
 function navHomeSync() { const on = navHomeOnly(); document.body.classList.toggle('homeOnly', on); $('pauseBtn').setAttribute('aria-label', t(on ? 'home' : 'pauseMenu')); $('pauseBtn').title = t(on ? 'home' : 'pauseMenu'); return on; }
 function menuTick(now) { if (mode === 'camera') menuDwellTick(now); else if (!$('menuDwell').hidden) $('menuDwell').hidden = true; }
 function openMenu() {
@@ -15698,7 +15730,8 @@ function homeCamTick(now) {
 }
 function goHome() {
   if (gameMode === 'mix') { mxBookClose(); if (mixS.ready) mxSave(true); }
-  if (gameMode === 'tachles') tkStop(); // (Tachles: its sheet goes, a room closes) // (Mix: the board is kept as it is)
+  if (gameMode === 'tachles') tkStop();
+  if (gameMode === 'powder') powderStop(); // (Sand Lab: its bar goes) // (Tachles: its sheet goes, a room closes) // (Mix: the board is kept as it is)
   const fromGame = mode !== 'none'; // (a Home with no game running (the start screen, a map over it) keeps the room the player is in)
   voiceStop();
   if (held) dropHeld();
@@ -15747,7 +15780,7 @@ function startGame(m) {
   daily.on = daily.armed && gameMode === 'strike'; daily.armed = false; // the Daily panel's buttons arm it
   adv.on = adv.armed && gameMode === 'strike' && !daily.on; adv.armed = false; // a stop on the Adventure map arms its stage
   frenzy.on = frenzy.armed && gameMode === 'strike' && !daily.on && !adv.on; frenzy.armed = false; // the map's Frenzy button (or /frenzy)
-  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (gameMode === 'mix') mixStart(); else if (gameMode === 'quest') questStart(); else if (gameMode === 'tachles') tkStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
+  if (gameMode === 'slice') resetSlice(); else if (gameMode === 'smash' && engine) resetSmash(performance.now()); else if (gameMode === 'strike') resetStrike(performance.now()); else if (gameMode === 'spot') spotStart(); else if (gameMode === 'mix') mixStart(); else if (gameMode === 'quest') questStart(); else if (gameMode === 'tachles') tkStart(); else if (gameMode === 'powder') powderStart(); else if (cgOn()) { cgReset(gameMode); cgSyncHands(); cgAskClose(); if (m === 'mouse') cgAskMaybe(); }
   routeEnter(gameMode === 'strike' && duel.on ? 'duel' : gameMode === 'strike' && frenzy.on ? 'frenzy' : gameMode); // the game's own path (/strike, /smash, ..., /frenzy)
   littleFlowSet(); // (phase 1: the Today panel hides the streak flame in the Little ones flow)
   showHint(); syncFullBtn(); // (not full screen: its sticker in the corner)
@@ -20242,7 +20275,7 @@ window.__grasp.popit = { PI, pi, boards: PI_BOARDS, shapes: PI_SHAPES, ids: PI_I
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
 const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
 function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
@@ -21800,6 +21833,236 @@ function renderTachles() { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle
   v.addEventListener('click', () => { const now = performance.now(); n = now - t0 < 1500 ? n + 1 : 1; t0 = now; if (n >= 7) { n = 0; try { localStorage.setItem('grasp.tkShow', '1'); } catch {} show(); sfx('levelup'); try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch {} } else if (n >= 4) sfx('tink'); });
   row.addEventListener('click', () => { h2More(false); mbModeGo('tachles'); }); })();
 window.__grasp.tk = { TK, tk, start: tkStart, act: tkAct, render: tkRender, net: TKNET };
+/* ---------------- Sand Lab (/powder, Big kids; the owner, Oct 2026, from a falling-sand app: "I want a game like that too"). A grid of grains
+   (~3 px a cell on a phone) that fall, flow, burn and react, two steps a frame. Three ways: Colors (colourful sand and a rainbow, calm), Lab
+   (sand, water, stone, wood, fire, oil, lava, ice, plant, acid, gunpowder and an eraser: water + lava = stone and steam, fire burns wood, oil and
+   plants, plants drink water and grow, acid eats what it touches, ice freezes water and melts by fire, gunpowder explodes) and Challenges
+   (9 levels with a goal and a few tools: fill the cup, put out the fire, reach the star, melt the dam, grow a garden, burn it all, make a cloud,
+   boom, the acid key; stars by time). The finger pours (a line between frames, so walls are drawn smooth); the tools sit in a bar under the
+   grid (#powderBar, DOM). Saved: profile.powder { stars, mode }. Hooks: __grasp.pw. ---------------- */
+const PWT = { E: 0, SAND: 1, WATER: 2, STONE: 3, WOOD: 4, FIRE: 5, SMOKE: 6, STEAM: 7, OIL: 8, LAVA: 9, ICE: 10, PLANT: 11, ACID: 12, BOOM: 13, CSAND: 14 };
+const PWK = new Uint8Array([0, 1, 2, 3, 3, 5, 4, 4, 2, 2, 3, 3, 2, 1, 1]); // kind: 1 powder, 2 liquid, 3 still, 4 gas, 5 fire
+const PWDEN = new Int8Array([0, 30, 20, 99, 99, 0, -2, -1, 15, 25, 99, 99, 18, 30, 30]);
+const PWBASE = ['#120f1c', '#e8c15a', '#2f6fe8', '#6f6f80', '#8a5a2b', '#ff7a1a', '#5a5a66', '#cfd8e6', '#5a4614', '#ff4a1a', '#a8e4ff', '#33b24a', '#9cff3a', '#4a4a50', '#ffffff'];
+const PW_COLORS = ['#ff4f64', '#ff9f1c', '#ffd23f', '#3ddc84', '#3ec5ff', '#5468ff', '#b07cff', '#ff7eb6'];
+const PW_MATS = [ // the Lab's tools: [id, type (or -1 eraser), emoji]
+  ['sand', PWT.SAND, '🏖️'], ['water', PWT.WATER, '💧'], ['stone', PWT.STONE, '🪨'], ['wood', PWT.WOOD, '🪵'], ['fire', PWT.FIRE, '🔥'],
+  ['oil', PWT.OIL, '🛢️'], ['lava', PWT.LAVA, '🌋'], ['ice', PWT.ICE, '🧊'], ['plant', PWT.PLANT, '🌱'], ['acid', PWT.ACID, '🧪'],
+  ['boom', PWT.BOOM, '💥'], ['erase', -1, '🧽']];
+PW_MATS[9][2] = '🧪';
+const PWS = {
+  en: { colors: 'Colors', lab: 'Lab', chal: 'Challenges', clear: 'Clear', retry: 'Retry', levels: 'Levels', next: 'Next', done: 'Done!', lost: 'Try again!', size: 'Brush',
+    sand: 'Sand', water: 'Water', stone: 'Stone', wood: 'Wood', fire: 'Fire', oil: 'Oil', lava: 'Lava', ice: 'Ice', plant: 'Plant', acid: 'Acid', boom: 'Boom powder', erase: 'Eraser', rainbow: 'Rainbow',
+    lvT: 'Challenges', lock: 'Finish the one before', woodLeft: 'Save the wood!' },
+  he: { colors: 'צבעים', lab: 'מעבדה', chal: 'אתגרים', clear: 'ניקוי', retry: 'שוב', levels: 'שלבים', next: 'הבא', done: 'הצלחתם!', lost: 'עוד פעם!', size: 'מכחול',
+    sand: 'חול', water: 'מים', stone: 'אבן', wood: 'עץ', fire: 'אש', oil: 'שמן', lava: 'לבה', ice: 'קרח', plant: 'צמח', acid: 'חומצה', boom: 'אבק נפץ', erase: 'מחק', rainbow: 'קשת',
+    lvT: 'אתגרים', lock: 'קודם מסיימים את הקודם', woodLeft: 'תצילו את העץ!' },
+};
+function pws(k) { return (PWS[lang] || PWS.en)[k] || PWS.en[k] || k; }
+/* the grid */
+const pw = { g: null, mode: 'colors', tool: 'sand', col: 0, size: 4, ptrs: new Map(), lvl: null, lv: null, won: 0, lost: 0, t0: 0, holdAt: 0, booms: 0, boomAt: 0, log: [], top: 0, barH: 0, cs: 3, steps: 2, hue: 0, fc: 0 };
+const PW_LUT = (() => { // a colour per type x 16 shades (fire: by its life), and the colour sand's 8 colours + 64 rainbow hues; Uint32 ABGR
+  const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)], pack = (r, g, b) => (255 << 24 | Math.min(255, b) << 16 | Math.min(255, g) << 8 | Math.min(255, r)) >>> 0;
+  const t = new Uint32Array(16 * 16); for (let ty = 0; ty < 15; ty++) { const c = rgb(PWBASE[ty]); for (let s = 0; s < 16; s++) { const k = ty === 0 ? 1 : 0.8 + 0.4 * s / 15; t[ty * 16 + s] = pack(c[0] * k | 0, c[1] * k | 0, c[2] * k | 0); } }
+  const pal = []; for (const h of PW_COLORS) pal.push(rgb(h)); for (let i = 0; i < 64; i++) { const a = i / 64 * 6, f = a - Math.floor(a), q = 1 - f, z = [[1, f, 0], [q, 1, 0], [0, 1, f], [0, q, 1], [f, 0, 1], [1, 0, q]][Math.floor(a) % 6]; pal.push(z.map((v) => 70 + v * 185)); }
+  const c = new Uint32Array(pal.length * 16); pal.forEach((p, i) => { for (let s = 0; s < 16; s++) { const k = 0.82 + 0.36 * s / 15; c[i * 16 + s] = pack(p[0] * k | 0, p[1] * k | 0, p[2] * k | 0); } });
+  const fire = new Uint32Array(64); for (let l = 0; l < 64; l++) { const k = Math.min(1, l / 40); fire[l] = pack(255, (90 + 150 * k) | 0, (20 + 60 * k * k) | 0); }
+  return { t, c, fire };
+})();
+function pwGrid(w, h) { const n = w * h; return { w, h, n, t: new Uint8Array(n), ex: new Uint8Array(n), sh: new Uint8Array(n), st: new Uint8Array(n), f: 1, img: null, cv: null }; }
+function pwSet(G, i, ty, e) { G.t[i] = ty; G.sh[i] = (Math.random() * 16) | 0; G.ex[i] = e != null ? e : ty === PWT.FIRE ? 18 + Math.random() * 25 : ty === PWT.SMOKE ? 30 + Math.random() * 50 : ty === PWT.STEAM ? 90 + Math.random() * 120 : 0; }
+function pwSwap(G, i, j) { const t = G.t, e = G.ex, s = G.sh, a = t[i], b = e[i], c = s[i]; t[i] = t[j]; e[i] = e[j]; s[i] = s[j]; t[j] = a; e[j] = b; s[j] = c; G.st[j] = G.f; G.st[i] = G.f; }
+function pwExplode(G, x0, y0) {
+  const r = 7, W = G.w; pw.booms++;
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + dy * dy > r * r) continue; const x = x0 + dx, y = y0 + dy; if (x < 0 || y < 0 || x >= W || y >= G.h) continue; const i = y * W + x; if (G.t[i] === PWT.STONE) continue;
+    if (G.t[i] === PWT.BOOM && (dx || dy)) { G.t[i] = PWT.FIRE; G.ex[i] = 3; continue; } if (Math.random() < 0.65) pwSet(G, i, PWT.FIRE, 6 + Math.random() * 14); else G.t[i] = 0; G.st[i] = G.f; }
+}
+function pwStep(G) {
+  const W = G.w, H = G.h, t = G.t, ex = G.ex, st = G.st; G.f = (G.f % 250) + 1; const f = G.f, R = Math.random;
+  const ok = (x, y) => x >= 0 && x < W && y >= 0 && y < H;
+  for (let y = H - 1; y >= 0; y--) {
+    const ltr = ((y + f) & 1) === 0;
+    for (let k = 0; k < W; k++) {
+      const x = ltr ? k : W - 1 - k, i = y * W + x, ty = t[i]; if (ty === 0 || st[i] === f) continue;
+      const kind = PWK[ty];
+      if (kind === 1 || kind === 2) { // fall (powders sink through lighter liquids and gases)
+        if (ty === PWT.LAVA && R() < 0.55) { pwReact(G, x, y, i, ty); continue; }
+        const d = PWDEN[ty], below = y + 1 < H ? i + W : -1;
+        if (below >= 0) { const tb = t[below]; if (tb === 0 || ((PWK[tb] === 2 || PWK[tb] === 4 || PWK[tb] === 5) && PWDEN[tb] < d && (PWK[tb] !== 2 || R() < 0.5))) { pwSwap(G, i, below); continue; } }
+        const dir = R() < 0.5 ? -1 : 1; let moved = false;
+        for (const s of [dir, -dir]) { const nx = x + s; if (y + 1 < H && nx >= 0 && nx < W) { const j = below + s, tj = t[j]; if (tj === 0 || ((PWK[tj] === 2 || PWK[tj] === 4) && PWDEN[tj] < d && R() < 0.5)) { pwSwap(G, i, j); moved = true; break; } } }
+        if (moved) continue;
+        if (kind === 2) { // flow sideways, up to a few cells
+          const disp = ty === PWT.WATER ? 5 : ty === PWT.LAVA ? 1 : 3; let to = -1;
+          for (let s = 1; s <= disp; s++) { const nx = x + dir * s; if (nx < 0 || nx >= W) break; const tj = t[i + dir * s]; if (tj === 0 || (PWK[tj] === 4)) to = i + dir * s; else if (PWK[tj] === 2 && PWDEN[tj] < d) { to = i + dir * s; break; } else break; }
+          if (to >= 0) { pwSwap(G, i, to); continue; }
+        }
+        pwReact(G, x, y, i, ty); continue;
+      }
+      if (kind === 4) { // gas: rise, drift, fade
+        if (--ex[i] === 0 || (y === 0 && R() < 0.02)) { if (ty === PWT.STEAM && R() < 0.35) pwSet(G, i, PWT.WATER); else t[i] = 0; continue; }
+        const up = y > 0 ? i - W : -1, dx = R() < 0.5 ? -1 : 1;
+        if (up >= 0 && R() < 0.8) { if (t[up] === 0) { pwSwap(G, i, up); continue; } const j = up + dx; if (x + dx >= 0 && x + dx < W && t[j] === 0) { pwSwap(G, i, j); continue; } }
+        if (x + dx >= 0 && x + dx < W && t[i + dx] === 0) pwSwap(G, i, i + dx); continue;
+      }
+      if (kind === 5) { // fire
+        let out = false;
+        for (let n = 0; n < 4; n++) { const nx = x + (n === 0 ? -1 : n === 1 ? 1 : 0), ny = y + (n === 2 ? -1 : n === 3 ? 1 : 0); if (!ok(nx, ny)) continue; const j = ny * W + nx, tj = t[j];
+          if (tj === PWT.WOOD && R() < 0.045) pwSet(G, j, PWT.FIRE, 50 + R() * 50); else if (tj === PWT.PLANT && R() < 0.12) pwSet(G, j, PWT.FIRE, 20 + R() * 20); else if (tj === PWT.OIL && R() < 0.3) pwSet(G, j, PWT.FIRE, 30 + R() * 30);
+          else if (tj === PWT.BOOM) pwExplode(G, nx, ny); else if (tj === PWT.ICE && R() < 0.06) pwSet(G, j, PWT.WATER); else if (tj === PWT.WATER && R() < 0.5) { pwSet(G, i, PWT.STEAM); if (R() < 0.3) pwSet(G, j, PWT.STEAM); out = true; break; } }
+        if (out || t[i] !== PWT.FIRE) continue;
+        if (--ex[i] === 0) { if (R() < 0.35) pwSet(G, i, PWT.SMOKE); else t[i] = 0; continue; }
+        if (ex[i] < 30 && y > 0 && R() < 0.5) { const j = i - W + (R() < 0.5 ? -1 : 1) * (R() < 0.5 ? 1 : 0); if (j >= 0 && t[j] === 0) pwSwap(G, i, j); }
+        continue;
+      }
+      if (ty === PWT.PLANT || ty === PWT.ICE) pwReact(G, x, y, i, ty);
+    }
+  }
+}
+function pwReact(G, x, y, i, ty) { // touch reactions of lava, acid, plants, ice, water
+  const W = G.w, t = G.t, R = Math.random;
+  if (ty !== PWT.LAVA && ty !== PWT.ACID && ty !== PWT.PLANT && ty !== PWT.ICE) return;
+  for (let n = 0; n < 4; n++) { const nx = x + (n === 0 ? -1 : n === 1 ? 1 : 0), ny = y + (n === 2 ? -1 : n === 3 ? 1 : 0); if (nx < 0 || ny < 0 || nx >= W || ny >= G.h) continue; const j = ny * W + nx, tj = t[j]; if (!tj) continue;
+    if (ty === PWT.LAVA) { if (tj === PWT.WATER) { pwSet(G, i, PWT.STONE); pwSet(G, j, PWT.STEAM); return; } if ((tj === PWT.WOOD || tj === PWT.PLANT || tj === PWT.OIL) && R() < 0.1) pwSet(G, j, PWT.FIRE, 30 + R() * 30); else if (tj === PWT.ICE && R() < 0.1) pwSet(G, j, PWT.WATER); else if (tj === PWT.BOOM) pwExplode(G, nx, ny); }
+    else if (ty === PWT.ACID) { if (tj !== PWT.ACID && PWK[tj] !== 4 && PWK[tj] !== 5 && (tj !== PWT.STONE || R() < 0.06) && R() < 0.09) { t[j] = 0; if (R() < 0.35) { t[i] = 0; return; } } }
+    else if (ty === PWT.PLANT) { if (tj === PWT.WATER && R() < 0.025) pwSet(G, j, PWT.PLANT); }
+    else if (ty === PWT.ICE) { if (tj === PWT.WATER && R() < 0.0025) pwSet(G, j, PWT.ICE); else if (tj === PWT.LAVA && R() < 0.05) pwSet(G, i, PWT.WATER); }
+  }
+  if (ty === PWT.LAVA && y > 0 && t[i - W] === 0 && R() < 0.004) pwSet(G, i - W, PWT.FIRE, 8);
+}
+/* drawing */
+function pwDraw() {
+  const G = pw.g; if (!G) return; if (!G.cv || G.cv.width !== G.w || G.cv.height !== G.h) { G.cv = document.createElement('canvas'); G.cv.width = G.w; G.cv.height = G.h; G.cx = G.cv.getContext('2d'); G.img = G.cx.createImageData(G.w, G.h); G.u = new Uint32Array(G.img.data.buffer); }
+  const u = G.u, t = G.t, sh = G.sh, ex = G.ex, L = PW_LUT, n = G.n;
+  for (let i = 0; i < n; i++) { const ty = t[i]; u[i] = ty === PWT.FIRE ? L.fire[Math.min(63, ex[i])] : ty === PWT.CSAND ? L.c[ex[i] * 16 + sh[i]] : ty === PWT.LAVA ? L.t[ty * 16 + ((sh[i] + (G.f >> 2)) & 15)] : L.t[ty * 16 + sh[i]]; }
+  G.cx.putImageData(G.img, 0, 0); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(G.cv, pw.x0, pw.top, G.w * pw.cs, G.h * pw.cs); ctx.imageSmoothingEnabled = true;
+}
+/* the layout, a level, the finger */
+function pwLayout(keep) {
+  const bar = $('powderBar'), bh = bar && !bar.hidden ? bar.getBoundingClientRect().height : 120, ah = Math.max(120, H - bh), cs = Math.max(2, Math.round(Math.min(W, ah) / (W < 600 ? 135 : 175)));
+  const w = Math.floor(W / cs), h = Math.floor(ah / cs), key = w + 'x' + h; pw.cs = cs; pw.x0 = Math.floor((W - w * cs) / 2); pw.top = 0; pw.barH = bh;
+  if (pw.g && pw.key === key) return false; const old = pw.g; pw.g = pwGrid(w, h); pw.key = key;
+  if (old && keep !== false && !pw.lv) { for (let y = 0; y < Math.min(old.h, h); y++) for (let x = 0; x < Math.min(old.w, w); x++) { const a = (old.h - 1 - y) * old.w + x, b = (h - 1 - y) * w + x; pw.g.t[b] = old.t[a]; pw.g.ex[b] = old.ex[a]; pw.g.sh[b] = old.sh[a]; } } // (keeps the sand, sitting on the floor)
+  if (pw.lv) pwBuild(); return true;
+}
+function pwToolType() { if (pw.mode === 'colors') return pw.tool === 'erase' ? -1 : PWT.CSAND; const m = PW_MATS.find((q) => q[0] === pw.tool); return m ? m[1] : PWT.SAND; }
+function pwPour(cx, cy) { // one brush stamp at a cell
+  const G = pw.g, r = pw.size, ty = pwToolType(), still = ty === PWT.STONE || ty === PWT.WOOD || ty === PWT.ICE || ty === PWT.PLANT || ty === -1, R = Math.random;
+  const p = ty === PWT.FIRE ? 0.35 : PWK[ty] === 2 ? 0.45 : 0.4, col = pw.tool === 'rainbow' ? 8 + ((pw.hue >> 1) & 63) : pw.col;
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + dy * dy > r * r + 1) continue; const x = cx + dx, y = cy + dy; if (x < 0 || y < 0 || x >= G.w || y >= G.h) continue; const i = y * G.w + x;
+    if (ty === -1) { G.t[i] = 0; continue; } if (ty === PWT.FIRE && G.t[i]) { const tj = G.t[i]; if (tj === PWT.BOOM) pwExplode(G, x, y); else if ((tj === PWT.WOOD || tj === PWT.OIL || tj === PWT.PLANT) && R() < 0.2) pwSet(G, i, PWT.FIRE, 40 + R() * 40); continue; } // (the fire brush lights what it touches)
+    if (still) { if (G.t[i] === 0 || PWK[G.t[i]] !== 3) pwSet(G, i, ty); continue; }
+    if (G.t[i] === 0 && R() < p) { pwSet(G, i, ty, ty === PWT.CSAND ? col : null); pw.used = (pw.used || 0) + 1; } }
+}
+function pwInput() { // every finger: a line of stamps from where it was
+  for (const q of pw.ptrs.values()) { const cx = (q.x - pw.x0) / pw.cs, cy = (q.y - pw.top) / pw.cs, lx = q.lx == null ? cx : q.lx, ly = q.ly == null ? cy : q.ly, d = Math.hypot(cx - lx, cy - ly), n = Math.max(1, Math.ceil(d / Math.max(1, pw.size * 0.6)));
+    for (let k = 1; k <= n; k++) pwPour(Math.round(lx + (cx - lx) * k / n), Math.round(ly + (cy - ly) * k / n)); q.lx = cx; q.ly = cy; }
+  pw.hue++;
+}
+function powderDown(e) { if (pw.won || (e.button !== 0 && e.pointerType !== 'touch') || e.clientY > H - pw.barH) return; audioInit(); pw.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, lx: null, ly: null }); try { canvas.setPointerCapture(e.pointerId); } catch {} }
+function powderMove(e) { const q = pw.ptrs.get(e.pointerId); if (q) { q.x = e.clientX; q.y = e.clientY; } }
+function powderUp(e) { pw.ptrs.delete(e.pointerId); }
+/* the challenges */
+const PW_LV = [
+  { id: 'cup', e: '🥤', en: 'Fill the cup', he: 'ממלאים את הכוס', tools: ['sand'], z: [0.37, 0.62, 0.63, 0.83],
+    build: (b) => { b(0.34, 0.5, 0.37, 0.86, PWT.STONE); b(0.63, 0.5, 0.66, 0.86, PWT.STONE); b(0.34, 0.83, 0.66, 0.86, PWT.STONE); }, goal: (c) => c.zone[PWT.SAND] / (c.zn * 0.8) },
+  { id: 'fire', e: '🚒', en: 'Put out the fire', he: 'מכבים את השריפה', tools: ['water'], z: null, wood: 1,
+    build: (b) => { b(0.25, 0.72, 0.75, 0.98, PWT.WOOD); b(0.45, 0.69, 0.55, 0.72, PWT.FIRE); }, goal: (c, L) => (c.all[PWT.FIRE] === 0 && c.t > 1.5 ? 1 : 0.99 * (1 - Math.min(1, c.all[PWT.FIRE] / 400))), lose: (c, L) => c.all[PWT.WOOD] < L.wood0 * 0.3 },
+  { id: 'star', e: '⭐', en: 'Reach the star', he: 'מגיעים לכוכב', tools: ['sand', 'stone'], z: [0.46, 0.4, 0.54, 0.46], noBuild: 1,
+    build: () => {}, goal: (c) => (c.zone[PWT.SAND] > 0 ? 1 : c.high) },
+  { id: 'dam', e: '🧊', en: 'Melt the ice dam', he: 'ממיסים את סכר הקרח', tools: ['fire', 'lava'], z: [0.72, 0.8, 0.93, 0.95],
+    build: (b) => { b(0.05, 0.55, 0.76, 0.58, PWT.STONE); b(0.02, 0.25, 0.05, 0.58, PWT.STONE); b(0.55, 0.28, 0.6, 0.55, PWT.ICE); b(0.05, 0.36, 0.55, 0.55, PWT.WATER); b(0.69, 0.75, 0.72, 0.98, PWT.STONE); b(0.93, 0.75, 0.96, 0.98, PWT.STONE); b(0.69, 0.95, 0.96, 0.98, PWT.STONE); },
+    goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.45) },
+  { id: 'garden', e: '🌻', en: 'Grow a garden', he: 'מגדלים גינה', tools: ['water'], z: null,
+    build: (b) => { b(0, 0.88, 1, 1, PWT.SAND); b(0.2, 0.85, 0.22, 0.88, PWT.PLANT); b(0.5, 0.85, 0.52, 0.88, PWT.PLANT); b(0.78, 0.85, 0.8, 0.88, PWT.PLANT); }, goal: (c, L) => c.all[PWT.PLANT] / (c.n * 0.04) },
+  { id: 'burn', e: '🔥', en: 'Burn it all', he: 'שורפים הכול', tools: ['fire', 'oil'], z: null, wood: 1,
+    build: (b) => { b(0.1, 0.6, 0.3, 0.98, PWT.WOOD); b(0.4, 0.4, 0.6, 0.98, PWT.WOOD); b(0.7, 0.7, 0.9, 0.98, PWT.WOOD); b(0.35, 0.3, 0.65, 0.33, PWT.STONE); b(0.05, 0.5, 0.35, 0.53, PWT.STONE); },
+    goal: (c, L) => 1 - c.all[PWT.WOOD] / Math.max(1, L.wood0) - (c.all[PWT.FIRE] && !c.all[PWT.WOOD] ? 0.001 : 0) },
+  { id: 'cloud', e: '☁️', en: 'Make a cloud', he: 'עושים ענן', tools: ['water'], z: null,
+    build: (b) => { b(0.15, 0.8, 0.18, 0.98, PWT.STONE); b(0.82, 0.8, 0.85, 0.98, PWT.STONE); b(0.15, 0.95, 0.85, 0.98, PWT.STONE); b(0.18, 0.84, 0.82, 0.95, PWT.LAVA); }, goal: (c) => c.all[PWT.STEAM] / (c.n * 0.035) },
+  { id: 'boom', e: '💥', en: 'Break the ice', he: 'שוברים את הקרח', tools: ['boom', 'fire'], z: null,
+    build: (b) => { b(0.25, 0.5, 0.28, 0.98, PWT.STONE); b(0.72, 0.5, 0.75, 0.98, PWT.STONE); b(0.25, 0.95, 0.75, 0.98, PWT.STONE); b(0.32, 0.75, 0.45, 0.95, PWT.ICE); b(0.55, 0.65, 0.68, 0.95, PWT.ICE); }, goal: (c, L) => 1 - c.all[PWT.ICE] / Math.max(1, L.ice0) },
+  { id: 'acid', e: '🧪', en: 'Free the water', he: 'משחררים את המים', tools: ['acid'], z: [0.38, 0.8, 0.62, 0.95],
+    build: (b) => { b(0.38, 0.12, 0.62, 0.15, PWT.WOOD); b(0.38, 0.15, 0.41, 0.4, PWT.WOOD); b(0.59, 0.15, 0.62, 0.4, PWT.WOOD); b(0.38, 0.4, 0.62, 0.43, PWT.WOOD); b(0.41, 0.15, 0.59, 0.4, PWT.WATER); b(0.35, 0.75, 0.38, 0.98, PWT.STONE); b(0.62, 0.75, 0.65, 0.98, PWT.STONE); b(0.35, 0.95, 0.65, 0.98, PWT.STONE); },
+    goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.4) },
+];
+function pwP() { if (!profile.powder || typeof profile.powder !== 'object') profile.powder = { stars: {}, mode: 'colors' }; if (!profile.powder.stars) profile.powder.stars = {}; return profile.powder; }
+function pwValidate(v) { const o = { stars: {}, mode: 'colors' }; if (v && typeof v === 'object') { if (['colors', 'lab', 'chal'].includes(v.mode)) o.mode = v.mode; if (v.stars && typeof v.stars === 'object') for (const k in v.stars) { const n = Math.round(+v.stars[k]); if (/^[a-z]{2,10}$/.test(k) && n >= 1 && n <= 3) o.stars[k] = n; } } return o; }
+function pwBuild() { // the level's shapes into a clean grid
+  const G = pw.g, L = pw.lv; G.t.fill(0); G.ex.fill(0);
+  const b = (x0, y0, x1, y1, ty) => { for (let y = Math.floor(y0 * G.h); y < Math.min(G.h, Math.ceil(y1 * G.h)); y++) for (let x = Math.floor(x0 * G.w); x < Math.min(G.w, Math.ceil(x1 * G.w)); x++) pwSet(G, y * G.w + x, ty); };
+  L.build(b); let w = 0, ic = 0; for (let i = 0; i < G.n; i++) { if (G.t[i] === PWT.WOOD) w++; if (G.t[i] === PWT.ICE) ic++; } L.wood0 = w; L.ice0 = ic;
+  pw.won = 0; pw.lost = 0; pw.t0 = performance.now(); pw.holdAt = 0; pw.prog = 0; pw.used = 0;
+}
+function pwCount() { // what the goals look at
+  const G = pw.g, L = pw.lv, all = new Uint32Array(16), zone = new Uint32Array(16); let zn = 0, high = 0;
+  for (let i = 0; i < G.n; i++) all[G.t[i]]++;
+  if (L.z) { const [a, b, c, d] = L.z, x0 = Math.floor(a * G.w), y0 = Math.floor(b * G.h), x1 = Math.ceil(c * G.w), y1 = Math.ceil(d * G.h); for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { zone[G.t[y * G.w + x]]++; zn++; } }
+  if (L.id === 'star') { for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === PWT.SAND) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))) * 0.98; break; } } }
+  return { all, zone, zn, high, n: G.n, t: (performance.now() - pw.t0) / 1000 };
+}
+function pwCheck(now) {
+  const L = pw.lv; if (!L || pw.won || pw.lost) return; const c = pwCount(); pw.prog = Math.max(0, Math.min(1, L.goal(c, L)));
+  if (L.lose && L.lose(c, L)) { pw.lost = now; sfx('boing'); pw.log.push('lost:' + L.id); pwBarSync(); return; }
+  if (pw.prog >= 1) { if (!pw.holdAt) pw.holdAt = now; else if (now - pw.holdAt > 700) pwWin(now, c); } else pw.holdAt = 0;
+}
+function pwWin(now, c) {
+  const L = pw.lv, s = (now - pw.t0) / 1000, stars = s < 25 ? 3 : s < 60 ? 2 : 1, P = pwP(), had = P.stars[L.id] || 0; P.stars[L.id] = Math.max(had, stars); saveProfile();
+  pw.won = now; pw.stars = stars; pw.secs = Math.round(s); addCoins(had ? 1 : [0, 3, 4, 6][stars]); confetti(W / 2, H * 0.3, 90, 1.2); sfx('levelup'); pw.log.push('won:' + L.id + ':' + stars); pwBarSync();
+}
+function pwStartLevel(k) { pw.lvl = k; pw.lv = PW_LV[k]; pw.tool = pw.lv.tools[0]; pw.mode = 'chal'; $('powderLv').hidden = true; pwLayout(); pwBuild(); pwBarSync(); pw.log.push('level:' + pw.lv.id); }
+/* the bar under the grid (DOM) and the level list */
+function pwBarSync() {
+  const B = $('powderBar'); if (!B) return; const he = lang === 'he', P = pwP(); B.dir = he ? 'rtl' : 'ltr';
+  const modes = [['colors', '🎨'], ['lab', '⚗️'], ['chal', '⭐']].map(([k, e]) => '<button class="pwM' + (pw.mode === k ? ' on' : '') + '" data-pw="m:' + k + '">' + e + ' ' + pws(k) + '</button>').join('');
+  const size = [2, 4, 7].map((s) => '<button class="pwS' + (pw.size === s ? ' on' : '') + '" data-pw="s:' + s + '" aria-label="' + pws('size') + ' ' + s + '"><i style="width:' + (4 + s * 2) + 'px;height:' + (4 + s * 2) + 'px"></i></button>').join('');
+  let tools = '';
+  if (pw.mode === 'colors') tools = PW_COLORS.map((c, i) => '<button class="pwT pwC' + (pw.tool === 'col' && pw.col === i ? ' on' : '') + '" data-pw="c:' + i + '" style="--c:' + c + '" aria-label="' + c + '"></button>').join('') +
+    '<button class="pwT pwC rb' + (pw.tool === 'rainbow' ? ' on' : '') + '" data-pw="t:rainbow" aria-label="' + pws('rainbow') + '"></button><button class="pwT' + (pw.tool === 'erase' ? ' on' : '') + '" data-pw="t:erase"><b>🧽</b><small>' + pws('erase') + '</small></button>';
+  else { const list = pw.mode === 'chal' && pw.lv ? PW_MATS.filter((m) => pw.lv.tools.includes(m[0])) : PW_MATS; tools = list.map((m) => '<button class="pwT' + (pw.tool === m[0] ? ' on' : '') + '" data-pw="t:' + m[0] + '"><b>' + m[2] + '</b><small>' + pws(m[0]) + '</small></button>').join(''); }
+  const acts = pw.mode === 'chal' ? '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button>' : '<button class="pwA" data-pw="clear">🗑️ ' + pws('clear') + '</button>';
+  B.innerHTML = '<div class="pwRow">' + modes + '</div><div class="pwRow pwTools">' + tools + '</div><div class="pwRow">' + size + acts + '</div>';
+  const V = $('powderLv'); if (pw.won || pw.lost) { const L = pw.lv; V.hidden = false; V.innerHTML = '<div class="pwCard"><div class="pwBig">' + (pw.won ? '⭐'.repeat(pw.stars) + '<span class="pwDim">' + '⭐'.repeat(3 - pw.stars) + '</span>' : '😅') + '</div><h2>' + (pw.won ? pws('done') : pws('lost')) + '</h2>' +
+    (pw.won ? '<p>' + L.e + ' ' + (he ? L.he : L.en) + ' · ' + pw.secs + 's</p>' : '<p>' + pws('woodLeft') + '</p>') + '<div class="pwRow">' + (pw.won && pw.lvl < PW_LV.length - 1 ? '<button class="pwA hot" data-pw="lv:' + (pw.lvl + 1) + '">' + pws('next') + '</button>' : '') + '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button></div></div>'; }
+  else if (!pw.listOpen) V.hidden = true;
+  requestAnimationFrame(() => pwLayout());
+}
+function pwLevels() { const V = $('powderLv'), P = pwP(), he = lang === 'he'; pw.listOpen = true; V.hidden = false; V.dir = he ? 'rtl' : 'ltr';
+  V.innerHTML = '<div class="pwCard"><h2>⭐ ' + pws('lvT') + '</h2><div class="pwLvGrid">' + PW_LV.map((L, k) => { const open = k === 0 || P.stars[PW_LV[k - 1].id], s = P.stars[L.id] || 0;
+    return '<button class="pwLv' + (open ? '' : ' lock') + '" data-pw="' + (open ? 'lv:' + k : 'locked') + '"><b>' + (open ? L.e : '🔒') + '</b><span>' + (k + 1) + '. ' + (he ? L.he : L.en) + '</span><i>' + '★'.repeat(s) + '<em>' + '★'.repeat(3 - s) + '</em></i></button>'; }).join('') + '</div></div>'; }
+function pwClick(e) {
+  const b = e.target.closest('[data-pw]'); if (!b) return; const a = b.dataset.pw; sfx('click'); const P = pwP();
+  if (a.startsWith('m:')) { const m = a.slice(2); if (m === 'chal') { pwLevels(); return; } pw.mode = m; P.mode = m; saveProfile(); pw.lv = null; pw.won = 0; pw.lost = 0; pw.listOpen = false; pw.tool = m === 'colors' ? 'col' : 'sand'; pw.g.t.fill(0); }
+  else if (a.startsWith('c:')) { pw.tool = 'col'; pw.col = +a.slice(2); }
+  else if (a.startsWith('t:')) pw.tool = a.slice(2);
+  else if (a.startsWith('s:')) pw.size = +a.slice(2);
+  else if (a === 'clear') { pw.g.t.fill(0); pw.log.push('clear'); }
+  else if (a === 'retry') { pw.listOpen = false; pwStartLevel(pw.lvl); return; }
+  else if (a === 'levels') { pwLevels(); return; }
+  else if (a.startsWith('lv:')) { pw.listOpen = false; P.mode = 'chal'; saveProfile(); pwStartLevel(+a.slice(3)); return; }
+  else if (a === 'locked') { toast('pwLocked', null, 'star'); return; }
+  pwBarSync();
+}
+function powderStart() {
+  const P = pwP(); $('powderBar').hidden = false; pw.ptrs.clear(); pw.won = 0; pw.lost = 0; pw.listOpen = false; pw.lv = null; pw.mode = P.mode === 'chal' ? 'colors' : P.mode; pw.tool = pw.mode === 'colors' ? 'col' : 'sand';
+  pw.key = ''; pw.g = null; pwBarSync(); pwLayout(false); if (P.mode === 'chal') pwLevels(); pw.log.push('start:' + pw.mode);
+}
+function powderStop() { $('powderBar').hidden = true; $('powderLv').hidden = true; pw.ptrs.clear(); pw.g = null; pw.key = ''; }
+function renderPowder(now) {
+  if (!pw.g) pwLayout(false); pwLayout(); if (!pw.won && !pw.lost) pwInput(); pw.booms = 0;
+  for (let s = 0; s < pw.steps; s++) pwStep(pw.g);
+  if (pw.booms && now - pw.boomAt > 250) { pw.boomAt = now; sfx('boom'); shakeScreen(6); }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0b0912'; ctx.fillRect(0, 0, W, H); pwDraw();
+  if (pw.lv) { const L = pw.lv, G = pw.g; if ((++pw.fc & 7) === 0) pwCheck(now); // (every 8th frame; pw.g.f moves 2 a frame)
+    if (L.z) { const [a, b, c, d] = L.z; resetView(); ctx.save(); ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(255,214,80,' + (0.55 + 0.3 * Math.sin(now / 250)).toFixed(2) + ')'; const x = pw.x0 + Math.floor(a * G.w) * pw.cs, y = pw.top + Math.floor(b * G.h) * pw.cs; ctx.strokeRect(x, y, (Math.ceil(c * G.w) - Math.floor(a * G.w)) * pw.cs, (Math.ceil(d * G.h) - Math.floor(b * G.h)) * pw.cs); ctx.restore();
+      if (L.id === 'star') { resetView(); ctx.font = '28px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⭐', pw.x0 + (a + c) / 2 * G.w * pw.cs, pw.top + (b + d) / 2 * G.h * pw.cs); } }
+    const tx = L.e + ' ' + (lang === 'he' ? L.he : L.en), sp = textSprite(tx, 17, '#ffffff', 'rgba(20,14,40,0.9)', 800), x0 = 16 + Math.min(sp.tw, W - 150) / 2 + 4, bw = Math.min(160, W * 0.35); // (the left: the corner buttons sit on the right)
+    blit(sp, x0, cgTopY() - 20, 0, Math.min(1, (W - 150) / sp.tw)); const bx = 16; resetView(); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.roundRect(bx, cgTopY() - 2, bw, 12, 6); ctx.fill(); ctx.fillStyle = '#3ddc84'; ctx.beginPath(); ctx.roundRect(bx, cgTopY() - 2, Math.max(12, bw * (pw.prog || 0)), 12, 6); ctx.fill();
+  }
+  drawParticles(); drawRings(now);
+}
+$('powderBar').addEventListener('click', pwClick); $('powderLv').addEventListener('click', pwClick);
+window.__grasp.pw = { pw, PWT, PW_LV, step: () => pwStep(pw.g), pour: pwPour, level: pwStartLevel, check: () => pwCheck(performance.now() + 1e6), count: pwCount, layout: pwLayout };
 /* ---------------- The installable app (PWA): manifest.webmanifest + sw.js (offline: the app shell precached, the CDN files cached at run time),
    an "Install app" chip (the top bar on the start screen, and the pause sheet) once the browser offers it (beforeinstallprompt: Android / desktop
    Chrome) or on iOS (a small "Add to Home Screen" how-to sheet); never shown in the installed app; a dismissal snoozes the start-screen chip
@@ -22093,7 +22356,7 @@ function h2Sync() {
    Pop It (built on another branch) shows only when its mode exists here (mbFeat). Hooks: __grasp.menub. */
 const MB_COL = { strike: '#ff7a52', big: '#ff7a52', smash: '#9a7bff', slice: '#2cc4ae', arcade: '#ff5d97', camera: '#4a8dff', little: '#ffc233', frenzy: '#ffa23a', daily: '#ff6b88', endless: '#45a8ff',
   drums: '#ff6b6b', bubbles: '#52cdf2', paint: '#b88aff', stars: '#5468ff', busy: '#f6a75c', shapes: '#ff7a7a', sandbox: '#f8c94c', calm: '#9ad4ee', animals: '#94d870', colors: '#ffb0b0', peekaboo: '#7fcf6a',
-  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', mix: '#ffc27a', quest: '#ff9a8a', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
+  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', mix: '#ffc27a', quest: '#ff9a8a', powder: '#ffe08a', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
 const MB_ROT = ['-1.6deg', '1.4deg', '1.1deg', '-1.3deg'], MB_INK = '#2a1f3d', MB_SAY_MS = 400, MB_WIG_MS = 2000;
 const MB_PENT = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 const mb = { room: 'big', page: 0, pages: 0, sayUntil: 0, log: [], said: [], blips: [], wig: 0, wigLast: null, pressed: null, pressAt: -1e9, bubuKey: '', feats: {} };
@@ -22124,6 +22387,7 @@ const MB_ICONS = {
   feed: [['e', 34, 26, 7, 18, '#ffffff'], ['e', 52, 24, 7, 18, '#ffffff'], ['e', 34, 28, 3, 11, '!#ffb3c6'], ['e', 52, 26, 3, 11, '!#ffb3c6'], ['c', 43, 58, 24, '#ffffff'], ['c', 35, 54, 3.5, '!#1e2a3a'], ['c', 51, 54, 3.5, '!#1e2a3a'], ['e', 43, 68, 5, 6, '!#c2185b'], ['p', 'M68 40 L90 52 L64 88 Z', '#ff8a1f'], ['l', 'M80 44 L86 28', '!#3fae4f', 4], ['l', 'M82 46 L96 40', '!#3fae4f', 4]],
   puzzle: [['p', 'M14 30 H40 A10 10 0 1 1 60 30 H86 V52 A10 10 0 1 0 86 72 V88 H14 Z', '#ff7eb6'], ['star', 46, 62, 13, '#ffd23f']],
   sand: [['r', 8, 22, 84, 64, 14, '#3aa7e0'], ['r', 15, 29, 70, 50, 9, '#ecc892'], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#b98a4e', 6], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#ff6fd8', 2.5], ['c', 76, 18, 9, '#5b4bd6'], ['c', 79, 15, 6, '!#ecc892']],
+  powder: [['p', 'M50 8 L56 8 L58 44 L52 44 Z', '#e8a21a'], ['p', 'M10 92 L50 46 L90 92 Z', '#ffd23f'], ['p', 'M10 92 L50 46 L60 58 L30 92 Z', '!#e8b02a'], ['c', 34, 30, 3, '#ffd23f'], ['c', 66, 24, 3, '#ffd23f'], ['c', 46, 20, 2.5, '#ffd23f'], ['r', 70, 74, 24, 18, 4, '#3ec5ff']],
   quest: [['r', 10, 22, 40, 56, 8, '#ffffff'], ['r', 14, 26, 32, 48, 5, '#ffb3a8'], ['r', 50, 14, 40, 56, 8, '#ffffff'], ['r', 54, 18, 32, 48, 5, '#b8dcff'], ['p', 'M30 40 L36 52 L30 64 L24 52 Z', '!#ff4f64'], ['star', 70, 42, 10, '#ffd23f'], ['l', 'M20 90 L44 66', '#8a8a8a', 6], ['l', 'M16 84 L28 78', '#6b4a2a', 6]],
   mix: [['r', 6, 50, 36, 36, 10, '#7cc8ff'], ['p', 'M24 56 Q33 68 33 74 A9 9 0 0 1 15 74 Q15 68 24 56 Z', '!#ffffff'], ['r', 58, 50, 36, 36, 10, '#ffb347'], ['p', 'M76 55 Q86 66 85 75 A9 9 0 0 1 67 75 Q66 66 76 55 Z', '!#ff4f64'], ['l', 'M26 44 Q32 26 44 24', '!#2a1f3d', 5], ['l', 'M74 44 Q68 26 56 24', '!#2a1f3d', 5], ['star', 50, 22, 16, '#ffd23f']],
   spot: [['r', 6, 14, 42, 34, 6, '#ffffff'], ['r', 10, 18, 34, 26, 3, '#7cc8ff'], ['c', 22, 32, 6, '#ffd23f'], ['r', 52, 14, 42, 34, 6, '#ffffff'], ['r', 56, 18, 34, 26, 3, '#7cc8ff'], ['c', 82, 34, 6, '#ff4f64'], ['c', 52, 70, 18, '#e9f6ff'], ['l', 'M64 82 L80 96', '#2a1f3d', 7]],
@@ -22304,7 +22568,7 @@ function mbSync() { // (from h2Sync: the coins, a new day, a pet change, the lan
 function mbInit() {
   for (const el of document.querySelectorAll('[data-ic]')) el.innerHTML = mbIco(el.dataset.ic);
   for (const el of document.querySelectorAll('.stk')) el.style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
-  { const live = [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].filter((el) => !el.hidden); live.forEach((el, i) => { el.style.setProperty('--rot', MB_ROT[i % 4]); el.classList.toggle('mbMid', live.length % 3 === 2 && i === live.length - 2); }); } // (three a row; two left over sit in the middle) $('heroPlay').style.setProperty('--rot', '0deg'); // (straight: its strip sits inside it)
+  { const live = [...$('bigRoom').querySelectorAll('.mbGrid > .stk')].filter((el) => !el.hidden); live.forEach((el, i) => { el.style.setProperty('--rot', MB_ROT[i % 4]); const left = live.length % 4; el.style.gridColumn = left && i === live.length - left ? (1 + (4 - left) * 3) + ' / span 6' : ''; }); } // (four a row; a short last row sits in the middle) $('heroPlay').style.setProperty('--rot', '0deg'); // (straight: its strip sits inside it)
   for (const el of document.querySelectorAll('.mbDockB')) el.querySelector('.rd').style.setProperty('--c', MB_COL[mbKey(el)] || '#ffd166');
   mbPages(); mbRoom(mbRoomGet(), true); mbSync();
   [...$('mbTop').querySelectorAll('button'), $('bigBtn'), $('littleBtn')].forEach((el, i) => el.style.setProperty('--i', String(Math.min(i, 3)))); // (the entrance's order: the top, then the rooms' stickers)
