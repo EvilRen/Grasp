@@ -27,10 +27,10 @@ async def run(b, he):
     await page.wait_for_timeout(500); await page.screenshot(path=OUT + 'mix_new_%s.png' % tag.lower())
     await page.mouse.click(30, 300); await page.wait_for_timeout(200)
     check(tag + ': a tap closes the New! card; an order asks for it', not (await state(page))['card'] and c in (await state(page))['orders'])
-    # a tap on a source drops one on the board
-    L = await page.evaluate(f"{MX}.layout()"); src = L['src'][0]
-    await page.mouse.click(src['x'], src['y']); await page.wait_for_timeout(400); s3 = await state(page)
-    check(tag + ': a tap on a source drops a %s on the board' % src['id'], s3['board'].count(src['id']) == s2['board'].count(src['id']) + 1, s3['log'])
+    # no sources to tap any more (the board fills by itself): a tap on "next" drops nothing
+    L = await page.evaluate(f"{MX}.layout()"); n0 = sum(1 for x in s2['board'] if x)
+    await page.mouse.click(L['next']['x'], L['next']['y']); await page.wait_for_timeout(400); s3 = await state(page)
+    check(tag + ': the bar: the book, "next", the bulb; a tap on "next" drops nothing', sum(1 for x in s3['board'] if x) == n0, s3['log'])
     # an order: drag the thing onto it
     k = s3['orders'].index(c); o = L['orders'][k]; coins = s3['coins']
     await drag(page, await cell(page, j), [o['x'] + o['w'] / 2, o['y'] + o['h'] / 2]); s4 = await state(page)
@@ -55,8 +55,8 @@ async def run(b, he):
     await page.screenshot(path=OUT + 'mix_book_%s.png' % tag.lower())
     await page.click('#mxBookX'); await page.wait_for_timeout(200); check(tag + ': the book closes', await page.evaluate("$('mixBook').hidden"))
     # a full board
-    await page.evaluate(f"{MX}.mix.board.fill('water')"); await page.mouse.click(src['x'], src['y']); await page.wait_for_timeout(200)
-    check(tag + ': a full board: a tap on a source says so (nothing lost)', 'full' in (await state(page))['log'])
+    await page.evaluate(f"{MX}.mix.board.fill('water'); {MX}.mix.autoAt = 1"); await page.wait_for_timeout(300)
+    check(tag + ': a full board: it says so (nothing lost)', 'full' in (await state(page))['log'])
     await page.screenshot(path=OUT + 'mix_full_%s.png' % tag.lower())
     # kept: a reload
     await page.evaluate(f"(() => {{ const m = {MX}.mix; m.board.fill(''); m.board[5] = '{c}'; }})()"); await page.evaluate("goHome()"); await page.wait_for_timeout(500)
@@ -72,7 +72,7 @@ async def auto(b):
     ctx, page, errs = await page_for(b, '/mix', True, init="window.__graspNoAutoFs = true; window.__mxAutoMs = 300;"); await wait(page, f"{MX}.mix.ready", 8000)
     n0 = sum(1 for x in (await state(page))['board'] if x); await page.wait_for_timeout(2000); s = await state(page); n1 = sum(1 for x in s['board'] if x)
     base = await page.evaluate(f"{MX}.mix.data.base")
-    check('by itself: new basic things land on the board, nothing tapped', n1 >= n0 + 3 and any(l.startswith('auto:') for l in s['log']), [n0, n1, s['log']])
+    check('by itself: new basic things land on the board, nothing tapped; "next" shows the one on its way', n1 >= n0 + 3 and any(l.startswith('auto:') for l in s['log']) and await page.evaluate(f"!!{MX}.mix.nextId"), [n0, n1, s['log']])
     await page.screenshot(path=OUT + 'mix_auto.png')
     await page.evaluate(f"(() => {{ const m = {MX}.mix; for (let i = 0; i < m.board.length; i++) if (!m.board[i]) m.board[i] = 'water'; }})()"); await page.wait_for_timeout(900)
     check('a full board: nothing more lands, nothing lost', all((await state(page))['board']))
