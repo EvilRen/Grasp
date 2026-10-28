@@ -1365,6 +1365,9 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
   position:fixed; inset:0; z-index:4; overflow-y:auto; overflow-x:hidden; color:var(--tx); font-family:"Heebo","Rubik",ui-sans-serif,system-ui,sans-serif; -webkit-tap-highlight-color:transparent;
   background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(168,85,247,.08), transparent 70%), radial-gradient(ellipse 60% 50% at 50% 100%, rgba(217,70,239,.05), transparent 70%), var(--bg); }
 #tachles[hidden]{ display:none; }
+body.tkOn #fsGameBtn, body.tkOn #pauseBtn, body.tkOn .chrome{ display:none !important; } /* (Tachles: always full screen, no corner buttons; the owner) */
+body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px); }
+#tachles .tkExit{ display:block; margin:14px auto 0; background:none; border:none; color:var(--faint); font-size:13px; text-decoration:underline; }
 #tachles *{ box-sizing:border-box; }
 #tachles .tkIn0{ min-height:100%; display:flex; justify-content:center; padding:calc(env(safe-area-inset-top,0px) + 68px) 16px calc(env(safe-area-inset-bottom,0px) + 20px); }
 #tachles .tkIn0.fade{ animation:tkFade .25s ease-out; }
@@ -1931,7 +1934,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.5';
+const APP_VERSION = '1.7.6';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21851,7 +21854,7 @@ const TKS = {
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
     judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
-    kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
+    kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה נכשלה. בדוק את האינטרנט ונסה שוב.',
     wrShort: 'קצר מדי', wrNoBlank: 'בשאלה צריך לפחות מקום ריק אחד (___)', wrLimit: 'אפשר 5 ביום. מחר עוד!', wrNote: 'בלי שמות של אנשים אמיתיים ובלי קטינים. כל קלף נבדק לפני שהוא נכנס.', wrMine: 'קלפים ששלחת (מחכים לאישור)', swipe: 'החלק לצדדים לעוד קלפים · גע בקלף כדי לבחור אותו', imN: 'אני {n}', passD: 'ושאף אחד אחר לא יציץ!', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
   en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
@@ -21867,7 +21870,7 @@ const TKS = {
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', pickN: 'Pick {n}', noCards: 'No cards in hand',
     judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
-    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
+    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
     wrPhW: 'e.g. My aunt on TikTok.', wrPhB: 'e.g. What really happened at ___\'s wedding?', wrBlank: 'blank', wrSend: 'Send for approval', wrSending: 'Sending...', wrSent: 'Sent for approval! Thanks 🙏', wrErr: "Couldn't send. Check the internet and try again.",
     wrShort: 'Too short', wrNoBlank: 'A question needs at least one ___', wrLimit: 'Up to 5 a day. More tomorrow!', wrNote: 'No real people\'s names and no minors. Everything is checked before it goes in.', wrMine: 'You sent (waiting for approval)', swipe: 'Swipe for more cards · tap a card to pick it', imN: "I'm {n}", passD: 'No peeking, everyone else', addP: 'Add a player', name: 'Player {n}', skip: 'Skip {n}', connecting: 'Connecting...' },
 };
@@ -21954,8 +21957,9 @@ const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null,
   botT: 0, err: '', lobby: [], lobbyView: null, lobbySet: null, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
 function tkStore(v) { try { if (v) localStorage.setItem('grasp.tk', JSON.stringify(v)); else return JSON.parse(localStorage.getItem('grasp.tk') || '{}'); } catch { return {}; } }
 async function tkLoad() { if (tk.deck) return tk.deck; const r = await fetch('/assets/tachles/deck.json?v=' + TK_V); if (!r.ok) throw new Error('deck'); tk.deck = await r.json(); return tk.deck; }
+function tkFs() { if (window.__graspNoAutoFs || typeof fsCan !== 'function' || !fsCan() || fsEl()) return; const d = document.documentElement; try { const p = (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch {} } // (always full screen: on the first tap if the opening tap could not)
 function tkStart() {
-  const el = $('tachles'); el.hidden = false; const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, TK_MAXP) : ['', '', ''];
+  const el = $('tachles'); el.hidden = false; document.body.classList.add('tkOn'); tkFs(); const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, TK_MAXP) : ['', '', ''];
   const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7 }; tk.myName = S.me || '';
   if (!document.getElementById('tkFont')) { const l = document.createElement('link'); l.id = 'tkFont'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap'; document.head.appendChild(l); }
   let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
@@ -21963,7 +21967,7 @@ function tkStart() {
   tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm('join'); tk.log.push('start:' + tk.scr);
   clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
-function tkStop() { const el = $('tachles'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
+function tkStop() { const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
 function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); }
 function tkNetBye() { try { if (tk.mode === 'host') for (const [, c] of tk.conns) c.send({ t: 'closed' }); else if (tk.mode === 'guest' && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
 function tkSave() { tkStore({ names: tk.names, set: tk.set, me: tk.myName }); }
@@ -22024,7 +22028,7 @@ function tkRender() {
     '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' +
     '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
     '<p class="tkFaint tkXs tkC tkOr">' + tks('or') + '</p><div class="tkTwo"><button class="tkS" data-a="m:bots">' + tki('bot') + tks('bots') + '</button><button class="tkS" data-a="m:local">' + tki('phone') + tks('local') + '</button></div></div>' +
-    '<button class="tkS tkW tkWrite" data-a="m:write">✍️ ' + tks('write') + '</button><p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p></div>';
+    '<button class="tkS tkW tkWrite" data-a="m:write">✍️ ' + tks('write') + '</button><p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p><button class="tkExit" data-a="home">' + tks('exit') + '</button></div>';
   else if (s === 'form') { const f = tk.form, T = { create: ['newRoom', 'mkRoom', 'mkRoomL'], join: ['joinRoom', 'joinGo', 'joinGoL'], bots: ['botsT', 'goRoom', 'goRoom'] }[f];
     h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad7"><button class="tkBack" data-a="menu">' + tki('back', 'lflip') + '<span>' + tks('back') + '</span></button><h2 class="tkH2">' + tks(T[0]) + '</h2>' + tkNickRow(tk.myName) +
       (f === 'join' ? '<input id="tkCode" class="tkCodeIn" maxlength="4" placeholder="ABCD" dir="ltr" autocomplete="off" value="' + tkEsc(tk.code) + '">' : '') +
@@ -22258,7 +22262,7 @@ document.addEventListener('input', (e) => { if (e.target.id === 'tkWrT') { tk.wr
 (() => { const f = $('footTap'); if (!f) return; let t = 0; f.style.pointerEvents = 'auto'; f.style.webkitUserSelect = f.style.userSelect = 'none'; f.style.webkitTouchCallout = 'none'; f.style.touchAction = 'none'; f.style.padding = '10px 14px'; f.style.margin = '-10px -14px';
   f.addEventListener('pointerdown', () => { clearTimeout(t); t = setTimeout(() => { try { navigator.vibrate && navigator.vibrate(30); } catch {} mbModeGo('tachles'); }, 1000); });
   for (const k of ['pointerup', 'pointercancel']) f.addEventListener(k, () => clearTimeout(t)); f.addEventListener('contextmenu', (e) => e.preventDefault()); })();
-$('tachles').addEventListener('click', tkClick);
+$('tachles').addEventListener('click', tkClick); $('tachles').addEventListener('pointerup', tkFs, true);
 function renderTachles() { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#111'; ctx.fillRect(0, 0, W, H); }
 /* the way in from Settings (the owner, Oct 2026: the long press did nothing on his Android): 7 taps on the version at the bottom of Settings,
    like Android's developer options; then a "🔞 Tachles" row stays in Settings (localStorage grasp.tkShow) */

@@ -27,6 +27,7 @@ async def gate_and_bots(b, he):
     ok = await wait(page, f"gameMode === 'tachles' && !$('tachles').hidden && {TKH}.tk.scr === 'gate'", 5000)
     check(tag + ': a long press on the copyright line opens Tachles behind the 18+ gate (the original\'s: 🔞, the neon title)', ok and await page.locator('#tachles .tkNeon').count() == 1, await page.evaluate(f"[gameMode, {TKH}.tk.scr]"))
     await page.screenshot(path=OUT + 'tachles_gate_%s.png' % tag.lower())
+    check(tag + ': no corner buttons in Tachles (the home / full-screen chips are hidden)', await page.evaluate("getComputedStyle($('pauseBtn')).display === 'none' && getComputedStyle(document.querySelector('.chrome')).display === 'none'"))
     await click(page, '#tachles [data-a="gate"]')
     check(tag + ': "I\'m 18+": the original\'s menu (create, join) and ours (bots, one phone)', (await view(page))['scr'] == 'menu' and all([await page.locator('#tachles [data-a="m:%s"]' % k).count() == 1 for k in ('create', 'join', 'bots', 'local')]))
     await page.screenshot(path=OUT + 'tachles_menu_%s.png' % tag.lower())
@@ -72,7 +73,7 @@ async def gate_and_bots(b, he):
     await page.screenshot(path=OUT + 'tachles_over_%s.png' % tag.lower())
     await click(page, '#tachles [data-a="again"]'); check(tag + ': New game: back to the room, the same players', (await view(page))['scr'] == 'lobby' and await page.evaluate(f"{TKH}.tk.lobby.length") == 3)
     await page.evaluate("goHome()"); await page.wait_for_timeout(500)
-    check(tag + ': Home: the sheet goes', await page.evaluate("$('tachles').hidden && mode === 'none'"))
+    check(tag + ': Home: the sheet goes, the corner buttons are back', await page.evaluate("$('tachles').hidden && mode === 'none' && !document.body.classList.contains('tkOn')"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
 async def rules(b):
