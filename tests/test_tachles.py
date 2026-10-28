@@ -40,6 +40,7 @@ async def gate_and_bots(b, he):
     await page.screenshot(path=OUT + 'tachles_rename_%s.png' % tag.lower())
     await page.fill('#tkMe', 'Dana'); await click(page, '#tachles [data-a="renameOk"]')
     L = await page.evaluate(f"{TKH}.tk.lobby.map((p) => p.name)")
+    check(tag + ': each bot shows its taste ("אוהב …")', await page.locator('#tachles .tkPl .tkTaste').count() == 2 and 'אוהב' in await page.inner_text('#tachles .tkPl .tkTaste >> nth=0'))
     check(tag + ': a room with you and two bots ("BOT-<snack>"), avatars, Add bot, Settings, Start', (await view(page))['scr'] == 'lobby' and len(L) == 3 and all(x.startswith('BOT-') for x in L[1:]) and await page.locator('#tachles .tkPl .tkAv').count() == 3 and await page.locator('#tachles [data-a="start"]').count() == 1, L)
     for i in range(2): await click(page, '#tachles [data-a="addBot"]')
     check(tag + ': four bots at most (the button says so)', await page.evaluate(f"{TKH}.tk.lobby.length") == 5 and await page.locator('#tachles [data-a="addBot"][disabled]').count() == 1)
@@ -105,6 +106,13 @@ async def rules(b):
     sf = await page.evaluate(f"""(() => {{ const T = {TKH}.TK, d = {TKH}.tk.deck, seenW = Array.from({{ length: d.w.length - 20 }}, (_, i) => i), seenB = Array.from({{ length: d.b.length - 3 }}, (_, i) => i);
       const g = T.newGame(d, [{{ id: 'a', name: 'A' }}, {{ id: 'b', name: 'B' }}], {{ target: 3, hand: 7, seenW, seenB }}); const fresh = g.players.flatMap((p) => p.hand).filter((i) => i >= d.w.length - 20).length;
       return {{ fresh, black: g.black >= d.b.length - 3 }}; }})()""")
+    tz = await page.evaluate(f"""(() => {{ const T = {TKH}.TK, d = {TKH}.tk.deck, sx = d.wm.findIndex((m) => m.includes('s', 1)), pl = d.wm.findIndex((m) => m[0] !== '3' && !/[sg]/.test(m.slice(1))); let wins = 0, picks = 0;
+      for (let r = 0; r < 20; r++) {{ const g = T.newGame(d, [{{ id: 'a', name: 'A' }}, {{ id: 'b', name: 'B', bot: true, taste: 'sg3' }}, {{ id: 'c', name: 'C', bot: true, taste: 'sg3' }}], {{ hand: 7 }});
+        g.judge = 1; g.phase = 'judge'; g.subs = {{ a: [pl], c: [sx] }}; g.order = ['a', 'c']; g.black = d.b.findIndex((b) => b[1] === 1); T.botMove(g); if (g.last && g.last.pid === 'c') wins++;
+        const h = T.newGame(d, [{{ id: 'a', name: 'A' }}, {{ id: 'b', name: 'B', bot: true, taste: 'sg3' }}], {{ hand: 7 }}); h.judge = 0; h.black = d.b.findIndex((b) => b[1] === 1); h.players[1].hand = [pl, pl, sx, pl, pl, pl, pl].map((x, i) => i === 2 ? sx : x); h.phase = 'pick'; h.subs = {{}};
+        T.botMove(h); if (h.subs.b && h.subs.b[0] === sx) picks++; }}
+      return {{ wins, picks }}; }})()""")
+    check('bots with taste: a "סוטה ומגעיל" bot czar picks the sex answer over a plain one, and answers with it (20 of 20)', tz['wins'] == 20 and tz['picks'] == 20, tz)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)

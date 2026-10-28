@@ -1452,6 +1452,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkModal{ position:fixed; inset:0; z-index:6; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.8); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); } #tachles .tkModal.fade{ animation:tkFade .2s ease-out; }
 #tachles .tkMBox{ width:min(24rem,100%); }
 #tachles .tkMHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; } #tachles .tkMHead h3{ font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
+#tachles .tkPlN{ flex-wrap:wrap; row-gap:0; } #tachles .tkPlN .tkTaste{ flex-basis:100%; } #tachles .tkTaste{ display:block; font-size:12px; color:var(--neonB); font-weight:700; margin-top:2px; } #tachles .tkCzar .tkTaste{ display:inline; }
 #tachles .tkLvls{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
 #tachles .tkLv{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; border-radius:14px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; font-weight:800; font-size:14px; }
 #tachles .tkLv b{ font-size:24px; } #tachles .tkLv.on{ border-color:var(--neon); background:rgba(168,85,247,.16); box-shadow:0 0 18px rgba(168,85,247,.4); } #tachles .tkLv[disabled]{ opacity:.75; } #tachles .tkLv.on[disabled]{ opacity:1; }
@@ -1948,7 +1949,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.12';
+const APP_VERSION = '1.7.13';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21832,6 +21833,11 @@ const TK_PACKS = [['s', '🍆', 'סקס', 'איברים, פורנו ומה שק�
   ['x', '🍺', 'סמים ושתייה', 'אלכוהול, סמים והחלטות גרועות'], ['c', '⭐', 'סלבס ואנשים אמיתיים', 'אנשים אמיתיים, בשמם'], ['h', '🕯️', 'השואה וטרור', 'השואה, נאצים וטרור. הכי רגיש'],
   ['e', '🎭', 'גזענות ועדות', 'סטריאוטיפים של עדות, וגזענים'], ['f', '🍲', 'משפחה ואוכל', 'אמא, סבתא, חמות וארוחות שישי'], ['t', '📱', 'טכנולוגיה ורשתות', 'אפליקציות, טיקטוק, סטארט-אפים וטלוויזיה'],
   ['i', '🇮🇱', 'יומיום ישראלי', 'בירוקרטיה, פקקים, ים ושכנים']];
+/* each bot has a taste (the owner: against bots your pick has to matter): it answers and, as czar, judges by the packs it loves ("3": it loves the harshest) */
+const TK_TASTES = [{ t: 'sg3', e: '🍆💩', n: 'סוטה ומגעיל' }, { t: 'dh3', e: '⚰️🕯️', n: 'שחור משחור' }, { t: 'pc', e: '🏛️⭐', n: 'חולה פוליטיקה' }, { t: 'rf', e: '🕍🍲', n: 'סבתא מסורתית' },
+  { t: 'xt', e: '🍺📱', n: 'צעיר ומסטול' }, { t: 'ia', e: '🇮🇱🪖', n: 'ישראלי עד העצם' }, { t: 'e3', e: '🎭', n: 'גזען מקצועי' }];
+function tkTaste(taken) { const off = (tk.set && tk.set.off) || [], ok = TK_TASTES.filter((q) => [...q.t].some((c) => c === '3' || !off.includes(c))), fresh = ok.filter((q) => !taken.includes(q.t)); const L = fresh.length ? fresh : ok.length ? ok : TK_TASTES; return L[Math.floor(Math.random() * L.length)].t; }
+function tkTasteOf(t) { return TK_TASTES.find((q) => q.t === t); }
 const TK_V = 4, TK_SWAPS = 3, TK_STAG = 700, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
@@ -21871,7 +21877,7 @@ const TKS = {
     newRoom: 'חדר חדש', joinRoom: 'הצטרפות לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
     errNick: 'בחר כינוי', errCode: 'קוד החדר הוא 4 אותיות באנגלית', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', loading: 'טוען...',
     leaveHost: 'סגור חדר', leave: 'עזוב חדר', leaveG: 'עזוב', roomCode: 'קוד החדר', shareHint: 'שתף את הקוד או את הקישור', copyLink: 'העתק קישור', copied: 'הועתק!', share: 'שתף', shareTxt: "בוא לשחק ת'כלס. קוד החדר: {c}",
-    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'אי אפשר להוסיף עוד בוטים', settings: 'הגדרות', roomSet: 'הגדרות החדר', styleT: 'סגנון הערב', packsB: 'חבילות: {n} מתוך {m}', cardsN: '{n} קלפים', packsT: 'חבילות', packsD: 'כבה נושא שלא מתאים לחבורה, והקלפים שלו לא יופיעו. כל קלף בלי נושא רגיש תמיד במשחק.', pkAllOn: 'הדלק הכול', pkAllOff: 'כבה הכול', fewCards: 'מעט מדי קלפים: הדלק עוד חבילות', start: 'התחל משחק', needMore: 'צריך עוד שחקן אחד',
+    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'אי אפשר להוסיף עוד בוטים', settings: 'הגדרות', roomSet: 'הגדרות החדר', styleT: 'סגנון הערב', likes: 'אוהב', packsB: 'חבילות: {n} מתוך {m}', cardsN: '{n} קלפים', packsT: 'חבילות', packsD: 'כבה נושא שלא מתאים לחבורה, והקלפים שלו לא יופיעו. כל קלף בלי נושא רגיש תמיד במשחק.', pkAllOn: 'הדלק הכול', pkAllOff: 'כבה הכול', fewCards: 'מעט מדי קלפים: הדלק עוד חבילות', start: 'התחל משחק', needMore: 'צריך עוד שחקן אחד',
     waitHost: '⏳ מחכים שהמארח יתחיל את המשחק...', winScore: 'נקודות לניצחון', timer: 'זמן לסבב', hand: 'קלפים ביד', noTimer: 'בלי',
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
@@ -21906,7 +21912,7 @@ const TK = (() => {
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   function newGame(deck, players, o) {
     o = o || {};
-    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, score: 0, hand: [], on: true, swaps: TK_SWAPS })), target: o.target || 5, handN: o.hand || 7, timer: o.timer || 0,
+    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, taste: p.taste || '', score: 0, hand: [], on: true, swaps: TK_SWAPS })), target: o.target || 5, handN: o.hand || 7, timer: o.timer || 0,
       judge: Math.floor(Math.random() * players.length) - 1, round: 0, wd: [], bd: [], black: null, subs: {}, order: [], phase: 'pick', last: null, winner: null, seq: 0, roundAt: 0, revealAt: 0 };
     g.okW = o.okW || null; g.okB = o.okB || null;
     const first = (n, seen, ok) => { const S = new Set(seen || []), all = ok ? ok.slice() : Array.from({ length: n }, (_, i) => i); return shuffle(all.filter((i) => S.has(i))).concat(shuffle(all.filter((i) => !S.has(i)))); }; // (cards not seen yet on these phones come first: popped from the end)
@@ -21949,9 +21955,12 @@ const TK = (() => {
     if (g.phase !== 'reveal') return false; const top = Math.max(...g.players.map((p) => p.score));
     if (top >= g.target) { g.phase = 'over'; g.winner = g.players.find((p) => p.score === top).id; g.seq++; } else startRound(g); return true;
   }
-  function botMove(g) { // one bot step (the host calls it with a pause between): a bot answers, or a bot czar picks
-    if (g.phase === 'pick') { const b = needs(g).find((p) => p.bot); if (b) { const idx = shuffle(b.hand.map((_, i) => i)).slice(0, pickOf(g)); return submit(g, b.id, idx) && b.id; } }
-    if (g.phase === 'judge' && g.players[g.judge].bot) return judge(g, g.players[g.judge].id, Math.floor(Math.random() * g.order.length)) && 'judge';
+  function taste(g, i, t) { const m = (g.deck.wm && g.deck.wm[i]) || ''; let s = Math.random() * 1.2; for (const c of m.slice(1)) if (t.includes(c)) s += 2; if (t.includes('3') && m[0] === '3') s += 1; return s; } // how much a taste likes a white card (a little luck in it)
+  function botMove(g) { // one bot step (the host calls it with a pause between): a bot answers (for a bot czar: by the czar's taste, else its own), or a bot czar picks by its taste
+    const J = g.players[g.judge];
+    if (g.phase === 'pick') { const b = needs(g).find((p) => p.bot); if (b) { const t = (J.bot && J.taste) || b.taste || '', sc = b.hand.map((c, i) => [taste(g, c, t), i]).sort((x, y) => y[0] - x[0]);
+      return submit(g, b.id, sc.slice(0, pickOf(g)).map((x) => x[1])) && b.id; } }
+    if (g.phase === 'judge' && J.bot) { const sc = g.order.map((id) => g.subs[id].reduce((a, c) => a + taste(g, c, J.taste || ''), 0)); return judge(g, J.id, sc.indexOf(Math.max(...sc))) && 'judge'; }
     return false;
   }
   function view(g, pid) { // what one player may see
@@ -21960,7 +21969,7 @@ const TK = (() => {
       hand: me ? me.hand.map((i) => g.deck.w[i]) : [], swaps: me ? me.swaps || 0 : 0, mine: !!(me && g.subs[pid]), pick: pickOf(g), timer: g.timer,
       left: g.timer && g.phase === 'pick' ? Math.max(0, g.timer * 1000 - (now - g.roundAt)) : 0, revLeft: g.phase === 'reveal' ? Math.max(0, tkRevealMs() - (now - g.revealAt)) : 0,
       subs: g.phase === 'pick' ? null : g.order.map((id) => g.subs[id].map((i) => g.deck.w[i])), win: g.last ? g.last.k : -1,
-      players: g.players.map((p) => ({ id: p.id, name: p.name, score: p.score, bot: p.bot, on: p.on, sent: !!g.subs[p.id] })),
+      players: g.players.map((p) => ({ id: p.id, name: p.name, score: p.score, bot: p.bot, taste: p.taste, on: p.on, sent: !!g.subs[p.id] })),
       waiting: needs(g).map((p) => p.name), last: g.last && { name: g.last.pid ? nm(g.last.pid) : null, cards: g.last.cards.map((i) => g.deck.w[i]), black: g.deck.b[g.last.black] }, winner: g.winner && nm(g.winner) };
   }
   return { newGame, startRound, submit, swap, judge, skip, force, next, botMove, view, needs };
@@ -22143,7 +22152,7 @@ function tkLobbyHtml() {
     '<div class="tkTwo"><button class="tkS tkSm" data-a="copy">' + (Date.now() - tk.copied < 2000 ? tki('check', 'neonI') + '<span class="tkNeonC">' + tks('copied') + '</span>' : tki('copy') + tks('copyLink')) + '</button><button class="tkP tkSm" data-a="share">' + tki('share') + tks('share') + '</button></div></div>';
   h += '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">' + tks('players') + ' <span class="tkDim tkSm">(' + list.length + ')</span></h2><div class="tkCol8">' + list.map((p) => {
     const isMe = p.id === me, isHost = p.id === 'h';
-    return '<div class="tkPl' + (isMe ? ' me' : '') + '">' + tkAv(p.name, 44) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (isMe ? '<small>' + tks('you') + '</small>' : '') + '</span>' + (isMe && tk.mode === 'solo' ? '<button class="tkKick tkEdit" data-a="rename" aria-label="' + tks('rename') + '">✏️</button>' : '') +
+    return '<div class="tkPl' + (isMe ? ' me' : '') + '">' + tkAv(p.name, 44) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (isMe ? '<small>' + tks('you') + '</small>' : '') + (p.bot && tkTasteOf(p.taste) ? '<small class="tkTaste">' + tks('likes') + ' ' + tkTasteOf(p.taste).e + ' ' + tkTasteOf(p.taste).n + '</small>' : '') + '</span>' + (isMe && tk.mode === 'solo' ? '<button class="tkKick tkEdit" data-a="rename" aria-label="' + tks('rename') + '">✏️</button>' : '') +
       (isHost && online ? '<span class="tkHostB">' + tki('crown') + tks('host') + '</span>' : '') + (host && !isMe && !isHost ? '<button class="tkKick" data-a="kick:' + tkEsc(p.id) + '" aria-label="' + tks('kick') + '">' + tki('x') + '</button>' : '') + '</div>'; }).join('') + '</div></div>';
   const S0 = host ? tk.set : (tk.lobbySet || tk.set), few = host && !tkEnough(S0, list.length); h += tkStyleHtml(S0, host);
   if (host) h += '<button class="tkS tkW tkMb" data-a="addBot"' + (full || cap ? ' disabled' : '') + '>' + tki('bot') + (full ? tks('full') : cap ? tks('botCap') : tks('addBot')) + '</button>';
@@ -22193,7 +22202,7 @@ function tkGameHtml(v) {
   tkSeenMark(v); const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick';
   const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
   let h = '<div class="tkWrap2 tkGame">' + tkTop(tkLeaveLabel(), tks('round', { n: v.round }), right) + tkScoresHtml(v, local ? who : v.me) + '<div class="tkCenter">' +
-    '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b></span></div>' +
+    '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b>' + (() => { const J = v.players.find((p) => p.id === v.judge), T = J && J.bot && tkTasteOf(J.taste); return T ? ' <small class="tkTaste">· ' + tks('likes') + ' ' + T.e + ' ' + T.n + '</small>' : ''; })() + '</span></div>' +
     '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : playing && !czar && !sent && (who || !local) && tk.sel.length ? tkFill(v.black[0], tk.sel.map((i) => v.hand[i])) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>';
   if (v.phase === 'reveal') h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div>' +
     '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p></div>' + tkSubsHtml(v, false);
@@ -22284,7 +22293,7 @@ function tkClick(e) {
   else if (a === 'addP') { tkReadNames(); tk.names.push(''); }
   else if (a.startsWith('rm:')) { tkReadNames(); tk.names.splice(+a.slice(3), 1); }
   else if (a === 'goLocal') { tkReadNames(); const names = tk.names.map((n, i) => n.trim() || tks('name', { n: i + 1 })); if (names.length + tk.botsL < 2 || !tk.deck) return; tkSave(); tk.mode = 'local'; tk.me = null;
-    tkNewGame(names.map((n, i) => ({ id: 'p' + i, name: n })).concat(Array.from({ length: tk.botsL }, (_, i) => ({ id: 'b' + i, name: tkBotNick(names), bot: true })))); return; }
+    tkNewGame(names.map((n, i) => ({ id: 'p' + i, name: n })).concat((() => { const B = []; for (let i = 0; i < tk.botsL; i++) B.push({ id: 'b' + i, name: tkBotNick(names.concat(B.map((q) => q.name))), bot: true, taste: tkTaste(B.map((q) => q.taste)) }); return B; })())); return; }
   else if (a.startsWith('iam:')) { tk.passTo = a.slice(4) + ':' + tk.g.round + ':' + tk.g.phase; tk.sel = []; }
   else if (a.startsWith('card:')) { const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
     if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > cr.width * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
@@ -22298,7 +22307,7 @@ function tkClick(e) {
     try { navigator.clipboard.writeText(url); } catch {} tk.copied = Date.now(); setTimeout(tkRender, 2100); }
   tkRender();
 }
-function tkAddBot() { const L = tk.lobby; if (L.length >= TK_MAXP || L.filter((p) => p.bot).length >= TK_MAXB) return; L.push({ id: 'b' + tk.botN++, name: tkBotNick(L.map((p) => p.name)), bot: true }); }
+function tkAddBot() { const L = tk.lobby; if (L.length >= TK_MAXP || L.filter((p) => p.bot).length >= TK_MAXB) return; L.push({ id: 'b' + tk.botN++, name: tkBotNick(L.map((p) => p.name)), bot: true, taste: tkTaste(L.map((p) => p.taste || '')) }); }
 function tkCurView() { if (tk.mode !== 'local') return tk.view; const g = tk.g, v = tk.view; if (v.phase === 'pick') { const p = g.players.find((q) => !q.bot && g.players[g.judge].id !== q.id && q.on && !g.subs[q.id]); return p ? TK.view(g, p.id) : v; } return TK.view(g, g.players[g.judge].id); }
 function tkReadNames() { document.querySelectorAll('#tachles .tkIn[data-i]').forEach((x) => { tk.names[+x.dataset.i] = x.value.slice(0, 20); }); }
 /* online: the host opens a room (a code), the guests join */
