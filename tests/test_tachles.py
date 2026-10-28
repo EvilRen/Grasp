@@ -48,7 +48,7 @@ async def gate_and_bots(b, he):
     check(tag + ': two bots kicked', await page.evaluate(f"{TKH}.tk.lobby.length") == 3)
     await click(page, '#tachles [data-a="set"]'); await page.screenshot(path=OUT + 'tachles_settings_modal_%s.png' % tag.lower())
     await click(page, '#tachles [data-a="ws-"]'); await click(page, '#tachles [data-a="ws-"]'); await click(page, '#tachles [data-a="hs-"]'); await click(page, '#tachles [data-a="tm+"]')
-    S = await page.evaluate(f"{TKH}.tk.set"); check(tag + ': room settings: points to win 3, hand 6, round time 90 s', S == {'target': 3, 'hand': 6, 'timer': 90}, S)
+    S = await page.evaluate(f"{TKH}.tk.set"); check(tag + ': room settings: points to win 3, hand 6, round time 90 s', {k: S[k] for k in ('target', 'hand', 'timer')} == {'target': 3, 'hand': 6, 'timer': 90}, S)
     await click(page, '#tachles .tkMHead [data-a="mclose"]'); await page.screenshot(path=OUT + 'tachles_lobby_%s.png' % tag.lower()); await click(page, '#tachles [data-a="start"]')
     v = await view(page); check(tag + ': the game: round 1, the scores strip (avatars, a crown on the czar), the black card', v['scr'] == 'game' and len(v['players']) == 3 and v['round'] == 1 and await page.locator('#tachles .tkScores .tkAv').count() == 3 and await page.locator('#tachles .tkScores .tkCrown').count() == 1 and await page.locator('#tachles .tkBlackC').count() == 1, v)
     if await page.evaluate(f"{TKH}.tk.view.judge !== 'h'"):
@@ -129,7 +129,7 @@ async def online(b):
     pages = []
     for i in range(4):
         pg = await ctx.new_page(); await routes(pg); pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.add_init_script(FAST + "window.__tkBus = 'bc'; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
+        await pg.add_init_script(FAST + "window.__tkReveal = 1500; window.__tkBus = 'bc'; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
         await pg.goto(BASE + '/tachles'); await wait(pg, f"{TKH}.tk.scr === 'menu'", 8000); pages.append(pg)
     host, g1, g2, g3 = pages
     await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'המארח'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(300)
@@ -150,11 +150,13 @@ async def online(b):
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     for k in range(30):
         if (await view(host))['phase'] == 'reveal': break
-        for p in pages: await step_local(p)
+        for p in pages:
+            if (await view(host))['phase'] == 'reveal' or (await view(host))['round'] > 1: break
+            await step_local(p)
         await host.wait_for_timeout(150)
     v = await view(host); check('online: everyone answers, the czar picks: a point, every phone sees the trophy on the winning answer', v['phase'] == 'reveal' and sum(v['players']) == 1 and (await view(g2))['phase'] == 'reveal' and await g2.locator('#tachles .tkSub.win .tkTrophy').count() == 1, [v, await view(g2)])
     await g2.screenshot(path=OUT + 'tachles_online_reveal_he.png')
-    await host.wait_for_timeout(700); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
+    await host.wait_for_timeout(1900); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
     await click(host, '#tachles [data-a="leave"]'); check('online: Close room asks first', await host.locator('#tachles .tkModal [data-a="leaveOk"]').count() == 1)
     await host.screenshot(path=OUT + 'tachles_leave_he.png')
     await click(host, '#tachles [data-a="leaveOk"]'); await host.wait_for_timeout(300)
@@ -165,8 +167,31 @@ async def deck(b):
     ctx, page, errs = await page_for(b, '/tachles', True, init="sessionStorage.setItem('grasp.tk18', '1');"); await page.wait_for_timeout(1200)
     d = await page.evaluate(f"{TKH}.tk.deck")
     bad = [c for c in d['w'] + [x[0] for x in d['b']] if any(k in c for k in ('פדופיל', 'הסבא שמשפץ', 'תינוק עם זין', 'הזין של הרב עובדיה', 'יואב גלנט שמכניס'))]
-    check('the deck: 240+ black and 950+ white cards, without the two dropped groups', len(d['b']) >= 240 and len(d['w']) >= 950 and not bad, [len(d['b']), len(d['w']), bad])
+    check('the deck: 340+ black and 1350+ white cards, each with its level and packs, without the two dropped groups', len(d['b']) >= 340 and len(d['w']) >= 1350 and len(d['wm']) == len(d['w']) and len(d['bm']) == len(d['b']) and not bad, [len(d['b']), len(d['w']), bad])
     await ctx.close()
+
+async def style_packs(b):
+    # the evening's style (3 levels) and the topic packs: only the cards they let in are dealt
+    ctx, page, errs = await page_for(b, '/tachles', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 6000)
+    await click(page, '#tachles [data-a="m:bots"]')
+    check('style: the room shows "סגנון הערב" with 3 levels, 🟠 גס on by default, and a packs button', await page.locator('#tachles .tkLv').count() == 3 and await page.locator('#tachles .tkLv.on').inner_text() == '🟠\nגס' and await page.locator('#tachles [data-a="packs"]').count() == 1)
+    await click(page, '#tachles [data-a="lvl:1"]'); check('style: 🟢 קליל picked, its warning line shown', await page.evaluate(f"{TKH}.tk.set.lvl") == 1 and 'ההורים' in await page.inner_text('#tachles .tkLvD'))
+    await click(page, '#tachles [data-a="packs"]'); check('packs: a sheet of 13 packs, each with ⚠️ a warning and a card count, all on', await page.locator('#tachles .tkPk').count() == 13 and await page.locator('#tachles .tkPk.on').count() == 13 and await page.locator('#tachles .tkPk small:has-text("⚠️")').count() == 13)
+    await page.screenshot(path=OUT + 'tachles_packs.png')
+    await click(page, '#tachles [data-a="pkAll"]'); await click(page, '#tachles .tkMHead [data-a="mclose"]')
+    n0 = await page.inner_text('#tachles [data-a="packs"]')
+    check('packs: all off at 🟢: the button says 0 of 13 and fewer cards (the ones with no sensitive topic stay)', 'חבילות: 0 מתוך 13' in n0, n0)
+    await page.evaluate(f"{TKH}.tk.deck.wm = {TKH}.tk.deck.wm.map((m) => m + 'i'); {TKH}.render()")
+    check('packs: too few cards: Start is off and says why', await page.locator('#tachles [data-a="start"][disabled]').count() == 1 and 'מעט מדי' in await page.inner_text('#tachles [data-a="start"]'))
+    await page.evaluate(f"{TKH}.tk.deck.wm = {TKH}.tk.deck.wm.map((m) => m.slice(0, -1))")
+    await click(page, '#tachles [data-a="packs"]'); await click(page, '#tachles [data-a="pkAll"]'); await click(page, '#tachles [data-a="pk:s"]'); await click(page, '#tachles [data-a="pk:f"]'); await click(page, '#tachles .tkMHead [data-a="mclose"]')
+    check('packs: sex and family off, saved', await page.evaluate(f"{TKH}.tk.set.off.slice().sort().join('')") == 'fs' and await page.evaluate("JSON.parse(localStorage.getItem('grasp.tk')).set.lvl") == 1)
+    await page.screenshot(path=OUT + 'tachles_style.png')
+    await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(300)
+    r = await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g, d = g.deck, ws = g.players.flatMap((p) => p.hand).concat(g.wd), bs = g.bd.concat([g.black]);
+      const bad = (m) => +m[0] > 1 || m.includes('s', 1) || m.includes('f', 1); return {{ n: ws.length, badW: ws.filter((i) => bad(d.wm[i])).length, badB: bs.filter((i) => bad(d.bm[i])).length }}; }})()""")
+    check('style: the game at 🟢 without sex and family: every card in the hands, the pile and the questions passes', r['n'] > 50 and r['badW'] == 0 and r['badB'] == 0, r)
+    check('style: no page errors', not errs, errs); await ctx.close()
 
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
@@ -206,7 +231,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await write_card(b); await rules(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await write_card(b); await rules(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
