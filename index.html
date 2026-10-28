@@ -1359,43 +1359,155 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 .mxCell.no{ background:#e9e4f2; border-style:dashed; cursor:default; } .mxCell.no .e{ color:#9b8fb5; font-weight:800; }
 .mxCell.on{ background:#fff0a8; }
 .mxInfo{ margin:0; min-height:2.6em; font-size:14px; font-weight:700; line-height:1.35; }
-/* Tachles (adults): black and white cards in the DOM over the game canvas, under the corner button */
-#tachles{ position:fixed; inset:0; z-index:4; overflow-y:auto; background:#141414; color:#f4f4f4; font-family:"Rubik",system-ui,sans-serif; -webkit-tap-highlight-color:transparent; }
+/* Tachles (adults): the original's look (EvilRen/takhles: near-black, neon purple and magenta, Heebo, letter avatars, black and white card faces),
+   in the DOM over the game canvas, under the corner button */
+#tachles{ --bg:#0a0a0a; --card:#111; --el:#1a1a1a; --hov:#222; --bd:#262626; --bd2:#333; --tx:#fafafa; --dim:#888; --faint:#555; --neon:#a855f7; --neonB:#c084fc; --mag:#d946ef; --danger:#ef4444;
+  position:fixed; inset:0; z-index:4; overflow-y:auto; overflow-x:hidden; color:var(--tx); font-family:"Heebo","Rubik",ui-sans-serif,system-ui,sans-serif; -webkit-tap-highlight-color:transparent;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(168,85,247,.08), transparent 70%), radial-gradient(ellipse 60% 50% at 50% 100%, rgba(217,70,239,.05), transparent 70%), var(--bg); }
 #tachles[hidden]{ display:none; }
-#tachles .tkIn0{ min-height:100%; display:flex; justify-content:center; padding:calc(env(safe-area-inset-top,0px) + 76px) 14px calc(env(safe-area-inset-bottom,0px) + 24px); }
-#tachles .tkBox, #tachles .tkGame{ width:min(520px,100%); display:flex; flex-direction:column; gap:12px; align-items:stretch; }
-#tachles .tkBox{ text-align:center; }
-#tachles .tkLogo{ font-size:44px; font-weight:900; letter-spacing:1px; color:#fff; text-shadow:3px 3px 0 #e2245a; margin:6px 0; }
-#tachles h2{ font-size:22px; margin:4px 0; }
-#tachles p{ margin:0; line-height:1.45; }
-#tachles .tkBtn{ font:inherit; font-weight:800; font-size:17px; min-height:50px; padding:10px 16px; border-radius:14px; border:2px solid #f4f4f4; background:transparent; color:#f4f4f4; cursor:pointer; }
-#tachles .tkBtn.hot{ background:#e2245a; border-color:#e2245a; color:#fff; }
-#tachles .tkBtn.sm{ min-height:40px; font-size:15px; padding:6px 12px; }
-#tachles .tkBtn[disabled]{ opacity:.4; }
-#tachles .tkBig{ display:flex; flex-direction:column; gap:4px; text-align:start; padding:14px 16px; }
-#tachles .tkBig b{ font-size:19px; } #tachles .tkBig small{ font-size:14px; font-weight:500; opacity:.75; }
-#tachles .tkRow{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
-#tachles .tkIn{ flex:1; min-width:0; font:inherit; font-size:17px; padding:12px; border-radius:12px; border:2px solid #555; background:#222; color:#fff; }
-#tachles .tkIn.code{ text-transform:uppercase; letter-spacing:4px; text-align:center; font-weight:900; }
-#tachles .tkX{ width:44px; height:44px; border-radius:50%; border:2px solid #555; background:#222; color:#fff; font-size:16px; }
-#tachles select{ font:inherit; font-size:17px; padding:6px 10px; border-radius:10px; background:#222; color:#fff; border:2px solid #555; }
-#tachles .tkNote{ font-size:15px; opacity:.85; } #tachles .tkNote.big{ font-size:18px; font-weight:800; opacity:1; }
-#tachles .tkCode{ font-size:48px; font-weight:900; letter-spacing:8px; color:#fff; }
-#tachles .tkList{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; font-size:18px; }
-#tachles .tkHead{ display:flex; justify-content:space-between; font-weight:800; opacity:.8; }
-#tachles .tkScores{ display:flex; flex-wrap:wrap; gap:6px; }
-#tachles .tkSc{ padding:5px 10px; border-radius:999px; background:#262626; font-size:14px; } #tachles .tkSc.j{ background:#e2245a; } #tachles .tkSc.off{ opacity:.4; }
-#tachles .tkBlack{ background:#000; color:#fff; border:2px solid #fff; border-radius:18px; padding:20px 18px; font-size:21px; font-weight:800; line-height:1.4; min-height:120px; box-shadow:0 6px 0 #e2245a; }
-#tachles .tkBlack.big{ font-size:22px; } #tachles .tkBlack b{ color:#ffd23f; } #tachles .tkBlack i{ display:block; margin-top:10px; font-size:14px; font-style:normal; color:#ffd23f; }
-#tachles .tkHand{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
-#tachles .tkWhite{ position:relative; font:inherit; text-align:start; background:#fff; color:#111; border:3px solid #fff; border-radius:14px; padding:14px 12px; font-size:16px; font-weight:700; line-height:1.35; min-height:96px; cursor:pointer; }
-#tachles .tkWhite.on{ border-color:#e2245a; box-shadow:0 0 0 3px #e2245a; transform:translateY(-3px); }
-#tachles .tkWhite em{ position:absolute; top:-10px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:#e2245a; color:#fff; font-style:normal; display:flex; align-items:center; justify-content:center; }
-#tachles .tkSend{ position:sticky; bottom:calc(env(safe-area-inset-bottom,0px) + 10px); }
-#tachles .tkSubs{ display:flex; flex-direction:column; gap:10px; }
-#tachles .tkSub{ font:inherit; text-align:start; background:#fff; color:#111; border:3px solid #fff; border-radius:14px; padding:14px; font-size:17px; line-height:1.4; cursor:pointer; }
-#tachles .tkSub b{ color:#e2245a; } #tachles .tkSub[disabled]{ cursor:default; opacity:.92; }
-#tachles .tkWin{ display:flex; flex-direction:column; gap:12px; text-align:center; }
+#tachles *{ box-sizing:border-box; }
+#tachles .tkIn0{ min-height:100%; display:flex; justify-content:center; padding:calc(env(safe-area-inset-top,0px) + 68px) 16px calc(env(safe-area-inset-bottom,0px) + 20px); }
+#tachles .tkIn0.fade{ animation:tkFade .25s ease-out; }
+#tachles .tkWrap{ width:min(28rem,100%); display:flex; flex-direction:column; }
+#tachles .tkWrap2{ width:min(42rem,100%); display:flex; flex-direction:column; }
+#tachles .tkMidY{ justify-content:center; }
+#tachles p{ margin:0; } #tachles h1, #tachles h2, #tachles h3{ margin:0; }
+#tachles button{ font-family:inherit; cursor:pointer; user-select:none; -webkit-user-select:none; }
+#tachles button:disabled{ cursor:not-allowed; }
+#tachles input{ background:var(--el); color:var(--tx); border:1px solid var(--bd); border-radius:12px; padding:12px 16px; font:inherit; font-size:16px; outline:none; transition:border-color .15s, box-shadow .15s; min-width:0; }
+#tachles input:focus{ border-color:var(--neon); box-shadow:0 0 0 3px rgba(168,85,247,.18); }
+#tachles input::placeholder{ color:var(--faint); }
+#tachles .tkI{ width:20px; height:20px; flex:none; }
+#tachles[dir=ltr] .lflip, #tachles[dir=rtl] .rflip{ transform:scaleX(-1); }
+#tachles .tkC{ text-align:center; } #tachles .tkDim{ color:var(--dim); } #tachles .tkFaint{ color:var(--faint); } #tachles .tkLh{ line-height:1.6; }
+#tachles .tkXs{ font-size:12px; } #tachles .tkSm{ font-size:14px; } #tachles .tkLg{ font-size:18px; }
+#tachles .tkMb{ margin-bottom:16px; } #tachles .tkMt{ margin-top:12px; } #tachles .tkMb8{ margin-bottom:8px; }
+#tachles .tkCol{ display:flex; flex-direction:column; gap:12px; } #tachles .tkCol8{ display:flex; flex-direction:column; gap:8px; } #tachles .tkCol4{ display:flex; flex-direction:column; gap:4px; }
+#tachles .tkTwo{ display:flex; gap:8px; } #tachles .tkTwo > *{ flex:1; min-width:0; }
+#tachles .tkNeon{ background:linear-gradient(135deg,#c084fc 0%,#a855f7 50%,#d946ef 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; filter:drop-shadow(0 0 28px rgba(168,85,247,.55)); }
+#tachles .tkNeonC{ color:var(--neonB); } #tachles .neonI{ color:var(--neonB); } #tachles .gold{ color:#facc15; }
+#tachles .tkH0{ font-size:72px; font-weight:900; letter-spacing:-.025em; line-height:1.05; margin-bottom:12px; }
+#tachles .tkH1{ font-size:60px; font-weight:900; letter-spacing:-.025em; line-height:1.05; margin-bottom:12px; }
+#tachles .tkH1s{ font-size:30px; font-weight:900; margin-bottom:4px; line-height:1.2; word-break:break-word; }
+#tachles .tkH2{ font-size:30px; font-weight:900; margin-bottom:24px; } #tachles .tkH2s{ font-size:20px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+#tachles .tkH3{ font-size:24px; font-weight:900; margin-bottom:12px; line-height:1.25; }
+#tachles .tkEmoji{ font-size:72px; line-height:1; margin-bottom:24px; }
+#tachles .tkCard{ background:var(--card); border:1px solid var(--bd); border-radius:20px; }
+#tachles .tkPad{ padding:20px; } #tachles .tkPad6{ padding:24px; } #tachles .tkPad7{ padding:28px; } #tachles .tkPad8{ padding:32px; }
+#tachles .tkGlow{ box-shadow:0 0 32px rgba(168,85,247,.18), 0 0 64px rgba(217,70,239,.08); }
+#tachles .tkGate p.tkDim, #tachles .tkPad8 > p.tkDim{ margin-bottom:32px; }
+#tachles .tkPad8 > .tkFaint{ margin-top:24px; }
+#tachles .tkP, #tachles .tkS, #tachles .tkD{ display:inline-flex; align-items:center; justify-content:center; gap:10px; border-radius:14px; padding:14px 24px; font-size:16px; transition:transform .15s ease, box-shadow .2s ease, filter .15s ease, background .15s, border-color .15s; }
+#tachles .tkP{ background:linear-gradient(135deg,#a855f7 0%,#d946ef 100%); color:#fff; font-weight:800; border:none; box-shadow:0 4px 24px rgba(168,85,247,.35), 0 0 0 1px rgba(192,132,252,.3) inset; }
+#tachles .tkP:active:not(:disabled), #tachles .tkS:active:not(:disabled), #tachles .tkD:active{ transform:scale(.98); }
+#tachles .tkP:disabled, #tachles .tkS:disabled{ opacity:.4; }
+#tachles .tkS{ background:var(--el); color:var(--tx); font-weight:700; border:1px solid var(--bd); }
+#tachles .tkD{ background:var(--danger); color:#fff; font-weight:700; border:none; }
+@media (hover:hover){ #tachles .tkP:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 8px 36px rgba(168,85,247,.55), 0 0 0 1px rgba(192,132,252,.4) inset; filter:brightness(1.1); }
+  #tachles .tkS:hover:not(:disabled){ background:var(--hov); border-color:var(--neon); transform:translateY(-2px); box-shadow:0 0 0 3px rgba(168,85,247,.12); } }
+#tachles .tkS.tkSm, #tachles .tkP.tkSm{ padding:12px 14px; font-size:14px; } #tachles .tkSm .tkI{ width:16px; height:16px; }
+#tachles .tkW{ width:100%; } #tachles .tkGo{ padding-top:20px; padding-bottom:20px; } #tachles .tkGo .tkI{ width:24px; height:24px; }
+#tachles .tkIcon{ display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; color:var(--dim); background:transparent; border:none; flex:none; }
+#tachles .tkLink{ background:none; border:none; color:var(--faint); font-size:13px; margin-top:14px; text-decoration:underline; }
+/* the menu */
+#tachles .tkMenuTop{ display:flex; justify-content:flex-start; margin-bottom:8px; }
+#tachles .tkHero{ margin-bottom:44px; }
+#tachles .tkOr{ margin-top:10px; } #tachles .tkTwo .tkS{ padding:12px 10px; font-size:14px; gap:6px; } #tachles .tkTwo .tkS .tkI{ width:18px; height:18px; }
+#tachles .tkFoot{ margin-top:40px; }
+/* the nickname form */
+#tachles .tkBack{ display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--dim); font-size:14px; padding:6px 0; margin-bottom:16px; align-self:flex-start; }
+#tachles .tkBack .tkI{ width:16px; height:16px; }
+#tachles .tkNick{ display:flex; align-items:center; gap:12px; background:var(--el); border:1px solid var(--bd); border-radius:16px; padding:8px; margin-bottom:20px; transition:border-color .15s; }
+#tachles .tkNick:focus-within{ border-color:var(--neon); }
+#tachles .tkNick input{ flex:1; background:transparent; border:0; padding:0; font-size:16px; box-shadow:none !important; }
+#tachles .tkCodeIn{ width:100%; text-align:center; font-size:30px !important; font-weight:900; letter-spacing:.4em; text-transform:uppercase; padding:16px !important; margin-bottom:20px; }
+#tachles .tkErr{ background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); border-radius:12px; padding:12px; margin-bottom:16px; color:#f87171; font-size:14px; }
+/* letter avatars */
+#tachles .tkAv{ display:inline-flex; align-items:center; justify-content:center; font-weight:800; color:#fff; border-radius:12px; text-shadow:0 1px 2px rgba(0,0,0,.3); flex:none; user-select:none; line-height:1; }
+#tachles .tkAv.big{ margin:0 auto 12px; border-radius:20px; } #tachles .tkAv.pulse{ animation:tkPulse 1.6s ease-in-out infinite; }
+/* the room */
+#tachles .tkTop{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; min-height:48px; }
+#tachles .tkTop .tkBack{ margin:0; } #tachles .tkMid{ font-size:14px; font-weight:700; color:var(--faint); } #tachles .tkRight{ min-width:48px; display:flex; justify-content:flex-end; }
+#tachles .tkCodeBig{ font-size:64px; font-weight:900; letter-spacing:.3em; text-align:center; margin:4px 0 6px; padding-inline-start:.3em; line-height:1.1; }
+#tachles .tkCodeBig + p{ margin-bottom:20px; }
+#tachles .tkPl{ display:flex; align-items:center; gap:12px; padding:12px; border-radius:16px; background:var(--el); border:1px solid transparent; }
+#tachles .tkPl.me{ background:rgba(168,85,247,.08); border-color:rgba(168,85,247,.3); }
+#tachles .tkPl input{ flex:1; padding:10px 12px; }
+#tachles .tkPlN{ flex:1; min-width:0; display:flex; align-items:baseline; gap:8px; overflow:hidden; white-space:nowrap; } #tachles .tkPlN b{ overflow:hidden; text-overflow:ellipsis; }
+#tachles .tkPlN small{ font-size:12px; color:var(--neonB); font-weight:500; }
+#tachles .tkHostB{ display:inline-flex; align-items:center; gap:4px; font-size:12px; background:rgba(234,179,8,.15); color:#facc15; padding:4px 8px; border-radius:999px; border:1px solid rgba(234,179,8,.3); }
+#tachles .tkHostB .tkI{ width:12px; height:12px; }
+#tachles .tkKick{ width:32px; height:32px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:none; color:var(--faint); flex:none; }
+#tachles .tkKick .tkI{ width:16px; height:16px; } #tachles .tkKick:active{ color:var(--danger); background:rgba(239,68,68,.1); }
+#tachles .tkWait{ background:rgba(168,85,247,.05); border:1px solid rgba(168,85,247,.2); border-radius:16px; padding:16px; text-align:center; color:var(--dim); font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; }
+#tachles .tkWait .tkI{ width:16px; height:16px; }
+/* settings, confirm boxes, the toast */
+#tachles .tkModal{ position:fixed; inset:0; z-index:6; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.8); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); } #tachles .tkModal.fade{ animation:tkFade .2s ease-out; }
+#tachles .tkMBox{ width:min(24rem,100%); }
+#tachles .tkMHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; } #tachles .tkMHead h3{ font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
+#tachles .tkStep{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; font-size:14px; }
+#tachles .tkStep .tkDim{ display:flex; align-items:center; gap:6px; } #tachles .tkStepC{ display:flex; align-items:center; gap:8px; }
+#tachles .tkStepC b{ min-width:3.5rem; text-align:center; font-weight:900; font-size:16px; font-variant-numeric:tabular-nums; }
+#tachles .tkRnd{ width:36px; height:36px; border-radius:50%; background:var(--el); border:1px solid var(--bd); color:var(--tx); display:inline-flex; align-items:center; justify-content:center; }
+#tachles .tkRnd .tkI{ width:16px; height:16px; } #tachles .tkRnd:disabled{ opacity:.3; }
+#tachles .tkRO{ display:grid; grid-template-columns:1fr; gap:8px; font-size:14px; } #tachles .tkRO span{ display:flex; justify-content:space-between; background:var(--el); border-radius:12px; padding:8px 12px; color:var(--dim); } #tachles .tkRO b{ color:var(--tx); }
+#tachles .tkToast{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:50%; transform:translateX(-50%); z-index:7; background:var(--danger); color:#fff; font-weight:700; padding:12px 20px; border-radius:16px; box-shadow:0 4px 24px rgba(239,68,68,.5); animation:tkFade .25s ease-out; white-space:nowrap; max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis; }
+/* the game */
+#tachles .tkScores{ padding:10px; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; } #tachles .tkScores::-webkit-scrollbar{ display:none; }
+#tachles .tkSc{ flex:none; display:flex; align-items:center; gap:8px; padding:4px 8px; border-radius:12px; border:1px solid transparent; }
+#tachles .tkSc.me{ background:rgba(168,85,247,.1); border-color:rgba(168,85,247,.3); } #tachles .tkSc.off{ opacity:.35; }
+#tachles .tkAvW{ position:relative; display:inline-flex; } #tachles .tkCrown{ position:absolute; top:-8px; inset-inline-end:-5px; width:16px; height:16px; color:#facc15; fill:#facc15; filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+#tachles .tkScN{ display:flex; flex-direction:column; line-height:1.15; min-width:0; } #tachles .tkScN small{ font-size:12px; font-weight:700; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#tachles .tkScN b{ font-size:14px; font-weight:900; color:var(--neonB); }
+#tachles .tkCenter{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; margin:20px 0 4px; }
+#tachles .tkCzar{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--dim); } #tachles .tkCzar b{ color:#fff; } #tachles .tkCzar .tkI{ width:16px; height:16px; }
+#tachles .tkFace{ position:relative; display:flex; flex-direction:column; justify-content:space-between; border-radius:18px; padding:18px 18px 14px; box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04); text-align:start; }
+#tachles .tkBlackC{ width:min(28rem,100%); min-height:min(260px,27vh); text-align:center; color:#fafafa; border:1px solid #2a2a2a;
+  background:radial-gradient(circle at 18% 0%, rgba(168,85,247,.2), transparent 58%), radial-gradient(circle at 82% 100%, rgba(217,70,239,.14), transparent 60%), #0a0a0a;
+  box-shadow:0 0 32px rgba(168,85,247,.18), 0 0 64px rgba(217,70,239,.08), 0 6px 18px rgba(0,0,0,.45); }
+#tachles .tkBlackC p{ font-size:clamp(22px,6.4vw,30px); font-weight:900; line-height:1.35; white-space:pre-wrap; padding-top:8px; word-break:break-word; }
+#tachles .tkBlackC u{ text-decoration:none; color:var(--neonB); letter-spacing:-.05em; }
+#tachles .tkPickL{ align-self:flex-end; margin-top:16px; font-size:11px; color:var(--neonB); font-weight:900; letter-spacing:.1em; }
+#tachles .tkWhiteC{ background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%); color:#0a0a0a; border:1px solid #d8d8d8; }
+#tachles .tkWhiteC p{ font-weight:700; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
+#tachles .tkRing{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; }
+#tachles .tkRing svg{ position:absolute; inset:0; width:48px; height:48px; transform:rotate(-90deg); } #tachles .tkRing circle{ transition:stroke-dashoffset .25s linear; }
+#tachles .tkRing b{ font-size:14px; font-weight:900; font-variant-numeric:tabular-nums; } #tachles .tkRing.urg b{ color:#ef4444; } #tachles .tkRing.urg{ animation:tkUrgent .85s ease-in-out infinite; }
+#tachles .tkPill{ font-size:12px; font-weight:700; color:var(--dim); padding:4px 8px; border-radius:999px; background:var(--el); border:1px solid var(--bd); white-space:nowrap; }
+#tachles .tkStatus{ display:flex; flex-direction:column; align-items:center; gap:8px; width:min(28rem,100%); }
+#tachles .tkTease{ font-size:14px; font-style:italic; color:var(--faint); text-align:center; padding:0 12px; line-height:1.4; }
+#tachles .tkChips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+#tachles .tkChip{ display:flex; align-items:center; gap:6px; padding:4px 8px 4px 6px; border-radius:999px; background:var(--el); border:1px solid var(--bd); } #tachles .tkChip small{ font-size:12px; font-weight:700; color:#fff; }
+#tachles .tkChip .tkAv{ border-radius:8px; } #tachles .tkChip.ok small{ color:var(--dim); }
+#tachles .tkTick{ width:24px; height:24px; border-radius:50%; background:rgba(16,185,129,.2); border:1px solid rgba(16,185,129,.4); display:inline-flex; align-items:center; justify-content:center; color:#34d399; }
+#tachles .tkTick .tkI{ width:14px; height:14px; stroke-width:3; }
+#tachles .tkDone{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--neonB); }
+#tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
+#tachles .tkSend{ margin-top:4px; }
+#tachles .tkHandW{ overflow-x:auto; margin:0 -16px; padding-bottom:16px; scrollbar-width:none; } #tachles .tkHandW::-webkit-scrollbar{ display:none; }
+#tachles .tkHand{ display:flex; gap:12px; padding:22px 16px 8px; width:max-content; }
+#tachles .tkHC{ width:190px; min-height:170px; flex:none; font:inherit; cursor:pointer; transition:transform .15s, box-shadow .15s; justify-content:flex-start; }
+#tachles .tkHC p{ font-size:16px; padding-top:4px; }
+#tachles .tkHC.on{ transform:translateY(-12px); box-shadow:0 0 0 2px var(--neon), 0 0 28px rgba(168,85,247,.55); }
+#tachles .tkHC em, #tachles .tkSub em{ position:absolute; top:-8px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:var(--neon); color:#fff; font-style:normal; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(168,85,247,.7); }
+#tachles .tkSub em{ position:static; width:20px; height:20px; font-size:12px; margin-bottom:4px; box-shadow:none; }
+#tachles .tkBanner{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:4px; } #tachles .tkBanner > div{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; } #tachles .tkBanner .tkI{ width:20px; height:20px; }
+#tachles .tkSubs{ width:100%; max-width:48rem; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:4px 8px; }
+#tachles .tkSub{ position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; min-width:min(180px,42vw); max-width:220px; flex:1 1 160px; border-radius:16px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; transition:border-color .15s, transform .15s, opacity .2s; touch-action:manipulation; }
+#tachles .tkSub[disabled]{ cursor:default; } #tachles .tkSub.can:active{ transform:scale(.98); border-color:var(--neon); }
+#tachles .tkSub.win{ background:rgba(168,85,247,.15); border-color:var(--neon); box-shadow:0 0 24px rgba(168,85,247,.55); } #tachles .tkSub.lose{ opacity:.5; }
+#tachles .tkSub .tkFace{ min-height:120px; pointer-events:none; padding:14px; } #tachles .tkSub .tkFace p{ font-size:14px; }
+#tachles .tkTrophy{ position:absolute; top:-12px; inset-inline-end:-12px; width:36px; height:36px; border-radius:50%; background:#facc15; color:#000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(250,204,21,.7); pointer-events:none; }
+#tachles .tkPass .tkDim{ margin-bottom:4px; } #tachles .tkPass .tkFaint{ margin:4px 0 28px; }
+/* the end */
+#tachles .tkWin > .tkC{ margin-bottom:24px; } #tachles .tkBigT{ width:64px; height:64px; color:#facc15; filter:drop-shadow(0 0 24px rgba(250,204,21,.5)); margin:0 auto 12px; display:block; }
+#tachles .tkWin > .tkC > .tkDim.tkSm{ margin-bottom:4px; } #tachles .tkWin b{ color:var(--neonB); }
+#tachles .tkMedal{ font-size:24px; width:28px; text-align:center; flex:none; } #tachles .tkScore{ font-size:20px; font-weight:900; }
+#tachles .tkRest{ display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:12px; font-size:14px; } #tachles .tkRest.me{ background:rgba(168,85,247,.08); } #tachles .tkRest > span:first-child{ width:28px; text-align:center; }
+@keyframes tkFade{ from{ opacity:0; transform:scale(.97); } to{ opacity:1; transform:none; } }
+@keyframes tkUrgent{ 0%,100%{ transform:scale(1); filter:drop-shadow(0 0 8px rgba(239,68,68,.45)); } 50%{ transform:scale(1.08); filter:drop-shadow(0 0 16px rgba(239,68,68,.85)); } }
+@keyframes tkPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+@media (prefers-reduced-motion:reduce){ #tachles *{ animation:none !important; transition:none !important; } }
 /* Sand Lab: the tool bar under the grid, the level list / result card */
 #powderBar{ position:fixed; left:0; right:0; bottom:0; z-index:4; display:flex; flex-direction:column; gap:6px; padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 8px); background:#1b1630; border-top:2px solid #2e2650; font-family:var(--mbF); color:#fff; }
 #powderBar[hidden], #powderLv[hidden]{ display:none; }
@@ -1806,7 +1918,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.6.1';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21605,39 +21717,92 @@ window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: q
    groups he agreed to drop: anything sexualizing minors, sexual or criminal claims about real named people; plus new cards) ships with the app.
    Three ways to play: one phone passed round (a "pass to X" screen hides each hand), against bots, or each on their own phone (a room code;
    PeerJS's public broker only connects the phones, no database; the host's phone runs the game). Drawn in the DOM (#tachles). Hooks: __grasp.tk. ---------------- */
-const TK_V = 1, TK_HAND = 7;
-const TK_BOTS = ['בוטי', 'רנדומלי', 'אלגו', 'צ׳יפי', 'ביט', 'רובוטי', 'גוגו', 'ננו'];
+const TK_V = 1, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
+const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
+/* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
+   avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
+const TK_SNACKS = { he: ['במבה', 'ביסלי', 'עמבה', 'אפרופו', 'פיצוחים', 'פסק זמן', 'קליק', 'דובונים', 'קרמבו', 'אגוזים', 'צ׳יפס', 'פיתה', 'פלאפל', 'גזוז', 'בורקס', 'מסטיק', 'שוקו', 'במבי', 'אגוזי מלך', 'גלידה', 'סברס', 'עוגיות', 'פופקורן', 'עוגה', 'ופלים', 'גלעין', 'תות', 'מנגו', 'לימונדה', 'תפוז', 'אבטיח'],
+  en: ['Bamba', 'Bissli', 'Popcorn', 'Falafel', 'Pita', 'Burekas', 'Krembo', 'Gummy', 'Waffle', 'Mango', 'Lemonade', 'Pretzel', 'Donut', 'Cookie', 'Nachos', 'Churro', 'Melon', 'Toffee'] };
+const tkSn = () => { const s = TK_SNACKS[lang] || TK_SNACKS.he; return s[Math.floor(Math.random() * s.length)]; };
+function tkNick() { return tkSn() + ' ' + (1 + Math.floor(Math.random() * 99)); }
+function tkBotNick(taken) { let n = ''; for (let k = 0; k < 30; k++) { n = 'BOT-' + tkSn(); if (!taken.includes(n)) break; } return n; }
+const TK_AV = [['#a855f7', '#d946ef'], ['#ec4899', '#f43f5e'], ['#06b6d4', '#3b82f6'], ['#10b981', '#059669'], ['#f59e0b', '#ef4444'], ['#8b5cf6', '#6366f1'],
+  ['#14b8a6', '#0d9488'], ['#f97316', '#fb923c'], ['#84cc16', '#65a30d'], ['#e11d48', '#be123c'], ['#0ea5e9', '#2563eb'], ['#d946ef', '#a855f7']];
+function tkAv(name, size, cls) {
+  let h = 0; const s = String(name || ''); for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } const c = TK_AV[Math.abs(h) % TK_AV.length], ch = Array.from(s.trim())[0] || '?';
+  return '<span class="tkAv' + (cls ? ' ' + cls : '') + '" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.45) + 'px;background:linear-gradient(135deg,' + c[0] + ',' + c[1] + ');box-shadow:0 4px 16px ' + c[0] + '40">' + tkEsc(ch.toUpperCase()) + '</span>';
+}
+const TKI = { crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>', back: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>', x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>', minus: '<path d="M5 12h14"/>', copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/>',
+  gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3"/>', bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+  shuffle: '<path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/>',
+  reset: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>',
+  phone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>' };
+const tki = (n, c) => '<svg class="tkI' + (c ? ' ' + c : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TKI[n] + '</svg>';
+/* the original's lines for the last one still choosing (its SubmissionStatus) */
+const TK_TEASE = { he: ['כולם מחכים ל{name} המניאק', '{name}, קדימה אחי, החיים לא מחכים', '{name} עדיין מתלבט בין שואה לאונס', '{name}, הזמן רץ. גם החיים שלך.', '{name} בטח חופר באף עכשיו', 'מישהו ראה את {name}? הוא חי?',
+    '{name}, אנחנו לא הולכים לשום מקום', 'החדר נושם בשביל {name}', 'כל ההיסטוריה של עם ישראל מחכה ל{name}', '{name} כנראה מחפש את האוויר בחדר', 'ביבי הספיק להתחתן 3 פעמים בזמן ש{name} בוחר קלף', '{name} הולך לאיבוד בין 10 קלפים. מסכן.',
+    '{name}, הסבתא שלי קוראת ספרים מהר יותר', '{name} שוב מתבכיין על השואה', '{name}, גם הצב היה כבר גומר', 'כולם בעקבות {name} בלוח הקצב', '{name} מתחזה לאינטליגנט', '{name}, ולהזכירך - יש 10 קלפים, לא 100', 'אחרי שלוש מלחמות, {name} עדיין בוחר',
+    '{name} מצא את הקלף המושלם. רק שלא.', '{name}, אנחנו בודקים אם אתה בחיים', 'מסיבת ההפתעה ל{name} כבר מתוכננת', '{name} כבר חצי שעה בוחר. איזה כבוד.', '{name}, הפסיכולוג שלך מתקשר', '{name} כנראה הלך להוריד את הזבל',
+    'אייל גולן הקליט אלבום בזמן ש{name} בוחר', '{name} עוד מנסה להבין מה זה Pick 2', '{name}, אחרי המשחק נדבר', '{name} מצליח לתקוע את כולם', 'כולם מתפללים ל{name}', 'ביבי גם פחות איטי מ{name}', '{name}, אם אתה בשירותים אז סתם תגיד',
+    'אבא של {name} כבר התחרט', '{name}, יאללה חנקת, אנחנו לא מתים על זה', '{name} שוקל את משמעות החיים. שוב.', '{name} לא מבין מה הקטע', 'כולם בקיא בגלל {name}', '{name}, אתה אגדה. לא בקטע טוב.', 'המוח של {name} עדיין נטען',
+    '{name} מסתכל על הקלפים כאילו הם משהו חדש', '{name}, הילדים גדלו בזמן שבחרת', '{name} מתלבט בין רע לרע יותר', '{name} זקוק להתערבות אלוהית', '{name}, יש דבר כזה שניות', '{name} כנראה מחכה לסימן מהאנושות',
+    '{name}, יש לך עוד החלטות חשובות בחיים?', '{name} מצא את הסוד של החיים. בקלפים.', '{name}, אם זה בגלל לחץ - תנשום', "{name} עדיין מחפש את ה'בן זונה אמיתי' המושלם"],
+  en: ['Everyone is waiting for {name}, the maniac', '{name}, come on, life won\'t wait', '{name} is probably picking their nose right now', 'Has anyone seen {name}? Are they alive?', '{name}, we\'re not going anywhere',
+    '{name}, my grandma reads faster', '{name}, even the tortoise would be done by now', '{name} found the perfect card. Just kidding.', '{name}, your therapist is calling', '{name} is weighing the meaning of life. Again.',
+    '{name}\'s brain is still loading', '{name}, the kids grew up while you were choosing', '{name} is torn between bad and worse', '{name} needs divine intervention', '{name}, there is such a thing as seconds', '{name}, if it\'s stress, breathe'] };
 const TKS = {
-  he: { title: 'תכל׳ס', gateT: 'למבוגרים בלבד', gateD: 'משחק מסיבות גס, פוגעני ומצחיק במיוחד. תוכן מיני, מוות, דת ופוליטיקה. מעל 18 בלבד.', gateOk: 'אני מעל 18', back: 'חזרה',
-    local: 'טלפון אחד, מעבירים', localD: 'כולם על הטלפון הזה. כל אחד בתורו.', bots: 'נגד בוטים', botsD: 'אתם ועוד כמה בוטים חצופים.', online: 'כל אחד מהטלפון שלו', onlineD: 'חדר עם קוד, מתחברים מכל טלפון.',
-    players: 'שחקנים', addP: '+ שחקן', addBot: '+ בוט', name: 'שם', start: 'מתחילים!', target: 'עד כמה נקודות?', need3: 'צריך לפחות 3 שחקנים', you: 'את/ה',
-    pass: 'מעבירים ל־{n}', imN: 'אני {n}', pick: 'בחרו קלף', pickN: 'בחרו {n} קלפים (לפי הסדר)', send: 'שולחים', judgeIs: '{n} שופט/ת בסיבוב הזה', youJudge: 'את/ה השופט/ת. מחכים לתשובות…',
-    waiting: 'מחכים ל־{n}', judgeNow: 'בחרו את הכי מצחיק', winner: '{n} לוקח/ת את הנקודה!', next: 'סיבוב הבא', over: '{n} ניצח/ה!', again: 'עוד משחק', round: 'סיבוב {n}',
-    create: 'פותחים חדר', join: 'מצטרפים לחדר', code: 'קוד החדר', joinGo: 'נכנסים', share: 'שיתוף הקישור', copied: 'הקישור הועתק', lobby: 'בחדר', hostStart: 'המארח/ת מתחילים',
-    connecting: 'מתחברים…', netErr: 'החיבור נכשל. בדקו את הקוד והאינטרנט.', gone: 'החדר נסגר', skip: 'לדלג על {n}', pts: '{n} נק׳', botThinks: '{n} חושב/ת…', wait: 'רגע…', hostLeft: 'המארח/ת יצא/ה' },
-  en: { title: 'Tachles', gateT: 'Adults only', gateD: 'A crude, offensive, very funny party game. Sex, death, religion and politics. 18+ only.', gateOk: "I'm over 18", back: 'Back',
-    local: 'One phone, pass it round', localD: 'Everyone on this phone, one at a time.', bots: 'Against bots', botsD: 'You and a few cheeky bots.', online: 'Everyone on their own phone', onlineD: 'A room with a code; join from any phone.',
-    players: 'Players', addP: '+ player', addBot: '+ bot', name: 'Name', start: 'Start!', target: 'Play to how many points?', need3: 'At least 3 players', you: 'You',
-    pass: 'Pass the phone to {n}', imN: "I'm {n}", pick: 'Pick a card', pickN: 'Pick {n} cards (in order)', send: 'Send', judgeIs: '{n} judges this round', youJudge: "You're the judge. Waiting for answers…",
-    waiting: 'Waiting for {n}', judgeNow: 'Pick the funniest', winner: '{n} takes the point!', next: 'Next round', over: '{n} wins!', again: 'Play again', round: 'Round {n}',
-    create: 'Open a room', join: 'Join a room', code: 'Room code', joinGo: 'Join', share: 'Share the link', copied: 'Link copied', lobby: 'In the room', hostStart: 'The host starts',
-    connecting: 'Connecting…', netErr: "Couldn't connect. Check the code and the internet.", gone: 'The room closed', skip: 'Skip {n}', pts: '{n} pts', botThinks: '{n} is thinking…', wait: 'One moment…', hostLeft: 'The host left' },
+  he: { title: "ת'כלס", tag: 'משחק קלפים לאנשים נוראיים', foot: '18+ • הומור שחור • הכל מותר', gateD: 'המשחק מכיל הומור שחור, מין, אלימות ושפה גסה.', gateD2: 'מיועד לבני <b>18+</b> בלבד.',
+    gateOk: 'אני מעל גיל 18 - בוא נתחיל', gateFine: 'בכניסה אתה מאשר שאתה מבוגר ומסכים לתוכן.', back: 'חזור', resetGate: 'חזרה למסך הפתיחה',
+    create: 'צור חדר חדש', join: 'הצטרף לחדר קיים', bots: 'שחק נגד בוטים', local: 'טלפון אחד, מעבירים', or: 'או בלי אינטרנט',
+    newRoom: 'חדר חדש', joinRoom: 'הצטרף לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
+    errNick: 'בחר כינוי', errCode: 'קוד חדר הוא 4 אותיות', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', loading: 'טוען...',
+    leaveHost: 'סגור חדר', leave: 'עזוב חדר', leaveG: 'עזוב', roomCode: 'קוד החדר', shareHint: 'שתף את הקוד או הלינק', copyLink: 'העתק לינק', copied: 'הועתק!', share: 'שתף', shareTxt: "בוא לשחק ת'כלס. קוד החדר: {c}",
+    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'מקסימום בוטים', settings: 'הגדרות', roomSet: 'הגדרות חדר', start: 'התחל משחק', needMore: 'צריך עוד {n} שחקן',
+    waitHost: '⏳ ממתינים שהמארח יתחיל את המשחק...', winScore: 'ניצחון בנקודות', timer: 'זמן לסבב', hand: 'גודל יד', noTimer: 'בלי',
+    kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יוחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית. החדר ימשיך לשאר השחקנים.',
+    leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזרו לתפריט.', end: 'סיים',
+    round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'ממתינים לאחרים...', waitSubs: 'ממתין להגשות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר {n} נוספים', pickN: 'בחר {n}', noCards: 'אין קלפים ביד',
+    judgeNow: 'בחר את התשובה הטובה ביותר', czarPicking: 'הקיסר בוחר זוכה...', wonRound: 'זכה בסבב:', nobody: 'אף אחד לא ניצח את הסבב', nextIn: 'סבב הבא בעוד {n}…',
+    winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'ממתינים שהמארח יתחיל סבב חדש...', home: 'חזור לדף הבית',
+    kicked: 'הוצאת מהחדר על ידי המארח', closed: 'המארח סגר את החדר', pass: 'מעבירים את הטלפון ל־', imN: 'אני {n}', passD: 'שאף אחד אחר לא יציץ', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
+  en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
+    gateOk: "I'm over 18 - let's go", gateFine: 'By entering you confirm you are an adult and accept the content.', back: 'Back', resetGate: 'Back to the opening screen',
+    create: 'Create a new room', join: 'Join a room', bots: 'Play against bots', local: 'One phone, pass it round', or: 'or without internet',
+    newRoom: 'New room', joinRoom: 'Join a room', botsT: 'Against bots', localT: 'One phone', nick: 'Nickname', randNick: 'Random nickname', mkRoom: 'Create room', mkRoomL: 'Creating...', joinGo: 'Join', joinGoL: 'Joining...', goRoom: 'Go',
+    errNick: 'Pick a nickname', errCode: 'A room code is 4 letters', netErr: "Room not found or no connection. Try again.", loading: 'Loading...',
+    leaveHost: 'Close room', leave: 'Leave room', leaveG: 'Leave', roomCode: 'Room code', shareHint: 'Share the code or the link', copyLink: 'Copy link', copied: 'Copied!', share: 'Share', shareTxt: 'Come play Tachles. Room code: {c}',
+    players: 'Players', you: '(you)', host: 'Host', addBot: 'Add a bot', full: 'Room is full', botCap: 'Max bots', settings: 'Settings', roomSet: 'Room settings', start: 'Start game', needMore: 'Need {n} more player',
+    waitHost: '⏳ Waiting for the host to start...', winScore: 'Points to win', timer: 'Round time', hand: 'Hand size', noTimer: 'Off',
+    kickQ: 'Kick {n} out of the room?', cancel: 'Cancel', kick: 'Kick', leaveQh: 'Close the room?', leaveQ: 'Leave the room?', leaveDh: 'Every player goes back home and the room closes.', leaveD: 'You go back home. The room carries on without you.',
+    leaveQl: 'End the game?', leaveDl: 'The scores are cleared and you go back to the menu.', end: 'End',
+    round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', pickN: 'Pick {n}', noCards: 'No cards in hand',
+    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', nextIn: 'Next round in {n}…',
+    winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
+    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', imN: "I'm {n}", passD: 'No peeking, everyone else', addP: 'Add a player', name: 'Player {n}', skip: 'Skip {n}', connecting: 'Connecting...' },
 };
 function tks(k, v) { let s = (TKS[lang] || TKS.he)[k] || TKS.he[k] || k; if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]); return s; }
-/* the rules (pure; the host's phone runs them) */
+/* the rules (pure; the phone that runs the game calls them): the original's flow. The czar turns round; everyone else answers from a hand of
+   3-10 cards; with a single answerer two random "decoy" answers join (no point if the czar picks one); the czar's pick takes the point, a
+   4.5 s banner, then the next round on its own; the round clock (30 s-3 min): when it runs out, whoever answered goes to the czar */
 const TK = (() => {
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  function newGame(deck, players, target) {
-    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, score: 0, hand: [], on: true })), target: target || 5, judge: Math.floor(Math.random() * players.length) - 1,
-      round: 0, wd: [], bd: [], black: null, subs: {}, order: [], phase: 'pick', last: null, winner: null, seq: 0 };
+  function newGame(deck, players, o) {
+    o = o || {};
+    const g = { deck, players: players.map((p) => ({ id: p.id, name: p.name, bot: !!p.bot, score: 0, hand: [], on: true })), target: o.target || 5, handN: o.hand || 7, timer: o.timer || 0,
+      judge: Math.floor(Math.random() * players.length) - 1, round: 0, wd: [], bd: [], black: null, subs: {}, order: [], phase: 'pick', last: null, winner: null, seq: 0, roundAt: 0, revealAt: 0 };
     startRound(g); return g;
   }
-  function drawW(g) { if (!g.wd.length) { const held = new Set(g.players.flatMap((p) => p.hand)); g.wd = shuffle(g.deck.w.map((_, i) => i).filter((i) => !held.has(i))); } return g.wd.pop(); }
+  function drawW(g) { if (!g.wd.length) { const held = new Set(g.players.flatMap((p) => p.hand).concat(Object.values(g.subs).flat())); g.wd = shuffle(g.deck.w.map((_, i) => i).filter((i) => !held.has(i))); } return g.wd.pop(); }
   function drawB(g) { if (!g.bd.length) g.bd = shuffle(g.deck.b.map((_, i) => i)); return g.bd.pop(); }
   function startRound(g) {
     g.round++; g.seq++; const n = g.players.length; do { g.judge = (g.judge + 1) % n; } while (!g.players[g.judge].on && g.players.some((p) => p.on));
-    g.black = drawB(g); g.subs = {}; g.order = []; g.phase = 'pick'; g.last = null;
-    const pick = g.deck.b[g.black][1]; for (const p of g.players) while (p.hand.length < TK_HAND + pick - 1) p.hand.push(drawW(g));
+    g.black = drawB(g); g.subs = {}; g.order = []; g.phase = 'pick'; g.last = null; g.roundAt = Date.now();
+    for (const p of g.players) while (p.hand.length < Math.max(g.handN, pickOf(g))) p.hand.push(drawW(g));
   }
   const pickOf = (g) => g.deck.b[g.black][1];
   const needs = (g) => g.players.filter((p, i) => i !== g.judge && p.on && !g.subs[p.id]);
@@ -21647,28 +21812,38 @@ const TK = (() => {
     g.subs[pid] = idx.map((i) => p.hand[i]); p.hand = p.hand.filter((_, i) => !idx.includes(i)); g.seq++;
     if (!needs(g).length) toJudge(g); return true;
   }
-  function toJudge(g) { g.order = shuffle(Object.keys(g.subs)); g.phase = g.order.length ? 'judge' : 'pick'; if (!g.order.length) startRound(g); g.seq++; }
-  function skip(g, pid) { const p = g.players.find((q) => q.id === pid); if (!p) return; p.on = false; if (g.phase === 'pick' && !needs(g).length) toJudge(g); g.seq++; }
+  function toJudge(g) {
+    if (!Object.keys(g.subs).length) { startRound(g); return; }
+    if (g.players.filter((p, i) => i !== g.judge && p.on).length === 1) for (const d of ['~1', '~2']) g.subs[d] = Array.from({ length: pickOf(g) }, () => drawW(g)); // the decoys
+    g.order = shuffle(Object.keys(g.subs)); g.phase = 'judge'; g.seq++;
+    const J = g.players[g.judge]; if (!J.on) judge(g, J.id, Math.floor(Math.random() * g.order.length)); // (the czar left: a random pick)
+  }
+  function force(g) { if (g.phase !== 'pick' || !Object.keys(g.subs).length) return false; toJudge(g); return true; } // the clock ran out
+  function skip(g, pid) { const p = g.players.find((q) => q.id === pid); if (!p) return; p.on = false; if (g.phase === 'pick' && !needs(g).length) toJudge(g); else if (g.phase === 'judge' && g.players[g.judge].id === pid) judge(g, pid, Math.floor(Math.random() * g.order.length)); g.seq++; }
   function judge(g, pid, k) {
     if (g.phase !== 'judge' || g.players[g.judge].id !== pid || !(k >= 0 && k < g.order.length)) return false;
-    const w = g.players.find((p) => p.id === g.order[k]); w.score++; g.last = { pid: w.id, cards: g.subs[w.id], black: g.black };
-    g.phase = w.score >= g.target ? 'over' : 'reveal'; if (g.phase === 'over') g.winner = w.id; g.seq++; return true;
+    const id = g.order[k], w = id[0] === '~' ? null : g.players.find((p) => p.id === id); if (w) w.score++;
+    g.last = { pid: w ? w.id : null, k, cards: g.subs[id], black: g.black }; g.phase = 'reveal'; g.revealAt = Date.now(); g.seq++; return true;
   }
-  function botMove(g) { // one bot step (the host calls it with a pause between): a bot answers, or a bot judge picks
+  function next(g) { // after the banner: the next round, or the end
+    if (g.phase !== 'reveal') return false; const top = Math.max(...g.players.map((p) => p.score));
+    if (top >= g.target) { g.phase = 'over'; g.winner = g.players.find((p) => p.score === top).id; g.seq++; } else startRound(g); return true;
+  }
+  function botMove(g) { // one bot step (the host calls it with a pause between): a bot answers, or a bot czar picks
     if (g.phase === 'pick') { const b = needs(g).find((p) => p.bot); if (b) { const idx = shuffle(b.hand.map((_, i) => i)).slice(0, pickOf(g)); return submit(g, b.id, idx) && b.id; } }
     if (g.phase === 'judge' && g.players[g.judge].bot) return judge(g, g.players[g.judge].id, Math.floor(Math.random() * g.order.length)) && 'judge';
     return false;
   }
   function view(g, pid) { // what one player may see
-    const me = g.players.find((p) => p.id === pid), J = g.players[g.judge];
+    const me = g.players.find((p) => p.id === pid), J = g.players[g.judge], now = Date.now(), nm = (id) => { const p = g.players.find((q) => q.id === id); return p ? p.name : null; };
     return { seq: g.seq, phase: g.phase, round: g.round, target: g.target, black: g.deck.b[g.black], judge: J.id, judgeName: J.name, me: pid,
-      hand: me ? me.hand.map((i) => g.deck.w[i]) : [], mine: !!(me && g.subs[pid]), pick: pickOf(g),
-      subs: g.phase === 'pick' ? null : g.order.map((id) => g.subs[id].map((i) => g.deck.w[i])),
+      hand: me ? me.hand.map((i) => g.deck.w[i]) : [], mine: !!(me && g.subs[pid]), pick: pickOf(g), timer: g.timer,
+      left: g.timer && g.phase === 'pick' ? Math.max(0, g.timer * 1000 - (now - g.roundAt)) : 0, revLeft: g.phase === 'reveal' ? Math.max(0, tkRevealMs() - (now - g.revealAt)) : 0,
+      subs: g.phase === 'pick' ? null : g.order.map((id) => g.subs[id].map((i) => g.deck.w[i])), win: g.last ? g.last.k : -1,
       players: g.players.map((p) => ({ id: p.id, name: p.name, score: p.score, bot: p.bot, on: p.on, sent: !!g.subs[p.id] })),
-      waiting: needs(g).map((p) => p.name), last: g.last && { name: g.players.find((p) => p.id === g.last.pid).name, cards: g.last.cards.map((i) => g.deck.w[i]), black: g.deck.b[g.last.black] },
-      winner: g.winner && g.players.find((p) => p.id === g.winner).name };
+      waiting: needs(g).map((p) => p.name), last: g.last && { name: g.last.pid ? nm(g.last.pid) : null, cards: g.last.cards.map((i) => g.deck.w[i]), black: g.deck.b[g.last.black] }, winner: g.winner && nm(g.winner) };
   }
-  return { newGame, startRound, submit, judge, skip, botMove, view, needs };
+  return { newGame, startRound, submit, judge, skip, force, next, botMove, view, needs };
 })();
 /* the phones: one hosts (runs TK), the others send their moves. PeerJS (its public broker connects the phones; WebRTC after that); tests use a
    BroadcastChannel (?tkbus=bc) with the same calls */
@@ -21688,138 +21863,264 @@ const TKNET = {
       c.on('open', () => { clearTimeout(t); ok({ send: (d) => c.send(d), close: () => p.destroy() }); }); c.on('data', onData); c.on('close', () => onErr && onErr('closed')); }); p.on('error', (e) => { onErr && onErr(e); no(e); }); });
   },
 };
-const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], bots: 2, target: 5, passTo: null, seen: {}, net: null, conns: new Map(), code: '', log: [], botT: 0, err: '' };
+/* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
+const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7 }, myName: '', passTo: null, net: null, conns: new Map(), code: '', log: [],
+  botT: 0, err: '', lobby: [], lobbyView: null, lobbySet: null, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
 function tkStore(v) { try { if (v) localStorage.setItem('grasp.tk', JSON.stringify(v)); else return JSON.parse(localStorage.getItem('grasp.tk') || '{}'); } catch { return {}; } }
 async function tkLoad() { if (tk.deck) return tk.deck; const r = await fetch('/assets/tachles/deck.json?v=' + TK_V); if (!r.ok) throw new Error('deck'); tk.deck = await r.json(); return tk.deck; }
 function tkStart() {
-  let el = $('tachles'); el.hidden = false; const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, 8) : ['', '', '']; tk.target = S.target || 5; tk.bots = S.bots || 2; tk.myName = S.me || '';
-  let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1'; } catch {}
-  const room = new URLSearchParams(location.search).get('room'); tk.code = room ? room.toUpperCase().slice(0, 6) : '';
-  tk.scr = ok ? (tk.code ? 'join' : 'menu') : 'gate'; tk.log.push('start:' + tk.scr); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
+  const el = $('tachles'); el.hidden = false; const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, TK_MAXP) : ['', '', ''];
+  const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7 }; tk.myName = S.me || '';
+  if (!document.getElementById('tkFont')) { const l = document.createElement('link'); l.id = 'tkFont'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap'; document.head.appendChild(l); }
+  let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
+  const room = new URLSearchParams(location.search).get('room'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
+  tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm('join'); tk.log.push('start:' + tk.scr);
+  clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
-function tkStop() { const el = $('tachles'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); }
+function tkStop() { const el = $('tachles'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
 function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); }
-/* the host side: every change goes to every phone (each its own view) and the bots move */
+function tkNetBye() { try { if (tk.mode === 'host') for (const [, c] of tk.conns) c.send({ t: 'closed' }); else if (tk.mode === 'guest' && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
+function tkSave() { tkStore({ names: tk.names, set: tk.set, me: tk.myName }); }
+function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkRender, 4600); }
+/* the phone that runs the game: every change goes to every phone (each its own view) and the bots move */
+function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
   const g = tk.g; if (!g) return; if (tk.mode === 'host') for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} }
-  tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkRender(); tkBots();
+  tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
-  if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 1800 : 700 + Math.random() * 900); }
-function tkNewGame(players) { tk.g = TK.newGame(tk.deck, players, tk.target); tk.sel = []; tk.seen = {}; tk.log.push('game:' + players.length); tkPush(); }
-function tkAct(a) { // a move by the player on this phone: to the engine (host / one phone) or to the host
-  const g = tk.g, v = tk.view; tk.log.push('act:' + a.t);
+  if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 : 900 + Math.random() * 2600); }
+function tkTick() { // 4 times a second: the round ring and the next-round count; on the phone that runs the game, the clock and the banner
+  const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now();
+  if (g && tk.mode !== 'guest') {
+    if (g.phase === 'pick' && g.timer && now - g.roundAt > g.timer * 1000 + TK_GRACE && TK.force(g)) { tk.log.push('timeup'); tkPush(); return; }
+    if (g.phase === 'reveal' && now - g.revealAt >= tkRevealMs()) { TK.next(g); tk.log.push(g.phase === 'over' ? 'over' : 'next'); tk.sel = []; tk.passTo = null; tkPush(); return; }
+  }
+  const r = $('tkTimer'); if (r && tk.view) r.outerHTML = tkRing(tk.view);
+  const n = $('tkNextN'); if (n) n.textContent = tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - now) / 1000)) });
+}
+function tkNewGame(players) { tk.g = TK.newGame(tk.deck, players, { target: tk.set.target, hand: tk.set.hand, timer: tk.mode === 'local' ? 0 : tk.set.timer }); tk.sel = []; tk.tease = null; tk.passTo = null; tk.scr = 'game'; tk.log.push('game:' + players.length); tkPush(); }
+function tkAct(a) { // a move by the player on this phone: to the engine (it runs here) or to the host
+  const g = tk.g; tk.log.push('act:' + a.t);
   if (tk.mode === 'guest') { tk.net.send(a); tk.sel = []; return; }
   const pid = a.pid || tk.me;
-  if (a.t === 'pick') TK.submit(g, pid, a.idx); else if (a.t === 'judge') TK.judge(g, pid, a.k); else if (a.t === 'next' && (g.phase === 'reveal')) TK.startRound(g);
-  else if (a.t === 'skip') TK.skip(g, a.who); else if (a.t === 'again') { for (const p of g.players) { p.score = 0; p.on = true; } g.winner = null; g.round = 0; TK.startRound(g); }
+  if (a.t === 'pick') TK.submit(g, pid, a.idx); else if (a.t === 'judge') TK.judge(g, pid, a.k); else if (a.t === 'skip') TK.skip(g, a.who);
   tk.sel = []; tkPush();
+}
+function tkAgain() { // "New game": back to the room with the same players (the original's reset to the lobby)
+  const g = tk.g; tk.g = null; tk.view = null; clearTimeout(tk.botT);
+  if (tk.mode === 'local') { tk.scr = 'setLocal'; return; }
+  if (g) tk.lobby = g.players.filter((p) => p.on || p.bot).map((p) => ({ id: p.id, name: p.name, bot: p.bot })).concat(tk.lobby.filter((p) => !g.players.some((q) => q.id === p.id) && tk.conns.has(p.id))); // (and who came in during the game)
+  tk.scr = 'lobby'; if (tk.mode === 'host') tkLobbyPush();
 }
 /* the screens */
 function tkEsc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-function tkFill(black, cards) { // the black card with the answers in its blanks (or after it)
-  const t = black[0], ans = cards.map((c) => c.replace(/[.!]+$/, '')); if (!t.includes('___')) return tkEsc(t) + ' <b>' + ans.map(tkEsc).join(' / ') + '</b>';
-  let k = 0; return tkEsc(t).split('___').map((s, i, a) => s + (i < a.length - 1 ? '<b>' + tkEsc(ans[k++] || '___') + '</b>' : '')).join('');
+function tkCard(t) { return tkEsc(t).split('___').join('<u>______</u>'); }
+function tkRing(v) { // the original's RoundTimer: a ring that empties, red and pulsing in the last 15 s
+  if (!v.timer || !tk.dl) return '<span id="tkTimer"></span>';
+  const rem = Math.max(0, Math.ceil((tk.dl - Date.now()) / 1000)), C = 2 * Math.PI * 18, fr = Math.max(0, Math.min(1, rem / v.timer)), urg = rem <= 15 && rem > 0;
+  return '<span id="tkTimer" class="tkRing' + (urg ? ' urg' : '') + '"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,.12)" stroke-width="2" fill="none"/><circle cx="22" cy="22" r="18" stroke="' + (urg ? '#ef4444' : '#a855f7') +
+    '" stroke-width="2.5" fill="none" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - fr)).toFixed(2) + '" stroke-linecap="round"/></svg><b dir="ltr">' + rem + '</b></span>';
 }
-function tkScores(v) { return '<div class="tkScores">' + v.players.map((p) => '<span class="tkSc' + (p.id === v.judge ? ' j' : '') + (p.on ? '' : ' off') + '">' + (p.bot ? '🤖 ' : '') + tkEsc(p.name) + ' <b>' + p.score + '</b>' + (v.phase === 'pick' && p.id !== v.judge ? (p.sent ? ' ✅' : ' ⏳') : '') + '</span>').join('') + '</div>'; }
+function tkTop(label, mid, right) { return '<div class="tkTop"><button class="tkBack" data-a="leave">' + tki('back', 'lflip') + '<span>' + label + '</span></button><span class="tkMid">' + (mid || '') + '</span><span class="tkRight">' + (right || '') + '</span></div>'; }
+function tkLeaveLabel() { return tk.mode === 'host' ? tks('leaveHost') : tk.mode === 'guest' ? tks('leaveG') : tks('end'); }
+function tkNickRow(v) { return '<div class="tkNick">' + '<span id="tkAvBox">' + tkAv(v || '?', 48) + '</span><input id="tkMe" maxlength="20" placeholder="' + tks('nick') + '" value="' + tkEsc(v) + '"><button class="tkIcon" data-a="shuffle" title="' + tks('randNick') + '" aria-label="' + tks('randNick') + '">' + tki('shuffle') + '</button></div>'; }
+function tkForm(f) { tk.form = f; tk.scr = 'form'; tk.err = ''; if (!tk.myName) tk.myName = tkNick(); }
 function tkRender() {
-  const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr, he = lang === 'he'; el.dir = he ? 'rtl' : 'ltr'; let h = '';
-  if (tk.err === 'deck') h = '<div class="tkBox"><p>' + tks('netErr') + '</p></div>';
-  else if (s === 'gate') h = '<div class="tkBox tkGate"><div class="tkLogo">' + tks('title') + '</div><h2>🔞 ' + tks('gateT') + '</h2><p>' + tks('gateD') + '</p><button class="tkBtn hot" data-a="gate">' + tks('gateOk') + '</button><button class="tkBtn" data-a="home">' + tks('back') + '</button></div>';
-  else if (s === 'menu') h = '<div class="tkBox"><div class="tkLogo">' + tks('title') + '</div>' + ['local', 'bots', 'online'].map((k) => '<button class="tkBtn tkBig" data-a="m:' + k + '"><b>' + tks(k) + '</b><small>' + tks(k + 'D') + '</small></button>').join('') +
-    '<label class="tkRow">' + tks('target') + ' <select data-a="target">' + [3, 5, 7, 10].map((n) => '<option' + (n === tk.target ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></label></div>';
-  else if (s === 'setLocal') h = '<div class="tkBox"><h2>' + tks('players') + '</h2>' + tk.names.map((n, i) => '<div class="tkRow"><input class="tkIn" data-i="' + i + '" maxlength="14" placeholder="' + tks('name') + ' ' + (i + 1) + '" value="' + tkEsc(n) + '">' + (tk.names.length > 1 ? '<button class="tkX" data-a="rm:' + i + '">✕</button>' : '') + '</div>').join('') +
-    '<div class="tkRow">' + (tk.names.length < 8 ? '<button class="tkBtn sm" data-a="addP">' + tks('addP') + '</button>' : '') + '<span class="tkRow">🤖 <button class="tkBtn sm" data-a="bot-">−</button> <b>' + tk.bots + '</b> <button class="tkBtn sm" data-a="bot+">+</button></span></div>' +
-    '<button class="tkBtn hot" data-a="goLocal">' + tks('start') + '</button><p class="tkNote" id="tkNote"></p><button class="tkBtn" data-a="menu">' + tks('back') + '</button></div>';
-  else if (s === 'setBots') h = '<div class="tkBox"><h2>' + tks('bots') + '</h2><div class="tkRow"><input class="tkIn" id="tkMe" maxlength="14" placeholder="' + tks('name') + '" value="' + tkEsc(tk.myName) + '"></div>' +
-    '<div class="tkRow">🤖 <button class="tkBtn sm" data-a="bot-">−</button> <b>' + Math.max(2, tk.bots) + '</b> <button class="tkBtn sm" data-a="bot+">+</button></div><button class="tkBtn hot" data-a="goBots">' + tks('start') + '</button><button class="tkBtn" data-a="menu">' + tks('back') + '</button></div>';
-  else if (s === 'online') h = '<div class="tkBox"><h2>' + tks('online') + '</h2><div class="tkRow"><input class="tkIn" id="tkMe" maxlength="14" placeholder="' + tks('name') + '" value="' + tkEsc(tk.myName) + '"></div>' +
-    '<button class="tkBtn hot" data-a="create">' + tks('create') + '</button><div class="tkRow"><input class="tkIn code" id="tkCode" maxlength="6" placeholder="' + tks('code') + '" value="' + tkEsc(tk.code) + '" dir="ltr"><button class="tkBtn" data-a="join">' + tks('joinGo') + '</button></div><p class="tkNote">' + tkEsc(tk.netMsg || '') + '</p><button class="tkBtn" data-a="menu">' + tks('back') + '</button></div>';
-  else if (s === 'join') h = '<div class="tkBox"><h2>' + tks('join') + ' <span dir="ltr">' + tkEsc(tk.code) + '</span></h2><div class="tkRow"><input class="tkIn" id="tkMe" maxlength="14" placeholder="' + tks('name') + '" value="' + tkEsc(tk.myName) + '"></div><button class="tkBtn hot" data-a="join">' + tks('joinGo') + '</button><p class="tkNote">' + tkEsc(tk.netMsg || '') + '</p><button class="tkBtn" data-a="menu">' + tks('back') + '</button></div>';
-  else if (s === 'lobby') { const list = tk.mode === 'host' ? tk.lobby : (tk.lobbyView || []); h = '<div class="tkBox"><h2>' + tks('lobby') + '</h2><div class="tkCode" dir="ltr">' + tkEsc(tk.code) + '</div>' +
-    (tk.mode === 'host' ? '<button class="tkBtn sm" data-a="share">🔗 ' + tks('share') + '</button>' : '') + '<ul class="tkList">' + list.map((p) => '<li>' + (p.bot ? '🤖 ' : '🙂 ') + tkEsc(p.name) + '</li>').join('') + '</ul>' +
-    (tk.mode === 'host' ? '<button class="tkBtn sm" data-a="hostBot">' + tks('addBot') + '</button><button class="tkBtn hot" data-a="hostGo"' + (list.length < 3 ? ' disabled' : '') + '>' + tks('start') + '</button>' + (list.length < 3 ? '<p class="tkNote">' + tks('need3') + '</p>' : '') : '<p class="tkNote">' + tks('hostStart') + '</p>') +
-    '<p class="tkNote">' + tkEsc(tk.netMsg || '') + '</p></div>'; }
-  else if (s === 'game' && tk.view) h = tkGameHtml(tk.view);
-  else h = '<div class="tkBox"><p>' + tks('wait') + '</p></div>';
-  el.innerHTML = '<div class="tkIn0">' + h + '</div>';
+  const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr, he = lang === 'he'; el.dir = he ? 'rtl' : 'ltr';
+  const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
+  if (tk.err === 'deck') h = '<div class="tkWrap"><div class="tkCard tkPad tkC"><p class="tkDim">' + tks('netErr') + '</p></div></div>';
+  else if (s === 'gate') h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad8 tkC tkGlow"><div class="tkEmoji">🔞</div><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p class="tkDim tkLh">' + tks('gateD') + '<br>' + tks('gateD2') + '</p>' +
+    '<button class="tkP tkW tkLg" data-a="gate">' + tks('gateOk') + '</button><p class="tkFaint tkXs">' + tks('gateFine') + '</p><button class="tkLink" data-a="home">' + tks('home') + '</button></div></div>';
+  else if (s === 'menu') h = '<div class="tkWrap tkMidY"><div class="tkMenuTop"><button class="tkIcon" data-a="ungate" title="' + tks('resetGate') + '" aria-label="' + tks('resetGate') + '">' + tki('reset') + '</button></div>' +
+    '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' +
+    '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
+    '<p class="tkFaint tkXs tkC tkOr">' + tks('or') + '</p><div class="tkTwo"><button class="tkS" data-a="m:bots">' + tki('bot') + tks('bots') + '</button><button class="tkS" data-a="m:local">' + tki('phone') + tks('local') + '</button></div></div>' +
+    '<p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p></div>';
+  else if (s === 'form') { const f = tk.form, T = { create: ['newRoom', 'mkRoom', 'mkRoomL'], join: ['joinRoom', 'joinGo', 'joinGoL'], bots: ['botsT', 'goRoom', 'goRoom'] }[f];
+    h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad7"><button class="tkBack" data-a="menu">' + tki('back', 'lflip') + '<span>' + tks('back') + '</span></button><h2 class="tkH2">' + tks(T[0]) + '</h2>' + tkNickRow(tk.myName) +
+      (f === 'join' ? '<input id="tkCode" class="tkCodeIn" maxlength="4" placeholder="ABCD" dir="ltr" autocomplete="off" value="' + tkEsc(tk.code) + '">' : '') +
+      (tk.err ? '<div class="tkErr">' + tkEsc(tk.err) + '</div>' : '') + '<button class="tkP tkW tkLg" data-a="go:' + f + '"' + (tk.busy ? ' disabled' : '') + '>' + tks(tk.busy ? T[2] : T[1]) + '</button></div></div>'; }
+  else if (s === 'setLocal') h = tkLocalHtml();
+  else if (s === 'lobby') h = tkLobbyHtml();
+  else if (s === 'game' && tk.view) h = tk.view.phase === 'over' ? tkWinHtml(tk.view) : tkGameHtml(tk.view);
+  else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
+  const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
+  el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + tkModalHtml() + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
+  const hs2 = el.querySelector('.tkHandW'); if (hs2 && hx) hs2.scrollLeft = hx;
+}
+function tkStepper(k, label, val, dn, up) { return '<div class="tkStep"><span class="tkDim">' + label + '</span><span class="tkStepC"><button class="tkRnd" data-a="' + k + '-"' + (dn ? '' : ' disabled') + ' aria-label="-">' + tki('minus') + '</button><b>' + val + '</b><button class="tkRnd" data-a="' + k + '+"' + (up ? '' : ' disabled') + ' aria-label="+">' + tki('plus') + '</button></span></div>'; }
+function tkModalHtml() {
+  const m = tk.modal; if (!m) { tk.mShown = null; return ''; } let b = '';
+  if (m.t === 'set') { const S = tk.mode === 'guest' ? (tk.lobbySet || tk.set) : tk.set, ti = TK_TIMERS.indexOf(S.timer), local = tk.mode === 'local';
+    b = '<div class="tkMHead"><h3>' + tki('gear', 'neonI') + tks('roomSet') + '</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div>' +
+      (tk.mode === 'guest' ? '<div class="tkRO"><span>' + tks('winScore') + '<b>' + S.target + '</b></span><span>' + tks('timer') + '<b dir="ltr">' + S.timer + 's</b></span><span>' + tks('hand') + '<b>' + S.hand + '</b></span></div>'
+        : tkStepper('ws', tks('winScore'), S.target, S.target > 3, S.target < 15) + (local ? '' : tkStepper('tm', tks('timer'), '<span dir="ltr">' + S.timer + 's</span>', ti > 0, ti < TK_TIMERS.length - 1)) + tkStepper('hs', tks('hand'), S.hand, S.hand > 5, S.hand < 10)); }
+  else if (m.t === 'kick') { const p = tk.lobby.find((q) => q.id === m.id); b = '<h3 class="tkH3">' + tks('kickQ', { n: tkEsc(p ? p.name : '') }) + '</h3><div class="tkTwo"><button class="tkS" data-a="mclose">' + tks('cancel') + '</button><button class="tkD" data-a="kickOk">' + tks('kick') + '</button></div>'; }
+  else if (m.t === 'leave') { const k = tk.mode === 'host' ? 'h' : tk.mode === 'guest' ? '' : 'l';
+    b = '<h3 class="tkH3">' + tks('leaveQ' + k) + '</h3><p class="tkDim tkLh">' + tks('leaveD' + k) + '</p><div class="tkTwo"><button class="tkS" data-a="mclose">' + tks('cancel') + '</button><button class="tkD" data-a="leaveOk">' + tkLeaveLabel() + '</button></div>'; }
+  const fm = tk.mShown !== m.t; tk.mShown = m.t;
+  return '<div class="tkModal' + (fm ? ' fade' : '') + '" data-a="mclose"><div class="tkCard tkPad6 tkMBox" data-a="">' + b + '</div></div>';
+}
+function tkLobbyHtml() {
+  const host = tk.mode !== 'guest', list = host ? tk.lobby : (tk.lobbyView || []), bots = list.filter((p) => p.bot).length, full = list.length >= TK_MAXP, cap = bots >= TK_MAXB, online = tk.mode !== 'solo';
+  const me = tk.mode === 'guest' ? tk.guestId : 'h';
+  let h = '<div class="tkWrap2">' + tkTop(tk.mode === 'host' ? tks('leaveHost') : tk.mode === 'guest' ? tks('leave') : tks('back'), '<span class="tkFaint">' + tks('title') + '</span>');
+  if (online) h += '<div class="tkCard tkPad7 tkGlow tkMb"><p class="tkDim tkSm tkC">' + tks('roomCode') + '</p><div class="tkNeon tkCodeBig" dir="ltr">' + tkEsc(tk.code) + '</div><p class="tkDim tkSm tkC">' + (tk.netMsg ? tkEsc(tk.netMsg) : tks('shareHint')) + '</p>' +
+    '<div class="tkTwo"><button class="tkS tkSm" data-a="copy">' + (Date.now() - tk.copied < 2000 ? tki('check', 'neonI') + '<span class="tkNeonC">' + tks('copied') + '</span>' : tki('copy') + tks('copyLink')) + '</button><button class="tkP tkSm" data-a="share">' + tki('share') + tks('share') + '</button></div></div>';
+  h += '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">' + tks('players') + ' <span class="tkDim tkSm">(' + list.length + ')</span></h2><div class="tkCol8">' + list.map((p) => {
+    const isMe = p.id === me, isHost = p.id === 'h';
+    return '<div class="tkPl' + (isMe ? ' me' : '') + '">' + tkAv(p.name, 44) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (isMe ? '<small>' + tks('you') + '</small>' : '') + '</span>' +
+      (isHost && online ? '<span class="tkHostB">' + tki('crown') + tks('host') + '</span>' : '') + (host && !isMe && !isHost ? '<button class="tkKick" data-a="kick:' + tkEsc(p.id) + '" aria-label="' + tks('kick') + '">' + tki('x') + '</button>' : '') + '</div>'; }).join('') + '</div></div>';
+  if (host) h += '<button class="tkS tkW tkMb" data-a="addBot"' + (full || cap ? ' disabled' : '') + '>' + tki('bot') + (full ? tks('full') : cap ? tks('botCap') : tks('addBot')) + '</button>';
+  h += '<button class="tkS tkW tkMb" data-a="set">' + tki('gear', 'neonI') + tks('settings') + '</button>';
+  h += host ? '<button class="tkP tkW tkLg tkGo" data-a="start"' + (list.length < 2 ? ' disabled' : '') + '>' + tki('play', 'rflip') + (list.length < 2 ? tks('needMore', { n: 2 - list.length }) : tks('start')) + '</button>'
+    : '<div class="tkWait">' + tks('waitHost') + '</div>';
+  return h + '</div>';
+}
+function tkLocalHtml() { // one phone: the names (letter avatars), bots, the settings
+  const n = tk.names.length;
+  return '<div class="tkWrap2">' + tkTop(tks('back'), '<span class="tkFaint">' + tks('title') + '</span>') + '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">' + tki('phone', 'neonI') + ' ' + tks('localT') + '</h2><div class="tkCol8">' +
+    tk.names.map((v, i) => '<div class="tkPl">' + tkAv(v || tks('name', { n: i + 1 }), 40) + '<input class="tkIn" data-i="' + i + '" maxlength="20" placeholder="' + tks('name', { n: i + 1 }) + '" value="' + tkEsc(v) + '">' +
+      (n > 1 ? '<button class="tkKick" data-a="rm:' + i + '" aria-label="' + tks('kick') + '">' + tki('x') + '</button>' : '') + '</div>').join('') + '</div>' +
+    (n + tk.botsL < TK_MAXP ? '<button class="tkS tkW tkSm tkMt" data-a="addP">' + tki('plus') + tks('addP') + '</button>' : '') + '</div>' +
+    '<div class="tkCard tkPad6 tkMb">' + tkStepper('bot', tki('bot') + ' ' + tks('bots'), tk.botsL, tk.botsL > 0, tk.botsL < TK_MAXB && n + tk.botsL < TK_MAXP) + '</div>' +
+    '<button class="tkS tkW tkMb" data-a="set">' + tki('gear', 'neonI') + tks('settings') + '</button>' +
+    '<button class="tkP tkW tkLg tkGo" data-a="goLocal"' + (n + tk.botsL < 2 ? ' disabled' : '') + '>' + tki('play', 'rflip') + tks('start') + '</button></div>';
+}
+function tkScoresHtml(v, me) { return '<div class="tkCard tkScores">' + v.players.map((p) => '<div class="tkSc' + (p.id === me ? ' me' : '') + (p.on ? '' : ' off') + '"><span class="tkAvW">' + tkAv(p.name, 32) + (p.id === v.judge ? tki('crown', 'tkCrown') : '') + '</span>' +
+  '<span class="tkScN"><small>' + tkEsc(p.name) + '</small><b>' + p.score + '</b></span></div>').join('') + '</div>'; }
+function tkTeaseFor(v, holdouts) { // a stable line for the one still choosing (picked once per round and player)
+  if (holdouts.length !== 1) return ''; const key = v.round + '|' + holdouts[0].id;
+  if (!tk.tease || tk.tease.key !== key) { const L = TK_TEASE[lang] || TK_TEASE.he; tk.tease = { key, line: L[Math.floor(Math.random() * L.length)] }; }
+  return '<p class="tkTease">' + tkEsc(tk.tease.line).split('{name}').join(tkEsc(holdouts[0].name)) + '</p>';
+}
+function tkStatusHtml(v) { // the original's SubmissionStatus: a chip per answerer, a pulsing avatar until they answer, then a green tick
+  const el = v.players.filter((p) => p.id !== v.judge && p.on), out = el.filter((p) => !p.sent); if (!el.length) return '';
+  return '<div class="tkStatus">' + tkTeaseFor(v, out) + '<div class="tkChips">' + el.map((p) => '<span class="tkChip' + (p.sent ? ' ok' : '') + '">' + (p.sent ? '<span class="tkTick">' + tki('check') + '</span>' : tkAv(p.name, 24, 'pulse')) + '<small>' + tkEsc(p.name) + '</small></span>').join('') + '</div></div>';
+}
+function tkSubsHtml(v, canPick) { // the answers as white cards: the czar taps one; after the pick, the winner glows with a trophy and the rest fade
+  const done = v.phase === 'reveal';
+  return '<div class="tkSubs">' + v.subs.map((cs, k) => { const win = done && k === v.win, lose = done && k !== v.win;
+    return '<button class="tkSub' + (win ? ' win' : lose ? ' lose' : '') + (canPick ? ' can' : '') + '" data-a="' + (canPick ? 'judge:' + k : '') + '"' + (canPick ? '' : ' disabled') + '>' +
+      cs.map((c, i) => '<div class="tkFace tkWhiteC">' + (cs.length > 1 ? '<em>' + (i + 1) + '</em>' : '') + '<p>' + tkEsc(c) + '</p></div>').join('') + (win ? '<span class="tkTrophy">' + tki('trophy') + '</span>' : '') + '</button>'; }).join('') + '</div>';
 }
 function tkGameHtml(v) {
-  const g = tk.g, local = tk.mode === 'local', humans = local ? g.players.filter((p) => !p.bot) : null, J = v.judge, blackHtml = '<div class="tkBlack">' + tkEsc(v.black[0]).split('___').join('<u>______</u>') + (v.pick > 1 ? '<i>' + tks('pickN', { n: v.pick }) + '</i>' : '') + '</div>';
-  let who = v.me, body = '';
-  if (local) { // one phone: whose turn is it on this phone?
-    if (v.phase === 'pick') { const next = humans.find((p) => g.players[g.judge].id !== p.id && p.on && !g.subs[p.id]); who = next ? next.id : null; }
-    else if (v.phase === 'judge') who = g.players[g.judge].bot ? null : J;
-    if (who && humans.length > 1 && tk.passTo !== who + ':' + g.round + ':' + v.phase) { const nm = g.players.find((p) => p.id === who).name; return '<div class="tkBox tkPass"><div class="tkLogo">' + tks('title') + '</div><h2>' + tks('pass', { n: tkEsc(nm) }) + '</h2><button class="tkBtn hot tkBig" data-a="iam:' + who + '">' + tks('imN', { n: tkEsc(nm) }) + '</button></div>'; }
+  const g = tk.g, local = tk.mode === 'local', humans = local ? g.players.filter((p) => !p.bot) : null;
+  let who = v.me;
+  if (local) { // one phone: whose turn is it on this phone? (a pass screen first, so nobody sees another's hand)
+    if (v.phase === 'pick') { const nx = humans.find((p) => g.players[g.judge].id !== p.id && p.on && !g.subs[p.id]); who = nx ? nx.id : null; }
+    else if (v.phase === 'judge') who = g.players[g.judge].bot ? null : v.judge; else who = null;
+    if (who && humans.length > 1 && tk.passTo !== who + ':' + g.round + ':' + v.phase) { const nm = g.players.find((p) => p.id === who).name;
+      return '<div class="tkWrap tkMidY">' + '<div class="tkCard tkPad8 tkC tkGlow tkPass">' + tkAv(nm, 88, 'big') + '<p class="tkDim">' + tks('pass') + '</p><h2 class="tkNeon tkH1s">' + tkEsc(nm) + '</h2><p class="tkFaint tkXs">' + tks('passD') + '</p>' +
+        '<button class="tkP tkW tkLg" data-a="iam:' + tkEsc(who) + '">' + tks('imN', { n: tkEsc(nm) }) + '</button></div></div>'; }
     if (who) v = TK.view(g, who);
   }
-  const head = '<div class="tkHead"><span>' + tks('round', { n: v.round }) + '</span><span>🎯 ' + v.target + '</span></div>' + tkScores(v);
-  if (v.phase === 'pick') {
-    if (local && !who) body = blackHtml + '<p class="tkNote">' + (g.players[g.judge].bot ? tks('botThinks', { n: tkEsc(v.judgeName) }) : tks('waiting', { n: v.waiting.map(tkEsc).join(', ') })) + '</p>';
-    else if (v.me === J) body = blackHtml + '<p class="tkNote big">⚖️ ' + tks('youJudge') + '</p><p class="tkNote">' + tks('waiting', { n: v.waiting.map(tkEsc).join(', ') }) + '</p>' + tkSkipHtml(v);
-    else if (v.mine) body = blackHtml + '<p class="tkNote big">✅ ' + tks('waiting', { n: v.waiting.map(tkEsc).join(', ') }) + '</p>' + tkSkipHtml(v);
-    else body = blackHtml + '<p class="tkNote">⚖️ ' + tks('judgeIs', { n: tkEsc(v.judgeName) }) + (v.pick > 1 ? '' : ' · ' + tks('pick')) + '</p><div class="tkHand">' + v.hand.map((c, i) => { const k = tk.sel.indexOf(i);
-      return '<button class="tkWhite' + (k >= 0 ? ' on' : '') + '" data-a="card:' + i + '">' + tkEsc(c) + (k >= 0 && v.pick > 1 ? '<em>' + (k + 1) + '</em>' : '') + '</button>'; }).join('') + '</div><button class="tkBtn hot tkSend" data-a="send"' + (tk.sel.length === v.pick ? '' : ' disabled') + '>' + tks('send') + '</button>';
-  } else if (v.phase === 'judge') {
-    const iJudge = v.me === J && (!local || who === J);
-    body = blackHtml + '<p class="tkNote big">' + (iJudge ? '⚖️ ' + tks('judgeNow') : g && g.players[g.judge].bot ? tks('botThinks', { n: tkEsc(v.judgeName) }) : tks('judgeIs', { n: tkEsc(v.judgeName) })) + '</p><div class="tkSubs">' +
-      v.subs.map((cs, k) => '<button class="tkSub" data-a="' + (iJudge ? 'judge:' + k : '') + '"' + (iJudge ? '' : ' disabled') + '>' + tkFill(v.black, cs) + '</button>').join('') + '</div>';
-  } else if (v.phase === 'reveal' || v.phase === 'over') {
-    body = '<div class="tkWin">' + (v.phase === 'over' ? '<div class="tkLogo">🏆 ' + tks('over', { n: tkEsc(v.winner) }) + '</div>' : '<h2>🎉 ' + tks('winner', { n: tkEsc(v.last.name) }) + '</h2>') + '<div class="tkBlack big">' + tkFill(v.last.black, v.last.cards) + '</div></div>' +
-      (tk.mode === 'guest' ? '<p class="tkNote">' + tks('hostStart') + '</p>' : '<button class="tkBtn hot" data-a="' + (v.phase === 'over' ? 'again' : 'next') + '">' + tks(v.phase === 'over' ? 'again' : 'next') + '</button>');
+  const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick';
+  const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
+  let h = '<div class="tkWrap2 tkGame">' + tkTop(tkLeaveLabel(), tks('round', { n: v.round }), right) + tkScoresHtml(v, local ? who : v.me) + '<div class="tkCenter">' +
+    '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b></span></div>' +
+    '<div class="tkFace tkBlackC"><p>' + tkCard(v.black[0]) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>';
+  if (v.phase === 'reveal') h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div>' +
+    '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p></div>' + tkSubsHtml(v, false);
+  else if (v.phase === 'judge') h += '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar);
+  else {
+    h += tkStatusHtml(v);
+    if (local && !who) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>';
+    else if (czar) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>' + tkSkipHtml(v);
+    else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkSkipHtml(v);
+    else h += '<button class="tkP tkSend" data-a="send"' + (tk.sel.length === v.pick ? '' : ' disabled') + '>' + tki('send') + (tk.sel.length === v.pick ? tks('submit') : tks('pickMore', { n: v.pick - tk.sel.length })) + '</button>';
   }
-  return '<div class="tkGame">' + head + body + '</div>';
+  h += '</div>';
+  if (playing && !czar && !sent && (who || !local)) h += v.hand.length ? '<div class="tkHandW"><div class="tkHand">' + v.hand.map((c, i) => { const k = tk.sel.indexOf(i);
+    return '<button class="tkFace tkWhiteC tkHC' + (k >= 0 ? ' on' : '') + '" data-a="card:' + i + '"><p>' + tkEsc(c) + '</p>' + (k >= 0 && v.pick > 1 ? '<em>' + (k + 1) + '</em>' : '') + '</button>'; }).join('') + '</div></div>' : '<p class="tkDim tkC tkSm">' + tks('noCards') + '</p>';
+  return h + '</div>';
 }
-function tkSkipHtml(v) { if (tk.mode !== 'host') return ''; const g = tk.g; return TK.needs(g).filter((p) => !p.bot && p.id !== tk.me).map((p) => '<button class="tkBtn sm" data-a="skip:' + p.id + '">' + tks('skip', { n: tkEsc(p.name) }) + '</button>').join(''); }
+function tkWinHtml(v) { // the original's WinScreen: the trophy, the winner's avatar, a podium with medals, the rest below
+  const R = v.players.slice().sort((a, b) => b.score - a.score), w = R[0], me = tk.mode === 'local' ? null : v.me, runs = tk.mode !== 'guest';
+  return '<div class="tkWrap tkMidY"><div class="tkCard tkPad7 tkGlow tkWin"><div class="tkC">' + tki('trophy', 'tkBigT') + '<p class="tkDim tkSm">' + tks('winner') + '</p>' + tkAv(w.name, 88, 'big') + '<h1 class="tkNeon tkH1s">' + tkEsc(w.name) + '</h1><p class="tkDim">' + tks('wonWith', { n: w.score }) + '</p></div>' +
+    '<div class="tkCol8 tkMb">' + R.slice(0, 3).map((p, i) => '<div class="tkPl' + (p.id === me ? ' me' : '') + '"><span class="tkMedal">' + ['🥇', '🥈', '🥉'][i] + '</span>' + tkAv(p.name, 36) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (p.id === me ? '<small>' + tks('you') + '</small>' : '') + '</span><b class="tkNeonC tkScore">' + p.score + '</b></div>').join('') + '</div>' +
+    (R.length > 3 ? '<div class="tkCol4 tkMb">' + R.slice(3).map((p, i) => '<div class="tkRest' + (p.id === me ? ' me' : '') + '"><span class="tkFaint">' + (i + 4) + '</span>' + tkAv(p.name, 28) + '<span class="tkPlN">' + tkEsc(p.name) + '</span><b class="tkDim">' + p.score + '</b></div>').join('') + '</div>' : '') +
+    (runs ? '<div class="tkCol"><button class="tkP tkW" data-a="again">' + tki('reset') + tks('newGame') + '</button><button class="tkS tkW" data-a="leaveOk">' + tkLeaveLabel() + '</button></div>'
+      : '<div class="tkWait tkMb8">' + tki('crown', 'gold') + tks('waitNew') + '</div><button class="tkS tkW" data-a="leaveOk">' + tks('home') + '</button>') + '</div></div>';
+}
+function tkSkipHtml(v) { if (tk.mode !== 'host') return ''; const g = tk.g; return '<div class="tkSkips">' + TK.needs(g).filter((p) => !p.bot && p.id !== tk.me).map((p) => '<button class="tkS tkSm" data-a="skip:' + tkEsc(p.id) + '">' + tks('skip', { n: tkEsc(p.name) }) + '</button>').join('') + '</div>'; }
 function tkClick(e) {
-  const b = e.target.closest('[data-a]'); if (!b || b.disabled) return; const a = b.dataset.a; if (!a) return; sfx('click');
-  const nameOf = () => { const x = $('tkMe'); return (x && x.value.trim().slice(0, 14)) || (lang === 'he' ? 'אני' : 'Me'); };
-  if (a === 'gate') { try { sessionStorage.setItem('grasp.tk18', '1'); } catch {} tk.scr = tk.code ? 'join' : 'menu'; }
+  const b = e.target.closest('[data-a]'); if (!b || b.disabled) return; const a = b.dataset.a; if (!a) { e.stopPropagation(); return; } sfx('click');
+  const nameOf = () => { const x = $('tkMe'); return (x && x.value.trim().slice(0, 20)) || ''; };
+  if (a === 'gate') { try { sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('grasp.tk18', '1'); } catch {} tk.scr = 'menu'; if (tk.code) tkForm('join'); }
+  else if (a === 'ungate') { try { sessionStorage.removeItem('grasp.tk18'); localStorage.removeItem('grasp.tk18'); } catch {} tk.scr = 'gate'; }
   else if (a === 'home') { goHome(); return; }
-  else if (a === 'menu') { tkNetClose(); tk.scr = 'menu'; tk.g = null; }
-  else if (a.startsWith('m:')) { const m = a.slice(2); tk.scr = m === 'local' ? 'setLocal' : m === 'bots' ? 'setBots' : 'online'; }
+  else if (a === 'menu') { tkNetClose(); tk.scr = 'menu'; tk.g = null; tk.form = null; tk.busy = false; }
+  else if (a === 'm:create' || a === 'm:join' || a === 'm:bots') tkForm(a.slice(2));
+  else if (a === 'm:local') { tk.mode = 'local'; tk.scr = 'setLocal'; tk.botsL = tk.botsL || 0; }
+  else if (a === 'shuffle') { tk.myName = tkNick(); const x = $('tkMe'); if (x) { x.value = tk.myName; $('tkAvBox').innerHTML = tkAv(tk.myName, 48); } return; }
+  else if (a.startsWith('go:')) { const f = a.slice(3), nm = nameOf(); tk.myName = nm; const c = $('tkCode'); if (c) tk.code = c.value.trim().toUpperCase();
+    if (!nm) tk.err = tks('errNick'); else if (f === 'join' && tk.code.length !== 4) tk.err = tks('errCode');
+    else { tk.err = ''; tkSave(); if (f === 'create') return tkHost(nm); if (f === 'join') return tkJoin(nm);
+      tk.mode = 'solo'; tk.me = 'h'; tk.code = ''; tk.netMsg = ''; tk.lobby = [{ id: 'h', name: nm }]; tk.botN = 0; for (let i = 0; i < 2; i++) tkAddBot(); tk.scr = 'lobby'; } }
+  else if (a === 'leave') { if (tk.scr === 'setLocal' || tk.mode === 'solo' && tk.scr === 'lobby') { tk.scr = 'menu'; } else tk.modal = { t: 'leave' }; }
+  else if (a === 'leaveOk') { tk.modal = null; tkNetBye(); tkNetClose(); clearTimeout(tk.botT); tk.g = null; tk.view = null; tk.scr = 'menu'; tk.log.push('leave'); }
+  else if (a === 'mclose') tk.modal = null;
+  else if (a === 'set') tk.modal = { t: 'set' };
+  else if (/^(ws|tm|hs|bot)[+-]$/.test(a)) { const up = a.endsWith('+'), k = a.slice(0, -1), S = tk.set; if (tk.scr === 'setLocal') tkReadNames();
+    if (k === 'ws') S.target = Math.max(3, Math.min(15, S.target + (up ? 1 : -1))); else if (k === 'hs') S.hand = Math.max(5, Math.min(10, S.hand + (up ? 1 : -1)));
+    else if (k === 'tm') S.timer = TK_TIMERS[Math.max(0, Math.min(TK_TIMERS.length - 1, TK_TIMERS.indexOf(S.timer) + (up ? 1 : -1)))];
+    else tk.botsL = Math.max(0, Math.min(TK_MAXB, tk.botsL + (up ? 1 : -1)));
+    tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
+  else if (a.startsWith('kick:')) tk.modal = { t: 'kick', id: a.slice(5) };
+  else if (a === 'kickOk') { const id = tk.modal && tk.modal.id; tk.modal = null; tk.lobby = tk.lobby.filter((p) => p.id !== id); const c = tk.conns.get(id); if (c) { try { c.send({ t: 'kicked' }); } catch {} tk.conns.delete(id); } tk.log.push('kick'); if (tk.mode === 'host') tkLobbyPush(); }
+  else if (a === 'addBot') { tkAddBot(); if (tk.mode === 'host') tkLobbyPush(); }
+  else if (a === 'start') { if (tk.lobby.length >= 2 && tk.deck) { tkNewGame(tk.lobby); return; } }
   else if (a === 'addP') { tkReadNames(); tk.names.push(''); }
   else if (a.startsWith('rm:')) { tkReadNames(); tk.names.splice(+a.slice(3), 1); }
-  else if (a === 'bot-') { tkReadNames(); tk.bots = Math.max(0, tk.bots - 1); } else if (a === 'bot+') { tkReadNames(); tk.bots = Math.min(5, tk.bots + 1); }
-  else if (a === 'goLocal') { tkReadNames(); const names = tk.names.map((n, i) => n.trim() || (lang === 'he' ? 'שחקן ' : 'Player ') + (i + 1)), total = names.length + tk.bots;
-    if (total < 3) { const n = $('tkNote'); if (n) n.textContent = tks('need3'); return; } tkSave(); tk.mode = 'local'; tk.me = null; tk.scr = 'game'; tk.passTo = null;
-    tkNewGame(names.map((n, i) => ({ id: 'p' + i, name: n })).concat(tkBotList(tk.bots))); return; }
-  else if (a === 'goBots') { tk.myName = nameOf(); tk.bots = Math.max(2, tk.bots); tkSave(); tk.mode = 'local'; tk.me = 'p0'; tk.scr = 'game'; tkNewGame([{ id: 'p0', name: tk.myName }].concat(tkBotList(tk.bots))); return; }
+  else if (a === 'goLocal') { tkReadNames(); const names = tk.names.map((n, i) => n.trim() || tks('name', { n: i + 1 })); if (names.length + tk.botsL < 2 || !tk.deck) return; tkSave(); tk.mode = 'local'; tk.me = null;
+    tkNewGame(names.map((n, i) => ({ id: 'p' + i, name: n })).concat(Array.from({ length: tk.botsL }, (_, i) => ({ id: 'b' + i, name: tkBotNick(names), bot: true })))); return; }
   else if (a.startsWith('iam:')) { tk.passTo = a.slice(4) + ':' + tk.g.round + ':' + tk.g.phase; tk.sel = []; }
   else if (a.startsWith('card:')) { const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i); if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
   else if (a === 'send') { const v = tkCurView(); if (tk.sel.length === v.pick) return tkAct({ t: 'pick', idx: tk.sel.slice(), pid: v.me }); }
   else if (a.startsWith('judge:')) { const v = tkCurView(); return tkAct({ t: 'judge', k: +a.slice(6), pid: v.me }); }
-  else if (a === 'next' || a === 'again') return tkAct({ t: a });
+  else if (a === 'again') tkAgain();
   else if (a.startsWith('skip:')) return tkAct({ t: 'skip', who: a.slice(5) });
-  else if (a === 'create') return tkHost(nameOf());
-  else if (a === 'join') { const c = $('tkCode'); if (c) tk.code = c.value.trim().toUpperCase(); return tkJoin(nameOf()); }
-  else if (a === 'hostBot') { const b = tkBotList(1, tk.lobby.filter((p) => p.bot).length)[0]; tk.lobby.push(b); tkLobbyPush(); }
-  else if (a === 'hostGo') { tk.scr = 'game'; tkNewGame(tk.lobby); return; }
-  else if (a === 'share') { const url = location.origin + '/tachles?room=' + tk.code; try { if (navigator.share) navigator.share({ title: tks('title'), url }); else { navigator.clipboard.writeText(url); toast('tkCopied'); } } catch {} return; }
+  else if (a === 'copy' || a === 'share') { const url = location.origin + '/tachles?room=' + tk.code;
+    if (a === 'share' && navigator.share) { navigator.share({ title: tks('title') + ' - ' + tk.code, text: tks('shareTxt', { c: tk.code }), url }).catch(() => {}); return; }
+    try { navigator.clipboard.writeText(url); } catch {} tk.copied = Date.now(); setTimeout(tkRender, 2100); }
   tkRender();
 }
+function tkAddBot() { const L = tk.lobby; if (L.length >= TK_MAXP || L.filter((p) => p.bot).length >= TK_MAXB) return; L.push({ id: 'b' + tk.botN++, name: tkBotNick(L.map((p) => p.name)), bot: true }); }
 function tkCurView() { if (tk.mode !== 'local') return tk.view; const g = tk.g, v = tk.view; if (v.phase === 'pick') { const p = g.players.find((q) => !q.bot && g.players[g.judge].id !== q.id && q.on && !g.subs[q.id]); return p ? TK.view(g, p.id) : v; } return TK.view(g, g.players[g.judge].id); }
-function tkBotList(n, from = 0) { return Array.from({ length: n }, (_, i) => ({ id: 'b' + (from + i), name: TK_BOTS[(from + i) % TK_BOTS.length], bot: true })); }
-function tkReadNames() { document.querySelectorAll('#tachles .tkIn[data-i]').forEach((x) => { tk.names[+x.dataset.i] = x.value.slice(0, 14); }); }
-function tkSave() { tkStore({ names: tk.names, target: tk.target, bots: tk.bots, me: tk.myName }); }
+function tkReadNames() { document.querySelectorAll('#tachles .tkIn[data-i]').forEach((x) => { tk.names[+x.dataset.i] = x.value.slice(0, 20); }); }
 /* online: the host opens a room (a code), the guests join */
 async function tkHost(name) {
-  tk.myName = name; tkSave(); tk.mode = 'host'; tk.me = 'h'; tk.code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); tk.lobby = [{ id: 'h', name }]; tk.netMsg = tks('connecting'); tk.scr = 'lobby'; tkRender();
-  try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => { const p = tk.g && tk.g.players.find((q) => q.id === c.peer); if (p) { TK.skip(tk.g, p.id); tkPush(); } }); }, () => { tk.netMsg = tks('netErr'); tkRender(); }); tk.netMsg = ''; tk.log.push('host:' + tk.code); }
+  tk.mode = 'host'; tk.me = 'h'; tk.botN = 0; tk.code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); tk.lobby = [{ id: 'h', name }]; tk.netMsg = tks('connecting'); tk.scr = 'lobby'; tkRender();
+  try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => tkGone(c.peer || c.id)); }, () => { tk.netMsg = tks('netErr'); tkRender(); }); tk.netMsg = ''; tk.log.push('host:' + tk.code); }
   catch { tk.netMsg = tks('netErr'); } tkRender();
 }
+function tkGone(id) { tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
 function tkFromGuest(c, m) {
   const id = c.peer || c.id; if (!m || typeof m !== 'object') return;
-  if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 14); tk.conns.set(id, c); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p) { p.on = true; tkPush(); } } else if (!tk.lobby.some((p) => p.id === id)) { tk.lobby.push({ id, name }); tkLobbyPush(); } return; }
-  if (!tk.g) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); tkPush();
+  if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 20); tk.conns.set(id, c);
+    if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p) { p.on = true; tkPush(); return; } }
+    if (!tk.lobby.some((p) => p.id === id)) { if (tk.lobby.length >= TK_MAXP) { try { c.send({ t: 'full' }); } catch {} tk.conns.delete(id); return; } tk.lobby.push({ id, name }); }
+    if (tk.g) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} tkRender(); } else tkLobbyPush(); return; }
+  if (m.t === 'bye') return tkGone(id);
+  if (!tk.g || !tk.conns.has(id)) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); tkPush();
 }
-function tkLobbyPush() { for (const [, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code }); } catch {} } tkRender(); }
+function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id }); } catch {} } tkRender(); }
 async function tkJoin(name) {
-  tk.myName = name; tkSave(); tk.mode = 'guest'; tk.netMsg = tks('connecting'); tkRender();
-  try { tk.net = await TKNET.join(tk.code, (m) => { if (m.t === 'lobby') { tk.lobbyView = m.list; tk.scr = 'lobby'; } if (m.t === 'view') { tk.view = m.v; tk.me = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; } tkRender(); }, () => { tk.netMsg = tks('hostLeft'); tkRender(); });
-    tk.net.send({ t: 'hello', name }); tk.scr = 'lobby'; tk.netMsg = ''; tk.log.push('join:' + tk.code); } catch { tk.netMsg = tks('netErr'); tk.scr = 'online'; } tkRender();
+  tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender();
+  const out = (k) => { tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
+  try { tk.net = await TKNET.join(tk.code, (m) => {
+      if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
+      else if (m.t === 'view') { tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
+      else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
+      tkRender(); }, () => { if (tk.mode === 'guest' && tk.net) out('closed'); });
+    tk.net.send({ t: 'hello', name }); tk.log.push('join:' + tk.code);
+    setTimeout(() => { if (tk.busy && tk.mode === 'guest' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
+  catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
 }
-document.addEventListener('change', (e) => { if (e.target.matches && e.target.matches('#tachles select[data-a=target]')) { tk.target = +e.target.value; tkSave(); } });
+document.addEventListener('input', (e) => { if (e.target.id === 'tkMe') { const b = $('tkAvBox'); if (b) b.innerHTML = tkAv(e.target.value || '?', 48); }
+  else if (e.target.id === 'tkCode') e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4); });
 /* the way in: a long press (1 s) on the copyright line's text (#footTap; the line itself never takes a tap) */
 (() => { const f = $('footTap'); if (!f) return; let t = 0; f.style.pointerEvents = 'auto'; f.style.webkitUserSelect = f.style.userSelect = 'none'; f.style.webkitTouchCallout = 'none'; f.style.touchAction = 'none'; f.style.padding = '10px 14px'; f.style.margin = '-10px -14px';
   f.addEventListener('pointerdown', () => { clearTimeout(t); t = setTimeout(() => { try { navigator.vibrate && navigator.vibrate(30); } catch {} mbModeGo('tachles'); }, 1000); });
