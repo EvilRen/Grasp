@@ -1931,7 +1931,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.4';
+const APP_VERSION = '1.7.5';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21805,7 +21805,7 @@ window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: q
    groups he agreed to drop: anything sexualizing minors, sexual or criminal claims about real named people; plus new cards) ships with the app.
    Three ways to play: one phone passed round (a "pass to X" screen hides each hand), against bots, or each on their own phone (a room code;
    PeerJS's public broker only connects the phones, no database; the host's phone runs the game). Drawn in the DOM (#tachles). Hooks: __grasp.tk. ---------------- */
-const TK_V = 1, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
+const TK_V = 2, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
    avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
@@ -21833,34 +21833,27 @@ const TKI = { crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 
   phone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>' };
 const tki = (n, c) => '<svg class="tkI' + (c ? ' ' + c : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TKI[n] + '</svg>';
 /* the original's lines for the last one still choosing (its SubmissionStatus) */
-const TK_TEASE = { he: ['כולם מחכים ל{name} המניאק', '{name}, קדימה אחי, החיים לא מחכים', '{name} עדיין מתלבט בין שואה לאונס', '{name}, הזמן רץ. גם החיים שלך.', '{name} בטח חופר באף עכשיו', 'מישהו ראה את {name}? הוא חי?',
-    '{name}, אנחנו לא הולכים לשום מקום', 'החדר נושם בשביל {name}', 'כל ההיסטוריה של עם ישראל מחכה ל{name}', '{name} כנראה מחפש את האוויר בחדר', 'ביבי הספיק להתחתן 3 פעמים בזמן ש{name} בוחר קלף', '{name} הולך לאיבוד בין 10 קלפים. מסכן.',
-    '{name}, הסבתא שלי קוראת ספרים מהר יותר', '{name} שוב מתבכיין על השואה', '{name}, גם הצב היה כבר גומר', 'כולם בעקבות {name} בלוח הקצב', '{name} מתחזה לאינטליגנט', '{name}, ולהזכירך - יש 10 קלפים, לא 100', 'אחרי שלוש מלחמות, {name} עדיין בוחר',
-    '{name} מצא את הקלף המושלם. רק שלא.', '{name}, אנחנו בודקים אם אתה בחיים', 'מסיבת ההפתעה ל{name} כבר מתוכננת', '{name} כבר חצי שעה בוחר. איזה כבוד.', '{name}, הפסיכולוג שלך מתקשר', '{name} כנראה הלך להוריד את הזבל',
-    'אייל גולן הקליט אלבום בזמן ש{name} בוחר', '{name} עוד מנסה להבין מה זה Pick 2', '{name}, אחרי המשחק נדבר', '{name} מצליח לתקוע את כולם', 'כולם מתפללים ל{name}', 'ביבי גם פחות איטי מ{name}', '{name}, אם אתה בשירותים אז סתם תגיד',
-    'אבא של {name} כבר התחרט', '{name}, יאללה חנקת, אנחנו לא מתים על זה', '{name} שוקל את משמעות החיים. שוב.', '{name} לא מבין מה הקטע', 'כולם בקיא בגלל {name}', '{name}, אתה אגדה. לא בקטע טוב.', 'המוח של {name} עדיין נטען',
-    '{name} מסתכל על הקלפים כאילו הם משהו חדש', '{name}, הילדים גדלו בזמן שבחרת', '{name} מתלבט בין רע לרע יותר', '{name} זקוק להתערבות אלוהית', '{name}, יש דבר כזה שניות', '{name} כנראה מחכה לסימן מהאנושות',
-    '{name}, יש לך עוד החלטות חשובות בחיים?', '{name} מצא את הסוד של החיים. בקלפים.', '{name}, אם זה בגלל לחץ - תנשום', "{name} עדיין מחפש את ה'בן זונה אמיתי' המושלם"],
+const TK_TEASE = { he: ['כולם מחכים ל{name} המניאק', '{name}, קדימה אחי, החיים לא מחכים', '{name} עדיין מתלבט בין שואה לאונס', '{name}, הזמן רץ. גם החיים שלך.', '{name} בטח חופר באף עכשיו', 'מישהו ראה את {name}? הוא חי?', '{name}, אנחנו לא הולכים לשום מקום', 'כל החדר עוצר את הנשימה בשביל {name}', 'כל ההיסטוריה של עם ישראל מחכה ל{name}', '{name} כנראה יצא לשאוף אוויר', 'ביבי הספיק להתחתן 3 פעמים בזמן ש{name} בוחר קלף', '{name} הולך לאיבוד בין 7 קלפים. מסכן.', '{name}, סבתא שלי קוראת יותר מהר', '{name} שוב מתבכיין על השואה', '{name}, גם צב כבר היה מסיים', 'כולם עומדים בתור בגלל {name}', '{name} מתחזה לאינטליגנט', '{name}, רק להזכיר: יש לך 7 קלפים, לא 100', 'עברו שלוש מלחמות, ו{name} עדיין בוחר', '{name} מצא את הקלף המושלם. סתם, לא.', '{name}, אנחנו בודקים אם אתה עוד בחיים', 'מסיבת ההפתעה ל{name} כבר מתוכננת', '{name} כבר חצי שעה בוחר. איזה כבוד.', '{name}, הפסיכולוג שלך על הקו', '{name} כנראה הלך להוריד את הזבל', 'אייל גולן הקליט אלבום שלם בזמן ש{name} בוחר', '{name} עוד מנסה להבין מה זה "בחר 2"', '{name}, אחרי המשחק נדבר', '{name} מצליח לתקוע את כולם', 'כולם מתפללים ל{name}', 'אפילו ביבי פחות איטי מ{name}', '{name}, אם אתה בשירותים, פשוט תגיד', 'אבא של {name} כבר מתחרט', '{name}, יאללה, חנקת', '{name} שוקל את משמעות החיים. שוב.', '{name} לא מבין מה הקטע', 'כולם נרדמים בגלל {name}', '{name}, אתה אגדה. לא בקטע טוב.', 'המוח של {name} עדיין נטען', '{name} מסתכל על הקלפים כאילו הוא רואה אותם בפעם הראשונה', '{name}, הילדים כבר גדלו בזמן שבחרת', '{name} מתלבט בין רע לגרוע יותר', '{name} צריך התערבות אלוהית', '{name}, יש דבר כזה שניות', '{name} כנראה מחכה לאות משמיים', '{name}, יש לך עוד החלטות חשובות בחיים?', '{name} מצא את סוד החיים. בקלפים.', '{name}, אם זה לחץ, תנשום', '{name} עדיין מחפש את ה\'בן זונה\' המושלם'],
   en: ['Everyone is waiting for {name}, the maniac', '{name}, come on, life won\'t wait', '{name} is probably picking their nose right now', 'Has anyone seen {name}? Are they alive?', '{name}, we\'re not going anywhere',
     '{name}, my grandma reads faster', '{name}, even the tortoise would be done by now', '{name} found the perfect card. Just kidding.', '{name}, your therapist is calling', '{name} is weighing the meaning of life. Again.',
     '{name}\'s brain is still loading', '{name}, the kids grew up while you were choosing', '{name} is torn between bad and worse', '{name} needs divine intervention', '{name}, there is such a thing as seconds', '{name}, if it\'s stress, breathe'] };
 const TKS = {
-  he: { title: "ת'כלס", tag: 'משחק קלפים לאנשים נוראיים', foot: '18+ • הומור שחור • הכל מותר', gateD: 'המשחק מכיל הומור שחור, מין, אלימות ושפה גסה.', gateD2: 'מיועד לבני <b>18+</b> בלבד.',
-    gateOk: 'אני מעל גיל 18 - בוא נתחיל', gateFine: 'בכניסה אתה מאשר שאתה מבוגר ומסכים לתוכן.', back: 'חזור', resetGate: 'חזרה למסך הפתיחה',
-    create: 'צור חדר חדש', join: 'הצטרף לחדר קיים', bots: 'שחק נגד בוטים', local: 'טלפון אחד, מעבירים', or: 'או בלי אינטרנט',
-    newRoom: 'חדר חדש', joinRoom: 'הצטרף לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
-    errNick: 'בחר כינוי', errCode: 'קוד חדר הוא 4 אותיות', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', loading: 'טוען...',
-    leaveHost: 'סגור חדר', leave: 'עזוב חדר', leaveG: 'עזוב', roomCode: 'קוד החדר', shareHint: 'שתף את הקוד או הלינק', copyLink: 'העתק לינק', copied: 'הועתק!', share: 'שתף', shareTxt: "בוא לשחק ת'כלס. קוד החדר: {c}",
-    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'מקסימום בוטים', settings: 'הגדרות', roomSet: 'הגדרות חדר', start: 'התחל משחק', needMore: 'צריך עוד {n} שחקן',
-    waitHost: '⏳ ממתינים שהמארח יתחיל את המשחק...', winScore: 'ניצחון בנקודות', timer: 'זמן לסבב', hand: 'גודל יד', noTimer: 'בלי',
-    kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יוחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית. החדר ימשיך לשאר השחקנים.',
-    leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזרו לתפריט.', end: 'סיים',
-    round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'ממתינים לאחרים...', waitSubs: 'ממתין להגשות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר {n} נוספים', pickN: 'בחר {n}', noCards: 'אין קלפים ביד',
-    judgeNow: 'בחר את התשובה הטובה ביותר', czarPicking: 'הקיסר בוחר זוכה...', wonRound: 'זכה בסבב:', nobody: 'אף אחד לא ניצח את הסבב', nextIn: 'סבב הבא בעוד {n}…',
-    winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'ממתינים שהמארח יתחיל סבב חדש...', home: 'חזור לדף הבית',
-    kicked: 'הוצאת מהחדר על ידי המארח', closed: 'המארח סגר את החדר', pass: 'מעבירים את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמירה', write: 'כתבו קלף משלכם', writeD: 'הכי מצחיק שלכם. הוא נשלח לאישור, ואם יאושר הוא ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
-    wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'חור', wrSend: 'שולחים לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה לא הצליחה. בדקו את האינטרנט ונסו שוב.',
-    wrShort: 'קצר מדי', wrNoBlank: 'בשאלה צריך לפחות ___ אחד', wrLimit: 'עד 5 ביום. מחר עוד!', wrNote: 'בלי שמות של אנשים אמיתיים ובלי קטינים. הכול נבדק לפני שנכנס.', wrMine: 'ששלחתם (ממתינים לאישור)', swipe: 'מחליקים לצדדים לעוד קלפים · נוגעים בקלף כדי לבחור', imN: 'אני {n}', passD: 'שאף אחד אחר לא יציץ', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
+  he: { title: "ת'כלס", tag: 'משחק קלפים לאנשים נוראיים', foot: '18+ • הומור שחור • הכול מותר', gateD: 'המשחק מכיל הומור שחור, מין, אלימות ושפה גסה.', gateD2: 'מיועד לבני <b>18+</b> בלבד.',
+    gateOk: 'אני מעל גיל 18, בוא נתחיל', gateFine: 'בכניסה אתה מאשר שאתה בגיר ומסכים לתוכן.', back: 'חזור', resetGate: 'חזרה למסך הפתיחה',
+    create: 'צור חדר חדש', join: 'הצטרף לחדר קיים', bots: 'שחק נגד בוטים', local: 'טלפון אחד שעובר מיד ליד', or: 'או בלי אינטרנט',
+    newRoom: 'חדר חדש', joinRoom: 'הצטרפות לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
+    errNick: 'בחר כינוי', errCode: 'קוד החדר הוא 4 אותיות באנגלית', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', loading: 'טוען...',
+    leaveHost: 'סגור חדר', leave: 'עזוב חדר', leaveG: 'עזוב', roomCode: 'קוד החדר', shareHint: 'שתף את הקוד או את הקישור', copyLink: 'העתק קישור', copied: 'הועתק!', share: 'שתף', shareTxt: "בוא לשחק ת'כלס. קוד החדר: {c}",
+    players: 'שחקנים', you: '(אתה)', host: 'מארח', addBot: 'הוסף בוט', full: 'החדר מלא', botCap: 'אי אפשר להוסיף עוד בוטים', settings: 'הגדרות', roomSet: 'הגדרות החדר', start: 'התחל משחק', needMore: 'צריך עוד שחקן אחד',
+    waitHost: '⏳ מחכים שהמארח יתחיל את המשחק...', winScore: 'נקודות לניצחון', timer: 'זמן לסבב', hand: 'קלפים ביד', noTimer: 'בלי',
+    kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
+    leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
+    round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
+    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', nextIn: 'הסבב הבא בעוד {n}…',
+    winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
+    kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
+    wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה נכשלה. בדוק את האינטרנט ונסה שוב.',
+    wrShort: 'קצר מדי', wrNoBlank: 'בשאלה צריך לפחות מקום ריק אחד (___)', wrLimit: 'אפשר 5 ביום. מחר עוד!', wrNote: 'בלי שמות של אנשים אמיתיים ובלי קטינים. כל קלף נבדק לפני שהוא נכנס.', wrMine: 'קלפים ששלחת (מחכים לאישור)', swipe: 'החלק לצדדים לעוד קלפים · גע בקלף כדי לבחור אותו', imN: 'אני {n}', passD: 'ושאף אחד אחר לא יציץ!', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
   en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
     gateOk: "I'm over 18 - let's go", gateFine: 'By entering you confirm you are an adult and accept the content.', back: 'Back', resetGate: 'Back to the opening screen',
     create: 'Create a new room', join: 'Join a room', bots: 'Play against bots', local: 'One phone, pass it round', or: 'or without internet',
