@@ -1523,6 +1523,7 @@ html[dir="rtl"] .mbMap{ --rot:-4deg; }
 #powderBar .pwC.rb{ background:conic-gradient(#ff4f64,#ffd23f,#3ddc84,#3ec5ff,#b07cff,#ff4f64); }
 #powderBar .pwS{ width:44px; height:40px; border-radius:12px; border:2px solid #3b3266; background:#241d42; display:grid; place-items:center; }
 #powderBar .pwS i{ display:block; border-radius:50%; background:#fff; } #powderBar .pwS.on{ border-color:#ffd23f; }
+#powderBar .pwTilt{ padding:0 12px; font-size:18px; } #powderBar .pwTilt.on{ border-color:#ffd23f; }
 #powderBar .pwA, #powderLv .pwA{ min-height:40px; padding:0 14px; border-radius:20px; border:2px solid #3b3266; background:#241d42; font-size:15px; font-weight:700; color:#fff; }
 #powderLv{ position:fixed; inset:0; z-index:5; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(8,6,16,.6); font-family:var(--mbF); color:#2a1f3d; }
 #powderLv .pwCard{ width:min(440px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#fff; border:3px solid #2a1f3d; border-radius:24px; box-shadow:0 6px 0 #2a1f3d; padding:16px; text-align:center; display:flex; flex-direction:column; gap:10px; }
@@ -1918,7 +1919,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.6.4';
+const APP_VERSION = '1.6.5';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2631,7 +2632,7 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   tgd_feed: 'Feed me!', feWants: 'The {a} wants a {f}!', feWantsPet: '{a} wants a {f}!', feYum: 'Yummy!', feYuck: 'Yuck!', feBurp: 'Burp! Excuse me!',
   fd_carrot: 'Carrot', fd_bone: 'Bone', fd_fish: 'Fish', fd_banana: 'Banana', fd_apple: 'Apple', fd_snack: 'Cookie',
   tkCopied: 'Link copied', modeTachles: 'Tachles', gm_tachles: 'tachles',
-  modePowder: 'Sand Lab', gm_powder: 'sand lab', descPowder: 'Pour sand, water, fire and lava and watch them fall, flow, burn and mix.', pwLocked: 'Finish the one before first',
+  modePowder: 'Sand Lab', gm_powder: 'sand lab', descPowder: 'Pour sand, water, fire and lava and watch them fall, flow, burn and mix.', pwLocked: 'Finish the one before first', pwTiltOn: 'Tilt the phone: the sand falls that way', pwTiltOff: 'Tilt off: the sand always falls down',
   modeQuest: 'Quest', gm_quest: 'quest', descQuest: 'A card adventure: pick a hero, choose doors, beat monsters with your deck.',
   modeMix: 'Mix it', gm_mix: 'mix it', descMix: 'Drag one thing onto another: two of the same merge, two different make something new. More than 350 to find.', mxCoach: 'Drag one onto the other!', mxFull: 'The board is full: join or bin some!', mxNext: 'coming…', mxFullS: 'full', mxNew: 'New!', mxCount: '{n} of {all} found', mxFrom: 'made from', mxInto: 'makes', mxBook: 'The book', mxErr: "Mix didn't load. Check the connection.",
   modeSpot: 'Spot it', gm_spot: 'spot the difference', descSpot: 'Two pictures, a few differences: tap them. 3, then 5, then 7.', spFind: 'Find {n} differences!', spDone: 'Well spotted!', spNext: 'Next', spMissL: 'misses', spHintL: 'hints', spTimeL: 'seconds', spLvl1: 'Easy', spLvl2: 'Medium', spLvl3: 'Hard', spLoading: 'Loading the pictures…', spErr: "The pictures didn't load. Check the connection, then try again.",
@@ -2654,7 +2655,7 @@ Object.assign(I18N.he, {
   tgd_feed: 'תאכילו אותי!', feWants: 'ה{a} רוצה {f}!', feWantsPet: '{a} רוצה {f}!', feYum: 'יאמי!', feYuck: 'איכס!', feBurp: 'גרעפס! סליחה!',
   fd_carrot: 'גזר', fd_bone: 'עצם', fd_fish: 'דג', fd_banana: 'בננה', fd_apple: 'תפוח', fd_snack: 'עוגייה',
   tkCopied: 'הקישור הועתק', modeTachles: 'תכל׳ס', gm_tachles: 'תכל׳ס',
-  modePowder: 'מעבדת חול', gm_powder: 'מעבדת חול', descPowder: 'שופכים חול, מים, אש ולבה ורואים אותם נופלים, זורמים, בוערים ומתערבבים.', pwLocked: 'קודם מסיימים את השלב הקודם',
+  modePowder: 'מעבדת חול', gm_powder: 'מעבדת חול', descPowder: 'שופכים חול, מים, אש ולבה ורואים אותם נופלים, זורמים, בוערים ומתערבבים.', pwLocked: 'קודם מסיימים את השלב הקודם', pwTiltOn: 'מטים את הטלפון: החול נופל לשם', pwTiltOff: 'ההטיה כבויה: החול תמיד נופל למטה',
   modeQuest: 'מסע', gm_quest: 'מסע', descQuest: 'הרפתקת קלפים: בוחרים גיבור, בוחרים דלתות, מנצחים מפלצות עם החפיסה.',
   modeMix: 'מערבבים', gm_mix: 'מערבבים', descMix: 'גוררים דבר אחד על אחר: שניים זהים מתאחדים, שניים שונים יוצרים משהו חדש. יותר מ־350 לגלות.', mxCoach: 'גררו אחד על השני!', mxFull: 'הלוח מלא: חברו או זרקו לפח!', mxNext: 'בדרך…', mxFullS: 'מלא', mxNew: 'חדש!', mxCount: 'נמצאו {n} מתוך {all}', mxFrom: 'עשוי מ', mxInto: 'יוצר', mxBook: 'הספר', mxErr: 'המשחק לא נטען. בדקו את החיבור.',
   modeSpot: 'הבדלים', gm_spot: 'מצא את ההבדלים', descSpot: 'שתי תמונות, כמה הבדלים: מקישים עליהם. 3, אחר כך 5, ואחר כך 7.', spFind: 'מצאו {n} הבדלים!', spDone: 'עין חדה!', spNext: 'הבא', spMissL: 'טעויות', spHintL: 'רמזים', spTimeL: 'שניות', spLvl1: 'קל', spLvl2: 'בינוני', spLvl3: 'קשה', spLoading: 'טוען את התמונות…', spErr: 'התמונות לא נטענו. בדקו את החיבור ונסו שוב.',
@@ -22212,10 +22213,10 @@ PW_MATS[9][2] = '🧪';
 const PWS = {
   en: { colors: 'Colors', lab: 'Lab', chal: 'Challenges', clear: 'Clear', retry: 'Retry', levels: 'Levels', next: 'Next', done: 'Done!', lost: 'Try again!', size: 'Brush',
     sand: 'Sand', water: 'Water', stone: 'Stone', wood: 'Wood', fire: 'Fire', oil: 'Oil', lava: 'Lava', ice: 'Ice', plant: 'Plant', acid: 'Acid', boom: 'Boom powder', erase: 'Eraser', rainbow: 'Rainbow',
-    lvT: 'Challenges', lock: 'Finish the one before', woodLeft: 'Save the wood!' },
+    lvT: 'Challenges', lock: 'Finish the one before', woodLeft: 'Save the wood!', tilt: 'Tilt the phone' },
   he: { colors: 'צבעים', lab: 'מעבדה', chal: 'אתגרים', clear: 'ניקוי', retry: 'שוב', levels: 'שלבים', next: 'הבא', done: 'הצלחתם!', lost: 'עוד פעם!', size: 'מכחול',
     sand: 'חול', water: 'מים', stone: 'אבן', wood: 'עץ', fire: 'אש', oil: 'שמן', lava: 'לבה', ice: 'קרח', plant: 'צמח', acid: 'חומצה', boom: 'אבק נפץ', erase: 'מחק', rainbow: 'קשת',
-    lvT: 'אתגרים', lock: 'קודם מסיימים את הקודם', woodLeft: 'תצילו את העץ!' },
+    lvT: 'אתגרים', lock: 'קודם מסיימים את הקודם', woodLeft: 'תצילו את העץ!', tilt: 'הטיית הטלפון' },
 };
 function pws(k) { return (PWS[lang] || PWS.en)[k] || PWS.en[k] || k; }
 /* the grid */
@@ -22236,33 +22237,38 @@ function pwExplode(G, x0, y0) {
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + dy * dy > r * r) continue; const x = x0 + dx, y = y0 + dy; if (x < 0 || y < 0 || x >= W || y >= G.h) continue; const i = y * W + x; if (G.t[i] === PWT.STONE) continue;
     if (G.t[i] === PWT.BOOM && (dx || dy)) { G.t[i] = PWT.FIRE; G.ex[i] = 3; continue; } if (Math.random() < 0.65) pwSet(G, i, PWT.FIRE, 6 + Math.random() * 14); else G.t[i] = 0; G.st[i] = G.f; }
 }
+/* gravity: one of 8 directions (pw.gk: 0 = down, then round clockwise on the screen), from the phone's tilt (the owner, Oct 2026: "I want the sand to move when I move
+   the phone"); the step reads "down", its two diagonals, the two sides and "up" from it, and sweeps the grid from the far end of the fall */
+const PW_D = [[0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1]];
 function pwStep(G) {
-  const W = G.w, H = G.h, t = G.t, ex = G.ex, st = G.st; G.f = (G.f % 250) + 1; const f = G.f, R = Math.random;
-  const ok = (x, y) => x >= 0 && x < W && y >= 0 && y < H;
-  for (let y = H - 1; y >= 0; y--) {
-    const ltr = ((y + f) & 1) === 0;
+  const W = G.w, H = G.h, t = G.t, ex = G.ex, st = G.st; G.f = (G.f % 250) + 1; const f = G.f, R = Math.random, gk = pw.gk || 0;
+  const [gx, gy] = PW_D[gk], dA = PW_D[(gk + 1) & 7], dB = PW_D[(gk + 7) & 7], sA = PW_D[(gk + 2) & 7], sB = PW_D[(gk + 6) & 7], ux = -gx, uy = -gy, uA = PW_D[(gk + 3) & 7], uB = PW_D[(gk + 5) & 7];
+  const ok = (x, y) => x >= 0 && x < W && y >= 0 && y < H, nb = (x, y, dx, dy) => { const nx = x + dx, ny = y + dy; return nx >= 0 && nx < W && ny >= 0 && ny < H ? ny * W + nx : -1; };
+  for (let a = 0; a < H; a++) {
+    const y = gy > 0 ? H - 1 - a : a, ltr = gx > 0 ? false : gx < 0 ? true : ((y + f) & 1) === 0;
     for (let k = 0; k < W; k++) {
       const x = ltr ? k : W - 1 - k, i = y * W + x, ty = t[i]; if (ty === 0 || st[i] === f) continue;
       const kind = PWK[ty];
       if (kind === 1 || kind === 2) { // fall (powders sink through lighter liquids and gases)
         if (ty === PWT.LAVA && R() < 0.55) { pwReact(G, x, y, i, ty); continue; }
-        const d = PWDEN[ty], below = y + 1 < H ? i + W : -1;
+        const d = PWDEN[ty], below = nb(x, y, gx, gy);
         if (below >= 0) { const tb = t[below]; if (tb === 0 || ((PWK[tb] === 2 || PWK[tb] === 4 || PWK[tb] === 5) && PWDEN[tb] < d && (PWK[tb] !== 2 || R() < 0.5))) { pwSwap(G, i, below); continue; } }
-        const dir = R() < 0.5 ? -1 : 1; let moved = false;
-        for (const s of [dir, -dir]) { const nx = x + s; if (y + 1 < H && nx >= 0 && nx < W) { const j = below + s, tj = t[j]; if (tj === 0 || ((PWK[tj] === 2 || PWK[tj] === 4) && PWDEN[tj] < d && R() < 0.5)) { pwSwap(G, i, j); moved = true; break; } } }
+        const r0 = R() < 0.5; let moved = false;
+        for (const dd of r0 ? [dA, dB] : [dB, dA]) { const j = nb(x, y, dd[0], dd[1]); if (j >= 0) { const tj = t[j]; if (tj === 0 || ((PWK[tj] === 2 || PWK[tj] === 4) && PWDEN[tj] < d && R() < 0.5)) { pwSwap(G, i, j); moved = true; break; } } }
         if (moved) continue;
         if (kind === 2) { // flow sideways, up to a few cells
-          const disp = ty === PWT.WATER ? 5 : ty === PWT.LAVA ? 1 : 3; let to = -1;
-          for (let s = 1; s <= disp; s++) { const nx = x + dir * s; if (nx < 0 || nx >= W) break; const tj = t[i + dir * s]; if (tj === 0 || (PWK[tj] === 4)) to = i + dir * s; else if (PWK[tj] === 2 && PWDEN[tj] < d) { to = i + dir * s; break; } else break; }
+          const disp = ty === PWT.WATER ? 5 : ty === PWT.LAVA ? 1 : 3, sd = r0 ? sA : sB; let to = -1;
+          for (let s = 1; s <= disp; s++) { const nx = x + sd[0] * s, ny = y + sd[1] * s; if (!ok(nx, ny)) break; const j = ny * W + nx, tj = t[j]; if (tj === 0 || (PWK[tj] === 4)) to = j; else if (PWK[tj] === 2 && PWDEN[tj] < d) { to = j; break; } else break; }
           if (to >= 0) { pwSwap(G, i, to); continue; }
         }
         pwReact(G, x, y, i, ty); continue;
       }
       if (kind === 4) { // gas: rise, drift, fade
-        if (--ex[i] === 0 || (y === 0 && R() < 0.02)) { if (ty === PWT.STEAM && R() < 0.35) pwSet(G, i, PWT.WATER); else t[i] = 0; continue; }
-        const up = y > 0 ? i - W : -1, dx = R() < 0.5 ? -1 : 1;
-        if (up >= 0 && R() < 0.8) { if (t[up] === 0) { pwSwap(G, i, up); continue; } const j = up + dx; if (x + dx >= 0 && x + dx < W && t[j] === 0) { pwSwap(G, i, j); continue; } }
-        if (x + dx >= 0 && x + dx < W && t[i + dx] === 0) pwSwap(G, i, i + dx); continue;
+        const up = nb(x, y, ux, uy);
+        if (--ex[i] === 0 || (up < 0 && R() < 0.02)) { if (ty === PWT.STEAM && R() < 0.35) pwSet(G, i, PWT.WATER); else t[i] = 0; continue; }
+        const r0 = R() < 0.5, ud = r0 ? uA : uB, sd = r0 ? sA : sB;
+        if (up >= 0 && R() < 0.8) { if (t[up] === 0) { pwSwap(G, i, up); continue; } const j = nb(x, y, ud[0], ud[1]); if (j >= 0 && t[j] === 0) { pwSwap(G, i, j); continue; } }
+        const j = nb(x, y, sd[0], sd[1]); if (j >= 0 && t[j] === 0) pwSwap(G, i, j); continue;
       }
       if (kind === 5) { // fire
         let out = false;
@@ -22271,7 +22277,7 @@ function pwStep(G) {
           else if (tj === PWT.BOOM) pwExplode(G, nx, ny); else if (tj === PWT.ICE && R() < 0.06) pwSet(G, j, PWT.WATER); else if (tj === PWT.WATER && R() < 0.5) { pwSet(G, i, PWT.STEAM); if (R() < 0.3) pwSet(G, j, PWT.STEAM); out = true; break; } }
         if (out || t[i] !== PWT.FIRE) continue;
         if (--ex[i] === 0) { if (R() < 0.35) pwSet(G, i, PWT.SMOKE); else t[i] = 0; continue; }
-        if (ex[i] < 30 && y > 0 && R() < 0.5) { const j = i - W + (R() < 0.5 ? -1 : 1) * (R() < 0.5 ? 1 : 0); if (j >= 0 && t[j] === 0) pwSwap(G, i, j); }
+        if (ex[i] < 30 && R() < 0.5) { const dd = R() < 0.5 ? [ux, uy] : R() < 0.5 ? uA : uB, j = nb(x, y, dd[0], dd[1]); if (j >= 0 && t[j] === 0) pwSwap(G, i, j); }
         continue;
       }
       if (ty === PWT.PLANT || ty === PWT.ICE) pwReact(G, x, y, i, ty);
@@ -22287,7 +22293,7 @@ function pwReact(G, x, y, i, ty) { // touch reactions of lava, acid, plants, ice
     else if (ty === PWT.PLANT) { if (tj === PWT.WATER && R() < 0.025) pwSet(G, j, PWT.PLANT); }
     else if (ty === PWT.ICE) { if (tj === PWT.WATER && R() < 0.0025) pwSet(G, j, PWT.ICE); else if (tj === PWT.LAVA && R() < 0.05) pwSet(G, i, PWT.WATER); }
   }
-  if (ty === PWT.LAVA && y > 0 && t[i - W] === 0 && R() < 0.004) pwSet(G, i - W, PWT.FIRE, 8);
+  if (ty === PWT.LAVA && R() < 0.004) { const u = PW_D[((pw.gk || 0) + 4) & 7], nx = x + u[0], ny = y + u[1]; if (nx >= 0 && ny >= 0 && nx < W && ny < G.h && t[ny * W + nx] === 0) pwSet(G, ny * W + nx, PWT.FIRE, 8); }
 }
 /* drawing */
 function pwDraw() {
@@ -22313,12 +22319,30 @@ function pwPour(cx, cy) { // one brush stamp at a cell
     if (still) { if (G.t[i] === 0 || PWK[G.t[i]] !== 3) pwSet(G, i, ty); continue; }
     if (G.t[i] === 0 && R() < p) { pwSet(G, i, ty, ty === PWT.CSAND ? col : null); pw.used = (pw.used || 0) + 1; } }
 }
-function pwInput() { // every finger: a line of stamps from where it was
-  for (const q of pw.ptrs.values()) { const cx = (q.x - pw.x0) / pw.cs, cy = (q.y - pw.top) / pw.cs, lx = q.lx == null ? cx : q.lx, ly = q.ly == null ? cy : q.ly, d = Math.hypot(cx - lx, cy - ly), n = Math.max(1, Math.ceil(d / Math.max(1, pw.size * 0.6)));
-    for (let k = 1; k <= n; k++) pwPour(Math.round(lx + (cx - lx) * k / n), Math.round(ly + (cy - ly) * k / n)); q.lx = cx; q.ly = cy; }
+function pwInput() { // every finger: a line of stamps from where it was (pours), or, for a finger that came down on sand or water, a shove along its way
+  for (const q of pw.ptrs.values()) { const cx = (q.x - pw.x0) / pw.cs, cy = (q.y - pw.top) / pw.cs;
+    if (q.push == null) q.push = pwToolType() !== -1 && pwMovableNear(Math.round(cx), Math.round(cy), Math.max(2, pw.size)); // (decided when the finger lands)
+    const lx = q.lx == null ? cx : q.lx, ly = q.ly == null ? cy : q.ly, d = Math.hypot(cx - lx, cy - ly);
+    if (q.push) { if (q.lx == null) { pwShove(cx, cy, null); pw.log.push('poke'); } else if (d > 0.2) { const n = Math.max(1, Math.ceil(d / 1.5)); for (let k = 1; k <= n; k++) pwShove(lx + (cx - lx) * k / n, ly + (cy - ly) * k / n, [(cx - lx) / d, (cy - ly) / d]); pw.pushes = (pw.pushes || 0) + 1; } }
+    else { const n = Math.max(1, Math.ceil(d / Math.max(1, pw.size * 0.6))); for (let k = 1; k <= n; k++) pwPour(Math.round(lx + (cx - lx) * k / n), Math.round(ly + (cy - ly) * k / n)); }
+    q.lx = cx; q.ly = cy; }
   pw.hue++;
 }
-function powderDown(e) { if (pw.won || (e.button !== 0 && e.pointerType !== 'touch') || e.clientY > H - pw.barH) return; audioInit(); pw.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, lx: null, ly: null }); try { canvas.setPointerCapture(e.pointerId); } catch {} }
+const pwMoves = (ty) => PWK[ty] === 1 || PWK[ty] === 2;
+function pwMovableNear(cx, cy, r) { const G = pw.g; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = cx + dx, y = cy + dy; if (dx * dx + dy * dy <= r * r && x >= 0 && y >= 0 && x < G.w && y < G.h && pwMoves(G.t[y * G.w + x])) return true; } return false; }
+function pwShove(fx, fy, dir) { // the finger moves the grains under it out of its way: along its move (dir), or out from its middle (a poke)
+  const G = pw.g, r = Math.max(3, pw.size + 2), cx = Math.round(fx), cy = Math.round(fy), list = [];
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const dd = dx * dx + dy * dy, x = cx + dx, y = cy + dy; if (dd > r * r || x < 0 || y < 0 || x >= G.w || y >= G.h) continue; const i = y * G.w + x; if (!pwMoves(G.t[i])) continue;
+    const L = Math.sqrt(dd) || 1, u = dir || (dd ? [dx / L, dy / L] : [0, -1]); list.push([i, x, y, u, dir ? dx * u[0] + dy * u[1] : L]); }
+  list.sort((a, b) => b[4] - a[4]);
+  for (const [i, x, y, u] of list) { if (!pwMoves(G.t[i])) continue; let to = -1;
+    for (const w of [u, Math.random() < 0.5 ? [-u[1], u[0]] : [u[1], -u[0]]]) { // straight on; else to one side
+      for (let k = 1; k <= r * 2 + 2; k++) { const nx = Math.round(x + w[0] * k), ny = Math.round(y + w[1] * k); if (nx < 0 || ny < 0 || nx >= G.w || ny >= G.h) break; const j = ny * G.w + nx, tj = G.t[j];
+        if (tj === 0) { if ((nx - fx) ** 2 + (ny - fy) ** 2 > r * r) { to = j; break; } else if (to < 0) to = j; } else if (!pwMoves(tj)) break; }
+      if (to >= 0) break; }
+    if (to >= 0) pwSwap(G, i, to); }
+}
+function powderDown(e) { if (pw.won || (e.button !== 0 && e.pointerType !== 'touch') || e.clientY > H - pw.barH) return; audioInit(); pw.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, lx: null, ly: null, push: null }); try { canvas.setPointerCapture(e.pointerId); } catch {} pwMotionAsk(); }
 function powderMove(e) { const q = pw.ptrs.get(e.pointerId); if (q) { q.x = e.clientX; q.y = e.clientY; } }
 function powderUp(e) { pw.ptrs.delete(e.pointerId); }
 /* the challenges */
@@ -22379,7 +22403,8 @@ function pwBarSync() {
   if (pw.mode === 'colors') tools = PW_COLORS.map((c, i) => '<button class="pwT pwC' + (pw.tool === 'col' && pw.col === i ? ' on' : '') + '" data-pw="c:' + i + '" style="--c:' + c + '" aria-label="' + c + '"></button>').join('') +
     '<button class="pwT pwC rb' + (pw.tool === 'rainbow' ? ' on' : '') + '" data-pw="t:rainbow" aria-label="' + pws('rainbow') + '"></button><button class="pwT' + (pw.tool === 'erase' ? ' on' : '') + '" data-pw="t:erase"><b>🧽</b><small>' + pws('erase') + '</small></button>';
   else { const list = pw.mode === 'chal' && pw.lv ? PW_MATS.filter((m) => pw.lv.tools.includes(m[0])) : PW_MATS; tools = list.map((m) => '<button class="pwT' + (pw.tool === m[0] ? ' on' : '') + '" data-pw="t:' + m[0] + '"><b>' + m[2] + '</b><small>' + pws(m[0]) + '</small></button>').join(''); }
-  const acts = pw.mode === 'chal' ? '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button>' : '<button class="pwA" data-pw="clear">🗑️ ' + pws('clear') + '</button>';
+  const acts = (pw.mode === 'chal' ? '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button>' : '<button class="pwA" data-pw="clear">🗑️ ' + pws('clear') + '</button>') +
+    '<button class="pwA pwTilt' + (pwTiltOn() ? ' on' : '') + '" data-pw="tilt" aria-label="' + pws('tilt') + '">' + (pwTiltOn() ? '📱' : '🔒') + '</button>';
   B.innerHTML = '<div class="pwRow">' + modes + '</div><div class="pwRow pwTools">' + tools + '</div><div class="pwRow">' + size + acts + '</div>';
   const V = $('powderLv'); if (pw.won || pw.lost) { const L = pw.lv; V.hidden = false; V.innerHTML = '<div class="pwCard"><div class="pwBig">' + (pw.won ? '⭐'.repeat(pw.stars) + '<span class="pwDim">' + '⭐'.repeat(3 - pw.stars) + '</span>' : '😅') + '</div><h2>' + (pw.won ? pws('done') : pws('lost')) + '</h2>' +
     (pw.won ? '<p>' + L.e + ' ' + (he ? L.he : L.en) + ' · ' + pw.secs + 's</p>' : '<p>' + pws('woodLeft') + '</p>') + '<div class="pwRow">' + (pw.won && pw.lvl < PW_LV.length - 1 ? '<button class="pwA hot" data-pw="lv:' + (pw.lvl + 1) + '">' + pws('next') + '</button>' : '') + '<button class="pwA" data-pw="retry">↺ ' + pws('retry') + '</button><button class="pwA" data-pw="levels">☰ ' + pws('levels') + '</button></div></div>'; }
@@ -22396,6 +22421,7 @@ function pwClick(e) {
   else if (a.startsWith('t:')) pw.tool = a.slice(2);
   else if (a.startsWith('s:')) pw.size = +a.slice(2);
   else if (a === 'clear') { pw.g.t.fill(0); pw.log.push('clear'); }
+  else if (a === 'tilt') { const on = !pwTiltOn(); try { localStorage.setItem('grasp.pwTilt', on ? '1' : '0'); } catch {} if (!on) pw.gk = 0; pwMotionAsk(); toast(on ? 'pwTiltOn' : 'pwTiltOff', null, on ? 'check' : 'star'); }
   else if (a === 'retry') { pw.listOpen = false; pwStartLevel(pw.lvl); return; }
   else if (a === 'levels') { pwLevels(); return; }
   else if (a.startsWith('lv:')) { pw.listOpen = false; P.mode = 'chal'; saveProfile(); pwStartLevel(+a.slice(3)); return; }
@@ -22407,8 +22433,23 @@ function powderStart() {
   pw.key = ''; pw.g = null; pwBarSync(); pwLayout(false); if (P.mode === 'chal') pwLevels(); pw.log.push('start:' + pw.mode);
 }
 function powderStop() { $('powderBar').hidden = true; $('powderLv').hidden = true; pw.ptrs.clear(); pw.g = null; pw.key = ''; }
+/* the tilt: devicemotion's gravity (the reaction to it, per the spec) in screen terms, turned with the screen; 8 directions, with some slack so a hand's wobble
+   does not flip it; a phone lying flat keeps the last one; the 📱 button turns it off (localStorage grasp.pwTilt) */
+const pwTiltOn = () => { try { return localStorage.getItem('grasp.pwTilt') !== '0'; } catch { return true; } };
+function pwMotion(e) { const a = e.accelerationIncludingGravity; if (!a || a.x == null) return; let gx = -a.x, gy = a.y; const ang = ((screen.orientation && screen.orientation.angle) || window.orientation || 0) % 360;
+  if (ang === 90 || ang === -270) [gx, gy] = [gy, -gx]; else if (ang === 180 || ang === -180) [gx, gy] = [-gx, -gy]; else if (ang === 270 || ang === -90) [gx, gy] = [-gy, gx]; pw.tilt = { x: gx, y: gy, t: performance.now() }; }
+function pwGravity() {
+  if (window.__pwGk != null) { pw.gk = window.__pwGk; return; } // (tests)
+  const T = pw.tilt; if (!pwTiltOn() || pw.won || pw.lost) { pw.gk = 0; return; } if (!T || performance.now() - T.t > 1500 || Math.hypot(T.x, T.y) < 2.5) return;
+  const a = Math.atan2(T.y, T.x), ang = (k) => Math.atan2(PW_D[k][1], PW_D[k][0]), diff = (k) => Math.abs(((a - ang(k) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+  let best = 0; for (let k = 1; k < 8; k++) if (diff(k) < diff(best)) best = k; if (best !== (pw.gk || 0) && diff(pw.gk || 0) > 0.6) { pw.gk = best; pw.log.push('g:' + best); }
+}
+function pwMotionAsk() { // iOS asks once, on a touch
+  if (pw.askedMotion) return; pw.askedMotion = true; try { if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') DeviceMotionEvent.requestPermission().catch(() => {}); } catch {}
+}
+window.addEventListener('devicemotion', pwMotion);
 function renderPowder(now) {
-  if (!pw.g) pwLayout(false); pwLayout(); if (!pw.won && !pw.lost) pwInput(); pw.booms = 0;
+  if (!pw.g) pwLayout(false); pwLayout(); pwGravity(); if (!pw.won && !pw.lost) pwInput(); pw.booms = 0;
   for (let s = 0; s < pw.steps; s++) pwStep(pw.g);
   if (pw.booms && now - pw.boomAt > 250) { pw.boomAt = now; sfx('boom'); shakeScreen(6); }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0b0912'; ctx.fillRect(0, 0, W, H); pwDraw();

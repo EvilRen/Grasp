@@ -49,9 +49,39 @@ async def run(b, he):
     await page.evaluate("goHome()"); await page.wait_for_timeout(400); check(tag + ': Home: the bar goes', await page.evaluate("$('powderBar').hidden && $('powderLv').hidden"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
+async def tilt_push(b):
+    # the owner: "the sand should move when I move the phone, or when I touch sand that is already there"
+    ctx, page, errs = await page_for(b, '/powder', True, init="window.__graspNoAutoFs = true; localStorage.removeItem('grasp.pwTilt');"); await wait(page, f"!!{PWH}.pw.g && !$('powderBar').hidden", 6000)
+    pile = f"(() => {{ const G = {PWH}.pw.g; G.t.fill(0); for (let y = G.h - 25; y < G.h; y++) for (let x = Math.floor(G.w * 0.35); x < Math.floor(G.w * 0.65); x++) {{ G.t[y * G.w + x] = 14; G.ex[y * G.w + x] = 3; }} }})()"
+    meanx = f"(() => {{ const G = {PWH}.pw.g; let s = 0, n = 0; for (let i = 0; i < G.n; i++) if (G.t[i] === 14) {{ s += (i % G.w) / G.w; n++; }} return [s / n, n]; }})()"
+    await page.evaluate(pile); n0 = (await page.evaluate(meanx))[1]
+    await page.evaluate("window.__pwGk = 2"); await page.wait_for_timeout(2500); L = await page.evaluate(meanx)
+    await page.screenshot(path=OUT + 'powder_tilt_left.png')
+    await page.evaluate("window.__pwGk = 6"); await page.wait_for_timeout(3500); R = await page.evaluate(meanx)
+    check('tilt: gravity to the left, the sand runs left; to the right, it runs right; none lost', L[0] < 0.3 and R[0] > 0.7 and L[1] == n0 and R[1] == n0, [L, R, n0])
+    await page.evaluate("window.__pwGk = null; window.dispatchEvent(Object.assign(new Event('devicemotion'), { accelerationIncludingGravity: { x: 9.2, y: 2, z: 1 } }))"); await page.wait_for_timeout(200)
+    g1 = await page.evaluate(f"{PWH}.pw.gk")
+    await page.evaluate("window.dispatchEvent(Object.assign(new Event('devicemotion'), { accelerationIncludingGravity: { x: 0.3, y: 9.6, z: 1 } }))"); await page.wait_for_timeout(200); g2 = await page.evaluate(f"{PWH}.pw.gk")
+    check('tilt: the phone\'s motion sensor sets it (left side down: to the left; upright: down again)', g1 == 2 and g2 == 0, [g1, g2])
+    await page.click('#powderBar [data-pw="tilt"]'); await page.evaluate("window.dispatchEvent(Object.assign(new Event('devicemotion'), { accelerationIncludingGravity: { x: 9.2, y: 2, z: 1 } }))"); await page.wait_for_timeout(200)
+    check('the 📱 button turns the tilt off (the sand always falls down); kept', await page.evaluate(f"{PWH}.pw.gk") == 0 and await page.evaluate("localStorage.getItem('grasp.pwTilt')") == '0')
+    await page.click('#powderBar [data-pw="tilt"]')
+    # a finger on sand pushes it
+    await page.evaluate("window.__pwGk = 0"); await page.evaluate(pile); await page.wait_for_timeout(300)
+    snap = f"Array.from({PWH}.pw.g.t)"; before = await page.evaluate(snap); W, H = await page.evaluate("[innerWidth, innerHeight]")
+    gy = await page.evaluate(f"(() => {{ const pw = {PWH}.pw; return pw.top + (pw.g.h - 12) * pw.cs; }})()")
+    await drag(page, (W * 0.4, gy), (W * 0.62, gy - 30), 700); await page.wait_for_timeout(200)
+    after = await page.evaluate(snap); moved = sum(1 for a, c in zip(before, after) if a != c)
+    check('a finger that lands on sand pushes it along (it moves, none poured, none lost)', moved > 60 and after.count(14) == before.count(14) and await page.evaluate(f"{PWH}.pw.pushes || 0") > 0, [moved, before.count(14), after.count(14)])
+    await page.screenshot(path=OUT + 'powder_push.png')
+    c0 = after.count(14); await drag(page, (W * 0.5, H * 0.12), (W * 0.55, H * 0.12), 500); await page.wait_for_timeout(300)
+    check('on empty space the finger still pours', (await count(page, 14)) > c0)
+    check('tilt / push: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
+        await tilt_push(b)
         for he in (True, False): await run(b, he)
         await b.close()
     print('FAILURES:', check.fails)
