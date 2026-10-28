@@ -1930,7 +1930,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.7.3';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22364,7 +22364,7 @@ function pwReact(G, x, y, i, ty) { // touch reactions of lava, acid, plants, ice
   for (let n = 0; n < 4; n++) { const nx = x + (n === 0 ? -1 : n === 1 ? 1 : 0), ny = y + (n === 2 ? -1 : n === 3 ? 1 : 0); if (nx < 0 || ny < 0 || nx >= W || ny >= G.h) continue; const j = ny * W + nx, tj = t[j]; if (!tj) continue;
     if (ty === PWT.LAVA) { if (tj === PWT.WATER) { pwSet(G, j, PWT.STEAM); if (R() < (pw.lv && pw.lv.hot ? 0.25 : 0.4)) { pwSet(G, i, PWT.STONE, 1); return; } continue; } // (water boils off; the lava only sometimes cools to a crust (ex 1), which the lava melts back: a crust once sealed the cloud level, the owner could not pass it)
       if (tj === PWT.STONE && G.ex[j] === 1 && R() < (pw.lv && pw.lv.hot ? 0.03 : 0.006)) { pwSet(G, j, PWT.LAVA); continue; } if ((tj === PWT.WOOD || tj === PWT.PLANT || tj === PWT.OIL) && R() < 0.1) pwSet(G, j, PWT.FIRE, 30 + R() * 30); else if (tj === PWT.ICE && R() < 0.1) pwSet(G, j, PWT.WATER); else if (tj === PWT.BOOM) pwExplode(G, nx, ny); }
-    else if (ty === PWT.ACID) { if (tj !== PWT.ACID && PWK[tj] !== 4 && PWK[tj] !== 5 && (tj !== PWT.STONE || R() < 0.06) && R() < 0.09) { t[j] = 0; if (R() < 0.35) { t[i] = 0; return; } } }
+    else if (ty === PWT.ACID) { if (tj !== PWT.ACID && tj !== PWT.WATER && tj !== PWT.STONE && PWK[tj] !== 4 && PWK[tj] !== 5 && R() < 0.09) { /* (1.7.3: stone and water are safe from acid: it ate the basin and the water, the owner: "this level is no hit") */ t[j] = 0; if (R() < 0.35) { t[i] = 0; return; } } }
     else if (ty === PWT.PLANT) { if (tj === PWT.WATER && R() < 0.025) pwSet(G, j, PWT.PLANT); }
     else if (ty === PWT.ICE) { if (tj === PWT.WATER && R() < 0.0025) pwSet(G, j, PWT.ICE); else if (tj === PWT.LAVA && R() < 0.05) pwSet(G, i, PWT.WATER); }
   }
@@ -22442,9 +22442,10 @@ const PW_LV = [
     build: (b) => { b(0.15, 0.8, 0.18, 0.98, PWT.STONE); b(0.82, 0.8, 0.85, 0.98, PWT.STONE); b(0.15, 0.95, 0.85, 0.98, PWT.STONE); b(0.18, 0.84, 0.82, 0.95, PWT.LAVA); }, goal: (c) => c.all[PWT.STEAM] / (c.n * 0.042) },
   { id: 'boom', e: '💥', en: 'Break the ice', he: 'שוברים את הקרח', tools: ['boom', 'fire'], z: null,
     build: (b) => { b(0.25, 0.5, 0.28, 0.98, PWT.STONE); b(0.72, 0.5, 0.75, 0.98, PWT.STONE); b(0.25, 0.95, 0.75, 0.98, PWT.STONE); b(0.32, 0.75, 0.45, 0.95, PWT.ICE); b(0.55, 0.65, 0.68, 0.95, PWT.ICE); }, goal: (c, L) => 1 - c.all[PWT.ICE] / Math.max(1, L.ice0) },
-  { id: 'acid', e: '🧪', en: 'Free the water', he: 'משחררים את המים', tools: ['acid'], z: [0.38, 0.8, 0.62, 0.95],
-    build: (b) => { b(0.38, 0.12, 0.62, 0.15, PWT.WOOD); b(0.38, 0.15, 0.41, 0.4, PWT.WOOD); b(0.59, 0.15, 0.62, 0.4, PWT.WOOD); b(0.38, 0.4, 0.62, 0.43, PWT.WOOD); b(0.41, 0.15, 0.59, 0.4, PWT.WATER); b(0.35, 0.75, 0.38, 0.98, PWT.STONE); b(0.62, 0.75, 0.65, 0.98, PWT.STONE); b(0.35, 0.95, 0.65, 0.98, PWT.STONE); },
-    goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.4) },
+  { id: 'acid', e: '🧪', en: 'Free the water', he: 'משחררים את המים', tools: ['acid'], z: [0.72, 0.8, 0.93, 0.95], // (1.7.3: a wooden dam holds the water back: acid on it eats a way through)
+    build: (b) => { b(0.05, 0.55, 0.76, 0.58, PWT.STONE); b(0.02, 0.3, 0.05, 0.58, PWT.STONE); b(0.5, 0.28, 0.56, 0.55, PWT.WOOD); b(0.05, 0.36, 0.5, 0.55, PWT.WATER);
+      b(0.69, 0.75, 0.72, 0.98, PWT.STONE); b(0.93, 0.75, 0.96, 0.98, PWT.STONE); b(0.69, 0.95, 0.96, 0.98, PWT.STONE); },
+    goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.4), sol: [['acid', 0.53, 0.15, 40, null, 240]], solRepeat: 1 },
 ];
 /* 500 more challenges (the owner, Oct 2026: "I want 500 more of these, it's really fun"; "maybe levels?"): 10 worlds of 50 after the 9 made by hand,
    made by a generator (the same level every time: a seeded dice per level), easy / normal / hard (profile.powder.diff). Each kind of level knows
