@@ -1977,7 +1977,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.24';
+const APP_VERSION = '1.7.25';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22099,13 +22099,67 @@ async function tkNetCheck() {
   await ws('echo postman', 'wss://ws.postman-echo.com/raw');
   tkDbg('check webrtc: ' + (window.RTCPeerConnection ? 'available' : 'MISSING')); tkDbg('— network check done');
 }
+/* the rooms over public MQTT brokers (the owner's network check: 0.peerjs.com is blocked on his network, HiveMQ / EMQX / Nostr get through; he wants no
+   Supabase): every message goes through the broker, so no phone-to-phone link has to get through. Topics per room: …/h to the room, …/g/<id> to one phone
+   (no phone gets the others' hands), …/a to all. The room listens on both brokers, a phone uses the first that answers. A small MQTT 3.1.1 client:
+   CONNECT, SUBSCRIBE, PUBLISH (QoS 0), PINGREQ; reconnect with back-off; a queue while down. The room and the phones ping every 5 s; 25 s silent = gone */
+const TK_MQ = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'], TK_MQT = 'grasp-tk/v1/';
+function tkMq(url, cid, subs, onMsg, onState) {
+  const te = new TextEncoder(), td = new TextDecoder(), name = url.split('/')[2].split(':')[0].split('.')[1] || url;
+  const str = (x) => { const b = te.encode(x); return [b.length >> 8, b.length & 255, ...b]; };
+  const pkt = (h, body) => { const out = [h]; let n = body.length; do { let d = n % 128; n = Math.floor(n / 128); if (n) d |= 128; out.push(d); } while (n); return new Uint8Array(out.concat(body)); };
+  let ws = null, ok = false, dead = false, tries = 0, rt = 0, pi = 0, pid = 1, buf = new Uint8Array(0); const q = [], st = { open: false, disconnected: true, id: cid, broker: name };
+  const send = (u8) => { try { ws.send(u8); return true; } catch { return false; } };
+  const later = () => { if (dead) return; clearTimeout(rt); rt = setTimeout(up, Math.min(15000, 1000 * Math.pow(2, tries++))); };
+  const up = () => { if (dead || (ws && ws.readyState <= 1)) return; tkDbg(cid + ': connecting to ' + name + (tries ? ' (try ' + (tries + 1) + ')' : ''));
+    try { ws = new WebSocket(url, 'mqtt'); } catch (e) { tkDbg(cid + ': ' + name + ' threw ' + tkErrS(e)); return later(); }
+    ws.binaryType = 'arraybuffer'; buf = new Uint8Array(0);
+    ws.onopen = () => send(pkt(0x10, [...str('MQTT'), 4, 0x02, 0, 30, ...str(cid)]));
+    ws.onmessage = (e) => { const a = new Uint8Array(e.data), m = new Uint8Array(buf.length + a.length); m.set(buf); m.set(a, buf.length); buf = m;
+      while (buf.length >= 2) { let n = 0, mul = 1, i = 1, d; do { if (i >= buf.length) return; d = buf[i++]; n += (d & 127) * mul; mul *= 128; } while (d & 128); if (buf.length < i + n) return;
+        const h = buf[0], body = buf.slice(i, i + n); buf = buf.slice(i + n); const ty = h >> 4;
+        if (ty === 2) { if (body[1] !== 0) { tkDbg(cid + ': ' + name + ' refused (' + body[1] + ')'); try { ws.close(); } catch {} return; }
+          const sub = []; for (const t of subs) sub.push(...str(t), 0); send(pkt(0x82, [pid >> 8, pid & 255, ...sub])); pid = (pid % 60000) + 1; }
+        else if (ty === 9) { ok = true; tries = 0; st.open = true; st.disconnected = false; tkDbg(cid + ': JOINED on ' + name); while (q.length && ok) send(q.shift()); clearInterval(pi); pi = setInterval(() => send(new Uint8Array([0xc0, 0])), 20000); onState('open'); }
+        else if (ty === 3) { const tl = (body[0] << 8) | body[1], topic = td.decode(body.slice(2, 2 + tl)), qos = (h >> 1) & 3, off = 2 + tl + (qos ? 2 : 0); let o; try { o = JSON.parse(td.decode(body.slice(off))); } catch { continue; } onMsg(topic, o); } } };
+    ws.onclose = (e) => { clearInterval(pi); const was = ok; ok = false; st.open = false; st.disconnected = true; tkDbg(cid + ': ' + name + ' DISCONNECTED (code ' + e.code + ')'); if (was) onState('down'); later(); };
+    ws.onerror = () => tkDbg(cid + ': ' + name + ' socket error'); };
+  const vis = () => { if (document.visibilityState === 'visible' && !dead && (!ws || ws.readyState > 1)) { tries = 0; up(); } }; document.addEventListener('visibilitychange', vis); addEventListener('online', vis);
+  up();
+  return { st, pub(topic, obj) { const u = pkt(0x30, [...str(topic), ...te.encode(JSON.stringify(obj))]); if (ok && ws && ws.readyState === 1) send(u); else if (q.length < 200) q.push(u); },
+    close() { dead = true; clearInterval(pi); clearTimeout(rt); document.removeEventListener('visibilitychange', vis); removeEventListener('online', vis); try { if (ws && ws.readyState === 1) ws.send(new Uint8Array([0xe0, 0])); ws && ws.close(); } catch {} } };
+}
 const TKNET = {
   async peer() { if (window.Peer) return window.Peer; await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); return window.Peer; },
   bc: () => new URLSearchParams(location.search).get('tkbus') === 'bc' || window.__tkBus === 'bc',
+  peerMode: () => window.__tkNet === 'peer' || new URLSearchParams(location.search).get('net') === 'peer', // (the old PeerJS way, for a comparison)
+  mqHost(code, onConn, onErr, onOk) { // the room: on every broker; a phone is answered on the broker it came from
+    const T = TK_MQT + code + '/', conns = new Map(), seen = new Map(), cs = [], st = { get open() { return cs.some((c) => c.st.open); }, get disconnected() { return !cs.some((c) => c.st.open); }, id: 'room ' + code };
+    const mk = (id, cl) => { const c = { peer: id, h: {}, on(k, f) { this.h[k] = f; }, send: (d) => cl.pub(T + 'g/' + id, { from: 'host', d }), close() {} }; conns.set(id, c); tkDbg('host: new phone ' + id + ' via ' + cl.st.broker); onConn(c); return c; };
+    let was = false;
+    for (const u of (window.__tkMQ || TK_MQ)) { const cl = tkMq(u, 'gtkh' + code + Math.random().toString(36).slice(2, 7), [T + 'h'], (topic, m) => { if (!m || !m.from) return; seen.set(m.from, Date.now());
+        if (m.d && m.d.t === '~ping') return; const c = conns.get(m.from) || mk(m.from, cl); if (c.h.data) c.h.data(m.d); },
+      (s) => { const on = st.open; if (on && !was) onOk && onOk(); if (!on && was) onErr && onErr({ type: 'disconnected' }); was = on; }); cs.push(cl); }
+    const pi = setInterval(() => { for (const cl of cs) cl.pub(T + 'a', { from: 'host', d: { t: '~ping' } }); const now = Date.now();
+      for (const [id, c] of conns) if (now - (seen.get(id) || 0) > 25000 && st.open) { tkDbg('host: phone ' + id + ' silent 25 s, dropped'); conns.delete(id); if (c.h.close) c.h.close(); } }, 5000);
+    return Promise.resolve({ close: () => { clearInterval(pi); cs.forEach((c) => c.close()); }, p: st });
+  },
+  mqJoin(code, onData, onErr) { // a phone: the first broker that connects
+    const T = TK_MQT + code + '/', me = 'g' + Math.random().toString(36).slice(2, 9); let cl = null, last = 0, gone = false, pi = 0;
+    return new Promise((ok, no) => { let done = false, i = 0;
+      const L = window.__tkMQ || TK_MQ; const tryNext = () => { if (done) return; if (i >= L.length) { tkDbg(me + ': no broker answered'); done = true; return no(new Error('no broker')); } const u = L[i++], c = tkMq(u, 'gtk' + me, [T + 'g/' + me, T + 'a'], (topic, m) => {
+          if (!m || m.from !== 'host') return; last = Date.now(); if (m.d && m.d.t === '~ping') return; onData(m.d); },
+        (s) => { if (s === 'open' && !done) { done = true; clearTimeout(tm); cl = c; last = Date.now();
+          pi = setInterval(() => { cl.pub(T + 'h', { from: me, d: { t: '~ping' } }); if (!gone && cl.st.open && Date.now() - last > 25000) { tkDbg(me + ': the room is silent for 25 s'); gone = true; clearInterval(pi); onErr && onErr('closed'); } }, 5000);
+          ok({ send: (d) => cl.pub(T + 'h', { from: me, d }), close: () => { gone = true; clearInterval(pi); cl.close(); }, p: cl.st }); } });
+        const tm = setTimeout(() => { if (!done) { tkDbg(me + ': ' + u.split('/')[2] + ' too slow, the next one'); c.close(); tryNext(); } }, 7000); };
+      tryNext(); });
+  },
   async host(code, onConn, onErr, onOk) {
     if (TKNET.bc()) { const ch = new BroadcastChannel('tk-' + code), conns = new Map(); ch.onmessage = (e) => { const m = e.data; if (m.to !== 'host') return; let c = conns.get(m.from);
         if (!c) { c = { id: m.from, send: (d) => ch.postMessage({ to: m.from, d }), h: {}, on(k, f) { this.h[k] = f; }, close() {} }; conns.set(m.from, c); onConn(c); } if (c.h.data) c.h.data(m.d); };
       return { close: () => ch.close() }; }
+    if (!TKNET.peerMode()) return TKNET.mqHost(code, onConn, onErr, onOk);
     tkDbg('host: loading PeerJS'); const Peer = await TKNET.peer(), id = 'grasp-tk-' + code, open = new Set();
     /* (the owner's log: "Lost connection to server" every few hundred ms: each drop fired two or three reconnects at once, which kept knocking each
        other off. Now one at a time, waiting 1, 2, 4, 8, 15 s; after 3 failures with nobody in yet, a brand-new peer with the same room id) */
@@ -22129,6 +22183,7 @@ const TKNET = {
   async join(code, onData, onErr) {
     if (TKNET.bc()) { const me = 'g' + Math.random().toString(36).slice(2, 8), ch = new BroadcastChannel('tk-' + code); ch.onmessage = (e) => { if (e.data.to === me) onData(e.data.d); };
       return { send: (d) => ch.postMessage({ to: 'host', from: me, d }), close: () => ch.close() }; }
+    if (!TKNET.peerMode()) return TKNET.mqJoin(code, onData, onErr);
     tkDbg('join: loading PeerJS'); const Peer = await TKNET.peer(), p = new Peer({ config: TK_ICE }); let joined = false, bt = 0, btries = 0; tkDbg('join: connecting to the broker');
     const back = () => { if (bt) return; bt = setTimeout(() => { bt = 0; try { if (!p.destroyed && p.disconnected) { tkDbg('join: reconnecting to the broker'); p.reconnect(); } } catch {} }, Math.min(15000, 1000 * Math.pow(2, btries++))); };
     p.on('open', () => { btries = 0; });
@@ -22854,7 +22909,7 @@ const PW_FAM = {
     if (z2) for (let q = 0; q < 6; q++) sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 100], [tools[0], cx2, Math.min(0.12, top - 0.1), 100]); // (two cups: a little in each in turn, so neither overflows while the other waits)
     else sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 900]); if (z2) { if (lid === PWT.WOOD) sol.unshift(['fire', cx2, top - 0.03, 50, null, 160]); if (lid === PWT.ICE) sol.unshift(['lava', cx2, top - 0.12, 40, null, 260]); }
     const cup = (b, a, c) => { b(a, top, a + t, by, PWT.STONE); b(c - t, top, c, by, PWT.STONE); b(a, by - t, c, by, PWT.STONE); if (lid) b(a, top - 0.025, c, top, lid); }, k = liq ? 0.6 : shape === 'vase' ? 0.7 : 0.8; // (sand in a narrow vase leaves gaps at the walls)
-    return { tools, z: [x0 + t, top + 0.08, x1 - t, by - t], z2, shape, ammoK: z2 ? 1.5 : shape === 'vase' ? 1.8 : 1, pour: 1, need: (cw - 2 * t) * (ch - 0.08) * (liq ? 1.5 : 0.85) * (z2 ? 2 : 1),
+    return { tools, z: [x0 + t, top + 0.08, x1 - t, by - t], z2, shape, ammoK: z2 ? 1.5 : shape === 'vase' ? 1.8 : shape === 'stand' ? 1.4 : 1, /* (sand on a stand's edges is lost) */ pour: 1, need: (cw - 2 * t) * (ch - 0.08) * (liq ? 1.5 : 0.85) * (z2 ? 2 : 1),
       build: (b) => { cup(b, x0, x1); if (z2) cup(b, cx2 - cw / 2, cx2 + cw / 2); if (up) b(cx - 0.05, by, cx + 0.05, 1, PWT.STONE);
         if (shape === 'funnel') for (let q = 0; q < 6; q++) { const y = top - 0.2 + q * 0.025, w = 0.2 - q * 0.03; b(cx - cw / 2 - w, y, cx - cw / 2 - w + 0.035, y + 0.025, PWT.STONE); b(cx + cw / 2 + w - 0.035, y, cx + cw / 2 + w, y + 0.025, PWT.STONE); } },
       goal: (c) => z2 ? Math.min(c.zone[ty] / (c.zn * k), c.zone2[ty] / (c.zn2 * k)) : c.zone[ty] / (c.zn * k), sol };
@@ -22929,7 +22984,7 @@ const PW_FAM = {
     const x0 = 0.1 + 0.2 * R(), x1 = x0 + 0.45 + 0.15 * R(), d = 0.12 + 0.06 * R();
     return { tools: ['lava'].concat(D > 0.5 ? ['sand'] : []), z: [x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95], noAmmo: 1, solRepeat: 1,
       build: (b) => { b(x0, 0.95 - d - 0.04, x0 + 0.03, 0.98, PWT.STONE); b(x1 - 0.03, 0.95 - d - 0.04, x1, 0.98, PWT.STONE); b(x0, 0.95, x1, 0.98, PWT.STONE); b(x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95, PWT.WATER); },
-      goal: (c) => (c.zone[PWT.STONE]) / (c.zn * (0.06 + 0.04 * D)), sol: [['lava', x0 + 0.06, 0.3, 90, x1 - 0.06]] };
+      goal: (c) => (c.zone[PWT.STONE]) / (c.zn * (0.055 + 0.035 * D)), sol: [['lava', x0 + 0.06, 0.3, 90, x1 - 0.06]] }; // (the hardest one made it with no time left)
   },
 };
 const PW_SHAPE = { cup: ['🥤', 'The cup', 'הכוס'], bowl: ['🥣', 'A wide bowl', 'קערה רחבה'], vase: ['🏺', 'A narrow vase', 'אגרטל צר'], twin: ['🥤', 'Two cups', 'שתי כוסות'], stand: ['🏆', 'A cup on a stand', 'כוס על עמוד'], funnel: ['🔻', 'Through the funnel', 'דרך המשפך'] };

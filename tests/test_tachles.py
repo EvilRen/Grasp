@@ -255,7 +255,7 @@ async def reconnect(b):
         drop() { this.open = false; this.disconnected = true; this.emit('error', { type: 'network', message: 'Lost connection to server.' }); this.emit('disconnected'); }
         reconnect() { window.__rc.push(Date.now()); setTimeout(() => this.drop(), 200); }
         destroy() { this.destroyed = true; this.open = false; this.disconnected = true; this.emit('disconnected'); this.emit('close'); } };"""
-    ctx, page, errs = await page_for(b, '/tachles', True, init="window.__graspNoAutoFs = true; sessionStorage.setItem('grasp.tk18', '1');" + fake); await wait(page, f"{TKH}.tk.scr === 'menu'", 6000)
+    ctx, page, errs = await page_for(b, '/tachles', True, init="window.__tkNet = 'peer'; window.__graspNoAutoFs = true; sessionStorage.setItem('grasp.tk18', '1');" + fake); await wait(page, f"{TKH}.tk.scr === 'menu'", 6000)
     await click(page, '#tachles [data-a="m:create"]'); await page.fill('#tkMe', 'המארח'); await click(page, '#tachles [data-a="go:create"]')
     await page.wait_for_timeout(1500); msg = await page.evaluate(f"{TKH}.tk.netMsg")
     check('reconnect: a drop shows "מתחבר מחדש" on the room', 'מתחבר מחדש' in msg, msg)
@@ -263,6 +263,28 @@ async def reconnect(b):
     r = await page.evaluate(f"(() => {{ const t = window.__rc, gaps = t.slice(1).map((x, i) => x - t[i]); return {{ n: t.length, minGap: gaps.length ? Math.min(...gaps) : 9999, peers: window.__peers, msg: {TKH}.tk.netMsg }}; }})()")
     check('reconnect: one try at a time, never a storm (the gaps grow, ≥ 0.9 s), then a fresh peer opens and the note goes', r['n'] >= 2 and r['n'] <= 6 and r['minGap'] >= 900 and r['peers'] >= 2 and r['msg'] == '', r)
     check('reconnect: no page errors', not errs, errs); await ctx.close()
+
+async def mqtt_room(b):
+    # the rooms over MQTT (the default since the owner's network blocks PeerJS), through a local broker (tests/mq_broker.py): a room, a phone joins
+    # with the code and sees the room, the game starts on both
+    import subprocess, sys as _s
+    br = subprocess.Popen([_s.executable if 'websockets' in _s.modules else 'python3.13', 'tests/mq_broker.py', '8897'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); await asyncio.sleep(1.2)
+    try:
+        ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []; pages = []
+        for i in range(2):
+            pg = await ctx.new_page(); await routes(pg); pg.on('pageerror', lambda e: errs.append(str(e)))
+            await pg.add_init_script(FAST + "window.__tkMQ = ['ws://localhost:8897/mqtt']; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
+            await pg.goto(BASE + '/tachles'); await wait(pg, f"{TKH}.tk.scr === 'menu'", 8000); pages.append(pg)
+        host, g = pages
+        await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'המארח'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(1500)
+        code = await host.evaluate(f"{TKH}.tk.code")
+        await click(g, '#tachles [data-a="m:join"]'); await g.fill('#tkMe', 'אורח'); await g.fill('#tkCode', code); await click(g, '#tachles [data-a="go:join"]')
+        ok = await wait(g, f"{TKH}.tk.scr === 'lobby'", 10000)
+        check('MQTT: a phone joins the room with its code (through the broker): both see two players', ok and await host.evaluate(f"{TKH}.tk.lobby.length") == 2 and len(await g.evaluate(f"{TKH}.tk.lobbyView")) == 2, await host.evaluate("tkDbgL.slice(-6)"))
+        await click(host, '#tachles [data-a="start"]'); ok2 = await wait(g, f"{TKH}.tk.scr === 'game' && {TKH}.tk.view && {TKH}.tk.view.round === 1", 8000)
+        check('MQTT: the game starts on the phone too', ok2)
+        check('MQTT: no page errors', not errs, errs); await ctx.close()
+    finally: br.terminate()
 
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
@@ -302,7 +324,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await write_card(b); await rules(b); await reconnect(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
