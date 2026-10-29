@@ -1479,6 +1479,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkFly{ position:absolute; bottom:40%; font-size:34px; pointer-events:none; animation:tkFly 1.5s ease-out forwards; z-index:3; } @keyframes tkFly{ 0%{ transform:translateY(0) scale(.6); opacity:0; } 15%{ opacity:1; transform:translateY(-10px) scale(1.2); } 100%{ transform:translateY(-140px) scale(1); opacity:0; } }
 #tachles .tkCrowd{ font-size:14px; color:#facc15; font-weight:700; } #tachles .tkNames{ width:100%; margin-bottom:8px; }
 #tachles .tkTV .tkSubs .tkSubW{ flex:1 1 calc(50% - 12px); max-width:none; }
+#tachles .tkDbgB{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 8px); left:8px; z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(30,30,30,.85); border:1px solid var(--bd); font-size:16px; opacity:.7; }
+#tachles .tkDbgP{ max-height:52vh; overflow:auto; font:11px/1.45 ui-monospace,Menlo,Consolas,monospace; color:#cfcfd8; background:#0b0b0b; border:1px solid var(--bd); border-radius:10px; padding:8px; white-space:pre-wrap; word-break:break-all; text-align:left; }
 #tachles .tkLvls{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
 #tachles .tkLv{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; border-radius:14px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; font-weight:800; font-size:14px; }
 #tachles .tkLv b{ font-size:24px; } #tachles .tkLv.on{ border-color:var(--neon); background:rgba(168,85,247,.16); box-shadow:0 0 18px rgba(168,85,247,.4); } #tachles .tkLv[disabled]{ opacity:.75; } #tachles .tkLv.on[disabled]{ opacity:1; }
@@ -1975,7 +1977,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.21';
+const APP_VERSION = '1.7.22';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21919,6 +21921,7 @@ function tkSnd(kind) {
     s0.connect(g); g.connect(audioBus()); s0.start(t0); };
   if (audio.state !== 'running') audio.resume().then(play).catch(() => {}); else play();
 }
+const TK_NETDOWN = ['disconnected', 'network', 'server-error', 'socket-error', 'socket-closed']; // (the broker errors that really mean the room cannot be found right now)
 const TK_V = 4, TK_SWAPS = 3, TK_STAG = 700, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
@@ -22065,6 +22068,15 @@ const TK = (() => {
 })();
 /* the phones: one hosts (runs TK), the others send their moves. PeerJS (its public broker connects the phones; WebRTC after that); tests use a
    BroadcastChannel (?tkbus=bc) with the same calls */
+/* the debug log (the owner: "add me a debug log screen"): every network event of the room, the time since the page opened; 🐞 opens it, Copy sends it */
+const tkDbgL = [], tkDbgT0 = Date.now();
+function tkDbg(m) { const s = ((Date.now() - tkDbgT0) / 1000).toFixed(1); tkDbgL.push(s + 's  ' + m); if (tkDbgL.length > 400) tkDbgL.splice(0, tkDbgL.length - 400); if (typeof tk !== 'undefined' && tk.modal && tk.modal.t === 'dbg') { clearTimeout(tkDbg.t); tkDbg.t = setTimeout(tkRender, 300); } }
+function tkErrS(e) { return e ? (e.type ? e.type + ': ' : '') + String(e.message || e).slice(0, 140) : '?'; }
+function tkWatchConn(c, who) { // a data connection's life, and its WebRTC link's
+  c.on('open', () => tkDbg(who + ' open (' + (c.peer || '?') + ')')); c.on('close', () => tkDbg(who + ' closed (' + (c.peer || '?') + ')')); c.on('error', (e) => tkDbg(who + ' error ' + tkErrS(e)));
+  setTimeout(() => { try { const pc = c.peerConnection; if (pc) { pc.addEventListener('iceconnectionstatechange', () => tkDbg(who + ' ice ' + pc.iceConnectionState)); pc.addEventListener('connectionstatechange', () => tkDbg(who + ' rtc ' + pc.connectionState)); } } catch {} }, 0);
+}
+addEventListener('online', () => tkDbg('device online')); addEventListener('offline', () => tkDbg('device OFFLINE')); document.addEventListener('visibilitychange', () => tkDbg('page ' + document.visibilityState));
 const TKNET = {
   async peer() { if (window.Peer) return window.Peer; await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); return window.Peer; },
   bc: () => new URLSearchParams(location.search).get('tkbus') === 'bc' || window.__tkBus === 'bc',
@@ -22072,20 +22084,26 @@ const TKNET = {
     if (TKNET.bc()) { const ch = new BroadcastChannel('tk-' + code), conns = new Map(); ch.onmessage = (e) => { const m = e.data; if (m.to !== 'host') return; let c = conns.get(m.from);
         if (!c) { c = { id: m.from, send: (d) => ch.postMessage({ to: m.from, d }), h: {}, on(k, f) { this.h[k] = f; }, close() {} }; conns.set(m.from, c); onConn(c); } if (c.h.data) c.h.data(m.d); };
       return { close: () => ch.close() }; }
-    const Peer = await TKNET.peer(), p = new Peer('grasp-tk-' + code); p.on('connection', (c) => { c.on('open', () => onConn(c)); });
+    tkDbg('host: loading PeerJS'); const Peer = await TKNET.peer(); tkDbg('host: registering room ' + code + ' on the broker'); const p = new Peer('grasp-tk-' + code); p.on('connection', (c) => { tkDbg('host: someone connecting (' + c.peer + ')'); tkWatchConn(c, 'guest'); c.on('open', () => onConn(c)); });
     /* (the owner: the room said "not found" after sharing the code: leaving the app to share drops the link to the broker, so nobody new could join.
        The phones already in keep playing (WebRTC); the room reconnects to the broker on its own, and again when the app comes back to the front) */
-    const back = () => { try { if (!p.destroyed && p.disconnected) p.reconnect(); } catch {} };
-    p.on('open', () => onOk && onOk()); p.on('disconnected', () => { onErr && onErr({ type: 'disconnected' }); setTimeout(back, 1000); });
-    p.on('error', (e) => { onErr && onErr(e); if (e && ['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(e.type)) setTimeout(back, 1500); });
+    const back = () => { try { if (!p.destroyed && p.disconnected) { tkDbg('host: reconnecting to the broker'); p.reconnect(); } } catch (e) { tkDbg('host: reconnect threw ' + tkErrS(e)); } };
+    p.on('open', (id) => { tkDbg('host: broker OPEN as ' + id); onOk && onOk(); }); p.on('disconnected', () => { tkDbg('host: broker DISCONNECTED'); onErr && onErr({ type: 'disconnected' }); setTimeout(back, 1000); });
+    p.on('close', () => tkDbg('host: peer destroyed'));
+    p.on('error', (e) => { tkDbg('host: ERROR ' + tkErrS(e)); onErr && onErr(e); if (e && ['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(e.type)) setTimeout(back, 1500); });
     const vis = () => { if (document.visibilityState === 'visible') back(); }; document.addEventListener('visibilitychange', vis);
     return { close: () => { document.removeEventListener('visibilitychange', vis); p.destroy(); }, p };
   },
   async join(code, onData, onErr) {
     if (TKNET.bc()) { const me = 'g' + Math.random().toString(36).slice(2, 8), ch = new BroadcastChannel('tk-' + code); ch.onmessage = (e) => { if (e.data.to === me) onData(e.data.d); };
       return { send: (d) => ch.postMessage({ to: 'host', from: me, d }), close: () => ch.close() }; }
-    const Peer = await TKNET.peer(), p = new Peer(); return new Promise((ok, no) => { p.on('open', () => { const c = p.connect('grasp-tk-' + code, { reliable: true }); const t = setTimeout(() => no(new Error('timeout')), 12000);
-      c.on('open', () => { clearTimeout(t); ok({ send: (d) => c.send(d), close: () => p.destroy() }); }); c.on('data', onData); c.on('close', () => onErr && onErr('closed')); }); p.on('error', (e) => { onErr && onErr(e); no(e); }); });
+    tkDbg('join: loading PeerJS'); const Peer = await TKNET.peer(), p = new Peer(); let joined = false; tkDbg('join: connecting to the broker');
+    const back = () => { try { if (!p.destroyed && p.disconnected) { tkDbg('join: reconnecting to the broker'); p.reconnect(); } } catch {} };
+    p.on('disconnected', () => { tkDbg('join: broker DISCONNECTED (the game link stays)'); setTimeout(back, 1000); }); p.on('close', () => tkDbg('join: peer destroyed'));
+    return new Promise((ok, no) => { p.on('open', (id) => { tkDbg('join: broker OPEN as ' + id); if (joined) return; joined = true; tkDbg('join: calling room ' + code); const c = p.connect('grasp-tk-' + code, { reliable: true }); tkWatchConn(c, 'host');
+      const t = setTimeout(() => { tkDbg('join: TIMEOUT, the room did not answer in 12 s'); no(new Error('timeout')); }, 12000);
+      c.on('open', () => { clearTimeout(t); ok({ send: (d) => c.send(d), close: () => p.destroy() }); }); c.on('data', onData); c.on('close', () => onErr && onErr('closed')); });
+      p.on('error', (e) => { tkDbg('join: ERROR ' + tkErrS(e)); if (!joined) no(e); /* (once in, a broker error is no reason to leave: the game link may well be fine; its own close says so) */ if (e && ['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) setTimeout(back, 1500); }); });
   },
 };
 /* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
@@ -22119,6 +22137,7 @@ function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !=
   if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 + g.order.length * TK_STAG : 900 + Math.random() * 2600); } /* (a bot czar reads them all first) */
 function tkTick() { // 4 times a second: the round ring and the next-round count; on the phone that runs the game, the clock and the banner
   const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now();
+  if (tk.mode === 'host' && tk.netMsg && tk.net && tk.net.p && tk.net.p.open && !tk.net.p.disconnected) { tk.netMsg = ''; tkRender(); } // (the room is reachable again: the note goes, whatever event was missed)
   if (g && tk.mode !== 'guest') {
     if (g.phase === 'pick' && g.timer && now - g.roundAt > g.timer * 1000 + TK_GRACE && TK.force(g)) { tk.log.push('timeup'); tkPush(); return; }
     if (g.phase === 'reveal' && now - g.revealAt >= tkRevealMs()) { TK.next(g); tk.log.push(g.phase === 'over' ? 'over' : 'next'); tk.sel = []; tk.passTo = null; tkPush(); return; }
@@ -22186,6 +22205,7 @@ function tkRender() {
   else if (s === 'game' && tk.view) h = tk.view.phase === 'over' ? tkWinHtml(tk.view) : tkGameHtml(tk.view);
   else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
   const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
+  if (['lobby', 'game', 'board', 'form'].includes(s)) h += '<button class="tkDbgB" data-a="dbg" aria-label="debug">🐞</button>';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
 }
@@ -22231,6 +22251,10 @@ function tkModalHtml() {
       (tk.mode === 'guest' ? '<div class="tkRO"><span>' + tks('winScore') + '<b>' + S.target + '</b></span><span>' + tks('timer') + '<b dir="ltr">' + S.timer + 's</b></span><span>' + tks('hand') + '<b>' + S.hand + '</b></span></div>'
         : tkStepper('ws', tks('winScore'), S.target, S.target > 3, S.target < 15) + (local ? '' : tkStepper('tm', tks('timer'), '<span dir="ltr">' + S.timer + 's</span>', ti > 0, ti < TK_TIMERS.length - 1)) + tkStepper('hs', tks('hand'), S.hand, S.hand > 5, S.hand < 10)); }
   else if (m.t === 'own') b = tkOwnHtml();
+  else if (m.t === 'dbg') { const P = tk.net && tk.net.p, st = 'גרסה ' + APP_VERSION + ' · מצב ' + (tk.mode || '-') + ' · חדר ' + (tk.code || '-') + ' · אינטרנט ' + (navigator.onLine ? 'כן' : 'לא') +
+      (P ? ' · broker ' + (P.disconnected ? 'מנותק' : P.open ? 'מחובר' : 'מתחבר') + ' (' + (P.id || '') + ')' : '') + ' · שחקנים ' + tk.conns.size + ' · מסכים ' + tk.screens.size;
+    b = '<div class="tkMHead"><h3>🐞 יומן חיבור</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div><p class="tkDim tkXs tkMb8" dir="rtl">' + tkEsc(st) + '</p>' +
+      '<pre class="tkDbgP" dir="ltr">' + tkEsc(tkDbgL.slice().reverse().join('\n') || '(ריק)') + '</pre><div class="tkTwo tkMt"><button class="tkS tkSm" data-a="dbgClr">נקה</button><button class="tkP tkSm" data-a="dbgCopy">' + (Date.now() - (tk.dbgCopied || 0) < 2000 ? 'הועתק!' : 'העתק') + '</button></div>'; }
   else if (m.t === 'packs') { const S = tk.mode === 'guest' ? (tk.lobbySet || tk.set) : tk.set, can = tk.mode !== 'guest', off = S.off || [], d = tk.deck, lv = S.lvl || 2;
     const cnt = (k) => { if (!d || !d.wm) return 0; let n = 0; for (const M of [d.wm, d.bm]) for (const m of M) if (+m[0] <= lv && m.includes(k, 1)) n++; return n; };
     b = '<div class="tkMHead"><h3>🗂️ ' + tks('packsT') + '</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div><p class="tkDim tkSm tkMb">' + tks('packsD') + '</p><div class="tkPacks">' +
@@ -22453,6 +22477,10 @@ function tkClick(e) {
   else if (a === 'kickOk') { const id = tk.modal && tk.modal.id; tk.modal = null; tk.lobby = tk.lobby.filter((p) => p.id !== id); const c = tk.conns.get(id); if (c) { try { c.send({ t: 'kicked' }); } catch {} tk.conns.delete(id); } tk.log.push('kick'); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'addBot') { tkAddBot(); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'start') { if (tk.lobby.length >= 2 && tk.deck && tkEnough(tk.set, tk.lobby.length)) { tkNewGame(tk.lobby); return; } }
+  else if (a === 'dbg') tk.modal = { t: 'dbg' };
+  else if (a === 'dbgClr') tkDbgL.length = 0;
+  else if (a === 'dbgCopy') { const P = tk.net && tk.net.p, txt = 'Tachles ' + APP_VERSION + ' mode=' + tk.mode + ' room=' + tk.code + ' online=' + navigator.onLine + (P ? ' broker=' + (P.disconnected ? 'down' : P.open ? 'open' : 'connecting') : '') + '\n' + navigator.userAgent + '\n' + tkDbgL.join('\n');
+    try { navigator.clipboard.writeText(txt).then(() => { tk.dbgCopied = Date.now(); tkRender(); }).catch(() => {}); } catch {} }
   else if (a === 'names') { tk.set.names = tk.set.names === false; tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'own') { if (tk.scr === 'setLocal') tkReadNames(); tk.myOwn = tk.mode === 'guest' ? tk.myOwn : (tk.own.h || []).slice(); tk.modal = { t: 'own' }; }
   else if (a === 'ownAdd' || a.startsWith('ownRm:')) { const x = $('tkOwnIn'), v = x ? x.value.trim().slice(0, 80) : ''; if (a === 'ownAdd') { if (!v) return; tk.myOwn.push(/[.!?]$/.test(v) ? v : v + '.'); } else tk.myOwn.splice(+a.slice(6), 1);
@@ -22486,16 +22514,19 @@ function tkCurView() { if (tk.mode !== 'local') return tk.view; const g = tk.g, 
 function tkReadNames() { document.querySelectorAll('#tachles .tkIn[data-i]').forEach((x) => { tk.names[+x.dataset.i] = x.value.slice(0, 20); }); }
 /* online: the host opens a room (a code), the guests join */
 async function tkHost(name) {
+  tkDbg('— create room (' + navigator.userAgent.slice(0, 90) + ')');
   tk.own = {};
   tk.mode = 'host'; tk.me = 'h'; tk.botN = 0; tk.code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); tk.lobby = [{ id: 'h', name }]; tk.netMsg = tks('connecting'); tk.scr = 'lobby'; tkRender();
   try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => tkGone(c.peer || c.id)); },
-      (e) => { if (tk.mode !== 'host') return; tk.netMsg = tks(e && e.type === 'unavailable-id' ? 'netTaken' : 'reconn'); tkRender(); }, () => { if (tk.mode === 'host' && tk.netMsg) { tk.netMsg = ''; tkRender(); } });
+      (e) => { if (tk.mode !== 'host') return; const ty = e && e.type; // (the owner: "the connection dropped" stayed on for good: a guest or the TV leaving makes the broker answer 'peer-unavailable', which is no drop at all)
+        if (ty === 'unavailable-id') tk.netMsg = tks('netTaken'); else if (TK_NETDOWN.includes(ty)) tk.netMsg = tks('reconn'); else return; tkRender(); },
+      () => { if (tk.mode === 'host' && tk.netMsg) { tk.netMsg = ''; tkRender(); } });
     tk.netMsg = ''; tk.log.push('host:' + tk.code); }
   catch { tk.netMsg = tks('netErr'); } tkRender();
 }
-function tkGone(id) { if (tk.screens.delete(id)) { tkRender(); return; } tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
+function tkGone(id) { tkDbg('gone: ' + id); if (tk.screens.delete(id)) { tkRender(); return; } tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
 function tkFromGuest(c, m) {
-  const id = c.peer || c.id; if (!m || typeof m !== 'object') return;
+  const id = c.peer || c.id; if (!m || typeof m !== 'object') return; tkDbg('in ← ' + id.slice(0, 10) + ': ' + m.t);
   if (m.t === 'screen') { tk.screens.set(id, c); tk.log.push('tv'); tkBoardPush(); tkRender(); return; }
   if (m.t === 'hello') { const name = String(m.name || '?').slice(0, 20); tk.conns.set(id, c); if (Array.isArray(m.seen)) tk.peerSeen[id] = m.seen.slice(0, 4000);
     if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p) { p.on = true; tkPush(); return; } }
@@ -22512,6 +22543,7 @@ function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lo
 function tkBoardPush() { if (tk.mode !== 'host' || !tk.screens.size) return; const v = tk.g ? { scr: 'game', v: TK.view(tk.g, '~tv') } : { scr: 'lobby', code: tk.code, list: tk.lobby, set: tk.set };
   for (const [, c] of tk.screens) { try { c.send({ t: 'board', v }); } catch {} } }
 async function tkScreen() {
+  tkDbg('— TV screen for room ' + tk.code);
   tk.mode = 'screen'; tk.busy = true; tk.err = ''; tkRender();
   const out = (k) => { tkNetClose(); tk.board = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
   try { tk.net = await TKNET.join(tk.code, (m) => {
@@ -22539,9 +22571,11 @@ function tkBoardHtml() {
   return h + '</div>';
 }
 async function tkJoin(name) {
+  tkDbg('— join room ' + tk.code);
   tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender();
   const out = (k) => { tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
   try { tk.net = await TKNET.join(tk.code, (m) => {
+      tkDbg('in ← host: ' + m.t + (m.v && m.v.seq != null ? ' #' + m.v.seq + ' ' + m.v.phase : ''));
       if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.lobbyOwn = m.own || 0; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
       else if (m.t === 'view') { tkSfxLoad(); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }

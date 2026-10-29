@@ -176,6 +176,9 @@ async def online(b):
     await click(g3, '#tachles [data-a="m:screen"]'); await g3.fill('#tkCode', code); await click(g3, '#tachles [data-a="go:screen"]'); await g3.wait_for_timeout(500)
     check('TV: the kicked phone joins as a shared screen: the big code, the players, no player added', await g3.locator('#tachles .tkTV .tkTvCode').count() == 1 and await g3.locator('#tachles .tkTvPl .tkChip').count() == 3 and await host.evaluate(f"{TKH}.tk.lobby.length") == 3 and 'מסך משותף מחובר' in await host.inner_text('#tachles .tkTvHint'))
     await g3.set_viewport_size({'width': 1280, 'height': 720}); await g3.screenshot(path=OUT + 'tachles_tv_lobby.png')
+    await click(host, '#tachles [data-a="dbg"]'); dl = await host.inner_text('#tachles .tkDbgP')
+    check('debug log: 🐞 in the room opens the connection log (the room made, guests\' hello, the TV)', '— create room' in dl and 'hello' in dl and 'screen' in dl and await host.locator('#tachles [data-a="dbgCopy"]').count() == 1, dl[:300])
+    await click(host, '#tachles .tkMHead [data-a="mclose"]')
     await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(400); pages = [host, g1, g2]
     check('TV: the game on the screen: the question card, the scores, the answer chips, no hand', await g3.locator('#tachles .tkTV .tkBlackC').count() == 1 and await g3.locator('#tachles .tkTV .tkScores').count() == 1 and await g3.locator('#tachles .tkHC').count() == 0)
     vs = [await view(p) for p in pages]; check('online: the host starts: every phone in the game, round 1', all(v['scr'] == 'game' and v['round'] == 1 for v in vs), vs)
