@@ -242,6 +242,26 @@ async def style_packs(b):
     check('style: the game at 🟢 without sex and family: every card in the hands, the pile and the questions passes', r['n'] > 50 and r['badW'] == 0 and r['badB'] == 0, r)
     check('style: no page errors', not errs, errs); await ctx.close()
 
+async def reconnect(b):
+    # the owner's log: the room's link to the broker dropped and re-dropped every few hundred ms. A fake PeerJS whose reconnects keep failing (an
+    # error + a disconnect at once, like the log): one try at a time with growing waits, then a brand-new peer that opens and clears the note
+    fake = """window.__rc = []; window.__peers = 0; window.__fail = true;
+      window.Peer = class { constructor(id) { this.id = id; this.h = {}; this.open = false; this.disconnected = true; this.destroyed = false; this.n = ++window.__peers; this.connections = {};
+          setTimeout(() => { if (this.n > 1 || !window.__dropAt) { this.open = true; this.disconnected = false; this.emit('open', id); } }, 50);
+          if (this.n === 1) setTimeout(() => { this.open = true; this.disconnected = false; this.emit('open', id); setTimeout(() => this.drop(), 300); }, 50); }
+        on(k, f) { (this.h[k] = this.h[k] || []).push(f); } emit(k, a) { (this.h[k] || []).forEach((f) => f(a)); }
+        drop() { this.open = false; this.disconnected = true; this.emit('error', { type: 'network', message: 'Lost connection to server.' }); this.emit('disconnected'); }
+        reconnect() { window.__rc.push(Date.now()); setTimeout(() => this.drop(), 200); }
+        destroy() { this.destroyed = true; this.open = false; this.disconnected = true; this.emit('disconnected'); this.emit('close'); } };"""
+    ctx, page, errs = await page_for(b, '/tachles', True, init="window.__graspNoAutoFs = true; sessionStorage.setItem('grasp.tk18', '1');" + fake); await wait(page, f"{TKH}.tk.scr === 'menu'", 6000)
+    await click(page, '#tachles [data-a="m:create"]'); await page.fill('#tkMe', 'המארח'); await click(page, '#tachles [data-a="go:create"]')
+    await page.wait_for_timeout(1500); msg = await page.evaluate(f"{TKH}.tk.netMsg")
+    check('reconnect: a drop shows "מתחבר מחדש" on the room', 'מתחבר מחדש' in msg, msg)
+    await page.wait_for_timeout(15000)
+    r = await page.evaluate(f"(() => {{ const t = window.__rc, gaps = t.slice(1).map((x, i) => x - t[i]); return {{ n: t.length, minGap: gaps.length ? Math.min(...gaps) : 9999, peers: window.__peers, msg: {TKH}.tk.netMsg }}; }})()")
+    check('reconnect: one try at a time, never a storm (the gaps grow, ≥ 0.9 s), then a fresh peer opens and the note goes', r['n'] >= 2 and r['n'] <= 6 and r['minGap'] >= 900 and r['peers'] >= 2 and r['msg'] == '', r)
+    check('reconnect: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -280,7 +300,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await write_card(b); await rules(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await write_card(b); await rules(b); await reconnect(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())

@@ -1977,7 +1977,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.22';
+const APP_VERSION = '1.7.23';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22077,6 +22077,10 @@ function tkWatchConn(c, who) { // a data connection's life, and its WebRTC link'
   setTimeout(() => { try { const pc = c.peerConnection; if (pc) { pc.addEventListener('iceconnectionstatechange', () => tkDbg(who + ' ice ' + pc.iceConnectionState)); pc.addEventListener('connectionstatechange', () => tkDbg(who + ' rtc ' + pc.connectionState)); } } catch {} }, 0);
 }
 addEventListener('online', () => tkDbg('device online')); addEventListener('offline', () => tkDbg('device OFFLINE')); document.addEventListener('visibilitychange', () => tkDbg('page ' + document.visibilityState));
+/* the WebRTC link between two phones: Google's STUN, PeerJS's own TURN relay, and Open Relay's (ports 80 / 443, TCP too, for networks that block the rest)
+   when the phones cannot see each other directly (4G and Wi-Fi) */
+const TK_ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }], sdpSemantics: 'unified-plan' };
 const TKNET = {
   async peer() { if (window.Peer) return window.Peer; await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); return window.Peer; },
   bc: () => new URLSearchParams(location.search).get('tkbus') === 'bc' || window.__tkBus === 'bc',
@@ -22084,26 +22088,37 @@ const TKNET = {
     if (TKNET.bc()) { const ch = new BroadcastChannel('tk-' + code), conns = new Map(); ch.onmessage = (e) => { const m = e.data; if (m.to !== 'host') return; let c = conns.get(m.from);
         if (!c) { c = { id: m.from, send: (d) => ch.postMessage({ to: m.from, d }), h: {}, on(k, f) { this.h[k] = f; }, close() {} }; conns.set(m.from, c); onConn(c); } if (c.h.data) c.h.data(m.d); };
       return { close: () => ch.close() }; }
-    tkDbg('host: loading PeerJS'); const Peer = await TKNET.peer(); tkDbg('host: registering room ' + code + ' on the broker'); const p = new Peer('grasp-tk-' + code); p.on('connection', (c) => { tkDbg('host: someone connecting (' + c.peer + ')'); tkWatchConn(c, 'guest'); c.on('open', () => onConn(c)); });
-    /* (the owner: the room said "not found" after sharing the code: leaving the app to share drops the link to the broker, so nobody new could join.
-       The phones already in keep playing (WebRTC); the room reconnects to the broker on its own, and again when the app comes back to the front) */
-    const back = () => { try { if (!p.destroyed && p.disconnected) { tkDbg('host: reconnecting to the broker'); p.reconnect(); } } catch (e) { tkDbg('host: reconnect threw ' + tkErrS(e)); } };
-    p.on('open', (id) => { tkDbg('host: broker OPEN as ' + id); onOk && onOk(); }); p.on('disconnected', () => { tkDbg('host: broker DISCONNECTED'); onErr && onErr({ type: 'disconnected' }); setTimeout(back, 1000); });
-    p.on('close', () => tkDbg('host: peer destroyed'));
-    p.on('error', (e) => { tkDbg('host: ERROR ' + tkErrS(e)); onErr && onErr(e); if (e && ['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(e.type)) setTimeout(back, 1500); });
-    const vis = () => { if (document.visibilityState === 'visible') back(); }; document.addEventListener('visibilitychange', vis);
-    return { close: () => { document.removeEventListener('visibilitychange', vis); p.destroy(); }, p };
+    tkDbg('host: loading PeerJS'); const Peer = await TKNET.peer(), id = 'grasp-tk-' + code, open = new Set();
+    /* (the owner's log: "Lost connection to server" every few hundred ms: each drop fired two or three reconnects at once, which kept knocking each
+       other off. Now one at a time, waiting 1, 2, 4, 8, 15 s; after 3 failures with nobody in yet, a brand-new peer with the same room id) */
+    let p = null, tries = 0, timer = 0, dead = false;
+    const make = () => { tkDbg('host: registering room ' + code + ' on the broker'); const q = new Peer(id, { config: TK_ICE }); p = q;
+      q.on('connection', (c) => { tkDbg('host: someone connecting (' + c.peer + ')'); tkWatchConn(c, 'guest'); c.on('open', () => { open.add(c); onConn(c); }); c.on('close', () => open.delete(c)); });
+      q.on('open', (x) => { if (q !== p) return; tries = 0; tkDbg('host: broker OPEN as ' + x); onOk && onOk(); });
+      q.on('disconnected', () => { if (q !== p || dead) return; tkDbg('host: broker DISCONNECTED'); onErr && onErr({ type: 'disconnected' }); retry(); });
+      q.on('close', () => tkDbg('host: peer destroyed'));
+      q.on('error', (e) => { if (q !== p) return; tkDbg('host: ERROR ' + tkErrS(e)); onErr && onErr(e); if (e && (TK_NETDOWN.includes(e.type) || e.type === 'unavailable-id')) retry(); }); };
+    const retry = (now) => { if (timer || dead) return; const ms = now ? 50 : Math.min(15000, 1000 * Math.pow(2, tries)); tries++; tkDbg('host: next try in ' + (ms / 1000).toFixed(1) + ' s');
+      timer = setTimeout(() => { timer = 0; if (dead || (p.open && !p.disconnected)) return;
+        if (tries > 3 && !open.size) { tkDbg('host: starting a fresh peer'); try { p.destroy(); } catch {} make(); retryArm(); }
+        else if (p.disconnected && !p.destroyed) { tkDbg('host: reconnecting to the broker'); try { p.reconnect(); } catch (e) { tkDbg('host: reconnect threw ' + tkErrS(e)); } retryArm(); }
+        else retryArm(); }, ms); };
+    const retryArm = () => setTimeout(() => { if (!dead && !(p.open && !p.disconnected)) retry(); }, 6000); // (no answer in 6 s: the next try)
+    make(); setTimeout(() => { if (!dead && !p.open) { tkDbg('host: no broker after 8 s'); retry(); } }, 8000);
+    const vis = () => { if (document.visibilityState === 'visible' && !dead && p.disconnected) { tries = 0; clearTimeout(timer); timer = 0; retry(true); } }; document.addEventListener('visibilitychange', vis);
+    return { close: () => { dead = true; clearTimeout(timer); document.removeEventListener('visibilitychange', vis); try { p.destroy(); } catch {} }, get p() { return p; } };
   },
   async join(code, onData, onErr) {
     if (TKNET.bc()) { const me = 'g' + Math.random().toString(36).slice(2, 8), ch = new BroadcastChannel('tk-' + code); ch.onmessage = (e) => { if (e.data.to === me) onData(e.data.d); };
       return { send: (d) => ch.postMessage({ to: 'host', from: me, d }), close: () => ch.close() }; }
-    tkDbg('join: loading PeerJS'); const Peer = await TKNET.peer(), p = new Peer(); let joined = false; tkDbg('join: connecting to the broker');
-    const back = () => { try { if (!p.destroyed && p.disconnected) { tkDbg('join: reconnecting to the broker'); p.reconnect(); } } catch {} };
-    p.on('disconnected', () => { tkDbg('join: broker DISCONNECTED (the game link stays)'); setTimeout(back, 1000); }); p.on('close', () => tkDbg('join: peer destroyed'));
+    tkDbg('join: loading PeerJS'); const Peer = await TKNET.peer(), p = new Peer({ config: TK_ICE }); let joined = false, bt = 0, btries = 0; tkDbg('join: connecting to the broker');
+    const back = () => { if (bt) return; bt = setTimeout(() => { bt = 0; try { if (!p.destroyed && p.disconnected) { tkDbg('join: reconnecting to the broker'); p.reconnect(); } } catch {} }, Math.min(15000, 1000 * Math.pow(2, btries++))); };
+    p.on('open', () => { btries = 0; });
+    p.on('disconnected', () => { tkDbg('join: broker DISCONNECTED (the game link stays)'); back(); }); p.on('close', () => tkDbg('join: peer destroyed'));
     return new Promise((ok, no) => { p.on('open', (id) => { tkDbg('join: broker OPEN as ' + id); if (joined) return; joined = true; tkDbg('join: calling room ' + code); const c = p.connect('grasp-tk-' + code, { reliable: true }); tkWatchConn(c, 'host');
       const t = setTimeout(() => { tkDbg('join: TIMEOUT, the room did not answer in 12 s'); no(new Error('timeout')); }, 12000);
       c.on('open', () => { clearTimeout(t); ok({ send: (d) => c.send(d), close: () => p.destroy() }); }); c.on('data', onData); c.on('close', () => onErr && onErr('closed')); });
-      p.on('error', (e) => { tkDbg('join: ERROR ' + tkErrS(e)); if (!joined) no(e); /* (once in, a broker error is no reason to leave: the game link may well be fine; its own close says so) */ if (e && ['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) setTimeout(back, 1500); }); });
+      p.on('error', (e) => { tkDbg('join: ERROR ' + tkErrS(e)); if (!joined) no(e); /* (once in, a broker error is no reason to leave: the game link may well be fine; its own close says so) */ if (e && ['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) back(); }); });
   },
 };
 /* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
