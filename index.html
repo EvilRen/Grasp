@@ -1527,7 +1527,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkHN{ position:absolute; bottom:10px; inset-inline-start:14px; font-size:11px; font-weight:800; color:#aaa; letter-spacing:.05em; }
 #tachles .tkDots{ display:flex; justify-content:center; gap:6px; margin-top:2px; } #tachles .tkDots i{ width:8px; height:8px; border-radius:50%; background:#3a3a3a; cursor:pointer; } #tachles .tkDots i.cur{ background:#fff; transform:scale(1.25); } #tachles .tkDots i.on{ background:var(--neon); box-shadow:0 0 8px var(--neon); }
 #tachles .tkSwipe{ text-align:center; font-size:12px; color:var(--faint); margin:6px 0 4px; }
-#tachles .tkHandBox{ position:sticky; bottom:0; z-index:3; margin:0 -16px; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 4px); background:linear-gradient(rgba(10,10,10,0), rgba(10,10,10,.95) 26px); } /* (the hand stays at the bottom of the screen, like cards held: the owner, from Evil Apples) */
+#tachles .tkHandBox{ position:sticky; bottom:0; z-index:3; margin:0 -16px; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 4px); background:linear-gradient(rgba(10,10,10,0), rgba(10,10,10,.95) 26px); } /* (the hand stays at the bottom of the screen, like cards held: the owner, from the owner's reference) */
 #tachles .tkHC em, #tachles .tkSub em{ position:absolute; top:-8px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:var(--neon); color:#fff; font-style:normal; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(168,85,247,.7); }
 #tachles .tkSub em{ position:static; width:20px; height:20px; font-size:12px; margin-bottom:4px; box-shadow:none; }
 #tachles .tkBanner{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:4px; } #tachles .tkBanner > div{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; } #tachles .tkBanner .tkI{ width:20px; height:20px; }
@@ -1967,7 +1967,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.17';
+const APP_VERSION = '1.7.18';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21857,7 +21857,7 @@ function questDown(e) {
 }
 window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: qEnter, play: (i, t) => qPlay(i, t, performance.now()), endTurn: () => { quest.busyUntil = 0; qEndTurn(performance.now()); }, next: qNext, profile: qP, save: qSave, btns: () => quest.btns };
 /* ---------------- Tachles (/tachles; adults only: a long press on the copyright line at the bottom of the home screen, then "I'm 18+"; the owner,
-   Oct 2026: his party game (like Cards Against Humanity: a question card, everyone answers with the funniest white card from their hand, the
+   Oct 2026: his party game (a question card, everyone answers with the funniest white card from their hand, the
    judge picks the winner, the judge moves round) without its database. The deck (assets/tachles/deck.json: the owner's Supabase cards minus two
    groups he agreed to drop: anything sexualizing minors, sexual or criminal claims about real named people; plus new cards) ships with the app.
    Three ways to play: one phone passed round (a "pass to X" screen hides each hand), against bots, or each on their own phone (a room code;
@@ -21866,7 +21866,7 @@ window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: q
    and 0-3 packs (deck.json wm / bm: "2sg" = level 2, packs s and g, parallel to w / b); the room picks a level and switches packs off */
 const TK_LVL = [null, { e: '🟢', n: 'קליל', d: 'לערב עם ההורים או בחברה מעורבת. עוקץ, בלי סקס בוטה ובלי גועל.' },
   { e: '🟠', n: 'גס', d: 'לחברים. סקס, קללות, הפרשות והומור שחור.' },
-  { e: '🔴', n: 'בלי גבולות', d: 'כמו Cards Against Humanity: מזעזע, טאבו, הכי רחוק שיש. רק למי שבאמת בא לו.' }];
+  { e: '🔴', n: 'בלי גבולות', d: 'מזעזע, טאבו, הכי רחוק שיש. רק למי שבאמת בא לו.' }];
 const TK_PACKS = [['s', '🍆', 'סקס', 'איברים, פורנו ומה שקורה מתחת לשמיכה'], ['g', '💩', 'קקי, פיפי וגועל', 'הפרשות, הקאות וריחות'], ['r', '🕍', 'דת וחרדים', 'רבנים, אלוהים, חגים וכשרות'],
   ['p', '🏛️', 'פוליטיקה', 'פוליטיקאים, הכנסת והממשלה'], ['a', '🪖', 'צבא ומילואים', 'טירונות, מילואים ושמירות'], ['d', '⚰️', 'מוות ומחלות', 'לוויות, בתי חולים והומור שחור'],
   ['x', '🍺', 'סמים ושתייה', 'אלכוהול, סמים והחלטות גרועות'], ['c', '⭐', 'סלבס ואנשים אמיתיים', 'אנשים אמיתיים, בשמם'], ['h', '🕯️', 'השואה וטרור', 'השואה, נאצים וטרור. הכי רגיש'],
@@ -21894,6 +21894,19 @@ const TK_PW = [['האקס של {p}.', '1'], ['אמא של {p} בטינדר.', '2
 /* live reactions (the owner: with sounds: farts, burps, claps, vomit): anyone taps them on an answer; they fly up on every phone and the TV, and the most-reacted
    answer that the czar did not pick wins a crowd point */
 const TK_RX = [['laugh', '😂'], ['clap', '👏'], ['fart', '💨'], ['burp', '🥴'], ['vomit', '🤮'], ['horn', '🔥']];
+/* the reactions' sounds (the owner: the synthesized ones were bad): real recordings, CC0 from freesound.org (assets/tachles/sfx/CREDITS.txt), trimmed;
+   [file, gain]; a random take each time; the synth stays as the fallback until a file is in */
+const TK_SFX = { laugh: [['laugh1', 0.9], ['laugh2', 2.2]], clap: [['clap1', 1.1], ['clap2', 1.1]], fart: [['fart1', 0.9], ['fart2', 1]], burp: [['burp1', 0.9], ['burp2', 1.3]], vomit: [['vomit1', 1.1], ['vomit2', 2.4]], horn: [['horn1', 3.5]] };
+const tkSfxBuf = {};
+function tkSfxLoad() { if (!audio) return; for (const L of Object.values(TK_SFX)) for (const [f] of L) if (!tkSfxBuf[f]) tkSfxBuf[f] = fetch('/assets/tachles/sfx/' + f + '.mp3').then((r) => r.arrayBuffer()).then((a) => new Promise((ok, no) => audio.decodeAudioData(a, ok, no))).then((b) => (tkSfxBuf[f] = b)).catch(() => { tkSfxBuf[f] = null; }); }
+function tkSnd(kind) {
+  try { audioInit(); } catch {} if (muted || !audio) return; tkSfxLoad(); const L = TK_SFX[kind]; if (!L) return; const [f, gn] = L[Math.floor(Math.random() * L.length)], b = tkSfxBuf[f];
+  if (!(b instanceof AudioBuffer)) { sfx(kind); return; }
+  const play = () => { const t0 = audio.currentTime, s0 = audio.createBufferSource(), g = audio.createGain(); s0.buffer = b; s0.playbackRate.value = 0.94 + Math.random() * 0.12;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.5 * gn, t0 + 0.015); g.gain.setValueAtTime(0.5 * gn, t0 + Math.max(0.02, b.duration - 0.2)); g.gain.linearRampToValueAtTime(0, t0 + b.duration);
+    s0.connect(g); g.connect(audioBus()); s0.start(t0); };
+  if (audio.state !== 'running') audio.resume().then(play).catch(() => {}); else play();
+}
 const TK_V = 4, TK_SWAPS = 3, TK_STAG = 700, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
 const tkRevealMs = () => window.__tkReveal || 4500; // the winner's banner, then the next round on its own (the original's 4.5 s)
 /* the original's look and feel (EvilRen/takhles, Oct 2026: "Tachles is missing the original's features and designs"): snack nicknames, a letter
@@ -22088,7 +22101,7 @@ function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkR
 function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
   const g = tk.g; if (!g) return; if (tk.mode === 'host') { for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} } tkBoardPush(); }
-  tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots(); tkBotRx();
+  tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots(); tkBotRx(); tkSfxLoad();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
   if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 + g.order.length * TK_STAG : 900 + Math.random() * 2600); } /* (a bot czar reads them all first) */
@@ -22170,7 +22183,7 @@ function tkFan() { // the hand, held: the card in the middle straight and in fro
     c.style.transform = 'translateY(' + (a * 26 - (c.classList.contains('on') ? 18 : 0)).toFixed(1) + 'px) rotate(' + (Math.max(-2.2, Math.min(2.2, d)) * 9).toFixed(1) + 'deg) scale(' + (1 - Math.min(1, a) * 0.12).toFixed(3) + ')'; c.style.zIndex = String(100 - Math.round(a * 10)); });
   document.querySelectorAll('#tachles .tkDots i').forEach((e, i) => e.classList.toggle('cur', i === best));
 }
-/* write your own card (the owner, from Evil Apples' wildcards: "send it to me, it goes in after I approve"): a white answer or a black question (___ for
+/* write your own card (the owner, from a wildcard idea: "send it to me, it goes in after I approve"): a white answer or a black question (___ for
    each blank); it goes to the owner by email (FormSubmit: no server of ours; the first one sent asks the owner to confirm the address), he adds the
    ones he likes to assets/tachles/deck.json (tools/tk_add.py). 5 a day a phone; what was sent stays listed here (localStorage grasp.tkMine) */
 const TK_MAIL = 'https://formsubmit.co/ajax/bennyankri@gmail.com';
@@ -22362,7 +22375,7 @@ function tkFx(k, e) { // a reaction: to every phone and the TV (the host), then 
   if (tk.mode === 'host') for (const [, c] of [...tk.conns, ...tk.screens]) { try { c.send({ t: 'fx', k, e }); } catch {} } tkFxShow(k, e);
 }
 function tkFxShow(k, e) {
-  const R = TK_RX[e]; if (!R) return; const now = Date.now(); if (now - tk.fxAt > 140) { tk.fxAt = now; try { audioInit(); sfx(R[0]); } catch {} }
+  const R = TK_RX[e]; if (!R) return; const now = Date.now(); if (now - tk.fxAt > 140) { tk.fxAt = now; try { tkSnd(R[0]); } catch {} }
   if (tk.rxKey !== tk.subsKey) { tk.rxKey = tk.subsKey; tk.rxN = {}; } tk.rxN[k] = (tk.rxN[k] || 0) + 1; tk.log.push('fx:' + R[0]);
   const W0 = document.querySelectorAll('#tachles .tkSubW')[k]; if (!W0) return; const n = W0.querySelector('.tkRxN'); if (n) n.textContent = tk.rxN[k];
   const f = document.createElement('span'); f.className = 'tkFly'; f.textContent = R[1]; f.style.insetInlineStart = (10 + Math.random() * 75) + '%'; W0.appendChild(f); setTimeout(() => f.remove(), 1600);
@@ -22489,7 +22502,7 @@ async function tkScreen() {
   tk.mode = 'screen'; tk.busy = true; tk.err = ''; tkRender();
   const out = (k) => { tkNetClose(); tk.board = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
   try { tk.net = await TKNET.join(tk.code, (m) => {
-      if (m.t === 'board') { tk.board = m.v; tk.scr = 'board'; tk.busy = false; if (m.v.v) tkSeen(m.v.v); }
+      if (m.t === 'board') { tkSfxLoad(); tk.board = m.v; tk.scr = 'board'; tk.busy = false; if (m.v.v) tkSeen(m.v.v); }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
       else if (m.t === 'closed') return out('closed');
       tkRender(); }, () => { if (tk.mode === 'screen' && tk.net) out('closed'); });
@@ -22518,7 +22531,7 @@ async function tkJoin(name) {
   try { tk.net = await TKNET.join(tk.code, (m) => {
       if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.lobbyOwn = m.own || 0; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
-      else if (m.t === 'view') { tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
+      else if (m.t === 'view') { tkSfxLoad(); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
       tkRender(); }, () => { if (tk.mode === 'guest' && tk.net) out('closed'); });
     tk.net.send({ t: 'hello', name, seen: tkSeenList() }); tk.log.push('join:' + tk.code);

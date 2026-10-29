@@ -131,6 +131,8 @@ async def rules(b):
       const kc = g.order.indexOf('c'), kb = g.order.indexOf('b'); const own = T.react(g, 'c', kc); T.react(g, 'b', kc); T.react(g, 'd', kc); T.react(g, 'a', kb); T.judge(g, 'a', kb);
       return {{ own, b: g.players[1].score, c: g.players[2].score, crowd: g.last.crowd }}; }})()""")
     check('reactions: never on your own answer; the most-reacted answer the czar did not pick gets a crowd point (and the czar\'s pick its point)', cr == {'own': False, 'b': 1, 'c': 1, 'crowd': 'c'}, cr)
+    sb = await page.evaluate("(async () => { audioInit(); tkSfxLoad(); await Promise.all(Object.values(tkSfxBuf)); const B = Object.entries(tkSfxBuf); return { n: B.length, ok: B.filter(([, b]) => b instanceof AudioBuffer).length, max: Math.max(...B.map(([, b]) => b ? b.duration : 0)) }; })()")
+    check('reaction sounds: 11 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 11 and sb['ok'] == 11 and sb['max'] < 3, sb)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)
@@ -253,7 +255,7 @@ async def settings_way(b):
     check('settings: no page errors', not errs, errs); await ctx.close()
 
 async def write_card(b):
-    # write your own card (the owner: Evil Apples' wildcards; to his email for approval): a black one with two blanks is sent (FormSubmit, mocked here)
+    # write your own card (the owner: a wildcard idea; to his email for approval): a black one with two blanks is sent (FormSubmit, mocked here)
     ctx, page, errs = await page_for(b, '/tachles', True, init="window.__graspNoAutoFs = true; sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu'", 6000)
     sent = []
     async def fs(route):
