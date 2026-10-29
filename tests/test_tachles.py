@@ -5,6 +5,7 @@ exec(open('tests/test_toddler.py').read().split('# ---------------- Animal sound
 # without the two dropped groups. Screenshots: tests/out/tachles_*.png
 TKH = '__grasp.tk'
 JUDGED = []
+BACKS = []
 async def click(page, sel): await page.click(sel); await page.wait_for_timeout(120)
 async def view(page): return await page.evaluate(f"(() => {{ const t = {TKH}.tk; return {{ scr: t.scr, mode: t.mode, phase: t.view && t.view.phase, round: t.view && t.view.round, players: t.view && t.view.players.map((p) => p.score), log: t.log.slice(-4) }}; }})()")
 async def step_local(page):
@@ -29,7 +30,11 @@ async def step_local(page):
         need = await page.evaluate(f"{TKH}.tk.view ? (({TKH}.tk.mode === 'local' && {TKH}.tk.g) ? {TKH}.TK.view({TKH}.tk.g, 'x').pick : {TKH}.tk.view.pick) : 1")
         await page.evaluate(f"{TKH}.tk.sel = []")
         for i in range(need): await page.evaluate("document.querySelectorAll('#tachles .tkHC')[%d].scrollIntoView({ inline: 'center', block: 'nearest' })" % i); await page.wait_for_timeout(120); await click(page, '#tachles .tkHC >> nth=%d' % i)
-        await click(page, '#tachles [data-a="send"]'); return True
+        await click(page, '#tachles [data-a="send"]')
+        if not BACKS and await page.locator('#tachles .tkBacks').count():
+            BACKS.append(1); bk = await page.evaluate("[document.querySelectorAll('#tachles .tkBacks .tkBackC:not(.wait)').length, document.querySelectorAll('#tachles .tkScores .tkSt').length]")
+            check('after answering: the answers in so far lie face down (one per answer), the players\' strip marks the judge / still choosing / done', bk[0] >= 1 and bk[1] >= 2, bk)
+        return True
     return False
 FAST = "window.__graspNoAutoFs = true; window.__tkFast = true; window.__tkReveal = 250;"
 
@@ -78,7 +83,7 @@ async def gate_and_bots(b, he):
         dz = await page.evaluate("(() => { const d = document.querySelector('#tachles .tkDuel'), q = d && d.querySelector('.tkBlackC').getBoundingClientRect(), z = d && d.querySelector('.tkSlots').getBoundingClientRect(); return d ? { qx: q.left + q.width / 2, zx: z.left + z.width / 2, zy: z.top + z.height / 2, full: d.querySelectorAll('.tkSlot.full').length, txt: (d.querySelector('.tkSlot.full p') || {}).textContent } : null; })()")
         hand1 = await page.evaluate(f"{TKH}.tk.view.hand[1]")
         check(tag + ': choosing: the question is a card on the right, the drop zone on the left (the owner), the picked card sits in it', dz and dz['qx'] > dz['zx'] and dz['full'] == 1 and dz['txt'] == hand1, dz)
-        await click(page, '#tachles [data-a="unsel:0"]'); check(tag + ': a tap on the card in the zone takes it back', await page.evaluate(f"{TKH}.tk.sel") == [] and await page.locator('#tachles .tkSlot.empty').count() == 1)
+        await click(page, '#tachles [data-a="unsel:0"]'); check(tag + ': a tap on the card in the zone takes it back', await page.evaluate(f"{TKH}.tk.sel") == [] and await page.locator('#tachles .tkSlot.empty').count() == await page.evaluate(f"{TKH}.tk.view.pick"))
         c = await page.evaluate("(() => { const r = document.querySelectorAll('#tachles .tkHC')[1].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
         await page.mouse.move(c[0], c[1]); await page.mouse.down()
         for k in range(1, 13): await page.mouse.move(c[0] + (dz['zx'] - c[0]) * k / 12, c[1] + (dz['zy'] - c[1]) * k / 12); await page.wait_for_timeout(20)
@@ -105,8 +110,8 @@ async def gate_and_bots(b, he):
         if v['phase'] == 'over': break
         if v['phase'] == 'reveal' and not shot:
             await page.evaluate(f"{TKH}.tk.g.revealAt = Date.now() + 4000")
-            mk = await page.evaluate("[document.querySelectorAll('#tachles .tkSub').length, document.querySelectorAll('#tachles .tkSub .tkAnsC').length, document.querySelectorAll('#tachles .tkBlackC mark').length, document.querySelectorAll('#tachles .tkSubW.stag').length, document.querySelectorAll('#tachles .tkSub .tkSent').length]")
-            full = await page.evaluate(f"(() => {{ localStorage.setItem('grasp.tkFull', '1'); {TKH}.render(); const n = document.querySelectorAll('#tachles .tkSub .tkSent mark').length; localStorage.removeItem('grasp.tkFull'); {TKH}.render(); return n; }})()")
+            mk = await page.evaluate("[document.querySelectorAll('#tachles .tkRevHand .tkJC').length, document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length, document.querySelectorAll('#tachles .tkDuel .tkSlot').length, document.querySelectorAll('#tachles .tkBlackC mark').length]")
+            full = await page.evaluate(f"(() => {{ localStorage.setItem('grasp.tkFull', '1'); {TKH}.render(); const n = document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length; localStorage.removeItem('grasp.tkFull'); {TKH}.render(); return n; }})()")
             rv = await page.evaluate("(() => { const r = window.__tkReveal; delete window.__tkReveal; const ms = tkRevealMs(); window.__tkReveal = r; return ms; })()")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
             if tag == 'HE':
@@ -114,9 +119,11 @@ async def gate_and_bots(b, he):
                 if rxs: await page.click('#tachles .tkRxB >> nth=0'); await page.wait_for_timeout(100); rxs = rxs if row0 == 0 and await page.locator('#tachles .tkRx button').count() == 6 else 0; await page.click('#tachles .tkRx button >> nth=2'); await page.wait_for_timeout(100)
                 fx = [x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')]
                 check(tag + ': live reactions: one small 😂 on each of the others\' answers (not your own) opens 😂👏💨🥴🤮🔥; a tap plays the fart and flies 💨 up', rxs >= 1 and len(fx) > n0 and fx[-1] == 'fx:fart' and await page.locator('#tachles .tkFly').count() >= 1, [rxs, fx[-3:]])
-            check(tag + ': the reveal: the answers show just the answer (the owner; no sentence), all at once; the winner\'s sentence in the question card', mk[0] >= 1 and mk[1] == mk[0] and mk[4] == 0 and mk[2] >= 1 and mk[3] == 0, mk)
+            check(tag + ': the reveal: the answers show just the answer (the owner; no sentence), the question card stays clean beside the winner\'s zone', mk[0] >= 1 and mk[1] == 0 and mk[2] == 1 and mk[3] == 0, mk)
             check(tag + ': the "whole sentence" switch (off by default) puts each answer in the sentence again', full >= mk[0], full)
-            check(tag + ': the next round waits 10 s by default (was 4.5 s, "goes by really fast")', rv == 10000, rv)
+            check(tag + ': the next round waits for the "Next round" button by default (from Evil Apples; was a 4.5 s clock)', rv >= 1e11, rv)
+            ea = await page.evaluate("[document.querySelectorAll('#tachles .tkNextB').length, document.querySelectorAll('#tachles .tkRevHand .tkBy').length, document.querySelectorAll('#tachles .tkDuel .tkWinC, #tachles .tkDuel .tkSlot.empty').length, document.querySelectorAll('#tachles .tkRevHand .tkJC').length]")
+            check(tag + ': the reveal: the winner sits in the zone by the question, every answer in the hand with who wrote it, a red "Next round ›" button', ea[0] == 1 and ea[1] >= 1 and ea[2] == 1 and ea[3] >= 2, ea)
         if not await step_local(page): await page.wait_for_timeout(80)
     await page.wait_for_timeout(200); v = await view(page)
     check(tag + ': the game played to the end (3 points), round after round on its own; the win screen (trophy, podium, New game)', v['phase'] == 'over' and max(v['players']) == 3 and await page.locator('#tachles .tkMedal').count() == 3 and await page.locator('#tachles [data-a="again"]').count() == 1, v)
@@ -223,7 +230,7 @@ async def online(b):
             if (await view(host))['phase'] == 'reveal' or (await view(host))['round'] > 1: break
             await step_local(p)
         await host.wait_for_timeout(150)
-    v = await view(host); check('online: everyone answers, the czar picks: a point, every phone sees the trophy on the winning answer', v['phase'] == 'reveal' and sum(v['players']) == 1 and (await view(g2))['phase'] == 'reveal' and await g2.locator('#tachles .tkSub.win .tkTrophy').count() == 1, [v, await view(g2)])
+    v = await view(host); check('online: everyone answers, the czar picks: a point, every phone sees the trophy on the winning answer', v['phase'] == 'reveal' and sum(v['players']) == 1 and (await view(g2))['phase'] == 'reveal' and await g2.locator('#tachles .tkDuel .tkWinC .tkTrophy').count() == 1, [v, await view(g2)])
     await g2.screenshot(path=OUT + 'tachles_online_reveal_he.png')
     check('TV: the reveal on the screen: the winning sentence in the question card and every answer under it', await g3.locator('#tachles .tkTV .tkBlackC mark').count() >= 1 and await g3.locator('#tachles .tkTV .tkSub .tkAnsC').count() >= 2)
     await g3.screenshot(path=OUT + 'tachles_tv_reveal.png')
