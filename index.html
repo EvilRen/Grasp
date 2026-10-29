@@ -1980,7 +1980,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -5520,13 +5520,13 @@ function towerBegin(now) {
     const by = Math.min(t1, t2), th = P.boss ? u * 0.8 : u * 0.5; box(cx, by - th / 2, 'plank', off * 2 + u * 1.2, th); top = by - th; }
   const ks = P.boss ? u * 2.4 : u * 1.45, k = Bodies.rectangle(kx, top - ks / 2 - 1, ks, ks, { friction: 0.8, density: 0.0015, chamfer: { radius: ks * 0.16 } }); k.tw = { mat: 'king', col: P.boss ? '#ff9f43' : P.king.col, w: ks, h: ks, hp: P.kingHp }; bs.push(k);
   if (funOn('towerZoo')) { // the animals (Settings: "Tower: animals", off unless on): 2-4 of them sitting on the top blocks
-    const tops = bs.filter((b) => b.tw.mat !== 'king').sort((a, b) => a.bounds.min.y - b.bounds.min.y), used = [], n = 2 + Math.min(2, Math.floor(P.n / 4)), r = u * 0.46;
+    const tops = bs.filter((b) => b.tw.mat !== 'king').sort((a, b) => a.bounds.min.y - b.bounds.min.y), used = [], n = 2 + Math.min(2, Math.floor(P.n / 4)), R = u * 0.82, aw = R * 1.5, ah = R * 2.6, r = aw / 2; // (the owner: "bigger, whole, and they come apart: arms, legs, head")
     const kb = bs.find((q) => q.tw.mat === 'king'), spots = [];
-    for (const b of tops) { if (spots.length >= n) break; if (spots.some((p) => Math.abs(p[0] - b.position.x) < u * 0.9) || Math.abs(b.position.x - kx) < kb.tw.w / 2 + r) continue; spots.push([b.position.x, b.bounds.min.y - r - 1]); }
-    if (spots.length < n) spots.push([kx, kb.bounds.min.y - r - 1]); // (on the king's head)
-    for (const s of [-1, 1]) if (spots.length < n) spots.push([cx + s * (spanW / 2 + r + 6), ty - r - 1]); // (on the table, by the tower)
-    for (const [x, y] of spots.slice(0, n)) { const kind = TW_ZOO[Math.floor(rnd() * TW_ZOO.length)], a = Bodies.circle(x, y, r, { friction: 0.9, restitution: 0.25, density: 0.0012 });
-      a.tw = { mat: 'animal', kind, col: (AN_PAL[kind] || AN_PAL.cow).base, w: r * 2, h: r * 2, r }; bs.push(a); } }
+    for (const b of tops) { if (spots.length >= n) break; if (spots.some((p) => Math.abs(p[0] - b.position.x) < aw) || Math.abs(b.position.x - kx) < kb.tw.w / 2 + r) continue; spots.push([b.position.x, b.bounds.min.y - ah / 2 - 1]); }
+    if (spots.length < n) spots.push([kx, kb.bounds.min.y - ah / 2 - 1]); // (on the king's head)
+    for (const s of [-1, 1]) if (spots.length < n) spots.push([cx + s * (spanW / 2 + r + 6), ty - ah / 2 - 1]); // (on the table, by the tower)
+    for (const [x, y] of spots.slice(0, n)) { const kind = TW_ZOO[Math.floor(rnd() * TW_ZOO.length)], a = Bodies.rectangle(x, y, aw, ah, { friction: 0.9, restitution: 0.15, density: 0.0012, chamfer: { radius: aw * 0.3 } });
+      a.tw = { mat: 'animal', kind, col: (AN_PAL[kind] || AN_PAL.cow).base, w: aw, h: ah, r: R, ph: rnd() * 6 }; bs.push(a); } }
   const tw = Math.min(W - 30, spanW + u * 2.6);
   tower.table = { x: cx, y: ty, w: tw, body: Bodies.rectangle(cx, ty + 14, tw, 28, { isStatic: true, friction: 0.45, label: 'twTable' }) };
   tower.blocks = bs; Composite.add(world, [tower.table.body, ...bs]);
@@ -5565,27 +5565,59 @@ function twKingHurt(b, now) { // the giant king loses a heart; with none left he
   smash.floaters.push({ x: b.position.x, y: b.position.y - b.tw.h, text: b.tw.hp > 0 ? '💔' : t('twWobble'), big: true, life: 1.2 });
   if (b.tw.hp <= 0) M.Body.setVelocity(b, { x: (b.position.x < W / 2 ? -1 : 1) * 3, y: -4 });
 }
-function twSprite(kind, r) { // the animal's drawing on a canvas of its own (cached), to cut into chunks
-  const C = twSprite.c || (twSprite.c = {}), key = kind + ':' + Math.round(r); if (C[key]) return C[key];
-  const S = Math.ceil(r * 3.4), cv = document.createElement('canvas'); cv.width = cv.height = Math.ceil(S * DPR); const g = cv.getContext('2d'); g.scale(DPR, DPR); g.translate(S / 2, S / 2); tgAnimal(g, kind, r * 0.98, { t: 0 }); return (C[key] = { cv, S });
+/* the animals, whole (the owner: "bigger and whole, and they come apart: the arms, the legs, the head"): the Little ones' head (tgAnimal) on a body
+   with two arms and two legs, each drawn on its own so a blast sends them flying apart. Local frame: the body's centre at (0, TW_FY x R) of the box */
+const TW_FY = 0.28, TW_PARTS = { head: [0, -0.92], arm: [0.58, -0.2], leg: [0.3, 0.4] };
+function twLimb(g, kind, R, leg) { // hangs from (0, 0) down to y = L: an arm with a paw, a leg with a hoof / foot; birds: a wing, a thin orange leg
+  const P = AN_PAL[kind] || AN_PAL.cow, bird = kind === 'duck' || kind === 'rooster', L = R * (leg ? 0.62 : 0.56), w = R * (leg ? 0.34 : 0.3); tgInk(g, R);
+  if (bird && !leg) { tgEll(g, 0, L * 0.5, w * 0.95, L * 0.56, 0, kind === 'duck' ? P.wing : '#f0e2cc'); return L; }
+  if (bird) { g.lineWidth = R * 0.12; g.strokeStyle = PET_INK; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, L * 0.88); g.stroke(); g.lineWidth = R * 0.06; g.strokeStyle = '#ff9a1c'; g.stroke(); tgInk(g, R); tgEll(g, R * 0.05, L * 0.9, R * 0.22, R * 0.09, 0, '#ff9a1c'); return L; }
+  const col = kind === 'sheep' ? P.dark : P.base, tip = kind === 'cow' || kind === 'horse' || kind === 'sheep' ? '#3a2f2a' : kind === 'pig' ? P.dark : kind === 'monkey' ? P.face : kind === 'dog' ? P.ear : kind === 'cat' ? P.muz : '#ffffff';
+  g.fillStyle = col; g.beginPath(); g.roundRect(-w / 2, -w * 0.3, w, L + w * 0.3, w / 2); g.fill(); g.stroke();
+  if (kind === 'cat') { g.save(); g.beginPath(); g.roundRect(-w / 2, -w * 0.3, w, L + w * 0.3, w / 2); g.clip(); g.strokeStyle = P.stripe; g.lineWidth = w * 0.18; for (const k of [0.25, 0.5]) { g.beginPath(); g.moveTo(-w / 2, L * k); g.lineTo(w / 2, L * k + w * 0.15); g.stroke(); } g.restore(); tgInk(g, R); }
+  g.fillStyle = tip; g.beginPath(); g.roundRect(-w * 0.56, L - w * 0.5, w * 1.12, w * 0.62, w * 0.3); g.fill(); g.stroke(); return L;
 }
-function twBreak(b, now, nx, ny, f) { // the animal breaks into chunks of its drawing
-  b.tw.gone = true; M.Composite.remove(world, b); const x = b.position.x, y = b.position.y, r = b.tw.r, sp = twSprite(b.tw.kind, r), n = 6 + Math.floor(Math.random() * 2), a0 = Math.random() * TAU, R2 = r * 1.3; // (the cut follows the animal: head, ears and all)
-  const cuts = []; for (let i = 0; i < n; i++) cuts.push(a0 + (i + 0.25 + Math.random() * 0.5) / n * TAU); cuts.sort((p, q) => p - q);
-  const bits = tower.bits || (tower.bits = []), push = 7 + 9 * (f || 0.5);
-  for (let i = 0; i < n; i++) { const c0 = cuts[i], c1 = cuts[(i + 1) % n] + (i === n - 1 ? TAU : 0), mid = (c0 + c1) / 2, poly = [[0, 0]]; for (let q = 0; q <= 4; q++) { const a = c0 + (c1 - c0) * q / 4; poly.push([Math.cos(a) * R2, Math.sin(a) * R2]); }
-    const ox = Math.cos(mid) * r * 0.55, oy = Math.sin(mid) * r * 0.55; // (each chunk starts where it sat in the animal)
-    bits.push({ sp, poly, x: x + ox, y: y + oy, ox, oy, vx: Math.cos(mid) * (3 + Math.random() * 4) + nx * push * 0.6, vy: Math.sin(mid) * (3 + Math.random() * 4) + ny * push * 0.6 - 6, rot: b.angle, vr: (Math.random() - 0.5) * 0.5, t0: now }); }
-  fxShards(x, y, ['#ffffff', '#ffcf56', '#ff8fc8', '#8fd3ff'], 14, 0, -1, 0.5); twBang(x, y, 0.5, now); tgSfx('an_' + b.tw.kind); sfx('pop'); track('smash', 1);
-  smash.floaters.push({ x, y: y - r * 1.4, text: t('twPop'), big: true, life: 0.9 }); tower.log.push('animal:break');
+function twTorso(g, kind, R, t = 0) { // the body (and the tail) round (0, 0)
+  const P = AN_PAL[kind] || AN_PAL.cow, rx = R * 0.66, ry = R * 0.6; tgInk(g, R);
+  if (kind === 'rooster') ['#2f9e6e', '#3f7fe0', '#e04f3f'].forEach((c, i) => { g.save(); g.translate(-rx * 0.8, -R * 0.1); g.rotate(-0.9 + i * 0.35); tgEll(g, 0, -R * 0.45, R * 0.16, R * 0.5, 0, c); g.restore(); });
+  if (kind === 'duck') { g.beginPath(); g.moveTo(-rx * 0.8, -R * 0.05); g.lineTo(-rx * 1.25, -R * 0.35); g.lineTo(-rx * 0.85, R * 0.2); g.closePath(); g.fillStyle = P.base; g.fill(); g.stroke(); }
+  const tail = (w, col) => { g.beginPath(); g.moveTo(rx * 0.85, R * 0.15); g.bezierCurveTo(rx * 1.5, R * 0.1, rx * 1.4, -R * 0.6 + Math.sin(t / 260) * R * 0.1, rx * 1.15, -R * 0.55); g.lineWidth = w + R * 0.06; g.strokeStyle = PET_INK; g.stroke(); g.lineWidth = w; g.strokeStyle = col; g.stroke(); tgInk(g, R); };
+  if (kind === 'monkey') tail(R * 0.1, P.base); else if (kind === 'cat') tail(R * 0.13, P.base); else if (kind === 'dog') tail(R * 0.12, P.base); else if (kind === 'cow') { tail(R * 0.05, P.base); tgEll(g, rx * 1.15, -R * 0.58, R * 0.08, R * 0.12, 0, P.dark); }
+  else if (kind === 'pig') { g.beginPath(); g.moveTo(rx * 0.9, 0); g.bezierCurveTo(rx * 1.35, -R * 0.25, rx * 1.35, R * 0.25, rx * 1.1, R * 0.05); g.stroke(); }
+  if (kind === 'sheep') { const pts = []; for (let i = 0; i < 9; i++) { const a = i / 9 * TAU; pts.push([Math.cos(a) * rx * 0.8, Math.sin(a) * ry * 0.75, R * 0.32]); } tgWool(g, pts, P.base, R); }
+  else tgEll(g, 0, 0, rx, ry, 0, P.base);
+  if (kind === 'cow') { g.save(); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.clip(); g.fillStyle = P.dark; for (const [x, y, r] of [[-0.45, -0.1, 0.25], [0.5, 0.25, 0.2], [0.1, 0.45, 0.14]]) { g.beginPath(); g.arc(x * rx, y * ry, r * R, 0, TAU); g.fill(); } g.restore(); g.beginPath(); g.ellipse(0, 0, rx, ry, 0, 0, TAU); g.stroke(); }
+  const belly = kind === 'duck' ? '#fff0a0' : kind === 'rooster' ? '#ffffff' : kind === 'pig' ? '#ffd3dd' : kind === 'monkey' ? P.face : kind === 'dog' || kind === 'cat' ? P.muz : null;
+  if (belly) { g.fillStyle = belly; g.beginPath(); g.ellipse(0, ry * 0.2, rx * 0.58, ry * 0.62, 0, 0, TAU); g.fill(); }
 }
-function twBits(now) { // the chunks: fly, spin, fall, fade
+function twAnimal(g, kind, R, o = {}) { // the whole animal, the body's centre at (0, TW_FY x R): legs, body, arms (waving a little), the head
+  const t = o.t || 0, wig = o.wig || 0, sw = Math.sin(t / 320) * 0.18 + wig * 0.6, H0 = TW_PARTS; g.save(); g.translate(0, TW_FY * R);
+  for (const s of [-1, 1]) { g.save(); g.translate(s * H0.leg[0] * R, H0.leg[1] * R); g.rotate(-s * (0.06 + wig * 0.25)); twLimb(g, kind, R, true); g.restore(); }
+  twTorso(g, kind, R, t);
+  for (const s of [-1, 1]) { g.save(); g.translate(s * H0.arm[0] * R, H0.arm[1] * R); g.rotate(-s * (0.55 + (s > 0 ? sw : -sw * 0.5))); twLimb(g, kind, R, false); g.restore(); }
+  g.save(); g.translate(0, H0.head[1] * R); g.rotate(Math.sin(t / 700) * 0.06 + wig * 0.2); tgAnimal(g, kind, R * 0.72, { t, wig, mood: o.mood }); g.restore(); g.restore();
+}
+function twPartSprite(kind, part, R) { // one part on a canvas of its own (cached), centred
+  const C = twPartSprite.c || (twPartSprite.c = {}), key = kind + ':' + part + ':' + Math.round(R); if (C[key]) return C[key];
+  const S = Math.ceil(R * (part === 'arm' || part === 'leg' ? 1.5 : 2.8)), cv = document.createElement('canvas'); cv.width = cv.height = Math.ceil(S * DPR); const g = cv.getContext('2d'); g.scale(DPR, DPR); g.translate(S / 2, S / 2); g.lineJoin = 'round'; g.lineCap = 'round';
+  if (part === 'head') tgAnimal(g, kind, R * 0.72, { t: 0, mood: 'yuck' }); else if (part === 'body') twTorso(g, kind, R); else { const leg = part === 'leg'; g.translate(0, -R * (leg ? 0.31 : 0.28)); twLimb(g, kind, R, leg); }
+  return (C[key] = { cv, S });
+}
+function twBreak(b, now, nx, ny, f) { // the animal comes apart: the head pops off up high, the arms and legs fly out, the body tumbles
+  b.tw.gone = true; M.Composite.remove(world, b); const x = b.position.x, y = b.position.y, R = b.tw.r, kind = b.tw.kind, ca = Math.cos(b.angle), sa = Math.sin(b.angle), push = 7 + 9 * (f || 0.5), H0 = TW_PARTS;
+  const at = (lx, ly) => ({ x: x + lx * ca - ly * sa, y: y + lx * sa + ly * ca }), bits = tower.bits || (tower.bits = []);
+  const add = (part, lx, ly, vx, vy, vr) => { const p = at(lx * R, (ly + TW_FY) * R); bits.push({ part, sp: twPartSprite(kind, part, R), x: p.x, y: p.y, vx: vx + nx * push * 0.6, vy: vy + ny * push * 0.6, rot: b.angle, vr, t0: now }); };
+  add('head', 0, H0.head[1], (Math.random() - 0.5) * 4, -11 - Math.random() * 4, (Math.random() - 0.5) * 0.5);
+  add('body', 0, 0, (Math.random() - 0.5) * 3, -4 - Math.random() * 2, (Math.random() - 0.5) * 0.3);
+  for (const s of [-1, 1]) { add('arm', s * H0.arm[0], H0.arm[1] + 0.28, s * (5 + Math.random() * 4), -7 - Math.random() * 3, s * (0.25 + Math.random() * 0.3)); add('leg', s * H0.leg[0], H0.leg[1] + 0.31, s * (3 + Math.random() * 3), -3 - Math.random() * 3, s * (0.2 + Math.random() * 0.3)); }
+  fxShards(x, y, ['#ffffff', '#ffcf56', '#ff8fc8', '#8fd3ff'], 14, 0, -1, 0.5); twBang(x, y, 0.5, now); tgSfx('an_' + kind); sfx('pop'); track('smash', 1);
+  smash.floaters.push({ x, y: y - b.tw.h * 0.6, text: t('twPop'), big: true, life: 0.9 }); tower.log.push('animal:break');
+}
+function twBits(now) { // the parts: fly, spin, fall, fade
   const B = tower.bits; if (!B || !B.length) return; const g = 0.42 * (tower.plan ? tower.plan.world.g : 1);
   for (let i = B.length - 1; i >= 0; i--) { const p = B[i], age = (now - p.t0) / 1000; if (age > 2.4 || p.y > H + 200) { B.splice(i, 1); continue; }
     p.vy += g; p.x += p.vx; p.y += p.vy; p.vx *= 0.995; p.rot += p.vr;
-    ctx.save(); ctx.globalAlpha = age < 1.6 ? 1 : Math.max(0, 1 - (age - 1.6) / 0.8); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.translate(-p.ox, -p.oy);
-    ctx.beginPath(); ctx.moveTo(p.poly[0][0], p.poly[0][1]); for (const [qx, qy] of p.poly) ctx.lineTo(qx, qy); ctx.closePath(); ctx.clip(); ctx.drawImage(p.sp.cv, -p.sp.S / 2, -p.sp.S / 2, p.sp.S, p.sp.S);
-    ctx.restore(); }
+    ctx.save(); ctx.globalAlpha = age < 1.6 ? 1 : Math.max(0, 1 - (age - 1.6) / 0.8); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.drawImage(p.sp.cv, -p.sp.S / 2, -p.sp.S / 2, p.sp.S, p.sp.S); ctx.restore(); }
 }
 function twShatter(b, now) { b.tw.gone = true; M.Composite.remove(world, b); fxShards(b.position.x, b.position.y, ['#cdeeff', '#ffffff', '#9fdcff'], 12, 0, -1, 0.45); sfx('glass'); track('smash', 1); tower.log.push('glass'); }
 function twBoom(b, now) { // TNT: a bigger blast of its own (and the TNT near it goes off too, a chain)
@@ -5669,8 +5701,8 @@ function renderTower(now) {
   }
   for (const b of tower.blocks) {
     if (b.tw.gone) continue; const v = b.vertices, m = b.tw.mat;
-    if (m === 'animal') { ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle); tgAnimal(ctx, b.tw.kind, b.tw.r * 0.98, { t: now, wig: b.tw.hit ? Math.sin(now * 0.05) : 0 }); ctx.restore();
-      if (b.tw.hit && !twOnTable(b)) { ctx.font = Math.round(b.tw.r * 0.8) + 'px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💫', b.position.x + Math.sin(now * 0.01) * b.tw.r * 0.4, b.position.y - b.tw.r * 1.3); }
+    if (m === 'animal') { ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle); twAnimal(ctx, b.tw.kind, b.tw.r, { t: now + b.tw.ph * 1000, wig: b.tw.hit ? Math.sin(now * 0.05) : 0 }); ctx.restore();
+      if (b.tw.hit && !twOnTable(b)) { ctx.font = Math.round(b.tw.r * 0.8) + 'px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💫', b.position.x + Math.sin(now * 0.01) * b.tw.r * 0.4, b.position.y - b.tw.h * 0.62); }
       continue; }
     ctx.beginPath(); ctx.moveTo(v[0].x, v[0].y); for (let i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y); ctx.closePath();
     ctx.fillStyle = b.tw.col; ctx.fill(); ctx.lineWidth = m === 'king' ? 4 : 3; ctx.strokeStyle = INK; ctx.stroke();
@@ -5684,7 +5716,7 @@ function renderTower(now) {
     ctx.restore();
     if (m === 'king' && P.boss && b.tw.hp > 0 && !tower.slowAt) { ctx.font = Math.round(u * 0.6) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; for (let i = 0; i < P.kingHp; i++) ctx.fillText(i < b.tw.hp ? '❤️' : '🤍', b.position.x + (i - (P.kingHp - 1) / 2) * u * 0.72, b.position.y - b.tw.h * 0.95); ctx.textBaseline = 'alphabetic'; }
   }
-  drawParticles(); drawRings(now); drawFloaters(smash.floaters); twBits(now);
+  drawParticles(); drawRings(now); resetView(); twBits(now); drawFloaters(smash.floaters); // (the parts in the world's view: drawFloaters leaves its last sprite's transform behind)
   view.s = 1; view.x = view.y = 0; resetView();
   if (tower.flash > 0) { ctx.fillStyle = 'rgba(255,253,240,' + Math.min(0.6, tower.flash).toFixed(3) + ')'; ctx.fillRect(0, 0, W, H); }
   if (mode !== 'none' && P && !smash.over) { // the HUD: the tower (or the giant king), its world and what is left on the table, under the corner row
