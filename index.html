@@ -1977,7 +1977,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.7.23';
+const APP_VERSION = '1.7.24';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22081,6 +22081,24 @@ addEventListener('online', () => tkDbg('device online')); addEventListener('offl
    when the phones cannot see each other directly (4G and Wi-Fi) */
 const TK_ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
   { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }], sdpSemantics: 'unified-plan' };
+/* the network check (the owner's log: the broker's socket never opened, 0.1 s and closed, every time): which kinds of connection this phone's
+   network lets through, to pick a way that works there */
+async function tkNetCheck() {
+  tkDbg('— network check'); const rnd = () => Math.random().toString(36).slice(2, 10);
+  const http = async (n, u) => { const t0 = Date.now(); try { const r = await fetch(u, { cache: 'no-store' }); tkDbg('check ' + n + ': HTTP ' + r.status + ' in ' + (Date.now() - t0) + ' ms'); } catch (e) { tkDbg('check ' + n + ': HTTP FAILED ' + tkErrS(e)); } };
+  const ws = (n, u, proto) => new Promise((done) => { const t0 = Date.now(); let w, fin = false; const end = (m) => { if (fin) return; fin = true; tkDbg('check ' + n + ': ' + m + ' (' + (Date.now() - t0) + ' ms)'); try { w.close(); } catch {} done(); };
+    try { w = proto ? new WebSocket(u, proto) : new WebSocket(u); } catch (e) { return end('THREW ' + tkErrS(e)); }
+    w.onopen = () => end('OPEN ✓'); w.onerror = () => end('error'); w.onclose = (e) => end('CLOSED code ' + e.code + (e.reason ? ' ' + e.reason : '')); setTimeout(() => end('no answer in 8 s'), 8000); });
+  await http('peerjs http', 'https://0.peerjs.com/peerjs/id?ts=' + Date.now());
+  await ws('peerjs ws', 'wss://0.peerjs.com/peerjs?key=peerjs&id=grasp-check-' + rnd() + '&token=' + rnd() + '&version=1.5.4');
+  await ws('mqtt hivemq', 'wss://broker.hivemq.com:8884/mqtt', 'mqtt');
+  await ws('mqtt emqx', 'wss://broker.emqx.io:8084/mqtt', 'mqtt');
+  await ws('nostr damus', 'wss://relay.damus.io');
+  await ws('nostr nos.lol', 'wss://nos.lol');
+  await ws('torrent tracker', 'wss://tracker.openwebtorrent.com');
+  await ws('echo postman', 'wss://ws.postman-echo.com/raw');
+  tkDbg('check webrtc: ' + (window.RTCPeerConnection ? 'available' : 'MISSING')); tkDbg('— network check done');
+}
 const TKNET = {
   async peer() { if (window.Peer) return window.Peer; await new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); return window.Peer; },
   bc: () => new URLSearchParams(location.search).get('tkbus') === 'bc' || window.__tkBus === 'bc',
@@ -22220,7 +22238,7 @@ function tkRender() {
   else if (s === 'game' && tk.view) h = tk.view.phase === 'over' ? tkWinHtml(tk.view) : tkGameHtml(tk.view);
   else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
   const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
-  if (['lobby', 'game', 'board', 'form'].includes(s)) h += '<button class="tkDbgB" data-a="dbg" aria-label="debug">🐞</button>';
+  if (['menu', 'lobby', 'game', 'board', 'form'].includes(s)) h += '<button class="tkDbgB" data-a="dbg" aria-label="debug">🐞</button>';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
 }
@@ -22269,7 +22287,7 @@ function tkModalHtml() {
   else if (m.t === 'dbg') { const P = tk.net && tk.net.p, st = 'גרסה ' + APP_VERSION + ' · מצב ' + (tk.mode || '-') + ' · חדר ' + (tk.code || '-') + ' · אינטרנט ' + (navigator.onLine ? 'כן' : 'לא') +
       (P ? ' · broker ' + (P.disconnected ? 'מנותק' : P.open ? 'מחובר' : 'מתחבר') + ' (' + (P.id || '') + ')' : '') + ' · שחקנים ' + tk.conns.size + ' · מסכים ' + tk.screens.size;
     b = '<div class="tkMHead"><h3>🐞 יומן חיבור</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div><p class="tkDim tkXs tkMb8" dir="rtl">' + tkEsc(st) + '</p>' +
-      '<pre class="tkDbgP" dir="ltr">' + tkEsc(tkDbgL.slice().reverse().join('\n') || '(ריק)') + '</pre><div class="tkTwo tkMt"><button class="tkS tkSm" data-a="dbgClr">נקה</button><button class="tkP tkSm" data-a="dbgCopy">' + (Date.now() - (tk.dbgCopied || 0) < 2000 ? 'הועתק!' : 'העתק') + '</button></div>'; }
+      '<pre class="tkDbgP" dir="ltr">' + tkEsc(tkDbgL.slice().reverse().join('\n') || '(ריק)') + '</pre><button class="tkS tkW tkSm tkMt" data-a="dbgNet">🔬 בדיקת רשת (כ-30 שניות)</button><div class="tkTwo tkMt"><button class="tkS tkSm" data-a="dbgClr">נקה</button><button class="tkP tkSm" data-a="dbgCopy">' + (Date.now() - (tk.dbgCopied || 0) < 2000 ? 'הועתק!' : 'העתק') + '</button></div>'; }
   else if (m.t === 'packs') { const S = tk.mode === 'guest' ? (tk.lobbySet || tk.set) : tk.set, can = tk.mode !== 'guest', off = S.off || [], d = tk.deck, lv = S.lvl || 2;
     const cnt = (k) => { if (!d || !d.wm) return 0; let n = 0; for (const M of [d.wm, d.bm]) for (const m of M) if (+m[0] <= lv && m.includes(k, 1)) n++; return n; };
     b = '<div class="tkMHead"><h3>🗂️ ' + tks('packsT') + '</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div><p class="tkDim tkSm tkMb">' + tks('packsD') + '</p><div class="tkPacks">' +
@@ -22494,6 +22512,7 @@ function tkClick(e) {
   else if (a === 'start') { if (tk.lobby.length >= 2 && tk.deck && tkEnough(tk.set, tk.lobby.length)) { tkNewGame(tk.lobby); return; } }
   else if (a === 'dbg') tk.modal = { t: 'dbg' };
   else if (a === 'dbgClr') tkDbgL.length = 0;
+  else if (a === 'dbgNet') { tkNetCheck(); }
   else if (a === 'dbgCopy') { const P = tk.net && tk.net.p, txt = 'Tachles ' + APP_VERSION + ' mode=' + tk.mode + ' room=' + tk.code + ' online=' + navigator.onLine + (P ? ' broker=' + (P.disconnected ? 'down' : P.open ? 'open' : 'connecting') : '') + '\n' + navigator.userAgent + '\n' + tkDbgL.join('\n');
     try { navigator.clipboard.writeText(txt).then(() => { tk.dbgCopied = Date.now(); tkRender(); }).catch(() => {}); } catch {} }
   else if (a === 'names') { tk.set.names = tk.set.names === false; tkSave(); if (tk.mode === 'host') tkLobbyPush(); }

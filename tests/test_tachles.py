@@ -178,6 +178,8 @@ async def online(b):
     await g3.set_viewport_size({'width': 1280, 'height': 720}); await g3.screenshot(path=OUT + 'tachles_tv_lobby.png')
     await click(host, '#tachles [data-a="dbg"]'); dl = await host.inner_text('#tachles .tkDbgP')
     check('debug log: 🐞 in the room opens the connection log (the room made, guests\' hello, the TV)', '— create room' in dl and 'hello' in dl and 'screen' in dl and await host.locator('#tachles [data-a="dbgCopy"]').count() == 1, dl[:300])
+    await click(host, '#tachles [data-a="dbgNet"]'); await host.wait_for_timeout(600)
+    check('debug log: "🔬 בדיקת רשת" runs a network check into the log', any('network check' in x for x in await host.evaluate("tkDbgL")))
     await click(host, '#tachles .tkMHead [data-a="mclose"]')
     await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(400); pages = [host, g1, g2]
     check('TV: the game on the screen: the question card, the scores, the answer chips, no hand', await g3.locator('#tachles .tkTV .tkBlackC').count() == 1 and await g3.locator('#tachles .tkTV .tkScores').count() == 1 and await g3.locator('#tachles .tkHC').count() == 0)
