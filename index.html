@@ -1256,7 +1256,8 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
   .mbCamRow .stk{ --icS:min(10cqw, 7cqh); padding:.8cqw 0; }
   .mbGrid{ gap:3.2cqw 4.4cqw; padding-top:2.6cqw; }
 }
-.mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:.3cqw 1.1cqw; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (one line, >= 14 px: the panel's rule) */
+.mbGrid > .stk .lb{ font-size:max(14px,3.5cqw); padding:max(3px,.3cqw) max(9px,1.1cqw); line-height:1.25; letter-spacing:.01em; white-space:nowrap; overflow-wrap:normal; max-width:none; } /* (the owner: the names were cramped: the cqw padding came to under 1 px on a phone, so a px floor) */
+#start .stk .lb.fit{ padding-inline:4px; letter-spacing:-.02em; } /* (one line, >= 14 px: the panel's rule) */
 /* navigation v2: Strike's modes as chips under its hero (icon + one word, each plays at once) */
 .mbModes{ display:flex; justify-content:center; gap:2.6cqw; margin-top:3.2cqw; }
 /* the owner, Oct 2026 ("Strike with every button apart"): one card: Strike's ways to play are a strip inside its bottom (pick one; Play plays it); the Map a button at its end */
@@ -1283,7 +1284,7 @@ html[dir="rtl"] .stk::before{ inset:-20% -30% -20% auto; transform:rotate(-20deg
 .mbCamT .ic svg{ width:max(24px,6.4cqw); height:max(24px,6.4cqw); }
 .mbCamRow{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:2.4cqw; padding:0 1cqw; }
 .mbCamRow .stk{ --icS:min(12cqw, 9cqh); overflow:visible; padding:1.4cqw 0; gap:.6cqw; border-radius:4.4cqw; box-shadow:0 0 0 max(3px,1.1cqw) #fff, 0 max(4px,1.6cqw) 0 max(3px,1.1cqw) rgba(42,31,61,.24); }
-.mbCamRow .stk .lb{ font-size:max(14px,3.5cqw); padding:0 1cqw; border-width:max(1.5px,.4cqw); white-space:nowrap; max-width:none; }
+.mbCamRow .stk .lb{ font-size:max(14px,3.5cqw); padding:max(2px,.2cqw) max(9px,1cqw); line-height:1.25; border-width:max(1.5px,.4cqw); white-space:nowrap; max-width:none; }
 .mbCamRow .stk::before{ display:none; }
 /* navigation v2: Little ones keeps the coins, the Shop and the Events out of reach (only Bubu, the lock and the sound up top) */
 #start.mb[data-room="little"] #metaPill{ visibility:hidden; pointer-events:none; }
@@ -2770,7 +2771,11 @@ function applyLang() {
   document.querySelectorAll('[data-i18n-title]').forEach((el) => (el.title = t(el.dataset.i18nTitle)));
   document.querySelectorAll('.langBtn').forEach((b) => { b.querySelector('span').textContent = t('langName'); b.setAttribute('aria-label', t('langAria')); b.title = t('langAria'); });
   if (typeof onLangChange === 'function') onLangChange();
+  requestAnimationFrame(lbFit);
 }
+/* a game's name wider than its sticker ("מעבדת חול" on a narrow phone): a size smaller, less padding */
+function lbFit() { document.querySelectorAll('#start .mbGrid > .stk .lb, #start .mbCamRow .stk .lb').forEach((l) => { l.classList.remove('fit'); const w = l.parentNode.clientWidth; if (w && l.offsetWidth > w - 6) l.classList.add('fit'); }); }
+addEventListener('resize', () => requestAnimationFrame(lbFit));
 function setLang(l) { lang = l; try { localStorage.setItem('lang', l); } catch {} applyLang(); }
 document.querySelectorAll('.langBtn').forEach((b) => b.addEventListener('click', () => setLang(lang === 'he' ? 'en' : 'he')));
 
