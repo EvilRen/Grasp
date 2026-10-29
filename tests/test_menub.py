@@ -50,7 +50,7 @@ BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn'
 # the rooms' swiper (#mbRooms): settled on the room mb.room names (the room off screen is inert)
 SETTLED = f"(() => {{ const R = $('mbRooms'), r = {M}.mb.room; return !{M}.mb.swiping && Math.abs(Math.abs(R.scrollLeft) - (r === 'little' ? R.clientWidth : 0)) < 2 && $('start').dataset.room === r && $('bigRoom').inert === (r !== 'big') && $('littlePick').inert === (r !== 'little'); }})()"
 def in_room(r): return f"{M}.mb.room === '{r}' && " + SETTLED
-LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'lilPopit']]
+LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'sky', 'lilPopit']]
 
 async def page_of(page):
     return await page.evaluate(f"({{ i: {M}.pageNow(), mb: {M}.mb.page, on: [...document.querySelectorAll('#mbDots .mbDot')].findIndex(d => d.classList.contains('on')), sl: $('mbPager').scrollLeft,"
@@ -193,7 +193,7 @@ async def main():
             check(tg + ': a swipe ' + ('right (RTL)' if he else 'left') + ' = page 2 (its stickers on screen, its dot lit, a page blip)', p1['i'] == 1 and p1['on'] == 1 and p1['seen'] == LITTLE[1] and (p1['sl'] < 0 if he else p1['sl'] > 0) and await page.evaluate(f"{M}.mb.blips.some(x => x.kind === 'page')"), p1)
             await page.evaluate(f"$('mbPager').scrollBy({{ left: {sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 2", timeout=3000)
             p2 = await page_of(page)
-            check(tg + ': ... page 3 (Puzzle, Sand, Pop It)', p2['i'] == 2 and p2['seen'] == LITTLE[2], p2)
+            check(tg + ': ... page 3 (Puzzle, Sand, Sky tower, Pop It)', p2['i'] == 2 and p2['seen'] == LITTLE[2], p2)
             await page.evaluate(f"$('mbPager').scrollBy({{ left: {-sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 1", timeout=3000)
             check(tg + ': and back the other way to page 2', (await page_of(page))['seen'] == LITTLE[1])
             await page.tap('#mbDots .mbDot[data-pg="0"]'); await page.wait_for_function(f"{M}.mb.page === 0 && Math.abs($('mbPager').scrollLeft) < 2", timeout=4000)

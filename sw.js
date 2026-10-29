@@ -10,14 +10,14 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-10-30b';
+const VERSION = 'grasp-2026-10-30c';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
   '/icons/shortcut-strike.png', '/icons/shortcut-smash.png', '/icons/shortcut-shapes.png', '/icons/shortcut-camera.png',
   '/assets/guests/cow_in.png', '/assets/guests/cow_happy.png', '/assets/guests/cow_dizzy.png', '/assets/guests/cow_squash.png',
   '/assets/pet/Flying_Dragon.glb', '/assets/pet/Flying_Dragon_Evolved.glb'];
-const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|popit|spot|mix|quest|tachles|powder)\/?$/;
+const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|sky|popit|spot|mix|quest|tachles|powder)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;
 let lastUpdate = 0; // when a new index.html was last cached (a page loaded before that runs the old one; it can ask)

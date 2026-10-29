@@ -1615,7 +1615,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #moreSheet .segBtn{ color:var(--mbInk); } #moreSheet .segBtn[aria-pressed="true"]{ background:#ffd23f; color:var(--mbInk); box-shadow:inset 0 0 0 2px var(--mbInk); }
 #moreSheet .moreRow.link{ color:var(--mbInk); }
 #moreSheet .moreRow.hbInstall svg{ color:#ff6b4a; }
-#moreHud small{ font-size:14px; font-weight:500; opacity:.7; }
+#moreHud small, #moreFart small, #moreZoo small{ font-size:14px; font-weight:500; opacity:.7; }
 /* calm and slow devices: no idle motion */
 @media (prefers-reduced-motion: reduce){ .mbCall, #start.mb, #start.mb::before, #start.mb.intro *, .mbBubu .bb, .stk.hero .go, #hero.picked .stk.hero .go, #hero.picked .stk.hero .go::after, .mbWiggle, .mbBo, .mbBubu.jump .bb, .mbDockB .bang{ animation:none !important; } .stk, .mbMap, .mbDockB .rd{ transition:none; } .mbPager{ scroll-behavior:auto; } }
 body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, body.gfx0 #start.mb, body.gfxCalm #start.mb::before, body.gfx0 #start.mb::before{ animation:none; }
@@ -1722,6 +1722,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
         <button type="button" class="stk wig tgTile" data-mode="feed" aria-pressed="false"><span class="ic" data-ic="feed"></span><span class="lb" data-i18n="modeFeed">Feed me</span></button>
         <button type="button" class="stk wig tgTile" data-mode="puzzle" aria-pressed="false"><span class="ic" data-ic="puzzle"></span><span class="lb" data-i18n="modePuzzle">Puzzle</span></button>
         <button type="button" class="stk wig tgTile" data-mode="sand" aria-pressed="false"><span class="ic" data-ic="sand"></span><span class="lb" data-i18n="modeSand">Sand</span></button>
+        <button type="button" class="stk wig tgTile" data-mode="sky" aria-pressed="false"><span class="ic" data-ic="sky"></span><span class="lb" data-i18n="modeSky">Sky Tower</span></button>
         <button type="button" class="stk wig tgTile" id="lilPopit" data-k="popit" data-feat="popit" hidden><span class="ic" data-ic="popit"></span><span class="lb" data-i18n="mbPopit">Pop It</span></button>
       </div>
       <div class="mbDots" id="mbDots"></div>
@@ -1979,7 +1980,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.9.0';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -2699,6 +2700,9 @@ Object.assign(I18N.en, { // the Little ones games (Animal sounds, Colors, Peekab
   modeSand: 'Sand', gm_sand: 'sand', descSand: 'A tray of soft sand: dig with your fingers, smooth it flat again, and switch on the glow in the dark.', tgd_sand: 'Dig and squish!',
   modePuzzle: 'Puzzle', gm_puzzle: 'puzzle', descPuzzle: 'A giant puzzle: 2, then 3, then 4 big pieces. Drag each one to its place (or tap it, then its place); the picture comes alive.',
   tgd_puzzle: 'Drag the piece!', pzDone: 'Hooray! A {p}!', pz_car: 'car', pz_cow: 'cow', pz_duck: 'duck', pz_boat: 'boat',
+  modeSky: 'Sky Tower', gm_sky: 'sky tower', descSky: 'Blocks float down from the sky: steer each one with a finger and build a wobbly tower past the clouds, the birds and space, up to the moon. It fell? Boom, and build again.',
+  tgd_sky: 'Build it high!', sk_num: 'One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten', sk_oops: 'Oops!', sk_boom: 'Boom! Again!',
+  sk_clouds: 'The clouds!', sk_birds: 'Hello, birds!', sk_balloon: 'A balloon!', sk_space: 'Space!', sk_moon: 'We reached the moon!', sk_stars: 'Up to the stars!',
 });
 Object.assign(I18N.he, {
   modeAnimals: 'חיות', gm_animals: 'חיות', descAnimals: 'חווה עם חיות גדולות: הקישו על חיה ותשמעו אותה ואת השם שלה. ואחר כך משחק עדין: "איפה הפרה?"',
@@ -2722,6 +2726,9 @@ Object.assign(I18N.he, {
   modeSand: 'חול קינטי', gm_sand: 'חול קינטי', descSand: 'ארגז של חול רך: חופרים באצבעות, מחליקים מחדש, ומדליקים זוהר בחושך.', tgd_sand: 'חופרים באצבע!',
   modePuzzle: 'פאזל', gm_puzzle: 'פאזל', descPuzzle: 'פאזל ענק: 2, אחר כך 3 ואחר כך 4 חלקים גדולים. גררו כל חלק למקום שלו (או הקישו עליו ואז על המקום); התמונה מתעוררת לחיים.',
   tgd_puzzle: 'גוררים את החלק!', pzDone: 'הידד! {p}!', pz_car: 'מכונית', pz_cow: 'פרה', pz_duck: 'ברווז', pz_boat: 'סירה',
+  modeSky: 'מגדל לשמיים', gm_sky: 'מגדל לשמיים', descSky: 'קוביות יורדות מהשמיים: מזיזים כל אחת עם האצבע ובונים מגדל מתנדנד מעל העננים, הציפורים והחלל, עד הירח. נפל? בום, ובונים שוב.',
+  tgd_sky: 'בונים גבוה!', sk_num: 'אחת,שתיים,שלוש,ארבע,חמש,שש,שבע,שמונה,תשע,עשר', sk_oops: 'אופס!', sk_boom: 'בום! עוד פעם!',
+  sk_clouds: 'העננים!', sk_birds: 'שלום, ציפורים!', sk_balloon: 'כדור פורח!', sk_space: 'החלל!', sk_moon: 'הגענו לירח!', sk_stars: 'עד הכוכבים!',
 });
 Object.assign(I18N.en, { // Pop It (the silicone fidget toy): names and spoken lines
   modePopit: 'Pop It', gm_popit: 'pop it', descPopit: 'A squishy rainbow pop-it: pop every bubble (slide a finger to pop a row), then FLIP! Race the clock, pop one colour, repeat a pattern, collect new boards.',
@@ -2758,14 +2765,14 @@ Object.assign(I18N.he, {
 Object.assign(I18N.en, {
   twPop: 'CRACK!', twBoss: 'The giant king', twBossHint: 'Blast right next to him: 3 hearts!', twWobble: 'He wobbles!', twBoom: 'BOOM!!', tw_kitchen: 'Kitchen', tw_picnic: 'Picnic', tw_castle: 'Castle', tw_space: 'Space', tw_candy: 'Candy land',
   twN: 'Tower {n}', twLeft: '{n} left', twDone: 'Tower down!', twPerfect: 'Perfect!', twNext: 'Next tower', twTaps: 'taps', hintTower: 'Tap to blast the tower off the table!',
-  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.8.0',
-  wn: ['\uD83D\uDCA8 Pop It: a fart mode! Every pop a different, silly fart or burp (Settings to turn it on)', '\uD83D\uDC37 Tower: funny animals that break into pieces when you blast them (Settings)', '\uD83C\uDFD6\uFE0F Sand Lab: the challenges never repeat in a row: bowls, vases, two cups, funnels', '\uD83D\uDCF1 Sand Lab: tilting works in more browsers'],
+  wnTitle: 'What\u2019s new?', wnBtn: 'Let\u2019s go! \uD83C\uDF89', wnFor: '1.9.0',
+  wn: ['\uD83C\uDF19 New for the little ones: Sky Tower! Blocks with faces float down, steer them with a finger and build up past the clouds and the birds to the moon', '\uD83D\uDCA5 It fell? A funny BOOM and build again (nothing is lost)', '\uD83D\uDD22 Every block plays a note and is counted out loud'],
 });
 Object.assign(I18N.he, {
   twPop: 'קראק!', twBoss: 'המלך הענק', twBossHint: 'פיצוץ ממש לידו: 3 לבבות!', twWobble: 'הוא מתנדנד!', twBoom: 'בום!!', tw_kitchen: 'מטבח', tw_picnic: 'פיקניק', tw_castle: 'טירה', tw_space: 'חלל', tw_candy: 'ארץ הממתקים',
   twN: 'מגדל {n}', twLeft: 'נשארו {n}', twDone: 'המגדל נפל!', twPerfect: 'מושלם!', twNext: 'למגדל הבא', twTaps: 'נגיעות', hintTower: 'נוגעים ומפוצצים את המגדל מהשולחן!',
-  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.8.0',
-  wn: ['\uD83D\uDCA8 פופ איט: מצב פלוצים! כל פופ פלוץ או גרעפס מצחיק אחר (מדליקים בהגדרות)', '\uD83D\uDC37 המגדל: חיות מצחיקות שמתפרקות לחתיכות כשמפוצצים אותן (בהגדרות)', '\uD83C\uDFD6\uFE0F מעבדת חול: האתגרים לא חוזרים על עצמם: קערות, אגרטלים, שתי כוסות ומשפכים', '\uD83D\uDCF1 מעבדת חול: ההטיה עובדת בעוד דפדפנים'],
+  wnTitle: 'מה חדש?', wnBtn: 'יאללה! \uD83C\uDF89', wnFor: '1.9.0',
+  wn: ['\uD83C\uDF19 חדש לקטנטנים: מגדל לשמיים! קוביות עם פרצופים יורדות מהשמיים, מזיזים אותן באצבע ובונים מעל העננים והציפורים עד הירח', '\uD83D\uDCA5 נפל? בום מצחיק ובונים שוב (שום דבר לא הולך לאיבוד)', '\uD83D\uDD22 כל קובייה מנגנת צליל וסופרים אותה בקול'],
 });
 function t(key, vars) {
   if (vars && vars.n === 1 && I18N.en[key + '1'] !== undefined && /\{n\}/.test(I18N.en[key] || '')) key += '1'; // (a singular form, when there is one)
@@ -15490,7 +15497,7 @@ $('resetBtn').addEventListener('click', () => { if (gameMode === 'slice') resetS
    the same toolbar as a small sheet: Resume first, then Restart, Sound, Language, Stats and Home, each the toolbar's own button and handler. ---------------- */
 const menu = { open: false, dwell: null, block: false };
 const chromeEl = document.querySelector('.chrome');
-const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // every game: the toolbar is the one pause button in play
+const MENU_MODES = ['sandbox', 'slice', 'smash', 'busy', 'strike', 'shapes', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'sky', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // every game: the toolbar is the one pause button in play
 function menuMode() { return MENU_MODES.includes(gameMode); }
 function syncChromeMode() { const on = menuMode(); document.body.classList.toggle('minChrome', on); document.body.classList.toggle('navLittle', navRoomOf() === 'little'); navHomeSync(); try { syncFullBtn(); } catch {} if (!on) closeMenu(false); }
 // the owner, Oct 2026 ("why do I need this pause button?"): where there is nothing to pause (the Little ones' games, Sand, both Pop Its, Paint,
@@ -18750,11 +18757,11 @@ window.__grasp.cg = { modes: CG_MODES, drums, bubbles, paint, catcher, hand2, ca
    to read colours, on the device). First play of each: the demo finger + <= 3 words, voiced once (profile.tips 'tg_<mode>'). Input: one finger
    drives (a second finger or a palm is ignored while one is down); a second tap on the same thing within TAPG.sameMs is one tap (phase 1's guard).
    Art is drawn in code (tgAnimal: 10 round animals; scenes cached per size). Hooks: __grasp.tg. */
-const TG_MODES = ['animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand'];
-function tgOn(m = gameMode) { return m === 'animals' || m === 'colors' || m === 'peekaboo' || m === 'feed' || m === 'puzzle' || m === 'sand' || m === 'popit'; } // (+ Pop It: the same frame, its own multi-touch input)
+const TG_MODES = ['animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'sky'];
+function tgOn(m = gameMode) { return m === 'animals' || m === 'colors' || m === 'peekaboo' || m === 'feed' || m === 'puzzle' || m === 'sand' || m === 'sky' || m === 'popit'; } // (+ Pop It: the same frame, its own multi-touch input)
 const TG = { slop: 22, tapMs: 700, palm: 90, demoTap: 1700, demoDrag: 2600 };
 const tg = { press: null, presses: new Map(), last: null, said: [], snd: [], sndN: 0, ignored: 0, demo: null, t0: 0, log: [], sayId: 0, notes: [] };
-function tgGame(m = gameMode) { return m === 'animals' ? AN_GAME : m === 'colors' ? CO_GAME : m === 'peekaboo' ? PK_GAME : m === 'feed' ? FE_GAME : m === 'puzzle' ? PZ_GAME : m === 'sand' ? SA_GAME : m === 'popit' ? PI_GAME : null; }
+function tgGame(m = gameMode) { return m === 'animals' ? AN_GAME : m === 'colors' ? CO_GAME : m === 'peekaboo' ? PK_GAME : m === 'feed' ? FE_GAME : m === 'puzzle' ? PZ_GAME : m === 'sand' ? SA_GAME : m === 'sky' ? SK_GAME : m === 'popit' ? PI_GAME : null; }
 function tgBig() { return Math.max(1, Math.min(1.8, Math.min(W, H) / 400)); }
 function tgTop() { return cgTopY(); } // under the pause button
 function tgReset(m = gameMode, now = performance.now()) { // a fresh visit / Restart
@@ -18762,7 +18769,7 @@ function tgReset(m = gameMode, now = performance.now()) { // a fresh visit / Res
   tgDemoStart(m, now); // (first: a game's first prompt waits for the demo's words)
   const G = tgGame(m); if (G) G.reset(now);
 }
-function tgLeave() { tg.press = null; tg.presses.clear(); tg.demo = null; tg.sayId++; ccCamStop(); saSndStop(); sa.st = null; }
+function tgLeave() { tg.press = null; tg.presses.clear(); tg.demo = null; tg.sayId++; ccCamStop(); saSndStop(); sa.st = null; sk.held = null; }
 function tgTick(now, dt) { const G = tgGame(); if (G && mode !== 'none' && !pause.on && !menu.open) G.tick(now, dt); } // (a11y: the last game no longer ticks (and re-asks) under the start screen)
 function tgRender(now) { const G = tgGame(); if (!G) return; G.render(now); drawParticles(); drawRings(now); tgNotesDraw(now); if (G.overlay) G.overlay(now); tgDemoDraw(now); }
 /* input: every finger (the owner, Oct 2026: two hands at once; the hand holding the phone is held back at the edge by the grip filter);
@@ -20531,7 +20538,7 @@ window.__grasp.popit = { PI, pi, boards: PI_BOARDS, shapes: PI_SHAPES, ids: PI_I
    until the camera is picked); vercel.json (and tests/serve.py) rewrite those paths to this page. Entering a game pushes its path; Home goes back to
    '/' (history.back() when the game was entered from the start screen, so Back / Forward stay tidy); the browser's Back from a game is Home (the round
    ends as the Home button ends it), Forward re-enters it. Any other path is the start screen. Hook: __grasp.route. --- */
-const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
+const ROUTE_MODES = ['strike', 'smash', 'slice', 'busy', 'shapes', 'sandbox', 'frenzy', 'duel', 'drums', 'bubbles', 'paint', 'stars', 'animals', 'colors', 'peekaboo', 'feed', 'puzzle', 'sand', 'sky', 'popit', 'spot', 'mix', 'quest', 'tachles', 'powder']; // (+ the Little ones games: /animals ..., /popit) // (frenzy: Strike's Frenzy run; duel: a friend's challenge, its query kept)
 const route = { applying: false, log: [], duelQ: '' };
 function routeOf(path) { const m = /^\/([a-z]+)\/?$/.exec(path || ''); return m && ROUTE_MODES.includes(m[1]) ? m[1] : null; }
 function routeNow() { return (mode !== 'none' || anyMapOpen()) && ROUTE_MODES.includes(gameMode) ? (gameMode === 'strike' && duel.on && mode !== 'none' && !anyMapOpen() ? 'duel' : gameMode === 'strike' && frenzy.on && mode !== 'none' && !anyMapOpen() ? 'frenzy' : gameMode) : null; } // the game on screen (the Adventure map counts as Strike, the Smash map as Smash)
@@ -20838,6 +20845,240 @@ const SA_GAME = { reset: saReset, tick: saTick, render: saRender, down: saDown, 
 window.__grasp.sand = { SA, sa, shade: () => saShade(), layout: () => (saLayout(true), sa.L), night: (on) => (saNight(on), sa.night),
   at: (x, y) => sa.h[saIdx(x, y)], glowAt: (x, y) => sa.glow[saIdx(x, y)], colAt: (x, y) => { const u = saIdx(x, y) * 3; return [sa.hue[u], sa.hue[u + 1], sa.hue[u + 2]]; }, sum() { let s = 0; for (let k = 0; k < sa.h.length; k++) s += sa.h[k]; return s; },
   get snd() { return { on: !!sa.snd, lv: sa.sndLv }; } };
+/* ---------------- Sky tower (/sky, the Little ones; Oct 2026, the owner: "blocks from the sky for the little ones, but something interesting" ->
+   a tower up to the sky). A block with a face floats down from the top; a finger anywhere steers it (it glides under the finger; on the block
+   itself it can be carried), letting go drops it; left alone it sinks and lands by itself. Its centre over the top block = it lands (a xylophone
+   note that climbs with the tower, the count said up to 10, a gentle pull to the middle); else it tips off with "Oops!" and poofs (nothing lost).
+   The tower stands while the weight above each block sits over it (the centre of mass, a little forgiving); a staircase too far = BOOM: every
+   block flies off dizzy, the camera slides back down and a fresh tower starts ("Boom! Again!"). It sways like a spring (drawn only: a nudge per
+   landing, more when it leans; the blocks look worried then). As it rises the sky changes: clouds, birds, a balloon and a plane, space and stars,
+   the moon (a party and its name at each); the best height is a flag on the side (grasp.skyBest). World y: up is negative from the platform's
+   top; x: from the screen's middle. Hooks: __grasp.sky. ---------------- */
+const SK = { g: 0.0024, sink: 0.03, magnet: 0.3, reach: 0.04, margin: 0.14, nervous: 0.7, top: 0.58, ground: 0.84, respawnMs: 380, boomMs: 1900,
+  stages: [['clouds', 3], ['birds', 7], ['balloon', 11], ['space', 16], ['moon', 22], ['stars', 30]],
+  cols: ['#ff5d6c', '#ffa23a', '#ffd93d', '#5cd16e', '#3ec5ff', '#8f6bff', '#ff7eb6'],
+  kinds: [[1, 1], [1.5, 0.75], [0.85, 1.15], [1, 1], [1.3, 0.8], [1.15, 1.15]],
+  notes: [392, 440, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.5],
+  sky: [[0, [154, 217, 255]], [6, [108, 192, 255]], [12, [74, 143, 240]], [16, [53, 87, 201]], [19, [28, 34, 102]], [23, [11, 11, 46]]] };
+const sk = { u: 64, pw: 166, blocks: [], hand: null, fall: null, debris: [], cam: 0, camT: 0, sway: 0, swayV: 0, best: 0, stage: 0, held: null,
+  n: 0, boom: null, next: 0, colI: -1, id: 0, lean: 0, log: [], scen: null, scenKey: '', rnd: rng(Date.now() % 100000), sndAt: 0, misses: 0 };
+try { sk.best = +localStorage.getItem('grasp.skyBest') || 0; } catch {}
+function skSize() { sk.u = Math.round(Math.max(54, Math.min(108, W / 5.2, H / 9))); sk.pw = Math.round(sk.u * 2.6); }
+function skCam0() { return -SK.ground * H; }
+function skTopY() { const b = sk.blocks[sk.blocks.length - 1]; return b ? b.y - b.h / 2 : 0; }
+function skSup() { const b = sk.blocks[sk.blocks.length - 1]; return b ? { x: b.x, w: b.w, top: b.y - b.h / 2 } : { x: 0, w: sk.pw, top: 0 }; }
+function skBend(a) { const A = -skTopY(); if (A <= 0) return 0; const f = Math.max(0, Math.min(1, a / A)); return sk.sway * f * f; } // the sway's offset at height a (drawn only)
+function skVisX() { return skSup().x + skBend(-skTopY()); } // the top as the eye sees it (where a block is aimed)
+function skK() { return 0.00006 / (1 + -skTopY() / (8 * sk.u)); } // the spring: a taller tower sways slower
+function skReset(now) {
+  skSize(); sk.blocks = []; sk.hand = sk.fall = sk.boom = sk.held = null; sk.debris = []; sk.sway = sk.swayV = 0; sk.stage = 0; sk.n = 0; sk.lean = 0; sk.misses = 0;
+  sk.cam = sk.camT = skCam0(); sk.log.length = 0; sk.next = now; sk.sizeKey = skSizeKey(); skSpawn(now);
+}
+function skSpawn(now) {
+  const u = sk.u, R = sk.rnd, k = sk.n === 0 ? SK.kinds[R() < 0.5 ? 0 : 1] : SK.kinds[Math.floor(R() * SK.kinds.length)];
+  let c = Math.floor(R() * SK.cols.length); if (c === sk.colI) c = (c + 1) % SK.cols.length; sk.colI = c;
+  const w = Math.round(k[0] * u), h = Math.round(k[1] * u), lim = W / 2 - w / 2 - 8, side = sk.n === 0 ? (lang === 'he' ? 1 : -1) : R() < 0.5 ? -1 : 1;
+  const x = Math.max(-lim, Math.min(lim, side * W * (sk.n === 0 ? 0.24 : 0.08 + R() * 0.2)));
+  sk.hand = { id: ++sk.id, w, h, x, tx: x, sy: Math.max(tgTop() + h / 2 + 16, H * 0.17), col: SK.cols[c], born: now }; sk.log.push('spawn');
+}
+function skHandMax() { const h = sk.hand; return skTopY() - sk.cam - h.h / 2 - sk.u * 0.22; } // the lowest a hovering block goes (just over the top)
+function skDrop(now, how) {
+  const h = sk.hand; if (!h) return false; sk.hand = null; sk.held = null;
+  sk.fall = { id: h.id, w: h.w, h: h.h, x: h.x, y: h.sy + sk.cam, vy: how === 'auto' ? SK.sink : 0.04, col: h.col }; sk.log.push('drop:' + how);
+  if (how !== 'auto') tgSfx('swish'); return true;
+}
+function skLand(now) {
+  const f = sk.fall, u = sk.u; sk.fall = null; const sup = skSup(), vis = skVisX(); let dx = f.x - vis;
+  if (Math.abs(dx) > sup.w / 2 + SK.reach * u) { // over the edge: it tips off and poofs (nothing lost)
+    const s = Math.sign(dx); sk.debris.push({ w: f.w, h: f.h, col: f.col, x: f.x, y: sup.top - f.h / 2, vx: s * 0.1, vy: -0.08, a: 0, va: s * 0.007, b: 0, t0: now, tip: 1 });
+    tgSfx('boing'); sk.misses++; tgSay(t('sk_oops'), { level: 'name', key: 'sk_oops', gapSame: 5000 }); sk.next = now + 700; sk.log.push('tip'); return 'tip';
+  }
+  if (Math.abs(dx) < sup.w * 0.32) dx *= 1 - SK.magnet; // a gentle pull to the middle
+  const b = { id: f.id, w: f.w, h: f.h, col: f.col, x: sup.x + dx, y: sup.top - f.h / 2, at: now }; sk.blocks.push(b); sk.n++;
+  const n = sk.blocks.length; tgSfx('xylo', SK.notes[(n - 1) % SK.notes.length]); tgSfx('wood');
+
+  const A = -skTopY(), om = Math.sqrt(skK()), amp = (0.08 + Math.min(0.5, Math.abs(dx) / u) * 0.45) * u * Math.min(1, A / (3 * u));
+  sk.swayV += (dx ? Math.sign(dx) : sk.rnd() < 0.5 ? -1 : 1) * amp * om;
+  const sx = W / 2 + b.x, sy = b.y + b.h / 2 - sk.cam; fxDust(sx - b.w / 2, sy, 2); fxDust(sx + b.w / 2, sy, 2);
+  const fail = skCheck(); if (fail >= 0) { skBoom(now, fail); return 'boom'; }
+  const alt = A / u; let st = null;
+  while (sk.stage < SK.stages.length && alt >= SK.stages[sk.stage][1]) { st = SK.stages[sk.stage][0]; sk.stage++; sk.log.push('stage:' + st); tgParty(sx, sy - b.h, st === 'moon' || st === 'stars'); }
+  if (st) tgSay(t('sk_' + st), { level: 'name' }); else if (n <= 10) tgSay(t('sk_num').split(',')[n - 1], { level: 'name' }); // (a new sky's name instead of the count, and a moment longer to look)
+  if (alt > sk.best) { sk.best = Math.round(alt * 10) / 10; try { localStorage.setItem('grasp.skyBest', String(sk.best)); } catch {} }
+  sk.next = now + (st ? 1100 : SK.respawnMs); sk.log.push('land'); return 'land';
+}
+function skCheck() { // the first block (0 = the platform) whose load above sits past its edge, or -1; sk.lean = the worst share of the room used
+  const L = [{ x: 0, w: sk.pw }].concat(sk.blocks), B = sk.blocks; let lean = 0;
+  for (let k = 0; k < B.length; k++) {
+    let m = 0, sx = 0; for (let j = k; j < B.length; j++) { const a = B[j].w * B[j].h; m += a; sx += a * B[j].x; }
+    const r = Math.abs(sx / m - L[k].x) / (L[k].w / 2 + SK.margin * sk.u); if (r > 1) { sk.lean = r; return k; } lean = Math.max(lean, r);
+  }
+  sk.lean = lean; return -1;
+}
+function skBoom(now, k) {
+  const B = sk.blocks, u = sk.u, L = [{ x: 0, w: sk.pw }].concat(B); let m = 0, sx = 0; for (let j = k; j < B.length; j++) { const a = B[j].w * B[j].h; m += a; sx += a * B[j].x; }
+  const dir = Math.sign(sx / m - L[k].x) || 1, at = B[k] || B[B.length - 1], R = sk.rnd;
+  sk.boom = { t0: now, k, x: W / 2 + at.x, y: at.y - sk.cam };
+  B.forEach((b, j) => { const up = j >= k ? 1 : 0.55; sk.debris.push({ w: b.w, h: b.h, col: b.col, x: b.x + skBend(-b.y), y: b.y, vx: dir * (0.04 + R() * 0.16) * up + (R() - 0.5) * 0.12, vy: -(0.12 + R() * 0.32) * up, a: 0, va: (R() - 0.5) * 0.022, b: 0, t0: now }); });
+  if (sk.hand) { fxDust(W / 2 + sk.hand.x, sk.hand.sy, 4); sk.hand = null; } sk.held = null; sk.fall = null;
+  sk.blocks = []; sk.sway = sk.swayV = 0; sk.stage = 0; sk.lean = 0; sk.n = 0;
+  shakeScreen(3.5); tgSfx('boom'); fxDust(sk.boom.x, sk.boom.y, 9); fxShards(sk.boom.x, sk.boom.y, ['#ffd23f', '#ff8a1f', '#ffffff'], 10);
+  setTimeout(() => { if (gameMode === 'sky') tgSfx('boing'); }, 260); setTimeout(() => { if (gameMode === 'sky') tgSfx('giggle'); }, 800);
+  tgSay(t('sk_boom'), { level: 'name' }); sk.log.push('boom:' + k);
+}
+function skTick(now, dt) {
+  dt = Math.min(50, dt || 16); const u = sk.u, c0 = skCam0();
+  if (skSizeKey() !== sk.sizeKey) { sk.sizeKey = skSizeKey(); if (!sk.blocks.length && !sk.debris.length) { skSize(); if (sk.hand) sk.hand.sy = Math.max(tgTop() + sk.hand.h / 2 + 16, H * 0.17); } }
+  sk.camT = sk.boom ? c0 : Math.min(c0, skTopY() - SK.top * H); sk.cam += (sk.camT - sk.cam) * (1 - Math.exp(-dt / (sk.boom ? 380 : 260)));
+  const k = skK(), force = sk.lean > SK.nervous ? Math.sin(now / 230) * 0.00001 * u * sk.lean : 0;
+  sk.swayV += (-k * sk.sway - 0.0011 * sk.swayV + force) * dt; sk.sway += sk.swayV * dt; sk.sway = Math.max(-0.8 * u, Math.min(0.8 * u, sk.sway));
+  if (!sk.hand && !sk.fall && !sk.boom && now >= sk.next) skSpawn(now);
+  const h = sk.hand;
+  if (h) {
+    h.x += (h.tx - h.x) * (1 - Math.exp(-dt / 70)); const mx = skHandMax();
+    if (sk.held) h.sy = Math.min(h.sy, mx);
+    else if (!tgDemoOn()) { h.sy += SK.sink * dt * Math.min(1, (now - h.born) / 600); if (h.sy >= mx) skDrop(now, 'auto'); }
+  }
+  const f = sk.fall; if (f) { f.vy += SK.g * dt; f.y += f.vy * dt; if (f.y + f.h / 2 >= skSup().top) skLand(now); }
+  for (let i = sk.debris.length - 1; i >= 0; i--) {
+    const d = sk.debris[i]; d.vy += SK.g * dt; d.x += d.vx * dt; d.y += d.vy * dt; d.a += d.va * dt;
+    const r = Math.max(d.w, d.h) * 0.42, floor = Math.abs(d.x) < sk.pw / 2 ? 0 : u * 0.55;
+    if (d.y + r >= floor && d.vy > 0) { d.y = floor - r; d.vy *= -0.42; d.vx *= 0.7; d.va *= 0.6; d.b++; if (now - sk.sndAt > 160) { sk.sndAt = now; tgSfx(d.b === 1 ? 'boing' : 'thud'); } }
+    const sy = d.y - sk.cam;
+    if (d.b >= 2 || now - d.t0 > 3600 || sy > H + 3 * u) { if (sy < H + u) { fxDust(W / 2 + d.x, sy, 4); fxSparkle(W / 2 + d.x, sy, ['#ffd23f', '#ffffff', d.col], 4, 26); if (now - sk.sndAt > 120) { sk.sndAt = now; tgSfx('pop'); } } sk.debris.splice(i, 1); }
+  }
+  if (sk.boom && now - sk.boom.t0 > SK.boomMs && Math.abs(sk.cam - c0) < 24) { sk.boom = null; sk.next = now + 200; sk.log.push('fresh'); }
+}
+function skSizeKey() { return W * 10000 + H; }
+/* the drawing: the sky by height, the scenery (made once per size), the ground and platform, the blocks with faces */
+function skSkyCol(a) { const S = SK.sky; if (a <= S[0][0]) return S[0][1]; for (let i = 1; i < S.length; i++) if (a <= S[i][0]) { const k = (a - S[i - 1][0]) / (S[i][0] - S[i - 1][0]); return S[i - 1][1].map((v, j) => Math.round(v + (S[i][1][j] - v) * k)); } return S[S.length - 1][1]; }
+function skScenery() {
+  const key = W + 'x' + H + '|' + sk.u; if (sk.scen && sk.scenKey === key) return sk.scen; sk.scenKey = key;
+  const r = rng(4242), u = sk.u, S = { clouds: [], birds: [], stars: [] };
+  for (let i = 0; i < 16; i++) S.clouds.push({ a: 1.6 + i * 0.95 + r() * 0.7, x: r() * W, s: u * (0.32 + r() * 0.34), v: (r() - 0.5) * 0.012 });
+  for (let i = 0; i < 6; i++) S.birds.push({ a: 6.4 + r() * 6.5, x: r() * W, v: (0.03 + r() * 0.035) * (r() < 0.5 ? -1 : 1), s: u * (0.2 + r() * 0.08), ph: r() * 6 });
+  for (let i = 0; i < 140; i++) S.stars.push({ a: 14 + r() * 40, x: r() * W, r: 0.8 + r() * 1.8, ph: r() * 6 });
+  return (sk.scen = S);
+}
+function skBird(g, x, y, s, flap, dir) {
+  g.save(); g.translate(x, y); g.scale(dir, 1); g.fillStyle = '#ff9f43'; g.strokeStyle = PET_INK; g.lineWidth = 2;
+  g.beginPath(); g.ellipse(0, 0, s, s * 0.78, 0, 0, TAU); g.fill(); g.stroke();
+  g.fillStyle = '#ffd08a'; g.beginPath(); g.moveTo(-s * 0.2, -s * 0.1); g.quadraticCurveTo(-s * 0.9, -s * (0.2 + 1.1 * flap), -s * 1.1, -s * 0.1 - s * flap * 0.5); g.quadraticCurveTo(-s * 0.6, s * 0.25, -s * 0.2, s * 0.1); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#ffd23f'; g.beginPath(); g.moveTo(s * 0.9, -s * 0.1); g.lineTo(s * 1.35, s * 0.05); g.lineTo(s * 0.9, s * 0.22); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = PET_INK; g.beginPath(); g.arc(s * 0.45, -s * 0.22, s * 0.13, 0, TAU); g.fill(); g.restore();
+}
+function skBalloon(g, x, y, s) {
+  g.save(); g.translate(x, y); g.strokeStyle = PET_INK; g.lineWidth = 2.5;
+  const cols = ['#ff5d6c', '#ffd93d', '#3ec5ff', '#5cd16e']; for (let i = 0; i < 4; i++) { g.fillStyle = cols[i]; g.beginPath(); g.ellipse(0, 0, s * (1 - i * 0.25), s * 1.15, 0, 0, TAU); g.fill(); }
+  g.beginPath(); g.ellipse(0, 0, s, s * 1.15, 0, 0, TAU); g.stroke();
+  g.beginPath(); g.moveTo(-s * 0.5, s * 0.95); g.lineTo(-s * 0.3, s * 1.6); g.moveTo(s * 0.5, s * 0.95); g.lineTo(s * 0.3, s * 1.6); g.stroke();
+  g.fillStyle = '#b8793a'; g.beginPath(); g.roundRect(-s * 0.35, s * 1.55, s * 0.7, s * 0.45, 4); g.fill(); g.stroke(); g.restore();
+}
+function skPlane(g, x, y, s, dir) {
+  g.save(); g.translate(x, y); g.scale(dir, 1); g.strokeStyle = PET_INK; g.lineWidth = 2.5; g.fillStyle = '#ffffff';
+  g.beginPath(); g.ellipse(0, 0, s * 1.4, s * 0.38, 0, 0, TAU); g.fill(); g.stroke();
+  g.fillStyle = '#ff5d6c'; g.beginPath(); g.moveTo(-s * 0.2, 0); g.lineTo(-s * 0.7, s * 0.9); g.lineTo(-s * 0.35, s * 0.9); g.lineTo(s * 0.35, 0); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(-s * 1.1, -s * 0.1); g.lineTo(-s * 1.5, -s * 0.75); g.lineTo(-s * 1.25, -s * 0.75); g.lineTo(-s * 0.85, -s * 0.15); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#7fd0ff'; for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(s * (0.75 - i * 0.38), -s * 0.06, s * 0.1, 0, TAU); g.fill(); } g.restore();
+}
+function skMoon(g, x, y, r, happy, now) {
+  g.save(); g.translate(x, y); g.shadowColor = 'rgba(255,240,170,0.7)'; g.shadowBlur = r * 0.6;
+  const gr = g.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r); gr.addColorStop(0, '#fffbe0'); gr.addColorStop(1, '#f2d67a'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill(); g.shadowBlur = 0;
+  g.fillStyle = 'rgba(200,160,70,0.35)'; for (const [cx, cy, cr] of [[0.35, -0.35, 0.16], [-0.45, 0.35, 0.12], [0.45, 0.45, 0.09]]) { g.beginPath(); g.arc(cx * r, cy * r, cr * r, 0, TAU); g.fill(); }
+  g.fillStyle = PET_INK; g.strokeStyle = PET_INK; g.lineWidth = r * 0.07; g.lineCap = 'round';
+  const wink = happy && (now % 2400) < 400; g.beginPath(); g.arc(-r * 0.3, -r * 0.08, r * 0.08, 0, TAU); g.fill();
+  if (wink) { g.beginPath(); g.moveTo(r * 0.2, -r * 0.08); g.lineTo(r * 0.42, -r * 0.08); g.stroke(); } else { g.beginPath(); g.arc(r * 0.3, -r * 0.08, r * 0.08, 0, TAU); g.fill(); }
+  g.beginPath(); if (happy) g.arc(0, r * 0.12, r * 0.3, 0.15 * Math.PI, 0.85 * Math.PI); else { g.moveTo(-r * 0.15, r * 0.3); g.lineTo(r * 0.15, r * 0.3); } g.stroke();
+  g.fillStyle = 'rgba(255,140,170,0.45)'; g.beginPath(); g.arc(-r * 0.5, r * 0.18, r * 0.1, 0, TAU); g.arc(r * 0.5, r * 0.18, r * 0.1, 0, TAU); g.fill(); g.restore();
+}
+function skPlanet(g, x, y, r) {
+  g.save(); g.translate(x, y); g.rotate(-0.35); g.strokeStyle = '#ffd08a'; g.lineWidth = r * 0.18; g.beginPath(); g.ellipse(0, 0, r * 1.7, r * 0.45, 0, Math.PI, TAU); g.stroke();
+  const gr = g.createLinearGradient(0, -r, 0, r); gr.addColorStop(0, '#c7a6ff'); gr.addColorStop(1, '#7b5cd6'); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill();
+  g.strokeStyle = '#ffd08a'; g.beginPath(); g.ellipse(0, 0, r * 1.7, r * 0.45, 0, 0, Math.PI); g.stroke(); g.restore();
+}
+function skRocket(g, x, y, s, now) {
+  g.save(); g.translate(x, y); g.rotate(-0.5); g.strokeStyle = PET_INK; g.lineWidth = 2.5;
+  g.fillStyle = (now % 160) < 80 ? '#ffd23f' : '#ff8a1f'; g.beginPath(); g.moveTo(-s * 0.3, s * 0.9); g.lineTo(0, s * (1.5 + 0.2 * Math.sin(now / 40))); g.lineTo(s * 0.3, s * 0.9); g.closePath(); g.fill();
+  g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(0, -s * 1.2); g.quadraticCurveTo(s * 0.55, -s * 0.5, s * 0.45, s * 0.9); g.lineTo(-s * 0.45, s * 0.9); g.quadraticCurveTo(-s * 0.55, -s * 0.5, 0, -s * 1.2); g.fill(); g.stroke();
+  g.fillStyle = '#ff5d6c'; g.beginPath(); g.moveTo(-s * 0.45, s * 0.4); g.lineTo(-s * 0.8, s * 1); g.lineTo(-s * 0.4, s * 0.9); g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.moveTo(s * 0.45, s * 0.4); g.lineTo(s * 0.8, s * 1); g.lineTo(s * 0.4, s * 0.9); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#3ec5ff'; g.beginPath(); g.arc(0, -s * 0.2, s * 0.22, 0, TAU); g.fill(); g.stroke(); g.restore();
+}
+function skBlockDraw(g, b, x, y, ang, mood, now, sq = 0) {
+  const w = b.w, h = b.h, s = Math.min(w, h), r = s * 0.2;
+  g.save(); g.translate(x, y + h / 2); g.rotate(ang); g.scale(1 + sq * 0.6, 1 - sq); g.translate(0, -h / 2);
+  g.fillStyle = b.col; g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, r); g.fill();
+  g.save(); g.clip(); g.fillStyle = 'rgba(0,0,0,0.13)'; g.fillRect(-w / 2, h * 0.22, w, h); g.fillStyle = 'rgba(255,255,255,0.32)'; g.beginPath(); g.roundRect(-w / 2 + s * 0.1, -h / 2 + s * 0.08, w * 0.45, s * 0.13, s * 0.07); g.fill(); g.restore();
+  g.strokeStyle = PET_INK; g.lineWidth = Math.max(2.5, s * 0.05); g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, r); g.stroke();
+  const ex = s * 0.2, ey = -s * 0.07, er = s * 0.12, blink = mood !== 'dizzy' && ((now + b.id * 937) % 3700) < 130; g.lineCap = 'round';
+  for (const sx of [-1, 1]) {
+    const cx = sx * ex;
+    if (mood === 'dizzy') { g.lineWidth = s * 0.05; g.beginPath(); g.moveTo(cx - er * 0.7, ey - er * 0.7); g.lineTo(cx + er * 0.7, ey + er * 0.7); g.moveTo(cx + er * 0.7, ey - er * 0.7); g.lineTo(cx - er * 0.7, ey + er * 0.7); g.stroke(); continue; }
+    if (blink) { g.lineWidth = s * 0.045; g.beginPath(); g.moveTo(cx - er * 0.8, ey); g.lineTo(cx + er * 0.8, ey); g.stroke(); continue; }
+    g.fillStyle = '#ffffff'; g.lineWidth = s * 0.035; g.beginPath(); g.arc(cx, ey, er, 0, TAU); g.fill(); g.stroke();
+    const ly = mood === 'wee' ? 0.35 : mood === 'worry' ? -0.2 : 0.15; g.fillStyle = PET_INK; g.beginPath(); g.arc(cx + sx * er * 0.12, ey + er * ly, er * 0.52, 0, TAU); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(cx + sx * er * 0.12 - er * 0.18, ey + er * ly - er * 0.2, er * 0.17, 0, TAU); g.fill();
+  }
+  g.fillStyle = 'rgba(255,120,150,0.5)'; g.beginPath(); g.arc(-s * 0.33, s * 0.1, s * 0.07, 0, TAU); g.arc(s * 0.33, s * 0.1, s * 0.07, 0, TAU); g.fill();
+  g.strokeStyle = PET_INK; g.fillStyle = PET_INK; g.lineWidth = s * 0.045; const my = s * 0.16;
+  if (mood === 'wee' || mood === 'dizzy') { g.beginPath(); g.ellipse(0, my + s * 0.02, s * 0.09, s * 0.11, 0, 0, TAU); g.fill(); g.fillStyle = '#ff7e9a'; g.beginPath(); g.ellipse(0, my + s * 0.08, s * 0.05, s * 0.035, 0, 0, TAU); g.fill(); }
+  else if (mood === 'worry') { g.beginPath(); g.moveTo(-s * 0.13, my + s * 0.03); for (let i = 1; i <= 4; i++) g.lineTo(-s * 0.13 + i * s * 0.065, my + s * 0.03 + (i % 2 ? -1 : 1) * s * 0.03); g.stroke(); g.fillStyle = '#9fe0ff'; g.beginPath(); const dx = w / 2 - s * 0.12, dy = -h / 2 + s * 0.2 + (now / 6 % (s * 0.2)); g.moveTo(dx, dy - s * 0.09); g.quadraticCurveTo(dx + s * 0.07, dy, dx, dy + s * 0.05); g.quadraticCurveTo(dx - s * 0.07, dy, dx, dy - s * 0.09); g.fill(); }
+  else { g.beginPath(); g.arc(0, my - s * 0.06, s * 0.13, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); }
+  g.restore();
+}
+function skRender(now) {
+  const k = (now - shake.t) / shake.ms;
+  if (k < 1 && shake.amp > 0) { const a = shake.amp * (1 - k); view.x = Math.sin(now * 0.11) * a; view.y = Math.cos(now * 0.17) * a; } else view.x = view.y = 0;
+  const u = sk.u, cam = sk.cam, cx = W / 2, S = skScenery(), aTop = -cam / u, aBot = -(cam + H) / u, rgb = (c) => 'rgb(' + c.join(',') + ')';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, rgb(skSkyCol(aTop))); gr.addColorStop(0.5, rgb(skSkyCol((aTop + aBot) / 2))); gr.addColorStop(1, rgb(skSkyCol(aBot))); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  resetView(); const g = ctx, Y = (a) => -a * u - cam, vis = (y, m = 200) => y > -m && y < H + m;
+  for (const s of S.stars) { const y = Y(s.a), al = Math.max(0, Math.min(1, (s.a - 14) / 5)) * (0.55 + 0.45 * Math.sin(now / 500 + s.ph)); if (al > 0.02 && vis(y, 10)) { g.globalAlpha = al; g.fillStyle = '#ffffff'; g.beginPath(); g.arc(s.x, y, s.r, 0, TAU); g.fill(); } } g.globalAlpha = 1;
+  const sun = Y(4.5); if (vis(sun)) tgSun(g, lang === 'he' ? W * 0.16 : W * 0.84, sun, Math.min(46, u * 0.6));
+  { const y = Y(22.5); if (vis(y)) skMoon(g, lang === 'he' ? W * 0.24 : W * 0.76, y, u * 0.95, sk.stage >= 5, now); }
+  { const y = Y(29); if (vis(y)) skPlanet(g, lang === 'he' ? W * 0.78 : W * 0.22, y, u * 0.5); }
+  { const y = Y(18.2) + Math.sin(now / 700) * 8, x = ((now * 0.05) % (W + 200)) - 100; if (vis(y)) skRocket(g, x, y, u * 0.38, now); }
+  { const y = Y(11.4) + Math.sin(now / 900) * 10; if (vis(y)) skBalloon(g, (lang === 'he' ? W * 0.78 : W * 0.22) + Math.sin(now / 1500) * 14, y, u * 0.42); }
+  { const y = Y(13.6), x = W + 120 - ((now * 0.06) % (W + 240)); if (vis(y)) skPlane(g, x, y, u * 0.34, -1); }
+  for (const b of S.birds) { const y = Y(b.a) + Math.sin(now / 400 + b.ph) * 6; if (!vis(y)) continue; const span = W + 80, x = (((b.x + b.v * now) % span) + span) % span - 40; skBird(g, x, y, b.s, (Math.sin(now / 90 + b.ph) + 1) / 2, Math.sign(b.v)); }
+  for (const c of S.clouds) { const y = Y(c.a); if (!vis(y)) continue; const span = W + c.s * 4, x = (((c.x + c.v * now) % span) + span) % span - c.s * 2, al = Math.max(0, Math.min(0.92, 1 - (c.a - 14) / 3)); if (al > 0.02) tgCloud(g, x, y, c.s, al); }
+  const gy = Y(0); if (gy < H + 40) { // the ground: grass, two bushes, the platform
+    const gs = makeSprite('skground|' + W + 'x' + H + '|' + u, W, H, 0, 0, (q) => { tgGrass(q, 0); for (const [bx, br] of [[W * 0.1, u * 0.5], [W * 0.9, u * 0.42]]) { q.fillStyle = '#4caf50'; for (const [dx, dy, rr] of [[-0.6, 0.1, 0.6], [0, -0.2, 0.75], [0.6, 0.1, 0.6]]) { q.beginPath(); q.arc(bx + dx * br, u * 0.15 + dy * br, rr * br, 0, TAU); q.fill(); } } });
+    ctx.drawImage(gs.c, 0, gy + u * 0.55, W, H);
+    const pw = sk.pw; g.fillStyle = '#c8b28f'; g.strokeStyle = PET_INK; g.lineWidth = 3; g.beginPath(); g.roundRect(cx - pw / 2, gy, pw, u * 0.62, 8); g.fill(); g.stroke();
+    g.strokeStyle = 'rgba(90,70,40,0.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(cx - pw / 2 + 6, gy + u * 0.3); g.lineTo(cx + pw / 2 - 6, gy + u * 0.3); for (let i = 1; i < 4; i++) { const x = cx - pw / 2 + pw * i / 4; g.moveTo(x + (i % 2 ? 0 : 10), gy + 4); g.lineTo(x + (i % 2 ? 0 : 10), gy + u * 0.3); g.moveTo(x - (i % 2 ? 12 : 0), gy + u * 0.3); g.lineTo(x - (i % 2 ? 12 : 0), gy + u * 0.6); } g.stroke();
+    g.fillStyle = '#7bd36a'; g.beginPath(); g.roundRect(cx - pw / 2 - 4, gy - 5, pw + 8, 9, 5); g.fill();
+  }
+  if (sk.best > 1.5) { const y = Y(sk.best), x = lang === 'he' ? 22 : W - 22, d = lang === 'he' ? 1 : -1; if (vis(y, 40)) {
+    g.save(); g.globalAlpha = 0.5; g.setLineDash([6, 8]); g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); g.restore();
+    g.strokeStyle = PET_INK; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 40); g.stroke(); g.fillStyle = '#ff5d6c'; g.beginPath(); g.moveTo(x, y - 40); g.lineTo(x + d * 26, y - 32 + Math.sin(now / 200) * 2); g.lineTo(x, y - 24); g.closePath(); g.fill(); g.stroke(); } }
+  const A = -skTopY(), hand = sk.hand, worry = sk.lean > SK.nervous;
+  sk.blocks.forEach((b, i) => { const a = -b.y, bend = skBend(a), ang = A > 0 ? 2 * sk.sway * a / (A * A) * 0.6 : 0, q = Math.max(0, 1 - (now - b.at) / 240);
+    skBlockDraw(g, b, cx + b.x + bend, b.y - cam, ang, worry ? 'worry' : 'happy', now, q * 0.16 * Math.sin(q * Math.PI)); });
+  if (hand && !sk.boom) {
+    const sup = skSup(), vx = skVisX(); if (Math.abs(hand.x - vx) <= sup.w / 2 + SK.reach * u) { const y = sup.top - hand.h / 2 - cam; g.save(); g.globalAlpha = 0.45 + 0.2 * Math.sin(now / 220); g.setLineDash([8, 7]); g.strokeStyle = '#ffffff'; g.lineWidth = 3; g.beginPath(); g.roundRect(cx + hand.x - hand.w / 2, y - hand.h / 2, hand.w, hand.h, Math.min(hand.w, hand.h) * 0.2); g.stroke(); g.restore(); }
+    const k2 = Math.min(1, (now - hand.born) / 320), pop = k2 < 1 ? 0.6 + 0.4 * ease(k2) + Math.sin(k2 * Math.PI) * 0.12 : 1;
+    g.save(); g.translate(cx + hand.x, hand.sy); g.scale(pop, pop); skBlockDraw(g, hand, 0, Math.sin(now / 420) * 3, Math.sin(now / 700) * 0.05 + (hand.tx - hand.x) * 0.002, sk.held ? 'wee' : 'happy', now); g.restore();
+  }
+  if (sk.fall) skBlockDraw(g, sk.fall, cx + sk.fall.x, sk.fall.y - cam, 0, 'wee', now);
+  for (const d of sk.debris) skBlockDraw(g, d, cx + d.x, d.y - cam, d.a, d.tip ? 'wee' : 'dizzy', now);
+  if (sk.boom && now - sk.boom.t0 < 650) { const q = (now - sk.boom.t0) / 650, R = u * (0.8 + 1.6 * ease(Math.min(1, q * 1.6))), b = sk.boom; g.save(); g.globalAlpha = 1 - q * q; g.translate(b.x, b.y); g.rotate(q * 0.4);
+    for (const [rr, col] of [[1, '#ffd23f'], [0.62, '#ff8a1f'], [0.3, '#ffffff']]) { g.fillStyle = col; g.strokeStyle = PET_INK; g.lineWidth = 3; g.beginPath(); for (let i = 0; i < 24; i++) { const a = i * TAU / 24, l = R * rr * (i % 2 ? 0.62 : 1); g.lineTo(Math.cos(a) * l, Math.sin(a) * l); } g.closePath(); g.fill(); if (rr === 1) g.stroke(); }
+    g.restore(); }
+}
+function skDown(p, now, P) {
+  const h = sk.hand; if (!h || sk.boom) return; tgDemoDone(now);
+  const hx = W / 2 + h.x, on = Math.abs(p.x - hx) <= Math.max(60, h.w / 2 + 14) && Math.abs(p.y - h.sy) <= Math.max(60, h.h / 2 + 14);
+  sk.held = { f: h.id, on, ox: on ? hx - p.x : 0, oy: on ? h.sy - p.y : 0 }; h.tx = skClampX(p.x - W / 2 + sk.held.ox, h); tgSfx('blip'); sk.log.push(on ? 'grab' : 'steer');
+}
+function skClampX(x, h) { const lim = W / 2 - h.w / 2 - 6; return Math.max(-lim, Math.min(lim, x)); }
+function skMove(p) {
+  const h = sk.hand, G = sk.held; if (!h || !G || G.f !== h.id) return;
+  h.tx = skClampX(p.x - W / 2 + G.ox, h); if (G.on) h.sy = Math.max(tgTop() + h.h / 2 + 6, Math.min(skHandMax(), p.y + G.oy));
+}
+function skUp(p, P, tap, cancel) { const h = sk.hand, G = sk.held; sk.held = null; if (!h || !G || G.f !== h.id || cancel) return; h.x = h.tx = skClampX(p.x - W / 2 + G.ox, h); skDrop(performance.now(), 'finger'); }
+function skDemo() { const h = sk.hand; if (!h) return null; return { a: { x: W / 2 + h.x, y: h.sy }, b: { x: W / 2 + skVisX(), y: h.sy + 30 } }; }
+const SK_GAME = { reset: skReset, tick: skTick, render: skRender, down: skDown, move: skMove, up: skUp, demo: skDemo, slot: { obj: sk, key: 'held' } };
+window.__grasp.sky = { SK, sk, alt: () => -skTopY() / sk.u, check: skCheck, visX: skVisX, cam0: skCam0,
+  put(dx = 0) { const now = performance.now(); if (sk.boom) return null; if (!sk.hand) skSpawn(now); sk.hand.x = sk.hand.tx = skVisX() + dx; skDrop(now, 'test'); sk.fall.y = skSup().top - sk.fall.h / 2 - 0.5; return skLand(now); } };
 /* ---------------- Spot the difference (/spot, Big kids; Oct 2026: the audience asked for it). Two pictures, the original and a changed one (one
    above the other on a phone, side by side when the screen is wide; the original first in reading order); a tap on a difference, in either
    picture, rings it in both. Three levels: 3, then 5, then 7 differences (every scene on level 1 first, then on 2, then on 3: one tap on the
@@ -23497,7 +23738,7 @@ function h2Sync() {
    Pop It (built on another branch) shows only when its mode exists here (mbFeat). Hooks: __grasp.menub. */
 const MB_COL = { strike: '#ff7a52', big: '#ff7a52', smash: '#9a7bff', slice: '#2cc4ae', arcade: '#ff5d97', camera: '#4a8dff', little: '#ffc233', frenzy: '#ffa23a', daily: '#ff6b88', endless: '#45a8ff',
   drums: '#ff6b6b', bubbles: '#52cdf2', paint: '#b88aff', stars: '#5468ff', busy: '#f6a75c', shapes: '#ff7a7a', sandbox: '#f8c94c', calm: '#9ad4ee', animals: '#94d870', colors: '#ffb0b0', peekaboo: '#7fcf6a',
-  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', popit: '#c9b0ff', spot: '#9fd4ff', mix: '#ffc27a', quest: '#ff9a8a', powder: '#ffe08a', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
+  feed: '#ffbf9a', puzzle: '#8fbaff', sand: '#f3c98b', sky: '#8fd0ff', popit: '#c9b0ff', spot: '#9fd4ff', mix: '#ffc27a', quest: '#ff9a8a', powder: '#ffe08a', shop: '#ff8fab', events: '#56c8f0', pet: '#d7c8ff', map: '#ffd166' };
 const MB_ROT = ['-1.6deg', '1.4deg', '1.1deg', '-1.3deg'], MB_INK = '#2a1f3d', MB_SAY_MS = 400, MB_WIG_MS = 2000;
 const MB_PENT = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
 const mb = { room: 'big', page: 0, pages: 0, sayUntil: 0, log: [], said: [], blips: [], wig: 0, wigLast: null, pressed: null, pressAt: -1e9, bubuKey: '', feats: {} };
@@ -23528,6 +23769,7 @@ const MB_ICONS = {
   feed: [['e', 34, 26, 7, 18, '#ffffff'], ['e', 52, 24, 7, 18, '#ffffff'], ['e', 34, 28, 3, 11, '!#ffb3c6'], ['e', 52, 26, 3, 11, '!#ffb3c6'], ['c', 43, 58, 24, '#ffffff'], ['c', 35, 54, 3.5, '!#1e2a3a'], ['c', 51, 54, 3.5, '!#1e2a3a'], ['e', 43, 68, 5, 6, '!#c2185b'], ['p', 'M68 40 L90 52 L64 88 Z', '#ff8a1f'], ['l', 'M80 44 L86 28', '!#3fae4f', 4], ['l', 'M82 46 L96 40', '!#3fae4f', 4]],
   puzzle: [['p', 'M14 30 H40 A10 10 0 1 1 60 30 H86 V52 A10 10 0 1 0 86 72 V88 H14 Z', '#ff7eb6'], ['star', 46, 62, 13, '#ffd23f']],
   sand: [['r', 8, 22, 84, 64, 14, '#3aa7e0'], ['r', 15, 29, 70, 50, 9, '#ecc892'], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#b98a4e', 6], ['l', 'M30 60 Q30 40 50 40 Q66 40 66 54 Q66 64 54 64 Q44 64 44 56', '!#ff6fd8', 2.5], ['c', 76, 18, 9, '#5b4bd6'], ['c', 79, 15, 6, '!#ecc892']],
+  sky: [['c', 18, 26, 9, '!#ffffff'], ['c', 28, 22, 11, '!#ffffff'], ['c', 37, 27, 8, '!#ffffff'], ['p', 'M86 10 A13 13 0 1 0 90 34 A10 10 0 1 1 86 10 Z', '#ffe68a'], ['r', 26, 70, 48, 22, 6, '#ff5d6c'], ['r', 34, 47, 30, 23, 6, '#ffd23f'], ['r', 40, 26, 22, 21, 6, '#3ec5ff'], ['c', 46, 35, 2.4, '!#1d2547'], ['c', 56, 35, 2.4, '!#1d2547']],
   powder: [['p', 'M50 8 L56 8 L58 44 L52 44 Z', '#e8a21a'], ['p', 'M10 92 L50 46 L90 92 Z', '#ffd23f'], ['p', 'M10 92 L50 46 L60 58 L30 92 Z', '!#e8b02a'], ['c', 34, 30, 3, '#ffd23f'], ['c', 66, 24, 3, '#ffd23f'], ['c', 46, 20, 2.5, '#ffd23f'], ['r', 70, 74, 24, 18, 4, '#3ec5ff']],
   quest: [['r', 10, 22, 40, 56, 8, '#ffffff'], ['r', 14, 26, 32, 48, 5, '#ffb3a8'], ['r', 50, 14, 40, 56, 8, '#ffffff'], ['r', 54, 18, 32, 48, 5, '#b8dcff'], ['p', 'M30 40 L36 52 L30 64 L24 52 Z', '!#ff4f64'], ['star', 70, 42, 10, '#ffd23f'], ['l', 'M20 90 L44 66', '#8a8a8a', 6], ['l', 'M16 84 L28 78', '#6b4a2a', 6]],
   mix: [['r', 6, 50, 36, 36, 10, '#7cc8ff'], ['p', 'M24 56 Q33 68 33 74 A9 9 0 0 1 15 74 Q15 68 24 56 Z', '!#ffffff'], ['r', 58, 50, 36, 36, 10, '#ffb347'], ['p', 'M76 55 Q86 66 85 75 A9 9 0 0 1 67 75 Q66 66 76 55 Z', '!#ff4f64'], ['l', 'M26 44 Q32 26 44 24', '!#2a1f3d', 5], ['l', 'M74 44 Q68 26 56 24', '!#2a1f3d', 5], ['star', 50, 22, 16, '#ffd23f']],
