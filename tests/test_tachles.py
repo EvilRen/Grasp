@@ -61,8 +61,7 @@ async def gate_and_bots(b, he):
         check(tag + ': a tap on a side card brings it to the middle (not picked yet)', await page.evaluate(f"{TKH}.tk.sel.length") == 0 and await page.evaluate("document.querySelectorAll('#tachles .tkDots i')[1].classList.contains('cur')"))
         q = await page.evaluate("(() => { const r = document.querySelectorAll('#tachles .tkHC')[1].getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
         await page.mouse.click(q[0], q[1]); await page.wait_for_timeout(200); check(tag + ': a tap on the middle card picks it', await page.evaluate(f"{TKH}.tk.sel") == [1])
-        fill = await page.evaluate(f"(() => {{ const m = document.querySelector('#tachles .tkBlackC mark'), c = {TKH}.tk.view.hand[1]; return [m ? m.textContent : null, c]; }})()")
-        check(tag + ': the picked card shows inside the question, as one whole sentence', fill[0] and fill[1].startswith(fill[0].split(' ')[0]) and fill[0].rstrip('.') == fill[1].rstrip('.!'), fill)
+        check(tag + ': while picking, the question stays clean (the whole sentence only at the judging and the reveal)', await page.locator('#tachles .tkBlackC mark').count() == 0)
         for top in (1, 0):
             cov = await page.evaluate("((top) => { const T = $('tachles'); [T, ...T.querySelectorAll('*')].forEach((e) => { if (e.scrollHeight > e.clientHeight + 2 && !e.classList.contains('tkHandW')) e.scrollTop = top ? 0 : e.scrollHeight; }); const s = document.querySelector('#tachles [data-a=\"send\"]'), r = s.getBoundingClientRect(), x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(x && s.contains(x)); })(%d)" % top)
             check(tag + ': the submit button is never under the cards (scrolled to the ' + ('top' if top else 'bottom') + ')', cov)
@@ -85,10 +84,10 @@ async def gate_and_bots(b, he):
             mk = await page.evaluate("[document.querySelectorAll('#tachles .tkSub').length, document.querySelectorAll('#tachles .tkSub .tkSent mark').length, document.querySelectorAll('#tachles .tkBlackC mark').length, document.querySelectorAll('#tachles .tkSubW.stag').length]")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
             if tag == 'HE':
-                rxs = await page.locator('#tachles .tkRx').count(); n0 = len([x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')])
-                if rxs: await page.click('#tachles .tkRx button >> nth=2'); await page.wait_for_timeout(100)
+                rxs = await page.locator('#tachles .tkRxB').count(); n0 = len([x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')]); row0 = await page.locator('#tachles .tkRx').count()
+                if rxs: await page.click('#tachles .tkRxB >> nth=0'); await page.wait_for_timeout(100); rxs = rxs if row0 == 0 and await page.locator('#tachles .tkRx button').count() == 6 else 0; await page.click('#tachles .tkRx button >> nth=2'); await page.wait_for_timeout(100)
                 fx = [x for x in await page.evaluate(f"{TKH}.tk.log") if x.startswith('fx:')]
-                check(tag + ': live reactions: a row of 😂👏💨🥴🤮🔥 under the others\' answers (not your own); a tap plays the fart and flies 💨 up', rxs >= 1 and len(fx) > n0 and fx[-1] == 'fx:fart' and await page.locator('#tachles .tkFly').count() >= 1, [rxs, fx[-3:]])
+                check(tag + ': live reactions: one small 😂 on each of the others\' answers (not your own) opens 😂👏💨🥴🤮🔥; a tap plays the fart and flies 💨 up', rxs >= 1 and len(fx) > n0 and fx[-1] == 'fx:fart' and await page.locator('#tachles .tkFly').count() >= 1, [rxs, fx[-3:]])
             check(tag + ': the reveal: every answer is a whole sentence (the question with the answer marked in it), all at once; the winner\'s sentence in the question card', mk[0] >= 1 and mk[1] >= mk[0] and mk[2] >= 1 and mk[3] == 0, mk)
         if not await step_local(page): await page.wait_for_timeout(80)
     await page.wait_for_timeout(200); v = await view(page)
