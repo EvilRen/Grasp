@@ -291,6 +291,18 @@ async def picker_tests(b):
         check(('HE' if he else 'EN') + ': the tile opens Free mode at once', ok)
         check(('HE' if he else 'EN') + ' picker: no page errors', not errs, errs); await ctx.close()
 
+async def fart_tests(b):
+    # the owner: a Pop It mode, off by default (Settings: "Pop It: farts"), where every pop is a different, weird fart or burp
+    ctx, page, errs = await page_for(b, '/popit', True); await wait(page, "mode === 'mouse' && gameMode === 'popit' && $('start').hidden")
+    bs = await bubbles(page); await page.touchscreen.tap(bs[0]['x'], bs[0]['y']); await page.wait_for_timeout(200)
+    check('farts: off by default: a pop is the crisp pop, no rude noise', 'rude' not in await page.evaluate("pi.snd") and 'pi_pop' in await page.evaluate("pi.snd"))
+    await page.evaluate("localStorage.setItem('grasp.fun.popFart', '1'); audioInit(); rudeLoad(); Promise.all(Object.values(rude.buf))"); await page.wait_for_timeout(1500)
+    n0 = await page.evaluate("rude.n")
+    for q in bs[1:7]: await page.touchscreen.tap(q['x'], q['y']); await page.wait_for_timeout(260)
+    r = await page.evaluate("({ n: rude.n, rude: pi.snd.filter(x => x === 'rude').length, loaded: Object.values(rude.buf).filter(x => x instanceof AudioBuffer).length, tot: RUDE.length })")
+    check('farts: on: every pop plays a rude noise (real recordings, all 15 load), a different one each time', r['rude'] == 6 and r['n'] - n0 == 6 and r['loaded'] == r['tot'] == 15, r)
+    check('farts: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
@@ -302,6 +314,7 @@ async def main():
             if not only or 'shelf' in only: await shelf_tests(b, he)
         if not only or 'feel' in only: await feel_tests(b)
         if not only or 'picker' in only: await picker_tests(b)
+        if not only or 'fart' in only: await fart_tests(b)
         await b.close()
     srv.terminate()
     print('FAILS', check.fails); sys.exit(1 if check.fails else 0)

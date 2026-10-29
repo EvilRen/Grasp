@@ -64,11 +64,31 @@ async def materials(b):
     await page.screenshot(path=OUT + 'tower_tnt.png')
     check('materials: no page errors', not errs, errs); await ctx.close()
 
+async def zoo(b):
+    # the owner: "funny animals to blow up", off by default (Settings: "Tower: animals"): 2-4 on the top blocks; "I wanted animals that break into
+    # pieces": blasted, an animal breaks into chunks of its drawing that fly, spin, fall and fade
+    ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(600)
+    await page.tap('#start button[data-mode="smash"]'); await wait(page, "!!tower.table", 8000)
+    check('zoo: off by default: no animals on the tower', await page.evaluate("tower.blocks.filter(b => b.tw.mat === 'animal').length") == 0)
+    await page.evaluate("goHome()"); await page.wait_for_timeout(500)
+    await page.tap('#settingsBtn'); await page.wait_for_timeout(300); await page.tap('#moreZoo'); await page.wait_for_timeout(200)
+    check('zoo: Settings has "🐷 מגדל: חיות", a tap turns it on (kept)', await page.evaluate("$('moreZoo').getAttribute('aria-pressed') === 'true' && localStorage.getItem('grasp.fun.towerZoo') === '1'"))
+    await page.evaluate("document.querySelector('#moreSheet .xBtn').click()"); await page.wait_for_timeout(300)
+    await page.tap('#start button[data-mode="smash"]'); await wait(page, "!!tower.table && tower.blocks.some(b => b.tw.mat === 'animal')", 8000)
+    A = await page.evaluate("tower.blocks.filter(b => b.tw.mat === 'animal').map(b => [b.tw.kind, b.tw.poof])")
+    check('zoo: 2-4 cartoon animals sit on the top blocks', 2 <= len(A) <= 4, A); await page.wait_for_timeout(700); await page.screenshot(path=OUT + 'tower_zoo.png')
+    await page.evaluate("(() => { const b = tower.blocks.filter(q => q.tw.mat === 'animal')[0]; towerTap(b.position.x, b.position.y + 4, performance.now()); })()"); await page.wait_for_timeout(250)
+    await page.screenshot(path=OUT + 'tower_zoo_break.png')
+    k = await page.evaluate("[tower.log.filter(x => x.startsWith('animal:')), (tower.bits || []).length, tg.snd.filter(x => x.startsWith('an_')).length]")
+    check('zoo: a blasted animal breaks into 6-7 chunks of its drawing that fly off, with its voice', 'animal:break' in k[0] and 6 <= k[1] <= 14 and k[2] >= 1, k)
+    await page.wait_for_timeout(2800); check('zoo: the chunks fall and fade away', await page.evaluate("(tower.bits || []).length") == 0)
+    check('zoo: no page errors', not errs, errs); await ctx.close()
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await run(b, he)
-        await materials(b)
+        await materials(b); await zoo(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
