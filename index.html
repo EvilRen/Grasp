@@ -22820,15 +22820,15 @@ const PW_LV = [
    further on: smaller cups, cups on pillars, lids to burn or melt first, more fires and blocks, a pour zone (pour only inside the dashed box),
    a bucket (only so much to pour). */
 const PW_WORLDS = [
-  { id: 'beach', e: '🏖️', en: 'Beach', he: 'חוף', mix: { fill_sand: 6, reach: 4 } },
-  { id: 'river', e: '💧', en: 'River', he: 'נהר', mix: { fill_water: 5, melt: 3, grow: 2 } },
-  { id: 'fire', e: '🔥', en: 'Fire', he: 'אש', mix: { ext: 5, burn: 5 } },
-  { id: 'garden', e: '🌱', en: 'Garden', he: 'גינה', mix: { grow: 5, ext: 2, fill_water: 3 } },
-  { id: 'ice', e: '🧊', en: 'Ice', he: 'קרח', mix: { melt: 5, boom: 5 } },
-  { id: 'volcano', e: '🌋', en: 'Volcano', he: 'הר געש', mix: { cloud: 5, stone: 3, burn: 2 } },
-  { id: 'lab', e: '🧪', en: 'Lab', he: 'מעבדה', mix: { acid: 6, fill_oil: 2, stone: 2 } },
-  { id: 'boom', e: '💥', en: 'Boom', he: 'פיצוצים', mix: { boom: 6, burn: 4 } },
-  { id: 'oil', e: '🛢️', en: 'Oil', he: 'שמן', mix: { fill_oil: 4, burn: 4, ext: 2 } },
+  { id: 'beach', e: '🏖️', en: 'Beach', he: 'חוף', mix: { fill_sand: 4, reach: 3, fill_water: 2, grow: 1 } }, /* (the owner: "this stupid repetition": four or five kinds a world, never the same twice in a row) */
+  { id: 'river', e: '💧', en: 'River', he: 'נהר', mix: { fill_water: 4, melt: 3, grow: 2, reach: 1 } },
+  { id: 'fire', e: '🔥', en: 'Fire', he: 'אש', mix: { ext: 3, burn: 3, fill_water: 1, cloud: 1, reach: 1, grow: 1 } },
+  { id: 'garden', e: '🌱', en: 'Garden', he: 'גינה', mix: { grow: 4, ext: 2, fill_water: 2, reach: 2 } },
+  { id: 'ice', e: '🧊', en: 'Ice', he: 'קרח', mix: { melt: 3, boom: 3, fill_water: 2, stone: 1, cloud: 1 } },
+  { id: 'volcano', e: '🌋', en: 'Volcano', he: 'הר געש', mix: { cloud: 4, stone: 3, burn: 2, ext: 1 } },
+  { id: 'lab', e: '🧪', en: 'Lab', he: 'מעבדה', mix: { acid: 4, fill_oil: 2, stone: 2, cloud: 1, boom: 1 } },
+  { id: 'boom', e: '💥', en: 'Boom', he: 'פיצוצים', mix: { boom: 4, burn: 2, ext: 1, melt: 1, stone: 1, fill_sand: 1 } },
+  { id: 'oil', e: '🛢️', en: 'Oil', he: 'שמן', mix: { fill_oil: 4, burn: 3, ext: 2, fill_sand: 1 } },
   { id: 'all', e: '🌈', en: 'Everything', he: 'הכול', mix: { fill_sand: 1, fill_water: 1, reach: 1, ext: 1, burn: 1, melt: 1, grow: 1, cloud: 1, boom: 1, acid: 1, stone: 1, fill_oil: 1 } },
 ];
 const PW_PER = 50, PW_N0 = PW_LV.length, PW_TOTAL = PW_N0 + PW_WORLDS.length * PW_PER;
@@ -22840,16 +22840,24 @@ const pwClamp = (v, a, b) => Math.max(a, Math.min(b, v));
 /* the kinds: each returns the level's look (build), goal, tools and its winning moves */
 const PW_FAM = {
   fill(R, D, mat) {
-    const ty = mat === 'water' ? PWT.WATER : mat === 'oil' ? PWT.OIL : PWT.SAND, cw = 0.32 - 0.14 * D - 0.04 * R(), ch = 0.24 + 0.1 * R(), t = 0.03;
-    const cx = 0.15 + cw / 2 + R() * (0.7 - cw), up = D > 0.3 && R() < 0.55 ? 0.08 + 0.22 * D * R() : 0, by = 0.98 - up, x0 = cx - cw / 2, x1 = cx + cw / 2, top = by - ch;
+    /* the container's shape (the owner: every "fill the cup" looked the same): a cup, a wide bowl, a narrow vase, two cups, a cup on a stand, a funnel over the cup */
+    const shape = ['cup', 'bowl', 'vase', 'twin', 'stand', 'funnel'][Math.floor(R() * 6)];
+    const ty = mat === 'water' ? PWT.WATER : mat === 'oil' ? PWT.OIL : PWT.SAND, t = 0.03;
+    let cw = 0.32 - 0.14 * D - 0.04 * R(), ch = 0.24 + 0.1 * R(); if (shape === 'bowl') { cw = Math.min(0.62, cw * 1.7); ch *= 0.6; } else if (shape === 'vase') { cw = Math.max(0.12, cw * 0.62); ch = Math.min(0.5, ch * 1.55); } else if (shape === 'twin') cw = Math.max(0.13, cw * 0.72);
+    const span = shape === 'twin' ? cw * 2 + 0.12 : cw, cx = 0.15 + cw / 2 + R() * Math.max(0, 0.7 - span);
+    const up = shape === 'stand' ? 0.12 + 0.18 * R() : D > 0.3 && R() < 0.55 && shape !== 'twin' ? 0.08 + 0.22 * D * R() : 0, by = 0.98 - up, x0 = cx - cw / 2, x1 = cx + cw / 2, top = by - ch;
     const lid = D > 0.4 && R() < 0.45 && mat !== 'oil' ? (R() < 0.6 || mat === 'water' ? PWT.WOOD : PWT.ICE) : 0, liq = ty !== PWT.SAND, tools = [mat === 'water' ? 'water' : mat === 'oil' ? 'oil' : 'sand'], sol = [];
     if (lid === PWT.WOOD) { tools.push('fire'); sol.push(['fire', cx, top - 0.03, 50, null, 160]); }
     if (lid === PWT.ICE) { tools.push('lava'); sol.push(['lava', cx, top - 0.12, 40, null, 260]); }
     if (D > 0.55 && R() < 0.5) tools.push(['stone', 'wood', 'plant'][Math.floor(R() * 3)]); // (a tool that does not help)
-    sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 900]);
-    return { tools, z: [x0 + t, top + 0.08, x1 - t, by - t], pour: 1, need: (cw - 2 * t) * (ch - 0.08) * (liq ? 1.5 : 0.85),
-      build: (b) => { b(x0, top, x0 + t, by, PWT.STONE); b(x1 - t, top, x1, by, PWT.STONE); b(x0, by - t, x1, by, PWT.STONE); if (up) b(cx - 0.05, by, cx + 0.05, 1, PWT.STONE); if (lid) b(x0, top - 0.025, x1, top, lid); },
-      goal: (c) => c.zone[ty] / (c.zn * (liq ? 0.6 : 0.8)), sol };
+    const cx2 = cx + cw + 0.12, z2 = shape === 'twin' ? [cx2 - cw / 2 + t, top + 0.08, cx2 + cw / 2 - t, by - t] : null;
+    if (z2) for (let q = 0; q < 6; q++) sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 100], [tools[0], cx2, Math.min(0.12, top - 0.1), 100]); // (two cups: a little in each in turn, so neither overflows while the other waits)
+    else sol.push([tools[0], cx, Math.min(0.12, top - 0.1), 900]); if (z2) { if (lid === PWT.WOOD) sol.unshift(['fire', cx2, top - 0.03, 50, null, 160]); if (lid === PWT.ICE) sol.unshift(['lava', cx2, top - 0.12, 40, null, 260]); }
+    const cup = (b, a, c) => { b(a, top, a + t, by, PWT.STONE); b(c - t, top, c, by, PWT.STONE); b(a, by - t, c, by, PWT.STONE); if (lid) b(a, top - 0.025, c, top, lid); }, k = liq ? 0.6 : shape === 'vase' ? 0.7 : 0.8; // (sand in a narrow vase leaves gaps at the walls)
+    return { tools, z: [x0 + t, top + 0.08, x1 - t, by - t], z2, shape, ammoK: z2 ? 1.5 : shape === 'vase' ? 1.8 : 1, pour: 1, need: (cw - 2 * t) * (ch - 0.08) * (liq ? 1.5 : 0.85) * (z2 ? 2 : 1),
+      build: (b) => { cup(b, x0, x1); if (z2) cup(b, cx2 - cw / 2, cx2 + cw / 2); if (up) b(cx - 0.05, by, cx + 0.05, 1, PWT.STONE);
+        if (shape === 'funnel') for (let q = 0; q < 6; q++) { const y = top - 0.2 + q * 0.025, w = 0.2 - q * 0.03; b(cx - cw / 2 - w, y, cx - cw / 2 - w + 0.035, y + 0.025, PWT.STONE); b(cx + cw / 2 + w - 0.035, y, cx + cw / 2 + w, y + 0.025, PWT.STONE); } },
+      goal: (c) => z2 ? Math.min(c.zone[ty] / (c.zn * k), c.zone2[ty] / (c.zn2 * k)) : c.zone[ty] / (c.zn * k), sol };
   },
   reach(R, D) {
     const sx = 0.2 + R() * 0.6, sy = 0.62 - 0.38 * D - 0.08 * R(), z = [sx - 0.05, sy - 0.03, sx + 0.05, sy + 0.03], sol = [];
@@ -22924,16 +22932,29 @@ const PW_FAM = {
       goal: (c) => (c.zone[PWT.STONE]) / (c.zn * (0.06 + 0.04 * D)), sol: [['lava', x0 + 0.06, 0.3, 90, x1 - 0.06]] };
   },
 };
+const PW_SHAPE = { cup: ['🥤', 'The cup', 'הכוס'], bowl: ['🥣', 'A wide bowl', 'קערה רחבה'], vase: ['🏺', 'A narrow vase', 'אגרטל צר'], twin: ['🥤', 'Two cups', 'שתי כוסות'], stand: ['🏆', 'A cup on a stand', 'כוס על עמוד'], funnel: ['🔻', 'Through the funnel', 'דרך המשפך'] };
+function pwSeq(w) { // a world's 50 kinds in play order
+  const C = pwSeq.c || (pwSeq.c = {}); if (C[w]) return C[w]; const W0 = PW_WORLDS[w], fams = Object.keys(W0.mix), tot = fams.reduce((a, f) => a + W0.mix[f], 0), R = pwRng(5501 + w * 31);
+  const left = {}; let n = PW_PER - fams.length; fams.forEach((f) => { left[f] = Math.round((W0.mix[f] / tot) * n); }); let d = n - fams.reduce((a, f) => a + left[f], 0); for (let q = 0; d !== 0; q++, d += d > 0 ? -1 : 1) left[fams[q % fams.length]] += d > 0 ? 1 : -1;
+  const seq = fams.slice(); // (each kind once first)
+  while (seq.length < PW_PER) { const a = seq[seq.length - 1], b = seq[seq.length - 2]; // (never the last one again, the one before only when nothing else is left; the more left of a kind, the likelier)
+    const all = fams.reduce((x, f) => x + left[f], 0), big = fams.reduce((x, f) => (left[f] > left[x] ? f : x), fams[0]); let pick = null;
+    if (big !== a && left[big] * 2 > all) pick = big; // (the biggest kind must go now, or it ends up twice in a row at the end)
+    else { const ws = fams.map((f) => (f === a || !left[f] ? 0 : left[f] * (f === b ? 0.2 : 1))), sum = ws.reduce((x, y) => x + y, 0); let r = R() * sum; pick = fams.find((f, q) => (r -= ws[q]) < 0) || fams.find((f) => left[f] && f !== a) || big; }
+    left[pick]--; seq.push(pick); }
+  return (C[w] = seq);
+}
 function pwDiffK(D, diff) { return diff === 'easy' ? D * 0.5 : diff === 'hard' ? Math.min(1, D * 1.1 + 0.2) : D; }
 function pwGen(k, diff) {
   const key = k + ':' + diff; if (!pw.gen) pw.gen = new Map(); if (pw.gen.has(key)) return pw.gen.get(key);
   const j = k - PW_N0, w = Math.floor(j / PW_PER), i = j % PW_PER, W0 = PW_WORLDS[w], R = pwRng(9173 + k * 7919), fams = Object.entries(W0.mix), tot = fams.reduce((s, f) => s + f[1], 0);
-  let fam = fams[0][0], r = R() * tot; for (const [f, n] of fams) { if ((r -= n) < 0) { fam = f; break; } } if (i < fams.length) fam = fams[i][0]; // (each kind once first)
+  const fam = pwSeq(w)[i]; R(); // (the world's order: each kind once first, then a shuffle that never repeats a kind twice in a row)
   const D = pwDiffK(pwClamp(w / 9 * 0.55 + i / 49 * 0.45, 0, 1), diff), [base, mat] = fam.split('_'), L = PW_FAM[base](R, D, mat), F = PW_FN[fam];
-  Object.assign(L, { id: 'g' + k, k, world: w, n: i + 1, fam, D, e: F[0], en: F[1] + ' ' + (i + 1), he: F[2] + ' ' + (i + 1), s3: Math.round(22 + 20 * D) });
+  const S = L.shape && PW_SHAPE[L.shape], M = { sand: ['sand', 'חול'], water: ['water', 'מים'], oil: ['oil', 'שמן'] }[mat]; // (a name of its own, no running number: "Fill the cup 8" read like the 8th of the same)
+  Object.assign(L, { id: 'g' + k, k, world: w, n: i + 1, fam, D, e: S ? S[0] : F[0], en: S ? S[1] + ' · ' + M[0] : F[1], he: S ? S[2] + ' · ' + M[1] : F[2], s3: Math.round(22 + 20 * D) });
   if (!L.noPz && D > 0.3 && R() < D * 0.8) { const xs = L.sol.flatMap((s) => (s[4] != null ? [s[1], s[4]] : [s[1]])), ys = L.sol.flatMap((s) => (s[6] != null ? [s[2], s[6]] : [s[2]])), m = 0.12 - 0.06 * D;
     L.pz = [pwClamp(Math.min(...xs) - m, 0, 1), 0, pwClamp(Math.max(...xs) + m, 0, 1), pwClamp(Math.max(...ys) + m, 0.25, 1)]; }
-  if (L.need && !L.noAmmo && D > 0.4 && R() < 0.4 + 0.5 * D) L.ammo = L.need * (2.6 - 1.2 * D);
+  if (L.need && !L.noAmmo && D > 0.4 && R() < 0.4 + 0.5 * D) L.ammo = L.need * (2.6 - 1.2 * D) * (L.ammoK || 1);
   pw.gen.set(key, L); return L;
 }
 function pwLevelAt(k) { return k < PW_N0 ? PW_LV[k] : pwGen(k, pwP().diff || 'normal'); }
@@ -22963,8 +22984,10 @@ function pwCount() { // what the goals look at
   const G = pw.g, L = pw.lv, all = new Uint32Array(16), zone = new Uint32Array(16); let zn = 0, high = 0;
   for (let i = 0; i < G.n; i++) all[G.t[i]]++;
   if (L.z) { const [a, b, c, d] = L.z, x0 = Math.floor(a * G.w), y0 = Math.floor(b * G.h), x1 = Math.ceil(c * G.w), y1 = Math.ceil(d * G.h); for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { zone[G.t[y * G.w + x]]++; zn++; } }
+  const zone2 = new Uint32Array(16); let zn2 = 0;
+  if (L.z2) { const [a, b, c, d] = L.z2, x0 = Math.floor(a * G.w), y0 = Math.floor(b * G.h), x1 = Math.ceil(c * G.w), y1 = Math.ceil(d * G.h); for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { zone2[G.t[y * G.w + x]]++; zn2++; } }
   if (L.id === 'star' || L.reach) { for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === PWT.SAND) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))) * 0.98; break; } } }
-  return { all, zone, zn, high, n: G.n, t: pw.bot ? pw.botT : (performance.now() - pw.t0) / 1000 };
+  return { all, zone, zn, zone2, zn2, high, n: G.n, t: pw.bot ? pw.botT : (performance.now() - pw.t0) / 1000 };
 }
 function pwCheck(now) {
   const L = pw.lv; if (!L || pw.won || pw.lost) return; const c = pwCount(), p0 = pw.prog; pw.prog = Math.max(0, Math.min(1, L.goal(c, L))); if (pw.prog > p0 + 0.005) pw.upAt = now;
@@ -23049,7 +23072,7 @@ function renderPowder(now) {
   if (pw.booms && now - pw.boomAt > 250) { pw.boomAt = now; sfx('boom'); shakeScreen(6); }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#0b0912'; ctx.fillRect(0, 0, W, H); pwDraw();
   if (pw.lv) { const L = pw.lv, G = pw.g; if ((++pw.fc & 7) === 0) pwCheck(now); // (every 8th frame; pw.g.f moves 2 a frame)
-    if (L.z) { const [a, b, c, d] = L.z; resetView(); ctx.save(); ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(255,214,80,' + (0.55 + 0.3 * Math.sin(now / 250)).toFixed(2) + ')'; const x = pw.x0 + Math.floor(a * G.w) * pw.cs, y = pw.top + Math.floor(b * G.h) * pw.cs; ctx.strokeRect(x, y, (Math.ceil(c * G.w) - Math.floor(a * G.w)) * pw.cs, (Math.ceil(d * G.h) - Math.floor(b * G.h)) * pw.cs); ctx.restore();
+    for (const Z of [L.z, L.z2]) if (Z) { const [a, b, c, d] = Z; resetView(); ctx.save(); ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(255,214,80,' + (0.55 + 0.3 * Math.sin(now / 250)).toFixed(2) + ')'; const x = pw.x0 + Math.floor(a * G.w) * pw.cs, y = pw.top + Math.floor(b * G.h) * pw.cs; ctx.strokeRect(x, y, (Math.ceil(c * G.w) - Math.floor(a * G.w)) * pw.cs, (Math.ceil(d * G.h) - Math.floor(b * G.h)) * pw.cs); ctx.restore();
       if (L.id === 'star' || L.reach) { resetView(); ctx.font = '28px ' + MX_EMOJI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('⭐', pw.x0 + (a + c) / 2 * G.w * pw.cs, pw.top + (b + d) / 2 * G.h * pw.cs); } }
     const tx = L.e + ' ' + (lang === 'he' ? L.he : L.en), sp = textSprite(tx, 17, '#ffffff', 'rgba(20,14,40,0.9)', 800), x0 = 16 + Math.min(sp.tw, W - 150) / 2 + 4, bw = Math.min(160, W * 0.35); // (the left: the corner buttons sit on the right)
     if (L.pz) { const [a, b, c, d] = L.pz; resetView(); ctx.save(); ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(120,200,255,0.75)'; ctx.fillStyle = 'rgba(120,200,255,0.06)'; const x = pw.x0 + a * G.w * pw.cs, y = pw.top + b * G.h * pw.cs, w = (c - a) * G.w * pw.cs, h = (d - b) * G.h * pw.cs; ctx.fillRect(x, y, w, h); ctx.strokeRect(x, y, w, h); ctx.restore(); } // (pour only in here)
