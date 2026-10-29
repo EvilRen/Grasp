@@ -49,6 +49,20 @@ async def run(b, he):
     await page.evaluate("goHome()"); await page.wait_for_timeout(400); check(tag + ': Home: the bar goes', await page.evaluate("$('powderBar').hidden && $('powderLv').hidden"))
     check(tag + ': no page errors', not errs, errs); await ctx.close()
 
+async def sensors(b):
+    # the owner turned his phone over and the sand stayed (Brave can hold devicemotion back): deviceorientation alone turns the gravity; with no sensor
+    # at all, a note on how to allow it
+    ctx, page, errs = await page_for(b, '/powder', True, init="window.__graspNoAutoFs = true; localStorage.removeItem('grasp.pwTilt');"); await wait(page, f"!!{PWH}.pw.g && !$('powderBar').hidden", 6000)
+    await page.wait_for_timeout(3300)
+    check('sensors: no motion sensor at all for 3 s: a note on how to allow it', 'noSensor' in await page.evaluate(f"{PWH}.pw.log") and await page.locator('#toast').count() >= 0)
+    for _ in range(4): await page.evaluate("(() => { const e = new Event('deviceorientation'); e.beta = -90; e.gamma = 0; e.alpha = 0; window.dispatchEvent(e); })()"); await page.wait_for_timeout(60)
+    await page.wait_for_timeout(300)
+    check('sensors: deviceorientation alone (upside down: beta -90): the gravity points up', await page.evaluate(f"{PWH}.pw.gk") == 4, await page.evaluate(f"{PWH}.pw.gk"))
+    for _ in range(4): await page.evaluate("(() => { const e = new Event('deviceorientation'); e.beta = 30; e.gamma = 60; e.alpha = 0; window.dispatchEvent(e); })()"); await page.wait_for_timeout(60)
+    await page.wait_for_timeout(300)
+    check('sensors: tilted right (gamma 60): the gravity turns right', await page.evaluate(f"{PWH}.pw.gk") in (5, 6, 7), await page.evaluate(f"{PWH}.pw.gk")) # (0 down, then clockwise on the screen: 6 right, 7 down-right)
+    check('sensors: no page errors', not errs, errs); await ctx.close()
+
 async def tilt_push(b):
     # the owner: "the sand should move when I move the phone, or when I touch sand that is already there"
     ctx, page, errs = await page_for(b, '/powder', True, init="window.__graspNoAutoFs = true; localStorage.removeItem('grasp.pwTilt');"); await wait(page, f"!!{PWH}.pw.g && !$('powderBar').hidden", 6000)
@@ -98,7 +112,7 @@ async def levels_map(b):
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
-        await tilt_push(b); await levels_map(b)
+        await sensors(b); await tilt_push(b); await levels_map(b)
         for he in (True, False): await run(b, he)
         await b.close()
     print('FAILURES:', check.fails)
