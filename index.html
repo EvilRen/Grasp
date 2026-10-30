@@ -2012,7 +2012,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.11.1';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23500,7 +23500,7 @@ const PW_FN = { fill_sand: ['🥤', 'Fill the cup', 'ממלאים את הכוס'
   chain: ['🌱', 'Melt the ice for the garden', 'ממיסים קרח לגינה'], duo: ['🥤', 'Sand here, water there', 'חול פה, מים שם'], bury: ['💎', 'Bury the treasure', 'קוברים את האוצר'],
   blast: ['💥', 'Blow up the dam', 'מפוצצים את הסכר'], climb: ['🌿', 'Grow up to the star', 'מגדלים עד הכוכב'], dig: ['💎', 'Dig to the gem', 'חופרים עד היהלום'] };
 function pwRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const pwClamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pwClamp = (v, a, b) => Math.max(a, Math.min(b, v)), pwPick = (R, a) => a[Math.floor(R() * a.length)];
 /* the kinds: each returns the level's look (build), goal, tools and its winning moves */
 const PW_FAM = {
   fill(R, D, mat) {
@@ -23529,119 +23529,156 @@ const PW_FAM = {
     sol.push(['sand', sx, sy - 0.12, 300]);
     return { tools: ['sand', 'stone'], z, reach: 1, noPz: 1, need: 0.04 + 0.05 * (0.98 - sy), build: () => {}, goal: (c) => (c.zone[PWT.SAND] > 0 ? 1 : c.high), sol };
   },
-  ext(R, D) {
-    const n = 1 + Math.floor(D * 2.6 + R() * 0.8), blocks = [], sol = [], gap = 1 / n;
-    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.12 + 0.1 * R()), x = gap * k + (gap - w) / 2 + (R() - 0.5) * (gap - w) * 0.6, h = 0.08 + 0.12 * R(), y = 0.98 - h; blocks.push([x, y, x + w, 0.98]); sol.push(['water', x + w / 2, y - 0.14, 30]); }
-    const roof = D > 0.5 ? blocks.filter(() => R() < 0.5) : [];
-    sol.push(...sol.map((s) => s.slice())); // (twice over)
-    return { tools: ['water'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: null, wood: 1, noAmmo: 1,
-      build: (b) => { for (const [a, y, c, d] of blocks) { b(a, y, c, d, PWT.WOOD); b(a + (c - a) * 0.4, y - 0.02, a + (c - a) * 0.6, y, PWT.FIRE); } for (const [a, y, c] of roof) b(a - 0.02, y - 0.2, a + (c - a) * 0.45, y - 0.185, PWT.STONE); },
-      goal: (c) => (c.all[PWT.FIRE] === 0 && c.t > 1.5 ? 1 : 0.99 * (1 - Math.min(1, c.all[PWT.FIRE] / 400))), lose: (c, L) => c.all[PWT.WOOD] < L.wood0 * (0.12 + 0.12 * D), sol };
+  ext(R, D) { // fires to put out: on houses, in tree tops, along a wooden bridge
+    const kind = pwPick(R, ['houses', 'houses', 'trees', 'bridge']), fires = [], parts = [], roofs = [];
+    if (kind === 'bridge') { const x0 = 0.08 + 0.1 * R(), x1 = 0.92 - 0.1 * R(), py = 0.55 + 0.2 * R(), n = 1 + Math.floor(D * 2 + R());
+      parts.push(['s', x0, py, x0 + 0.05, 0.98], ['s', x1 - 0.05, py, x1, 0.98], ['w', x0, py - 0.03, x1, py]); for (let k = 0; k < n; k++) { const x = x0 + 0.08 + (x1 - x0 - 0.16) * (n === 1 ? 0.5 : k / (n - 1)); fires.push([x, py - 0.05, x + 0.04, py - 0.03]); } }
+    else { const n = 1 + Math.floor(D * 2.6 + R() * 0.8), gap = 1 / n;
+      for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.12 + 0.1 * R()), x = gap * k + (gap - w) / 2 + (R() - 0.5) * (gap - w) * 0.6, h = 0.08 + 0.14 * R(), y = 0.98 - h;
+        if (kind === 'trees') { const cx = x + w / 2, top = y - 0.12 - 0.06 * R(); parts.push(['w', cx - 0.015, y, cx + 0.015, 0.98], ['p', x, top, x + w, y]); fires.push([cx - 0.02, top - 0.02, cx + 0.02, top]); }
+        else { parts.push(['w', x, y, x + w, 0.98]); fires.push([x + w * 0.4, y - 0.02, x + w * 0.6, y]); if (D > 0.5 && R() < 0.5) roofs.push([x - 0.02, y - 0.2, x + w * 0.45, y - 0.185]); } } }
+    const sol = fires.map(([a, y, c]) => ['water', (a + c) / 2, y - 0.14, 30]); sol.push(...sol.map((s) => s.slice()));
+    return { tools: ['water'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: null, wood: 1, noAmmo: 1, sub: kind,
+      build: (b) => { for (const [t, a, y, c, d] of parts) b(a, y, c, d, t === 's' ? PWT.STONE : t === 'p' ? PWT.PLANT : PWT.WOOD); for (const [a, y, c, d] of fires) b(a, y, c, d, PWT.FIRE); for (const [a, y, c, d] of roofs) b(a, y, c, d, PWT.STONE); },
+      goal: (c) => (c.all[PWT.FIRE] === 0 && c.t > 1.5 ? 1 : 0.99 * (1 - Math.min(1, c.all[PWT.FIRE] / 400))), lose: kind === 'houses' ? (c, L) => c.all[PWT.WOOD] < L.wood0 * (0.12 + 0.12 * D) : null, sol }; // (a tree's crown, a thin bridge burn fast: saving the wood is the houses' point only)
   },
-  burn(R, D) {
-    const n = 2 + Math.floor(D * 3 * R() + D), blocks = [], sol = [], gap = 1 / n, oil = R() < 0.5;
-    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.6, 0.08 + 0.1 * R()), x = gap * k + (gap - w) / 2, h = 0.1 + 0.25 * R(), y = 0.98 - h; blocks.push([x, y, x + w, 0.98]); if (oil) sol.push(['oil', x + w / 2, y - 0.06, 12]); sol.push(['fire', x + w / 2, y + h / 2, 25]); }
-    const roofs = D > 0.4 ? blocks.filter(() => R() < 0.5) : [];
-    return { tools: ['fire'].concat(oil ? ['oil'] : []), z: null, wood: 1, noAmmo: 1,
-      build: (b) => { for (const [a, y, c, d] of blocks) b(a, y, c, d, PWT.WOOD); for (const [a, y, c] of roofs) b(a - 0.015, y - 0.02, c + 0.015, y, PWT.STONE); },
-      goal: (c, L) => (1 - c.all[PWT.WOOD] / Math.max(1, L.wood0)) / 0.97, sol };
+  burn(R, D) { // wood to burn: blocks, trees, crates on shelves, a bridge
+    const kind = pwPick(R, ['blocks', 'trees', 'crates', 'bridge']), oil = R() < 0.5, parts = [], sol = [];
+    if (kind === 'bridge') { const x0 = 0.06 + 0.1 * R(), x1 = 0.94 - 0.1 * R(), py = 0.5 + 0.25 * R(); parts.push(['s', x0, py, x0 + 0.05, 0.98], ['s', x1 - 0.05, py, x1, 0.98], ['w', x0 + 0.05, py - 0.04, x1 - 0.05, py]); for (const f of [0.25, 0.75]) sol.push(['fire', x0 + (x1 - x0) * f, py - 0.02, 25]); }
+    else { const n = 2 + Math.floor(D * 3 * R() + D), gap = 1 / n;
+      for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.6, 0.08 + 0.1 * R()), x = gap * k + (gap - w) / 2, h = 0.1 + 0.25 * R();
+        if (kind === 'trees') { const cx = x + w / 2, y = 0.98 - h; parts.push(['w', cx - 0.015, y, cx + 0.015, 0.98], ['w', x, y - 0.1, x + w, y]); sol.push(['fire', cx, y - 0.05, 25]); }
+        else if (kind === 'crates') { const sy = 0.45 + 0.4 * R(), ch = 0.06 + 0.06 * R(); parts.push(['s', x - 0.02, sy, x + w + 0.02, sy + 0.02], ['w', x, sy - ch, x + w, sy]); if (oil) sol.push(['oil', x + w / 2, sy - ch - 0.05, 10]); sol.push(['fire', x + w / 2, sy - ch / 2, 25]); }
+        else { const y = 0.98 - h; parts.push(['w', x, y, x + w, 0.98]); if (oil) sol.push(['oil', x + w / 2, y - 0.06, 12]); sol.push(['fire', x + w / 2, y + h / 2, 25]); } } }
+    return { tools: ['fire'].concat(oil ? ['oil'] : []), z: null, wood: 1, noAmmo: 1, sub: kind,
+      build: (b) => { for (const [t, a, y, c, d] of parts) b(a, y, c, d, t === 's' ? PWT.STONE : PWT.WOOD); },
+      goal: (c, L) => (1 - c.all[PWT.WOOD] / Math.max(1, L.wood0)) / 0.95, sol };
   },
-  melt(R, D) {
-    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sh = 0.5 + 0.1 * R(), dx = 0.5 + 0.08 * R(), lavaOnly = false, fireOnly = D > 0.5 && R() < 0.5; // (lava alone seals the dam: lava on water leaves stone)
-    const tools = lavaOnly ? ['lava'] : fireOnly ? ['fire'] : ['fire', 'lava'], sol = []; // (melt: also the goal, a third of the basin)
-    if (tools.includes('fire')) sol.push(['fire', X(dx + 0.065), sh - 0.2, 120, null, 20, sh + 0.03]);
-    else sol.push(['lava', X(dx + 0.025), sh - 0.32, 50, null, 200]);
-    const R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
-    const zone = R4(0.72, 0.8, 0.93, 0.95);
-    return { tools, z: zone, noAmmo: 1,
-      build: (b) => { const B = (a, y0, c, y1, ty) => { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], ty); };
-        B(0.05, sh + 0.05, 0.76, sh + 0.08, PWT.STONE); B(0.02, sh - 0.25, 0.05, sh + 0.08, PWT.STONE); B(dx, sh - 0.22, dx + 0.05, sh + 0.05, PWT.ICE); B(0.05, sh - 0.14, dx, sh + 0.05, PWT.WATER);
-        B(0.69, 0.75, 0.72, 0.98, PWT.STONE); B(0.93, 0.75, 0.96, 0.98, PWT.STONE); B(0.69, 0.95, 0.96, 0.98, PWT.STONE); },
-      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.3), sol, solRepeat: 1 };
+  melt(R, D) { // ice holds the water back: an ice dam on a shelf, or a block of ice on a grate over the cup
+    const kind = pwPick(R, ['dam', 'dam', 'block']), flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
+    const fireOnly = D > 0.5 && R() < 0.5, tools = fireOnly ? ['fire'] : ['fire', 'lava'], parts = [], sol = [];
+    let zone;
+    if (kind === 'dam') { const sh = 0.4 + 0.22 * R(), left = 0.04 + 0.1 * R(), dx = 0.38 + 0.16 * R(), bw = 0.04 + 0.025 * R(), end = dx + bw + 0.06 + 0.06 * R(), cw = 0.2 + 0.06 * R(), cx = Math.min(0.96 - cw / 2, end + cw / 2 - 0.05);
+      parts.push(['s', left, sh + 0.05, end, sh + 0.08], ['s', left - 0.03, sh - 0.25, left, sh + 0.08], ['i', dx, sh - 0.2, dx + bw, sh + 0.05], ['W', left, sh - 0.14, dx, sh + 0.05], ['s', cx - cw / 2, 0.75, cx - cw / 2 + 0.03, 0.98], ['s', cx + cw / 2 - 0.03, 0.75, cx + cw / 2, 0.98], ['s', cx - cw / 2, 0.95, cx + cw / 2, 0.98]);
+      zone = R4(cx - cw / 2 + 0.03, 0.8, cx + cw / 2 - 0.03, 0.95); sol.push(['fire', X(dx + bw + 0.015), sh - 0.2, 120, null, 20, sh + 0.03]); } // (lava on the dam seals it: the fire along its dry side)
+    else { const iw = 0.12 + 0.05 * R(), cw = iw + 0.16, bx = cw / 2 + 0.03 + (0.94 - cw) * R(), ih = 0.08 + 0.05 * R(), gy = 0.42 + 0.14 * R(); // (an ice block on a grate over the cup: melt it, it drips in; no water near the ice, so nothing freezes back)
+      parts.push(['s', bx - iw / 2 - 0.04, gy, bx - 0.03, gy + 0.025], ['s', bx + 0.03, gy, bx + iw / 2 + 0.04, gy + 0.025], ['i', bx - iw / 2, gy - ih, bx + iw / 2, gy], ['s', bx - cw / 2, 0.75, bx - cw / 2 + 0.03, 0.98], ['s', bx + cw / 2 - 0.03, 0.75, bx + cw / 2, 0.98], ['s', bx - cw / 2, 0.95, bx + cw / 2, 0.98]);
+      zone = R4(bx - cw / 2 + 0.03, 0.8, bx + cw / 2 - 0.03, 0.95); for (const sd of [-1, 1]) sol.push(['fire', X(bx + sd * (iw / 2 + 0.025)), gy - ih * 0.3, 30, null, 10]); sol.push(['fire', X(bx), gy - ih - 0.02, 20, null, 20]); }
+    return { tools, z: zone, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [t, a, y0, c, y1] of parts) { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], t === 'i' ? PWT.ICE : t === 'W' ? PWT.WATER : PWT.STONE); } },
+      goal: (c, L) => (kind === 'block' ? c.zone[PWT.WATER] / Math.max(1, L.ice0 * 0.3) : c.zone[PWT.WATER] / (c.zn * 0.3)), sol }; // (the block: a third of its ice in the cup)
   },
-  grow(R, D) {
-    const n = 2 + Math.floor(R() * 3), fy = 0.86 - 0.04 * R(), seeds = [], sol = [];
-    for (let k = 0; k < n; k++) { const x = (k + 0.5) / n + (R() - 0.5) * 0.08; seeds.push(x); sol.push(['water', x, 0.2, 60]); }
-    return { tools: ['water'], z: null, noAmmo: D < 0.5, solRepeat: 1, need: 0.06 + 0.04 * D,
-      build: (b) => { b(0, fy, 1, 1, PWT.SAND); for (const x of seeds) b(x - 0.01, fy - 0.03, x + 0.01, fy, PWT.PLANT); if (D > 0.4) b(0.45, fy - 0.06, 0.55, fy, PWT.STONE); },
-      goal: (c) => c.all[PWT.PLANT] / (c.n * (0.03 + 0.012 * D)), sol };
+  grow(R, D) { // seeds to water: on flat ground, on hills, in pots, on terraces
+    const kind = pwPick(R, ['flat', 'hills', 'pots', 'terraces']), seeds = [], parts = [], sol = []; let fy = 0.86 - 0.04 * R();
+    if (kind === 'pots') { const n = 2 + Math.floor(R() * 2), gap = 1 / n; for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.16 + 0.06 * R()), x = gap * k + (gap - w) / 2, top = 0.78 - 0.1 * R(), x2 = x + w / 2;
+        parts.push(['s', x, top, x + 0.025, 0.98], ['s', x + w - 0.025, top, x + w, 0.98], ['s', x, 0.95, x + w, 0.98], ['S', x + 0.025, top + 0.07, x + w - 0.025, 0.95], ['p', x2 - 0.012, top + 0.04, x2 + 0.012, top + 0.07]); sol.push(['water', x2, 0.25, 45]); } }
+    else if (kind === 'terraces') { const n = 2 + Math.floor(R() * 2), up = R() < 0.5; parts.push(['S', 0, fy, 1, 1]); for (let k = 0; k < n; k++) { const x0 = k / n, x1 = (k + 1) / n, h = (up ? k : n - 1 - k) * 0.08, y = fy - h; if (h) parts.push(['s', x0, y, x1, fy], ['S', x0, y - 0.03, x1, y]); const sx = (x0 + x1) / 2 + (R() - 0.5) * 0.08; parts.push(['p', sx - 0.012, y - 0.06, sx + 0.012, y - 0.03]); sol.push(['water', sx, 0.2, 55]); } }
+    else { const n = 2 + Math.floor(R() * 3); parts.push(['S', 0, fy, 1, 1]); for (let k = 0; k < n; k++) { const x = (k + 0.5) / n + (R() - 0.5) * 0.08; let y = fy; if (kind === 'hills') { const hh = 0.04 + 0.05 * R(); parts.push(['S', x - 0.1, fy - hh * 0.5, x + 0.1, fy], ['S', x - 0.05, fy - hh, x + 0.05, fy]); y = fy - hh; } parts.push(['p', x - 0.01, y - 0.03, x + 0.01, y]); sol.push(['water', x, 0.2, 60]); }
+      if (D > 0.4 && kind === 'flat') parts.push(['s', 0.45, fy - 0.06, 0.55, fy]); }
+    const potK = kind === 'pots' ? 0.45 : 1;
+    return { tools: ['water'], z: null, noAmmo: D < 0.5, solRepeat: 1, need: 0.06 + 0.04 * D, sub: kind,
+      build: (b) => { for (const [t, a, y, c, d] of parts) b(a, y, c, d, t === 's' ? PWT.STONE : t === 'S' ? PWT.SAND : PWT.PLANT); },
+      goal: (c) => c.all[PWT.PLANT] / (c.n * (0.03 + 0.012 * D) * potK), sol };
   },
-  cloud(R, D) {
-    const n = 1 + Math.floor(R() * 2 + D), pools = [], sol = [], gap = 1 / n;
-    for (let k = 0; k < n; k++) { const w = gap * (0.6 + 0.25 * R()), x = gap * k + (gap - w) / 2, d = 0.1 + 0.06 * R(); pools.push([x, w, d]); sol.push(['water', x + 0.05, 0.4, 70, x + w - 0.05]); }
-    return { tools: ['water'], z: null, hot: 1, noAmmo: 1, solRepeat: 1,
-      build: (b) => { for (const [x, w, d] of pools) { b(x, 0.98 - d - 0.03, x + 0.03, 0.98, PWT.STONE); b(x + w - 0.03, 0.98 - d - 0.03, x + w, 0.98, PWT.STONE); b(x, 0.95, x + w, 0.98, PWT.STONE); b(x + 0.03, 0.95 - d, x + w - 0.03, 0.95, PWT.LAVA); } },
+  cloud(R, D) { // water on lava makes steam: pools on the floor, up on pillars, a lava river
+    const kind = pwPick(R, ['pools', 'pillars', 'river']), pools = [], sol = [];
+    if (kind === 'river') { const y = 0.9 - 0.05 * R(); pools.push([0.04, 0.92, 0.07 + 0.03 * R(), y]); sol.push(['water', 0.1, 0.4, 70, 0.9]); }
+    else { const n = 1 + Math.floor(R() * 2 + D), gap = 1 / n; for (let k = 0; k < n; k++) { const w = gap * (0.6 + 0.25 * R()), x = gap * k + (gap - w) / 2, d = 0.08 + 0.06 * R(), by = kind === 'pillars' ? 0.98 - (0.1 + 0.3 * R()) : 0.98; pools.push([x, w, d, by]); sol.push(['water', x + 0.05, Math.max(0.1, by - d - 0.3), 70, x + w - 0.05]); } }
+    return { tools: ['water'], z: null, hot: 1, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [x, w, d, by] of pools) { b(x, by - d - 0.03, x + 0.03, by, PWT.STONE); b(x + w - 0.03, by - d - 0.03, x + w, by, PWT.STONE); b(x, by - 0.03, x + w, by, PWT.STONE); b(x + 0.03, by - 0.03 - d, x + w - 0.03, by - 0.03, PWT.LAVA); if (by < 0.97) b(x + w / 2 - 0.03, by, x + w / 2 + 0.03, 0.98, PWT.STONE); } },
       goal: (c) => c.all[PWT.STEAM] / (c.n * (0.02 + 0.016 * D)), sol };
   },
-  boom(R, D) {
-    const n = 1 + Math.floor(R() * 2 + D * 1.5), ice = [], sol = [], gap = 0.86 / n;
-    for (let k = 0; k < n; k++) { const w = Math.min(gap * 0.7, 0.07 + 0.06 * R()), x = 0.07 + gap * k + (gap - w) / 2, h = 0.08 + 0.12 * R(); ice.push([x, 0.95 - h, x + w, 0.95]); sol.push(['boom', x + w / 2, 0.3, 45, null, 90]); } // (let the powder settle on the ice, then light it)
-    for (const [a, y, c] of ice) sol.push(['fire', (a + c) / 2, y - 0.03, 15, null, 30]);
-    return { tools: ['boom', 'fire'], z: null, noAmmo: 1, solRepeat: 1,
-      build: (b) => { b(0.04, 0.6, 0.07, 0.98, PWT.STONE); b(0.93, 0.6, 0.96, 0.98, PWT.STONE); b(0.04, 0.95, 0.96, 0.98, PWT.STONE); for (const [a, y, c, d] of ice) b(a, y, c, d, PWT.ICE); },
-      goal: (c, L) => (1 - c.all[PWT.ICE] / Math.max(1, L.ice0)) / 0.85, sol };
+  boom(R, D) { // ice to blow up: blocks, tall columns, a slab on posts
+    const kind = pwPick(R, ['blocks', 'columns', 'slab']), ice = [], posts = [], sol = [];
+    if (kind === 'slab') { const y = 0.5 + 0.2 * R(), x0 = 0.12 + 0.1 * R(), x1 = 0.88 - 0.1 * R(); ice.push([x0, y, x1, y + 0.04]); posts.push([x0, y + 0.04, x0 + 0.03, 0.98], [x1 - 0.03, y + 0.04, x1, 0.98]); sol.push(['boom', x0 + 0.04, y - 0.15, 60, x1 - 0.04], ['fire', x0 + 0.05, y - 0.02, 15, null, 60], ['fire', x1 - 0.05, y - 0.02, 15, null, 60]); }
+    else { const n = 1 + Math.floor(R() * 2 + D * 1.5), gap = 0.86 / n; for (let k = 0; k < n; k++) { const w = kind === 'columns' ? 0.04 + 0.03 * R() : Math.min(gap * 0.7, 0.07 + 0.06 * R()), x = 0.07 + gap * k + (gap - w) / 2, h = kind === 'columns' ? 0.2 + 0.2 * R() : 0.08 + 0.12 * R(); ice.push([x, 0.95 - h, x + w, 0.95]); sol.push(['boom', x + w / 2, 0.3, 45, null, 90]); }
+      for (const [a, y, c] of ice) sol.push(['fire', (a + c) / 2, y - 0.03, 15, null, 30]); }
+    return { tools: ['boom', 'fire'], z: null, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { if (kind !== 'slab') { b(0.04, 0.6, 0.07, 0.98, PWT.STONE); b(0.93, 0.6, 0.96, 0.98, PWT.STONE); b(0.04, 0.95, 0.96, 0.98, PWT.STONE); } for (const [a, y, c, d] of posts) b(a, y, c, d, PWT.STONE); for (const [a, y, c, d] of ice) b(a, y, c, d, PWT.ICE); },
+      goal: (c, L) => (1 - c.all[PWT.ICE] / Math.max(1, L.ice0)) / 0.72, sol };
   },
-  acid(R, D) {
-    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sy = 0.42 + 0.12 * R(), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
-    return { tools: ['acid'], z: R4(0.66, 0.84, 0.92, 0.95), noAmmo: 1, solRepeat: 1, // (a little acid: too much eats the water too)
-      build: (b) => { const B = (a, y0, c, y1, ty) => { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], ty); };
-        B(0.08, sy, 0.66, sy + 0.03, PWT.STONE); B(0.12, sy - 0.2, 0.15, sy, PWT.WOOD); B(0.45, sy - 0.2, 0.48, sy, PWT.WOOD); B(0.15, sy - 0.16, 0.45, sy, PWT.WATER);
-        B(0.63, 0.8, 0.66, 0.98, PWT.STONE); B(0.92, 0.8, 0.95, 0.98, PWT.STONE); B(0.63, 0.95, 0.95, 0.98, PWT.STONE); },
-      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.12), sol: [['acid', X(0.53), sy - 0.04, 10, null, 400]] };
+  acid(R, D) { // wood holds the water back: a wooden dam, or a wooden crate on a shelf
+    const kind = pwPick(R, ['dam', 'crate']), flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1], parts = [];
+    let zone, sol;
+    if (kind === 'dam') { const sy = 0.4 + 0.16 * R(), left = 0.06 + 0.08 * R(), dx = 0.4 + 0.12 * R(), cx = 0.66 + 0.14 * R(), cw = 0.24;
+      parts.push(['s', left, sy, Math.min(cx - cw / 2 + 0.03, dx + 0.2), sy + 0.03], ['w', left + 0.04, sy - 0.2, left + 0.07, sy], ['w', dx, sy - 0.2, dx + 0.03, sy], ['W', left + 0.07, sy - 0.16, dx, sy]);
+      parts.push(['s', cx - cw / 2, 0.8, cx - cw / 2 + 0.03, 0.98], ['s', cx + cw / 2 - 0.03, 0.8, cx + cw / 2, 0.98], ['s', cx - cw / 2, 0.95, cx + cw / 2, 0.98]); zone = R4(cx - cw / 2 + 0.03, 0.84, cx + cw / 2 - 0.03, 0.95); sol = [['acid', X(dx + 0.015), sy - 0.04, 10, null, 400]]; }
+    else { const sy = 0.38 + 0.18 * R(), cx0 = 0.1 + 0.15 * R(), cwd = 0.22 + 0.1 * R(), ch = 0.14 + 0.06 * R(), end = cx0 + cwd + 0.08 + 0.06 * R(), cw = 0.22, cc = Math.min(0.96 - cw / 2, end + cw / 2 - 0.05);
+      parts.push(['s', cx0 - 0.03, sy, end, sy + 0.03], ['w', cx0, sy - ch, cx0 + 0.03, sy], ['w', cx0 + cwd - 0.03, sy - ch, cx0 + cwd, sy], ['W', cx0 + 0.03, sy - ch + 0.03, cx0 + cwd - 0.03, sy]);
+      parts.push(['s', cc - cw / 2, 0.8, cc - cw / 2 + 0.03, 0.98], ['s', cc + cw / 2 - 0.03, 0.8, cc + cw / 2, 0.98], ['s', cc - cw / 2, 0.95, cc + cw / 2, 0.98]); zone = R4(cc - cw / 2 + 0.03, 0.84, cc + cw / 2 - 0.03, 0.95); sol = [['acid', X(cx0 + cwd - 0.015), sy - ch - 0.04, 10, null, 400]]; }
+    return { tools: ['acid'], z: zone, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [t, a, y0, c, y1] of parts) { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], t === 'w' ? PWT.WOOD : t === 'W' ? PWT.WATER : PWT.STONE); } },
+      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.12), sol };
   },
-  stone(R, D) {
-    const x0 = 0.1 + 0.2 * R(), x1 = x0 + 0.45 + 0.15 * R(), d = 0.12 + 0.06 * R();
-    return { tools: ['lava'].concat(D > 0.5 ? ['sand'] : []), z: [x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95], noAmmo: 1, solRepeat: 1,
-      build: (b) => { b(x0, 0.95 - d - 0.04, x0 + 0.03, 0.98, PWT.STONE); b(x1 - 0.03, 0.95 - d - 0.04, x1, 0.98, PWT.STONE); b(x0, 0.95, x1, 0.98, PWT.STONE); b(x0 + 0.03, 0.95 - d, x1 - 0.03, 0.95, PWT.WATER); },
-      goal: (c) => (c.zone[PWT.STONE]) / (c.zn * (0.055 + 0.035 * D)), sol: [['lava', x0 + 0.06, 0.3, 90, x1 - 0.06]] }; // (the hardest one made it with no time left)
+  stone(R, D) { // lava on water makes stone: a basin, two, a deep well, a basin up on a pillar
+    const kind = pwPick(R, ['basin', 'two', 'well', 'raised']), bs = [], sol = [];
+    const add = (x0, x1, d, by) => { bs.push([x0, x1, d, by]); sol.push(['lava', x0 + 0.06, Math.max(0.08, by - d - 0.3), 90, x1 - 0.06]); };
+    if (kind === 'two') { add(0.06, 0.42 + 0.04 * R(), 0.1 + 0.05 * R(), 0.98); add(0.55 + 0.04 * R(), 0.94, 0.1 + 0.05 * R(), 0.98); }
+    else if (kind === 'well') { const x0 = 0.3 + 0.2 * R(); add(x0, x0 + 0.2 + 0.05 * R(), 0.22 + 0.08 * R(), 0.98); }
+    else if (kind === 'raised') { const x0 = 0.1 + 0.25 * R(); add(x0, x0 + 0.42 + 0.12 * R(), 0.1 + 0.05 * R(), 0.72 + 0.12 * R()); }
+    else { const x0 = 0.1 + 0.2 * R(); add(x0, x0 + 0.45 + 0.15 * R(), 0.12 + 0.06 * R(), 0.98); }
+    const [a0, a1, d0, b0] = bs[0];
+    return { tools: ['lava'].concat(D > 0.5 ? ['sand'] : []), z: [a0 + 0.03, b0 - 0.03 - d0, a1 - 0.03, kind === 'well' ? b0 - 0.03 - d0 + 0.08 : b0 - 0.03], /* (a deep well: the stone forms on top, the box is the top) */ z2: bs[1] ? [bs[1][0] + 0.03, bs[1][3] - 0.03 - bs[1][2], bs[1][1] - 0.03, bs[1][3] - 0.03] : null, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [x0, x1, d, by] of bs) { b(x0, by - d - 0.04, x0 + 0.03, by, PWT.STONE); b(x1 - 0.03, by - d - 0.04, x1, by, PWT.STONE); b(x0, by - 0.03, x1, by, PWT.STONE); b(x0 + 0.03, by - 0.03 - d, x1 - 0.03, by - 0.03, PWT.WATER); if (by < 0.97) b((x0 + x1) / 2 - 0.04, by, (x0 + x1) / 2 + 0.04, 0.98, PWT.STONE); } },
+      goal: (c) => { const k = 0.05 + 0.03 * D, a = c.zone[PWT.STONE] / (c.zn * k); return bs[1] ? Math.min(a, c.zone2[PWT.STONE] / (c.zn2 * k)) : a; }, sol };
   },
   /* (1.10.0, the owner: "still a lot of challenges repeat, it is really boring": nine more kinds, each its own picture and its own trick) */
-  slide(R, D, mat) { // pour only in the corner box; sand rides a 45° chute (cell for cell, whatever the screen's shape) to the cup; water runs along shelves, through a gap at alternate ends
-    const liq = mat === 'water', ty = liq ? PWT.WATER : PWT.SAND, flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), t = 0.03, cw = 0.2 + 0.06 * (1 - D) + 0.04 * R(), ch = 0.16 + 0.06 * R(), nS = 2 + (D > 0.5 ? 1 : 0);
-    const L = { tools: [liq ? 'water' : 'sand'].concat(D > 0.6 && R() < 0.5 ? [liq ? 'sand' : 'water'] : []), z: [0, 0, 0.1, 0.1], noPz: 1, noAmmo: 1, pz: flip ? [0.68, 0.08, 1, 0.24] : [0, 0.08, 0.32, 0.24], sol: [[liq ? 'water' : 'sand', X(0.16), 0.16, 1100]] }; // (the pour box under the title)
+  slide(R, D, mat) { // pour only in the corner box; sand rides 45° chutes (cell for cell, whatever the screen's shape; a second one back the other way when there is room) to the cup; water runs along 2-4 shelves of their own lengths, through a gap at alternate ends
+    const liq = mat === 'water', ty = liq ? PWT.WATER : PWT.SAND, flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), t = 0.03, cw = 0.2 + 0.06 * (1 - D) + 0.04 * R(), ch = 0.16 + 0.06 * R();
+    const nS = 2 + Math.floor(R() * (D > 0.5 ? 3 : 2)), gaps = Array.from({ length: 4 }, () => 0.26 + 0.1 * R()), y0 = 0.24 + 0.1 * R(), r1 = 0.45 + 0.3 * R(), two = R() < 0.55, px = 0.02 * Math.floor(R() * 4);
+    const L = { tools: [liq ? 'water' : 'sand'].concat(D > 0.6 && R() < 0.5 ? [liq ? 'sand' : 'water'] : []), z: [0, 0, 0.1, 0.1], noPz: 1, noAmmo: 1, pz: flip ? [0.68 - px, 0.08, 1 - px, 0.24] : [px, 0.08, 0.32 + px, 0.24], sol: [[liq ? 'water' : 'sand', X(0.16 + px), 0.16, 1100]], sub: liq ? nS + ' shelves' : two ? 'zigzag' : 'chute' }; // (the pour box under the title)
     L.build = (b, G) => { const B = (a, y0, c, y1, q) => b(Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1, q), cup = (a, c, top) => { B(a, top, a + t, 0.98, PWT.STONE); B(c - t, top, c, 0.98, PWT.STONE); B(a, 0.95, c, 0.98, PWT.STONE); };
       let cx;
-      if (!liq) { const y0 = 0.27, maxDrop = 0.98 - ch - 0.06 - y0, run = Math.min(0.8 - cw / 2, maxDrop * G.h / G.w), n = Math.max(4, Math.round(run * G.w)); // (a step a cell: the grains always slide)
-        for (let q = 0; q < n; q++) { const x = 0.01 + q / G.w, y = y0 + q / G.h; B(x, y, x + 1.5 / G.w, y + 3 / G.h, PWT.STONE); }
-        B(0, y0 - 0.12, 0.012, y0 + 0.01, PWT.STONE); cx = Math.min(0.97 - cw / 2, 0.01 + run + cw * 0.2); }
-      else { for (let q = 0; q < nS; q++) { const y = 0.28 + q * 0.15; if (q % 2 === 0) { B(0, y, 0.7, y + 0.02, PWT.STONE); B(0.68, y - 0.03, 0.7, y, PWT.STONE); } else { B(0.3, y, 1, y + 0.02, PWT.STONE); B(0.3, y - 0.03, 0.32, y, PWT.STONE); } /* (wide gaps: the water does not take all day) */ }
-        cx = nS % 2 ? Math.min(0.97 - cw / 2, 0.66 + cw / 2) : Math.max(0.03 + cw / 2, 0.34 - cw / 2); } // (the cup right under the last gap, where the water falls)
+      if (!liq) { const top0 = 0.98 - ch - 0.06, ramp = (xa, ya, run, dir) => { const n = Math.max(4, Math.round(run * G.w)); for (let q = 0; q < n; q++) { const x = xa + dir * q / G.w, y = ya + q / G.h; B(dir > 0 ? x : x - 1.5 / G.w, y, dir > 0 ? x + 1.5 / G.w : x, y + 3 / G.h, PWT.STONE); } return [xa + dir * n / G.w, ya + n / G.h]; };
+        let run = Math.min(0.8 - cw / 2, r1, (top0 - y0) * G.h / G.w); const [ex, ey] = ramp(0.01 + px, y0, run, 1); B(px, y0 - 0.12, px + 0.012, y0 + 0.01, PWT.STONE); cx = Math.min(0.97 - cw / 2, ex + cw * 0.2 - 0.01);
+        const run2 = Math.min(ex - 0.12, (top0 - ey - 0.06) * G.h / G.w); if (two && run2 > 0.18) { const [fx] = ramp(ex + 0.03, ey + 0.06, run2, -1); B(ex + 0.03, ey - 0.02, ex + 0.045, ey + 0.08, PWT.STONE); cx = Math.max(0.03 + cw / 2, fx - cw * 0.2 + 0.01); } } // (the second chute: from just under the first one's end, back the other way, a little wall so the grains turn)
+      else { let y = 0.27; const dy = Math.min(0.17, (0.98 - ch - 0.08 - 0.27) / nS); for (let q = 0; q < nS; q++) { const g = gaps[q]; if (q % 2 === 0) { B(0, y, 1 - g, y + 0.02, PWT.STONE); B(1 - g - 0.02, y - 0.03, 1 - g, y, PWT.STONE); } else { B(g, y, 1, y + 0.02, PWT.STONE); B(g, y - 0.03, g + 0.02, y, PWT.STONE); } y += dy; } /* (wide gaps: the water does not take all day) */
+        const g = gaps[nS - 1]; cx = nS % 2 ? Math.min(0.97 - cw / 2, 1 - g - 0.04 + cw / 2) : Math.max(0.03 + cw / 2, g + 0.04 - cw / 2); } // (the cup right under the last gap, where the water falls)
       const top = 0.98 - ch, a = cx - cw / 2, c = cx + cw / 2; cup(a, c, top); const za = X(a + t), zc = X(c - t); L.z = [Math.min(za, zc), top + 0.05, Math.max(za, zc), 0.95]; };
     L.goal = (c) => c.zone[ty] / (c.zn * (liq ? 0.6 : 0.75)); return L;
   },
-  cool(R, D) { // a lava pool (or two): pour water over it till it is stone
-    const n = D > 0.5 && R() < 0.6 ? 2 : 1, pools = [], sol = [], gap = 1 / n;
-    for (let k = 0; k < n; k++) { const w = gap * (0.5 + 0.3 * R()), x = gap * k + (gap - w) / 2, d = 0.022 + 0.014 * R(); pools.push([x, w, d]); sol.push(['water', x + 0.04, 0.45, 80, x + w - 0.04]); }
-    return { tools: ['water'], z: null, noAmmo: 1, solRepeat: 1,
-      build: (b) => { for (const [x, w, d] of pools) { b(x, 0.98 - d - 0.03, x + 0.025, 0.98, PWT.STONE); b(x + w - 0.025, 0.98 - d - 0.03, x + w, 0.98, PWT.STONE); b(x, 0.96, x + w, 0.98, PWT.STONE); b(x + 0.025, 0.96 - d, x + w - 0.025, 0.96, PWT.LAVA); } },
-      coolTop: 1, goal: (c, L) => (1 - c.hot / Math.max(1, L.hot0)) / 0.95, sol }; // (the lava open to the air: water on it leaves a stone crust; the crust slowly melts back, so cover it all)
+  cool(R, D) { // lava to crust over: pools on the floor, up on pillars, a long river
+    const kind = pwPick(R, ['pools', 'raised', 'river']), pools = [], sol = [];
+    if (kind === 'river') { const d = 0.02 + 0.01 * R(); pools.push([0.04, 0.92, d, 0.98]); sol.push(['water', 0.08, 0.45, 110, 0.92]); }
+    else { const n = D > 0.5 && R() < 0.6 ? 2 + (R() < 0.3 ? 1 : 0) : 1, gap = 1 / n; for (let k = 0; k < n; k++) { const w = gap * (0.5 + 0.3 * R()), x = gap * k + (gap - w) / 2, d = 0.022 + 0.014 * R(), by = kind === 'raised' ? 0.98 - (0.1 + 0.3 * R()) : 0.98; pools.push([x, w, d, by]); sol.push(['water', x + 0.04, Math.max(0.1, by - 0.5), 80, x + w - 0.04]); } }
+    return { tools: ['water'], z: null, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [x, w, d, by] of pools) { b(x, by - d - 0.03, x + 0.025, by, PWT.STONE); b(x + w - 0.025, by - d - 0.03, x + w, by, PWT.STONE); b(x, by - 0.02, x + w, by, PWT.STONE); b(x + 0.025, by - 0.02 - d, x + w - 0.025, by - 0.02, PWT.LAVA); if (by < 0.97) b(x + w / 2 - 0.03, by, x + w / 2 + 0.03, 0.98, PWT.STONE); } },
+      coolTop: 1, goal: (c, L) => (1 - c.hot / Math.max(1, L.hot0)) / 0.95, sol };
   },
   chain(R, D) { // ice on shelves over the seeds: melt it with fire, the water rains down, the garden grows
-    const n = 2 + (R() < 0.5 ? 1 : 0), fy = 0.88, seeds = [], ice = [], sol = [];
-    for (let k = 0; k < n; k++) { const x = (k + 0.5) / n + (R() - 0.5) * 0.05, iw = 0.09 + 0.04 * R(), iy = 0.36 + 0.14 * R(), ih = 0.06 + 0.03 * R(); seeds.push(x); ice.push([x - iw / 2, iy, x + iw / 2, iy + ih]); for (const sd of [-1, 1]) sol.push(['fire', x + sd * (iw / 2 + 0.025), iy + ih * 0.7, 20, null, 30]); } // (fire along the ice's sides: it climbs and licks the ice)
+    const n = 1 + Math.floor(R() * 3), fy = 0.82 + 0.1 * R(), seeds = [], ice = [], sol = [];
+    for (let k = 0; k < n; k++) { const x = (k + 0.5) / n + (R() - 0.5) * 0.1, iw = 0.09 + 0.06 * R(), iy = 0.22 + 0.36 * R(), ih = 0.06 + 0.05 * R(); seeds.push(x); ice.push([x - iw / 2, iy, x + iw / 2, iy + ih]); for (const sd of [-1, 1]) sol.push(['fire', x + sd * (iw / 2 + 0.025), iy + ih * 0.7, 20, null, 30]); } // (fire along the ice's sides: it climbs and licks the ice)
     return { tools: ['fire'].concat(D > 0.5 ? ['water'] : []), z: null, noAmmo: 1, solRepeat: 1,
       build: (b) => { b(0, fy, 1, 1, PWT.SAND); for (const x of seeds) b(x - 0.012, fy - 0.03, x + 0.012, fy, PWT.PLANT); for (const [a, y, c, d] of ice) { b(a - 0.008, d, c + 0.008, d + 0.015, PWT.STONE); b(a, y, c, d, PWT.ICE); } },
       goal: (c, L) => (c.all[PWT.PLANT] - L.plant0) / Math.max(1, L.ice0 * (0.25 + 0.1 * D)), sol };
   },
-  duo(R, D) { // two cups: sand in the one, water in the other
-    const flip = R() < 0.5, cw = 0.26 - 0.08 * D + 0.03 * R(), ch = 0.2 + 0.06 * R(), t = 0.03, ca = flip ? 0.74 - 0.04 * R() : 0.26 + 0.04 * R(), cb = flip ? 0.26 + 0.04 * R() : 0.74 - 0.04 * R(), top = 0.98 - ch;
-    const Z = (cx) => [cx - cw / 2 + t, top + 0.05, cx + cw / 2 - t, 0.95], cup = (b, cx) => { b(cx - cw / 2, top, cx - cw / 2 + t, 0.98, PWT.STONE); b(cx + cw / 2 - t, top, cx + cw / 2, 0.98, PWT.STONE); b(cx - cw / 2, 0.95, cx + cw / 2, 0.98, PWT.STONE); };
-    return { tools: ['sand', 'water'], z: Z(ca), z2: Z(cb), zc: ['sand', 'water'], mark: '🏖️', mark2: '💧', markUp: 1, noAmmo: 1, noPz: 1,
-      build: (b) => { cup(b, ca); cup(b, cb); }, goal: (c) => Math.min(c.zone[PWT.SAND] / (c.zn * 0.78), c.zone2[PWT.WATER] / (c.zn2 * 0.6)), sol: [['sand', ca, 0.15, 70, null, 30], ['water', cb, 0.15, 120, null, 60]], solRepeat: 1 };
+  duo(R, D) { // two cups, two things: sand and water, sand and oil, water and oil; a cup may stand on a pillar
+    const pair = pwPick(R, [['sand', 'water'], ['sand', 'water'], ['sand', 'oil'], ['water', 'oil']]), flip = R() < 0.5, cw = 0.26 - 0.08 * D + 0.03 * R(), t = 0.03;
+    const ca = flip ? 0.74 - 0.06 * R() : 0.26 + 0.06 * R(), cb = flip ? 0.26 + 0.06 * R() : 0.74 - 0.06 * R(), ha = 0.2 + 0.06 * R(), hb = 0.2 + 0.06 * R(), ua = R() < 0.35 ? 0.1 + 0.15 * R() : 0, ub = !ua && R() < 0.35 ? 0.1 + 0.15 * R() : 0;
+    const TY = { sand: PWT.SAND, water: PWT.WATER, oil: PWT.OIL }, E = { sand: '🏖️', water: '💧', oil: '🛢️' }, K = (m) => (m === 'sand' ? 0.78 : 0.6);
+    const Z = (cx, h, u) => [cx - cw / 2 + t, 0.98 - u - h + 0.05, cx + cw / 2 - t, 0.95 - u], cup = (b, cx, h, u) => { const by = 0.98 - u, top = by - h; b(cx - cw / 2, top, cx - cw / 2 + t, by, PWT.STONE); b(cx + cw / 2 - t, top, cx + cw / 2, by, PWT.STONE); b(cx - cw / 2, by - t, cx + cw / 2, by, PWT.STONE); if (u) b(cx - 0.04, by, cx + 0.04, 0.98, PWT.STONE); };
+    return { tools: pair.slice(), z: Z(ca, ha, ua), z2: Z(cb, hb, ub), zc: pair.map((m) => (m === 'sand' ? 'sand' : 'water')), mark: E[pair[0]], mark2: E[pair[1]], markUp: 1, noAmmo: 1, noPz: 1, sub: pair.join('+'),
+      build: (b) => { cup(b, ca, ha, ua); cup(b, cb, hb, ub); }, goal: (c) => Math.min(c.zone[TY[pair[0]]] / (c.zn * K(pair[0])), c.zone2[TY[pair[1]]] / (c.zn2 * K(pair[1]))),
+      sol: [[pair[0], ca, 0.12, 70, null, 30], [pair[1], cb, 0.12, 120, null, 60]], solRepeat: 1 };
   },
-  bury(R, D) { // a treasure on the floor: cover it with sand (maybe under a stone roof: pour from its open side)
-    const gx = 0.2 + 0.6 * R(), gw = 0.1 + 0.04 * R(), gh = 0.05 + 0.03 * D, roof = D > 0.45 && R() < 0.6 ? (gx < 0.5 ? 1 : -1) : 0, z = [gx - gw / 2, 0.98 - gh, gx + gw / 2, 0.98];
-    return { tools: ['sand'].concat(D > 0.6 && R() < 0.5 ? ['water'] : []), z, mark: '💎', markFade: 1, noPz: 1, need: gw * gh * 4,
-      build: (b) => { if (roof) { const a = roof > 0 ? gx - gw * 0.9 : gx - gw * 0.1; b(a, 0.98 - gh - 0.1, a + gw, 0.98 - gh - 0.085, PWT.STONE); } }, // (the roof over the side away from the open one)
-      goal: (c) => c.zone[PWT.SAND] / (c.zn * 0.85), sol: [['sand', gx + roof * gw * 0.9, 0.3, 700]] };
+  bury(R, D) { // a treasure to cover with sand: on the floor (maybe under a roof), down in a pit, two of them, up on a pedestal
+    const kind = pwPick(R, ['floor', 'pit', 'two', 'pedestal']), gw = 0.1 + 0.04 * R(), gh = 0.05 + 0.03 * D, parts = [], sol = [];
+    const gx = 0.2 + 0.6 * R(); let z, z2 = null;
+    if (kind === 'pit') { const pw = gw + 0.08, pd = 0.12 + 0.06 * R(); parts.push(['s', gx - pw / 2 - 0.03, 0.98 - pd, gx - pw / 2, 0.98], ['s', gx + pw / 2, 0.98 - pd, gx + pw / 2 + 0.03, 0.98]); z = [gx - gw / 2, 0.98 - gh, gx + gw / 2, 0.98]; sol.push(['sand', gx, 0.3, 700]); }
+    else if (kind === 'two') { const g1 = 0.15 + 0.2 * R(), g2 = 0.62 + 0.2 * R(); z = [g1 - gw / 2, 0.98 - gh, g1 + gw / 2, 0.98]; z2 = [g2 - gw / 2, 0.98 - gh, g2 + gw / 2, 0.98]; sol.push(['sand', g1, 0.3, 300], ['sand', g2, 0.3, 300]); }
+    else if (kind === 'pedestal') { const ph = 0.1 + 0.08 * R(), pw = gw + 0.04; parts.push(['s', gx - pw / 2, 0.98 - ph, gx + pw / 2, 0.98]); z = [gx - gw / 2, 0.98 - ph - gh, gx + gw / 2, 0.98 - ph]; sol.push(['sand', gx, 0.25, 900]); }
+    else { const roof = D > 0.45 && R() < 0.6 ? (gx < 0.5 ? 1 : -1) : 0; if (roof) { const a = roof > 0 ? gx - gw * 0.9 : gx - gw * 0.1; parts.push(['s', a, 0.98 - gh - 0.1, a + gw, 0.98 - gh - 0.085]); } z = [gx - gw / 2, 0.98 - gh, gx + gw / 2, 0.98]; sol.push(['sand', gx + roof * gw * 0.9, 0.3, 700]); }
+    return { tools: ['sand'].concat(D > 0.6 && R() < 0.5 ? ['water'] : []), z, z2, mark: '💎', mark2: z2 ? '💎' : null, markFade: 1, noPz: 1, noAmmo: 1, sub: kind, /* (no bucket: a pit, two treasures, a pedestal take a lot of sand) */
+      build: (b) => { for (const [t, a, y, c, d] of parts) b(a, y, c, d, PWT.STONE); },
+      goal: (c) => (z2 ? Math.min(c.zone[PWT.SAND] / (c.zn * 0.85), c.zone2[PWT.SAND] / (c.zn2 * 0.85)) : c.zone[PWT.SAND] / (c.zn * 0.85)), sol };
   },
-  blast(R, D) { // water behind a wooden dam: boom powder on the dam, then a spark
-    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sh = 0.5 + 0.1 * R(), dx = 0.5 + 0.06 * R(), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
-    return { tools: ['boom', 'fire'], z: R4(0.72, 0.8, 0.93, 0.95), noAmmo: 1, solRepeat: 1,
+  blast(R, D) { // water behind a wooden wall to blow up (not ice: ice freezes the water against it and grows): the powder gathers in a pocket at its dry foot, then a spark
+    const flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), sh = 0.45 + 0.16 * R(), left = 0.03 + 0.08 * R(), dx = 0.42 + 0.14 * R(), bw = 0.035 + 0.015 * R(), ice = (R(), false), cw = 0.22 + 0.05 * R(), end = dx + 0.18 + 0.06 * R(), cx = Math.min(0.96 - cw / 2, end + cw / 2 - 0.05), R4 = (a, y0, c, y1) => [Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1];
+    return { tools: ['boom', 'fire'], z: R4(cx - cw / 2 + 0.03, 0.8, cx + cw / 2 - 0.03, 0.95), noAmmo: 1, solRepeat: 1, sub: ice ? 'ice' : 'wood',
       build: (b) => { const B = (a, y0, c, y1, ty) => { const r = R4(a, y0, c, y1); b(r[0], r[1], r[2], r[3], ty); };
-        B(0.05, sh + 0.05, 0.76, sh + 0.08, PWT.STONE); B(0.02, sh - 0.25, 0.05, sh + 0.08, PWT.STONE); B(dx, sh - 0.2, dx + 0.04, sh + 0.05, PWT.WOOD); B(0.05, sh - 0.14, dx, sh + 0.05, PWT.WATER); B(dx + 0.1, sh + 0.01, dx + 0.115, sh + 0.05, PWT.STONE); // (a little pocket at the dam's dry foot: the powder gathers there)
-        B(0.69, 0.75, 0.72, 0.98, PWT.STONE); B(0.93, 0.75, 0.96, 0.98, PWT.STONE); B(0.69, 0.95, 0.96, 0.98, PWT.STONE); },
-      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.3), sol: [['boom', X(dx + 0.07), sh - 0.1, 30, null, 80], ['fire', X(dx + 0.07), sh, 12, null, 200]] };
+        B(left, sh + 0.05, end, sh + 0.08, PWT.STONE); B(left - 0.03, sh - 0.25, left, sh + 0.08, PWT.STONE); B(dx, sh - 0.2, dx + bw, sh + 0.05, ice ? PWT.ICE : PWT.WOOD); B(left, sh - 0.14, dx, sh + 0.05, PWT.WATER); B(dx + 0.1, sh + 0.01, dx + 0.115, sh + 0.05, PWT.STONE);
+        B(cx - cw / 2, 0.75, cx - cw / 2 + 0.03, 0.98, PWT.STONE); B(cx + cw / 2 - 0.03, 0.75, cx + cw / 2, 0.98, PWT.STONE); B(cx - cw / 2, 0.95, cx + cw / 2, 0.98, PWT.STONE); },
+      goal: (c) => c.zone[PWT.WATER] / (c.zn * 0.24), sol: [['boom', X(dx + bw + 0.03), sh - 0.1, 30, null, 80], ['fire', X(dx + bw + 0.03), sh, 12, null, 200]] };
   },
   climb(R, D) { // a seed in a glass tube: pour water in and the plant climbs up to the star
     const sx = 0.25 + 0.5 * R(), sy = 0.6 - 0.12 * D - 0.04 * R(), fy = 0.92, tw = 0.07 + 0.02 * R();
@@ -23649,12 +23686,15 @@ const PW_FAM = {
       build: (b) => { b(0, fy, 1, 1, PWT.SAND); b(sx - tw - 0.02, sy + 0.05, sx - tw, fy, PWT.STONE); b(sx + tw, sy + 0.05, sx + tw + 0.02, fy, PWT.STONE); b(sx - 0.015, fy - 0.03, sx + 0.015, fy, PWT.PLANT); },
       goal: (c) => (c.zone[PWT.PLANT] > 0 ? 1 : c.high), sol: [['water', sx, sy - 0.12, 2400]] };
   },
-  dig(R, D) { // a gem deep in the sand: dig down to it with the sponge
-    const gx = 0.25 + 0.5 * R(), top = 0.5 - 0.1 * D - 0.05 * R(), rocks = [];
-    if (D > 0.35) for (let q = 0; q < 2; q++) { const rx = R() < 0.5 ? 0.05 + R() * 0.2 : 0.65 + R() * 0.2; rocks.push([rx, top + 0.1 + R() * 0.2]); }
-    return { tools: ['erase'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: [gx - 0.05, 0.9, gx + 0.05, 0.98], mark: '💎', noPz: 1, noAmmo: 1, solRepeat: 1,
-      build: (b) => { b(0, top, 1, 0.98, PWT.SAND); for (const [x, y] of rocks) b(x, y, x + 0.09, y + 0.03, PWT.STONE); },
-      goal: (c) => (1 - c.zone[PWT.SAND] / Math.max(1, c.zn)) / 0.8, sol: [-0.05, 0.05, 0].map((d) => ['erase', gx + d, top - 0.02, 45, null, 4, 0.97]) };
+  dig(R, D) { // a gem deep in the sand: dig down with the sponge (hills and dips on top, layers of rock with a gap, a cave, the gem off to a side)
+    const kind = pwPick(R, ['plain', 'layers', 'side', 'cave']), gx = kind === 'side' ? (R() < 0.5 ? 0.1 : 0.9) : 0.2 + 0.6 * R(), top = 0.32 + 0.24 * R() - 0.06 * D, gy = 0.72 + 0.18 * R(), rocks = [], hills = [], cave = [];
+    for (let q = 0; q < 5; q++) { const x = q / 5, h = (R() - 0.4) * 0.2; hills.push([x, top - h, x + 0.2]); }
+    if (kind === 'layers') { const n = 1 + (R() < 0.5 ? 1 : 0); for (let q = 0; q < n; q++) { const y = top + 0.12 + q * 0.14, hole = 0.1 + 0.6 * R(); rocks.push([0, y, hole, y + 0.025], [hole + 0.12, y, 1, y + 0.025]); } }
+    else if (kind === 'cave') { const cx = R() < 0.5 ? 0.15 + 0.2 * R() : 0.65 + 0.2 * R(), cy = top + 0.15 + 0.12 * R(); cave.push([cx - 0.12, cy, cx + 0.12, cy + 0.1]); rocks.push([cx - 0.14, cy + 0.1, cx + 0.14, cy + 0.12]); }
+    else if (D > 0.35) for (let q = 0; q < 2; q++) { const rx = R() < 0.5 ? 0.05 + R() * 0.2 : 0.65 + R() * 0.2; if (Math.abs(rx + 0.045 - gx) > 0.12) rocks.push([rx, top + 0.1 + R() * 0.2, rx + 0.09, top + 0.13 + R() * 0.2]); }
+    return { tools: ['erase'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: [gx - 0.05, gy, gx + 0.05, gy + 0.08], mark: '💎', noPz: 1, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [a, y, c] of hills) b(a, y, c, 0.98, PWT.SAND); for (const [a, y, c, d] of cave) b(a, y, c, d, PWT.E); for (const [a, y, c, d] of rocks) b(a, y, c, d, PWT.STONE); },
+      goal: (c) => (1 - c.zone[PWT.SAND] / Math.max(1, c.zn)) / 0.8, sol: [-0.05, 0.05, 0].map((d) => ['erase', gx + d, Math.min(...hills.map((h) => h[1])) - 0.02, 45, null, 4, Math.min(0.97, gy + 0.08)]) };
   },
 };
 const PW_SHAPE = { cup: ['🥤', 'The cup', 'הכוס'], bowl: ['🥣', 'A wide bowl', 'קערה רחבה'], vase: ['🏺', 'A narrow vase', 'אגרטל צר'], twin: ['🥤', 'Two cups', 'שתי כוסות'], stand: ['🏆', 'A cup on a stand', 'כוס על עמוד'], funnel: ['🔻', 'Through the funnel', 'דרך המשפך'] };
@@ -23670,17 +23710,49 @@ function pwSeq(w) { // a world's 50 kinds in play order: each kind once first, t
   return (C[w] = best.seq);
 }
 function pwDiffK(D, diff) { return diff === 'easy' ? D * 0.5 : diff === 'hard' ? Math.min(1, D * 1.1 + 0.2) : D; }
-function pwGen(k, diff) {
-  const key = k + ':' + diff; if (!pw.gen) pw.gen = new Map(); if (pw.gen.has(key)) return pw.gen.get(key);
-  const j = k - PW_N0, w = Math.floor(j / PW_PER), i = j % PW_PER, W0 = PW_WORLDS[w], R = pwRng(9173 + k * 7919), fams = Object.entries(W0.mix), tot = fams.reduce((s, f) => s + f[1], 0);
-  const fam = pwSeq(w)[i]; R(); // (the world's order: each kind once first, then a shuffle that never repeats a kind twice in a row)
+/* look-alikes (the owner, 1.11.1: "some levels are 1:1 the same"): each level is drawn small (30 x 48: its shapes and its boxes) and compared
+   with every level before it in its world and the hand-made ones; one closer than PW_NEAR (the share of the drawn cells that differ) is made
+   again with other dice, up to 10 times, the most different kept */
+const PW_NEAR = 0.32, PW_FPW = 30, PW_FPH = 48;
+function pwPrint(L) {
+  const g = new Uint8Array(PW_FPW * PW_FPH), b = (x0, y0, x1, y1, ty) => { for (let y = Math.max(0, Math.floor(y0 * PW_FPH)); y < Math.min(PW_FPH, Math.ceil(y1 * PW_FPH)); y++) for (let x = Math.max(0, Math.floor(x0 * PW_FPW)); x < Math.min(PW_FPW, Math.ceil(x1 * PW_FPW)); x++) g[y * PW_FPW + x] = ty; };
+  try { L.build(b, { w: PW_FPW, h: PW_FPH }); } catch {}
+  for (const Z of [L.z, L.z2, L.pz]) if (Z) for (let y = Math.max(0, Math.floor(Z[1] * PW_FPH)); y < Math.min(PW_FPH, Math.ceil(Z[3] * PW_FPH)); y++) for (let x = Math.max(0, Math.floor(Z[0] * PW_FPW)); x < Math.min(PW_FPW, Math.ceil(Z[2] * PW_FPW)); x++) if (!g[y * PW_FPW + x]) g[y * PW_FPW + x] = 20;
+  return g;
+}
+function pwApart(A, B) { let n = 0, d = 0; for (let i = 0; i < A.length; i++) if (A[i] || B[i]) { n++; if (A[i] !== B[i]) d++; } return n ? d / n : 1; }
+const PW_SUBN = { // a variant's own name (the owner: levels that look alike; a name of their own helps too)
+  'melt:block': ['🧊', 'Melt the ice block', 'ממיסים את קוביית הקרח'], 'ext:trees': ['🌳', 'Save the trees', 'מצילים את העצים'], 'ext:bridge': ['🌉', 'Save the bridge', 'מצילים את הגשר'],
+  'burn:trees': ['🌲', 'Burn the dry trees', 'שורפים את העצים היבשים'], 'burn:crates': ['📦', 'Burn the crates', 'שורפים את הארגזים'], 'burn:bridge': ['🌉', 'Burn the old bridge', 'שורפים את הגשר הישן'],
+  'grow:hills': ['⛰️', 'A garden on the hills', 'גינה על הגבעות'], 'grow:pots': ['🪴', 'Water the pots', 'משקים את העציצים'], 'grow:terraces': ['🌾', 'A garden on steps', 'גינה במדרגות'],
+  'cloud:pillars': ['☁️', 'Clouds from up high', 'עננים מלמעלה'], 'cloud:river': ['☁️', 'Steam over the lava river', 'אדים מעל נהר הלבה'],
+  'boom:columns': ['💥', 'Topple the ice columns', 'מפילים את עמודי הקרח'], 'boom:slab': ['💥', 'Break the ice bridge', 'שוברים את גשר הקרח'],
+  'acid:crate': ['📦', 'Open the wooden crate', 'פותחים את ארגז העץ'], 'stone:two': ['🪨', 'Stone in two pools', 'אבן בשתי בריכות'], 'stone:well': ['🪨', 'Seal the well', 'סוגרים את הבאר'], 'stone:raised': ['🪨', 'Stone up on the pillar', 'אבן על העמוד'],
+  'cool:raised': ['🌋', 'Cool the lava bowl', 'מקררים את קערת הלבה'], 'cool:river': ['🌋', 'Cool the lava river', 'מקררים את נהר הלבה'],
+  'bury:pit': ['💎', 'Bury it in the pit', 'קוברים בבור'], 'bury:two': ['💎', 'Bury both treasures', 'קוברים שני אוצרות'], 'bury:pedestal': ['🏆', 'Bury the trophy', 'קוברים את הגביע'],
+  'dig:layers': ['💎', 'Dig through the rock', 'חופרים דרך הסלע'], 'dig:cave': ['💎', 'Dig past the cave', 'חופרים ליד המערה'], 'dig:side': ['💎', 'The gem in the corner', 'היהלום בפינה'],
+  'duo:sand+oil': ['🛢️', 'Sand here, oil there', 'חול פה, שמן שם'], 'duo:water+oil': ['🛢️', 'Water here, oil there', 'מים פה, שמן שם'],
+};
+function pwMake(k, diff, a) {
+  const j = k - PW_N0, w = Math.floor(j / PW_PER), i = j % PW_PER, R = pwRng(9173 + k * 7919 + a * 104729);
+  const fam = pwSeq(w)[i]; R(); // (the world's order: each kind once first, then never the same kind within 4 levels)
   const D = pwDiffK(pwClamp(w / 9 * 0.55 + i / 49 * 0.45, 0, 1), diff), [base, mat] = fam.split('_'), L = PW_FAM[base](R, D, mat), F = PW_FN[fam];
   const S = L.shape && PW_SHAPE[L.shape], M = { sand: ['sand', 'חול'], water: ['water', 'מים'], oil: ['oil', 'שמן'], lava: ['lava', 'לבה'] }[mat]; // (a name of its own, no running number: "Fill the cup 8" read like the 8th of the same)
-  Object.assign(L, { id: 'g' + k, k, world: w, n: i + 1, fam, D, e: S ? S[0] : F[0], en: S ? S[1] + ' · ' + M[0] : F[1], he: S ? S[2] + ' · ' + M[1] : F[2], s3: Math.round(22 + 20 * D) });
+  const V = L.sub && PW_SUBN[base + ':' + L.sub];
+  Object.assign(L, { id: 'g' + k, k, world: w, n: i + 1, fam, D, e: V ? V[0] : S ? S[0] : F[0], en: V ? V[1] : S ? S[1] + ' · ' + M[0] : F[1], he: V ? V[2] : S ? S[2] + ' · ' + M[1] : F[2], s3: Math.round(22 + 20 * D) });
   if (!L.noPz && D > 0.3 && R() < D * 0.8) { const xs = L.sol.flatMap((s) => (s[4] != null ? [s[1], s[4]] : [s[1]])), ys = L.sol.flatMap((s) => (s[6] != null ? [s[2], s[6]] : [s[2]])), m = 0.12 - 0.06 * D;
     L.pz = [pwClamp(Math.min(...xs) - m, 0, 1), 0, pwClamp(Math.max(...xs) + m, 0, 1), pwClamp(Math.max(...ys) + m, 0.25, 1)]; }
   if (L.need && !L.noAmmo && D > 0.4 && R() < 0.4 + 0.5 * D) L.ammo = L.need * (2.6 - 1.2 * D) * (L.ammoK || 1);
-  pw.gen.set(key, L); return L;
+  return L;
+}
+function pwGen(k, diff) {
+  const key = k + ':' + diff; if (!pw.gen) pw.gen = new Map(); if (pw.gen.has(key)) return pw.gen.get(key);
+  const j = k - PW_N0, i = j % PW_PER; if (i > 0 && !pw.gen.has((k - 1) + ':' + diff)) pwGen(k - 1, diff); // (in order: a level is checked against those before it)
+  if (!pwGen.hand) pwGen.hand = PW_LV.map((L) => pwPrint(L));
+  const before = []; for (let q = k - i; q < k; q++) { const P = pw.gen.get(q + ':' + diff); if (P && P.fp) before.push(P.fp); } before.push(...pwGen.hand);
+  let best = null;
+  for (let a = 0; a < 10; a++) { const L = pwMake(k, diff, a), fp = pwPrint(L); let near = 1; for (const P of before) near = Math.min(near, pwApart(fp, P)); L.fp = fp; L.near = near; L.tries = a + 1; if (!best || near > best.near) best = L; if (near >= PW_NEAR) break; }
+  pw.gen.set(key, best); return best;
 }
 function pwLevelAt(k) { return k < PW_N0 ? PW_LV[k] : pwGen(k, pwP().diff || 'normal'); }
 function pwIdAt(k) { return k < PW_N0 ? PW_LV[k].id : 'g' + k; }
@@ -23752,7 +23824,7 @@ function pwLevels(w) { // the map: easy / normal / hard, the worlds (the 9 made 
   const worlds = [{ e: '⭐', en: 'First steps', he: 'צעדים ראשונים' }].concat(PW_WORLDS).map((W0, ww) => { const [a, b] = pwWorldRange(ww), open = pwOpen(a);
     return '<button class="pwW' + (ww === w ? ' on' : '') + (open ? '' : ' lock') + '" data-pw="w:' + ww + '"><b>' + (open ? W0.e : '🔒') + '</b><span>' + (he ? W0.he : W0.en) + '</span><i>★ ' + sum(ww) + '/' + (b - a) * 3 + '</i></button>'; }).join('');
   const [a, b] = pwWorldRange(w); let lv = '';
-  for (let k = a; k < b; k++) { const open = pwOpen(k), s = P.stars[pwIdAt(k)] || 0, L = k < PW_N0 ? PW_LV[k] : null, e = L ? L.e : PW_FN[pwGen(k, P.diff || 'normal').fam][0];
+  for (let k = a; k < b; k++) { const open = pwOpen(k), s = P.stars[pwIdAt(k)] || 0, L = k < PW_N0 ? PW_LV[k] : null, e = L ? L.e : pwGen(k, P.diff || 'normal').e;
     lv += '<button class="pwLv' + (open ? '' : ' lock') + (w ? ' sm' : '') + '" data-pw="' + (open ? 'lv:' + k : 'locked') + '"><b>' + (open ? e : '🔒') + '</b><span>' + (L ? (k + 1) + '. ' + (he ? L.he : L.en) : (k - a + 1)) + '</span><i>' + '★'.repeat(s) + '<em>' + '★'.repeat(3 - s) + '</em></i></button>'; }
   const back = ['colors', 'lab'].map((k) => '<button class="pwA pwBack" data-pw="m:' + k + '">' + (k === 'colors' ? '🎨 ' : '⚗️ ') + pws(k) + '</button>').join(''); // (the way back to free play: the challenge bar has no mode tabs)
   V.innerHTML = '<div class="pwCard pwMap"><div class="pwMapTop"><h2>⭐ ' + pws('lvT') + '</h2>' + back + '</div><div class="pwDiffs">' + diff + '</div><div class="pwWorlds">' + worlds + '</div><div class="pwLvGrid' + (w ? ' g5' : '') + '">' + lv + '</div></div>';
