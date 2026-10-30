@@ -2012,7 +2012,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.11.1';
+const APP_VERSION = '1.11.2';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23625,14 +23625,14 @@ const PW_FAM = {
   /* (1.10.0, the owner: "still a lot of challenges repeat, it is really boring": nine more kinds, each its own picture and its own trick) */
   slide(R, D, mat) { // pour only in the corner box; sand rides 45° chutes (cell for cell, whatever the screen's shape; a second one back the other way when there is room) to the cup; water runs along 2-4 shelves of their own lengths, through a gap at alternate ends
     const liq = mat === 'water', ty = liq ? PWT.WATER : PWT.SAND, flip = R() < 0.5, X = (v) => (flip ? 1 - v : v), t = 0.03, cw = 0.2 + 0.06 * (1 - D) + 0.04 * R(), ch = 0.16 + 0.06 * R();
-    const nS = 2 + Math.floor(R() * (D > 0.5 ? 3 : 2)), gaps = Array.from({ length: 4 }, () => 0.26 + 0.1 * R()), y0 = 0.24 + 0.1 * R(), r1 = 0.45 + 0.3 * R(), two = R() < 0.55, px = 0.02 * Math.floor(R() * 4);
+    const nS = 2 + Math.floor(R() * 3), gaps = Array.from({ length: 4 }, () => 0.24 + 0.16 * R()), jit = Array.from({ length: 4 }, () => (R() - 0.5) * 0.05), y0 = 0.24 + 0.1 * R(), r1 = 0.45 + 0.3 * R(), two = R() < 0.55, px = 0.02 * Math.floor(R() * 4);
     const L = { tools: [liq ? 'water' : 'sand'].concat(D > 0.6 && R() < 0.5 ? [liq ? 'sand' : 'water'] : []), z: [0, 0, 0.1, 0.1], noPz: 1, noAmmo: 1, pz: flip ? [0.68 - px, 0.08, 1 - px, 0.24] : [px, 0.08, 0.32 + px, 0.24], sol: [[liq ? 'water' : 'sand', X(0.16 + px), 0.16, 1100]], sub: liq ? nS + ' shelves' : two ? 'zigzag' : 'chute' }; // (the pour box under the title)
     L.build = (b, G) => { const B = (a, y0, c, y1, q) => b(Math.min(X(a), X(c)), y0, Math.max(X(a), X(c)), y1, q), cup = (a, c, top) => { B(a, top, a + t, 0.98, PWT.STONE); B(c - t, top, c, 0.98, PWT.STONE); B(a, 0.95, c, 0.98, PWT.STONE); };
       let cx;
       if (!liq) { const top0 = 0.98 - ch - 0.06, ramp = (xa, ya, run, dir) => { const n = Math.max(4, Math.round(run * G.w)); for (let q = 0; q < n; q++) { const x = xa + dir * q / G.w, y = ya + q / G.h; B(dir > 0 ? x : x - 1.5 / G.w, y, dir > 0 ? x + 1.5 / G.w : x, y + 3 / G.h, PWT.STONE); } return [xa + dir * n / G.w, ya + n / G.h]; };
         let run = Math.min(0.8 - cw / 2, r1, (top0 - y0) * G.h / G.w); const [ex, ey] = ramp(0.01 + px, y0, run, 1); B(px, y0 - 0.12, px + 0.012, y0 + 0.01, PWT.STONE); cx = Math.min(0.97 - cw / 2, ex + cw * 0.2 - 0.01);
         const run2 = Math.min(ex - 0.12, (top0 - ey - 0.06) * G.h / G.w); if (two && run2 > 0.18) { const [fx] = ramp(ex + 0.03, ey + 0.06, run2, -1); B(ex + 0.03, ey - 0.02, ex + 0.045, ey + 0.08, PWT.STONE); cx = Math.max(0.03 + cw / 2, fx - cw * 0.2 + 0.01); } } // (the second chute: from just under the first one's end, back the other way, a little wall so the grains turn)
-      else { let y = 0.27; const dy = Math.min(0.17, (0.98 - ch - 0.08 - 0.27) / nS); for (let q = 0; q < nS; q++) { const g = gaps[q]; if (q % 2 === 0) { B(0, y, 1 - g, y + 0.02, PWT.STONE); B(1 - g - 0.02, y - 0.03, 1 - g, y, PWT.STONE); } else { B(g, y, 1, y + 0.02, PWT.STONE); B(g, y - 0.03, g + 0.02, y, PWT.STONE); } y += dy; } /* (wide gaps: the water does not take all day) */
+      else { let y = 0.27; const dy = Math.min(0.17, (0.98 - ch - 0.08 - 0.27) / nS); for (let q = 0; q < nS; q++) { const g = gaps[q]; y += q ? jit[q] : 0; if (q % 2 === 0) { B(0, y, 1 - g, y + 0.02, PWT.STONE); B(1 - g - 0.02, y - 0.03, 1 - g, y, PWT.STONE); } else { B(g, y, 1, y + 0.02, PWT.STONE); B(g, y - 0.03, g + 0.02, y, PWT.STONE); } y += dy; } /* (wide gaps: the water does not take all day) */
         const g = gaps[nS - 1]; cx = nS % 2 ? Math.min(0.97 - cw / 2, 1 - g - 0.04 + cw / 2) : Math.max(0.03 + cw / 2, g + 0.04 - cw / 2); } // (the cup right under the last gap, where the water falls)
       const top = 0.98 - ch, a = cx - cw / 2, c = cx + cw / 2; cup(a, c, top); const za = X(a + t), zc = X(c - t); L.z = [Math.min(za, zc), top + 0.05, Math.max(za, zc), 0.95]; };
     L.goal = (c) => c.zone[ty] / (c.zn * (liq ? 0.6 : 0.75)); return L;
@@ -23686,15 +23686,20 @@ const PW_FAM = {
       build: (b) => { b(0, fy, 1, 1, PWT.SAND); b(sx - tw - 0.02, sy + 0.05, sx - tw, fy, PWT.STONE); b(sx + tw, sy + 0.05, sx + tw + 0.02, fy, PWT.STONE); b(sx - 0.015, fy - 0.03, sx + 0.015, fy, PWT.PLANT); },
       goal: (c) => (c.zone[PWT.PLANT] > 0 ? 1 : c.high), sol: [['water', sx, sy - 0.12, 2400]] };
   },
-  dig(R, D) { // a gem deep in the sand: dig down with the sponge (hills and dips on top, layers of rock with a gap, a cave, the gem off to a side)
-    const kind = pwPick(R, ['plain', 'layers', 'side', 'cave']), gx = kind === 'side' ? (R() < 0.5 ? 0.1 : 0.9) : 0.2 + 0.6 * R(), top = 0.32 + 0.24 * R() - 0.06 * D, gy = 0.72 + 0.18 * R(), rocks = [], hills = [], cave = [];
-    for (let q = 0; q < 5; q++) { const x = q / 5, h = (R() - 0.4) * 0.2; hills.push([x, top - h, x + 0.2]); }
+  dig(R, D) { // a gem deep in the sand: dig down with the sponge (hills and dips on top, layers of rock with a gap, a cave, the gem in a corner, sand in a stone box, a tall tower of sand, a lake on the sand, two gems)
+    const kind = pwPick(R, ['plain', 'layers', 'side', 'cave', 'box', 'tower', 'lake', 'two']), top = 0.32 + 0.24 * R() - 0.06 * D, gy = 0.72 + 0.18 * R(), rocks = [], hills = [], cave = [], walls = [], pools = [];
+    let gx = kind === 'side' ? (R() < 0.5 ? 0.1 : 0.9) : 0.2 + 0.6 * R(), g2 = null;
+    if (kind === 'box' || kind === 'tower') { const w = kind === 'tower' ? 0.18 + 0.1 * R() : 0.36 + 0.24 * R(), x0 = 0.04 + (0.92 - w) * R(), t0 = kind === 'tower' ? 0.2 + 0.1 * R() : top; walls.push([x0 - 0.03, t0, x0, 0.98], [x0 + w, t0, x0 + w + 0.03, 0.98]); hills.push([x0, t0 + 0.02, x0 + w]); gx = x0 + 0.05 + (w - 0.1) * R(); }
+    else { for (let q = 0; q < 5; q++) { const x = q / 5, h = (R() - 0.4) * 0.2; hills.push([x, top - h, x + 0.2]); } }
+    if (kind === 'lake') { const lx = 0.1 + 0.5 * R(), lw = 0.25 + 0.15 * R(); pools.push([lx, top - 0.07, lx + lw, top + 0.01]); for (const h of hills) h[1] = Math.max(h[1], top); }
+    if (kind === 'two') { gx = 0.12 + 0.3 * R(); g2 = 0.58 + 0.3 * R(); }
     if (kind === 'layers') { const n = 1 + (R() < 0.5 ? 1 : 0); for (let q = 0; q < n; q++) { const y = top + 0.12 + q * 0.14, hole = 0.1 + 0.6 * R(); rocks.push([0, y, hole, y + 0.025], [hole + 0.12, y, 1, y + 0.025]); } }
     else if (kind === 'cave') { const cx = R() < 0.5 ? 0.15 + 0.2 * R() : 0.65 + 0.2 * R(), cy = top + 0.15 + 0.12 * R(); cave.push([cx - 0.12, cy, cx + 0.12, cy + 0.1]); rocks.push([cx - 0.14, cy + 0.1, cx + 0.14, cy + 0.12]); }
-    else if (D > 0.35) for (let q = 0; q < 2; q++) { const rx = R() < 0.5 ? 0.05 + R() * 0.2 : 0.65 + R() * 0.2; if (Math.abs(rx + 0.045 - gx) > 0.12) rocks.push([rx, top + 0.1 + R() * 0.2, rx + 0.09, top + 0.13 + R() * 0.2]); }
-    return { tools: ['erase'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: [gx - 0.05, gy, gx + 0.05, gy + 0.08], mark: '💎', noPz: 1, noAmmo: 1, solRepeat: 1, sub: kind,
-      build: (b) => { for (const [a, y, c] of hills) b(a, y, c, 0.98, PWT.SAND); for (const [a, y, c, d] of cave) b(a, y, c, d, PWT.E); for (const [a, y, c, d] of rocks) b(a, y, c, d, PWT.STONE); },
-      goal: (c) => (1 - c.zone[PWT.SAND] / Math.max(1, c.zn)) / 0.8, sol: [-0.05, 0.05, 0].map((d) => ['erase', gx + d, Math.min(...hills.map((h) => h[1])) - 0.02, 45, null, 4, Math.min(0.97, gy + 0.08)]) };
+    else if (D > 0.35 && (kind === 'plain' || kind === 'side')) for (let q = 0; q < 2; q++) { const rx = R() < 0.5 ? 0.05 + R() * 0.2 : 0.65 + R() * 0.2; if (Math.abs(rx + 0.045 - gx) > 0.12) rocks.push([rx, top + 0.1 + R() * 0.2, rx + 0.09, top + 0.13 + R() * 0.2]); }
+    const hi = Math.min(...hills.map((h) => h[1]), ...pools.map((p) => p[1])) - 0.02, Z = (x) => [x - 0.05, gy, x + 0.05, gy + 0.08], dig = (x) => [-0.05, 0.05, 0].map((d) => ['erase', x + d, hi, 45, null, 4, Math.min(0.97, gy + 0.08)]);
+    return { tools: ['erase'].concat(D > 0.6 && R() < 0.5 ? ['sand'] : []), z: Z(gx), z2: g2 != null ? Z(g2) : null, mark: '💎', mark2: g2 != null ? '💎' : null, noPz: 1, noAmmo: 1, solRepeat: 1, sub: kind,
+      build: (b) => { for (const [a, y, c] of hills) b(a, y, c, 0.98, PWT.SAND); for (const [a, y, c, d] of pools) b(a, y, c, d, PWT.WATER); for (const [a, y, c, d] of cave) b(a, y, c, d, PWT.E); for (const [a, y, c, d] of rocks) b(a, y, c, d, PWT.STONE); for (const [a, y, c, d] of walls) b(a, y, c, d, PWT.STONE); },
+      goal: (c) => { const f = (z, n) => (1 - z[PWT.SAND] / Math.max(1, n)) / 0.8; return g2 != null ? Math.min(f(c.zone, c.zn), f(c.zone2, c.zn2)) : f(c.zone, c.zn); }, sol: dig(gx).concat(g2 != null ? dig(g2) : []) };
   },
 };
 const PW_SHAPE = { cup: ['🥤', 'The cup', 'הכוס'], bowl: ['🥣', 'A wide bowl', 'קערה רחבה'], vase: ['🏺', 'A narrow vase', 'אגרטל צר'], twin: ['🥤', 'Two cups', 'שתי כוסות'], stand: ['🏆', 'A cup on a stand', 'כוס על עמוד'], funnel: ['🔻', 'Through the funnel', 'דרך המשפך'] };
@@ -23713,7 +23718,7 @@ function pwDiffK(D, diff) { return diff === 'easy' ? D * 0.5 : diff === 'hard' ?
 /* look-alikes (the owner, 1.11.1: "some levels are 1:1 the same"): each level is drawn small (30 x 48: its shapes and its boxes) and compared
    with every level before it in its world and the hand-made ones; one closer than PW_NEAR (the share of the drawn cells that differ) is made
    again with other dice, up to 10 times, the most different kept */
-const PW_NEAR = 0.32, PW_FPW = 30, PW_FPH = 48;
+const PW_NEAR = 0.36, PW_FPW = 30, PW_FPH = 48;
 function pwPrint(L) {
   const g = new Uint8Array(PW_FPW * PW_FPH), b = (x0, y0, x1, y1, ty) => { for (let y = Math.max(0, Math.floor(y0 * PW_FPH)); y < Math.min(PW_FPH, Math.ceil(y1 * PW_FPH)); y++) for (let x = Math.max(0, Math.floor(x0 * PW_FPW)); x < Math.min(PW_FPW, Math.ceil(x1 * PW_FPW)); x++) g[y * PW_FPW + x] = ty; };
   try { L.build(b, { w: PW_FPW, h: PW_FPH }); } catch {}
@@ -23730,7 +23735,7 @@ const PW_SUBN = { // a variant's own name (the owner: levels that look alike; a 
   'acid:crate': ['📦', 'Open the wooden crate', 'פותחים את ארגז העץ'], 'stone:two': ['🪨', 'Stone in two pools', 'אבן בשתי בריכות'], 'stone:well': ['🪨', 'Seal the well', 'סוגרים את הבאר'], 'stone:raised': ['🪨', 'Stone up on the pillar', 'אבן על העמוד'],
   'cool:raised': ['🌋', 'Cool the lava bowl', 'מקררים את קערת הלבה'], 'cool:river': ['🌋', 'Cool the lava river', 'מקררים את נהר הלבה'],
   'bury:pit': ['💎', 'Bury it in the pit', 'קוברים בבור'], 'bury:two': ['💎', 'Bury both treasures', 'קוברים שני אוצרות'], 'bury:pedestal': ['🏆', 'Bury the trophy', 'קוברים את הגביע'],
-  'dig:layers': ['💎', 'Dig through the rock', 'חופרים דרך הסלע'], 'dig:cave': ['💎', 'Dig past the cave', 'חופרים ליד המערה'], 'dig:side': ['💎', 'The gem in the corner', 'היהלום בפינה'],
+  'dig:layers': ['💎', 'Dig through the rock', 'חופרים דרך הסלע'], 'dig:box': ['📦', 'Dig in the sand box', 'חופרים בארגז החול'], 'dig:tower': ['🗼', 'Dig down the sand tower', 'חופרים במגדל החול'], 'dig:lake': ['🏝️', 'Dig under the lake', 'חופרים מתחת לאגם'], 'dig:two': ['💎', 'Dig up both gems', 'חופרים לשני היהלומים'], 'dig:cave': ['💎', 'Dig past the cave', 'חופרים ליד המערה'], 'dig:side': ['💎', 'The gem in the corner', 'היהלום בפינה'],
   'duo:sand+oil': ['🛢️', 'Sand here, oil there', 'חול פה, שמן שם'], 'duo:water+oil': ['🛢️', 'Water here, oil there', 'מים פה, שמן שם'],
 };
 function pwMake(k, diff, a) {
@@ -23747,12 +23752,21 @@ function pwMake(k, diff, a) {
 }
 function pwGen(k, diff) {
   const key = k + ':' + diff; if (!pw.gen) pw.gen = new Map(); if (pw.gen.has(key)) return pw.gen.get(key);
-  const j = k - PW_N0, i = j % PW_PER; if (i > 0 && !pw.gen.has((k - 1) + ':' + diff)) pwGen(k - 1, diff); // (in order: a level is checked against those before it)
-  if (!pwGen.hand) pwGen.hand = PW_LV.map((L) => pwPrint(L));
-  const before = []; for (let q = k - i; q < k; q++) { const P = pw.gen.get(q + ':' + diff); if (P && P.fp) before.push(P.fp); } before.push(...pwGen.hand);
+  for (let q = PW_N0; q < k; q++) if (!pw.gen.has(q + ':' + diff)) pwGen1(q, diff); // (in order, all worlds: a level is checked against every one before it)
+  return pwGen1(k, diff);
+}
+function pwWarm(diff) { // all the levels made in the background, a few ms at a time, while Sand Lab is open (each is checked against all before it: ~0.5 s in all)
+  let q = PW_N0; const step = () => { const t = performance.now(); while (q < PW_TOTAL && performance.now() - t < 8) pwGen(q++, diff); if (q < PW_TOTAL && gameMode === 'powder') setTimeout(step, 40); }; setTimeout(step, 300);
+}
+function pwGen1(k, diff) { // (1.11.2, the owner: "make sure none are alike": against every earlier level with the same tools in any world and the hand-made ones, up to 40 tries)
+  const key = k + ':' + diff; if (pw.gen.has(key)) return pw.gen.get(key);
+  if (!pwGen.hand) pwGen.hand = PW_LV.map((L) => ({ fp: pwPrint(L), tools: L.tools.join() }));
+  const by = pwGen.by || (pwGen.by = {}), F = by[diff] || (by[diff] = {});
   let best = null;
-  for (let a = 0; a < 10; a++) { const L = pwMake(k, diff, a), fp = pwPrint(L); let near = 1; for (const P of before) near = Math.min(near, pwApart(fp, P)); L.fp = fp; L.near = near; L.tries = a + 1; if (!best || near > best.near) best = L; if (near >= PW_NEAR) break; }
-  pw.gen.set(key, best); return best;
+  for (let a = 0; a < 40; a++) { const L = pwMake(k, diff, a), fp = pwPrint(L), tl = L.tools.join(); let near = 1;
+    for (const P of F[tl] || []) near = Math.min(near, pwApart(fp, P)); /* (any kind with the same tools: a cloud and a cooling are both water on lava) */ for (const H of pwGen.hand) if (H.tools === tl) near = Math.min(near, pwApart(fp, H.fp));
+    L.fp = fp; L.near = near; L.tries = a + 1; if (!best || near > best.near) best = L; if (near >= PW_NEAR) break; }
+  const bt = best.tools.join(); (F[bt] || (F[bt] = [])).push(best.fp); pw.gen.set(key, best); return best;
 }
 function pwLevelAt(k) { return k < PW_N0 ? PW_LV[k] : pwGen(k, pwP().diff || 'normal'); }
 function pwIdAt(k) { return k < PW_N0 ? PW_LV[k].id : 'g' + k; }
@@ -23784,7 +23798,7 @@ function pwCount() { // what the goals look at
   let hot = 0; if (L.coolTop) for (let i = G.w; i < G.n; i++) if (G.t[i] === PWT.LAVA) { const u = G.t[i - G.w]; if (u === 0 || u === PWT.WATER || u === PWT.STEAM || u === PWT.SMOKE || u === PWT.FIRE) hot++; }
   const zone2 = new Uint32Array(16); let zn2 = 0;
   if (L.z2) { const [a, b, c, d] = L.z2, x0 = Math.floor(a * G.w), y0 = Math.floor(b * G.h), x1 = Math.ceil(c * G.w), y1 = Math.ceil(d * G.h); for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { zone2[G.t[y * G.w + x]]++; zn2++; } }
-  if (L.id === 'star' || L.reach) { const rt = L.reachT || PWT.SAND; for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === rt) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))) * 0.98; break; } } }
+  if (L.id === 'star' || L.reach) { const rt = L.reachT || PWT.SAND; for (let y = 0; y < G.h; y++) { let any = false; for (let x = 0; x < G.w; x++) if (G.t[y * G.w + x] === rt) { any = true; break; } if (any) { high = Math.max(0, (G.h - y) / (G.h * (1 - L.z[3]))); break; /* (sand up at the star's height counts: a grain that rolls off the top does not undo it) */ } } }
   return { all, zone, zn, zone2, zn2, high, hot, n: G.n, t: pw.bot ? pw.botT : (performance.now() - pw.t0) / 1000 };
 }
 function pwCheck(now) {
@@ -23848,7 +23862,7 @@ function pwClick(e) {
 }
 function powderStart() {
   const P = pwP(); $('powderBar').hidden = false; pw.ptrs.clear(); pw.won = 0; pw.lost = 0; pw.listOpen = false; pw.lv = null; pw.mode = P.mode === 'chal' ? 'colors' : P.mode; pw.tool = pw.mode === 'colors' ? 'col' : 'sand';
-  pw.key = ''; pw.g = null; pwBarSync(); pwLayout(false); if (P.mode === 'chal') pwLevels(); pw.log.push('start:' + pw.mode); pwSensorCheck();
+  pw.key = ''; pw.g = null; pwBarSync(); pwLayout(false); if (P.mode === 'chal') pwLevels(); pw.log.push('start:' + pw.mode); pwSensorCheck(); pwWarm(P.diff || 'normal');
 }
 function powderStop() { $('powderBar').hidden = true; $('powderLv').hidden = true; pw.ptrs.clear(); pw.g = null; pw.key = ''; }
 /* the tilt: devicemotion's gravity (the reaction to it, per the spec) in screen terms, turned with the screen; 8 directions, with some slack so a hand's wobble
