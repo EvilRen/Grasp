@@ -34,6 +34,7 @@ async def step_local(page):
         for i in range(need):
             await page.evaluate("document.querySelectorAll('#tachles .tkHC')[%d].scrollIntoView({ inline: 'center', block: 'nearest' })" % i); await page.wait_for_timeout(120); await click(page, '#tachles .tkHC >> nth=%d' % i)
             if len(await page.evaluate(f"{TKH}.tk.sel")) <= i: await page.wait_for_timeout(500); await click(page, '#tachles .tkHC >> nth=%d' % i) # (the hand's snap may have put another card in the middle: the first tap brought this one over)
+        if not await page.locator('#tachles [data-a="send"]').count(): return False # (the round moved on meanwhile: look again)
         await click(page, '#tachles [data-a="send"]')
         if not BACKS and await page.locator('#tachles .tkBacks').count():
             BACKS.append(1); bk = await page.evaluate("[document.querySelectorAll('#tachles .tkBacks .tkBackC:not(.wait)').length, document.querySelectorAll('#tachles .tkScores .tkSt').length]")
@@ -406,6 +407,26 @@ async def taps(b):
     check('taps on the middle card: every one takes (clean, quick, long, a sliding finger, the edges, mid re-render, after a swipe)', all(v == 6 for v in res.values()), res)
     check('taps: no page errors', not errs, errs); await ctx.close()
 
+async def small_screen(b):
+    # the UX pass on a short phone (360x640): Start stays on screen in the room, the game opens at the top (the host had scrolled down to Start:
+    # the question was out of sight), and while picking the question card is not under the hand held at the bottom
+    ctx = await b.new_context(viewport={'width': 360, 'height': 640}, is_mobile=True, has_touch=True); errs = []
+    page = await ctx.new_page(); await routes(page); page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(FAST + "sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');"); await page.goto(BASE + '/tachles'); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    await click(page, '#tachles [data-a="m:bots"]')
+    vis = "(() => { const r = document.querySelector('#tachles [data-a=\"start\"]').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; })()"
+    check('short phone: the room\'s Start button is on screen without scrolling (held at the bottom)', await page.evaluate(vis))
+    await page.evaluate("$('tachles').scrollTop = 1e5"); check('short phone: still on screen scrolled to the end', await page.evaluate(vis))
+    await page.evaluate(f"{TKH}.TK.botMove = () => false")
+    for _ in range(20):
+        await page.evaluate("$('tachles').scrollTop = 1e5"); await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(200)
+        if await page.evaluate(f"{TKH}.tk.view.me !== {TKH}.tk.view.judge"): break
+        await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
+    st = await page.evaluate("(() => { const q = document.querySelector('#tachles .tkBlackC').getBoundingClientRect(), h = document.querySelector('#tachles .tkHandBox').getBoundingClientRect(); return [$('tachles').scrollTop, Math.round(q.top), Math.round(q.bottom), Math.round(h.top)]; })()")
+    await page.screenshot(path=OUT + 'tachles_small_pick.png')
+    check('short phone: the game opens at the top, the question card whole and above the hand', st[0] == 0 and st[1] >= 0 and st[2] <= st[3] + 2, st)
+    check('short phone: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -444,7 +465,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await taps(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
