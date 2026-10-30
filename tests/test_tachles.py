@@ -116,6 +116,9 @@ async def gate_and_bots(b, he):
             await page.evaluate(f"{TKH}.tk.g.revealAt = Date.now() + 4000")
             mk = await page.evaluate("[document.querySelectorAll('#tachles .tkRevHand .tkJC').length, document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length, document.querySelectorAll('#tachles .tkDuel .tkSlot').length, document.querySelectorAll('#tachles .tkBlackC mark').length]")
             full = await page.evaluate(f"(() => {{ {TKH}.tk.set.full = true; {TKH}.render(); const n = document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length; {TKH}.tk.set.full = false; {TKH}.render(); return n; }})()")
+            fb = await page.locator('#tachles .tkTop .tkFullB').count(); await click(page, '#tachles .tkTop .tkFullB'); fb2 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count(), await page.locator('#tachles .tkFullB.on').count()]
+            await click(page, '#tachles .tkTop .tkFullB'); fb3 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count()]
+            check(tag + ': "📜 משפט מלא" at the top of the reveal turns the whole sentence on and off in the game', fb == 1 and fb2[0] is True and fb2[1] >= 1 and fb2[2] == 1 and fb3 == [False, 0], [fb, fb2, fb3])
             rv = await page.evaluate("(() => { const r = window.__tkReveal; delete window.__tkReveal; const ms = tkRevealMs(); window.__tkReveal = r; return ms; })()")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
             if tag == 'HE':
