@@ -22,6 +22,7 @@ async def step_local(page):
             check('judging: the czar drags the best answer into the zone by the question; the crown button lights', await page.evaluate(f"{TKH}.tk.jsel") == 0 and await page.locator('#tachles .tkSlot.full').count() == 1 and await page.locator('#tachles .tkCrownB[disabled]').count() == 0)
         else:
             await page.evaluate("document.querySelectorAll('#tachles .tkJC')[0].scrollIntoView({ inline: 'center', block: 'nearest' })"); await page.wait_for_timeout(120); await click(page, '#tachles .tkJC >> nth=0')
+            if await page.locator('#tachles .tkCrownB[disabled]').count(): await page.wait_for_timeout(500); await click(page, '#tachles .tkJC >> nth=0') # (the hand's snap may have put the other card in the middle: the first tap brings this one over, like a person tapping twice)
         await click(page, '#tachles .tkCrownB'); return True
     if await page.locator('#tachles [data-a^="judge:"]').count(): await click(page, '#tachles [data-a^="judge:"] >> nth=0'); return True
     if await page.locator('#tachles .tkJC').count(): return False
@@ -340,6 +341,17 @@ async def mqtt_room(b):
         check('MQTT: no page errors', not errs, errs); await ctx.close()
     finally: br.terminate()
 
+async def link_in(b):
+    # the owner: the shared link (/tachles?room=CODE) opened the menu: the code was lost on the way in. Now: the 18+ gate, then the join form with the code
+    ctx, page, errs = await page_for(b, '/tachles?room=ABCD', True, init=FAST); await wait(page, f"{TKH}.tk.scr === 'gate'", 8000)
+    check('the link: the 18+ gate first, the room code kept', await page.evaluate(f"{TKH}.tk.code") == 'ABCD', await page.evaluate("location.href"))
+    await click(page, '#tachles [data-a="gate"]')
+    check('the link: after the gate, the join form with the code filled in and the name ready', (await view(page))['scr'] == 'form' and await page.evaluate(f"{TKH}.tk.form") == 'join' and await page.input_value('#tkCode') == 'ABCD' and await page.locator('#tkMe').count() == 1)
+    await page.screenshot(path=OUT + 'tachles_link_join.png')
+    ctx2, p2, e2 = await page_for(b, '/tachles?room=WXYZ', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(p2, f"{TKH}.tk.scr === 'form'", 8000)
+    check('the link, 18+ already confirmed: straight to the join form with the code', await p2.evaluate(f"{TKH}.tk.form") == 'join' and await p2.input_value('#tkCode') == 'WXYZ')
+    check('the link: no page errors', not errs and not e2, errs + e2); await ctx.close(); await ctx2.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -378,7 +390,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())

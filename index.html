@@ -2015,7 +2015,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.1';
+const APP_VERSION = '1.12.2';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -20654,7 +20654,7 @@ function pwaOpenParam() { // the installed app's shortcut 'Camera games' (/?open
 }
 function routeBoot() { // on load: a game's path opens it (no start screen first); anything else stays on the start screen
   const m = routeOf(location.pathname); if (!m) return false;
-  route.applying = true; try { if (m === 'duel') route.duelQ = location.search; const p = '/' + m + (m === 'duel' ? location.search : '');
+  route.applying = true; try { if (m === 'duel') route.duelQ = location.search; const p = '/' + m + (m === 'duel' || m === 'tachles' ? location.search : ''); // (Tachles: the shared link's ?room=CODE, read by tkStart; it was dropped here, so the link opened the menu, not the join form)
     if (navGuardOk()) { history.replaceState(null, '', '/'); history.pushState({ grasp: m, fromHome: true }, '', p); route.log.push('boot:under'); } // (navigation v2, a real visitor: the start screen under a direct link, so the first Back lands home, not out of the app)
     else history.replaceState({ grasp: m, fromHome: false }, '', p); routeOpen(m); } catch {} finally { route.applying = false; }
   return true;
@@ -23274,9 +23274,9 @@ function tkClick(e) {
   else if (a === 'jun') tk.jsel = null;
   else if (a === 'nextR') { const v = tkCurView(); if (v && v.phase === 'reveal') return tkAct({ t: 'next', pid: v.me }); }
   else if (a.startsWith('jc:')) { if (Date.now() - (tk.dragEnd || 0) < 400) return; const k = +a.slice(3), v = tkCurView(), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
-    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > cr.width * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } if (v && v.me === v.judge && (tk.mode !== 'local' || tkLocalCzarHere())) tk.jsel = tk.jsel === k ? null : k; else return; }
+    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > (b.offsetWidth || cr.width) * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (offsetWidth: mid-flip the box is narrow, and a tap on the middle card read as one on the side) */ if (v && v.me === v.judge && (tk.mode !== 'local' || tkLocalCzarHere())) tk.jsel = tk.jsel === k ? null : k; else return; }
   else if (a.startsWith('card:')) { if (Date.now() - (tk.dragEnd || 0) < 400) return; const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
-    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > cr.width * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
+    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > (b.offsetWidth || cr.width) * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
   else if (a === 'swap') { const v = tkCurView(); if (v.swaps > 0) { const W0 = document.querySelector('#tachles .tkHandW'); if (W0) W0.scrollLeft = 0; return tkAct({ t: 'swap', pid: v.me }); } }
   else if (a === 'send') { const v = tkCurView(); if (tk.sel.length === v.pick) return tkAct({ t: 'pick', idx: tk.sel.slice(), pid: v.me }); }
   else if (a.startsWith('judge:')) { const v = tkCurView(); return tkAct({ t: 'judge', k: +a.slice(6), pid: v.me }); }
