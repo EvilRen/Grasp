@@ -50,7 +50,7 @@ BIG = ('settingsBtn', 'startSound', 'fullBtn', 'metaPill', 'bigBtn', 'littleBtn'
 # the rooms' swiper (#mbRooms): settled on the room mb.room names (the room off screen is inert)
 SETTLED = f"(() => {{ const R = $('mbRooms'), r = {M}.mb.room; return !{M}.mb.swiping && Math.abs(Math.abs(R.scrollLeft) - (r === 'little' ? R.clientWidth : 0)) < 2 && $('start').dataset.room === r && $('bigRoom').inert === (r !== 'big') && $('littlePick').inert === (r !== 'little'); }})()"
 def in_room(r): return f"{M}.mb.room === '{r}' && " + SETTLED
-LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'sky', 'lilPopit']]
+LITTLE = [['busy', 'shapes', 'sandbox', 'calmBtn'], ['animals', 'colors', 'peekaboo', 'feed'], ['puzzle', 'sand', 'sky', 'tama'], ['lilPopit']]
 
 async def page_of(page):
     return await page.evaluate(f"({{ i: {M}.pageNow(), mb: {M}.mb.page, on: [...document.querySelectorAll('#mbDots .mbDot')].findIndex(d => d.classList.contains('on')), sl: $('mbPager').scrollLeft,"
@@ -84,15 +84,15 @@ async def main():
             await page.tap('#littleBtn'); await page.wait_for_function(in_room('little'), timeout=3000); await page.wait_for_timeout(500)
             L = layout_ok(tg + ' little p1', await page.evaluate(LAYOUT + "()"), ('busy', 'shapes', 'sandbox', 'calmBtn'))
             lb = {x['id']: x for x in L['btns']}
-            check(tg + ': Little ones: 4 huge stickers (2 x 2, each >= 140 px), mint background, 3 dots', all(lb[k]['w'] >= 140 and lb[k]['h'] >= 180 for k in LITTLE[0]) and await page.evaluate("getComputedStyle($('start')).backgroundColor === 'rgb(166, 236, 208)' && document.querySelectorAll('#mbDots .mbDot').length === 3"), [lb.get(k) for k in LITTLE[0]])
+            check(tg + ': Little ones: 4 huge stickers (2 x 2, each >= 140 px), mint background, 4 dots', all(lb[k]['w'] >= 140 and lb[k]['h'] >= 180 for k in LITTLE[0]) and await page.evaluate("getComputedStyle($('start')).backgroundColor === 'rgb(166, 236, 208)' && document.querySelectorAll('#mbDots .mbDot').length === 4"), [lb.get(k) for k in LITTLE[0]])
             first = lb['busy']; check(tg + ': the first sticker sits at the ' + ('right (RTL)' if he else 'left'), (first['l'] > lb['shapes']['l']) if he else (first['l'] < lb['shapes']['l']), [first, lb['shapes']])
             DOTS = "[...document.querySelectorAll('#mbDots .mbDot')].map(d => ({ pg: +d.dataset.pg, x: d.getBoundingClientRect().left, on: d.classList.contains('on') })).sort((a, b) => a.x - b.x)"  # (left to right on screen)
             ds = await page.evaluate(DOTS); edge = ds[-1] if he else ds[0]
-            check(tg + ': the dots run with the pages: page 1\'s dot is the ' + ('rightmost (RTL)' if he else 'leftmost') + ' and it is the lit one', edge['pg'] == 0 and edge['on'] and sum(d['on'] for d in ds) == 1 and [d['pg'] for d in ds] == ([2, 1, 0] if he else [0, 1, 2]), ds)
+            check(tg + ': the dots run with the pages: page 1\'s dot is the ' + ('rightmost (RTL)' if he else 'leftmost') + ' and it is the lit one', edge['pg'] == 0 and edge['on'] and sum(d['on'] for d in ds) == 1 and [d['pg'] for d in ds] == ([3, 2, 1, 0] if he else [0, 1, 2, 3]), ds)
             await page.screenshot(path=OUT + 'menub_little_p1_%s.png' % lg)
             await page.tap('#mbDots .mbDot[data-pg="1"]'); await page.wait_for_function(f"{M}.pageNow() === 1", timeout=3000); await page.wait_for_timeout(600)
             ds = await page.evaluate(DOTS); p2 = await page_of(page)
-            check(tg + ': tapping the middle dot goes to page 2 (its stickers on screen), the middle dot lit', [d['on'] for d in ds] == [False, True, False] and p2['seen'] == LITTLE[1], [ds, p2])
+            check(tg + ': tapping the second dot goes to page 2 (its stickers on screen), that dot lit', [d['on'] for d in ds] == ([False, False, True, False] if he else [False, True, False, False]) and p2['seen'] == LITTLE[1], [ds, p2])
             layout_ok(tg + ' little p2', await page.evaluate(LAYOUT + "()"), ('animals', 'colors', 'peekaboo', 'feed'))
             await page.screenshot(path=OUT + 'menub_little_p2_%s.png' % lg)
             await page.tap('#bigBtn'); await page.wait_for_function(in_room('big'), timeout=3000); await page.wait_for_timeout(400)
@@ -173,10 +173,10 @@ async def main():
         bu = await page.evaluate("({ bubu: $('bubuBtn').hidden, w: $('bubuBtn').getBoundingClientRect().width, tab: !$('petTab').hidden })")
         check('Bubu hidden even with a hatched pet (the pet lives in the dock\'s Pet tab)', bu['bubu'] and bu['w'] == 0 and bu['tab'], bu)
         await page.evaluate(f"{M}.room('little')"); await page.wait_for_timeout(300)
-        # Pop It (merged): its sticker shows in Little ones (page 3) and in Big kids
-        await page.evaluate("window.routeOpen = (m) => { window.__opened = m; return true; }; __grasp.menub.page(2, true)"); await page.wait_for_timeout(300)
+        # Pop It (merged): its sticker shows in Little ones (page 4) and in Big kids
+        await page.evaluate("window.routeOpen = (m) => { window.__opened = m; return true; }; __grasp.menub.page(3, true)"); await page.wait_for_timeout(300)
         pi = await page.evaluate(f"({{ lil: !$('lilPopit').hidden, big: !$('bigPopit').hidden, feat: {M}.feat('popit'), pages: {M}.mb.pages, seen: !!$('lilPopit').closest('.mbPg') }})")
-        check('Pop It: its sticker shows in Little ones (page 3) and in Big kids', pi['lil'] and pi['big'] and pi['feat'] and pi['seen'] and pi['pages'] == 3, pi)
+        check('Pop It: its sticker shows in Little ones (page 4) and in Big kids', pi['lil'] and pi['big'] and pi['feat'] and pi['seen'] and pi['pages'] == 4, pi)
         await page.tap('#lilPopit'); await page.wait_for_function("window.__opened === 'popit'", timeout=4000)
         check('Pop It sticker: says its name and opens /popit (routeOpen)', await page.evaluate(f"{M}.mb.said.slice(-1)[0].text") == 'Pop It')
         check('stickers: no page errors', not errs, errs); await ctx.close()
@@ -193,7 +193,7 @@ async def main():
             check(tg + ': a swipe ' + ('right (RTL)' if he else 'left') + ' = page 2 (its stickers on screen, its dot lit, a page blip)', p1['i'] == 1 and p1['on'] == 1 and p1['seen'] == LITTLE[1] and (p1['sl'] < 0 if he else p1['sl'] > 0) and await page.evaluate(f"{M}.mb.blips.some(x => x.kind === 'page')"), p1)
             await page.evaluate(f"$('mbPager').scrollBy({{ left: {sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 2", timeout=3000)
             p2 = await page_of(page)
-            check(tg + ': ... page 3 (Puzzle, Sand, Sky tower, Pop It)', p2['i'] == 2 and p2['seen'] == LITTLE[2], p2)
+            check(tg + ': ... page 3 (Puzzle, Sand, Sky tower, Pocket pet)', p2['i'] == 2 and p2['seen'] == LITTLE[2], p2)
             await page.evaluate(f"$('mbPager').scrollBy({{ left: {-sgn} * $('mbPager').clientWidth, behavior: 'instant' }})"); await page.wait_for_function(f"{M}.mb.page === 1", timeout=3000)
             check(tg + ': and back the other way to page 2', (await page_of(page))['seen'] == LITTLE[1])
             await page.tap('#mbDots .mbDot[data-pg="0"]'); await page.wait_for_function(f"{M}.mb.page === 0 && Math.abs($('mbPager').scrollLeft) < 2", timeout=4000)
