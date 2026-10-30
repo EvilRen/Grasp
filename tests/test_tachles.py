@@ -26,11 +26,14 @@ async def step_local(page):
         await click(page, '#tachles .tkCrownB'); return True
     if await page.locator('#tachles [data-a^="judge:"]').count(): await click(page, '#tachles [data-a^="judge:"] >> nth=0'); return True
     if await page.locator('#tachles .tkJC').count(): return False
+    if await page.evaluate(f"(() => {{ const t = {TKH}.tk, v = t.mode === 'local' ? null : t.view; return !!v && v.phase === 'pick' && v.me === v.judge; }})()"): return False # (the czar waits while the others choose)
     n = await page.locator('#tachles .tkHC').count()
     if n:
         need = await page.evaluate(f"{TKH}.tk.view ? (({TKH}.tk.mode === 'local' && {TKH}.tk.g) ? {TKH}.TK.view({TKH}.tk.g, 'x').pick : {TKH}.tk.view.pick) : 1")
         await page.evaluate(f"{TKH}.tk.sel = []")
-        for i in range(need): await page.evaluate("document.querySelectorAll('#tachles .tkHC')[%d].scrollIntoView({ inline: 'center', block: 'nearest' })" % i); await page.wait_for_timeout(120); await click(page, '#tachles .tkHC >> nth=%d' % i)
+        for i in range(need):
+            await page.evaluate("document.querySelectorAll('#tachles .tkHC')[%d].scrollIntoView({ inline: 'center', block: 'nearest' })" % i); await page.wait_for_timeout(120); await click(page, '#tachles .tkHC >> nth=%d' % i)
+            if len(await page.evaluate(f"{TKH}.tk.sel")) <= i: await page.wait_for_timeout(500); await click(page, '#tachles .tkHC >> nth=%d' % i) # (the hand's snap may have put another card in the middle: the first tap brought this one over)
         await click(page, '#tachles [data-a="send"]')
         if not BACKS and await page.locator('#tachles .tkBacks').count():
             BACKS.append(1); bk = await page.evaluate("[document.querySelectorAll('#tachles .tkBacks .tkBackC:not(.wait)').length, document.querySelectorAll('#tachles .tkScores .tkSt').length]")
@@ -112,7 +115,7 @@ async def gate_and_bots(b, he):
         if v['phase'] == 'reveal' and not shot:
             await page.evaluate(f"{TKH}.tk.g.revealAt = Date.now() + 4000")
             mk = await page.evaluate("[document.querySelectorAll('#tachles .tkRevHand .tkJC').length, document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length, document.querySelectorAll('#tachles .tkDuel .tkSlot').length, document.querySelectorAll('#tachles .tkBlackC mark').length]")
-            full = await page.evaluate(f"(() => {{ localStorage.setItem('grasp.tkFull', '1'); {TKH}.render(); const n = document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length; localStorage.removeItem('grasp.tkFull'); {TKH}.render(); return n; }})()")
+            full = await page.evaluate(f"(() => {{ {TKH}.tk.set.full = true; {TKH}.render(); const n = document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length; {TKH}.tk.set.full = false; {TKH}.render(); return n; }})()")
             rv = await page.evaluate("(() => { const r = window.__tkReveal; delete window.__tkReveal; const ms = tkRevealMs(); window.__tkReveal = r; return ms; })()")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
             if tag == 'HE':
@@ -217,9 +220,18 @@ async def online(b):
     await click(host, '#tachles [data-a="dbgNet"]'); await host.wait_for_timeout(600)
     check('debug log: "🔬 בדיקת רשת" runs a network check into the log', any('network check' in x for x in await host.evaluate("tkDbgL")))
     await click(host, '#tachles .tkMHead [data-a="mclose"]')
+    await click(host, '#tachles [data-a="set"]'); await click(host, '#tachles [data-a="fullT"]'); await host.wait_for_timeout(250)
+    check('full sentence: the host turns it on for the whole room ("לכל החדר"), the guests get it', await host.evaluate(f"{TKH}.tk.set.full === true") and 'לכל החדר' in await host.inner_text('#tachles .tkModal') and await g1.evaluate("tkFullOn()") and await g2.evaluate("tkFullOn()"))
+    await click(host, '#tachles .tkMHead [data-a="mclose"]')
+    await click(g2, '#tachles [data-a="set"]'); m2 = await g2.inner_text('#tachles .tkModal'); await click(g2, '#tachles [data-a="fullT"]'); await g2.wait_for_timeout(200)
+    check('full sentence: a guest turns it off on their own phone only ("רק בטלפון שלך"); the room and the others keep it', 'רק בטלפון שלך' in m2 and not await g2.evaluate("tkFullOn()") and await g1.evaluate("tkFullOn()") and await host.evaluate(f"{TKH}.tk.set.full === true"))
+    await click(g2, '#tachles .tkMHead [data-a="mclose"]')
     await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(400); pages = [host, g1, g2]
     check('TV: the game on the screen: the question card, the scores, the answer chips, no hand', await g3.locator('#tachles .tkTV .tkBlackC').count() == 1 and await g3.locator('#tachles .tkTV .tkScores').count() == 1 and await g3.locator('#tachles .tkHC').count() == 0)
     vs = [await view(p) for p in pages]; check('online: the host starts: every phone in the game, round 1', all(v['scr'] == 'game' and v['round'] == 1 for v in vs), vs)
+    st = await g1.evaluate("(() => { const s = document.querySelector('#tachles .tkScores'), r = s.getBoundingClientRect(); return [s.scrollWidth <= s.clientWidth + 1, [...s.querySelectorAll('.tkSc')].every((c) => { const q = c.getBoundingClientRect(); return q.left >= r.left - 1 && q.right <= r.right + 1; })]; })()")
+    st8 = await g1.evaluate("(() => { const d = document.createElement('div'), w = document.querySelector('#tachles .tkWrap2') || document.querySelector('#tachles .tkIn0'); d.innerHTML = tkScoresHtml({ phase: 'pick', judge: 'p0', players: ['בני', 'איתמר', 'אריאל', 'רעות', 'אורי', 'פיתה 42', 'שמשון הגיבור', 'דנה'].map((n, i) => ({ id: 'p' + i, name: n, score: i, on: true })) }, 'p0'); w.appendChild(d); const s = d.firstChild, r = s.getBoundingClientRect(), ok = [s.scrollWidth <= s.clientWidth + 1, [...s.querySelectorAll('.tkSc')].every((c) => { const q = c.getBoundingClientRect(); return q.left >= r.left - 1 && q.right <= r.right + 1 && q.width >= 36; })]; d.remove(); return ok; })()")
+    check('the players\' strip: everyone fits, no scrolling (3 players, and 8: the avatar over the name)', all(st) and all(st8), [st, st8])
     hands = [await p.evaluate(f"{TKH}.tk.view.hand.join('|')") for p in pages]; check('online: each phone sees only its own hand (three different hands)', len(set(hands)) == 3, [h[:30] for h in hands])
     J = await host.evaluate(f"{TKH}.tk.view.judge"); pick = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") != J]
     await step_local(pick[0]); await host.wait_for_timeout(200)
@@ -352,6 +364,43 @@ async def link_in(b):
     check('the link, 18+ already confirmed: straight to the join form with the code', await p2.evaluate(f"{TKH}.tk.form") == 'join' and await p2.input_value('#tkCode') == 'WXYZ')
     check('the link: no page errors', not errs and not e2, errs + e2); await ctx.close(); await ctx2.close()
 
+async def taps(b):
+    # the owner: "a tap on a card sometimes takes, sometimes not": real touches (CDP) on the middle card of the hand: clean, quick, long, the finger
+    # sliding a little, near the card's edges, while the screen re-renders (a message in), right after a swipe; each tap must pick / unpick it.
+    # And 5 players (4 bots): the players' strip fits without scrolling
+    ctx, page, errs = await page_for(b, '/tachles', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    await click(page, '#tachles [data-a="m:bots"]')
+    for _ in range(2): await click(page, '#tachles [data-a="addBot"]')
+    for _ in range(20):
+        await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(250)
+        if await page.evaluate(f"{TKH}.tk.view.me !== {TKH}.tk.view.judge && {TKH}.tk.view.phase === 'pick'"): break
+        await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
+    await page.evaluate(f"clearTimeout({TKH}.tk.botT); {TKH}.tk.g.timer = 0; {TKH}.tk.g.players.forEach((p) => {{ if (p.bot) p.on = false; }}); {TKH}.render()") # (the bots hold off: the hand stays)
+    st = await page.evaluate("(() => { const s = document.querySelector('#tachles .tkScores'), r = s.getBoundingClientRect(); return [s.querySelectorAll('.tkSc').length, s.classList.contains('many'), s.scrollWidth <= s.clientWidth + 1, [...s.querySelectorAll('.tkSc')].every((c) => { const q = c.getBoundingClientRect(); return q.left >= r.left - 1 && q.right <= r.right + 1; })]; })()")
+    await page.evaluate(f"{TKH}.tk.g.players.forEach((p) => {{ p.on = true; }}); {TKH}.render()"); await page.screenshot(path=OUT + 'tachles_strip5.png'); await page.evaluate(f"{TKH}.tk.g.players.forEach((p) => {{ if (p.bot) p.on = false; }}); {TKH}.render()")
+    check('5 players: the strip shows them all (the avatar over the name), no scrolling', st[0] == 5 and all(st[1:]), st)
+    cdp = await ctx.new_cdp_session(page)
+    async def touch(typ, pts): await cdp.send('Input.dispatchTouchEvent', {'type': typ, 'touchPoints': [{'x': x, 'y': y, 'id': 1, 'radiusX': 8, 'radiusY': 8, 'force': 1} for x, y in pts]})
+    MID = "(() => { const W = document.querySelector('#tachles .tkHandW').getBoundingClientRect(), mid = W.left + W.width / 2; let best = null, bd = 1e9; document.querySelectorAll('#tachles .tkHC').forEach((c, i) => { const r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); if (d < bd) { bd = d; best = [i, r.left + r.width / 2, r.top + r.height / 2, r.width]; } }); return best; })()"
+    async def tap1(jx=0, jy=0, hold=70, pos=0.5, storm=False, swipe=0):
+        m = await page.evaluate(MID)
+        if swipe:
+            await touch('touchStart', [(200, m[2])])
+            for k in range(1, 7): await touch('touchMove', [(200 + swipe * k / 6, m[2])]); await page.wait_for_timeout(12)
+            await touch('touchEnd', []); await page.wait_for_timeout(1200); m = await page.evaluate(MID)
+        if storm: await page.evaluate(f"window.__st = setInterval(() => {TKH}.render(), 60)")
+        s0 = await page.evaluate(f"{TKH}.tk.sel.slice()"); x = m[1] + (pos - 0.5) * m[3] * 0.8
+        await touch('touchStart', [(x, m[2])]); await page.wait_for_timeout(hold // 2)
+        if jx or jy: await touch('touchMove', [(x + jx, m[2] + jy)])
+        await page.wait_for_timeout(hold // 2); await touch('touchEnd', []); await page.wait_for_timeout(220)
+        if storm: await page.evaluate("clearInterval(window.__st)")
+        s1 = await page.evaluate(f"{TKH}.tk.sel.slice()"); return (m[0] in s1) != (m[0] in s0)
+    res = {}
+    for name, kw in (('clean', {}), ('quick', {'hold': 20}), ('long', {'hold': 400}), ('slide 10px', {'jx': 10}), ('slide up 10px', {'jy': -10}), ('edge', {'pos': 0.9}), ('other edge', {'pos': 0.1}), ('re-render', {'storm': True}), ('after a swipe', {'swipe': 120})):
+        res[name] = sum([await tap1(**kw) for _ in range(6)])
+    check('taps on the middle card: every one takes (clean, quick, long, a sliding finger, the edges, mid re-render, after a swipe)', all(v == 6 for v in res.values()), res)
+    check('taps: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -390,7 +439,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await taps(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
