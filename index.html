@@ -1496,6 +1496,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkRnd{ width:36px; height:36px; border-radius:50%; background:var(--el); border:1px solid var(--bd); color:var(--tx); display:inline-flex; align-items:center; justify-content:center; }
 #tachles .tkRnd .tkI{ width:16px; height:16px; } #tachles .tkRnd:disabled{ opacity:.3; }
 #tachles .tkRO{ display:grid; grid-template-columns:1fr; gap:8px; font-size:14px; } #tachles .tkRO span{ display:flex; justify-content:space-between; background:var(--el); border-radius:12px; padding:8px 12px; color:var(--dim); } #tachles .tkRO b{ color:var(--tx); }
+#tachles .tkNetBar{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 10px); left:50%; transform:translateX(-50%); z-index:6; background:#f59e0b; color:#1a1a1a; font-weight:700; font-size:14px; padding:8px 16px; border-radius:14px; box-shadow:0 4px 18px rgba(0,0,0,.4); max-width:calc(100vw - 32px); text-align:center; animation:tkFade .25s ease-out; }
+#tachles .tkBackIn{ border-color:#f59e0b; }
 #tachles .tkToast{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 16px); left:50%; transform:translateX(-50%); z-index:7; background:var(--danger); color:#fff; font-weight:700; padding:12px 20px; border-radius:16px; box-shadow:0 4px 24px rgba(239,68,68,.5); animation:tkFade .25s ease-out; white-space:nowrap; max-width:calc(100vw - 32px); overflow:hidden; text-overflow:ellipsis; }
 /* the game */
 #tachles .tkScores{ padding:10px; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; } #tachles .tkScores::-webkit-scrollbar{ display:none; }
@@ -2013,7 +2015,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.12.1';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22554,7 +22556,7 @@ const TKS = {
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', swap: 'החלף ({n})', swapD: 'זורק את כל היד ומקבל קלפים חדשים. 3 פעמים במשחק', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
     judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
-    kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
+    hostGone: 'המארח לא מחובר כרגע. מחכה שיחזור...', backIn: 'חזרה למשחק', backRoom: 'חזרה לחדר שלך', kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה נכשלה. בדוק את האינטרנט ונסה שוב.',
     wrShort: 'קצר מדי', wrNoBlank: 'בשאלה צריך לפחות מקום ריק אחד (___)', wrLimit: 'אפשר 5 ביום. מחר עוד!', wrNote: 'בלי שמות של אנשים אמיתיים ובלי קטינים. כל קלף נבדק לפני שהוא נכנס.', wrMine: 'קלפים ששלחת (מחכים לאישור)', swipe: 'החלק לצדדים לעוד קלפים · גרור קלף למעלה או גע בו', dropHere: 'גררו קלף לכאן', nextR: 'לסבב הבא', waitNext: 'מחכים ש{n} ימשיך לסבב הבא', byBtn: 'בכפתור', youJudge: 'אתה השופט: הקלפים נוחתים הפוכים', decoy: 'קלף מהחפיסה', dropBest: 'גררו לכאן את הכי טובה', pickWin: 'בוחרים זוכה', crownIt: 'זו הזוכה!', swipeJ: 'החלק לצדדים בין התשובות · גרור את הכי טובה למעלה או גע בה', imN: 'אני {n}', passD: 'ושאף אחד אחר לא יציץ!', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
   en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
@@ -22570,7 +22572,7 @@ const TKS = {
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', swap: 'Swap ({n})', swapD: 'Throw your whole hand away for new cards. 3 times a game', pickN: 'Pick {n}', noCards: 'No cards in hand',
     judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
-    kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
+    hostGone: 'The host is not connected. Waiting for them to come back...', backIn: 'Back to the game', backRoom: 'Back to your room', kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
     wrPhW: 'e.g. My aunt on TikTok.', wrPhB: 'e.g. What really happened at ___\'s wedding?', wrBlank: 'blank', wrSend: 'Send for approval', wrSending: 'Sending...', wrSent: 'Sent for approval! Thanks 🙏', wrErr: "Couldn't send. Check the internet and try again.",
     wrShort: 'Too short', wrNoBlank: 'A question needs at least one ___', wrLimit: 'Up to 5 a day. More tomorrow!', wrNote: 'No real people\'s names and no minors. Everything is checked before it goes in.', wrMine: 'You sent (waiting for approval)', swipe: 'Swipe for more cards · drag one up or tap it', dropHere: 'Drag a card here', nextR: 'Next round', waitNext: 'Waiting for {n} to start the next round', byBtn: 'button', youJudge: 'You are the judge: the cards land face down', decoy: 'from the deck', dropBest: 'Drag the best one here', pickWin: 'Choose the winner', crownIt: 'This one wins!', swipeJ: 'Swipe through the answers · drag the best one up or tap it', imN: "I'm {n}", passD: 'No peeking, everyone else', addP: 'Add a player', name: 'Player {n}', skip: 'Skip {n}', connecting: 'Connecting...' },
 };
@@ -22721,28 +22723,34 @@ const TKNET = {
   peerMode: () => window.__tkNet === 'peer' || new URLSearchParams(location.search).get('net') === 'peer', // (the old PeerJS way, for a comparison)
   mqHost(code, onConn, onErr, onOk) { // the room: on every broker; a phone is answered on the broker it came from
     const T = TK_MQT + code + '/', conns = new Map(), seen = new Map(), cs = [], st = { get open() { return cs.some((c) => c.st.open); }, get disconnected() { return !cs.some((c) => c.st.open); }, id: 'room ' + code };
+    let base = Date.now(), tick = Date.now(); const asked = new Map(); // (base: since when a silence counts: the room's own sleep or broker drop restarts it for everyone)
+    const who = (cl, to) => cl.pub(T + (to ? 'g/' + to : 'a'), { from: 'host', d: { t: 'who' } }); // (who is there? the phones answer with their hello: their seat comes back)
     const mk = (id, cl) => { const c = { peer: id, h: {}, on(k, f) { this.h[k] = f; }, send: (d) => cl.pub(T + 'g/' + id, { from: 'host', d }), close() {} }; conns.set(id, c); tkDbg('host: new phone ' + id + ' via ' + cl.st.broker); onConn(c); return c; };
     let was = false;
     for (const u of (window.__tkMQ || TK_MQ)) { const cl = tkMq(u, 'gtkh' + code + Math.random().toString(36).slice(2, 7), [T + 'h'], (topic, m) => { if (!m || !m.from) return; seen.set(m.from, Date.now());
-        if (m.d && m.d.t === '~ping') return; const c = conns.get(m.from) || mk(m.from, cl); if (c.h.data) c.h.data(m.d); },
-      (s) => { const on = st.open; if (on && !was) onOk && onOk(); if (!on && was) onErr && onErr({ type: 'disconnected' }); was = on; }); cs.push(cl); }
-    const pi = setInterval(() => { for (const cl of cs) cl.pub(T + 'a', { from: 'host', d: { t: '~ping' } }); const now = Date.now();
-      for (const [id, c] of conns) if (now - (seen.get(id) || 0) > 25000 && st.open) { tkDbg('host: phone ' + id + ' silent 25 s, dropped'); conns.delete(id); if (c.h.close) c.h.close(); } }, 5000);
+        if (m.d && m.d.t === '~ping') { if (!conns.has(m.from) && Date.now() - (asked.get(m.from) || 0) > 4000) { asked.set(m.from, Date.now()); who(cl, m.from); } return; } const c = conns.get(m.from) || mk(m.from, cl); if (c.h.data) c.h.data(m.d); },
+      (s) => { if (s === 'open') { base = Date.now(); who(cl); } const on = st.open; if (on && !was) onOk && onOk(); if (!on && was) onErr && onErr({ type: 'disconnected' }); was = on; }); cs.push(cl); }
+    const pi = setInterval(() => { for (const cl of cs) cl.pub(T + 'a', { from: 'host', d: { t: '~ping' } }); const now = Date.now(); if (now - tick > 12000) { tkDbg('host: this phone slept ' + Math.round((now - tick) / 1000) + ' s, nobody dropped'); base = now; } tick = now;
+      for (const [id, c] of conns) if (now - Math.max(seen.get(id) || 0, base) > 25000 && st.open) { tkDbg('host: phone ' + id + ' silent 25 s, dropped'); conns.delete(id); if (c.h.close) c.h.close(); } }, 5000);
     return Promise.resolve({ close: () => { clearInterval(pi); cs.forEach((c) => c.close()); }, p: st });
   },
-  mqJoin(code, onData, onErr) { // a phone: the first broker that connects
-    const T = TK_MQT + code + '/', me = 'g' + Math.random().toString(36).slice(2, 9); let cl = null, last = 0, gone = false, pi = 0;
+  mqJoin(code, onData, onErr, me) { // a phone: the first broker that connects. me: the same for the same room and name (tkGid), so a phone that dropped or reloaded gets its seat back
+    /* (the owner: "the screen went off, the browser closed: the player can't get back in". The room silent is no longer the end: "the host is not
+       connected" shows and the phone waits; the room back or the broker back, the phone says hello again) */
+    me = me || 'g' + Math.random().toString(36).slice(2, 9); const T = TK_MQT + code + '/'; let cl = null, last = 0, gone = false, pi = 0, quiet = false, tick = 0;
     return new Promise((ok, no) => { let done = false, i = 0;
-      const L = window.__tkMQ || TK_MQ; const tryNext = () => { if (done) return; if (i >= L.length) { tkDbg(me + ': no broker answered'); done = true; return no(new Error('no broker')); } const u = L[i++], c = tkMq(u, 'gtk' + me, [T + 'g/' + me, T + 'a'], (topic, m) => {
-          if (!m || m.from !== 'host') return; last = Date.now(); if (m.d && m.d.t === '~ping') return; onData(m.d); },
-        (s) => { if (s === 'open' && !done) { done = true; clearTimeout(tm); cl = c; last = Date.now();
-          pi = setInterval(() => { cl.pub(T + 'h', { from: me, d: { t: '~ping' } }); if (!gone && cl.st.open && Date.now() - last > 25000) { tkDbg(me + ': the room is silent for 25 s'); gone = true; clearInterval(pi); onErr && onErr('closed'); } }, 5000);
+      const L = window.__tkMQ || TK_MQ; const tryNext = () => { if (done) return; if (i >= L.length) { tkDbg(me + ': no broker answered'); done = true; return no(new Error('no broker')); } const u = L[i++], c = tkMq(u, 'gtk' + me + Math.random().toString(36).slice(2, 5), [T + 'g/' + me, T + 'a'], (topic, m) => {
+          if (!m || m.from !== 'host') return; last = Date.now(); if (quiet) { quiet = false; tkDbg(me + ': the room is back'); onErr && onErr('back'); } if (m.d && m.d.t === '~ping') return; onData(m.d); },
+        (s) => { if (s === 'open' && done && c === cl && !gone) { last = Date.now(); onErr && onErr('back'); } // (the broker back: hello again)
+          if (s === 'open' && !done) { done = true; clearTimeout(tm); cl = c; last = tick = Date.now();
+          pi = setInterval(() => { const now = Date.now(); if (now - tick > 12000) last = now; tick = now; cl.pub(T + 'h', { from: me, d: { t: '~ping' } }); // (this phone slept: the room gets a fresh 20 s)
+            if (!gone && !quiet && cl.st.open && now - last > 20000) { tkDbg(me + ': the room is silent for 20 s, waiting'); quiet = true; onErr && onErr('quiet'); } }, 5000);
           ok({ send: (d) => cl.pub(T + 'h', { from: me, d }), close: () => { gone = true; clearInterval(pi); cl.close(); }, p: cl.st }); } });
         const tm = setTimeout(() => { if (!done) { tkDbg(me + ': ' + u.split('/')[2] + ' too slow, the next one'); c.close(); tryNext(); } }, 7000); };
       tryNext(); });
   },
   async host(code, onConn, onErr, onOk) {
-    if (TKNET.bc()) { const ch = new BroadcastChannel('tk-' + code), conns = new Map(); ch.onmessage = (e) => { const m = e.data; if (m.to !== 'host') return; let c = conns.get(m.from);
+    if (TKNET.bc()) { const ch = new BroadcastChannel('tk-' + code), conns = new Map(); setTimeout(() => ch.postMessage({ to: '*', d: { t: 'who' } }), 50); ch.onmessage = (e) => { const m = e.data; if (m.to !== 'host') return; let c = conns.get(m.from);
         if (!c) { c = { id: m.from, send: (d) => ch.postMessage({ to: m.from, d }), h: {}, on(k, f) { this.h[k] = f; }, close() {} }; conns.set(m.from, c); onConn(c); } if (c.h.data) c.h.data(m.d); };
       return { close: () => ch.close() }; }
     if (!TKNET.peerMode()) return TKNET.mqHost(code, onConn, onErr, onOk);
@@ -22766,10 +22774,10 @@ const TKNET = {
     const vis = () => { if (document.visibilityState === 'visible' && !dead && p.disconnected) { tries = 0; clearTimeout(timer); timer = 0; retry(true); } }; document.addEventListener('visibilitychange', vis);
     return { close: () => { dead = true; clearTimeout(timer); document.removeEventListener('visibilitychange', vis); try { p.destroy(); } catch {} }, get p() { return p; } };
   },
-  async join(code, onData, onErr) {
-    if (TKNET.bc()) { const me = 'g' + Math.random().toString(36).slice(2, 8), ch = new BroadcastChannel('tk-' + code); ch.onmessage = (e) => { if (e.data.to === me) onData(e.data.d); };
+  async join(code, onData, onErr, me) {
+    if (TKNET.bc()) { me = me || 'g' + Math.random().toString(36).slice(2, 8); const ch = new BroadcastChannel('tk-' + code); ch.onmessage = (e) => { if (e.data.to === me || e.data.to === '*') onData(e.data.d); };
       return { send: (d) => ch.postMessage({ to: 'host', from: me, d }), close: () => ch.close() }; }
-    if (!TKNET.peerMode()) return TKNET.mqJoin(code, onData, onErr);
+    if (!TKNET.peerMode()) return TKNET.mqJoin(code, onData, onErr, me);
     tkDbg('join: loading PeerJS'); const Peer = await TKNET.peer(), p = new Peer({ config: TK_ICE }); let joined = false, bt = 0, btries = 0; tkDbg('join: connecting to the broker');
     const back = () => { if (bt) return; bt = setTimeout(() => { bt = 0; try { if (!p.destroyed && p.disconnected) { tkDbg('join: reconnecting to the broker'); p.reconnect(); } } catch {} }, Math.min(15000, 1000 * Math.pow(2, btries++))); };
     p.on('open', () => { btries = 0; });
@@ -22796,21 +22804,40 @@ function tkStart() {
   tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm(Q.get('screen') ? 'screen' : 'join'); tk.log.push('start:' + tk.scr);
   clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
-function tkStop() { const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
+function tkStop() { const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkWake(); tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
 function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); tk.screens.clear(); }
 function tkNetBye() { try { if (tk.mode === 'host') for (const [, c] of [...tk.conns, ...tk.screens]) c.send({ t: 'closed' }); else if ((tk.mode === 'guest' || tk.mode === 'screen') && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
 function tkSave() { tkStore({ names: tk.names, set: tk.set, me: tk.myName }); }
+/* back in after a drop (the owner: "the screen went off, the browser closed: the player can't get back in"): a phone's id is the same for the same
+   room and name (grasp.tkIds), so the room gives it back its seat, cards and points; the last room joined (grasp.tkLast) and the room this phone
+   runs, game and all (grasp.tkRoom, on every change), get a "back to the game" button in the menu for 4 hours; the screen stays on while playing */
+const TK_BACKMS = 4 * 3600e3;
+function tkLS(k, v) { try { if (v === undefined) { const x = JSON.parse(localStorage.getItem(k) || 'null'); return x && Date.now() - (x.at || 0) < TK_BACKMS ? x : null; } if (v) localStorage.setItem(k, JSON.stringify(v)); else localStorage.removeItem(k); } catch {} return null; }
+function tkGid(code, name) { let M = {}; try { M = JSON.parse(localStorage.getItem('grasp.tkIds') || '{}') || {}; } catch {} const k = code + ':' + name, now = Date.now();
+  for (const x in M) if (!M[x] || now - M[x].at > 864e5) delete M[x]; const id = (M[k] && M[k].id) || 'g' + Math.random().toString(36).slice(2, 9); M[k] = { id, at: now };
+  try { localStorage.setItem('grasp.tkIds', JSON.stringify(M)); } catch {} return id; }
+function tkRoomSave() { if (tk.mode !== 'host' || !tk.code) return; tkLS('grasp.tkRoom', { at: Date.now(), code: tk.code, name: tk.myName, lobby: tk.lobby, set: tk.set, own: tk.own, botN: tk.botN, g: tk.g }); }
+function tkWakeWant() { const el = $('tachles'); return !!el && !el.hidden && document.visibilityState === 'visible' && ['lobby', 'game', 'board'].includes(tk.scr); }
+function tkWake() { // (the screen stays on in the room and the game; the browser lets go of it when the page hides: asked again when it shows)
+  const L = navigator.wakeLock; if (!L) return; const want = tkWakeWant();
+  if (!want && tk.wake) { const w = tk.wake; tk.wake = null; w.release().catch(() => {}); return; }
+  if (!want || tk.wake || tk.waking || Date.now() - (tk.wakeNo || 0) < 10000) return; tk.waking = true;
+  L.request('screen').then((w) => { tk.waking = false; if (!tkWakeWant()) { w.release().catch(() => {}); return; } tk.wake = w; tk.log.push('wake'); w.addEventListener('release', () => { if (tk.wake === w) tk.wake = null; }); })
+    .catch(() => { tk.waking = false; tk.wakeNo = Date.now(); }); }
 function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkRender, 4600); }
 /* the phone that runs the game: every change goes to every phone (each its own view) and the bots move */
 function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
-  const g = tk.g; if (!g) return; if (tk.mode === 'host') { for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} } tkBoardPush(); }
+  const g = tk.g; if (!g) return; if (tk.mode === 'host') { for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid) }); } catch {} } tkBoardPush(); tkRoomSave(); }
   tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots(); tkBotRx(); tkSfxLoad();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
   if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 + g.order.length * TK_STAG : 900 + Math.random() * 2600); } /* (a bot czar reads them all first) */
 function tkTick() { // 4 times a second: the round ring and the next-round count; on the phone that runs the game, the clock and the banner
-  const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now();
+  const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now(); tkWake();
+  if (tk.mode === 'host' && tk.backAt && now - tk.backAt > (window.__tkFast ? 3000 : 30000)) { tk.backAt = 0; // (the room reopened: whoever is not back after 30 s sits out, as if they left)
+    if (g) { let n = 0; for (const p of g.players) if (!p.bot && p.id !== tk.me && p.on && !tk.conns.has(p.id)) { TK.skip(g, p.id); n++; } if (n) tkPush(); }
+    else { const L = tk.lobby.filter((p) => p.bot || p.id === tk.me || tk.conns.has(p.id)); if (L.length !== tk.lobby.length) { tk.lobby = L; tkLobbyPush(); } } }
   if (tk.mode === 'host' && tk.netMsg && tk.net && tk.net.p && tk.net.p.open && !tk.net.p.disconnected) { tk.netMsg = ''; tkRender(); } // (the room is reachable again: the note goes, whatever event was missed)
   if (g && tk.mode !== 'guest') {
     if (g.phase === 'pick' && g.timer && now - g.roundAt > g.timer * 1000 + TK_GRACE && TK.force(g)) { tk.log.push('timeup'); tkPush(); return; }
@@ -22865,7 +22892,7 @@ function tkRender() {
   else if (s === 'gate') h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad8 tkC tkGlow"><div class="tkEmoji">🔞</div><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p class="tkDim tkLh">' + tks('gateD') + '<br>' + tks('gateD2') + '</p>' +
     '<button class="tkP tkW tkLg" data-a="gate">' + tks('gateOk') + '</button><p class="tkFaint tkXs">' + tks('gateFine') + '</p><button class="tkLink" data-a="home">' + tks('home') + '</button></div></div>';
   else if (s === 'menu') h = '<div class="tkWrap tkMidY"><div class="tkMenuTop"><button class="tkIcon" data-a="ungate" title="' + tks('resetGate') + '" aria-label="' + tks('resetGate') + '">' + tki('reset') + '</button></div>' +
-    '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' +
+    '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' + tkBackHtml() +
     '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
     '<p class="tkFaint tkXs tkC tkOr">' + tks('or') + '</p><div class="tkTwo"><button class="tkS" data-a="m:bots">' + tki('bot') + tks('bots') + '</button><button class="tkS" data-a="m:local">' + tki('phone') + tks('local') + '</button></div></div>' +
     '<button class="tkS tkW tkWrite" data-a="m:write">✍️ ' + tks('write') + '</button><button class="tkS tkW tkWrite" data-a="m:screen">📺 ' + tks('tvB') + '</button><p class="tkFaint tkXs tkC tkFoot">' + tks('foot') + '</p><button class="tkExit" data-a="home">' + tks('exit') + '</button></div>';
@@ -22882,10 +22909,13 @@ function tkRender() {
   el.classList.toggle('tkJudge', s === 'game' && !!tk.view && tk.view.phase === 'judge'); // (the owner: the background tells you it is the judging)
   const fresh = tk.shown !== s + (tk.view ? tk.view.phase === 'over' : ''); tk.shown = s + (tk.view ? tk.view.phase === 'over' : ''); // (the fade only on a new screen)
   if (['menu', 'lobby', 'game', 'board', 'form'].includes(s)) h += '<button class="tkDbgB" data-a="dbg" aria-label="debug">🐞</button>';
+  if (tk.netMsg && (s === 'game' || (s === 'lobby' && tk.mode !== 'host') || s === 'board')) h += '<div class="tkNetBar">' + tkEsc(tk.netMsg) + '</div>';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
 }
+function tkBackHtml() { const R = tkLS('grasp.tkRoom'), B = tkLS('grasp.tkLast'), b = (a, k, c) => '<button class="tkS tkW tkLg tkBackIn" data-a="' + a + '">↩️ ' + tks(k) + ' <b dir="ltr">' + tkEsc(c) + '</b></button>';
+  return (R ? b('back:h', 'backRoom', R.code) : '') + (B ? b('back:g', 'backIn', B.code) : ''); }
 function tkFan() { // the hand, held: the card in the middle straight and in front, the others tilting and sinking away (and a dot each, the middle one white)
   const W0 = document.querySelector('#tachles .tkHandW'); if (!W0) return; const r0 = W0.getBoundingClientRect(), mid = r0.left + r0.width / 2, cards = W0.querySelectorAll('.tkHC'); let best = 0, bd = 1e9;
   cards.forEach((c, i) => { const r = c.getBoundingClientRect(), d = (r.left + r.width / 2 - mid) / r.width, a = Math.min(2.2, Math.abs(d)); if (Math.abs(d) < bd) { bd = Math.abs(d); best = i; }
@@ -23188,6 +23218,8 @@ function tkClick(e) {
   else if (a === 'home') { goHome(); return; }
   else if (a === 'menu') { tkNetClose(); tk.scr = 'menu'; tk.g = null; tk.form = null; tk.busy = false; }
   else if (a === 'm:create' || a === 'm:join') tkForm(a.slice(2));
+  else if (a === 'back:h') return tkResume();
+  else if (a === 'back:g') { const B = tkLS('grasp.tkLast'); if (B) { tk.code = B.code; tk.myName = B.name; tk.form = 'join'; tk.scr = 'form'; return tkJoin(B.name); } }
   else if (a === 'm:bots') { tkFixNick(); tkSave(); tkSolo(tk.myName); } // (no nickname screen: the room shows your name, ✏️ changes it)
   else if (a === 'm:write') { tk.scr = 'write'; tk.wrMsg = ''; tk.mode = null; }
   else if (a.startsWith('wr:')) { const w = a.slice(3), x = $('tkWrT'); if (x) tk.wr.text = x.value; tk.wrMsg = '';
@@ -23202,7 +23234,7 @@ function tkClick(e) {
     else { tk.err = ''; tkSave(); if (f === 'create') return tkHost(nm); if (f === 'join') return tkJoin(nm);
       tkSolo(nm); } }
   else if (a === 'leave') { if (tk.scr === 'write') { tk.scr = 'menu'; } else if (tk.scr === 'setLocal' || tk.mode === 'solo' && tk.scr === 'lobby') { tk.scr = 'menu'; } else tk.modal = { t: 'leave' }; }
-  else if (a === 'leaveOk') { tk.modal = null; tkNetBye(); tkNetClose(); clearTimeout(tk.botT); tk.g = null; tk.view = null; tk.scr = 'menu'; tk.log.push('leave'); }
+  else if (a === 'leaveOk') { tk.modal = null; if (tk.mode === 'host') tkLS('grasp.tkRoom', null); else if (tk.mode === 'guest') tkLS('grasp.tkLast', null); tkNetBye(); tkNetClose(); clearTimeout(tk.botT); tk.g = null; tk.view = null; tk.scr = 'menu'; tk.log.push('leave'); }
   else if (a === 'mclose') tk.modal = null;
   else if (a === 'rename') tk.modal = { t: 'name' };
   else if (a === 'renameOk') { const nm = nameOf(); if (nm) { tk.myName = nm; tkSave(); const me = tk.lobby.find((p) => p.id === 'h'); if (me) me.name = nm; } tk.modal = null; }
@@ -23263,7 +23295,17 @@ function tkReadNames() { document.querySelectorAll('#tachles .tkIn[data-i]').for
 async function tkHost(name) {
   tkDbg('— create room (' + navigator.userAgent.slice(0, 90) + ')');
   tk.own = {};
-  tk.mode = 'host'; tk.me = 'h'; tk.botN = 0; tk.code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); tk.lobby = [{ id: 'h', name }]; tk.netMsg = tks('connecting'); tk.scr = 'lobby'; tkRender();
+  tk.mode = 'host'; tk.me = 'h'; tk.botN = 0; tk.backAt = 0; tk.code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join(''); tk.lobby = [{ id: 'h', name }]; tk.netMsg = tks('connecting'); tk.scr = 'lobby'; tkRoomSave(); tkRender();
+  return tkHostNet();
+}
+async function tkResume() { // the room this phone ran, reopened with the same code: the game as it was; the phones come back on their own (they are asked "who is there?")
+  const R = tkLS('grasp.tkRoom'); if (!R) return; tkDbg('— reopen room ' + R.code);
+  tk.mode = 'host'; tk.me = 'h'; tk.code = R.code; tk.myName = R.name || tk.myName; tk.lobby = R.lobby || [{ id: 'h', name: tk.myName }]; tk.set = Object.assign(tk.set, R.set || {}); tk.own = R.own || {}; tk.botN = R.botN || 0;
+  tk.conns.clear(); tk.screens.clear(); tk.netMsg = tks('connecting'); tk.backAt = Date.now(); tk.sel = []; tk.passTo = null; tk.log.push('reopen:' + R.code);
+  const g = R.g; tk.g = g; if (g) { g.roundAt = g.revealAt = Date.now(); tk.scr = 'game'; tkPush(); } else { tk.scr = 'lobby'; tkRender(); }
+  return tkHostNet();
+}
+async function tkHostNet() {
   try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => tkGone(c.peer || c.id)); },
       (e) => { if (tk.mode !== 'host') return; const ty = e && e.type; // (the owner: "the connection dropped" stayed on for good: a guest or the TV leaving makes the broker answer 'peer-unavailable', which is no drop at all)
         if (ty === 'unavailable-id') tk.netMsg = tks('netTaken'); else if (TK_NETDOWN.includes(ty)) tk.netMsg = tks('reconn'); else return; tkRender(); },
@@ -23284,20 +23326,21 @@ function tkFromGuest(c, m) {
   if (m.t === 'react' && tk.g && tk.conns.has(id)) { TK.react(tk.g, id, m.k); tkFx(m.k, m.e); return; }
   if (!tk.g || !tk.conns.has(id)) return; if (m.t === 'pick') TK.submit(tk.g, id, m.idx); else if (m.t === 'swap') TK.swap(tk.g, id); else if (m.t === 'judge') TK.judge(tk.g, id, m.k); else if (m.t === 'next' && tk.g.phase === 'reveal' && tk.g.players[tk.g.judge].id === id) TK.next(tk.g); tkPush(); // (a guest moves the game on only as the round's czar)
 }
-function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id, own: tkOwnN() }); } catch {} } tkBoardPush(); tkRender(); }
+function tkLobbyPush() { for (const [id, c] of tk.conns) { try { c.send({ t: 'lobby', list: tk.lobby, code: tk.code, set: tk.set, you: id, own: tkOwnN() }); } catch {} } tkBoardPush(); tkRoomSave(); tkRender(); }
 /* the shared screen (the owner: a TV shows the board, the phones are the hands, like Jackbox): a phone or a TV browser joins the room as a screen (no player);
    the host sends it what everyone may see: the room, then the game as seen by nobody in it (no hand) */
 function tkBoardPush() { if (tk.mode !== 'host' || !tk.screens.size) return; const v = tk.g ? { scr: 'game', v: TK.view(tk.g, '~tv') } : { scr: 'lobby', code: tk.code, list: tk.lobby, set: tk.set };
   for (const [, c] of tk.screens) { try { c.send({ t: 'board', v }); } catch {} } }
 async function tkScreen() {
   tkDbg('— TV screen for room ' + tk.code);
-  tk.mode = 'screen'; tk.busy = true; tk.err = ''; tkRender();
-  const out = (k) => { tkNetClose(); tk.board = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
+  tk.mode = 'screen'; tk.busy = true; tk.err = ''; tk.netMsg = ''; tkRender();
+  const out = (k) => { tk.netMsg = ''; tkNetClose(); tk.board = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
   try { tk.net = await TKNET.join(tk.code, (m) => {
       if (m.t === 'board') { tkSfxLoad(); tk.board = m.v; tk.scr = 'board'; tk.busy = false; if (m.v.v) tkSeen(m.v.v); }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
       else if (m.t === 'closed') return out('closed');
-      tkRender(); }, () => { if (tk.mode === 'screen' && tk.net) out('closed'); });
+      else if (m.t === 'who') { try { tk.net.send({ t: 'screen' }); } catch {} return; }
+      tkRender(); }, (k) => { if (tk.mode !== 'screen' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tkRender(); } else if (k === 'back') { tk.netMsg = ''; try { tk.net.send({ t: 'screen' }); } catch {} tkRender(); } else out('closed'); });
     tk.net.send({ t: 'screen' }); tk.log.push('screen:' + tk.code);
     setTimeout(() => { if (tk.busy && tk.mode === 'screen' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
@@ -23319,16 +23362,18 @@ function tkBoardHtml() {
 }
 async function tkJoin(name) {
   tkDbg('— join room ' + tk.code);
-  tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender();
-  const out = (k) => { tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
-  try { tk.net = await TKNET.join(tk.code, (m) => {
+  tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender(); const code = tk.code, id = tkGid(code, name);
+  const out = (k) => { if (k === 'kicked' || k === 'closed') tkLS('grasp.tkLast', null); tk.netMsg = ''; tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
+  const hello = () => { try { tk.net && tk.net.send({ t: 'hello', name, seen: tkSeenList() }); } catch {} };
+  try { tk.net = await TKNET.join(code, (m) => {
       tkDbg('in ← host: ' + m.t + (m.v && m.v.seq != null ? ' #' + m.v.seq + ' ' + m.v.phase : ''));
+      if (m.t === 'who') return hello(); if (m.t === 'lobby' || m.t === 'view') tkLS('grasp.tkLast', { at: Date.now(), code, name });
       if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.lobbyOwn = m.own || 0; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
       else if (m.t === 'view') { tkSfxLoad(); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
-      tkRender(); }, () => { if (tk.mode === 'guest' && tk.net) out('closed'); });
-    tk.net.send({ t: 'hello', name, seen: tkSeenList() }); tk.log.push('join:' + tk.code);
+      tkRender(); }, (k) => { if (tk.mode !== 'guest' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tkRender(); } else if (k === 'back') { if (tk.netMsg) { tk.netMsg = ''; tkRender(); } hello(); } else out('closed'); }, id);
+    hello(); tk.log.push('join:' + tk.code);
     setTimeout(() => { if (tk.busy && tk.mode === 'guest' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
 }

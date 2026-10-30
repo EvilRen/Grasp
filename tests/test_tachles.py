@@ -306,9 +306,10 @@ async def mqtt_room(b):
     br = subprocess.Popen([_s.executable if 'websockets' in _s.modules else 'python3.13', 'tests/mq_broker.py', '8897'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); await asyncio.sleep(1.2)
     try:
         ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []; pages = []
+        INIT = FAST + "window.__tkMQ = ['ws://localhost:8897/mqtt']; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he'); Object.defineProperty(navigator, 'wakeLock', { value: { request: () => { window.__wl = (window.__wl || 0) + 1; return Promise.resolve({ release: () => Promise.resolve(), addEventListener() {} }); } } });"
         for i in range(2):
             pg = await ctx.new_page(); await routes(pg); pg.on('pageerror', lambda e: errs.append(str(e)))
-            await pg.add_init_script(FAST + "window.__tkMQ = ['ws://localhost:8897/mqtt']; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
+            await pg.add_init_script(INIT)
             await pg.goto(BASE + '/tachles'); await wait(pg, f"{TKH}.tk.scr === 'menu'", 8000); pages.append(pg)
         host, g = pages
         await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'המארח'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(1500)
@@ -318,6 +319,24 @@ async def mqtt_room(b):
         check('MQTT: a phone joins the room with its code (through the broker): both see two players', ok and await host.evaluate(f"{TKH}.tk.lobby.length") == 2 and len(await g.evaluate(f"{TKH}.tk.lobbyView")) == 2, await host.evaluate("tkDbgL.slice(-6)"))
         await click(host, '#tachles [data-a="start"]'); ok2 = await wait(g, f"{TKH}.tk.scr === 'game' && {TKH}.tk.view && {TKH}.tk.view.round === 1", 8000)
         check('MQTT: the game starts on the phone too', ok2)
+        check('screen on: the room and the game hold a wake lock (the screen does not go off)', await host.evaluate(f"!!{TKH}.tk.wake && window.__wl >= 1") and await g.evaluate(f"!!{TKH}.tk.wake"))
+        # the owner: "the screen went off, the browser closed: the player can't get back in". A phone closes and opens again: "back to the game", same seat and cards
+        hand, me = await g.evaluate(f"{TKH}.tk.view.hand.join('|')"), await g.evaluate(f"{TKH}.tk.view.me"); await g.close(); await host.wait_for_timeout(300)
+        g = await ctx.new_page(); await routes(g); g.on('pageerror', lambda e: errs.append(str(e))); await g.add_init_script(INIT)
+        await g.goto(BASE + '/tachles'); await wait(g, f"{TKH}.tk.scr === 'menu'", 8000)
+        check('back in: the menu shows "↩️ חזרה למשחק" with the room code', await g.locator('#tachles [data-a="back:g"]').count() == 1 and code in await g.inner_text('#tachles [data-a="back:g"]'))
+        await g.screenshot(path=OUT + 'tachles_back_in.png')
+        await click(g, '#tachles [data-a="back:g"]'); ok3 = await wait(g, f"{TKH}.tk.scr === 'game' && {TKH}.tk.view && {TKH}.tk.view.me === '{me}'", 10000)
+        check('back in: the same seat, the same cards, still two players', ok3 and await g.evaluate(f"{TKH}.tk.view.hand.join('|')") == hand and await host.evaluate(f"{TKH}.tk.g.players.length") == 2)
+        # the host's browser closes: reopened, "back to your room" opens the same code with the game as it was, and the phone comes back on its own
+        rnd, hh = await host.evaluate(f"{TKH}.tk.g.round"), await host.evaluate(f"{TKH}.tk.view.hand.join('|')"); await host.close(); await g.wait_for_timeout(300)
+        host = await ctx.new_page(); await routes(host); host.on('pageerror', lambda e: errs.append(str(e))); await host.add_init_script(INIT)
+        await host.goto(BASE + '/tachles'); await wait(host, f"{TKH}.tk.scr === 'menu'", 8000)
+        check('room back: the menu shows "↩️ חזרה לחדר שלך"', await host.locator('#tachles [data-a="back:h"]').count() == 1)
+        await click(host, '#tachles [data-a="back:h"]'); ok4 = await wait(host, f"{TKH}.tk.conns.size === 1 && {TKH}.tk.g.players.every((p) => p.on)", 12000)
+        check('room back: the same code and round, the host\'s cards, the phone back in the room (asked "who is there?")', ok4 and await host.evaluate(f"{TKH}.tk.code") == code and await host.evaluate(f"{TKH}.tk.g.round") == rnd and await host.evaluate(f"{TKH}.tk.view.hand.join('|')") == hh and (await view(g))['scr'] == 'game', await host.evaluate("tkDbgL.slice(-8)"))
+        await click(host, '#tachles [data-a="leave"]'); await click(host, '#tachles [data-a="leaveOk"]'); await wait(g, f"{TKH}.tk.scr === 'menu'", 8000)
+        check('room closed: the guest is back at the menu, no "back" buttons left', (await view(g))['scr'] == 'menu' and await g.locator('#tachles .tkBackIn').count() == 0 and await host.evaluate("!localStorage.getItem('grasp.tkRoom') && !localStorage.getItem('grasp.tkLast')"))
         check('MQTT: no page errors', not errs, errs); await ctx.close()
     finally: br.terminate()
 
