@@ -237,8 +237,10 @@ async def online(b):
     check('the players\' strip: everyone fits, no scrolling (3 players, and 8: the avatar over the name)', all(st) and all(st8), [st, st8])
     hands = [await p.evaluate(f"{TKH}.tk.view.hand.join('|')") for p in pages]; check('online: each phone sees only its own hand (three different hands)', len(set(hands)) == 3, [h[:30] for h in hands])
     J = await host.evaluate(f"{TKH}.tk.view.judge"); pick = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") != J]
-    await step_local(pick[0]); await host.wait_for_timeout(200)
-    check('online: one answered, one left: the status chips (a tick, a pulsing avatar) and a tease line for the last one', await pick[1].locator('#tachles .tkTick').count() == 1 and await pick[1].locator('#tachles .tkTease').count() == 1)
+    H = "(() => { const s = document.querySelector('#tachles .tkStatus'); return s ? Math.round(s.getBoundingClientRect().height) : -1; })()"; h0 = await pick[1].evaluate(H)
+    await step_local(pick[0]); await host.wait_for_timeout(200); h1 = await pick[1].evaluate(H)
+    check('online: one answered, one left: the status chips (a tick, a pulsing avatar) and a tease line for the last one', await pick[1].locator('#tachles .tkTick').count() == 1 and len((await pick[1].inner_text('#tachles .tkTease')).strip()) > 3)
+    check('the tease line does not push the screen: its place is kept from the start of the round (the owner: a scroll appeared)', h0 > 0 and h0 == h1, [h0, h1])
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     for k in range(30):
         if (await view(host))['phase'] == 'reveal': break

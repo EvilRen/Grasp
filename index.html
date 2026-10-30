@@ -1524,7 +1524,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkRing b{ font-size:14px; font-weight:900; font-variant-numeric:tabular-nums; } #tachles .tkRing.urg b{ color:#ef4444; } #tachles .tkRing.urg{ animation:tkUrgent .85s ease-in-out infinite; }
 #tachles .tkPill{ font-size:12px; font-weight:700; color:var(--dim); padding:4px 8px; border-radius:999px; background:var(--el); border:1px solid var(--bd); white-space:nowrap; }
 #tachles .tkStatus{ display:flex; flex-direction:column; align-items:center; gap:8px; width:min(28rem,100%); }
-#tachles .tkTease{ font-size:14px; font-style:italic; color:var(--faint); text-align:center; padding:0 12px; line-height:1.4; }
+#tachles .tkTease{ font-size:13px; font-style:italic; color:var(--faint); text-align:center; padding:0 12px; line-height:1.35; height:2.7em; margin:0 0 4px; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; } /* (the owner: the line showing up pushed everything down and a scroll appeared: its place is kept (2 lines) from the start of the round, empty until one is left) */
 #tachles .tkChips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
 #tachles .tkChip{ display:flex; align-items:center; gap:6px; padding:4px 8px 4px 6px; border-radius:999px; background:var(--el); border:1px solid var(--bd); } #tachles .tkChip small{ font-size:12px; font-weight:700; color:#fff; }
 #tachles .tkChip .tkAv{ border-radius:8px; } #tachles .tkChip.ok small{ color:var(--dim); }
@@ -2018,7 +2018,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.4';
+const APP_VERSION = '1.12.5';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23014,7 +23014,7 @@ function tkScoresHtml(v, me) { const st = (p) => !p.on || v.phase === 'reveal' |
   return '<div class="tkCard tkScores' + (v.players.length > 4 ? ' many' : '') + '">' + v.players.map((p) => '<div class="tkSc' + (p.id === me ? ' me' : '') + (p.on ? '' : ' off') + '"><span class="tkAvW">' + tkAv(p.name, 32) + (p.id === v.judge ? tki('crown', 'tkCrown') : '') + st(p) + '</span>' +
   '<span class="tkScN"><small>' + tkEsc(p.name) + '</small><b>' + p.score + '</b></span></div>').join('') + '</div>'; }
 function tkTeaseFor(v, holdouts) { // a stable line for the one still choosing (picked once per round and player)
-  if (holdouts.length !== 1) return ''; const key = v.round + '|' + holdouts[0].id;
+  if (holdouts.length !== 1) return '<p class="tkTease"></p>'; const key = v.round + '|' + holdouts[0].id;
   if (!tk.tease || tk.tease.key !== key) { const L = TK_TEASE[TK_LANG]; tk.tease = { key, line: L[Math.floor(Math.random() * L.length)] }; }
   return '<p class="tkTease">' + tkEsc(tk.tease.line).split('{name}').join(tkEsc(holdouts[0].name)) + '</p>';
 }
