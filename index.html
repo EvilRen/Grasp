@@ -1575,7 +1575,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 @media (max-height:760px){ /* (the UX pass: on a short phone, 640 high, the hand held at the bottom hid the question: a lower hand, a tighter top) */
   #tachles .tkTop{ margin-bottom:6px; min-height:40px; } #tachles .tkScores{ padding:6px; } #tachles .tkGame .tkCenter{ gap:8px; margin:8px 0 4px; justify-content:flex-start; }
   #tachles .tkHC{ min-height:150px; } #tachles .tkHC p{ font-size:16px; } #tachles .tkHand{ padding-top:22px; padding-bottom:8px; } #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:14px; }
-  #tachles .tkSendRow{ padding-top:2px; } #tachles .tkSend, #tachles .tkSwap{ margin-top:0; padding-top:10px; padding-bottom:10px; } #tachles .tkSwipe{ margin:2px 0; } }
+  #tachles .tkDuel .tkBlackC{ min-height:0; padding:10px 10px 8px; } #tachles .tkDuel .tkBlackC p{ font-size:clamp(13px,4vw,16px); line-height:1.3; } #tachles .tkSlot{ min-height:64px; padding:8px; } #tachles .tkSendRow{ padding-top:2px; } #tachles .tkSend, #tachles .tkSwap{ margin-top:0; padding-top:10px; padding-bottom:10px; } #tachles .tkSwipe{ margin:2px 0; } }
 #tachles .tkHandBox{ position:sticky; bottom:0; z-index:3; margin:0 -16px; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 4px); background:linear-gradient(rgba(10,10,10,0), rgba(10,10,10,.97) 8px); } /* (the hand stays at the bottom of the screen, like cards held: the owner, from the owner's reference) */
 #tachles .tkHC em, #tachles .tkSub em, #tachles .tkSlot em{ position:absolute; top:-8px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:var(--neon); color:#fff; font-style:normal; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(168,85,247,.7); }
 #tachles .tkSub em{ position:static; width:20px; height:20px; font-size:12px; margin-bottom:4px; box-shadow:none; }
@@ -2023,7 +2023,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.6';
+const APP_VERSION = '1.12.7';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23290,7 +23290,7 @@ function tkClick(e) {
   else if (a.startsWith('jc:')) { if (Date.now() - (tk.dragEnd || 0) < 400) return; const k = +a.slice(3), v = tkCurView(), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
     if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > (b.offsetWidth || cr.width) * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (offsetWidth: mid-flip the box is narrow, and a tap on the middle card read as one on the side) */ if (v && v.me === v.judge && (tk.mode !== 'local' || tkLocalCzarHere())) tk.jsel = tk.jsel === k ? null : k; else return; }
   else if (a.startsWith('card:')) { if (Date.now() - (tk.dragEnd || 0) < 400) return; const i = +a.slice(5), v = tkCurView(), k = tk.sel.indexOf(i), cr = b.getBoundingClientRect(), hw = b.parentNode.parentNode.getBoundingClientRect();
-    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > (b.offsetWidth || cr.width) * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; }
+    if (Math.abs(cr.left + cr.width / 2 - (hw.left + hw.width / 2)) > (b.offsetWidth || cr.width) * 0.45) { b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; } /* (a side card: to the middle first) */ if (k >= 0) tk.sel.splice(k, 1); else if (tk.sel.length < v.pick) tk.sel.push(i); else if (v.pick === 1) tk.sel = [i]; else { tk.sel[tk.sel.length - 1] = i; try { navigator.vibrate && navigator.vibrate(12); } catch {} } } /* (all picked and another tapped: it takes the last one's place, as a drag does; it did nothing, and felt like a tap that did not take) */
   else if (a === 'swap') { const v = tkCurView(); if (v.swaps > 0) { const W0 = document.querySelector('#tachles .tkHandW'); if (W0) W0.scrollLeft = 0; return tkAct({ t: 'swap', pid: v.me }); } }
   else if (a === 'send') { const v = tkCurView(); if (tk.sel.length === v.pick) return tkAct({ t: 'pick', idx: tk.sel.slice(), pid: v.me }); }
   else if (a.startsWith('judge:')) { const v = tkCurView(); return tkAct({ t: 'judge', k: +a.slice(6), pid: v.me }); }

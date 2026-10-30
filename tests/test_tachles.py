@@ -290,7 +290,7 @@ async def style_packs(b):
     await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(300)
     gc = await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g, d = g.deck, names = g.players.map((p) => p.name), j = d.w.indexOf('המנגל של אבי ביום העצמאות.');
       const nb = d.b.map((b, i) => i).filter((i) => i >= {TKH}.tk.deck.b.length), early = g.bd.slice(-60).filter((i) => i >= {TKH}.tk.deck.b.length).length;
-      const inHand = g.players.some((p) => p.hand.includes(j)), soon = inHand || g.wd.slice(-45).includes(j);
+      const inHand = g.players.some((p) => p.hand.includes(j)), soon = inHand || g.wd.slice(-45).includes(j) || !g.wd.includes(j); /* (or already played: fast bots) */
       return {{ named: nb.length > 0 && nb.every((i) => names.some((n) => d.b[i][0].includes(n))), early, soon }}; }})()""")
     check('the group\'s cards: questions with the players\' names (those the style lets in), several among the first draws; the in-joke dealt early', gc['named'] and gc['early'] >= 2 and gc['soon'], gc)
     r = await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g, d = g.deck, ws = g.players.flatMap((p) => p.hand).concat(g.wd), bs = g.bd.concat([g.black]);
@@ -401,9 +401,13 @@ async def taps(b):
         await page.wait_for_timeout(hold // 2); await touch('touchEnd', []); await page.wait_for_timeout(220)
         if storm: await page.evaluate("clearInterval(window.__st)")
         s1 = await page.evaluate(f"{TKH}.tk.sel.slice()"); return (m[0] in s1) != (m[0] in s0)
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk, g = t.g; g.black = g.deck.b.findIndex((c) => c[1] === 1); t.view = {TKH}.TK.view(g, t.me); t.sel = []; {TKH}.render(); }})()")
     res = {}
     for name, kw in (('clean', {}), ('quick', {'hold': 20}), ('long', {'hold': 400}), ('slide 10px', {'jx': 10}), ('slide up 10px', {'jy': -10}), ('edge', {'pos': 0.9}), ('other edge', {'pos': 0.1}), ('re-render', {'storm': True}), ('after a swipe', {'swipe': 120})):
         res[name] = sum([await tap1(**kw) for _ in range(6)])
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk, g = t.g; g.black = g.deck.b.findIndex((c) => c[1] === 2); t.view = {TKH}.TK.view(g, t.me); t.sel = [0, 1]; {TKH}.render(); document.querySelectorAll('#tachles .tkHC')[3].scrollIntoView({{ inline: 'center', block: 'nearest' }}); }})()"); await page.wait_for_timeout(300)
+    m = await page.evaluate(MID); await touch('touchStart', [(m[1], m[2])]); await page.wait_for_timeout(40); await touch('touchEnd', []); await page.wait_for_timeout(250)
+    check('taps: both picked (pick 2) and a third tapped: it takes the second one\'s place (it did nothing)', await page.evaluate(f"{TKH}.tk.sel.join()") == '0,%d' % m[0], [m[0], await page.evaluate(f"{TKH}.tk.sel")])
     check('taps on the middle card: every one takes (clean, quick, long, a sliding finger, the edges, mid re-render, after a swipe)', all(v == 6 for v in res.values()), res)
     check('taps: no page errors', not errs, errs); await ctx.close()
 
@@ -422,9 +426,10 @@ async def small_screen(b):
         await page.evaluate("$('tachles').scrollTop = 1e5"); await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(200)
         if await page.evaluate(f"{TKH}.tk.view.me !== {TKH}.tk.view.judge"): break
         await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk, g = t.g, B = g.deck.b; let k = 0; B.forEach((c, i) => {{ if (c[1] === 1 && c[0].length > B[k][0].length) k = i; }}); g.black = k; t.view = {TKH}.TK.view(g, t.me); {TKH}.render(); }})()") # (the longest question in the deck)
     st = await page.evaluate("(() => { const q = document.querySelector('#tachles .tkBlackC').getBoundingClientRect(), h = document.querySelector('#tachles .tkHandBox').getBoundingClientRect(); return [$('tachles').scrollTop, Math.round(q.top), Math.round(q.bottom), Math.round(h.top)]; })()")
     await page.screenshot(path=OUT + 'tachles_small_pick.png')
-    check('short phone: the game opens at the top, the question card whole and above the hand', st[0] == 0 and st[1] >= 0 and st[2] <= st[3] + 2, st)
+    check('short phone: the game opens at the top, the question card whole and above the hand (the longest question)', st[0] == 0 and st[1] >= 0 and st[2] <= st[3] + 2, st)
     check('short phone: no page errors', not errs, errs); await ctx.close()
 
 async def settings_way(b):
