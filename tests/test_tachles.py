@@ -372,7 +372,12 @@ async def link_in(b):
     await page.screenshot(path=OUT + 'tachles_link_join.png')
     ctx2, p2, e2 = await page_for(b, '/tachles?room=WXYZ', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(p2, f"{TKH}.tk.scr === 'form'", 8000)
     check('the link, 18+ already confirmed: straight to the join form with the code', await p2.evaluate(f"{TKH}.tk.form") == 'join' and await p2.input_value('#tkCode') == 'WXYZ')
-    check('the link: no page errors', not errs and not e2, errs + e2); await ctx.close(); await ctx2.close()
+    ctx3, p3, e3 = await page_for(b, '/r/qrst', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(p3, f"{TKH}.tk.scr === 'form'", 8000)
+    check('the short link /r/CODE (what Copy / Share send now: never the old copy a phone has cached): the join form with the code', await p3.evaluate(f"{TKH}.tk.form") == 'join' and await p3.input_value('#tkCode') == 'QRST' and '/tachles?room=QRST' in p3.url, p3.url)
+    await p3.evaluate(f"{TKH}.tk.code = 'WXYZ'"); await p3.evaluate("navigator.clipboard.writeText = (t) => { window.__clip = t; return Promise.resolve(); }")
+    await p3.evaluate(f"(() => {{ {TKH}.tk.scr = 'lobby'; {TKH}.tk.mode = 'host'; {TKH}.tk.lobby = [{{ id: 'h', name: 'x' }}]; {TKH}.render(); }})()"); await click(p3, '#tachles [data-a="copy"]')
+    check('Copy link copies the /r/CODE link', (await p3.evaluate("window.__clip || ''")).endswith('/r/WXYZ'), await p3.evaluate("window.__clip"))
+    check('the link: no page errors', not errs and not e2 and not e3, errs + e2 + e3); await ctx.close(); await ctx2.close(); await ctx3.close()
 
 async def taps(b):
     # the owner: "a tap on a card sometimes takes, sometimes not": real touches (CDP) on the middle card of the hand: clean, quick, long, the finger

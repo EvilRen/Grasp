@@ -2027,7 +2027,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.12';
+const APP_VERSION = '1.12.13';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -20665,6 +20665,10 @@ function pwaOpenParam() { // the installed app's shortcut 'Camera games' (/?open
   try { history.replaceState(null, '', '/'); } catch {} cgOpenPick(); return true;
 }
 function routeBoot() { // on load: a game's path opens it (no start screen first); anything else stays on the start screen
+  /* a Tachles room link, /r/CODE (1.12.13, the owner: "the room link still lands on the start screen"): the service worker answers /tachles
+     from the copy cached on the phone at once, so a friend who had Grasp from before ran an old copy that lost ?room=; /r/ is not one of the
+     paths an old service worker takes, so it always comes fresh from the network, and here it becomes /tachles?room=CODE */
+  const rm = /^\/r\/([A-Za-z]{4})\/?$/.exec(location.pathname); if (rm) try { history.replaceState(null, '', '/tachles?room=' + rm[1].toUpperCase()); } catch {}
   const m = routeOf(location.pathname); if (!m) return false;
   route.applying = true; try { if (m === 'duel') route.duelQ = location.search; const p = '/' + m + (m === 'duel' || m === 'tachles' ? location.search : ''); // (Tachles: the shared link's ?room=CODE, read by tkStart; it was dropped here, so the link opened the menu, not the join form)
     if (navGuardOk()) { history.replaceState(null, '', '/'); history.pushState({ grasp: m, fromHome: true }, '', p); route.log.push('boot:under'); } // (navigation v2, a real visitor: the start screen under a direct link, so the first Back lands home, not out of the app)
@@ -23385,7 +23389,7 @@ function tkClick(e) {
   else if (a === 'again') tkAgain();
   else if (a.startsWith('skip:')) return tkAct({ t: 'skip', who: a.slice(5) });
   else if (a.startsWith('shr:')) { const v = tk.view, k = a.slice(4), m = k === 'last' ? v && v.last && { black: v.black[0], cards: v.last.cards, name: v.last.name } : v && v.hist && v.hist[+k]; if (m) tkShareImg(m); return; }
-  else if (a === 'copy' || a === 'share') { const url = location.origin + '/tachles?room=' + tk.code;
+  else if (a === 'copy' || a === 'share') { const url = location.origin + '/r/' + tk.code; // (/r/: always fresh from the network, see routeBoot)
     if (a === 'share' && navigator.share) { navigator.share({ title: tks('title') + ' - ' + tk.code, text: tks('shareTxt', { c: tk.code }), url }).catch(() => {}); return; }
     try { navigator.clipboard.writeText(url); } catch {} tk.copied = Date.now(); setTimeout(tkRender, 2100); }
   tkRender();
