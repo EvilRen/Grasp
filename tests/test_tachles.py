@@ -463,6 +463,7 @@ async def public_rooms(b):
     await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'קרמבו'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(300)
     check('open rooms: a new room is open to everyone by default (the switch on)', await host.locator('#tachles [data-a="pubT"].on').count() == 1)
     await a.evaluate(f"{TKH}.tk.myName = 'שוקו 5'"); await n.evaluate(f"{TKH}.tk.myName = 'ביסלי 3'")
+    cp = await a.inner_text('#tachles .tkCopy'); check('the menu: the copyright line at the bottom (© year Benny Ankri · כל הזכויות שמורות)', 'Benny Ankri' in cp and '©' in cp and 'כל הזכויות שמורות' in cp, cp)
     await click(a, '#tachles [data-a="m:rooms"]'); await a.wait_for_timeout(600)
     txt = await a.inner_text('#tachles') if await a.locator('#tachles .tkPbRoom').count() else ''
     check('open rooms: the list shows the room: the host, 1/8 players, the style, points, round time', await a.locator('#tachles .tkPbRoom').count() == 1 and 'קרמבו' in txt and '1/8' in txt and 'גס' in txt and 'לניצחון' in txt and 'לסבב' in txt, txt[:200])
