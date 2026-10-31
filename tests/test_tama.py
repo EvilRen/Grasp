@@ -78,7 +78,7 @@ async def mechanics(b):
     # growing
     await page.evaluate(f"{S}.ta.cares = 14"); await btn(page, 'kitchen'); await page.wait_for_timeout(300); await page.evaluate(f"{S}.ta.foods[0].yuck = false; {S}.ta.need.food = 1; {S}.eat(0)"); await page.wait_for_timeout(2000); s = await st(page)
     check('cares grow it: a child at 15 (ears; "I grew!")', s['stage'] == 'child' and 'I grew!' in await said(page), s); await page.screenshot(path=OUT + 'tama_child.png')
-    await page.evaluate(f"{S}.ta.cares = 39; {S}.ta.need.food = 1; {S}.eat(0)"); await page.wait_for_timeout(1800); s = await st(page)
+    await page.evaluate(f"{S}.ta.cares = 39; {S}.ta.foods[0].yuck = false; {S}.ta.need.food = 1; {S}.eat(0)"); await page.wait_for_timeout(1800); s = await st(page)
     check('...grown up at 40 (antennae, a tail)', s['stage'] == 'adult', s); await btn(page, 'kitchen'); await page.wait_for_timeout(500); await page.screenshot(path=OUT + 'tama_adult.png')
     await page.tap('#pauseBtn'); await wait(page, "mode === 'none'", 4000)
     await page.evaluate("__grasp.setGameMode('tama'); strikeStart('mouse')"); await wait(page, "gameMode === 'tama' && mode === 'mouse'", 8000); await page.wait_for_timeout(300)
