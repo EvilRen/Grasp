@@ -1390,7 +1390,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkI{ width:20px; height:20px; flex:none; }
 #tachles[dir=ltr] .lflip, #tachles[dir=rtl] .rflip{ transform:scaleX(-1); }
 #tachles .tkC{ text-align:center; } #tachles .tkDim{ color:var(--dim); } #tachles .tkFaint{ color:var(--faint); } #tachles .tkLh{ line-height:1.6; }
-#tachles .tkXs{ font-size:12px; } #tachles .tkSm{ font-size:14px; } #tachles .tkLg{ font-size:18px; }
+#tachles .tkXs{ font-size:12px; } #tachles .tkGatePriv{ margin-top:6px; line-height:1.4; } #tachles .tkSm{ font-size:14px; } #tachles .tkLg{ font-size:18px; }
 #tachles .tkMb{ margin-bottom:16px; } #tachles .tkMt{ margin-top:12px; } #tachles .tkMb8{ margin-bottom:8px; }
 #tachles .tkCol{ display:flex; flex-direction:column; gap:12px; } #tachles .tkCol8{ display:flex; flex-direction:column; gap:8px; } #tachles .tkCol4{ display:flex; flex-direction:column; gap:4px; }
 #tachles .tkTwo{ display:flex; gap:8px; } #tachles .tkTwo > *{ flex:1; min-width:0; }
@@ -2032,7 +2032,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.24';
+const APP_VERSION = '1.12.25';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22668,7 +22668,7 @@ const TK_TEASE = { he: ['כולם מחכים ל{name} המניאק', '{name}, ק
     '{name}\'s brain is still loading', '{name}, the kids grew up while you were choosing', '{name} is torn between bad and worse', '{name} needs divine intervention', '{name}, there is such a thing as seconds', '{name}, if it\'s stress, breathe'] };
 const TKS = {
   he: { title: "ת'כלס", tag: 'משחק קלפים לאנשים נוראיים', foot: '18+ • הומור שחור • הכול מותר', gateD: 'המשחק מכיל הומור שחור, מין, אלימות ושפה גסה.', gateD2: 'מיועד לבני <b>18+</b> בלבד.',
-    gateOk: 'אני מעל גיל 18, בוא נתחיל', gateFine: 'בכניסה אתה מאשר שאתה בגיר ומסכים לתוכן. המשחק אוסף סוג מכשיר ועיר משוערת (לפי כתובת IP), בלי שמירת פרטים מזהים.', back: 'חזור', resetGate: 'חזרה למסך הפתיחה',
+    gateOk: 'אני מעל גיל 18, בוא נתחיל', gateFine: 'בכניסה אתה מאשר שאתה בגיר ומסכים לתוכן.', gatePriv: '🔎 נאסף: סוג מכשיר ועיר כללית (לפי IP). לא נשמרים פרטים מזהים.', back: 'חזור', resetGate: 'חזרה למסך הפתיחה',
     create: 'צור חדר חדש', join: 'הצטרף לחדר קיים', bots: 'שחק נגד בוטים', local: 'טלפון אחד שעובר מיד ליד', or: 'או בלי אינטרנט',
     newRoom: 'חדר חדש', joinRoom: 'הצטרפות לחדר', botsT: 'נגד בוטים', localT: 'טלפון אחד', nick: 'כינוי', randNick: 'כינוי אקראי', mkRoom: 'צור חדר', mkRoomL: 'יוצר...', joinGo: 'הצטרף', joinGoL: 'מצטרף...', goRoom: 'קדימה',
     errNick: 'בחר כינוי', errCode: 'קוד החדר הוא 4 אותיות באנגלית', netErr: 'החדר לא נמצא או שאין חיבור. נסה שוב.', reconn: 'החיבור נפל לרגע, מתחבר מחדש...', netTaken: 'הקוד הזה תפוס. סגור את החדר ופתח חדש.', loading: 'טוען...',
@@ -22684,7 +22684,7 @@ const TKS = {
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה לא הצליחה כרגע. נסה שוב מאוחר יותר.',
     wrShort: 'קצר מדי', wrNoBlank: 'בשאלה צריך לפחות מקום ריק אחד (___)', wrLimit: 'אפשר 5 ביום. מחר עוד!', wrNote: 'בלי שמות של אנשים אמיתיים ובלי קטינים. כל קלף נבדק לפני שהוא נכנס.', wrMine: 'קלפים ששלחת (מחכים לאישור)', swipe: 'החלק לצדדים לעוד קלפים · גרור קלף למעלה או גע בו', dropHere: 'גררו קלף לכאן', nextR: 'לסבב הבא', waitNext: 'מחכים ש{n} ימשיך לסבב הבא', byBtn: 'בכפתור', youJudge: 'אתה השופט: הקלפים נוחתים הפוכים', decoy: 'קלף מהחפיסה', dropBest: 'גררו לכאן את הכי טובה', pickWin: 'בוחרים זוכה', crownIt: 'זו הזוכה!', swipeJ: 'החלק לצדדים בין התשובות · גרור את הכי טובה למעלה או גע בה', imN: 'אני {n}', passD: 'ושאף אחד אחר לא יציץ!', addP: 'הוסף שחקן', name: 'שחקן {n}', skip: 'דלג על {n}', connecting: 'מתחבר...' },
   en: { title: 'Tachles', tag: 'A card game for horrible people', foot: '18+ • Dark humour • Anything goes', gateD: 'This game has dark humour, sex, violence and crude language.', gateD2: 'For <b>18+</b> only.',
-    gateOk: "I'm over 18 - let's go", gateFine: 'By entering you confirm you are an adult and accept the content. The game collects device type and an approximate city (by IP), without storing identifying details.', back: 'Back', resetGate: 'Back to the opening screen',
+    gateOk: "I'm over 18 - let's go", gateFine: 'By entering you confirm you are an adult and accept the content.', gatePriv: '🔎 Collected: device type and a general city (by IP). No identifying details are stored.', back: 'Back', resetGate: 'Back to the opening screen',
     create: 'Create a new room', join: 'Join a room', bots: 'Play against bots', local: 'One phone, pass it round', or: 'or without internet',
     newRoom: 'New room', joinRoom: 'Join a room', botsT: 'Against bots', localT: 'One phone', nick: 'Nickname', randNick: 'Random nickname', mkRoom: 'Create room', mkRoomL: 'Creating...', joinGo: 'Join', joinGoL: 'Joining...', goRoom: 'Go',
     errNick: 'Pick a nickname', errCode: 'A room code is 4 letters', netErr: "Room not found or no connection. Try again.", loading: 'Loading...',
@@ -23029,7 +23029,7 @@ function tkRender() {
   const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
   if (tk.err === 'deck') h = '<div class="tkWrap"><div class="tkCard tkPad tkC"><p class="tkDim">' + tks('netErr') + '</p></div></div>';
   else if (s === 'gate') h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad8 tkC tkGlow"><div class="tkEmoji">🔞</div><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p class="tkDim tkLh">' + tks('gateD') + '<br>' + tks('gateD2') + '</p>' +
-    '<button class="tkP tkW tkLg" data-a="gate">' + tks('gateOk') + '</button><p class="tkFaint tkXs">' + tks('gateFine') + '</p><button class="tkLink" data-a="home">' + tks('home') + '</button></div></div>';
+    '<button class="tkP tkW tkLg" data-a="gate">' + tks('gateOk') + '</button><p class="tkFaint tkXs">' + tks('gateFine') + '</p><p class="tkDim tkXs tkGatePriv">' + tks('gatePriv') + '</p><button class="tkLink" data-a="home">' + tks('home') + '</button></div></div>';
   else if (s === 'menu') h = '<div class="tkWrap tkMidY"><div class="tkMenuTop"><button class="tkIcon" data-a="ungate" title="' + tks('resetGate') + '" aria-label="' + tks('resetGate') + '">' + tki('reset') + '</button></div>' +
     '<div class="tkC tkHero"><h1 class="tkNeon tkH0" data-a="ttl">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' + tkBackHtml() +
     '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
