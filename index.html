@@ -2029,7 +2029,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.15';
+const APP_VERSION = '1.12.16';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21180,7 +21180,7 @@ window.__grasp.sky = { SK, sk, alt: () => -skTopY() / sk.u, check: skCheck, visX
    Saved: grasp.tama { stage, cares, col, hat, glasses }. Hooks: __grasp.tama. ---------------- */
 const TA = { decayMs: 22000, child: 15, adult: 40, crack: 5 };
 const TA_FOOD = [['🍎'], ['🍌'], ['🍪'], ['🥕'], ['🍕'], ['🍦'], ['🍓'], ['🧀'], ['🍉'], ['🥦', 'yuck'], ['🥦', 'yuck']];
-const TA_HATS = ['👑', '🎩', '🧢', '🎀', '🌸', '🥳', '🎓', '🤠'], TA_GLASSES = ['🕶️', '👓', '🥸'], TA_COLS = ['#8fd3ff', '#ff9fd0', '#a8e88a', '#ffd36e', '#c9b0ff', '#ffb38a'];
+const TA_HATS = ['👑', '🎩', '🧢', '🎀', '🌸', '👒', '🎓', '🌻'], TA_GLASSES = ['🕶️', '👓', '🥽'], /* (1.12.16, the owner: 🥳 🤠 🥸 were whole faces over the pet's face: things only now) */ TA_COLS = ['#8fd3ff', '#ff9fd0', '#a8e88a', '#ffd36e', '#c9b0ff', '#ffb38a'];
 const TA_BTN = [['kitchen', '🍎', '#ff8a80'], ['park', '⚽', '#8fd3ff'], ['bath', '🛁', '#b9f0c8'], ['bed', '🌙', '#c9b0ff'], ['dress', '👒', '#ffd36e']];
 const TA_NEED = { food: 'kitchen', fun: 'park', clean: 'bath', sleep: 'bed' }, TA_NEED_E = { food: '🍎', fun: '⚽', clean: '🛁', sleep: '🌙' };
 const ta = { stage: 'egg', cares: 0, col: TA_COLS[0], hat: '', glasses: '', room: 'home', need: { food: 2, fun: 2, clean: 3, sleep: 3 }, want: null, said: {}, log: [], L: null,
@@ -21189,7 +21189,7 @@ const ta = { stage: 'egg', cares: 0, col: TA_COLS[0], hat: '', glasses: '', room
 function taLoad() { try { const o = JSON.parse(localStorage.getItem('grasp.tama') || '{}'); ta.stage = ['egg', 'baby', 'child', 'adult'].includes(o.stage) ? o.stage : 'egg'; ta.cares = Math.max(0, Math.min(9999, +o.cares || 0)); ta.col = TA_COLS.includes(o.col) ? o.col : TA_COLS[0]; ta.hat = TA_HATS.includes(o.hat) ? o.hat : ''; ta.glasses = TA_GLASSES.includes(o.glasses) ? o.glasses : ''; } catch { ta.stage = 'egg'; ta.cares = 0; } }
 function taSave() { try { localStorage.setItem('grasp.tama', JSON.stringify({ stage: ta.stage, cares: ta.cares, col: ta.col, hat: ta.hat, glasses: ta.glasses })); } catch {} }
 function taSay(key, gap = 6000, o) { const now = performance.now(); if (now - (ta.said[key] || -1e9) < gap) return; ta.said[key] = now; tgSay(o && o.text || t('ta_' + key), { level: 'name' }); }
-function taReset(now) {
+function taReset(now) { taArtLoad();
   taLoad(); ta.need = { food: 2, fun: 2, clean: 2, sleep: 3 }; ta.room = 'home'; ta.want = null; ta.act = null; ta.mood = null; ta.foods = []; ta.held = null; ta.ball = null; ta.bonks = 0; ta.foam = []; ta.drops = []; ta.hearts = []; ta.zz = [];
   ta.dirt = []; ta.lights = true; ta.crack = 0; ta.hatchAt = 0; ta.sq = ta.sqv = ta.jy = ta.jv = ta.px = 0; ta.decayAt = now + TA.decayMs; ta.L = null; ta.log.length = 0; ta.touch = null; taDirty(2);
   if (tg.demo && tg.demo.m === 'tama' && ta.stage !== 'egg') tg.demo.words = t('ta_care');
@@ -21279,6 +21279,19 @@ function taEggTap(now) { ta.crack++; taPoke(1.6); tgSfx('tick'); ta.log.push('cr
    room and size into an offscreen canvas (taBg); the buttons are glossy bubbles; the needs are rings on a frosted panel */
 const taL = (h, k) => mixHex(h, [255, 255, 255], k), taD = (h, k) => mixHex(h, [10, 14, 32], k); // (hex in, hex out: they nest)
 const taA = (h, a) => { const [r, g2, b] = hexRgb(h); return 'rgba(' + r + ',' + g2 + ',' + b + ',' + a + ')'; };
+/* the dress-up things and the mud (1.12.16, the owner: "find relevant free art online"): Microsoft's Fluent Emoji 3D (MIT) as pictures, and three
+   splats from openclipart.org (CC0) tinted wet brown (assets/tama/, CREDITS.txt); [file, width in body widths, x, y in body radii, tilt] */
+const TA_ART = { '👑': ['crown', 1.0, 0, -0.86, 0], '🎩': ['tophat', 0.95, 0, -0.84, 0], '🧢': ['cap', 1.15, 0, -0.8, 0], '🎀': ['bow', 0.8, 0.32, -0.8, 0.25], '🌸': ['flower', 0.62, 0.42, -0.72, 0.3],
+  '👒': ['sunhat', 1.3, 0, -0.8, 0], '🎓': ['grad', 1.05, 0, -0.86, 0], '🌻': ['sunflower', 0.62, 0.45, -0.7, 0.3], '🕶️': ['sunglasses', 1.42], '👓': ['glasses', 1.42], '🥽': ['goggles', 1.3] };
+const taPics = {};
+function taPic(name, ext = 'png') { let p = taPics[name]; if (!p) { p = taPics[name] = new Image(); p.decoding = 'async'; p.src = '/assets/tama/' + name + '.' + ext; } return p.complete && p.naturalWidth ? p : null; }
+function taMud(i) { // a splat, tinted wet mud: dark at the bottom right, a lighter top left, a wet shine (cached)
+  const k = 'mud' + (i % 3 + 1), c = taPics[k + ':t']; if (c) return c; const im = taPic(k, 'svg'); if (!im) return null;
+  const S = 128, cv = document.createElement('canvas'); cv.width = cv.height = S; const g = cv.getContext('2d'), r = Math.min(S / im.naturalWidth, S / im.naturalHeight), w = im.naturalWidth * r, h = im.naturalHeight * r;
+  g.drawImage(im, (S - w) / 2, (S - h) / 2, w, h); g.globalCompositeOperation = 'source-in'; const gr = g.createLinearGradient(0, 0, S, S); gr.addColorStop(0, '#b07a45'); gr.addColorStop(1, '#6b4220'); g.fillStyle = gr; g.fillRect(0, 0, S, S);
+  g.globalCompositeOperation = 'source-atop'; const sh = g.createRadialGradient(S * 0.36, S * 0.34, 0, S * 0.36, S * 0.34, S * 0.3); sh.addColorStop(0, 'rgba(255,240,215,0.45)'); sh.addColorStop(1, 'rgba(255,240,215,0)'); g.fillStyle = sh; g.fillRect(0, 0, S, S);
+  return (taPics[k + ':t'] = cv); }
+function taArtLoad() { for (const k in TA_ART) taPic(TA_ART[k][0]); for (let i = 0; i < 3; i++) taPic('mud' + (i + 1), 'svg'); }
 function taDirtXY(d, x, y, rx, ry) { return { x: x + Math.cos(d.a) * d.d * rx * 0.75, y: y + ry * (0.42 + 0.4 * d.d * (0.35 + 0.65 * Math.abs(Math.sin(d.a)))) }; } // (mud on the lower body, never on the face)
 function taGlossy(g, x, y, rx, ry, col, o = {}) { // a soft shaded ellipse: light from the top left, a darker rim, a glossy highlight
   const gr = g.createRadialGradient(x - rx * 0.35, y - ry * 0.45, Math.min(rx, ry) * 0.05, x, y, Math.max(rx, ry) * 1.15); gr.addColorStop(0, taL(col, 0.5)); gr.addColorStop(0.45, col); gr.addColorStop(1, taD(col, o.dark || 0.22));
@@ -21360,7 +21373,7 @@ function taDrawPet(g, x, yb, R, now, o = {}) { // the creature, its feet on yb
   g.save(); g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, TAU); g.clip();
   const rim = g.createRadialGradient(x + rx * 0.9, y + ry * 0.4, 0, x + rx * 0.9, y + ry * 0.4, R * 0.7); rim.addColorStop(0, 'rgba(255,255,255,0.28)'); rim.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = rim; g.fillRect(x - rx, y - ry, rx * 2, ry * 2);
   const tg = g.createRadialGradient(x, y + ry * 0.45, 0, x, y + ry * 0.45, rx * 0.62); tg.addColorStop(0, 'rgba(255,255,255,0.5)'); tg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = tg; g.beginPath(); g.ellipse(x, y + ry * 0.45, rx * 0.62, ry * 0.48, 0, 0, TAU); g.fill(); // the tummy
-  for (const d of ta.dirt) { const q = taDirtXY(d, x, y, rx, ry), dr = d.r * R * 0.8; for (const [ox, oy, k] of [[0, 0, 1], [0.7, -0.35, 0.45], [-0.6, 0.45, 0.35]]) { const cx = q.x + ox * dr, cy = q.y + oy * dr, rr = dr * k, mg = g.createRadialGradient(cx, cy, 0, cx, cy, rr); mg.addColorStop(0, 'rgba(150,100,55,0.75)'); mg.addColorStop(0.75, 'rgba(150,100,55,0.5)'); mg.addColorStop(1, 'rgba(150,100,55,0)'); g.fillStyle = mg; g.beginPath(); g.ellipse(cx, cy, rr, rr * 0.8, d.a, 0, TAU); g.fill(); } } // (mud splats)
+  for (const d of ta.dirt) { const q = taDirtXY(d, x, y, rx, ry), dr = d.r * R * 0.8, M = taMud(Math.floor(d.a * 7)); if (M) { const z = dr * 4.2; g.save(); g.translate(q.x, q.y); g.rotate(d.a); g.globalAlpha = 0.92; g.drawImage(M, -z / 2, -z / 2, z, z); g.restore(); continue; } for (const [ox, oy, k] of [[0, 0, 1], [0.7, -0.35, 0.45], [-0.6, 0.45, 0.35]]) { const cx = q.x + ox * dr, cy = q.y + oy * dr, rr = dr * k, mg = g.createRadialGradient(cx, cy, 0, cx, cy, rr); mg.addColorStop(0, 'rgba(150,100,55,0.75)'); mg.addColorStop(0.75, 'rgba(150,100,55,0.5)'); mg.addColorStop(1, 'rgba(150,100,55,0)'); g.fillStyle = mg; g.beginPath(); g.ellipse(cx, cy, rr, rr * 0.8, d.a, 0, TAU); g.fill(); } } // (mud splats)
   g.restore();
   const sh = g.createRadialGradient(x - rx * 0.42, y - ry * 0.58, 0, x - rx * 0.42, y - ry * 0.58, R * 0.32); sh.addColorStop(0, 'rgba(255,255,255,0.85)'); sh.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = sh; g.beginPath(); g.ellipse(x - rx * 0.42, y - ry * 0.58, R * 0.3, R * 0.2, -0.6, 0, TAU); g.fill(); // the gloss
   // the face: big shiny eyes, soft blush, a small mouth
@@ -21385,8 +21398,9 @@ function taDrawPet(g, x, yb, R, now, o = {}) { // the creature, its feet on yb
   else { g.beginPath(); g.moveTo(x - mw, my - R * 0.01); g.quadraticCurveTo(x - mw * 0.5, my + R * 0.07, x, my); g.quadraticCurveTo(x + mw * 0.5, my + R * 0.07, x + mw, my - R * 0.01); g.stroke(); } // (the resting mouth: a small cat-like w)
   g.restore();
   const fs = (k) => Math.round(R * k) + 'px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'middle';
-  if (ta.glasses) { g.font = fs(0.95); g.fillStyle = '#000'; g.fillText(ta.glasses, x, ey + R * 0.02); }
-  if (ta.hat) { g.save(); g.translate(x, y - ry * 0.95); g.rotate(-0.12 + ta.sq * 0.3); g.font = fs(0.95); g.fillStyle = '#000'; g.fillText(ta.hat, 0, -R * 0.12); g.restore(); }
+  if (ta.glasses) { const A = TA_ART[ta.glasses], im = A && taPic(A[0]); if (im) { const cut = A[0] === 'goggles' ? 0.42 : 0, w = rx * A[1], sh = im.naturalHeight * (1 - cut), h = w * sh / im.naturalWidth; g.drawImage(im, 0, im.naturalHeight * cut, im.naturalWidth, sh, x - w / 2, ey - h * 0.5, w, h); } /* (the goggles without their strap) */ else { g.font = fs(0.95); g.fillStyle = '#000'; g.fillText(ta.glasses, x, ey + R * 0.02); } }
+  if (ta.hat) { const A = TA_ART[ta.hat], im = A && taPic(A[0]); g.save(); if (im) { const w = rx * A[1], h = w * im.naturalHeight / im.naturalWidth; g.translate(x + A[2] * rx, y + A[3] * ry); g.rotate(A[4] - 0.08 + ta.sq * 0.3); g.drawImage(im, -w / 2, -h * 0.82, w, h); } /* (the picture's lower edge sits a little into the head) */
+    else { g.translate(x, y - ry * 0.95); g.rotate(-0.12 + ta.sq * 0.3); g.font = fs(0.95); g.fillStyle = '#000'; g.fillText(ta.hat, 0, -R * 0.12); } g.restore(); }
 }
 function taDrawEgg(g, x, yb, R, now) {
   const wob = Math.sin(now / 60) * Math.min(0.2, Math.abs(ta.sqv) * 6) + Math.sin(now / 700) * 0.03, ry = R * 1.2, y = yb - ry;
@@ -21420,7 +21434,7 @@ function taRender(now) {
   if (ta.room === 'park' && ta.ball) { const B = ta.ball; taShadow(g, B.x, L.floorY + 6, B.r * 0.9, B.r * 0.2, 0.25); g.font = Math.round(B.r * 2.1) + 'px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'middle'; g.save(); g.translate(B.x, B.y); g.rotate(B.x / B.r); g.fillStyle = '#000'; g.fillText('⚽', 0, 2); g.restore(); }
   if (ta.room === 'dress') for (const it of taDressItems()) { const on = it.kind === 'col' ? ta.col === it.v : ta[it.kind] === it.v; g.save(); g.shadowColor = 'rgba(40,30,60,0.22)'; g.shadowBlur = 8; g.shadowOffsetY = 3; g.fillStyle = on ? '#ffe28a' : '#ffffff'; g.beginPath(); g.arc(it.x, it.y, it.r, 0, TAU); g.fill(); g.restore();
     if (on) { g.strokeStyle = '#ffb020'; g.lineWidth = 3; g.beginPath(); g.arc(it.x, it.y, it.r - 1.5, 0, TAU); g.stroke(); }
-    if (it.kind === 'col') taGlossy(g, it.x, it.y, it.r * 0.7, it.r * 0.7, it.v); else { g.font = Math.round(it.r * 1.25) + 'px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(it.v, it.x, it.y + 2); } }
+    const A = it.kind !== 'col' && TA_ART[it.v], im = A && taPic(A[0]); if (im) { const z = it.r * 1.45, w = im.naturalWidth >= im.naturalHeight ? z : z * im.naturalWidth / im.naturalHeight, h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, it.x - w / 2, it.y - h / 2, w, h); } else if (it.kind === 'col') taGlossy(g, it.x, it.y, it.r * 0.7, it.r * 0.7, it.v); else { g.font = Math.round(it.r * 1.25) + 'px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(it.v, it.x, it.y + 2); } }
   if (ta.room === 'bed' && !ta.lights) { g.fillStyle = 'rgba(10,8,40,0.55)'; g.fillRect(0, 0, W, H); for (const z of ta.zz) { const q = (now - z.t) / 1600; g.globalAlpha = 1 - q; g.font = '800 ' + Math.round(22 + q * 16) + 'px Fredoka, Rubik, sans-serif'; g.fillStyle = '#ffffff'; g.fillText('Z', z.x + q * 30, z.y - q * 60); g.globalAlpha = 1; } }
   for (const h of ta.hearts) { const q = (now - h.t) / 1600; g.globalAlpha = 1 - q; g.font = '30px ' + MX_EMOJI; g.textAlign = 'center'; g.fillStyle = '#000'; g.fillText('💖', h.x, h.y - q * 70); g.globalAlpha = 1; }
   if (ta.want && ta.stage !== 'egg' && ta.lights) { const bx = p.x + L.R * 0.95, byy = p.y - L.R * 1.25, br = Math.max(26, L.R * 0.32), k = 1 + 0.05 * Math.sin(now / 200); L.bub = { x: bx, y: byy, r: br * 1.2 }; // the thought bubble
