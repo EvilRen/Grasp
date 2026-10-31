@@ -492,8 +492,12 @@ async def stats(b):
     async def ab(route):
         u = route.request.url; hits.append(u.split('grasp-tachles/')[-1] if '/hit/' in u else 'get:' + u.split('grasp-tachles/')[-1])
         await route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body='{"value":4}' if '/get/' in u else '{"value":1}')
+    pings = []
+    async def nt(route): pings.append(__import__('json').loads(route.request.post_data or '{}')); await route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body='{}')
+    await page.route('https://ntfy.sh/**', nt)
     await page.route('https://abacus.jasoncameron.dev/**', ab); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
     await click(page, '#tachles [data-a="m:bots"]'); await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(400)
+    check('pings: a game start pings the owner\'s ntfy topic (the shape only: how, players, style)', len(pings) == 1 and pings[0].get('title') == '🎮 משחק התחיל' and 'נגד בוטים' in pings[0].get('message', '') and '3 שחקנים' in pings[0]['message'] and pings[0].get('topic', '').startswith('grasp-tk-'), pings)
     check('stats: a game against bots counts: how, how many players, the style, the day', all(k in hits for k in ('start-bots', 'size-3', 'lvl-2')) and any(h.startswith('day-') for h in hits), hits)
     await page.evaluate(f"(() => {{ {TKH}.tk.g = null; {TKH}.tk.scr = 'menu'; {TKH}.render(); }})()")
     for i in range(7): await page.click('#tachles [data-a="ttl"]', force=True); await page.wait_for_timeout(60)

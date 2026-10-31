@@ -2031,7 +2031,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.20';
+const APP_VERSION = '1.12.21';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22980,6 +22980,7 @@ function tkTick() { // 4 times a second: the round ring and the next-round count
   const n = $('tkNextN'); if (n) n.textContent = tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - now) / 1000)) });
 }
 function tkNewGame(players) { tkStat('start-' + (tk.mode === 'host' ? 'online' : tk.mode === 'local' ? 'local' : 'bots')); tkStat('size-' + (players.length >= 6 ? '6p' : Math.max(2, players.length))); tkStat('lvl-' + (tk.set.lvl || 2)); tkStat('day-' + tkDay()); tk.doneSent = false;
+  { const L = TK_LVL[tk.set.lvl || 2], hum = players.filter((p) => !p.bot).length; tkPing('🎮 משחק התחיל', (tk.mode === 'host' ? 'אונליין' : tk.mode === 'local' ? 'טלפון אחד' : 'נגד בוטים') + ' · ' + players.length + ' שחקנים' + (hum !== players.length ? ' (' + (hum === 1 ? 'אדם אחד' : hum + ' אנשים') + ')' : '') + ' · ' + L.e + ' ' + L.n + (tk.mode === 'host' ? ' · חדר ' + tk.code : ''), ['video_game']); }
   const S = new Set(tkSeenList()); for (const p of players) for (const x of tk.peerSeen[p.id] || []) S.add(x); // (what this phone and the guests' phones have seen goes last)
   const at = (arr, f) => arr.map((c, i) => S.has(tkHash(f(c))) ? i : -1).filter((i) => i >= 0);
   const D = tkGroupDeck(players), ok = tkAllowed(tk.set, D.d);
@@ -23108,7 +23109,7 @@ async function tkFbSend() { // the owner: "a feedback button, bugs: honestly I d
   try { const r = await fetch(TK_MAIL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ _subject: "ת'כלס: תלונה / פידבק", _template: 'table', _captcha: 'false', _honey: '', text, by: tk.myName || '', where: tk.scr + (tk.mode ? ' / ' + tk.mode : '') + (tk.code ? ' / ' + tk.code : ''), version: APP_VERSION, device: navigator.userAgent.slice(0, 160) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok || String(j.success) !== 'true') throw new Error('fb');
-    L.push(day); try { localStorage.setItem('grasp.tkFb', JSON.stringify(L)); } catch {} tk.fbText = ''; tk.fbMsg = 'fbOk'; tk.log.push('fb'); tkStat('feedback'); }
+    L.push(day); try { localStorage.setItem('grasp.tkFb', JSON.stringify(L)); } catch {} tk.fbText = ''; tk.fbMsg = 'fbOk'; tk.log.push('fb'); tkStat('feedback'); tkPing('🗣️ תלונה חדשה', text, ['speech_balloon']); }
   catch { tk.fbMsg = 'wrErr'; }
   tk.busy = false; tkRender();
 }
@@ -23116,6 +23117,10 @@ async function tkFbSend() { // the owner: "a feedback button, bugs: honestly I d
    account, CORS, 30 requests / 10 s an IP, a key lives 6 months from its last use) counts events under the namespace grasp-tachles; nothing personal,
    only counts. 7 taps on the title in the menu open the numbers (tkStatsHtml). Real visitors only: the suites opt in with window.__tkStats */
 const TK_AB = 'https://abacus.jasoncameron.dev/', TK_NS = 'grasp-tachles';
+/* the owner's phone pings (he asked: a game starts, a complaint, a written card): ntfy.sh (free, no account, CORS), a secret topic he subscribed to
+   in the ntfy app; no names, only the game's shape, the complaint's or card's text. Real visitors only, as the counters */
+const TK_NTFY = 'grasp-tk-ipmm5986p9a2b6';
+function tkPing(title, message, tags) { try { if (navigator.webdriver && window.__tkStats !== true) return; fetch('https://ntfy.sh/', { method: 'POST', mode: 'cors', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic: TK_NTFY, title, message: String(message).slice(0, 600), tags }) }).catch(() => {}); } catch {} }
 const tkDay = (d = 0) => { const t = new Date(Date.now() - d * 864e5); return t.getFullYear() + String(t.getMonth() + 1).padStart(2, '0') + String(t.getDate()).padStart(2, '0'); };
 function tkStat(k) { try { if (navigator.webdriver && window.__tkStats !== true) return; fetch(TK_AB + 'hit/' + TK_NS + '/' + k, { keepalive: true, mode: 'cors' }).catch(() => {}); } catch {} }
 const TK_STATK = [['start-online', 'game'], ['start-bots', 'game'], ['start-local', 'game'], ['done', 'game'], ['size-2', 'size'], ['size-3', 'size'], ['size-4', 'size'], ['size-5', 'size'], ['size-6p', 'size'],
@@ -23144,7 +23149,7 @@ async function tkWriteSend() {
   try { const r = await fetch(TK_MAIL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ _subject: "ת'כלס: קלף חדש לאישור", _template: 'table', _captcha: 'false', _honey: '', type: ty === 'b' ? 'שחור (שאלה)' : 'לבן (תשובה)', pick: ty === 'b' ? tkBlanks(text) : '', text, by: tk.myName || '', json: JSON.stringify(ty === 'b' ? [text.replace(/_{2,}/g, '___'), tkBlanks(text)] : text) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok || String(j.success) !== 'true') throw new Error('http ' + r.status + ' ' + (j.message || '')); // (1.12.18: FormSubmit answers 200 with success "false" until the address is activated: every card "sent" before was lost)
-    const m = tkMine(); m.push({ ty, text, d: new Date().toISOString().slice(0, 10) }); tkMine(m); tk.wr.text = ''; tk.wrMsg = 'wrSent'; tk.log.push('wrote:' + ty); tkStat('cards'); }
+    const m = tkMine(); m.push({ ty, text, d: new Date().toISOString().slice(0, 10) }); tkMine(m); tk.wr.text = ''; tk.wrMsg = 'wrSent'; tk.log.push('wrote:' + ty); tkStat('cards'); tkPing('✍️ קלף חדש לאישור', (ty === 'b' ? 'שאלה: ' : 'תשובה: ') + text, ['memo']); }
   catch { tk.wrMsg = 'wrErr'; }
   tk.busy = false; tkRender();
 }
