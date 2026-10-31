@@ -515,6 +515,10 @@ async def write_card(b):
     await page.screenshot(path=OUT + 'tachles_write_sent_he.png')
     await click(page, '#tachles [data-a="wr:w"]'); await page.fill('#tkWrT', 'x'); await click(page, '#tachles [data-a="wr:send"]')
     check('too short: not sent', len(sent) == 1 and await page.locator('#tachles .tkErr').count() == 1)
+    async def fs_off(route): sent.append(route.request.post_data); await route.fulfill(status=200, content_type='application/json', body='{"success":"false","message":"This form needs Activation."}')
+    await page.unroute('https://formsubmit.co/**'); await page.route('https://formsubmit.co/**', fs_off); n0 = await page.evaluate("JSON.parse(localStorage.getItem('grasp.tkMine')).length")
+    await page.fill('#tkWrT', 'כרטיס שלא נשלח באמת.'); await click(page, '#tachles [data-a="wr:send"]'); await page.wait_for_timeout(500)
+    check('the mail service says "not sent" (an address not activated yet answers 200 with success false): an error, no thank-you, not listed as sent', len(sent) == 2 and await page.evaluate("JSON.parse(localStorage.getItem('grasp.tkMine')).length") == n0 and 'נסה שוב' in await page.inner_text('#tachles'))
     check('write: no page errors', not errs, errs); await ctx.close()
 
 async def main():
