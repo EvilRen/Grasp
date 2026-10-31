@@ -283,9 +283,9 @@ async def feel_tests(b):  # reduced motion: no flex; the iPhone (no Vibration AP
 async def picker_tests(b):
     for he in (False, True):
         ctx, page, errs = await page_for(b, '/', he)
-        await page.tap('#littleBtn'); await wait(page, "!$('littlePick').hidden", 3000); await page.evaluate("__grasp.menub.page(2, true)"); await page.wait_for_timeout(500)
+        await page.tap('#littleBtn'); await wait(page, "!$('littlePick').hidden", 3000); await page.evaluate("__grasp.menub.page(3, true)"); await page.wait_for_timeout(500)
         t = await page.evaluate("""(() => { const b = $('lilPopit'), q = b.getBoundingClientRect(), pg = $('mbPager').getBoundingClientRect(); return { w: q.width, h: q.height, inside: q.left >= pg.left - 0.5 && q.right <= pg.right + 0.5 && q.bottom <= innerHeight, art: !!b.querySelector('.ic svg, .ic canvas'), label: b.querySelector('.lb').textContent.trim() }; })()""")
-        check(('HE' if he else 'EN') + ': Little ones has a big Pop It sticker (page 3), on screen', t['art'] and t['inside'] and t['w'] >= 90 and t['h'] >= 90 and t['label'] == ('פופ איט' if he else 'Pop It'), t)
+        check(('HE' if he else 'EN') + ': Little ones has a big Pop It sticker (page 4), on screen', t['art'] and t['inside'] and t['w'] >= 90 and t['h'] >= 90 and t['label'] == ('פופ איט' if he else 'Pop It'), t)
         await page.tap('#lilPopit')
         ok = await wait(page, "gameMode === 'popit' && mode === 'mouse' && location.pathname === '/popit' && pi.mode === 'free' && pi.flow === 'little' && !pi.over", 6000)
         check(('HE' if he else 'EN') + ': the tile opens Free mode at once', ok)

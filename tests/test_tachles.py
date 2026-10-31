@@ -174,7 +174,7 @@ async def rules(b):
       return {{ own, b: g.players[1].score, c: g.players[2].score, crowd: g.last.crowd }}; }})()""")
     check('reactions: never on your own answer; the most-reacted answer the czar did not pick gets a crowd point (and the czar\'s pick its point)', cr == {'own': False, 'b': 1, 'c': 1, 'crowd': 'c'}, cr)
     sb = await page.evaluate("(async () => { audioInit(); tkSfxLoad(); await Promise.all(Object.values(tkSfxBuf)); const B = Object.entries(tkSfxBuf); return { n: B.length, ok: B.filter(([, b]) => b instanceof AudioBuffer).length, max: Math.max(...B.map(([, b]) => b ? b.duration : 0)) }; })()")
-    check('reaction sounds: 11 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 11 and sb['ok'] == 11 and sb['max'] < 3, sb)
+    check('reaction sounds: 12 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 12 and sb['ok'] == 12 and sb['max'] < 3, sb)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)
@@ -264,6 +264,8 @@ async def deck(b):
     ctx, page, errs = await page_for(b, '/tachles', True, init="sessionStorage.setItem('grasp.tk18', '1');"); await page.wait_for_timeout(1200)
     d = await page.evaluate(f"{TKH}.tk.deck")
     bad = [c for c in d['w'] + [x[0] for x in d['b']] if any(k in c for k in ('פדופיל', 'הסבא שמשפץ', 'תינוק עם זין', 'הזין של הרב עובדיה', 'יואב גלנט שמכניס'))]
+    snd = await page.evaluate("(async () => { const C = new (window.OfflineAudioContext)(1, 44100, 44100), out = {}; for (const L of Object.values(TK_SFX)) for (const [f] of L) { try { const a = await (await fetch('/assets/tachles/sfx/' + f + '.mp3')).arrayBuffer(); const bf = await C.decodeAudioData(a); out[f] = Math.round(bf.duration * 10) / 10; } catch (e) { out[f] = 'ERR'; } } return out; })()")
+    check('the reaction sounds: every take loads and decodes, 0.5-3 s each; 🔥 is the crowd "oooo", three vomit takes, no air horn', all(isinstance(v, (int, float)) and 0.5 <= v <= 3 for v in snd.values()) and 'ooh1' in snd and 'horn1' not in snd and len([k for k in snd if k.startswith('vomit')]) == 3, snd)
     check('the deck: 340+ black and 1350+ white cards, each with its level and packs, without the two dropped groups', len(d['b']) >= 340 and len(d['w']) >= 1350 and len(d['wm']) == len(d['w']) and len(d['bm']) == len(d['b']) and not bad, [len(d['b']), len(d['w']), bad])
     await ctx.close()
 
