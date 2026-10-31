@@ -2027,7 +2027,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.13';
+const APP_VERSION = '1.12.14';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21225,7 +21225,8 @@ function taTick(now, dt) {
   if (ta.stage === 'egg') return;
   if (ta.lights && now >= ta.decayAt) { ta.decayAt = now + TA.decayMs; const k = ['food', 'fun', 'clean', 'sleep'][Math.floor(Math.random() * 4)]; ta.need[k] = Math.max(0, ta.need[k] - 1); if (k === 'clean') taDirty(2); }
   taWant(now);
-  if (ta.room === 'kitchen') { while (ta.foods.length < 3) taNewFood(ta.foods.length); for (const f of ta.foods) if (f !== (ta.held && ta.held.f)) { f.x += (f.hx - f.x) * Math.min(1, dt / 90); f.y += (f.hy - f.y) * Math.min(1, dt / 90); } const m = taMouthXY(), h = ta.held && ta.held.f; ta.mouth = h ? Math.max(0, Math.min(1, 1.6 - Math.hypot(h.x - m.x, h.y - m.y) / (L.R * 1.4))) : Math.max(0, ta.mouth - dt / 300); }
+  if (ta.room === 'kitchen') { if (now - (ta.eatAt || 0) > 700) while (ta.foods.length < 3) { const k = ta.eatSlot != null ? Math.min(ta.eatSlot, ta.foods.length) : ta.foods.length; ta.eatSlot = null; taNewFood(k); } /* (the owner: the food piled up on the right: the refill always went to the right-hand place; now into the eaten one's, and each keeps its own place) */
+    ta.foods.forEach((f, k) => { f.hx = taFoodX(k); if (f !== (ta.held && ta.held.f)) { f.x += (f.hx - f.x) * Math.min(1, dt / 90); f.y += (f.hy - f.y) * Math.min(1, dt / 90); } }); const m = taMouthXY(), h = ta.held && ta.held.f; ta.mouth = h ? Math.max(0, Math.min(1, 1.6 - Math.hypot(h.x - m.x, h.y - m.y) / (L.R * 1.4))) : Math.max(0, ta.mouth - dt / 300); }
   if (ta.chew && now > ta.chew) ta.chew = 0;
   if (ta.room === 'park') taBallTick(now, dt);
   if (ta.room === 'bath') { for (let i = ta.drops.length - 1; i >= 0; i--) { const d = ta.drops[i]; d.vy += 0.002 * dt; d.y += d.vy * dt; const p = taPetXY(); if (Math.hypot(d.x - p.x, d.y - p.y) < p.R) { ta.foam = ta.foam.filter((f) => Math.hypot(f.x - d.x, f.y - d.y) > p.R * 0.35); } if (d.y > L.floorY + 10) ta.drops.splice(i, 1); }
@@ -21236,11 +21237,12 @@ function taTick(now, dt) {
   if (ta.touch && now - ta.touch.t0 > 120) { const p = taPetXY(); ta.look.x += ((ta.touch.x - p.x) / p.R - ta.look.x) * 0.2; ta.look.y += ((ta.touch.y - p.y) / p.R - ta.look.y) * 0.2; } else { ta.look.x *= 0.92; ta.look.y *= 0.92; }
 }
 /* the kitchen */
-function taNewFood(i) { const L = taLayout(), F = TA_FOOD[Math.floor(Math.random() * TA_FOOD.length)], x = W / 2 + (i - 1) * Math.min(W * 0.27, L.ph * 1.2); ta.foods.splice(i, 0, { e: F[0], yuck: F[1] === 'yuck', hx: x, hy: L.propY, x, y: L.propY + 60, s: Math.min(L.ph * 0.6, 70) }); }
+function taFoodX(k) { const L = taLayout(); return W / 2 + (k - 1) * Math.min(W * 0.27, L.ph * 1.2); }
+function taNewFood(i) { const L = taLayout(), F = TA_FOOD[Math.floor(Math.random() * TA_FOOD.length)], x = taFoodX(i); ta.foods.splice(i, 0, { e: F[0], yuck: F[1] === 'yuck', hx: x, hy: L.propY, x, y: L.propY + 60, s: Math.min(L.ph * 0.6, 70) }); }
 function taEat(f, now) {
   const i = ta.foods.indexOf(f); if (i < 0) return; const m = taMouthXY();
   if (ta.need.food >= 4 && !f.yuck) { taMood('no', 1300); taSay('full', 3000); tgSfx('boing'); ta.log.push('full'); return; }
-  ta.foods.splice(i, 1); setTimeout(() => { if (ta.room === 'kitchen' && ta.foods.length < 3) taNewFood(Math.min(i, ta.foods.length)); }, 700);
+  ta.foods.splice(i, 1); ta.eatAt = now; ta.eatSlot = i; // (a new one comes into this place after a moment: taTick)
   if (f.yuck) { taMood('yuck', 1600); tgSfx('yuck'); taSay('yuck', 2500); taPoke(1.5); ta.log.push('yuck'); fxBurst(m.x, m.y, 'shard', { n: 8, col: ['#3fae4f', '#62c46b'], sp: 0.35, ang: -Math.PI / 2, spread: 2, ms: 700, s: 7, g: 0.001, drag: 0.01, spin: 0.03, jit: 6 }); return; }
   ta.chew = now + 1300; ta.mouth = 1; taMood('eat', 1300); taPoke(1); ta.need.food = Math.min(4, ta.need.food + 1); tgSfx('munch'); setTimeout(() => tgSfx('munch'), 420); setTimeout(() => tgSfx('munch'), 840);
   fxBurst(m.x, m.y + 6, 'dust', { n: 6, col: '#e8b26a', sp: 0.12, ms: 600, s: 5, g: 0.0008, drag: 0.02, jit: 10 }); taHeart(); taCare(); taSay('yum', 2500); ta.log.push('eat:' + f.e);
@@ -21275,7 +21277,7 @@ function taEggTap(now) { ta.crack++; taPoke(1.6); tgSfx('tick'); ta.log.push('cr
    room and size into an offscreen canvas (taBg); the buttons are glossy bubbles; the needs are rings on a frosted panel */
 const taL = (h, k) => mixHex(h, [255, 255, 255], k), taD = (h, k) => mixHex(h, [10, 14, 32], k); // (hex in, hex out: they nest)
 const taA = (h, a) => { const [r, g2, b] = hexRgb(h); return 'rgba(' + r + ',' + g2 + ',' + b + ',' + a + ')'; };
-function taDirtXY(d, x, y, rx, ry) { return { x: x + Math.cos(d.a) * d.d * rx * 0.85, y: y + ry * (0.12 + 0.62 * d.d * (0.35 + 0.65 * Math.abs(Math.sin(d.a)))) }; } // (mud on the lower body, never on the face)
+function taDirtXY(d, x, y, rx, ry) { return { x: x + Math.cos(d.a) * d.d * rx * 0.75, y: y + ry * (0.42 + 0.4 * d.d * (0.35 + 0.65 * Math.abs(Math.sin(d.a)))) }; } // (mud on the lower body, never on the face)
 function taGlossy(g, x, y, rx, ry, col, o = {}) { // a soft shaded ellipse: light from the top left, a darker rim, a glossy highlight
   const gr = g.createRadialGradient(x - rx * 0.35, y - ry * 0.45, Math.min(rx, ry) * 0.05, x, y, Math.max(rx, ry) * 1.15); gr.addColorStop(0, taL(col, 0.5)); gr.addColorStop(0.45, col); gr.addColorStop(1, taD(col, o.dark || 0.22));
   g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, rx, ry, o.rot || 0, 0, TAU); g.fill();
@@ -21324,9 +21326,9 @@ function taRoomPaint(g, r, L) { // the room's still parts
   const floor = { home: ['#e7b07a', '#c98c55', 'rgba(120,70,30,0.22)', 'planks'], dress: ['#f2c3a0', '#d99d78', 'rgba(140,80,50,0.2)', 'planks'], kitchen: ['#f5f0e6', '#ddd2bf', 'rgba(150,130,100,0.3)', 'tiles'], bath: ['#bfe7f7', '#92cfe8', 'rgba(255,255,255,0.6)', 'tiles'], bed: ['#5c4c96', '#3c3270', 'rgba(20,10,50,0.3)', 'planks'] }[r];
   taFloor(g, fy, floor[0], floor[1], floor[2], floor[3]);
   if (r === 'home') { const ww = Math.min(130, W * 0.3); taWindow(g, nearX(0.72) - ww / 2, top + 70, ww, ww * 0.82); taPlant(g, nearX(0.12), fy + 6, Math.min(70, W * 0.15)); const fx = nearX(0.3); taRR(g, fx - 26, top + 90, 52, 42, 6, '#ffffff'); taRR(g, fx - 21, top + 95, 42, 32, 4, '#ffd7e4'); g.font = '20px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText('💖', fx, top + 112); taRug(g, W / 2, fy + (H - fy) * 0.22, Math.min(W * 0.36, L.R * 2), (H - fy) * 0.12, '#ffb3c7', '#ffffff'); }
-  if (r === 'kitchen') { const sx = nearX(0.18); for (const k of [0, 1]) taRR(g, sx - 50, fy * (0.2 + k * 0.13), 100, 7, 3, '#c98f6a'); [['🍯', -30, 0], ['🫙', 0, 0], ['🧂', 28, 0], ['🍋', -22, 1], ['🫖', 18, 1]].forEach(([e, dx, k]) => { g.font = '24px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillStyle = '#000'; g.fillText(e, sx + dx, fy * (0.2 + k * 0.13) + 1); });
+  if (r === 'kitchen') { const sx = nearX(0.18), sy = (k) => Math.max(top + 100, fy * 0.2) + k * fy * 0.13; /* (the shelves under the needs panel, not behind it) */ for (const k of [0, 1]) taRR(g, sx - 50, sy(k), 100, 7, 3, '#c98f6a'); [['🍯', -30, 0], ['🫙', 0, 0], ['🧂', 28, 0], ['🍋', -22, 1], ['🫖', 18, 1]].forEach(([e, dx, k]) => { g.font = '24px ' + MX_EMOJI; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillStyle = '#000'; g.fillText(e, sx + dx, sy(k) + 1); });
     const fx = nearX(0.86), fw = Math.min(84, W * 0.2), fh = fy * 0.62; taShadow(g, fx, fy, fw * 0.7, 10); g.fillStyle = taVGrad(g, fy - fh, fy, '#ffffff', '#dfe8ee'); g.beginPath(); g.roundRect(fx - fw / 2, fy - fh, fw, fh, 12); g.fill(); g.fillStyle = 'rgba(120,140,160,0.35)'; g.fillRect(fx - fw / 2, fy - fh * 0.62, fw, 3); taRR(g, fx + fw * 0.28 * -side, fy - fh * 0.85, 5, fh * 0.16, 3, '#b8c4cc'); taRR(g, fx + fw * 0.28 * -side, fy - fh * 0.5, 5, fh * 0.18, 3, '#b8c4cc');
-    const lx = W / 2; g.strokeStyle = '#8a7a6a'; g.lineWidth = 2; g.beginPath(); g.moveTo(lx, 0); g.lineTo(lx, top + 30); g.stroke(); g.fillStyle = taVGrad(g, top + 30, top + 62, '#ffb35c', '#f08a3c'); g.beginPath(); g.moveTo(lx - 30, top + 62); g.quadraticCurveTo(lx, top + 18, lx + 30, top + 62); g.fill(); }
+    const lx = nearX(0.62); g.strokeStyle = '#8a7a6a'; g.lineWidth = 2; g.beginPath(); g.moveTo(lx, 0); g.lineTo(lx, top + 30); g.stroke(); g.fillStyle = taVGrad(g, top + 30, top + 62, '#ffb35c', '#f08a3c'); g.beginPath(); g.moveTo(lx - 30, top + 62); g.quadraticCurveTo(lx, top + 18, lx + 30, top + 62); g.fill(); }
   if (r === 'bath') { const mx = W / 2, my = top + 120, mw = Math.min(54, W * 0.13); /* (the mirror in the middle: the shower button stands to the side) */ g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(mx, my, mw, mw * 1.2, 0, 0, TAU); g.fill(); g.fillStyle = taVGrad(g, my - mw, my + mw, '#dff6ff', '#a9dcef'); g.beginPath(); g.ellipse(mx, my, mw * 0.85, mw * 1.05, 0, 0, TAU); g.fill(); g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.ellipse(mx - mw * 0.3, my - mw * 0.4, mw * 0.12, mw * 0.4, -0.4, 0, TAU); g.fill();
     const tx = nearX(0.14); taRR(g, tx - 40, top + 150, 80, 6, 3, '#c0c8d0'); g.fillStyle = taVGrad(g, top + 150, top + 230, '#ff9fbf', '#f37aa2'); g.beginPath(); g.roundRect(tx - 32, top + 153, 64, 80, [4, 4, 10, 10]); g.fill(); g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(tx - 32, top + 215, 64, 5); }
   if (r === 'bed') { const ww = Math.min(120, W * 0.28); taWindow(g, nearX(0.74) - ww / 2, top + 70, ww, ww * 0.85, walls[1]); const bx = nearX(0.86), bw = Math.min(150, W * 0.34); taShadow(g, bx, fy + 8, bw * 0.6, 12); g.fillStyle = taVGrad(g, fy - 90, fy, '#8e6bd1', '#6a4fb0'); g.beginPath(); g.roundRect(bx - bw / 2, fy - 92, bw, 70, 18); g.fill(); g.fillStyle = taVGrad(g, fy - 40, fy + 10, '#ffffff', '#d9d2f2'); g.beginPath(); g.roundRect(bx - bw / 2 - 6, fy - 40, bw + 12, 48, 12); g.fill(); g.fillStyle = '#ffd6e8'; g.beginPath(); g.ellipse(bx + bw * 0.22 * -side, fy - 44, bw * 0.18, 12, 0, 0, TAU); g.fill(); taRug(g, W / 2, fy + (H - fy) * 0.25, Math.min(W * 0.34, L.R * 2), (H - fy) * 0.12, '#7a6ac8', '#a99cf0'); }

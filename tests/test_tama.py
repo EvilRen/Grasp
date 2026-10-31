@@ -48,6 +48,8 @@ async def mechanics(b):
     await page.evaluate(f"{S}.ta.foods[0].yuck = true; {S}.ta.foods[0].e = '🥦'"); await page.evaluate(f"{S}.eat(0)"); s = await st(page)
     check('broccoli: a yuck face, spat out, "Yuck!"', s['mood'] == 'yuck' and 'Yuck!' in await said(page) and 'yuck' in await snd(page), s)
     await page.wait_for_timeout(1700)
+    fx = await page.evaluate(f"{S}.ta.foods.map((f) => Math.round(f.x))")
+    check('the left food eaten: a new one comes into its place, three apart on the table (the owner: they piled up on the right)', len(fx) == 3 and fx[1] - fx[0] > 40 and fx[2] - fx[1] > 40, fx)
     # the park
     await btn(page, 'park'); await page.wait_for_timeout(300)
     await page.evaluate(f"(() => {{ const B = {S}.ta.ball, p = {S}.pet(); B.x = p.x; B.y = p.y - p.R * 2.5; B.vx = 0; B.vy = 0.3; }})()"); await page.wait_for_timeout(900)
