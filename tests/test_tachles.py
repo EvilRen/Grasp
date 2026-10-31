@@ -485,6 +485,23 @@ async def public_rooms(b):
     check('"פתח חדר ציבורי": this phone opens a room, open to everyone', await n.evaluate(f"{TKH}.tk.mode") == 'host' and (await view(n))['scr'] == 'lobby' and await n.evaluate(f"{TKH}.tk.pub") is True)
     check('open rooms: no page errors', not errs, errs); await ctx.close()
 
+async def stats(b):
+    # the owner: "stats and info, without logging in to any system" (his pick: free counters): every event is a hit on a counter (Abacus, mocked
+    # here); 7 quick taps on the title open the numbers
+    ctx, page, errs = await page_for(b, '/tachles', True, init=FAST + "window.__tkStats = true; sessionStorage.setItem('grasp.tk18', '1');"); hits = []
+    async def ab(route):
+        u = route.request.url; hits.append(u.split('grasp-tachles/')[-1] if '/hit/' in u else 'get:' + u.split('grasp-tachles/')[-1])
+        await route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body='{"value":4}' if '/get/' in u else '{"value":1}')
+    await page.route('https://abacus.jasoncameron.dev/**', ab); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    await click(page, '#tachles [data-a="m:bots"]'); await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(400)
+    check('stats: a game against bots counts: how, how many players, the style, the day', all(k in hits for k in ('start-bots', 'size-3', 'lvl-2')) and any(h.startswith('day-') for h in hits), hits)
+    await page.evaluate(f"(() => {{ {TKH}.tk.g = null; {TKH}.tk.scr = 'menu'; {TKH}.render(); }})()")
+    for i in range(7): await page.click('#tachles [data-a="ttl"]', force=True); await page.wait_for_timeout(60)
+    await page.wait_for_timeout(800); txt = await page.inner_text('#tachles')
+    check('stats: 7 quick taps on the title open the numbers (games, players, rooms, style, feedback, cards)', (await view(page))['scr'] == 'stats' and 'סטטיסטיקות' in txt and 'הצטרפות מהירה' in txt and 'תלונות' in txt and len([h for h in hits if h.startswith('get:')]) >= 25, [len(hits), txt[:120]])
+    await page.screenshot(path=OUT + 'tachles_stats.png', full_page=True)
+    check('stats: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -532,7 +549,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())

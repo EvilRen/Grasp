@@ -1500,6 +1500,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkRO{ display:grid; grid-template-columns:1fr; gap:8px; font-size:14px; } #tachles .tkRO span{ display:flex; justify-content:space-between; background:var(--el); border-radius:12px; padding:8px 12px; color:var(--dim); } #tachles .tkRO b{ color:var(--tx); }
 #tachles .tkPbB{ font-size:14px; padding-top:12px; padding-bottom:12px; } #tachles .tkPbRoom{ display:flex; align-items:center; gap:12px; padding:12px 14px; } #tachles .tkPbI{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; } #tachles .tkPbI b{ font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } #tachles .tkPbI small{ font-size:12.5px; color:var(--dim); }
 #tachles .tkSpin{ width:34px; height:34px; margin:6px auto 12px; border-radius:50%; border:4px solid rgba(168,85,247,.25); border-top-color:var(--neon); animation:tkSpin .9s linear infinite; } @keyframes tkSpin{ to{ transform:rotate(360deg); } }
+#tachles .tkStRow{ display:flex; justify-content:space-between; align-items:center; padding:7px 2px; border-bottom:1px solid rgba(255,255,255,.06); font-size:15px; } #tachles .tkStRow:last-child{ border-bottom:0; } #tachles .tkStRow b{ font-size:17px; color:var(--neonB); }
 #tachles .tkFbT{ min-height:130px; width:100%; box-sizing:border-box; background:var(--el); color:#fff; border:1px solid var(--bd); border-radius:14px; padding:12px; font:inherit; font-size:16px; resize:vertical; outline:none; } #tachles .tkFbT:focus{ border-color:var(--neon); }
 #tachles .tkNetBar{ position:fixed; top:0; left:0; right:0; z-index:6; background:#f59e0b; color:#1a1a1a; font-weight:700; font-size:12px; line-height:1.3; padding:calc(env(safe-area-inset-top,0px) + 3px) 12px 3px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; animation:tkFade .25s ease-out; } #tachles.tkNetOn .tkIn0{ padding-top:20px; } /* (the owner's pick: a thin strip at the very top, nothing under it hidden) */
 #tachles .tkBackIn{ border-color:#f59e0b; }
@@ -2030,7 +2031,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.19';
+const APP_VERSION = '1.12.20';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22960,7 +22961,7 @@ function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkR
 /* the phone that runs the game: every change goes to every phone (each its own view) and the bots move */
 function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
-  const g = tk.g; if (!g) return; if (tk.mode === 'host') { tkPubSync(); for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid), full: !!tk.set.full }); } catch {} } tkBoardPush(); tkRoomSave(); }
+  const g = tk.g; if (!g) return; if (g.phase === 'over' && !tk.doneSent) { tk.doneSent = true; tkStat('done'); } if (tk.mode === 'host') { tkPubSync(); for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid), full: !!tk.set.full }); } catch {} } tkBoardPush(); tkRoomSave(); }
   tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots(); tkBotRx(); tkSfxLoad();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
@@ -22978,7 +22979,8 @@ function tkTick() { // 4 times a second: the round ring and the next-round count
   const r = $('tkTimer'); if (r && tk.view) r.outerHTML = tkRing(tk.view);
   const n = $('tkNextN'); if (n) n.textContent = tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - now) / 1000)) });
 }
-function tkNewGame(players) { const S = new Set(tkSeenList()); for (const p of players) for (const x of tk.peerSeen[p.id] || []) S.add(x); // (what this phone and the guests' phones have seen goes last)
+function tkNewGame(players) { tkStat('start-' + (tk.mode === 'host' ? 'online' : tk.mode === 'local' ? 'local' : 'bots')); tkStat('size-' + (players.length >= 6 ? '6p' : Math.max(2, players.length))); tkStat('lvl-' + (tk.set.lvl || 2)); tkStat('day-' + tkDay()); tk.doneSent = false;
+  const S = new Set(tkSeenList()); for (const p of players) for (const x of tk.peerSeen[p.id] || []) S.add(x); // (what this phone and the guests' phones have seen goes last)
   const at = (arr, f) => arr.map((c, i) => S.has(tkHash(f(c))) ? i : -1).filter((i) => i >= 0);
   const D = tkGroupDeck(players), ok = tkAllowed(tk.set, D.d);
   tk.g = TK.newGame(D.d, players, { target: tk.set.target, hand: tk.set.hand, timer: tk.mode === 'local' ? 0 : tk.set.timer, seenW: at(tk.deck.w, (c) => c), seenB: at(tk.deck.b, (c) => c[0]), okW: ok.w, okB: ok.b, topW: D.topW, topB: D.topB, ownW: D.ownW }); tk.sel = []; tk.tease = null; tk.passTo = null; tk.scr = 'game'; tk.log.push('game:' + players.length); tkPush(); }
@@ -23024,7 +23026,7 @@ function tkRender() {
   else if (s === 'gate') h = '<div class="tkWrap tkMidY"><div class="tkCard tkPad8 tkC tkGlow"><div class="tkEmoji">🔞</div><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p class="tkDim tkLh">' + tks('gateD') + '<br>' + tks('gateD2') + '</p>' +
     '<button class="tkP tkW tkLg" data-a="gate">' + tks('gateOk') + '</button><p class="tkFaint tkXs">' + tks('gateFine') + '</p><button class="tkLink" data-a="home">' + tks('home') + '</button></div></div>';
   else if (s === 'menu') h = '<div class="tkWrap tkMidY"><div class="tkMenuTop"><button class="tkIcon" data-a="ungate" title="' + tks('resetGate') + '" aria-label="' + tks('resetGate') + '">' + tki('reset') + '</button></div>' +
-    '<div class="tkC tkHero"><h1 class="tkNeon tkH0">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' + tkBackHtml() +
+    '<div class="tkC tkHero"><h1 class="tkNeon tkH0" data-a="ttl">' + tks('title') + '</h1><p class="tkDim tkLg">' + tks('tag') + '</p></div><div class="tkCol">' + tkBackHtml() +
     '<button class="tkP tkW tkLg" data-a="m:create">' + tki('plus') + tks('create') + '</button><button class="tkS tkW tkLg" data-a="m:join">' + tki('login') + tks('join') + '</button>' +
     '<div class="tkTwo"><button class="tkS tkPbB" data-a="m:quick">⚡ ' + tks('pbQuick') + '</button><button class="tkS tkPbB" data-a="m:rooms">🌍 ' + tks('pbRooms') + '</button></div>' +
     '<p class="tkFaint tkXs tkC tkOr">' + tks('or') + '</p><div class="tkTwo"><button class="tkS" data-a="m:bots">' + tki('bot') + tks('bots') + '</button><button class="tkS" data-a="m:local">' + tki('phone') + tks('local') + '</button></div></div>' +
@@ -23037,6 +23039,7 @@ function tkRender() {
   else if (s === 'write') h = tkWriteHtml();
   else if (s === 'lobby') h = tkLobbyHtml();
   else if (s === 'rooms') h = tkRoomsHtml();
+  else if (s === 'stats') h = tkStatsHtml();
   else if (s === 'board') h = tkBoardHtml();
   else if (s === 'game' && tk.view) h = tk.view.phase === 'over' ? tkWinHtml(tk.view) : tkGameHtml(tk.view);
   else h = '<div class="tkWrap tkMidY tkC"><p class="tkDim">' + tks('loading') + '</p></div>';
@@ -23067,8 +23070,8 @@ function tkRooms(quick) { tkWatchStop(); tk.rooms = []; tk.roomsAt = Date.now();
 function tkRoomsRender() { const a = document.activeElement; if (a && a.id === 'tkMe') { tk.roomsDirty = true; return; } tk.roomsDirty = false; tkRender(); } // (a new list waits while the nickname is being typed)
 document.addEventListener('focusout', (e) => { if (e.target && e.target.id === 'tkMe') { tk.myName = (e.target.value.trim() || tk.myName).slice(0, 20); if (tk.roomsDirty && tk.scr === 'rooms') setTimeout(tkRoomsRender, 0); } });
 function tkQuickTry(late) { if (!tk.quick || tk.scr !== 'rooms') return; const r = (tk.rooms || []).slice().sort((a, b) => b.n - a.n)[0]; // (quick join: the fullest room still waiting)
-  if (r) return tkPubJoin(r.c); if (late) { tk.quick = 0; tkRender(); } }
-function tkPubJoin(c) { tkWatchStop(); tkFixNick(); tkSave(); tk.code = c; tk.form = 'join'; tk.scr = 'form'; tk.log.push('pj:' + c); return tkJoin(tk.myName); }
+  if (r) { tk.joinVia = 'quick'; return tkPubJoin(r.c); } if (late) { tk.quick = 0; tkRender(); } }
+function tkPubJoin(c) { tk.joinVia = tk.joinVia || 'list'; tkWatchStop(); tkFixNick(); tkSave(); tk.code = c; tk.form = 'join'; tk.scr = 'form'; tk.log.push('pj:' + c); return tkJoin(tk.myName); }
 function tkPubSync() { // the host's note in the open rooms: while waiting for players and open; cleared when the game starts, the room fills, closes or goes private
   if (tk.mode !== 'host' || !tk.net || !tk.net.announce) return; const on = !tk.g && tk.pub && tk.lobby.length < TK_MAXP, now = Date.now();
   const key = on ? JSON.stringify([tk.myName, tk.lobby.length, tk.set.lvl, tk.set.target, tk.set.timer]) : '';
@@ -23109,7 +23112,31 @@ async function tkFbSend() { // the owner: "a feedback button, bugs: honestly I d
   catch { tk.fbMsg = 'wrErr'; }
   tk.busy = false; tkRender();
 }
-function tkStat() {} // (the statistics: to come)
+/* the statistics (the owner: "stats and info, without logging in to any system"; his pick: free counters only): Abacus (abacus.jasoncameron.dev, no
+   account, CORS, 30 requests / 10 s an IP, a key lives 6 months from its last use) counts events under the namespace grasp-tachles; nothing personal,
+   only counts. 7 taps on the title in the menu open the numbers (tkStatsHtml). Real visitors only: the suites opt in with window.__tkStats */
+const TK_AB = 'https://abacus.jasoncameron.dev/', TK_NS = 'grasp-tachles';
+const tkDay = (d = 0) => { const t = new Date(Date.now() - d * 864e5); return t.getFullYear() + String(t.getMonth() + 1).padStart(2, '0') + String(t.getDate()).padStart(2, '0'); };
+function tkStat(k) { try { if (navigator.webdriver && window.__tkStats !== true) return; fetch(TK_AB + 'hit/' + TK_NS + '/' + k, { keepalive: true, mode: 'cors' }).catch(() => {}); } catch {} }
+const TK_STATK = [['start-online', 'game'], ['start-bots', 'game'], ['start-local', 'game'], ['done', 'game'], ['size-2', 'size'], ['size-3', 'size'], ['size-4', 'size'], ['size-5', 'size'], ['size-6p', 'size'],
+  ['lvl-1', 'lvl'], ['lvl-2', 'lvl'], ['lvl-3', 'lvl'], ['rooms', 'room'], ['quick', 'room'], ['list', 'room'], ['code', 'room'], ['tv', 'room'], ['open', 'misc'], ['feedback', 'misc'], ['cards', 'misc']];
+async function tkStatsLoad() { // ~27 reads, 4 at a time, under the 30 / 10 s limit; a missing key is 0
+  const keys = TK_STATK.map((k) => k[0]).concat([0, 1, 2, 3, 4, 5, 6].map((d) => 'day-' + tkDay(d))), out = {}; tk.stats = { at: Date.now(), v: out, busy: true }; tkRender();
+  let i = 0; const one = async () => { while (i < keys.length) { const k = keys[i++]; try { const r = await fetch(TK_AB + 'get/' + TK_NS + '/' + k, { mode: 'cors' }); const j = await r.json().catch(() => ({})); out[k] = r.status === 429 ? null : +j.value || 0; } catch { out[k] = null; } } };
+  await Promise.all([one(), one(), one(), one()]); tk.stats.busy = false; if (tk.scr === 'stats') tkRender(); }
+function tkStatsHtml() {
+  const S = tk.stats || { v: {}, busy: true }, v = S.v, n = (k) => v[k] == null ? (S.busy ? '…' : '?') : v[k].toLocaleString('he-IL'), sum = (L) => L.reduce((a, k) => a + (+v[k] || 0), 0);
+  const games = sum(['start-online', 'start-bots', 'start-local']), week = sum([0, 1, 2, 3, 4, 5, 6].map((d) => 'day-' + tkDay(d))), seats = (+v['size-2'] || 0) * 2 + (+v['size-3'] || 0) * 3 + (+v['size-4'] || 0) * 4 + (+v['size-5'] || 0) * 5 + (+v['size-6p'] || 0) * 6.5;
+  const sized = sum(['size-2', 'size-3', 'size-4', 'size-5', 'size-6p']), row = (l, val) => '<div class="tkStRow"><span>' + l + '</span><b>' + val + '</b></div>', card = (t, rows) => '<div class="tkCard tkPad6 tkMb"><h3 class="tkH2s">' + t + '</h3>' + rows + '</div>';
+  return '<div class="tkWrap2">' + tkTop(tks('back'), '<span class="tkFaint">' + tks('title') + '</span>') + '<h2 class="tkH2 tkC">📊 סטטיסטיקות</h2><p class="tkDim tkSm tkC tkMb">ספירה בלבד, בלי פרטים של אף אחד' + (S.busy ? ' · טוען...' : '') + '</p>' +
+    card('📅 משחקים שהתחילו', row('היום', n('day-' + tkDay(0))) + row('אתמול', n('day-' + tkDay(1))) + row('7 ימים', S.busy ? '…' : week.toLocaleString('he-IL')) + row('סך הכל', S.busy ? '…' : games.toLocaleString('he-IL'))) +
+    card('🎮 איך משחקים', row('אונליין (חדר)', n('start-online')) + row('נגד בוטים', n('start-bots')) + row('טלפון אחד', n('start-local')) + row('משחקים שהגיעו לסוף', n('done'))) +
+    card('👥 שחקנים במשחק', row('2', n('size-2')) + row('3', n('size-3')) + row('4', n('size-4')) + row('5', n('size-5')) + row('6 ומעלה', n('size-6p')) + row('ממוצע', sized ? (seats / sized).toFixed(1) : '-')) +
+    card('🚪 חדרים', row('חדרים שנפתחו', n('rooms')) + row('הצטרפות מהירה', n('quick')) + row('מרשימת החדרים', n('list')) + row('עם קוד / קישור', n('code')) + row('מסך טלוויזיה', n('tv'))) +
+    card('🎨 סגנון הערב', row('🟢 קליל', n('lvl-1')) + row('🟠 גס', n('lvl-2')) + row('🔴 בלי גבולות', n('lvl-3'))) +
+    card('📬 עוד', row('פתיחות של ת\'כלס', n('open')) + row('תלונות', n('feedback')) + row('קלפים שנשלחו לאישור', n('cards'))) +
+    '<button class="tkS tkW" data-a="statsR">' + tki('reset') + 'רענן</button></div>';
+}
 async function tkWriteSend() {
   const x = $('tkWrT'), text = (x ? x.value : tk.wr.text).trim().replace(/\s+/g, ' '), ty = tk.wr.ty; tk.wr.text = text;
   if (text.length < 3) { tk.wrMsg = 'wrShort'; tkRender(); return; } if (ty === 'b' && !tkBlanks(text)) { tk.wrMsg = 'wrNoBlank'; tkRender(); return; }
@@ -23117,7 +23144,7 @@ async function tkWriteSend() {
   try { const r = await fetch(TK_MAIL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ _subject: "ת'כלס: קלף חדש לאישור", _template: 'table', _captcha: 'false', _honey: '', type: ty === 'b' ? 'שחור (שאלה)' : 'לבן (תשובה)', pick: ty === 'b' ? tkBlanks(text) : '', text, by: tk.myName || '', json: JSON.stringify(ty === 'b' ? [text.replace(/_{2,}/g, '___'), tkBlanks(text)] : text) }) });
     const j = await r.json().catch(() => ({})); if (!r.ok || String(j.success) !== 'true') throw new Error('http ' + r.status + ' ' + (j.message || '')); // (1.12.18: FormSubmit answers 200 with success "false" until the address is activated: every card "sent" before was lost)
-    const m = tkMine(); m.push({ ty, text, d: new Date().toISOString().slice(0, 10) }); tkMine(m); tk.wr.text = ''; tk.wrMsg = 'wrSent'; tk.log.push('wrote:' + ty); }
+    const m = tkMine(); m.push({ ty, text, d: new Date().toISOString().slice(0, 10) }); tkMine(m); tk.wr.text = ''; tk.wrMsg = 'wrSent'; tk.log.push('wrote:' + ty); tkStat('cards'); }
   catch { tk.wrMsg = 'wrErr'; }
   tk.busy = false; tkRender();
 }
@@ -23388,7 +23415,7 @@ function tkClick(e) {
   const dot = e.target.closest('[data-to]'); if (dot) { const c = document.querySelectorAll('#tachles .tkHC')[+dot.dataset.to]; if (c) c.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); return; }
   const b = e.target.closest('[data-a]'); if (!b || b.disabled) return; const a = b.dataset.a; if (!a) { e.stopPropagation(); return; } sfx('click');
   const nameOf = () => { const x = $('tkMe'); return (x && x.value.trim().slice(0, 20)) || ''; };
-  if (a === 'gate') { try { sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('grasp.tk18', '1'); } catch {} tk.scr = 'menu'; if (tk.code) tkForm('join'); }
+  if (a === 'gate') { try { sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('grasp.tk18', '1'); } catch {} tk.scr = 'menu'; tkStat('open'); if (tk.code) tkForm('join'); }
   else if (a === 'ungate') { try { sessionStorage.removeItem('grasp.tk18'); localStorage.removeItem('grasp.tk18'); } catch {} tk.scr = 'gate'; }
   else if (a === 'fs') { tkFs(); setTimeout(tkRender, 250); return; }
   else if (a === 'home') { goHome(); return; }
@@ -23400,7 +23427,7 @@ function tkClick(e) {
   else if (a === 'pb:create') { tkWatchStop(); tkFixNick(); tkSave(); return tkHost(tk.myName); }
   else if (a === 'pubT') { tk.pub = !tk.pub; tk.pubKey = null; tkPubSync(); tk.log.push('pub:' + tk.pub); }
   else if (a === 'back:h') return tkResume();
-  else if (a === 'back:g') { const B = tkLS('grasp.tkLast'); if (B) { tk.code = B.code; tk.myName = B.name; tk.form = 'join'; tk.scr = 'form'; return tkJoin(B.name); } }
+  else if (a === 'back:g') { const B = tkLS('grasp.tkLast'); if (B) { tk.joinVia = 'back'; tk.code = B.code; tk.myName = B.name; tk.form = 'join'; tk.scr = 'form'; return tkJoin(B.name); } }
   else if (a === 'm:bots') { tkFixNick(); tkSave(); tkSolo(tk.myName); } // (no nickname screen: the room shows your name, ✏️ changes it)
   else if (a === 'm:write') { tk.scr = 'write'; tk.wrMsg = ''; tk.mode = null; }
   else if (a.startsWith('wr:')) { const w = a.slice(3), x = $('tkWrT'); if (x) tk.wr.text = x.value; tk.wrMsg = '';
@@ -23414,9 +23441,11 @@ function tkClick(e) {
     if (!nm) tk.err = tks('errNick'); else if (f === 'join' && tk.code.length !== 4) tk.err = tks('errCode');
     else { tk.err = ''; tkSave(); if (f === 'create') return tkHost(nm); if (f === 'join') return tkJoin(nm); if (f === 'quick') return tkRooms(true);
       tkSolo(nm); } }
-  else if (a === 'leave') { if (tk.scr === 'rooms') { tkWatchStop(); tk.scr = 'menu'; } else if (tk.scr === 'write') { tk.scr = 'menu'; } else if (tk.scr === 'setLocal' || tk.mode === 'solo' && tk.scr === 'lobby') { tk.scr = 'menu'; } else tk.modal = { t: 'leave' }; }
+  else if (a === 'leave') { if (tk.scr === 'stats') { tk.scr = 'menu'; } else if (tk.scr === 'rooms') { tkWatchStop(); tk.scr = 'menu'; } else if (tk.scr === 'write') { tk.scr = 'menu'; } else if (tk.scr === 'setLocal' || tk.mode === 'solo' && tk.scr === 'lobby') { tk.scr = 'menu'; } else tk.modal = { t: 'leave' }; }
   else if (a === 'leaveOk') { tk.modal = null; if (tk.mode === 'host') tkLS('grasp.tkRoom', null); else if (tk.mode === 'guest') tkLS('grasp.tkLast', null); tkNetBye(); tkNetClose(); clearTimeout(tk.botT); tk.g = null; tk.view = null; tk.scr = 'menu'; tk.log.push('leave'); }
   else if (a === 'mclose') tk.modal = null;
+  else if (a === 'ttl') { const now = Date.now(); tk.ttlN = now - (tk.ttlAt || 0) < 1500 ? (tk.ttlN || 0) + 1 : 1; tk.ttlAt = now; if (tk.ttlN >= 7) { tk.ttlN = 0; tk.scr = 'stats'; tkStatsLoad(); return; } return; } // (7 quick taps on the title: the numbers)
+  else if (a === 'statsR') { tkStatsLoad(); return; }
   else if (a === 'fb') { tk.modal = { t: 'fb' }; tk.fbMsg = ''; }
   else if (a === 'fbSend') return tkFbSend();
   else if (a === 'rename') tk.modal = { t: 'name' };
@@ -23493,7 +23522,7 @@ async function tkHostNet() {
       (e) => { if (tk.mode !== 'host') return; const ty = e && e.type; // (the owner: "the connection dropped" stayed on for good: a guest or the TV leaving makes the broker answer 'peer-unavailable', which is no drop at all)
         if (ty === 'unavailable-id') tk.netMsg = tks('netTaken'); else if (TK_NETDOWN.includes(ty)) tk.netMsg = tks('reconn'); else return; tkRender(); },
       () => { if (tk.mode === 'host' && tk.netMsg) { tk.netMsg = ''; tkRender(); } });
-    tk.netMsg = ''; tk.log.push('host:' + tk.code); tkPubSync(); }
+    tk.netMsg = ''; tk.log.push('host:' + tk.code); tkPubSync(); if (!tk.g) tkStat('rooms'); }
   catch { tk.netMsg = tks('netErr'); } tkRender();
 }
 function tkGone(id) { tkDbg('gone: ' + id); if (tk.screens.delete(id)) { tkRender(); return; } tk.conns.delete(id); if (tk.g) { const p = tk.g.players.find((q) => q.id === id); if (p && p.on) { TK.skip(tk.g, id); tkPush(); } } else { tk.lobby = tk.lobby.filter((p) => p.id !== id); tkLobbyPush(); } }
@@ -23524,7 +23553,7 @@ async function tkScreen() {
       else if (m.t === 'closed') return out('closed');
       else if (m.t === 'who') { try { tk.net.send({ t: 'screen' }); } catch {} return; }
       tkRender(); }, (k) => { if (tk.mode !== 'screen' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tkRender(); } else if (k === 'back') { tk.netMsg = ''; try { tk.net.send({ t: 'screen' }); } catch {} tkRender(); } else out('closed'); });
-    tk.net.send({ t: 'screen' }); tk.log.push('screen:' + tk.code);
+    tk.net.send({ t: 'screen' }); tk.log.push('screen:' + tk.code); tkStat('tv');
     setTimeout(() => { if (tk.busy && tk.mode === 'screen' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
 }
@@ -23556,7 +23585,7 @@ async function tkJoin(name) {
       else if (m.t === 'view') { tkSfxLoad(); if (m.full != null) tk.lobbySet = Object.assign({}, tk.lobbySet, { full: m.full }); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
       tkRender(); }, (k) => { if (tk.mode !== 'guest' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tkRender(); } else if (k === 'back') { if (tk.netMsg) { tk.netMsg = ''; tkRender(); } hello(); } else out('closed'); }, id);
-    hello(); tk.log.push('join:' + tk.code);
+    hello(); tk.log.push('join:' + tk.code); if (tk.joinVia !== 'back') tkStat(tk.joinVia || 'code'); tk.joinVia = null;
     setTimeout(() => { if (tk.busy && tk.mode === 'guest' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
 }
