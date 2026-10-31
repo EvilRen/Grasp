@@ -174,7 +174,7 @@ async def rules(b):
       return {{ own, b: g.players[1].score, c: g.players[2].score, crowd: g.last.crowd }}; }})()""")
     check('reactions: never on your own answer; the most-reacted answer the czar did not pick gets a crowd point (and the czar\'s pick its point)', cr == {'own': False, 'b': 1, 'c': 1, 'crowd': 'c'}, cr)
     sb = await page.evaluate("(async () => { audioInit(); tkSfxLoad(); await Promise.all(Object.values(tkSfxBuf)); const B = Object.entries(tkSfxBuf); return { n: B.length, ok: B.filter(([, b]) => b instanceof AudioBuffer).length, max: Math.max(...B.map(([, b]) => b ? b.duration : 0)) }; })()")
-    check('reaction sounds: 12 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 12 and sb['ok'] == 12 and sb['max'] < 3, sb)
+    check('reaction sounds: 11 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 11 and sb['ok'] == 11 and sb['max'] < 3, sb)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
     check('rules: a hand of the set size; 2 players: the answer + 2 decoys go to the czar; a decoy pick gives no point ("nobody won")', r['hand'] == 5 and r['subs2'] == 3 and r['phase2'] == 'judge' and r['decoyPts'] == 0 and r['decoyName'] is None, r)
     check('rules: the clock: nothing to judge with no answers; with one, it goes to the czar', r['early'] is False and r['forced'] is True and r['phase3'] == 'judge' and r['subs3'] == 1, r)
