@@ -339,7 +339,12 @@ async def mqtt_room(b):
         code = await host.evaluate(f"{TKH}.tk.code")
         await click(g, '#tachles [data-a="m:join"]'); await g.fill('#tkMe', 'אורח'); await g.fill('#tkCode', code); await click(g, '#tachles [data-a="go:join"]')
         ok = await wait(g, f"{TKH}.tk.scr === 'lobby'", 10000)
-        check('MQTT: a phone joins the room with its code (through the broker): both see two players', ok and await host.evaluate(f"{TKH}.tk.lobby.length") == 2 and len(await g.evaluate(f"{TKH}.tk.lobbyView")) == 2, await host.evaluate("tkDbgL.slice(-6)"))
+        p3 = await ctx.new_page(); await routes(p3); p3.on('pageerror', lambda e: errs.append(str(e))); await p3.add_init_script(INIT); await p3.goto(BASE + '/tachles'); await wait(p3, f"{TKH}.tk.scr === 'menu'", 8000)
+        await p3.evaluate(f"{TKH}.tk.myName = 'עוגה 12'") # (the pages here share storage: another phone, another name)
+        await click(p3, '#tachles [data-a="m:quick"]'); okq = await wait(p3, f"{TKH}.tk.scr === 'lobby'", 10000)
+        check('MQTT: quick join finds the room through the broker (its retained note) and goes in', okq and await host.evaluate(f"{TKH}.tk.lobby.length") == 3, await p3.evaluate(f"{TKH}.tk.log.slice(-4)"))
+        await click(p3, '#tachles [data-a="leave"]'); await click(p3, '#tachles [data-a="leaveOk"]'); await host.wait_for_timeout(500); await p3.close()
+        check('MQTT: a phone joins the room with its code (through the broker): both see two players', ok and await host.evaluate(f"{TKH}.tk.lobby.length") >= 2 and len(await g.evaluate(f"{TKH}.tk.lobbyView")) >= 2, await host.evaluate("tkDbgL.slice(-6)"))
         await click(host, '#tachles [data-a="start"]'); ok2 = await wait(g, f"{TKH}.tk.scr === 'game' && {TKH}.tk.view && {TKH}.tk.view.round === 1", 8000)
         check('MQTT: the game starts on the phone too', ok2)
         check('screen on: the room and the game hold a wake lock (the screen does not go off)', await host.evaluate(f"!!{TKH}.tk.wake && window.__wl >= 1") and await g.evaluate(f"!!{TKH}.tk.wake"))
@@ -446,6 +451,38 @@ async def small_screen(b):
     check('the "host not connected" note: a thin strip at the very top, the leave button under it still free (the owner\'s pick)', nb[0] == 0 and nb[1] <= 26 and nb[2], nb)
     check('short phone: no page errors', not errs, errs); await ctx.close()
 
+async def public_rooms(b):
+    # the owner: "see the games others open and join one before it starts; quick join drops me into one not started yet". Every waiting room is listed
+    # (the host can close it); a list with the host, players, style, points and round time; quick join takes the fullest; none: create one / try again
+    ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []; pages = []
+    for i in range(4):
+        pg = await ctx.new_page(); await routes(pg); pg.on('pageerror', lambda e: errs.append(str(e)))
+        await pg.add_init_script(FAST + "window.__tkBus = 'bc'; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
+        await pg.goto(BASE + '/tachles'); await wait(pg, f"{TKH}.tk.scr === 'menu'", 8000); pages.append(pg)
+    host, a, q, n = pages
+    await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'קרמבו'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(300)
+    check('open rooms: a new room is open to everyone by default (the switch on)', await host.locator('#tachles [data-a="pubT"].on').count() == 1)
+    await a.evaluate(f"{TKH}.tk.myName = 'שוקו 5'"); await n.evaluate(f"{TKH}.tk.myName = 'ביסלי 3'")
+    await click(a, '#tachles [data-a="m:rooms"]'); await a.wait_for_timeout(600)
+    txt = await a.inner_text('#tachles') if await a.locator('#tachles .tkPbRoom').count() else ''
+    check('open rooms: the list shows the room: the host, 1/8 players, the style, points, round time', await a.locator('#tachles .tkPbRoom').count() == 1 and 'קרמבו' in txt and '1/8' in txt and 'גס' in txt and 'לניצחון' in txt and 'לסבב' in txt, txt[:200])
+    await a.screenshot(path=OUT + 'tachles_rooms.png')
+    await click(a, '#tachles [data-a^="pj:"]'); await wait(a, f"{TKH}.tk.scr === 'lobby'", 5000)
+    check('open rooms: a tap on Join: in the room (2 players), the list now says 2/8', await host.evaluate(f"{TKH}.tk.lobby.length") == 2)
+    await q.evaluate(f"{TKH}.tk.myName = 'במבה 7'") # (the pages share storage here: each phone its own name)
+    await click(q, '#tachles [data-a="m:quick"]'); ok = await wait(q, f"{TKH}.tk.scr === 'lobby'", 6000)
+    check('quick join: straight into the waiting room', ok and await host.evaluate(f"{TKH}.tk.lobby.length") == 3, await q.evaluate(f"{TKH}.tk.log.slice(-4)"))
+    await click(host, '#tachles [data-a="pubT"]'); await host.wait_for_timeout(200)
+    await click(n, '#tachles [data-a="m:quick"]'); await n.wait_for_timeout(3200)
+    check('the host closes the room to the public: quick join finds none: "אין חדרים פתוחים כרגע", create a public room, try again', await n.locator('#tachles [data-a="pb:create"]').count() == 1 and await n.locator('#tachles [data-a="pb:retry"]').count() == 1 and 'אין חדרים פתוחים' in await n.inner_text('#tachles'))
+    await n.screenshot(path=OUT + 'tachles_rooms_none.png')
+    await click(host, '#tachles [data-a="pubT"]'); await host.wait_for_timeout(200); await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(300)
+    await click(n, '#tachles [data-a="pb:retry"]'); await n.wait_for_timeout(3200)
+    check('a room that started is no longer listed', await n.locator('#tachles [data-a="pb:create"]').count() == 1)
+    await click(n, '#tachles [data-a="pb:create"]'); await n.wait_for_timeout(400)
+    check('"פתח חדר ציבורי": this phone opens a room, open to everyone', await n.evaluate(f"{TKH}.tk.mode") == 'host' and (await view(n))['scr'] == 'lobby' and await n.evaluate(f"{TKH}.tk.pub") is True)
+    check('open rooms: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -484,7 +521,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
