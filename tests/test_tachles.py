@@ -266,6 +266,8 @@ async def deck(b):
     bad = [c for c in d['w'] + [x[0] for x in d['b']] if any(k in c for k in ('פדופיל', 'הסבא שמשפץ', 'תינוק עם זין', 'הזין של הרב עובדיה', 'יואב גלנט שמכניס'))]
     snd = await page.evaluate("(async () => { const C = new (window.OfflineAudioContext)(1, 44100, 44100), out = {}; for (const L of Object.values(TK_SFX)) for (const [f] of L) { try { const a = await (await fetch('/assets/tachles/sfx/' + f + '.mp3')).arrayBuffer(); const bf = await C.decodeAudioData(a); out[f] = Math.round(bf.duration * 10) / 10; } catch (e) { out[f] = 'ERR'; } } return out; })()")
     check('the reaction sounds: every take loads and decodes, 0.5-3 s each; 🔥 is the crowd "oooo", three vomit takes, no air horn', all(isinstance(v, (int, float)) and 0.5 <= v <= 3 for v in snd.values()) and 'ooh1' in snd and 'horn1' not in snd and len([k for k in snd if k.startswith('vomit')]) == 3, snd)
+    yc = await page.evaluate(f"(() => {{ const d = {TKH}.tk.deck; const w = d.w.filter((c, i) => d.wm[i][0] === '1'), b = d.b.filter((c, i) => d.bm[i][0] === '1').map((c) => c[0]); return [w.length, b.length, w.includes('צו ראשון בחולצה של אבא.'), b.some((x) => x.startsWith('הדבר הכי גרוע לשלוח בטעות לקבוצת הכיתה'))]; }})()")
+    check('the light style: 800+ answers and 170+ questions, with the cards for 18-year-olds (army, school, phones, parents; the owner: "not funny enough")', yc[0] >= 800 and yc[1] >= 170 and yc[2] and yc[3], yc)
     check('the deck: 340+ black and 1350+ white cards, each with its level and packs, without the two dropped groups', len(d['b']) >= 340 and len(d['w']) >= 1350 and len(d['wm']) == len(d['w']) and len(d['bm']) == len(d['b']) and not bad, [len(d['b']), len(d['w']), bad])
     await ctx.close()
 
