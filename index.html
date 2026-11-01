@@ -1458,7 +1458,9 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkWait .tkI{ width:16px; height:16px; }
 /* settings, confirm boxes, the toast */
 #tachles .tkModal{ position:fixed; inset:0; z-index:6; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.8); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); } #tachles .tkModal.fade{ animation:tkFade .2s ease-out; }
-#tachles .tkMBox{ width:min(24rem,100%); }
+#tachles .tkMBox{ width:min(24rem,100%); max-height:calc(100vh - 32px); overflow-y:auto; scrollbar-width:none; } #tachles .tkMBox::-webkit-scrollbar{ display:none; }
+#tachles .tkSetH{ font-size:13px; font-weight:800; color:var(--faint); margin:14px 0 8px; } #tachles .tkMBox .tkSetH:first-of-type{ margin-top:4px; }
+#tachles .tkSetBtn{ display:flex; align-items:center; gap:10px; text-align:start; } #tachles .tkSetL{ display:flex; flex-direction:column; line-height:1.3; } #tachles .tkSetL small{ font-size:12.5px; color:var(--dim); font-weight:600; }
 #tachles .tkMHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; } #tachles .tkMHead h3{ font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
 #tachles .tkPlN{ flex-wrap:wrap; row-gap:0; } #tachles .tkPlN .tkTaste{ flex-basis:100%; } #tachles .tkTaste{ display:block; font-size:12px; color:var(--neonB); font-weight:700; margin-top:2px; } #tachles .tkCzar .tkTaste{ display:inline; }
 #tachles .tkShareB{ margin-top:6px; }
@@ -2032,7 +2034,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.27';
+const APP_VERSION = '1.12.28';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23163,6 +23165,7 @@ function tkModalHtml() {
   const m = tk.modal; if (!m) { tk.mShown = null; return ''; } let b = '';
   if (m.t === 'set') { const S = tk.mode === 'guest' ? (tk.lobbySet || tk.set) : tk.set, ti = TK_TIMERS.indexOf(S.timer), local = tk.mode === 'local';
     b = '<div class="tkMHead"><h3>' + tki('gear', 'neonI') + tks('roomSet') + '</h3><button class="tkIcon" data-a="mclose" aria-label="' + tks('cancel') + '">' + tki('x') + '</button></div>' +
+      '<h4 class="tkSetH">' + tks('styleT') + '</h4>' + tkStyleHtml(S, tk.mode !== 'guest', true) + '<h4 class="tkSetH">' + tks('roomSet') + '</h4>' +
       (tk.mode === 'guest' ? '<div class="tkRO"><span>' + tks('winScore') + '<b>' + S.target + '</b></span><span>' + tks('timer') + '<b dir="ltr">' + S.timer + 's</b></span><span>' + tks('hand') + '<b>' + S.hand + '</b></span><span>' + tks('rev') + '<b dir="ltr">' + (S.rev ? S.rev + 's' : tks('byBtn')) + '</b></span></div>'
         : tkStepper('ws', tks('winScore'), S.target, S.target > 3, S.target < 15) + (local ? '' : tkStepper('tm', tks('timer'), '<span dir="ltr">' + S.timer + 's</span>', ti > 0, ti < TK_TIMERS.length - 1)) + tkStepper('hs', tks('hand'), S.hand, S.hand > 5, S.hand < 10) +
           tkStepper('rv', tks('rev'), '<span dir="ltr">' + (S.rev ? S.rev + 's' : tks('byBtn')) + '</span>', TK_REVS.indexOf(S.rev || 0) > 0, TK_REVS.indexOf(S.rev || 0) < TK_REVS.length - 1)) +
@@ -23199,9 +23202,9 @@ function tkLobbyHtml() {
     const isMe = p.id === me, isHost = p.id === 'h';
     return '<div class="tkPl' + (isMe ? ' me' : '') + '">' + tkAv(p.name, 44) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (isMe ? '<small>' + tks('you') + '</small>' : '') + (p.bot && tkTasteOf(p.taste) ? '<small class="tkTaste">' + tks('likes') + ' ' + tkTasteOf(p.taste).e + ' ' + tkTasteOf(p.taste).n + '</small>' : '') + '</span>' + (isMe && tk.mode === 'solo' ? '<button class="tkKick tkEdit" data-a="rename" aria-label="' + tks('rename') + '">✏️</button>' : '') +
       (isHost && online ? '<span class="tkHostB">' + tki('crown') + tks('host') + '</span>' : '') + (host && !isMe && !isHost ? '<button class="tkKick" data-a="kick:' + tkEsc(p.id) + '" aria-label="' + tks('kick') + '">' + tki('x') + '</button>' : '') + '</div>'; }).join('') + '</div></div>';
-  const S0 = host ? tk.set : (tk.lobbySet || tk.set), few = host && !tkEnough(S0, list.length); h += tkStyleHtml(S0, host);
+  const S0 = host ? tk.set : (tk.lobbySet || tk.set), few = host && !tkEnough(S0, list.length);
   if (host) h += '<button class="tkS tkW tkMb" data-a="addBot"' + (full || cap ? ' disabled' : '') + '>' + tki('bot') + (full ? tks('full') : cap ? tks('botCap') : tks('addBot')) + '</button>';
-  h += '<button class="tkS tkW tkMb" data-a="set">' + tki('gear', 'neonI') + tks('settings') + '</button>';
+  h += '<button class="tkS tkW tkMb tkSetBtn" data-a="set">' + tki('gear', 'neonI') + '<span class="tkSetL"><b>' + tks('settings') + '</b><small>' + tkStyleSum(S0) + '</small></span></button>';
   h += host ? '<button class="tkP tkW tkLg tkGo" data-a="start"' + (list.length < 2 || few ? ' disabled' : '') + '>' + tki('play', 'rflip') + (list.length < 2 ? tks('needMore', { n: 2 - list.length }) : few ? tks('fewCards') : tks('start')) + '</button>'
     : '<div class="tkWait">' + tks('waitHost') + '</div>';
   return h + '</div>';
@@ -23212,8 +23215,8 @@ function tkLocalHtml() { // one phone: the names (letter avatars), bots, the set
     tk.names.map((v, i) => '<div class="tkPl">' + tkAv(v || tks('name', { n: i + 1 }), 40) + '<input class="tkIn" data-i="' + i + '" maxlength="20" placeholder="' + tks('name', { n: i + 1 }) + '" value="' + tkEsc(v) + '">' +
       (n > 1 ? '<button class="tkKick" data-a="rm:' + i + '" aria-label="' + tks('kick') + '">' + tki('x') + '</button>' : '') + '</div>').join('') + '</div>' +
     (n + tk.botsL < TK_MAXP ? '<button class="tkS tkW tkSm tkMt" data-a="addP">' + tki('plus') + tks('addP') + '</button>' : '') + '</div>' +
-    '<div class="tkCard tkPad6 tkMb">' + tkStepper('bot', tki('bot') + ' ' + tks('bots'), tk.botsL, tk.botsL > 0, tk.botsL < TK_MAXB && n + tk.botsL < TK_MAXP) + '</div>' + tkStyleHtml(tk.set, true) +
-    '<button class="tkS tkW tkMb" data-a="set">' + tki('gear', 'neonI') + tks('settings') + '</button>' +
+    '<div class="tkCard tkPad6 tkMb">' + tkStepper('bot', tki('bot') + ' ' + tks('bots'), tk.botsL, tk.botsL > 0, tk.botsL < TK_MAXB && n + tk.botsL < TK_MAXP) + '</div>' +
+    '<button class="tkS tkW tkMb tkSetBtn" data-a="set">' + tki('gear', 'neonI') + '<span class="tkSetL"><b>' + tks('settings') + '</b><small>' + tkStyleSum(tk.set) + '</small></span></button>' +
     '<button class="tkP tkW tkLg tkGo" data-a="goLocal"' + (n + tk.botsL < 2 || !tkEnough(tk.set, n + tk.botsL) ? ' disabled' : '') + '>' + tki('play', 'rflip') + (tkEnough(tk.set, n + tk.botsL) ? tks('start') : tks('fewCards')) + '</button></div>';
 }
 function tkScoresHtml(v, me) { const st = (p) => !p.on || v.phase === 'reveal' || v.phase === 'over' ? '' : p.id === v.judge ? '<i class="tkSt j">⚖️</i>' : v.phase === 'pick' ? (p.sent ? '<i class="tkSt ok">✓</i>' : '<i class="tkSt w">⏳</i>') : ''; // (from Evil Apples: who judges, who is still choosing, who is done)
@@ -23345,9 +23348,10 @@ function tkAllowed(S, d) { // the cards this room's style and packs let in: { w:
   const pick = (arr, meta) => arr.map((_, i) => i).filter((i) => pass(meta && meta[i])); return { w: pick(d.w, d.wm), b: pick(d.b, d.bm) };
 }
 function tkEnough(S, n) { if (!tk.deck) return true; const ok = tkAllowed(S); return ok.b.length >= 8 && ok.w.length >= n * (S.hand || 7) + 30; }
-function tkStyleHtml(S, can) { // the lobby card: the evening's style (3 levels) and the packs (a sheet)
+function tkStyleSum(S) { const ok = tk.deck ? tkAllowed(S) : null, L = TK_LVL[S.lvl || 2]; return L.e + ' ' + L.n + (ok ? ' · ' + tks('cardsN', { n: ok.w.length + ok.b.length }) : ''); }
+function tkStyleHtml(S, can, bare) { // the evening's style (3 levels) and the packs (a sheet); bare: inside the settings modal, no outer card
   const ok = tk.deck ? tkAllowed(S) : null, off = (S.off || []).length, L = TK_LVL[S.lvl || 2];
-  return '<div class="tkCard tkPad6 tkMb tkStyle"><h2 class="tkH2s">' + tks('styleT') + '</h2><div class="tkLvls">' + [1, 2, 3].map((l) => '<button class="tkLv' + ((S.lvl || 2) === l ? ' on' : '') + '" data-a="' + (can ? 'lvl:' + l : '') + '"' + (can ? '' : ' disabled') + '><b>' + TK_LVL[l].e + '</b><span>' + TK_LVL[l].n + '</span></button>').join('') + '</div>' +
+  return '<div class="' + (bare ? 'tkStyle tkMb' : 'tkCard tkPad6 tkMb tkStyle') + '">' + (bare ? '' : '<h2 class="tkH2s">' + tks('styleT') + '</h2>') + '<div class="tkLvls">' + [1, 2, 3].map((l) => '<button class="tkLv' + ((S.lvl || 2) === l ? ' on' : '') + '" data-a="' + (can ? 'lvl:' + l : '') + '"' + (can ? '' : ' disabled') + '><b>' + TK_LVL[l].e + '</b><span>' + TK_LVL[l].n + '</span></button>').join('') + '</div>' +
     '<p class="tkLvD">' + L.d + '</p>' + '<button class="tkPk tkNames' + (S.names !== false ? ' on' : '') + '" data-a="' + (can ? 'names' : '') + '"' + (can ? '' : ' disabled') + '><b>👥</b><span><strong>' + tks('namesT') + '</strong><small>' + tks('namesD') + '</small></span><i class="tkTg"></i></button>' +
     '<button class="tkS tkW tkSm tkMb8" data-a="own">🤫 ' + tks('ownB', { n: tk.mode === 'guest' ? tk.lobbyOwn : tkOwnN() }) + '</button><button class="tkS tkW tkSm" data-a="packs">🗂️ ' + tks('packsB', { n: TK_PACKS.length - off, m: TK_PACKS.length }) + (ok ? ' · ' + tks('cardsN', { n: ok.w.length + ok.b.length }) : '') + '</button></div>';
 }
@@ -23453,7 +23457,7 @@ function tkClick(e) {
       tkSolo(nm); } }
   else if (a === 'leave') { if (tk.scr === 'stats') { tk.scr = 'menu'; } else if (tk.scr === 'rooms') { tkWatchStop(); tk.scr = 'menu'; } else if (tk.scr === 'write') { tk.scr = 'menu'; } else if (tk.scr === 'setLocal' || tk.mode === 'solo' && tk.scr === 'lobby') { tk.scr = 'menu'; } else tk.modal = { t: 'leave' }; }
   else if (a === 'leaveOk') { tk.modal = null; if (tk.mode === 'host') tkLS('grasp.tkRoom', null); else if (tk.mode === 'guest') tkLS('grasp.tkLast', null); tkNetBye(); tkNetClose(); clearTimeout(tk.botT); tk.g = null; tk.view = null; tk.scr = 'menu'; tk.log.push('leave'); }
-  else if (a === 'mclose') tk.modal = null;
+  else if (a === 'mclose') { const back = tk.modal && tk.modal.back; tk.modal = back ? { t: 'set' } : null; }
   else if (a === 'ttl') { const now = Date.now(); tk.ttlN = now - (tk.ttlAt || 0) < 1500 ? (tk.ttlN || 0) + 1 : 1; tk.ttlAt = now; if (tk.ttlN >= 7) { tk.ttlN = 0; tk.scr = 'stats'; tkStatsLoad(); return; } return; } // (7 quick taps on the title: the numbers)
   else if (a === 'statsR') { tkStatsLoad(); return; }
   else if (a === 'fb') { tk.modal = { t: 'fb' }; tk.fbMsg = ''; }
@@ -23478,13 +23482,13 @@ function tkClick(e) {
   else if (a === 'dbgCopy') { const P = tk.net && tk.net.p, txt = 'Tachles ' + APP_VERSION + ' mode=' + tk.mode + ' room=' + tk.code + ' online=' + navigator.onLine + (P ? ' broker=' + (P.disconnected ? 'down' : P.open ? 'open' : 'connecting') : '') + '\n' + navigator.userAgent + '\n' + tkDbgL.join('\n');
     try { navigator.clipboard.writeText(txt).then(() => { tk.dbgCopied = Date.now(); tkRender(); }).catch(() => {}); } catch {} }
   else if (a === 'names') { tk.set.names = tk.set.names === false; tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
-  else if (a === 'own') { if (tk.scr === 'setLocal') tkReadNames(); tk.myOwn = tk.mode === 'guest' ? tk.myOwn : (tk.own.h || []).slice(); tk.modal = { t: 'own' }; }
+  else if (a === 'own') { if (tk.scr === 'setLocal') tkReadNames(); tk.myOwn = tk.mode === 'guest' ? tk.myOwn : (tk.own.h || []).slice(); tk.modal = { t: 'own', back: tk.modal && tk.modal.t === 'set' }; }
   else if (a === 'ownAdd' || a.startsWith('ownRm:')) { const x = $('tkOwnIn'), v = x ? x.value.trim().slice(0, 80) : ''; if (a === 'ownAdd') { if (!v) return; tk.myOwn.push(/[.!?]$/.test(v) ? v : v + '.'); } else tk.myOwn.splice(+a.slice(6), 1);
     if (tk.mode === 'guest') { try { tk.net.send({ t: 'own', cards: tk.myOwn }); } catch {} } else { tk.own.h = tk.myOwn.slice(); if (tk.mode === 'host') tkLobbyPush(); } }
   else if (a.startsWith('rxo:')) { const id = tk.subsKey + ':' + a.slice(4); tk.rxOpen = tk.rxOpen === id ? null : id; } // (the owner: six emojis under every answer was too much: one small 😂 opens them)
   else if (a.startsWith('rx:')) { const [, k, e] = a.split(':'), v = tkCurView(); tk.rxOpen = null; tkRender(); if (v) tkAct({ t: 'react', k: +k, e: +e, pid: v.me }); return; }
   else if (a.startsWith('lvl:')) { if (tk.scr === 'setLocal') tkReadNames(); tk.set.lvl = +a.slice(4); tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
-  else if (a === 'packs') { if (tk.scr === 'setLocal') tkReadNames(); tk.modal = { t: 'packs' }; }
+  else if (a === 'packs') { if (tk.scr === 'setLocal') tkReadNames(); tk.modal = { t: 'packs', back: tk.modal && tk.modal.t === 'set' }; }
   else if (a.startsWith('pk:')) { const k = a.slice(3), off = tk.set.off || (tk.set.off = []); if (off.includes(k)) off.splice(off.indexOf(k), 1); else off.push(k); tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'pkAll') { tk.set.off = tk.set.off && tk.set.off.length ? [] : TK_PACKS.map((q) => q[0]); tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'addP') { tkReadNames(); tk.names.push(''); }
