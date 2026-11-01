@@ -1163,6 +1163,20 @@ html[dir="rtl"] .moreRow .sw i{ left:auto; right:3px; } html[dir="rtl"] .moreRow
 #start.mb[data-room="little"]::before{ background-image:radial-gradient(rgba(255,255,255,.6) 5px, transparent 5.6px), radial-gradient(rgba(30,150,110,.16) 5px, transparent 5.6px); }
 #start.mb[hidden]{ display:none; }
 @keyframes mbBg{ from{ transform:translate(0,0); } to{ transform:translate(46px,46px); } }
+/* (the owner, on a desktop: "on PC it looks empty and dated") — a wide screen shows a lot of the flat backdrop around the narrow column; on wide
+   screens only, soft warm glows and a vignette give it depth, the layout untouched (mobile unchanged) */
+@media (min-width:860px){
+  #start.mb{ background-image:
+      radial-gradient(60% 45% at 50% -8%, rgba(255,255,255,.22), transparent 62%),
+      radial-gradient(42% 52% at 10% 22%, rgba(255,150,70,.32), transparent 66%),
+      radial-gradient(46% 56% at 90% 72%, rgba(150,110,255,.24), transparent 66%),
+      radial-gradient(135% 105% at 50% 122%, rgba(26,16,4,.5), transparent 56%); background-attachment:fixed; }
+  #start.mb[data-room="little"]{ background-image:
+      radial-gradient(60% 45% at 50% -8%, rgba(255,255,255,.24), transparent 62%),
+      radial-gradient(42% 52% at 10% 22%, rgba(60,200,150,.3), transparent 66%),
+      radial-gradient(46% 56% at 90% 72%, rgba(90,180,255,.22), transparent 66%),
+      radial-gradient(135% 105% at 50% 122%, rgba(8,40,30,.42), transparent 56%); }
+}
 #start.mb #startFx{ display:none; }
 #start.mb button{ font-family:var(--mbF); -webkit-tap-highlight-color:transparent; touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 .mbCol{ position:relative; width:var(--mbW); min-width:min(100vw, 320px); max-width:100%; height:100%; display:flex; flex-direction:column; container-type:inline-size; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
@@ -2035,7 +2049,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.30';
+const APP_VERSION = '1.12.31';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
