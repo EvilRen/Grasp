@@ -1460,6 +1460,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkModal{ position:fixed; inset:0; z-index:6; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.8); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); } #tachles .tkModal.fade{ animation:tkFade .2s ease-out; }
 #tachles .tkMBox{ width:min(24rem,100%); max-height:calc(100vh - 32px); overflow-y:auto; scrollbar-width:none; } #tachles .tkMBox::-webkit-scrollbar{ display:none; }
 #tachles .tkSetH{ font-size:13px; font-weight:800; color:var(--faint); margin:14px 0 8px; } #tachles .tkMBox .tkSetH:first-of-type{ margin-top:4px; }
+#tachles .tkPubRow{ margin-top:20px; } /* (the owner: the 'open to everyone' toggle was too close to the share buttons) */
 #tachles .tkSetBtn{ display:flex; align-items:center; gap:10px; text-align:start; } #tachles .tkSetL{ display:flex; flex-direction:column; line-height:1.3; } #tachles .tkSetL small{ font-size:12.5px; color:var(--dim); font-weight:600; }
 #tachles .tkMHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; } #tachles .tkMHead h3{ font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
 #tachles .tkPlN{ flex-wrap:wrap; row-gap:0; } #tachles .tkPlN .tkTaste{ flex-basis:100%; } #tachles .tkTaste{ display:block; font-size:12px; color:var(--neonB); font-weight:700; margin-top:2px; } #tachles .tkCzar .tkTaste{ display:inline; }
@@ -2034,7 +2035,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.28';
+const APP_VERSION = '1.12.29';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23197,7 +23198,7 @@ function tkLobbyHtml() {
   if (online) h += '<div class="tkCard tkPad7 tkGlow tkMb"><p class="tkDim tkSm tkC">' + tks('roomCode') + '</p><div class="tkNeon tkCodeBig" dir="ltr">' + tkEsc(tk.code) + '</div><p class="tkDim tkSm tkC">' + (tk.netMsg ? tkEsc(tk.netMsg) : tks('shareHint')) + '</p>' +
     (tk.mode === 'host' ? '<p class="tkFaint tkXs tkC tkTvHint">' + (tk.screens.size ? '📺 ' + tks('tvOn') : tks('tvHint', { c: tkEsc(tk.code) })) + '</p>' : '') +
     '<div class="tkTwo"><button class="tkS tkSm" data-a="copy">' + (Date.now() - tk.copied < 2000 ? tki('check', 'neonI') + '<span class="tkNeonC">' + tks('copied') + '</span>' : tki('copy') + tks('copyLink')) + '</button><button class="tkP tkSm" data-a="share">' + tki('share') + tks('share') + '</button></div>' +
-    (tk.mode === 'host' ? '<div class="tkPacks tkMt"><button class="tkPk' + (tk.pub ? ' on' : '') + '" data-a="pubT"><b>🌍</b><span><strong>' + tks('pbPub') + '</strong><small>' + tks('pbPubD') + '</small></span><i class="tkTg"></i></button></div>' : '') + '</div>';
+    (tk.mode === 'host' ? '<div class="tkPacks tkPubRow"><button class="tkPk' + (tk.pub ? ' on' : '') + '" data-a="pubT"><b>🌍</b><span><strong>' + tks('pbPub') + '</strong><small>' + tks('pbPubD') + '</small></span><i class="tkTg"></i></button></div>' : '') + '</div>';
   h += '<div class="tkCard tkPad6 tkMb"><h2 class="tkH2s">' + tks('players') + ' <span class="tkDim tkSm">(' + list.length + ')</span></h2><div class="tkCol8">' + list.map((p) => {
     const isMe = p.id === me, isHost = p.id === 'h';
     return '<div class="tkPl' + (isMe ? ' me' : '') + '">' + tkAv(p.name, 44) + '<span class="tkPlN"><b>' + tkEsc(p.name) + '</b>' + (isMe ? '<small>' + tks('you') + '</small>' : '') + (p.bot && tkTasteOf(p.taste) ? '<small class="tkTaste">' + tks('likes') + ' ' + tkTasteOf(p.taste).e + ' ' + tkTasteOf(p.taste).n + '</small>' : '') + '</span>' + (isMe && tk.mode === 'solo' ? '<button class="tkKick tkEdit" data-a="rename" aria-label="' + tks('rename') + '">✏️</button>' : '') +
