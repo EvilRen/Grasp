@@ -1515,7 +1515,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkRnd{ width:36px; height:36px; border-radius:50%; background:var(--el); border:1px solid var(--bd); color:var(--tx); display:inline-flex; align-items:center; justify-content:center; }
 #tachles .tkRnd .tkI{ width:16px; height:16px; } #tachles .tkRnd:disabled{ opacity:.3; }
 #tachles .tkRO{ display:grid; grid-template-columns:1fr; gap:8px; font-size:14px; } #tachles .tkRO span{ display:flex; justify-content:space-between; background:var(--el); border-radius:12px; padding:8px 12px; color:var(--dim); } #tachles .tkRO b{ color:var(--tx); }
-#tachles .tkHostWait{ position:fixed; inset:0; z-index:7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:32px; background:rgba(10,8,18,.93); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); animation:tkFade .25s ease-out; } #tachles .tkHostWait .tkSpin{ width:48px; height:48px; border-width:5px; margin:0 0 6px; } #tachles .tkHWEmoji{ font-size:40px; } #tachles .tkHWT{ font-size:22px; font-weight:800; color:#fff; margin:0; } #tachles .tkHWD{ font-size:15px; color:var(--dim); margin:0; } #tachles .tkHWB{ margin-top:18px; width:auto; padding-inline:28px; }
+#tachles .tkHostWait{ position:fixed; inset:0; z-index:7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:32px; background:rgba(10,8,18,.93); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); animation:tkFade .25s ease-out; } #tachles .tkHostWait .tkSpin{ width:48px; height:48px; border-width:5px; margin:0 0 6px; } #tachles .tkHWEmoji{ font-size:40px; } #tachles .tkHWT{ font-size:22px; font-weight:800; color:#fff; margin:0; } #tachles .tkHWD{ font-size:15px; color:var(--dim); margin:0; } #tachles .tkHWB{ margin-top:22px; font-size:13px; color:var(--faint); opacity:.85; }
 #tachles .tkPbB{ font-size:14px; padding-top:12px; padding-bottom:12px; } #tachles .tkPbRoom{ display:flex; align-items:center; gap:12px; padding:12px 14px; } #tachles .tkPbI{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; } #tachles .tkPbI b{ font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } #tachles .tkPbI small{ font-size:12.5px; color:var(--dim); }
 #tachles .tkSpin{ width:34px; height:34px; margin:6px auto 12px; border-radius:50%; border:4px solid rgba(168,85,247,.25); border-top-color:var(--neon); animation:tkSpin .9s linear infinite; } @keyframes tkSpin{ to{ transform:rotate(360deg); } }
 #tachles .tkCopy{ display:block; width:100%; text-align:center; font-size:11px; color:var(--faint); opacity:.7; margin:10px 0 0; background:none; border:0; cursor:pointer; padding:6px; }
@@ -2052,7 +2052,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.33';
+const APP_VERSION = '1.12.34';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23008,6 +23008,7 @@ function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !=
   if (busy) tk.botT = setTimeout(() => { if (TK.botMove(g)) { tk.log.push('bot'); tkPush(); } }, window.__tkFast ? 30 : g.phase === 'judge' ? 2200 + g.order.length * TK_STAG : 900 + Math.random() * 2600); } /* (a bot czar reads them all first) */
 function tkTick() { // 4 times a second: the round ring and the next-round count; on the phone that runs the game, the clock and the banner
   const el = $('tachles'); if (!el || el.hidden) return; const g = tk.g, now = Date.now(); tkWake(); tkPubSync();
+  if (tk.hostWait && !tk.hostWaitBtn && now - (tk.hostWaitAt || 0) > (window.__tkFast ? 3000 : 15000)) { tk.hostWaitBtn = true; tkRender(); } if (!tk.hostWait && tk.hostWaitBtn) tk.hostWaitBtn = false;
   if (tk.mode === 'host' && tk.backAt && now - tk.backAt > (window.__tkFast ? 3000 : 30000)) { tk.backAt = 0; // (the room reopened: whoever is not back after 30 s sits out, as if they left)
     if (g) { let n = 0; for (const p of g.players) if (!p.bot && p.id !== tk.me && p.on && !tk.conns.has(p.id)) { TK.skip(g, p.id); n++; } if (n) tkPush(); }
     else { const L = tk.lobby.filter((p) => p.bot || p.id === tk.me || tk.conns.has(p.id)); if (L.length !== tk.lobby.length) { tk.lobby = L; tkLobbyPush(); } } }
@@ -23093,7 +23094,7 @@ function tkRender() {
   if (['menu', 'lobby', 'game', 'board', 'form'].includes(s)) h += '<button class="tkDbgB" data-a="dbg" aria-label="debug">🐞</button>';
   const waitH = tk.hostWait && (tk.mode === 'guest' || tk.mode === 'screen') && (s === 'game' || s === 'lobby' || s === 'board'); // (the owner: a full-screen message, not a thin bar)
   const netOn = !waitH && !!tk.netMsg && (s === 'game' || (s === 'lobby' && tk.mode !== 'host') || s === 'board'); el.classList.toggle('tkNetOn', netOn); if (netOn) h += '<div class="tkNetBar">' + tkEsc(tk.netMsg) + '</div>';
-  const waitHtml = waitH ? '<div class="tkHostWait"><div class="tkSpin"></div><div class="tkHWEmoji">📵</div><h2 class="tkHWT">' + tks('hostGoneT') + '</h2><p class="tkHWD">' + tks('hostGoneD') + '</p><button class="tkS tkHWB" data-a="leave">' + tks('leave') + '</button></div>' : '';
+  const waitHtml = waitH ? '<div class="tkHostWait"><div class="tkSpin"></div><div class="tkHWEmoji">📵</div><h2 class="tkHWT">' + tks('hostGoneT') + '</h2><p class="tkHWD">' + tks('hostGoneD') + '</p>' + (Date.now() - (tk.hostWaitAt || 0) > (window.__tkFast ? 3000 : 15000) ? '<button class="tkLink tkHWB" data-a="leave">' + tks('leave') + '</button>' : '') + '</div>' : '';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
@@ -23609,7 +23610,7 @@ async function tkScreen() {
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
       else if (m.t === 'closed') return out('closed');
       else if (m.t === 'who') { try { tk.net.send({ t: 'screen' }); } catch {} return; }
-      tkRender(); }, (k) => { if (tk.mode !== 'screen' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tk.hostWait = true; tkRender(); } else if (k === 'back') { tk.netMsg = ''; tk.hostWait = false; try { tk.net.send({ t: 'screen' }); } catch {} tkRender(); } else out('closed'); });
+      tkRender(); }, (k) => { if (tk.mode !== 'screen' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tk.hostWait = true; tk.hostWaitAt = Date.now(); tkRender(); } else if (k === 'back') { tk.netMsg = ''; tk.hostWait = false; try { tk.net.send({ t: 'screen' }); } catch {} tkRender(); } else out('closed'); });
     tk.net.send({ t: 'screen' }); tk.log.push('screen:' + tk.code); tkStat('tv');
     setTimeout(() => { if (tk.busy && tk.mode === 'screen' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }
@@ -23639,9 +23640,9 @@ async function tkJoin(name) {
       if (m.t === 'who') return hello(); if (m.t === 'lobby' || m.t === 'view') tkLS('grasp.tkLast', { at: Date.now(), code, name });
       if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.lobbyOwn = m.own || 0; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
-      else if (m.t === 'view') { tkSfxLoad(); if (m.full != null) tk.lobbySet = Object.assign({}, tk.lobbySet, { full: m.full }); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.seq !== tk.lastSeq) tk.sel = []; tk.lastSeq = m.v.seq; tkSeen(m.v); }
+      else if (m.t === 'view') { tkSfxLoad(); if (m.full != null) tk.lobbySet = Object.assign({}, tk.lobbySet, { full: m.full }); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.round !== tk.lastRound || m.v.phase !== tk.lastPhase) tk.sel = []; tk.lastRound = m.v.round; tk.lastPhase = m.v.phase; tk.lastSeq = m.v.seq; /* (the owner: another player's submit used to wipe my in-progress pick; clear it only on a new round or phase) */ tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
-      tkRender(); }, (k) => { if (tk.mode !== 'guest' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tk.hostWait = true; tkRender(); } else if (k === 'back') { if (tk.netMsg || tk.hostWait) { tk.netMsg = ''; tk.hostWait = false; tkRender(); } hello(); } else out('closed'); }, id);
+      tkRender(); }, (k) => { if (tk.mode !== 'guest' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tk.hostWait = true; tk.hostWaitAt = Date.now(); tkRender(); } else if (k === 'back') { if (tk.netMsg || tk.hostWait) { tk.netMsg = ''; tk.hostWait = false; tkRender(); } hello(); } else out('closed'); }, id);
     hello(); tk.log.push('join:' + tk.code); if (tk.joinVia !== 'back') tkStat(tk.joinVia || 'code'); tk.joinVia = null;
     setTimeout(() => { if (tk.busy && tk.mode === 'guest' && tk.scr === 'form') { tk.busy = false; tk.err = tks('netErr'); tkNetClose(); tkRender(); } }, window.__tkBus ? 3000 : 14000); }
   catch { tk.busy = false; tk.err = tks('netErr'); tk.scr = 'form'; tkRender(); }

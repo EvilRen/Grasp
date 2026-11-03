@@ -518,12 +518,38 @@ async def stats(b):
     await page.screenshot(path=OUT + 'tachles_stats.png', full_page=True)
     check('stats: no page errors', not errs, errs); await ctx.close()
 
+async def sel_kept(b):
+    # the owner: my in-progress pick got wiped whenever another player sent theirs. It must survive others' submits
+    ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []; pages = []
+    for i in range(3):
+        pg = await ctx.new_page(); await routes(pg); pg.on('pageerror', lambda e: errs.append(str(e)))
+        await pg.add_init_script(FAST + "window.__tkReveal = 250; window.__tkBus = 'bc'; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');")
+        await pg.goto(BASE + '/tachles'); await wait(pg, f"{TKH}.tk.scr === 'menu'", 8000); pages.append(pg)
+    host, g1, g2 = pages
+    await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'מארח'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(300)
+    code = await host.evaluate(f"{TKH}.tk.code")
+    for pg, n in ((g1, 'אורח1'), (g2, 'אורח2')):
+        await click(pg, '#tachles [data-a="m:join"]'); await pg.fill('#tkMe', n); await pg.fill('#tkCode', code); await click(pg, '#tachles [data-a="go:join"]'); await pg.wait_for_timeout(300)
+    await host.evaluate(f"{TKH}.TK.botMove = () => false"); await click(host, '#tachles [data-a="start"]'); await host.wait_for_timeout(500)
+    await host.evaluate("(function(){var g=" + TKH + ".tk.g;var hi=g.players.findIndex(function(p){return p.id==='h';});g.judge=hi;g.subs={};g.order=[];g.phase='pick';g.roundAt=Date.now();})()"); await host.evaluate("tkPush()"); await host.wait_for_timeout(400)
+    await g1.evaluate(f"(function(){{ {TKH}.tk.sel = [0]; {TKH}.render(); }})()"); await g1.wait_for_timeout(150)
+    await g2.evaluate(f"(function(){{ var v = {TKH}.tk.view; {TKH}.tk.sel = [0]; {TKH}.act({{ t: 'pick', idx: [0], pid: v.me }}); }})()"); await host.wait_for_timeout(500)
+    check('my pick survives another player sending theirs (the owner: it used to reset)', await g1.evaluate(f"{TKH}.tk.sel.join()") == '0', await g1.evaluate(f"{TKH}.tk.sel"))
+    # a new round does clear it
+    rnd = await host.evaluate(f"{TKH}.tk.g.round")
+    await host.evaluate("(function(){var g=" + TKH + ".tk.g;" + TKH + ".TK.startRound(g);})()"); await host.evaluate("tkPush()"); await host.wait_for_timeout(400)
+    check('a new round does clear the pick', await g1.evaluate(f"{TKH}.tk.sel.length") == 0 and await g1.evaluate(f"{TKH}.tk.view.round") > rnd)
+    check('pick kept: no page errors', not errs, errs); await ctx.close()
+
 async def host_wait(b):
     # the owner: the "host not connected" note should be a full-screen message, not a thin bar
     ctx, page, errs = await page_for(b, '/tachles', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
-    await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.mode = 'guest'; t.scr = 'game'; t.hostWait = true; t.view = {{ phase: 'pick', round: 1, me: 'g', judge: 'h', players: [], hand: [], black: ['x', 1], pick: 1, subs: [], timer: 0 }}; {TKH}.render(); }})()")
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.mode = 'guest'; t.scr = 'game'; t.hostWait = true; t.hostWaitAt = Date.now(); t.view = {{ phase: 'pick', round: 1, me: 'g', judge: 'h', players: [], hand: [], black: ['x', 1], pick: 1, subs: [], timer: 0 }}; {TKH}.render(); }})()")
     o = await page.evaluate("(() => { const w = document.querySelector('#tachles .tkHostWait'); return w ? [w.getBoundingClientRect().width >= innerWidth * 0.9 && w.getBoundingClientRect().height >= innerHeight * 0.9, w.innerText] : [false, '']; })()")
-    check('host gone: a full-screen message (not a thin bar) with "המארח לא מחובר כרגע", "מחכה שיחזור" and a leave button', o[0] and 'המארח לא מחובר' in o[1] and 'מחכה שיחזור' in o[1] and await page.locator('#tachles .tkHostWait [data-a="leave"]').count() == 1 and await page.locator('#tachles .tkNetBar').count() == 0, o)
+    check('host gone: a full-screen message (not a thin bar) with "המארח לא מחובר כרגע" and "מחכה שיחזור"', o[0] and 'המארח לא מחובר' in o[1] and 'מחכה שיחזור' in o[1] and await page.locator('#tachles .tkNetBar').count() == 0, o)
+    check('host gone: the leave link is hidden at first (not an easy tap in the first seconds)', await page.locator('#tachles .tkHostWait [data-a="leave"]').count() == 0)
+    await page.evaluate(f"{TKH}.tk.hostWaitAt = Date.now() - 20000; {TKH}.render()")
+    check('host gone: after a wait the small leave link shows (a link, not a big button)', await page.locator('#tachles .tkHostWait .tkLink[data-a="leave"]').count() == 1)
     await page.screenshot(path=OUT + 'tachles_hostwait.png')
     await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.hostWait = false; t.netMsg = ''; {TKH}.render(); }})()")
     check('host back: the full-screen message is gone', await page.locator('#tachles .tkHostWait').count() == 0)
@@ -576,7 +602,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await sel_kept(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
