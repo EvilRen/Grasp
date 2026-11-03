@@ -1559,6 +1559,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkTick{ width:24px; height:24px; border-radius:50%; background:rgba(16,185,129,.2); border:1px solid rgba(16,185,129,.4); display:inline-flex; align-items:center; justify-content:center; color:#34d399; }
 #tachles .tkTick .tkI{ width:14px; height:14px; stroke-width:3; }
 #tachles .tkDone{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--neonB); }
+#tachles .tkMini{ width:min(28rem,100%); margin-top:14px; border-radius:16px; background:rgba(168,85,247,.06); box-shadow:inset 0 0 0 1px rgba(168,85,247,.2); overflow:hidden; } #tachles .tkMiniHd{ display:flex; justify-content:space-between; align-items:center; padding:8px 12px; font-size:12.5px; font-weight:700; color:var(--dim); } #tachles .tkMiniSc{ color:var(--neonB); }
+#tachles .tkMiniBox{ position:relative; height:150px; } #tachles .tkMiniT{ position:absolute; transform:translate(-50%,-50%); width:52px; height:52px; border-radius:50%; border:0; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), transparent 60%), var(--neon); font-size:26px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 14px rgba(168,85,247,.5); transition:left .06s, top .06s; } #tachles .tkMiniT:active{ transform:translate(-50%,-50%) scale(.86); }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
 #tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:1; background:#1b1b1f; color:#6b6b78; }
 #tachles .tkSend:disabled{ opacity:1; background:#241a33; color:#d8c6ff; border:2px dashed rgba(168,85,247,.75); box-shadow:none; } #tachles .tkSend:not(:disabled){ box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 6px 26px rgba(217,70,239,.65); } /* (the owner: with 3 to pick the purple button was hard to see: half see-through over the cards behind it. Now solid, the waiting one dashed with clear text, the ready one glowing) */ #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
@@ -2054,7 +2056,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.35';
+const APP_VERSION = '1.12.36';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22666,6 +22668,7 @@ const TK_VER = '2.1'; // (Tachles' own version, apart from the app; shown on the
 const TK_RELNOTES = [
   ['2.1', 'נובמבר 2026', [
     '🏆 שורת "סבב קודם" בראש כל סבב, וכפתור 🏆 שפותח את כל הזוכים והניקוד \u2014 כדי שלא תפספסו מי ניצח.',
+    '🎯 בזמן שמחכים לאחרים \u2014 משחקון "תפוס!" קטן עם שיא אישי, שלא תצאו מהמשחק מרוב שעמום.',
     '🛠️ תיקון: בחירת קלף לא מתאפסת כששחקן אחר שולח לפניך.',
     '📵 "המארח לא מחובר" עכשיו הודעה על כל המסך.',
   ]],
@@ -22724,7 +22727,7 @@ const TKS = {
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', swap: 'החלף ({n})', swapD: 'זורק את כל היד ומקבל קלפים חדשים. 3 פעמים במשחק', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
-    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
+    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', miniT: 'שעמם לך? תפוס!', miniS: 'ניקוד {n} · שיא {b}', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
     hostGone: 'המארח לא מחובר כרגע. מחכה שיחזור...', hostGoneT: 'המארח לא מחובר כרגע', hostGoneD: 'מחכה שיחזור...', backIn: 'חזרה למשחק', backRoom: 'חזרה לחדר שלך', kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה לא הצליחה כרגע. נסה שוב מאוחר יותר.',
@@ -22740,7 +22743,7 @@ const TKS = {
     kickQ: 'Kick {n} out of the room?', cancel: 'Cancel', kick: 'Kick', leaveQh: 'Close the room?', leaveQ: 'Leave the room?', leaveDh: 'Every player goes back home and the room closes.', leaveD: 'You go back home. The room carries on without you.',
     leaveQl: 'End the game?', leaveDl: 'The scores are cleared and you go back to the menu.', end: 'End',
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', swap: 'Swap ({n})', swapD: 'Throw your whole hand away for new cards. 3 times a game', pickN: 'Pick {n}', noCards: 'No cards in hand',
-    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
+    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', miniT: 'Bored? Tap!', miniS: 'Score {n} · Best {b}', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
     hostGone: 'The host is not connected. Waiting for them to come back...', hostGoneT: 'The host is not connected', hostGoneD: 'Waiting for them to come back...', backIn: 'Back to the game', backRoom: 'Back to your room', kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
     wrPhW: 'e.g. My aunt on TikTok.', wrPhB: 'e.g. What really happened at ___\'s wedding?', wrBlank: 'blank', wrSend: 'Send for approval', wrSending: 'Sending...', wrSent: 'Sent for approval! Thanks 🙏', wrErr: "Couldn't send. Check the internet and try again.",
@@ -22971,7 +22974,7 @@ const TKNET = {
 };
 /* tk.mode: 'host' (a room others join), 'guest', 'solo' (you and bots, no internet), 'local' (one phone passed round) */
 const tk = { deck: null, scr: 'gate', mode: null, g: null, me: null, view: null, sel: [], names: [], set: { target: 5, timer: 60, hand: 7, rev: 0 }, myName: '', passTo: null, net: null, conns: new Map(), screens: new Map(), board: null, peerSeen: {}, own: {}, myOwn: [], lobbyOwn: 0, rxN: {}, rxKey: '', fxAt: 0, botRx: '', code: '', log: [],
-  botT: 0, err: '', lobby: [], lobbyView: null, devs: {}, lobbySet: null, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
+  botT: 0, err: '', lobby: [], lobbyView: null, devs: {}, lobbySet: null, mini: { score: 0, best: 0, x: 50, y: 42, round: -1, pop: 0 }, modal: null, toast: null, tease: null, form: null, busy: false, dl: 0, nx: 0, iv: 0, botN: 0, copied: 0, botsL: 0, guestId: null, lastSeq: -1, netMsg: '' };
 function tkStore(v) { try { if (v) localStorage.setItem('grasp.tk', JSON.stringify(v)); else return JSON.parse(localStorage.getItem('grasp.tk') || '{}'); } catch { return {}; } }
 async function tkLoad() { if (tk.deck) return tk.deck; const r = await fetch('/assets/tachles/deck.json?v=' + TK_V); if (!r.ok) throw new Error('deck'); tk.deck = await r.json(); return tk.deck; }
 function tkFsNeed() { return !window.__graspNoAutoFs && typeof fsCan === 'function' && fsCan() && !fsEl(); } // (the owner: Tachles always full screen; a browser lets a page do it only on a tap: a veil asks for one)
@@ -22983,6 +22986,7 @@ function tkStart() {
   let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
   const Q = new URLSearchParams(location.search), room = Q.get('room') || Q.get('screen'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
   tk.scr = ok ? (tk.code ? 'form' : 'menu') : 'gate'; if (ok && tk.code) tkForm(Q.get('screen') ? 'screen' : 'join'); tk.log.push('start:' + tk.scr);
+  try { tk.mini.best = Math.max(0, Math.min(99999, +localStorage.getItem('grasp.tkMiniBest') || 0)); } catch {}
   clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
 function tkStop() { tkWatchStop(); const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkWake(); tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
@@ -23321,8 +23325,8 @@ function tkGameHtml(v) {
   else {
     h += tkStatusHtml(v);
     if (local && !who) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>';
-    else if (czar) h += '<p class="tkDim tkSm">' + tks('youJudge') + '</p>' + tkBacksHtml(v) + tkSkipHtml(v);
-    else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v);
+    else if (czar) h += '<p class="tkDim tkSm">' + tks('youJudge') + '</p>' + tkBacksHtml(v) + tkSkipHtml(v) + tkMiniHtml(v);
+    else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v) + tkMiniHtml(v);
     else if (!v.hand.length) h += tkSendHtml(v); /* (with cards, the button rides on top of the hand, so the cards never cover it) */
   }
   h += '</div>';
@@ -23358,6 +23362,15 @@ function tkRevealDuelHtml(v) { // the round's end: the winning answer sits in th
   const k = v.win, cs = k >= 0 ? v.subs[k] : null, by = v.by && k >= 0 ? v.by[k] : null;
   return '<div class="tkDuel"><div class="tkFace tkBlackC"><p>' + tkCard(v.black[0]) + '</p></div><div class="tkSlots">' + (cs ? '<div class="tkFace tkWhiteC tkSlot full tkWinC"><p>' + tkAnsP(cs) + '</p>' + (by ? '<small class="tkBy">' + tkEsc(by) + '</small>' : '') + '<span class="tkTrophy">' + tki('trophy') + '</span></div>' : '<div class="tkSlot empty"><span>' + tks('nobody') + '</span></div>') + '</div></div>';
 }
+const TK_MINIE = ['🎯', '⭐', '🔥', '💥', '👑', '🎲', '🍺', '💨'];
+function tkMiniHtml(v) { // the owner: a long wait makes the czar / a done picker bored and they leave the app. A tiny tap game to fidget on, with a best score
+  if (v.round !== tk.mini.round) { tk.mini.round = v.round; tk.mini.score = 0; tk.mini.x = 50; tk.mini.y = 42; } const m = tk.mini, e = TK_MINIE[m.pop % TK_MINIE.length];
+  return '<div class="tkMini"><div class="tkMiniHd"><span>🎯 ' + tks('miniT') + '</span><span class="tkMiniSc">' + tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }) + '</span></div>' +
+    '<div class="tkMiniBox"><button class="tkMiniT" data-a="miniTap" style="left:' + m.x + '%;top:' + m.y + '%">' + e + '</button></div></div>';
+}
+function tkMiniTap() { const m = tk.mini; m.score++; m.pop++; if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
+  m.x = 12 + Math.random() * 76; m.y = 16 + Math.random() * 68; try { tgSfx('pop'); } catch {} tkStat('mini'); // (a hit; move the target)
+  const t = document.querySelector('#tachles .tkMiniT'); if (t) { t.style.left = m.x + '%'; t.style.top = m.y + '%'; t.textContent = TK_MINIE[m.pop % TK_MINIE.length]; } const sc = document.querySelector('#tachles .tkMiniSc'); if (sc) sc.textContent = tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }); }
 function tkBacksHtml(v) { // while the others choose (from Evil Apples): a face-down card for each answer that came in, an empty place for each still to come
   const el = v.players.filter((p) => p.id !== v.judge && p.on); if (!el.length) return ''; const n = el.filter((p) => p.sent).length;
   return '<div class="tkBacks">' + el.map((p, i) => (i < n ? '<i class="tkBackC"></i>' : '<i class="tkBackC wait">⏳</i>')).join('') + '</div>';
@@ -23520,6 +23533,7 @@ function tkClick(e) {
   else if (a === 'fb') { tk.modal = { t: 'fb' }; tk.fbMsg = ''; }
   else if (a === 'tkRel') tk.modal = { t: 'rel' };
   else if (a === 'hist') tk.modal = { t: 'hist' };
+  else if (a === 'miniTap') { tkMiniTap(); return; }
   else if (a === 'fbSend') return tkFbSend();
   else if (a === 'rename') tk.modal = { t: 'name' };
   else if (a === 'renameOk') { const nm = nameOf(); if (nm) { tk.myName = nm; tkSave(); const me = tk.lobby.find((p) => p.id === 'h'); if (me) me.name = nm; } tk.modal = null; }
