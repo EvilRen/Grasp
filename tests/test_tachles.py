@@ -117,8 +117,8 @@ async def gate_and_bots(b, he):
             await page.evaluate(f"{TKH}.tk.g.revealAt = Date.now() + 4000")
             mk = await page.evaluate("[document.querySelectorAll('#tachles .tkRevHand .tkJC').length, document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length, document.querySelectorAll('#tachles .tkDuel .tkSlot').length, document.querySelectorAll('#tachles .tkBlackC mark').length]")
             full = await page.evaluate(f"(() => {{ {TKH}.tk.set.full = true; {TKH}.render(); const n = document.querySelectorAll('#tachles .tkRevHand .tkJC mark').length; {TKH}.tk.set.full = false; {TKH}.render(); return n; }})()")
-            fb = await page.locator('#tachles .tkTop .tkFullB').count(); await click(page, '#tachles .tkTop .tkFullB'); fb2 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count(), await page.locator('#tachles .tkFullB.on').count()]
-            await click(page, '#tachles .tkTop .tkFullB'); fb3 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count()]
+            fb = await page.locator('#tachles .tkTop [data-a="fullT"]').count(); await click(page, '#tachles .tkTop [data-a="fullT"]'); fb2 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count(), await page.locator('#tachles .tkFullB.on').count()]
+            await click(page, '#tachles .tkTop [data-a="fullT"]'); fb3 = [await page.evaluate(f"{TKH}.tk.set.full"), await page.locator('#tachles .tkRevHand .tkJC mark').count()]
             check(tag + ': "📜 משפט מלא" at the top of the reveal turns the whole sentence on and off in the game', fb == 1 and fb2[0] is True and fb2[1] >= 1 and fb2[2] == 1 and fb3 == [False, 0], [fb, fb2, fb3])
             rv = await page.evaluate("(() => { const r = window.__tkReveal; delete window.__tkReveal; const ms = tkRevealMs(); window.__tkReveal = r; return ms; })()")
             await page.screenshot(path=OUT + 'tachles_reveal_%s.png' % tag.lower()); shot = True
@@ -254,6 +254,11 @@ async def online(b):
     check('TV: the reveal on the screen: the winning sentence in the question card and every answer under it', await g3.locator('#tachles .tkTV .tkBlackC mark').count() >= 1 and await g3.locator('#tachles .tkTV .tkSub .tkAnsC').count() >= 2)
     await g3.screenshot(path=OUT + 'tachles_tv_reveal.png')
     await host.wait_for_timeout(1900); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
+    rc = await g1.evaluate("(() => { const e = document.querySelector('#tachles .tkRecap'); return e ? e.innerText : ''; })()")
+    check('reveal: a "סבב קודם" recap line at the top of the new round (the owner: people miss the winning answer)', 'סבב קודם' in rc, rc)
+    await click(g1, '#tachles [data-a="hist"]'); hm = await g1.inner_text('#tachles .tkModal')
+    check('🏆 winners button opens a history + scores modal with the winning sentences', 'זוכים' in hm and await g1.locator('#tachles .tkModal .tkMoment').count() >= 1 and await g1.locator('#tachles .tkModal .tkScores .tkSc').count() >= 2)
+    await g1.screenshot(path=OUT + 'tachles_history.png'); await click(g1, '#tachles .tkMHead [data-a="mclose"]')
     await click(host, '#tachles [data-a="leave"]'); check('online: Close room asks first', await host.locator('#tachles .tkModal [data-a="leaveOk"]').count() == 1)
     await host.screenshot(path=OUT + 'tachles_leave_he.png')
     await click(host, '#tachles [data-a="leaveOk"]'); await host.wait_for_timeout(300)
@@ -470,7 +475,7 @@ async def public_rooms(b):
     await click(host, '#tachles [data-a="m:create"]'); await host.fill('#tkMe', 'קרמבו'); await click(host, '#tachles [data-a="go:create"]'); await host.wait_for_timeout(300)
     check('open rooms: a new room is open to everyone by default (the switch on)', await host.locator('#tachles [data-a="pubT"].on').count() == 1)
     await a.evaluate(f"{TKH}.tk.myName = 'שוקו 5'"); await n.evaluate(f"{TKH}.tk.myName = 'ביסלי 3'")
-    cp = await a.inner_text('#tachles .tkCopy'); check('the menu: the copyright line at the bottom shows the Tachles version (© year Benny Ankri · Tachles v2.0)', 'Benny Ankri' in cp and '©' in cp and 'Tachles v2.0' in cp, cp)
+    cp = await a.inner_text('#tachles .tkCopy'); check('the menu: the copyright line at the bottom shows the Tachles version (© year Benny Ankri · Tachles v2.x)', 'Benny Ankri' in cp and '©' in cp and 'Tachles v2.' in cp, cp)
     await click(a, '#tachles [data-a="tkRel"]'); rel = await a.inner_text('#tachles .tkModal')
     check('tapping the © line opens "מה חדש בת\'כלס" with the versions and notes', 'מה חדש' in rel and 'v2.0' in rel and 'חדרים פתוחים' in rel and await a.locator('#tachles .tkRelL li').count() >= 5)
     await a.screenshot(path=OUT + 'tachles_relnotes.png'); await click(a, '#tachles .tkMHead [data-a="mclose"]')
