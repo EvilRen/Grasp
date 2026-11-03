@@ -518,6 +518,17 @@ async def stats(b):
     await page.screenshot(path=OUT + 'tachles_stats.png', full_page=True)
     check('stats: no page errors', not errs, errs); await ctx.close()
 
+async def host_wait(b):
+    # the owner: the "host not connected" note should be a full-screen message, not a thin bar
+    ctx, page, errs = await page_for(b, '/tachles', True, init=FAST + "sessionStorage.setItem('grasp.tk18', '1');"); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.mode = 'guest'; t.scr = 'game'; t.hostWait = true; t.view = {{ phase: 'pick', round: 1, me: 'g', judge: 'h', players: [], hand: [], black: ['x', 1], pick: 1, subs: [], timer: 0 }}; {TKH}.render(); }})()")
+    o = await page.evaluate("(() => { const w = document.querySelector('#tachles .tkHostWait'); return w ? [w.getBoundingClientRect().width >= innerWidth * 0.9 && w.getBoundingClientRect().height >= innerHeight * 0.9, w.innerText] : [false, '']; })()")
+    check('host gone: a full-screen message (not a thin bar) with "המארח לא מחובר כרגע", "מחכה שיחזור" and a leave button', o[0] and 'המארח לא מחובר' in o[1] and 'מחכה שיחזור' in o[1] and await page.locator('#tachles .tkHostWait [data-a="leave"]').count() == 1 and await page.locator('#tachles .tkNetBar').count() == 0, o)
+    await page.screenshot(path=OUT + 'tachles_hostwait.png')
+    await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.hostWait = false; t.netMsg = ''; {TKH}.render(); }})()")
+    check('host back: the full-screen message is gone', await page.locator('#tachles .tkHostWait').count() == 0)
+    check('host gone: no page errors', not errs, errs); await ctx.close()
+
 async def settings_way(b):
     # the owner's Android: the long press did nothing; Settings: 7 quick taps on the version show a "🔞 Tachles" row (it stays), a tap opens it
     ctx, page, errs = await page_for(b, '/', True, init="window.__graspNoAutoFs = true;"); await page.wait_for_timeout(700)
@@ -565,7 +576,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
