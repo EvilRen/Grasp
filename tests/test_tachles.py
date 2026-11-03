@@ -244,8 +244,10 @@ async def online(b):
     check('the tease line does not push the screen: its place is kept from the start of the round (the owner: a scroll appeared)', h0 > 0 and h0 == h1, [h0, h1])
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     czarP = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
-    mini = await czarP.evaluate("(() => { const b = document.querySelector('#tkMiniChar'); if (!b) return null; const s0 = __grasp.tk.tk.mini.score; const tap = () => b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true})); tap(); tap(); return [s0, __grasp.tk.tk.mini.score]; })()")
-    check('waiting: a roaming character shows for the waiting czar (on the whole screen, not a box at the bottom); tapping it scores and saves a best (the owner: a long wait is boring, imagined a character on the screen itself)', mini and mini[1] == mini[0] + 2 and await czarP.evaluate("+localStorage.getItem('grasp.tkMiniBest') >= 2"), mini)
+    # the owner: it must NOT appear at once (~5s delay); drive tkMiniSync directly to test the gate deterministically
+    delay = await czarP.evaluate("(() => { tkMiniHide(); const m = __grasp.tk.tk.mini; m.waitAt = 0; tkMiniSync(); const a = !document.querySelector('#tkMiniChar'); m.waitAt = Date.now() - 9000; tkMiniSync(); const b = !!document.querySelector('#tkMiniChar'); return [a, b]; })()")
+    mini = await czarP.evaluate("(() => { const b = document.querySelector('#tkMiniChar'); if (!b) return null; const s0 = __grasp.tk.tk.mini.score; const tap = () => b.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true})); tap(); tap(); tap(); return [s0, __grasp.tk.tk.mini.score, __grasp.tk.tk.mini.combo]; })()")
+    check('waiting: a roaming pixel-art goblin appears a few seconds in (not at once), roams the whole screen, and tapping it scores, combos and saves a best (the owner: pixel art, more life, and it should not appear before you get bored)', delay == [True, True] and mini and mini[1] == mini[0] + 3 and mini[2] == 3 and await czarP.evaluate("+localStorage.getItem('grasp.tkMiniBest') >= 3"), [delay, mini])
     await czarP.screenshot(path=OUT + 'tachles_mini.png')
     for k in range(30):
         if (await view(host))['phase'] == 'reveal': break

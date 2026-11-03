@@ -1562,8 +1562,11 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 .tkMiniLayer{ position:fixed; inset:0; z-index:5; pointer-events:none; overflow:hidden; }
 .tkMiniChar{ position:absolute; left:0; top:0; width:72px; height:72px; border:0; padding:0; background:none; pointer-events:auto; cursor:pointer; will-change:transform; image-rendering:pixelated; image-rendering:crisp-edges; filter:drop-shadow(2px 4px 0 rgba(0,0,0,.38)); -webkit-tap-highlight-color:transparent; touch-action:none; }
 .tkMiniBadge{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 54px); left:50%; transform:translateX(-50%); pointer-events:none; background:rgba(26,20,40,.85); color:#e9d5ff; font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,.4); }
-.tkMiniStar{ position:absolute; transform:translate(-50%,-50%); font-size:16px; pointer-events:none; animation:tkMiniStar .6s ease-out forwards; }
+.tkMiniStar{ position:absolute; transform:translate(-50%,-50%); font-size:16px; pointer-events:none; animation:tkMiniStar .68s ease-out forwards; }
 @keyframes tkMiniStar{ to{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); opacity:0; } }
+.tkMiniSay{ position:absolute; pointer-events:none; background:#fff; color:#1a1030; font-size:12px; font-weight:800; padding:3px 9px; border-radius:9px; white-space:nowrap; box-shadow:0 2px 0 rgba(0,0,0,.3); animation:tkMiniSay 1.2s ease-out forwards; z-index:6; }
+.tkMiniSay::after{ content:''; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%); border:5px solid transparent; border-top-color:#fff; border-bottom:0; }
+@keyframes tkMiniSay{ 0%{ opacity:0; transform:translate(-50%,-70%) scale(.6); } 16%{ opacity:1; transform:translate(-50%,-100%) scale(1); } 78%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-140%) scale(.9); } }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
 #tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:1; background:#1b1b1f; color:#6b6b78; }
 #tachles .tkSend:disabled{ opacity:1; background:#241a33; color:#d8c6ff; border:2px dashed rgba(168,85,247,.75); box-shadow:none; } #tachles .tkSend:not(:disabled){ box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 6px 26px rgba(217,70,239,.65); } /* (the owner: with 3 to pick the purple button was hard to see: half see-through over the cards behind it. Now solid, the waiting one dashed with clear text, the ready one glowing) */ #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
@@ -2059,7 +2062,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.38';
+const APP_VERSION = '1.12.39';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22671,7 +22674,7 @@ const TK_VER = '2.1'; // (Tachles' own version, apart from the app; shown on the
 const TK_RELNOTES = [
   ['2.1', 'נובמבר 2026', [
     '🏆 שורת "סבב קודם" בראש כל סבב, וכפתור 🏆 שפותח את כל הזוכים והניקוד \u2014 כדי שלא תפספסו מי ניצח.',
-    '🎯 בזמן שמחכים לאחרים \u2014 גובלין קטן בפיקסל ארט מתרוצץ לך על המסך. תפוס אותו, הוא מתכווץ, מחייך וזורק כוכבים, ויש שיא אישי. שלא תשתעממו.',
+    '🎯 בזמן שמחכים לאחרים \u2014 גובלין קטן בפיקסל ארט מתרוצץ לך על המסך (מופיע רק אחרי כמה שניות, כשמתחילים להשתעמם). מצמץ, מפהק, ואם לא נוגעים בו — נרדם. תפוס אותו: הוא מתכווץ, מדבר, זורק כוכבים, ובניקוד גבוה עולה רמה עד מלך זהוב עם כתר.',
     '🛠️ תיקון: בחירת קלף לא מתאפסת כששחקן אחר שולח לפניך.',
     '📵 "המארח לא מחובר" עכשיו הודעה על כל המסך.',
   ]],
@@ -22730,7 +22733,7 @@ const TKS = {
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', swap: 'החלף ({n})', swapD: 'זורק את כל היד ומקבל קלפים חדשים. 3 פעמים במשחק', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
-    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', miniT: 'שעמם לך? תפוס!', miniS: 'ניקוד {n} · שיא {b}', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
+    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', miniT: 'שעמם לך? תפוס!', miniS: 'ניקוד {n} · שיא {b}', miniUp: '⬆️ עליתי רמה!', miniKing: '👑 מלך!', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
     hostGone: 'המארח לא מחובר כרגע. מחכה שיחזור...', hostGoneT: 'המארח לא מחובר כרגע', hostGoneD: 'מחכה שיחזור...', backIn: 'חזרה למשחק', backRoom: 'חזרה לחדר שלך', kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה לא הצליחה כרגע. נסה שוב מאוחר יותר.',
@@ -22746,7 +22749,7 @@ const TKS = {
     kickQ: 'Kick {n} out of the room?', cancel: 'Cancel', kick: 'Kick', leaveQh: 'Close the room?', leaveQ: 'Leave the room?', leaveDh: 'Every player goes back home and the room closes.', leaveD: 'You go back home. The room carries on without you.',
     leaveQl: 'End the game?', leaveDl: 'The scores are cleared and you go back to the menu.', end: 'End',
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', swap: 'Swap ({n})', swapD: 'Throw your whole hand away for new cards. 3 times a game', pickN: 'Pick {n}', noCards: 'No cards in hand',
-    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', miniT: 'Bored? Tap!', miniS: 'Score {n} · Best {b}', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
+    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', miniT: 'Bored? Tap!', miniS: 'Score {n} · Best {b}', miniUp: '⬆️ Level up!', miniKing: '👑 King!', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
     hostGone: 'The host is not connected. Waiting for them to come back...', hostGoneT: 'The host is not connected', hostGoneD: 'Waiting for them to come back...', backIn: 'Back to the game', backRoom: 'Back to your room', kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
     wrPhW: 'e.g. My aunt on TikTok.', wrPhB: 'e.g. What really happened at ___\'s wedding?', wrBlank: 'blank', wrSend: 'Send for approval', wrSending: 'Sending...', wrSent: 'Sent for approval! Thanks 🙏', wrErr: "Couldn't send. Check the internet and try again.",
@@ -23034,6 +23037,7 @@ function tkTick() { // 4 times a second: the round ring and the next-round count
   }
   const r = $('tkTimer'); if (r && tk.view) r.outerHTML = tkRing(tk.view);
   const n = $('tkNextN'); if (n) n.textContent = tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - now) / 1000)) });
+  tkMiniSync(); // (the waiting goblin appears a few seconds in, even with no re-render)
 }
 function tkNewGame(players) { tkStat('start-' + (tk.mode === 'host' ? 'online' : tk.mode === 'local' ? 'local' : 'bots')); tkStat('size-' + (players.length >= 6 ? '6p' : Math.max(2, players.length))); tkStat('lvl-' + (tk.set.lvl || 2)); tkStat('day-' + tkDay()); tk.doneSent = false;
   { const L = TK_LVL[tk.set.lvl || 2], humP = players.filter((p) => !p.bot), bots = players.length - humP.length;
@@ -23111,7 +23115,7 @@ function tkRender() {
   const netOn = !waitH && !!tk.netMsg && (s === 'game' || (s === 'lobby' && tk.mode !== 'host') || s === 'board'); el.classList.toggle('tkNetOn', netOn); if (netOn) h += '<div class="tkNetBar">' + tkEsc(tk.netMsg) + '</div>';
   const waitHtml = waitH ? '<div class="tkHostWait"><div class="tkSpin"></div><div class="tkHWEmoji">📵</div><h2 class="tkHWT">' + tks('hostGoneT') + '</h2><p class="tkHWD">' + tks('hostGoneD') + '</p>' + (Date.now() - (tk.hostWaitAt || 0) > (window.__tkFast ? 3000 : 15000) ? '<button class="tkLink tkHWB" data-a="leave">' + tks('leave') + '</button>' : '') + '</div>' : '';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
-  if (tk.miniWant && s === 'game') tkMiniShow(); else tkMiniHide(); tk.miniWant = false;
+  tk.scrNow = s; tkMiniSync(); // the waiting goblin: shown only in a game, only while waiting, and only after the delay (tkMiniSync)
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
@@ -23313,7 +23317,7 @@ function tkGameHtml(v) {
         '<button class="tkP tkW tkLg" data-a="iam:' + tkEsc(who) + '">' + tks('imN', { n: tkEsc(nm) }) + '</button></div></div>'; }
     if (who) v = TK.view(g, who);
   }
-  const miniWait = v.phase === 'pick' && (v.me === v.judge || v.mine); tk.miniWant = miniWait; tk.miniRound = v.round;
+  const miniWait = v.phase === 'pick' && (v.me === v.judge || v.mine); tk.miniElig = miniWait; tk.miniRound = v.round;
   tkSeenMark(v); const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick', choosing = playing && !czar && !sent && (who || !local) && v.hand.length > 0, judging = v.phase === 'judge' && v.subs.length > 0 && (!local || !!who || g.players[g.judge].bot), revealing = v.phase === 'reveal' && v.subs && v.subs.length > 0;
   const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
   const fullB = judging || revealing ? '<button class="tkFullB' + (tkFullOn() ? ' on' : '') + '" data-a="fullT" aria-pressed="' + tkFullOn() + '">📜 ' + tks('fullBtn') + '</button>' : '';
@@ -23367,49 +23371,87 @@ function tkRevealDuelHtml(v) { // the round's end: the winning answer sits in th
   const k = v.win, cs = k >= 0 ? v.subs[k] : null, by = v.by && k >= 0 ? v.by[k] : null;
   return '<div class="tkDuel"><div class="tkFace tkBlackC"><p>' + tkCard(v.black[0]) + '</p></div><div class="tkSlots">' + (cs ? '<div class="tkFace tkWhiteC tkSlot full tkWinC"><p>' + tkAnsP(cs) + '</p>' + (by ? '<small class="tkBy">' + tkEsc(by) + '</small>' : '') + '<span class="tkTrophy">' + tki('trophy') + '</span></div>' : '<div class="tkSlot empty"><span>' + tks('nobody') + '</span></div>') + '</div></div>';
 }
-/* the owner wanted pixel art, not a blob: a cheeky little goblin that roams the whole screen while you wait. It walks (a 2-frame
-   leg cycle), faces the way it moves, and on a tap it squishes, grins wide and throws stars, speeding up as the score climbs.
-   Drawn to a tiny 16x16 canvas at nearest-neighbour on a body-level layer (survives the sheet's re-renders); rAF runs only while waiting. */
-const TK_GOB_PAL = { O: '#15230d', G: '#5cc24a', D: '#3a8a30', L: '#92ec72', W: '#ffffff', K: '#1a1030', M: '#4a0f1e', T: '#fff4d6', N: '#e86a86' };
-const TK_GOB = {
-  a: ['   O        O   ', '  OLO      OLO  ', '  OGDO    ODGO  ', '  OGGOOOOOOGGO  ', '  OGGGGGGGGGGO  ', ' OGGLGGGGGGLGGO ', ' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO ', ' OGGGGGNNGGGGGO ', ' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  ', '  OGGGGGGGGGGO  ', '   OGGGGGGGGO   ', '   OGO    OGO   ', '   OO      OO   '],
-  b: ['   O        O   ', '  OLO      OLO  ', '  OGDO    ODGO  ', '  OGGOOOOOOGGO  ', '  OGGGGGGGGGGO  ', ' OGGLGGGGGGLGGO ', ' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO ', ' OGGGGGNNGGGGGO ', ' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  ', '  OGGGGGGGGGGO  ', '   OGGGGGGGGO   ', '  OGO      OGO  ', '  OO        OO  '],
-  h: ['   O        O   ', '  OLO      OLO  ', '  OGDO    ODGO  ', '  OGGOOOOOOGGO  ', '  OGGGGGGGGGGO  ', ' OGGGKGGGGKGGGO ', ' OGGKGKGGKGKGGO ', ' OGGGGGNNGGGGGO ', ' OGGMMMMMMMMGGO ', ' OGMTTTTTTTTMGO ', ' OGMTTTTTTTTMGO ', ' OGMMNNNNNNMMGO ', '  OGMMMMMMMMGO  ', '   OGGGGGGGGO   ', '  OGO      OGO  ', ' OO          OO '],
-};
-function tkMiniDraw(key) { const m = tk.mini, c = m.cv; if (!c || m.cur === key) return; m.cur = key; const grid = TK_GOB[key[0]], flip = key[1] === 'L', S = m.S, x = m.cx;
+/* the owner wanted pixel art with more life: a cheeky goblin that roams while you wait. It appears only after ~5 s (so you get to be
+   bored first), walks (a 2-frame leg cycle), faces the way it moves, blinks and yawns, and dozes off with a 💤 if left alone — tap to
+   wake it. A tap makes it grin wide, throw stars and dart off; quick taps build a combo (x2, x3…) and every 10 points a confetti burst.
+   It levels up with the score: green → purple → gold with a crown, and taunts/cheers in little speech bubbles. Drawn pixel-by-pixel to a
+   16x16 canvas (nearest-neighbour) on a body-level layer that survives the sheet's re-renders; the rAF runs only while it is on screen. */
+const TK_MINI_DELAY = 5000; // (the owner: "it appears at once, I had no time to get bored")
+const TK_GOB_BASE = { O: '#15230d', W: '#ffffff', K: '#1a1030', M: '#4a0f1e', T: '#fff4d6', N: '#e86a86', C: '#ffd83b', c: '#8a5a00' };
+const TK_GOB_TIERS = [{ G: '#5cc24a', D: '#3a8a30', L: '#92ec72' }, { G: '#a45cf0', D: '#7636c0', L: '#c89cf7' }, { G: '#f5c33b', D: '#c9902a', L: '#ffe49a' }]; // green → purple → gold
+const TK_GOB_CROWN = [[2, 6, 'c'], [2, 8, 'c'], [2, 10, 'c'], [3, 6, 'C'], [3, 7, 'C'], [3, 8, 'C'], [3, 9, 'C'], [3, 10, 'C'], [4, 7, 'C'], [4, 8, 'C'], [4, 9, 'C']];
+const TK_GOB = (() => { // frames composed from one body + swappable eye/mouth rows (less hand-drawing, no row-length slips)
+  const A = ['   O        O   ', '  OLO      OLO  ', '  OGDO    ODGO  ', '  OGGOOOOOOGGO  ', '  OGGGGGGGGGGO  ', ' OGGLGGGGGGLGGO ', ' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO ', ' OGGGGGNNGGGGGO ', ' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  ', '  OGGGGGGGGGGO  ', '   OGGGGGGGGO   ', '   OGO    OGO   ', '   OO      OO   '];
+  const B = A.slice(); B[14] = '  OGO      OGO  '; B[15] = '  OO        OO  '; // legs mid-stride
+  const EYE = { open: [' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO '], blink: [' OGGGGGGGGGGGGO ', ' OGKKKGGGGKKKGO '], happy: [' OGGGKGGGGKGGGO ', ' OGGKGKGGKGKGGO '] };
+  const MOUTH = { grin: [' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  '], open: [' OGGMMMMMMMMGGO ', ' OGMTTTTTTTTMGO ', ' OGMMNNNNNNMMGO '], yawn: [' OGGGGMMMMGGGGO ', ' OGGGMNNMGGGGGO ', '  OGGMMMMGGGGO  '], calm: [' OGGGGGGGGGGGGO ', ' OGGGMMMMGGGGGO ', '  OGGGGGGGGGGO  '] };
+  const mk = (legs, eye, mouth) => { const g = (legs === 'b' ? B : A).slice(); g[6] = EYE[eye][0]; g[7] = EYE[eye][1]; g[9] = MOUTH[mouth][0]; g[10] = MOUTH[mouth][1]; g[11] = MOUTH[mouth][2]; return g; };
+  return { a: mk('a', 'open', 'grin'), b: mk('b', 'open', 'grin'), h: mk('a', 'happy', 'open'), k: mk('a', 'blink', 'grin'), y: mk('a', 'blink', 'yawn'), z: mk('a', 'blink', 'calm') };
+})();
+const TK_MINI_SAY = { he: { taunt: ['לא תתפוס!', 'נו כבר', 'כאן!', 'בוא נראה אותך', 'מהר מדי?'], yay: ['וואו!', 'עוד!', 'חחח', 'כיף!', 'יש!'] }, en: { taunt: ['Too slow!', 'Over here!', 'Catch me!', 'Come on', 'Missed?'], yay: ['Woo!', 'More!', 'Haha', 'Yay!', 'Nice!'] } };
+function tkMiniRnd(k) { const s = (TK_MINI_SAY[lang] || TK_MINI_SAY.he)[k]; return s[(Math.random() * s.length) | 0]; }
+function tkMiniTier() { const s = tk.mini.score; return s >= 20 ? 2 : s >= 8 ? 1 : 0; }
+function tkMiniDraw(key) { const m = tk.mini, c = m.cv; if (!c || m.cur === key) return; m.cur = key; const grid = TK_GOB[key[0]], flip = key[1] === 'L', tier = +key[2] || 0, S = m.S, x = m.cx, PAL = Object.assign({}, TK_GOB_BASE, TK_GOB_TIERS[tier]);
   x.clearRect(0, 0, c.width, c.height); x.save(); if (flip) { x.translate(c.width, 0); x.scale(-1, 1); }
-  for (let r = 0; r < 16; r++) { const row = grid[r]; for (let q = 0; q < 16; q++) { const col = TK_GOB_PAL[row[q]]; if (col) { x.fillStyle = col; x.fillRect(q * S, r * S, S, S); } } } x.restore();
+  for (let r = 0; r < 16; r++) { const row = grid[r]; for (let q = 0; q < 16; q++) { const col = PAL[row[q]]; if (col) { x.fillStyle = col; x.fillRect(q * S, r * S, S, S); } } }
+  if (tier >= 2) for (const a of TK_GOB_CROWN) { x.fillStyle = PAL[a[2]]; x.fillRect(a[1] * S, a[0] * S, S, S); } // a little crown at the top tier
+  x.restore();
+}
+function tkMiniSync() { const m = tk.mini; // decide whether the goblin is on screen — only in a game, only while waiting, and only after the delay
+  const ok = tk.scrNow === 'game' && tk.view && tk.view.phase !== 'over' && tk.miniElig;
+  if (!ok) { m.waitAt = 0; tkMiniHide(); return; }
+  if (!m.waitAt) m.waitAt = Date.now();
+  if (Date.now() - m.waitAt >= (window.__tkFast ? 500 : TK_MINI_DELAY)) tkMiniShow();
 }
 function tkMiniShow() { const m = tk.mini;
-  if (m.round !== tk.miniRound) { m.round = tk.miniRound; m.score = 0; }
+  if (m.round !== tk.miniRound) { m.round = tk.miniRound; m.score = 0; m.combo = 0; }
   if (!m.el) { const L = document.createElement('div'); L.className = 'tkMiniLayer'; const S = 4;
     L.innerHTML = '<div class="tkMiniBadge" id="tkMiniScore"></div><canvas class="tkMiniChar" id="tkMiniChar" width="' + (16 * S) + '" height="' + (16 * S) + '" role="button" tabindex="0" aria-label="' + tks('miniT') + '"></canvas>';
     document.body.appendChild(L); m.el = L; m.char = L.querySelector('.tkMiniChar'); m.badge = L.querySelector('.tkMiniBadge');
     m.S = S; m.cv = m.char; m.cx = m.char.getContext('2d'); m.cx.imageSmoothingEnabled = false; m.cur = ''; m.frame = 0; m.fLast = 0;
+    const now = performance.now(); m.idleAt = now; m.blinkUntil = 0; m.yawnUntil = 0; m.zzzAt = 0; m.tierShown = tkMiniTier();
+    m.blinkAt = now + 1800 + Math.random() * 2400; m.yawnAt = now + 9000 + Math.random() * 7000; m.sayAt = now + 6000 + Math.random() * 4000;
     m.char.addEventListener('pointerdown', (e) => { e.preventDefault(); tkMiniHit(); });
-    m.x = innerWidth * 0.5; m.y = innerHeight * 0.45; const a = Math.random() * TAU; m.vx = Math.cos(a) * 0.12; m.vy = Math.sin(a) * 0.12; tkMiniDraw('a'); }
+    m.x = innerWidth * 0.5; m.y = innerHeight * 0.42; const a = Math.random() * TAU; m.vx = Math.cos(a) * 0.12; m.vy = Math.sin(a) * 0.12; tkMiniDraw('aR0'); tkMiniSay(tks('miniT')); }
   tkMiniBadge(); if (!m.raf) { m.last = performance.now(); const loop = (now) => { m.raf = requestAnimationFrame(loop); tkMiniStep(now); }; m.raf = requestAnimationFrame(loop); }
 }
-function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } if (m.el) { m.el.remove(); m.el = m.char = m.badge = m.cv = m.cx = null; } }
+function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } if (m.el) { m.el.remove(); m.el = m.char = m.badge = m.cv = m.cx = m.say = null; } }
 function tkMiniBadge() { const m = tk.mini; if (m.badge) m.badge.textContent = tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }); }
 function tkMiniStep(now) { const m = tk.mini; const dt = Math.min(40, now - (m.last || now)); m.last = now; if (document.hidden || !m.char) return;
-  const sp = 1 + Math.min(2.2, m.score * 0.05); // (faster as the score grows)
+  const idle = now - (m.idleAt || now), asleep = idle > (window.__tkFast ? 2000 : 7000); // (left alone a while: it dozes off)
+  const sp = (1 + Math.min(2.2, m.score * 0.05)) * (asleep ? 0.3 : 1);
   m.x += m.vx * dt * sp; m.y += m.vy * dt * sp; const r = 36, W = innerWidth - r, H = innerHeight - r;
   if (m.x < r) { m.x = r; m.vx = Math.abs(m.vx); } if (m.x > W) { m.x = W; m.vx = -Math.abs(m.vx); }
   if (m.y < r + 40) { m.y = r + 40; m.vy = Math.abs(m.vy); } if (m.y > H) { m.y = H; m.vy = -Math.abs(m.vy); }
-  m.vx += (Math.random() - 0.5) * 0.004 * dt; m.vy += (Math.random() - 0.5) * 0.004 * dt; const v = Math.hypot(m.vx, m.vy) || 1; const cap = 0.1 + 0.02 * Math.min(6, m.score); m.vx = m.vx / v * Math.min(v, cap); m.vy = m.vy / v * Math.min(v, cap);
+  m.vx += (Math.random() - 0.5) * 0.004 * dt; m.vy += (Math.random() - 0.5) * 0.004 * dt; const v = Math.hypot(m.vx, m.vy) || 1; const cap = (0.1 + 0.02 * Math.min(6, m.score)) * (asleep ? 0.4 : 1); m.vx = m.vx / v * Math.min(v, cap); m.vy = m.vy / v * Math.min(v, cap);
   const hit = m.hit && now - m.hit < 230, sq = hit ? 1 - (now - m.hit) / 230 : 0;
-  const stepMs = Math.max(90, 200 - m.score * 8); if (now - m.fLast > stepMs) { m.fLast = now; m.frame ^= 1; } // the walk cycle
-  const face = m.vx >= 0 ? 'R' : 'L'; tkMiniDraw(hit ? 'h' + face : (m.frame ? 'b' : 'a') + face);
-  const wob = Math.sin(now / 120) * 4; // a little hop as it walks
+  const stepMs = Math.max(90, 200 - m.score * 8); if (!asleep && !hit && now - m.fLast > stepMs) { m.fLast = now; m.frame ^= 1; } // the walk cycle
+  if (!asleep && !hit && now > m.blinkAt) { m.blinkAt = now + 1800 + Math.random() * 2600; m.blinkUntil = now + 150; }
+  if (!asleep && !hit && now > m.yawnAt) { m.yawnAt = now + 11000 + Math.random() * 8000; m.yawnUntil = now + 680; }
+  if (!asleep && now > m.sayAt) { m.sayAt = now + 7000 + Math.random() * 5000; tkMiniSay(tkMiniRnd('taunt')); } // (an idle taunt)
+  if (asleep && now > m.zzzAt) { m.zzzAt = now + 1600; tkMiniSay('💤'); }
+  const face = m.vx >= 0 ? 'R' : 'L', tier = tkMiniTier();
+  let fk = m.frame ? 'b' : 'a'; if (hit) fk = 'h'; else if (asleep) fk = 'z'; else if (now < m.yawnUntil) fk = 'y'; else if (now < m.blinkUntil) fk = 'k';
+  tkMiniDraw(fk + face + tier);
+  const wob = asleep ? Math.sin(now / 560) * 2 : Math.sin(now / 120) * 4; // a little hop while it walks; a slow breath while it sleeps
   m.char.style.transform = 'translate(-50%,-50%) translate(' + m.x.toFixed(1) + 'px,' + (m.y + wob - sq * 3).toFixed(1) + 'px) scale(' + (1 + sq * 0.28) + ',' + (1 - sq * 0.34) + ')';
 }
-function tkMiniHit() { const m = tk.mini; m.score++; m.hit = performance.now(); if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
+function tkMiniHit() { const m = tk.mini; const now = performance.now(); m.combo = (now - (m.lastHit || 0) < 1200) ? (m.combo || 0) + 1 : 1; m.lastHit = now; m.idleAt = now; m.zzzAt = 0;
+  m.score++; m.hit = now; if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
   const a = Math.random() * TAU, s = 0.16 + Math.min(0.12, m.score * 0.004); m.vx = Math.cos(a) * s; m.vy = Math.sin(a) * s; // dart off in a new direction
-  tkMiniStars(m.x, m.y); tkMiniBadge(); try { tgSfx('pop'); } catch {} tkStat('mini');
+  const milestone = m.score % 10 === 0; tkMiniStars(m.x, m.y, milestone ? 18 : 6 + Math.min(10, m.combo * 2), milestone);
+  const tier = tkMiniTier();
+  if (tier > (m.tierShown || 0)) { m.tierShown = tier; tkMiniSay(tier >= 2 ? tks('miniKing') : tks('miniUp')); } // leveled up
+  else if (milestone) tkMiniSay(m.score + '! 🎉');
+  else if (m.combo >= 3) tkMiniSay('x' + m.combo + '!');
+  else if (Math.random() < 0.45) tkMiniSay(tkMiniRnd('yay'));
+  tkMiniBadge(); try { tgSfx('pop'); } catch {} tkStat('mini');
 }
-function tkMiniStars(x, y) { const L = tk.mini.el; if (!L) return; for (let i = 0; i < 6; i++) { const s = document.createElement('span'); s.className = 'tkMiniStar'; s.textContent = ['⭐', '✨', '💫'][i % 3];
-    const a = Math.random() * TAU, d = 24 + Math.random() * 26; s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); L.appendChild(s); setTimeout(() => s.remove(), 620); } }
+function tkMiniSay(t) { const m = tk.mini; if (!m.el) return; if (m.say) m.say.remove(); const s = document.createElement('div'); s.className = 'tkMiniSay'; s.textContent = t;
+  s.style.left = m.x + 'px'; s.style.top = (m.y - 34) + 'px'; m.el.appendChild(s); m.say = s; setTimeout(() => { if (s.parentNode) s.remove(); if (m.say === s) m.say = null; }, 1200); }
+function tkMiniStars(x, y, n, big) { const L = tk.mini.el; if (!L) return; n = n || 6; const set = big ? ['🎉', '✨', '⭐', '💫', '🎊'] : ['⭐', '✨', '💫'];
+  for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.className = 'tkMiniStar'; s.textContent = set[i % set.length];
+    const a = Math.random() * TAU, d = (big ? 34 : 24) + Math.random() * (big ? 48 : 26); s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); L.appendChild(s); setTimeout(() => s.remove(), 680); } }
 function tkBacksHtml(v) { // while the others choose (from Evil Apples): a face-down card for each answer that came in, an empty place for each still to come
   const el = v.players.filter((p) => p.id !== v.judge && p.on); if (!el.length) return ''; const n = el.filter((p) => p.sent).length;
   return '<div class="tkBacks">' + el.map((p, i) => (i < n ? '<i class="tkBackC"></i>' : '<i class="tkBackC wait">⏳</i>')).join('') + '</div>';
