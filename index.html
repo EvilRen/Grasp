@@ -1559,8 +1559,17 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkTick{ width:24px; height:24px; border-radius:50%; background:rgba(16,185,129,.2); border:1px solid rgba(16,185,129,.4); display:inline-flex; align-items:center; justify-content:center; color:#34d399; }
 #tachles .tkTick .tkI{ width:14px; height:14px; stroke-width:3; }
 #tachles .tkDone{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--neonB); }
-#tachles .tkMini{ width:min(28rem,100%); margin-top:14px; border-radius:16px; background:rgba(168,85,247,.06); box-shadow:inset 0 0 0 1px rgba(168,85,247,.2); overflow:hidden; } #tachles .tkMiniHd{ display:flex; justify-content:space-between; align-items:center; padding:8px 12px; font-size:12.5px; font-weight:700; color:var(--dim); } #tachles .tkMiniSc{ color:var(--neonB); }
-#tachles .tkMiniBox{ position:relative; height:150px; } #tachles .tkMiniT{ position:absolute; transform:translate(-50%,-50%); width:52px; height:52px; border-radius:50%; border:0; background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), transparent 60%), var(--neon); font-size:26px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 14px rgba(168,85,247,.5); transition:left .06s, top .06s; } #tachles .tkMiniT:active{ transform:translate(-50%,-50%) scale(.86); }
+.tkMiniLayer{ position:fixed; inset:0; z-index:5; pointer-events:none; overflow:hidden; }
+.tkMiniChar{ position:absolute; left:0; top:0; width:64px; height:64px; border:0; padding:0; border-radius:50% 50% 48% 48%; pointer-events:auto; cursor:pointer; will-change:transform;
+  background:radial-gradient(circle at 34% 28%, #f0c8ff, #c175f5 55%, #9b45e0); box-shadow:0 6px 16px rgba(120,40,200,.55), inset 0 -6px 10px rgba(90,20,160,.4), inset 0 5px 8px rgba(255,255,255,.4); }
+.tkMiniChar .tkMiniEyes{ position:absolute; top:34%; left:0; right:0; display:flex; justify-content:center; gap:11px; }
+.tkMiniChar .tkMiniEyes i{ width:15px; height:16px; border-radius:50%; background:#fff; position:relative; }
+.tkMiniChar .tkMiniEyes i::after{ content:''; position:absolute; width:7px; height:7px; border-radius:50%; background:#2a1240; left:calc(50% + var(--lx,0px)); top:55%; transform:translate(-50%,-50%); }
+.tkMiniChar .tkMiniMouth{ position:absolute; bottom:22%; left:50%; width:12px; height:6px; border-radius:0 0 10px 10px; background:#4a1860; transform:translateX(-50%); transition:all .12s; }
+.tkMiniChar .tkMiniMouth.big{ width:18px; height:14px; border-radius:50%; background:#7a1f3a; }
+.tkMiniBadge{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 54px); left:50%; transform:translateX(-50%); pointer-events:none; background:rgba(26,20,40,.85); color:#e9d5ff; font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,.4); }
+.tkMiniStar{ position:absolute; transform:translate(-50%,-50%); font-size:16px; pointer-events:none; animation:tkMiniStar .6s ease-out forwards; }
+@keyframes tkMiniStar{ to{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); opacity:0; } }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
 #tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:1; background:#1b1b1f; color:#6b6b78; }
 #tachles .tkSend:disabled{ opacity:1; background:#241a33; color:#d8c6ff; border:2px dashed rgba(168,85,247,.75); box-shadow:none; } #tachles .tkSend:not(:disabled){ box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 6px 26px rgba(217,70,239,.65); } /* (the owner: with 3 to pick the purple button was hard to see: half see-through over the cards behind it. Now solid, the waiting one dashed with clear text, the ready one glowing) */ #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
@@ -2056,7 +2065,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.36';
+const APP_VERSION = '1.12.37';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22668,7 +22677,7 @@ const TK_VER = '2.1'; // (Tachles' own version, apart from the app; shown on the
 const TK_RELNOTES = [
   ['2.1', 'נובמבר 2026', [
     '🏆 שורת "סבב קודם" בראש כל סבב, וכפתור 🏆 שפותח את כל הזוכים והניקוד \u2014 כדי שלא תפספסו מי ניצח.',
-    '🎯 בזמן שמחכים לאחרים \u2014 משחקון "תפוס!" קטן עם שיא אישי, שלא תצאו מהמשחק מרוב שעמום.',
+    '🎯 בזמן שמחכים לאחרים \u2014 דמות קטנה מסתובבת לך על המסך. תפוס אותה, היא קופצת וזורקת כוכבים, ויש שיא אישי. שלא תשתעממו.',
     '🛠️ תיקון: בחירת קלף לא מתאפסת כששחקן אחר שולח לפניך.',
     '📵 "המארח לא מחובר" עכשיו הודעה על כל המסך.',
   ]],
@@ -22989,7 +22998,7 @@ function tkStart() {
   try { tk.mini.best = Math.max(0, Math.min(99999, +localStorage.getItem('grasp.tkMiniBest') || 0)); } catch {}
   clearInterval(tk.iv); tk.iv = setInterval(tkTick, 250); tkLoad().then(() => tkRender()).catch(() => { tk.err = 'deck'; tkRender(); }); tkRender();
 }
-function tkStop() { tkWatchStop(); const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkWake(); tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
+function tkStop() { tkWatchStop(); tkMiniHide(); const el = $('tachles'); document.body.classList.remove('tkOn'); if (el) { el.hidden = true; el.innerHTML = ''; } tkWake(); tkNetBye(); tkNetClose(); tk.g = null; tk.view = null; clearTimeout(tk.botT); clearInterval(tk.iv); tk.modal = null; }
 function tkNetClose() { try { tk.net && tk.net.close(); } catch {} tk.net = null; tk.conns.clear(); tk.screens.clear(); }
 function tkNetBye() { try { if (tk.mode === 'host' && tk.net && tk.net.announce) tk.net.announce(null); } catch {} try { if (tk.mode === 'host') for (const [, c] of [...tk.conns, ...tk.screens]) c.send({ t: 'closed' }); else if ((tk.mode === 'guest' || tk.mode === 'screen') && tk.net) tk.net.send({ t: 'bye' }); } catch {} }
 function tkSave() { tkStore({ names: tk.names, set: tk.set, me: tk.myName }); }
@@ -23108,6 +23117,7 @@ function tkRender() {
   const netOn = !waitH && !!tk.netMsg && (s === 'game' || (s === 'lobby' && tk.mode !== 'host') || s === 'board'); el.classList.toggle('tkNetOn', netOn); if (netOn) h += '<div class="tkNetBar">' + tkEsc(tk.netMsg) + '</div>';
   const waitHtml = waitH ? '<div class="tkHostWait"><div class="tkSpin"></div><div class="tkHWEmoji">📵</div><h2 class="tkHWT">' + tks('hostGoneT') + '</h2><p class="tkHWD">' + tks('hostGoneD') + '</p>' + (Date.now() - (tk.hostWaitAt || 0) > (window.__tkFast ? 3000 : 15000) ? '<button class="tkLink tkHWB" data-a="leave">' + tks('leave') + '</button>' : '') + '</div>' : '';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
+  if (tk.miniWant && s === 'game') tkMiniShow(); else tkMiniHide(); tk.miniWant = false;
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFan(); }
@@ -23309,6 +23319,7 @@ function tkGameHtml(v) {
         '<button class="tkP tkW tkLg" data-a="iam:' + tkEsc(who) + '">' + tks('imN', { n: tkEsc(nm) }) + '</button></div></div>'; }
     if (who) v = TK.view(g, who);
   }
+  const miniWait = v.phase === 'pick' && (v.me === v.judge || v.mine); tk.miniWant = miniWait; tk.miniRound = v.round;
   tkSeenMark(v); const czar = v.me === v.judge && (!local || who === v.judge), sent = v.mine, playing = v.phase === 'pick', choosing = playing && !czar && !sent && (who || !local) && v.hand.length > 0, judging = v.phase === 'judge' && v.subs.length > 0 && (!local || !!who || g.players[g.judge].bot), revealing = v.phase === 'reveal' && v.subs && v.subs.length > 0;
   const right = playing && !czar && (who || !local) ? (sent ? '<span class="tkPill">' + tks('waitOthers') + '</span>' : tkRing(v)) : '';
   const fullB = judging || revealing ? '<button class="tkFullB' + (tkFullOn() ? ' on' : '') + '" data-a="fullT" aria-pressed="' + tkFullOn() + '">📜 ' + tks('fullBtn') + '</button>' : '';
@@ -23325,8 +23336,8 @@ function tkGameHtml(v) {
   else {
     h += tkStatusHtml(v);
     if (local && !who) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>';
-    else if (czar) h += '<p class="tkDim tkSm">' + tks('youJudge') + '</p>' + tkBacksHtml(v) + tkSkipHtml(v) + tkMiniHtml(v);
-    else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v) + tkMiniHtml(v);
+    else if (czar) h += '<p class="tkDim tkSm">' + tks('youJudge') + '</p>' + tkBacksHtml(v) + tkSkipHtml(v);
+    else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v);
     else if (!v.hand.length) h += tkSendHtml(v); /* (with cards, the button rides on top of the hand, so the cards never cover it) */
   }
   h += '</div>';
@@ -23362,15 +23373,36 @@ function tkRevealDuelHtml(v) { // the round's end: the winning answer sits in th
   const k = v.win, cs = k >= 0 ? v.subs[k] : null, by = v.by && k >= 0 ? v.by[k] : null;
   return '<div class="tkDuel"><div class="tkFace tkBlackC"><p>' + tkCard(v.black[0]) + '</p></div><div class="tkSlots">' + (cs ? '<div class="tkFace tkWhiteC tkSlot full tkWinC"><p>' + tkAnsP(cs) + '</p>' + (by ? '<small class="tkBy">' + tkEsc(by) + '</small>' : '') + '<span class="tkTrophy">' + tki('trophy') + '</span></div>' : '<div class="tkSlot empty"><span>' + tks('nobody') + '</span></div>') + '</div></div>';
 }
-const TK_MINIE = ['🎯', '⭐', '🔥', '💥', '👑', '🎲', '🍺', '💨'];
-function tkMiniHtml(v) { // the owner: a long wait makes the czar / a done picker bored and they leave the app. A tiny tap game to fidget on, with a best score
-  if (v.round !== tk.mini.round) { tk.mini.round = v.round; tk.mini.score = 0; tk.mini.x = 50; tk.mini.y = 42; } const m = tk.mini, e = TK_MINIE[m.pop % TK_MINIE.length];
-  return '<div class="tkMini"><div class="tkMiniHd"><span>🎯 ' + tks('miniT') + '</span><span class="tkMiniSc">' + tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }) + '</span></div>' +
-    '<div class="tkMiniBox"><button class="tkMiniT" data-a="miniTap" style="left:' + m.x + '%;top:' + m.y + '%">' + e + '</button></div></div>';
+/* the owner: a boring box at the bottom — instead a little character roams the whole screen while you wait; tap it to score, it squishes and
+   throws stars and speeds up. A body-level layer (survives the sheet's re-renders); the rAF loop runs only while waiting and stops when hidden */
+function tkMiniShow() { const m = tk.mini;
+  if (m.round !== tk.miniRound) { m.round = tk.miniRound; m.score = 0; }
+  if (!m.el) { const L = document.createElement('div'); L.className = 'tkMiniLayer'; L.innerHTML =
+      '<div class="tkMiniBadge" id="tkMiniScore"></div><button class="tkMiniChar" id="tkMiniChar" aria-label="' + tks('miniT') + '"><span class="tkMiniEyes"><i></i><i></i></span><span class="tkMiniMouth"></span></button>';
+    document.body.appendChild(L); m.el = L; m.char = L.querySelector('.tkMiniChar'); m.badge = L.querySelector('.tkMiniBadge');
+    m.char.addEventListener('pointerdown', (e) => { e.preventDefault(); tkMiniHit(); });
+    m.x = innerWidth * 0.5; m.y = innerHeight * 0.45; const a = Math.random() * TAU; m.vx = Math.cos(a) * 0.12; m.vy = Math.sin(a) * 0.12; m.t0 = performance.now(); }
+  tkMiniBadge(); if (!m.raf) { m.last = performance.now(); const loop = (now) => { m.raf = requestAnimationFrame(loop); tkMiniStep(now); }; m.raf = requestAnimationFrame(loop); }
 }
-function tkMiniTap() { const m = tk.mini; m.score++; m.pop++; if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
-  m.x = 12 + Math.random() * 76; m.y = 16 + Math.random() * 68; try { tgSfx('pop'); } catch {} tkStat('mini'); // (a hit; move the target)
-  const t = document.querySelector('#tachles .tkMiniT'); if (t) { t.style.left = m.x + '%'; t.style.top = m.y + '%'; t.textContent = TK_MINIE[m.pop % TK_MINIE.length]; } const sc = document.querySelector('#tachles .tkMiniSc'); if (sc) sc.textContent = tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }); }
+function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } if (m.el) { m.el.remove(); m.el = m.char = m.badge = null; } }
+function tkMiniBadge() { const m = tk.mini; if (m.badge) m.badge.textContent = tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }); }
+function tkMiniStep(now) { const m = tk.mini; const dt = Math.min(40, now - (m.last || now)); m.last = now; if (document.hidden || !m.char) return;
+  const sp = 1 + Math.min(2.2, m.score * 0.05); // (faster as the score grows)
+  m.x += m.vx * dt * sp; m.y += m.vy * dt * sp; const r = 34, W = innerWidth - r, H = innerHeight - r;
+  if (m.x < r) { m.x = r; m.vx = Math.abs(m.vx); } if (m.x > W) { m.x = W; m.vx = -Math.abs(m.vx); }
+  if (m.y < r + 40) { m.y = r + 40; m.vy = Math.abs(m.vy); } if (m.y > H) { m.y = H; m.vy = -Math.abs(m.vy); }
+  m.vx += (Math.random() - 0.5) * 0.004 * dt; m.vy += (Math.random() - 0.5) * 0.004 * dt; const v = Math.hypot(m.vx, m.vy) || 1; const cap = 0.1 + 0.02 * Math.min(6, m.score); m.vx = m.vx / v * Math.min(v, cap); m.vy = m.vy / v * Math.min(v, cap);
+  const wob = Math.sin(now / 160) * 6, sq = m.hit && now - m.hit < 180 ? 1 - (now - m.hit) / 180 : 0;
+  m.char.style.transform = 'translate(-50%,-50%) translate(' + m.x.toFixed(1) + 'px,' + (m.y + wob).toFixed(1) + 'px) scale(' + (1 + sq * 0.25) + ',' + (1 - sq * 0.3) + ')';
+  m.char.style.setProperty('--lx', (m.vx > 0 ? 2 : -2) + 'px'); // the eyes lean the way it moves
+}
+function tkMiniHit() { const m = tk.mini; m.score++; m.hit = performance.now(); if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
+  const a = Math.random() * TAU, s = 0.16 + Math.min(0.12, m.score * 0.004); m.vx = Math.cos(a) * s; m.vy = Math.sin(a) * s; // dart off in a new direction
+  if (m.char) { const f = m.char.querySelector('.tkMiniMouth'); if (f) f.className = 'tkMiniMouth big'; setTimeout(() => { const g = m.char && m.char.querySelector('.tkMiniMouth'); if (g) g.className = 'tkMiniMouth'; }, 220); tkMiniStars(m.x, m.y); }
+  tkMiniBadge(); try { tgSfx('pop'); } catch {} tkStat('mini');
+}
+function tkMiniStars(x, y) { const L = tk.mini.el; if (!L) return; for (let i = 0; i < 6; i++) { const s = document.createElement('span'); s.className = 'tkMiniStar'; s.textContent = ['⭐', '✨', '💫'][i % 3];
+    const a = Math.random() * TAU, d = 24 + Math.random() * 26; s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); L.appendChild(s); setTimeout(() => s.remove(), 620); } }
 function tkBacksHtml(v) { // while the others choose (from Evil Apples): a face-down card for each answer that came in, an empty place for each still to come
   const el = v.players.filter((p) => p.id !== v.judge && p.on); if (!el.length) return ''; const n = el.filter((p) => p.sent).length;
   return '<div class="tkBacks">' + el.map((p, i) => (i < n ? '<i class="tkBackC"></i>' : '<i class="tkBackC wait">⏳</i>')).join('') + '</div>';
@@ -23533,7 +23565,6 @@ function tkClick(e) {
   else if (a === 'fb') { tk.modal = { t: 'fb' }; tk.fbMsg = ''; }
   else if (a === 'tkRel') tk.modal = { t: 'rel' };
   else if (a === 'hist') tk.modal = { t: 'hist' };
-  else if (a === 'miniTap') { tkMiniTap(); return; }
   else if (a === 'fbSend') return tkFbSend();
   else if (a === 'rename') tk.modal = { t: 'name' };
   else if (a === 'renameOk') { const nm = nameOf(); if (nm) { tk.myName = nm; tkSave(); const me = tk.lobby.find((p) => p.id === 'h'); if (me) me.name = nm; } tk.modal = null; }
