@@ -2064,7 +2064,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.44';
+const APP_VERSION = '1.12.45';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22786,9 +22786,11 @@ const TK = (() => {
     const p = g.players.find((q) => q.id === pid); if (!p || g.phase !== 'pick' || g.subs[pid] || g.players[g.judge].id === pid || !(p.swaps > 0)) return false;
     const old = p.hand; p.hand = []; while (p.hand.length < Math.max(g.handN, pickOf(g))) p.hand.push(drawW(g)); g.wd.unshift(...shuffle(old)); p.swaps--; g.seq++; return true; // (the old ones go to the bottom of the pile)
   }
-  function drawW(g) { if (!g.wd.length) { const held = new Set(g.players.flatMap((p) => p.hand).concat(Object.values(g.subs).flat())); g.wd = shuffle((g.okW || g.deck.w.map((_, i) => i)).filter((i) => !held.has(i))); } return g.wd.pop(); }
+  function drawW(g) { if (!g.wd.length) { const all = g.okW || g.deck.w.map((_, i) => i), held = new Set(g.players.flatMap((p) => p.hand).concat(Object.values(g.subs).flat())); g.wd = shuffle(all.filter((i) => !held.has(i))); if (!g.wd.length) g.wd = shuffle(all.slice()); } return g.wd.pop(); } // (fall back to a repeat rather than a blank if the allowed set is smaller than the hands)
   function drawB(g) { if (!g.bd.length) g.bd = shuffle((g.okB || g.deck.b.map((_, i) => i)).slice()); return g.bd.pop(); }
+  function over(g) { g.phase = 'over'; const top = Math.max(0, ...g.players.map((p) => p.score)); const w = g.players.find((p) => p.on && p.score === top) || g.players.find((p) => p.score === top); g.winner = w ? w.id : null; g.seq++; } // end the game (prefers a still-present winner)
   function startRound(g) {
+    if (g.players.filter((p) => p.on).length < 2) { over(g); return; } // (the owner: with fewer than two players left, end cleanly instead of looping into a round nobody can play)
     g.round++; g.seq++; const n = g.players.length; do { g.judge = (g.judge + 1) % n; } while (!g.players[g.judge].on && g.players.some((p) => p.on));
     g.black = drawB(g); g.subs = {}; g.order = []; g.rx = {}; g.phase = 'pick'; g.prev = g.last || g.prev; g.last = null; g.roundAt = Date.now();
     for (const p of g.players) while (p.hand.length < Math.max(g.handN, pickOf(g))) p.hand.push(drawW(g));
@@ -22819,7 +22821,7 @@ const TK = (() => {
   }
   function next(g) { // after the banner: the next round, or the end
     if (g.phase !== 'reveal') return false; const top = Math.max(...g.players.map((p) => p.score));
-    if (top >= g.target) { g.phase = 'over'; g.winner = g.players.find((p) => p.score === top).id; g.seq++; } else startRound(g); return true;
+    if (top >= g.target) over(g); else startRound(g); return true;
   }
   function react(g, pid, k) { // a live reaction on answer k: counts once per player, never on your own answer
     if ((g.phase !== 'judge' && g.phase !== 'reveal') || !(k >= 0 && k < g.order.length) || g.order[k] === pid) return false; const L = g.rx[k] || (g.rx[k] = []); if (!L.includes(pid)) L.push(pid); return true; }
@@ -23029,7 +23031,7 @@ function tkToast(k) { tk.toast = { k, until: Date.now() + 4500 }; setTimeout(tkR
 /* the phone that runs the game: every change goes to every phone (each its own view) and the bots move */
 function tkSeen(v) { const now = Date.now(); tk.dl = v.timer && v.phase === 'pick' ? now + v.left : 0; tk.nx = v.phase === 'reveal' ? now + v.revLeft : 0; }
 function tkPush() {
-  const g = tk.g; if (!g) return; if (g.phase === 'over' && !tk.doneSent) { tk.doneSent = true; tkStat('done'); } if (tk.mode === 'host') { tkPubSync(); for (const [pid, c] of tk.conns) { try { c.send({ t: 'view', v: TK.view(g, pid), full: !!tk.set.full }); } catch {} } tkBoardPush(); tkRoomSave(); }
+  const g = tk.g; if (!g) return; if (g.phase === 'over' && !tk.doneSent) { tk.doneSent = true; tkStat('done'); } if (tk.mode === 'host') { tkPubSync(); for (const [pid, c] of tk.conns) { if (!g.players.some((p) => p.id === pid)) continue; try { c.send({ t: 'view', v: TK.view(g, pid), full: !!tk.set.full }); } catch {} } tkBoardPush(); tkRoomSave(); } /* (a phone that joined mid-game is in the lobby, not g.players: do not push it a broken player view — it waits for the next game) */
   tk.view = TK.view(g, tk.me || g.players.find((p) => !p.bot).id); tkSeen(tk.view); tkRender(); tkBots(); tkBotRx(); tkSfxLoad();
 }
 function tkBots() { clearTimeout(tk.botT); const g = tk.g; if (!g || (g.phase !== 'pick' && g.phase !== 'judge')) return; const busy = (g.phase === 'pick' && TK.needs(g).some((p) => p.bot)) || (g.phase === 'judge' && g.players[g.judge].bot);
@@ -23388,7 +23390,7 @@ function tkRevealDuelHtml(v) { // the round's end: the winning answer sits in th
    seconds and is gone once you draw. Shown to the waiting czar or a done picker in the pick phase (tk.miniElig, set in tkGameHtml). */
 const TK_DOODLE_FADE = 2800;
 function tkMiniSync() { const m = tk.mini; // the doodle pad is up only in a game, only while waiting
-  const ok = tk.scrNow === 'game' && tk.view && tk.view.phase !== 'over' && tk.miniElig;
+  const ok = tk.scrNow === 'game' && tk.view && tk.view.phase !== 'over' && tk.miniElig && !tk.modal && !tk.hostWait; // (never over a modal or the host-gone overlay: the pad sits above #tachles, so it would eat their taps)
   if (!ok) { tkMiniHide(); return; } tkMiniShow();
 }
 function tkMiniShow() { const m = tk.mini;
@@ -23411,7 +23413,7 @@ function tkDoodleBind(hit) { const m = tk.mini; const pt = (e) => ({ x: e.client
 function tkDoodleToggle() { const m = tk.mini; m.on = !m.on; m.cur2 = null;
   if (m.hit) m.hit.classList.toggle('on', m.on); if (m.tog) { m.tog.classList.toggle('on', m.on); m.tog.innerHTML = m.on ? tki('check') : tki('pencil'); }
   if (m.hintEl) m.hintEl.classList.toggle('on', m.on && !m.drawn); } // draw mode on: the pad catches the finger; off: it is transparent and the game's buttons work
-function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } removeEventListener('resize', tkDoodleSize); if (m.el) { m.el.remove(); m.el = m.cv = m.cx = m.hit = m.hintEl = m.tog = null; } m.on = false; }
+function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } removeEventListener('resize', tkDoodleSize); if (m.el) { m.el.remove(); m.el = m.cv = m.cx = m.hit = m.hintEl = m.tog = null; } m.on = false; m.cur2 = null; }
 function tkMiniStep(now) { const m = tk.mini; if (document.hidden || !m.cx) return; const x = m.cx;
   x.clearRect(0, 0, innerWidth, innerHeight); x.lineCap = 'round'; x.lineJoin = 'round';
   for (let si = m.strokes.length - 1; si >= 0; si--) { const s = m.strokes[si]; let alive = false;
@@ -23655,6 +23657,7 @@ async function tkResume() { // the room this phone ran, reopened with the same c
   return tkHostNet();
 }
 async function tkHostNet() {
+  if (tk.net) { try { tk.net.close(); } catch {} tk.net = null; } // (never stack a second live net: the old brokers/intervals/listeners would leak and two rooms would run)
   try { tk.net = await TKNET.host(tk.code, (c) => { c.on('data', (m) => tkFromGuest(c, m)); c.on('close', () => tkGone(c.peer || c.id)); },
       (e) => { if (tk.mode !== 'host') return; const ty = e && e.type; // (the owner: "the connection dropped" stayed on for good: a guest or the TV leaving makes the broker answer 'peer-unavailable', which is no drop at all)
         if (ty === 'unavailable-id') tk.netMsg = tks('netTaken'); else if (TK_NETDOWN.includes(ty)) tk.netMsg = tks('reconn'); else return; tkRender(); },
@@ -23711,15 +23714,15 @@ function tkBoardHtml() {
 }
 async function tkJoin(name) {
   tkDbg('— join room ' + tk.code);
-  tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tkRender(); const code = tk.code, id = tkGid(code, name);
-  const out = (k) => { if (k === 'kicked' || k === 'closed') tkLS('grasp.tkLast', null); tk.netMsg = ''; tk.hostWait = false; tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tkToast(k); tkRender(); };
+  tk.mode = 'guest'; tk.busy = true; tk.netMsg = ''; tk.sel = []; tk.lastRound = tk.lastPhase = undefined; tk.lastSeq = -1; tkRender(); const code = tk.code, id = tkGid(code, name); // (clear any pick state carried from a previous room, so it can't be replayed in the new one)
+  const out = (k) => { if (k === 'kicked' || k === 'closed') tkLS('grasp.tkLast', null); tk.netMsg = ''; tk.hostWait = false; tkNetClose(); tk.g = null; tk.view = null; tk.modal = null; tk.scr = 'menu'; tk.mode = null; tk.sel = []; tk.lastRound = tk.lastPhase = undefined; tk.lastSeq = -1; tkToast(k); tkRender(); };
   const hello = () => { try { tk.net && tk.net.send({ t: 'hello', name, seen: tkSeenList(), dev: tkDevice() }); } catch {} };
   try { tk.net = await TKNET.join(code, (m) => {
       tkDbg('in ← host: ' + m.t + (m.v && m.v.seq != null ? ' #' + m.v.seq + ' ' + m.v.phase : ''));
       if (m.t === 'who') return hello(); if (m.t === 'lobby' || m.t === 'view') tkLS('grasp.tkLast', { at: Date.now(), code, name });
       if (m.t === 'lobby') { tk.lobbyView = m.list; tk.lobbySet = m.set; tk.lobbyOwn = m.own || 0; tk.guestId = m.you; tk.view = null; tk.scr = 'lobby'; tk.busy = false; }
       else if (m.t === 'fx') return tkFxShow(m.k, m.e);
-      else if (m.t === 'view') { tkSfxLoad(); if (m.full != null) tk.lobbySet = Object.assign({}, tk.lobbySet, { full: m.full }); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.round !== tk.lastRound || m.v.phase !== tk.lastPhase) tk.sel = []; tk.lastRound = m.v.round; tk.lastPhase = m.v.phase; tk.lastSeq = m.v.seq; /* (the owner: another player's submit used to wipe my in-progress pick; clear it only on a new round or phase) */ tkSeen(m.v); }
+      else if (m.t === 'view') { if (m.v && m.v.seq != null && m.v.seq < tk.lastSeq && m.v.round === tk.lastRound) return; /* (ignore a stale/duplicate view that would overwrite newer state) */ tkSfxLoad(); if (m.full != null) tk.lobbySet = Object.assign({}, tk.lobbySet, { full: m.full }); tk.view = m.v; tk.me = m.v.me; tk.guestId = m.v.me; tk.scr = 'game'; if (m.v.round !== tk.lastRound || m.v.phase !== tk.lastPhase) tk.sel = []; tk.lastRound = m.v.round; tk.lastPhase = m.v.phase; tk.lastSeq = m.v.seq; /* (the owner: another player's submit used to wipe my in-progress pick; clear it only on a new round or phase) */ tkSeen(m.v); }
       else if (m.t === 'kicked') return out('kicked'); else if (m.t === 'closed') return out('closed'); else if (m.t === 'full') { tkNetClose(); tk.busy = false; tk.err = tks('full'); tk.scr = 'form'; }
       tkRender(); }, (k) => { if (tk.mode !== 'guest' || !tk.net) return; if (k === 'quiet') { tk.netMsg = tks('hostGone'); tk.hostWait = true; tk.hostWaitAt = Date.now(); tkRender(); } else if (k === 'back') { if (tk.netMsg || tk.hostWait) { tk.netMsg = ''; tk.hostWait = false; tkRender(); } hello(); } else out('closed'); }, id);
     hello(); tk.log.push('join:' + tk.code); if (tk.joinVia !== 'back') tkStat(tk.joinVia || 'code'); tk.joinVia = null;

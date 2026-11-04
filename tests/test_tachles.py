@@ -173,6 +173,12 @@ async def rules(b):
       const kc = g.order.indexOf('c'), kb = g.order.indexOf('b'); const own = T.react(g, 'c', kc); T.react(g, 'b', kc); T.react(g, 'd', kc); T.react(g, 'a', kb); T.judge(g, 'a', kb);
       return {{ own, b: g.players[1].score, c: g.players[2].score, crowd: g.last.crowd }}; }})()""")
     check('reactions: never on your own answer; the most-reacted answer the czar did not pick gets a crowd point (and the czar\'s pick its point)', cr == {'own': False, 'b': 1, 'c': 1, 'crowd': 'c'}, cr)
+    # the owner wanted it bug-free: a game must not deadlock when players leave. 2-player: the lone opponent leaves -> ends cleanly (not a frozen pick). 3-player: one leaves -> still playable; both -> over.
+    dl = await page.evaluate(f"""(() => {{ const T = {TKH}.TK, d = {TKH}.tk.deck;
+      const g2 = T.newGame(d, [{{id:'a',name:'A'}},{{id:'b',name:'B'}}], {{target:5,hand:7}}); const other = g2.players.find((_,i)=>i!==g2.judge).id; T.skip(g2, other); const twoP = g2.phase; const forced = T.force(g2);
+      const g3 = T.newGame(d, [{{id:'a',name:'A'}},{{id:'b',name:'B'}},{{id:'c',name:'C'}}], {{target:5,hand:7}}); const nj = g3.players.filter((_,i)=>i!==g3.judge).map(p=>p.id); T.skip(g3, nj[0]); const one = g3.phase; T.skip(g3, nj[1]); const both = g3.phase;
+      return [twoP, forced, one, both]; }})()""")
+    check('no deadlock: a game ends cleanly when too few players remain (2-player opponent leaves -> over; 3-player one leaves -> still playing, both -> over) instead of a frozen round nobody can play', dl == ['over', False, 'pick', 'over'], dl)
     sb = await page.evaluate("(async () => { audioInit(); tkSfxLoad(); await Promise.all(Object.values(tkSfxBuf)); const B = Object.entries(tkSfxBuf); return { n: B.length, ok: B.filter(([, b]) => b instanceof AudioBuffer).length, max: Math.max(...B.map(([, b]) => b ? b.duration : 0)) }; })()")
     check('reaction sounds: 11 real recordings (CC0) load and decode, none longer than 3 s', sb['n'] == 11 and sb['ok'] == 11 and sb['max'] < 3, sb)
     check('rules: cards not seen yet come first (14 dealt of 20 unseen: all 14 unseen; the question too)', sf['fresh'] == 14 and sf['black'], sf)
