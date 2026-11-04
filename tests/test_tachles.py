@@ -475,6 +475,26 @@ async def small_screen(b):
     check('the "host not connected" note: a thin strip at the very top, the leave button under it still free (the owner\'s pick)', nb[0] == 0 and nb[1] <= 26 and nb[2], nb)
     check('short phone: no page errors', not errs, errs); await ctx.close()
 
+async def fits_mid(b):
+    # the owner: "there are weird scrolls in Tachles". On common phones 761-889px tall (iPhone 12-16, here 390x844) the game board overflowed
+    # vertically by ~46px, so a small vertical scroll fought the sideways hand swipe. The board must now fit (0 vertical overflow) while the hand
+    # of cards still scrolls horizontally, and overscroll is contained so a scroll never chains to the browser (pull-to-refresh / rubber-band).
+    ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []
+    page = await ctx.new_page(); await routes(page); page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(FAST + "sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');"); await page.goto(BASE + '/tachles'); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    check('the Tachles surface contains its overscroll (no pull-to-refresh / rubber-band chaining)', await page.evaluate("getComputedStyle($('tachles')).overscrollBehaviorY === 'contain'"))
+    await click(page, '#tachles [data-a="m:bots"]')
+    await page.evaluate(f"{TKH}.TK.botMove = () => false")
+    for _ in range(20):
+        await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(200)
+        if await page.evaluate(f"{TKH}.tk.view.me !== {TKH}.tk.view.judge"): break
+        await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
+    m = await page.evaluate("(() => { const el = $('tachles'), w = document.querySelector('#tachles .tkHandW'); return { over: el.scrollHeight - el.clientHeight, hand: w ? w.scrollWidth - w.clientWidth : -1 }; })()")
+    await page.screenshot(path=OUT + 'tachles_fits_844.png')
+    check('iPhone-12-16 size (390x844): the game board fits with no vertical scroll (the owner\'s "weird scrolls" fix)', m['over'] <= 2, m)
+    check('the hand of cards still scrolls horizontally (only axis that scrolls)', m['hand'] > 50, m)
+    check('mid phone: no page errors', not errs, errs); await ctx.close()
+
 async def public_rooms(b):
     # the owner: "see the games others open and join one before it starts; quick join drops me into one not started yet". Every waiting room is listed
     # (the host can close it); a list with the host, players, style, points and round time; quick join takes the fullest; none: create one / try again
@@ -619,7 +639,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await sel_kept(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await sel_kept(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await fits_mid(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
