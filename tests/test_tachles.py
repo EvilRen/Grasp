@@ -246,8 +246,13 @@ async def online(b):
     J = await host.evaluate(f"{TKH}.tk.view.judge"); pick = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") != J]
     H = "(() => { const s = document.querySelector('#tachles .tkStatus'); return s ? Math.round(s.getBoundingClientRect().height) : -1; })()"; h0 = await pick[1].evaluate(H)
     await step_local(pick[0]); await host.wait_for_timeout(200); h1 = await pick[1].evaluate(H)
-    check('online: one answered, one left: the status chips (a tick, a pulsing avatar) and a tease line for the last one', await pick[1].locator('#tachles .tkTick').count() == 1 and len((await pick[1].inner_text('#tachles .tkTease')).strip()) > 3)
+    # (the owner: "why is there a scroll in the middle, it suddenly reveals the player names") — while you hold a hand the per-answerer name chips are gone
+    # (the scores strip already shows who sent, a ✓ badge), leaving just the tease line; the czar / a done picker still get the full chips
+    check('online: while picking, the submit status shows on the scores strip (a ✓ on the answerer), not a duplicate name-chip row below', await pick[1].locator('#tachles .tkScores .tkSt.ok').count() >= 1 and await pick[1].locator('#tachles .tkChips').count() == 0)
+    check('online: the tease line for the last one still shows while picking', len((await pick[1].inner_text('#tachles .tkTease')).strip()) > 3)
     check('the tease line does not push the screen: its place is kept from the start of the round (the owner: a scroll appeared)', h0 > 0 and h0 == h1, [h0, h1])
+    czarSt = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
+    check('online: the czar (no hand) still sees the full status chips with names', await czarSt.locator('#tachles .tkChips .tkChip').count() >= 1)
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     czarP = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
     # the owner: the goblin felt too much — instead a neon doodle pad; it is inert until you tap the pencil (so the game's own buttons never get blocked), then you draw and the line fades
