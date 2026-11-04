@@ -2074,7 +2074,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.46';
+const APP_VERSION = '1.12.47';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22682,10 +22682,11 @@ function tkFullMine(v) { try { if (v === undefined) return JSON.parse(sessionSto
    avatar on one of 12 gradients (the same name, the same colour), its lucide icons and its lines */
 const TK_SNACKS = { he: ['במבה', 'ביסלי', 'עמבה', 'אפרופו', 'פיצוחים', 'פסק זמן', 'קליק', 'דובונים', 'קרמבו', 'אגוזים', 'צ׳יפס', 'פיתה', 'פלאפל', 'גזוז', 'בורקס', 'מסטיק', 'שוקו', 'במבי', 'אגוזי מלך', 'גלידה', 'סברס', 'עוגיות', 'פופקורן', 'עוגה', 'ופלים', 'גלעין', 'תות', 'מנגו', 'לימונדה', 'תפוז', 'אבטיח'],
   en: ['Bamba', 'Bissli', 'Popcorn', 'Falafel', 'Pita', 'Burekas', 'Krembo', 'Gummy', 'Waffle', 'Mango', 'Lemonade', 'Pretzel', 'Donut', 'Cookie', 'Nachos', 'Churro', 'Melon', 'Toffee'] };
-const TK_VER = '2.1.1'; // (Tachles' own version, apart from the app; shown on the copyright line, which opens the notes)
+const TK_VER = '2.1.2'; // (Tachles' own version, apart from the app; shown on the copyright line, which opens the notes)
 const TK_RELNOTES = [
-  ['2.1.1', 'נובמבר 2026', [
-    '🖐️ גלילה חלקה יותר: לוח המשחק נכנס כולו למסך בטלפונים נפוצים (iPhone 12–16 וכאלה), כך שרק יד הקלפים נגללת לצדדים — בלי קפיצה אנכית מוזרה שהתנגשה בהחלקה.',
+  ['2.1.2', 'נובמבר 2026', [
+    '🖐️ גלילה חלקה יותר: לוח המשחק נכנס כולו למסך — רק יד הקלפים נגללת לצדדים, בלי קפיצה אנכית מוזרה שהתנגשה בהחלקה. עובד גם בחדר מלא (עד 5 שחקנים).',
+    '🧹 בזמן שבוחרים קלף, שורת ה"מי כבר שלח" הכפולה למטה הוסתרה (ממילא רואים ✓/⏳ על כל שחקן למעלה) — פחות עומס, בלי גלילה.',
     '📱 הפסקנו את ה"משיכה" של הדף בקצוות המסך (אין רענון/קפיצה של הדפדפן בזמן גלילה בתוך ת\'כלס).',
   ]],
   ['2.1', 'נובמבר 2026', [
@@ -23320,8 +23321,11 @@ function tkTeaseFor(v, holdouts) { // a stable line for the one still choosing (
   if (!tk.tease || tk.tease.key !== key) { const L = TK_TEASE[TK_LANG]; tk.tease = { key, line: L[Math.floor(Math.random() * L.length)] }; }
   return '<p class="tkTease">' + tkEsc(tk.tease.line).split('{name}').join(tkEsc(holdouts[0].name)) + '</p>';
 }
-function tkStatusHtml(v) { // the original's SubmissionStatus: a chip per answerer, a pulsing avatar until they answer, then a green tick
+function tkStatusHtml(v, slim) { // the original's SubmissionStatus: a chip per answerer, a pulsing avatar until they answer, then a green tick
   const el = v.players.filter((p) => p.id !== v.judge && p.on), out = el.filter((p) => !p.sent); if (!el.length) return '';
+  // (the owner: "why do I need this scroll?" — while you hold your hand, the scores strip already shows ✓/⏳ per player, so the chip row below is
+  //  redundant and it was pushing the board past the screen with many players; keep only the tease line there, show the full chips to a waiting viewer)
+  if (slim) return '<div class="tkStatus slim">' + tkTeaseFor(v, out) + '</div>';
   return '<div class="tkStatus">' + tkTeaseFor(v, out) + '<div class="tkChips">' + el.map((p) => '<span class="tkChip' + (p.sent ? ' ok' : '') + '">' + (p.sent ? '<span class="tkTick">' + tki('check') + '</span>' : tkAv(p.name, 24, 'pulse')) + '<small>' + tkEsc(p.name) + '</small></span>').join('') + '</div></div>';
 }
 function tkSubsHtml(v, canPick, tv) { // the answers as white cards: the czar taps one; after the pick, the winner glows with a trophy and the rest fade
@@ -23358,7 +23362,7 @@ function tkGameHtml(v) {
     (auto ? '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p>' : can ? '' : '<p class="tkDim tkXs">' + tks('waitNext', { n: tkEsc(v.judgeName) }) + '</p>') + '</div>' + (revealing ? '' : tkSubsHtml(v, false)); }
   else if (v.phase === 'judge') h += judging ? '<p class="tkJudgeT">⚖️ ' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' : '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar);
   else {
-    h += tkStatusHtml(v);
+    h += tkStatusHtml(v, choosing && v.players.length > 4); // (slim — tease only, no chip row — while this viewer holds a hand in a full room: the scores strip (now its taller `.many` layout) already shows ✓/⏳, so the chips would just push the board past the screen. Few players still fit with the chips)
     if (local && !who) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>';
     else if (czar) h += '<p class="tkDim tkSm">' + tks('youJudge') + '</p>' + tkBacksHtml(v) + tkSkipHtml(v);
     else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v);

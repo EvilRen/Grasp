@@ -484,15 +484,21 @@ async def fits_mid(b):
     await page.add_init_script(FAST + "sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he');"); await page.goto(BASE + '/tachles'); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
     check('the Tachles surface contains its overscroll (no pull-to-refresh / rubber-band chaining)', await page.evaluate("getComputedStyle($('tachles')).overscrollBehaviorY === 'contain'"))
     await click(page, '#tachles [data-a="m:bots"]')
+    for _ in range(4): # a full room (host + 4 bots = 5): the taller scores strip is where the owner still saw a scroll
+        if await page.locator('#tachles [data-a="addBot"]:not([disabled])').count(): await click(page, '#tachles [data-a="addBot"]')
+    np = await page.evaluate(f"{TKH}.tk.lobby.length")
     await page.evaluate(f"{TKH}.TK.botMove = () => false")
     for _ in range(20):
         await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(200)
         if await page.evaluate(f"{TKH}.tk.view.me !== {TKH}.tk.view.judge"): break
         await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
-    m = await page.evaluate("(() => { const el = $('tachles'), w = document.querySelector('#tachles .tkHandW'); return { over: el.scrollHeight - el.clientHeight, hand: w ? w.scrollWidth - w.clientWidth : -1 }; })()")
+    # some bots submit so the status is mixed (as when the owner hit it); the picker must still not need a vertical scroll
+    await page.evaluate(f"(() => {{ const g = {TKH}.tk.g, J = g.players[g.judge].id, others = g.players.filter((p) => p.id !== J && p.bot); for (let i = 0; i < 2 && i < others.length; i++) {{ try {{ {TKH}.TK.submit(g, others[i].id, [others[i].hand[0]]); }} catch (e) {{}} }} {TKH}.tk.view = {TKH}.TK.view(g, {TKH}.tk.me); {TKH}.render(); }})()")
+    m = await page.evaluate("(() => { const el = $('tachles'), w = document.querySelector('#tachles .tkHandW'); return { over: el.scrollHeight - el.clientHeight, hand: w ? w.scrollWidth - w.clientWidth : -1, chips: !!document.querySelector('#tachles .tkChips') }; })()")
     await page.screenshot(path=OUT + 'tachles_fits_844.png')
-    check('iPhone-12-16 size (390x844): the game board fits with no vertical scroll (the owner\'s "weird scrolls" fix)', m['over'] <= 2, m)
+    check('a full room (390x844, %d players): the game board fits with no vertical scroll (the owner\'s "weird scrolls" fix)' % np, m['over'] <= 2, m)
     check('the hand of cards still scrolls horizontally (only axis that scrolls)', m['hand'] > 50, m)
+    check('while picking, the redundant submit-status chip row is gone (the scores strip already shows ✓/⏳); no scroll-causing duplicate', not m['chips'], m)
     check('mid phone: no page errors', not errs, errs); await ctx.close()
 
 async def public_rooms(b):
