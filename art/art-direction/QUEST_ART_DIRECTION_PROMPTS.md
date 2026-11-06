@@ -177,3 +177,28 @@ python3 art/art-direction/build_board.py          # composites panels/ -> quest_
 
 The build script trims the dark bleed around each card, normalises card heights, cover-crops the
 hero and enemy to a shared cell, and lays everything on a 1200x2133 (9:16) graded dark board.
+
+---
+
+## 7. Provenance of the shipped panels
+
+The board mixes two generators. Panels 4.1–4.5 came from Z-Image-Turbo at the seeds listed
+above. The Hugging Face ZeroGPU quota ran out before the backdrops and the icon re-roll, so
+those three were finished in Gemini from `QUEST_GEMINI_BOARD_PROMPTS.md`:
+
+| Panel | Generator | File |
+|---|---|---|
+| ATTACK / SKILL / POWER cards | Z-Image-Turbo, seeds 710401 / 710422 / 710403 | `panels/card_*.webp` |
+| Hero, enemy | Z-Image-Turbo, seeds 710424 / 710405 | `panels/hero.webp`, `panels/enemy.webp` |
+| Icon row | Gemini, prompt C | `panels/icons.jpg` |
+| Forest, cosmic backdrops | Gemini, prompts A and B | `panels/bg_forest.jpg`, `panels/bg_cosmic.jpg` |
+
+The two hands sit together because both were given the same Style, Palette and Exclusion
+blocks. Gemini's output runs a touch smoother in the brushwork and a touch cooler in the
+shadows; at panel size on a dark board that reads as depth rather than as a seam. If the set
+is ever extended, matching Z-Image is the harder of the two to hit — generate new character
+and card art there first, and let Gemini fill environments and icons around it.
+
+The single-shot whole-board comparison was never generated; the quota ran out before it. The
+composited board is the only version, which is the one worth keeping anyway — a single pass
+over a layout this dense loses the card borders and the icon silhouettes.

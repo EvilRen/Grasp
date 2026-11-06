@@ -54,12 +54,13 @@ def precrop(img, frac):
     return img.crop((0, 0, img.width, round(img.height * frac)))
 
 
-def cover(img, cw, ch):
+def cover(img, cw, ch, bias=4):
+    """Scale to fill the cell and crop. bias=4 pulls the crop upward (keeps heads and
+    card tops safe); bias=2 centres it (right for symmetrical art like the icon row)."""
     s = max(cw / img.width, ch / img.height)
     r = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS)
-    # bias the crop upward so heads and card tops are never clipped
     x = (r.width - cw) // 2
-    y = min(max(0, (r.height - ch) // 4), max(0, r.height - ch))
+    y = min(max(0, (r.height - ch) // bias), max(0, r.height - ch))
     return r.crop((x, y, x + cw, y + ch))
 
 
@@ -103,57 +104,67 @@ def rule(board, y, inset=MARGIN, alpha=34):
 
 def main():
     board = background()
-    y = MARGIN
 
-    # --- Row 1: three card frames -------------------------------------------------
+    # --- build every row first, then distribute the leftover height evenly ------
+    rows = []
+
+    # Row 1: three card frames, normalised to a common height
     cw = (W - MARGIN * 2 - GAP * 2) // 3
     ch = 524
-    cards = [load(n) for n in ("card_attack.webp", "card_skill.webp", "card_power.webp")]
-    for i, c in enumerate(cards):
-        x = MARGIN + i * (cw + GAP)
+    cards = []
+    for i, n in enumerate(("card_attack", "card_skill", "card_power")):
+        c = load(n)
         if c is None:
             continue
         im = contain(trim(c), cw, ch)
-        paste(board, im, x + (cw - im.width) // 2, y + (ch - im.height) // 2, shadow=30)
-    y += ch + 36
-    rule(board, y - 18)
+        cards.append((im, MARGIN + i * (cw + GAP) + (cw - im.width) // 2,
+                      (ch - im.height) // 2, 30))
+    rows.append((ch, cards))
 
-    # --- Row 2: hero + enemy ------------------------------------------------------
-    pw = (W - MARGIN * 2 - GAP) // 2
-    ph = 760
-    for i, (n, frac) in enumerate((("hero.webp", 0.60), ("enemy.webp", 1.0))):
+    # Row 2: hero + enemy
+    pw, ph = (W - MARGIN * 2 - GAP) // 2, 760
+    chars = []
+    for i, (n, frac) in enumerate((("hero", 0.60), ("enemy", 1.0))):
         im = load(n)
         if im is None:
             continue
         if frac < 1.0:
             im = precrop(im, frac)
-        paste(board, cover(im, pw, ph), MARGIN + i * (pw + GAP), y, shadow=24)
-    y += ph + 36
-    rule(board, y - 18)
+        chars.append((cover(im, pw, ph), MARGIN + i * (pw + GAP), 0, 24))
+    rows.append((ph, chars))
 
-    # --- Row 3: UI icon row -------------------------------------------------------
-    iw, ih = W - MARGIN * 2, 340
-    icons = load("icons.webp")
+    # Row 3: the icon row, trimmed to its own content so no dead margin is carried in
+    icons = load("icons")
     if icons is not None:
-        paste(board, cover(icons, iw, ih), MARGIN, y, shadow=20)
-    y += ih + 36
-    rule(board, y - 18)
+        im = contain(trim(icons, tol=12), W - MARGIN * 2, 420)
+        rows.append((im.height, [(im, MARGIN + (W - MARGIN * 2 - im.width) // 2, 0, 0)]))
 
-    # --- Row 4: backdrop strip ----------------------------------------------------
+    # Row 4: the two battle backdrops
     bw = (W - MARGIN * 2 - GAP) // 2
     bh = round(bw * 9 / 16)
-    for i, n in enumerate(("bg_forest.webp", "bg_cosmic.webp")):
+    beds = []
+    for i, n in enumerate(("bg_forest", "bg_cosmic")):
         im = load(n)
-        x = MARGIN + i * (bw + GAP)
-        if im is None:                        # reserved plate until the panel exists
-            ph_ = Image.new("RGB", (bw, bh), (17, 21, 25))
-            ImageDraw.Draw(ph_).rectangle((0, 0, bw - 1, bh - 1), outline=(34, 42, 48))
-            paste(board, ph_, x, y, shadow=18)
+        if im is None:
             continue
-        paste(board, cover(im, bw, bh), x, y, shadow=22)
+        beds.append((cover(im, bw, bh, bias=2), MARGIN + i * (bw + GAP), 0, 22))
+    if beds:
+        rows.append((bh, beds))
+
+    used = sum(h for h, _ in rows)
+    gap = max(24, (H - MARGIN * 2 - used) // max(1, len(rows) - 1))
+
+    y = MARGIN
+    for idx, (h, items) in enumerate(rows):
+        for im, x, dy, sh in items:
+            paste(board, im, x, y + dy, shadow=sh)
+        y += h
+        if idx < len(rows) - 1:
+            rule(board, y + gap // 2)
+            y += gap
 
     board.save(OUT, "PNG", optimize=True)
-    print(f"wrote {OUT}  {board.size[0]}x{board.size[1]}")
+    print(f"wrote {OUT}  {board.size[0]}x{board.size[1]}  rows={len(rows)} gap={gap}")
 
 
 if __name__ == "__main__":
