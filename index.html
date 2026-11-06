@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.58';
+const APP_VERSION = '1.12.59';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21699,7 +21699,7 @@ var TK2_GAME;
     if (now - guideAt > 60000) return false; // give up gently after a while
     var tip = !hasRained ? 'rain' : (!hasPicked ? 'pick' : (!hasShaken ? 'shake' : null)); if (!tip) return false;
     var txt;
-    if (tip === 'rain') { var fx = W * 0.5, fy = H * 0.27 + Math.sin(now * 0.0022) * 10;
+    if (tip === 'rain') { var fx = W * 0.28, fy = H * 0.2 + Math.sin(now * 0.0022) * 10; // off to the side so it never sits on the moon
       ctx.globalCompositeOperation = 'lighter';
       for (var k = 0; k < 4; k++) { var dp = ((now * 0.0013 + k * 0.27) % 1); ctx.globalAlpha = (1 - dp) * 0.6; ctx.drawImage(WATER, fx - 3.5 + (k - 1.5) * 11, fy + 16 + dp * 92, 7, 15); }
       ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; drawFinger(fx, fy, now); txt = '✋ געו בשמיים — יורד גשם 💧'; }
@@ -21833,20 +21833,26 @@ var TK2_GAME;
 
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
 
-    // the time moon: a soft translucent moon high in the sky above the tree, a ring tracing the wait + a countdown inside (stars twinkle through it)
-    var tr = treeH * (0.085 + M * 0.05), tcy = baseY - treeH * (0.68 + 0.6 * M);
+    // the time moon: it waxes from a thin crescent to a full moon as the wait fills; at full the next bloom / fruit arrives. High in the sky, translucent, stars behind it
+    var tr = treeH * (0.088 + M * 0.052), tcy = baseY - treeH * (0.68 + 0.6 * M), ph = Math.min(1, Math.max(0.02, tp));
     ctx.globalCompositeOperation = 'lighter';
-    var hg = ctx.createRadialGradient(baseX, tcy, tr * 0.5, baseX, tcy, tr * 2.3); // moon glow halo
-    hg.addColorStop(0, 'rgba(150,185,230,' + (0.1 + antic * 0.05) + ')'); hg.addColorStop(1, 'rgba(150,185,230,0)');
-    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(baseX, tcy, tr * 2.3, 0, 6.283); ctx.fill();
-    var mg = ctx.createRadialGradient(baseX - tr * 0.3, tcy - tr * 0.3, tr * 0.1, baseX, tcy, tr); // the translucent moon disc
-    mg.addColorStop(0, 'rgba(228,238,252,0.3)'); mg.addColorStop(0.68, 'rgba(185,208,242,0.14)'); mg.addColorStop(1, 'rgba(165,195,235,0.05)');
-    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(baseX, tcy, tr, 0, 6.283); ctx.fill();
+    var hg = ctx.createRadialGradient(baseX, tcy, tr * 0.4, baseX, tcy, tr * 2.4); // a glow halo that strengthens as the moon fills
+    hg.addColorStop(0, 'rgba(150,186,232,' + (0.04 + ph * 0.11) + ')'); hg.addColorStop(1, 'rgba(150,186,232,0)');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(baseX, tcy, tr * 2.4, 0, 6.283); ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
-    ctx.lineCap = 'round'; ctx.lineWidth = 2.2; ctx.strokeStyle = 'rgba(190,222,250,' + (0.4 + antic * 0.3) + ')'; // the wait, traced round the rim
-    ctx.beginPath(); ctx.arc(baseX, tcy, tr, -1.5708, -1.5708 + Math.max(0.03, tp) * 6.283); ctx.stroke();
+    ctx.fillStyle = 'rgba(146,176,218,0.06)'; ctx.beginPath(); ctx.arc(baseX, tcy, tr, 0, 6.283); ctx.fill(); // the faint whole disc (the dark part), so the circle is always there
+    ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(190,216,246,0.2)'; ctx.beginPath(); ctx.arc(baseX, tcy, tr, 0, 6.283); ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter'; // the lit, waxing part
+    var lg = ctx.createRadialGradient(baseX - tr * 0.32, tcy - tr * 0.32, tr * 0.1, baseX, tcy, tr);
+    lg.addColorStop(0, 'rgba(238,245,255,0.6)'); lg.addColorStop(0.68, 'rgba(200,220,250,0.34)'); lg.addColorStop(1, 'rgba(176,202,240,0.16)');
+    ctx.fillStyle = lg; var tt = 1 - 2 * ph;
+    ctx.beginPath(); ctx.arc(baseX, tcy, tr, -1.5708, 1.5708, false); ctx.ellipse(baseX, tcy, tr * Math.abs(tt), tr, 0, 1.5708, -1.5708, ph < 0.5); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(baseX, tcy, tr, 0, 6.283); ctx.clip(); ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = 'rgba(120,150,196,0.09)'; // a few soft craters for texture
+    var CR = [[-0.28, 0.18, 0.24], [0.26, -0.2, 0.17], [0.08, 0.36, 0.14], [-0.04, -0.1, 0.12]];
+    for (var cr = 0; cr < CR.length; cr++) { ctx.beginPath(); ctx.ellipse(baseX + CR[cr][0] * tr, tcy + CR[cr][1] * tr, CR[cr][2] * tr, CR[cr][2] * tr * 0.82, 0, 0, 6.283); ctx.fill(); }
+    ctx.restore(); ctx.globalCompositeOperation = 'source-over';
     if (tr > 18) { var rem = Math.max(0, Math.ceil((STAGE_MS - (now - tStart)) / 1000)); // seconds until the next bloom / fruit
-      ctx.fillStyle = 'rgba(232,242,254,' + (0.5 + antic * 0.3) + ')'; ctx.font = '700 ' + Math.round(tr * 0.72) + 'px Heebo,-apple-system,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(234,243,255,' + (0.42 + ph * 0.3) + ')'; ctx.font = '700 ' + Math.round(tr * 0.72) + 'px Heebo,-apple-system,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(String(rem), baseX, tcy + tr * 0.04); }
 
     var vg = ctx.createRadialGradient(W / 2, H * 0.55, treeH * 0.5, W / 2, H * 0.55, Math.max(W, H) * 0.82);
