@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.70';
+const APP_VERSION = '1.12.71';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22745,7 +22745,7 @@ function qNewRun(hero, len) { const P = qP(); P.runs = (P.runs || 0) + 1; quest.
 function qGo(k, data) { quest.scr = k; quest.data = data || null; quest.sel = -1; if (quest.run) quest.run.at = { k, data: data || null }; qSave(); }
 function qEnter(kind, resumed) { // a door was chosen
   const r = quest.run; quest.log.push('door:' + kind);
-  if (kind === 'fight' || kind === 'elite' || kind === 'boss') { quest.f = QC.newFight(r, kind); quest.logAt = 0; quest.fx = []; quest.sel = -1; quest.scr = 'fight'; r.at = { k: 'fight', kind }; qSave(); quest.fightAt = performance.now(); if (kind === 'boss') sfx('boss'); return; }
+  if (kind === 'fight' || kind === 'elite' || kind === 'boss') { qPreloadMons(QC.landOf(r)); quest.f = QC.newFight(r, kind); quest.logAt = 0; quest.fx = []; quest.sel = -1; quest.scr = 'fight'; r.at = { k: 'fight', kind }; qSave(); quest.fightAt = performance.now(); if (kind === 'boss') sfx('boss'); return; }
   if (kind === 'rest') return qGo('rest');
   if (kind === 'shop') return qGo('shop', QC.shopStock(r));
   if (kind === 'chest') { const relic = QC.relicFor(r), gold = 25 + Math.floor(QC.R(r) * 20); r.gold += gold; return qGo('chest', { relic, gold }); }
@@ -22959,7 +22959,14 @@ function qRar(c) { return c.r === 'r' ? 'r' : c.r === 'u' ? 'u' : ''; }
 function qFrameSrc(c) { return '/assets/quest/frame_' + (Q_TYPE[c.t] || 'skill') + (qRar(c) ? '_' + qRar(c) : '') + '.webp'; }
 const Q_FRAMES = ['attack', 'skill', 'power'].flatMap((t) => ['', '_u', '_r'].map((r) => '/assets/quest/frame_' + t + r + '.webp'));
 const Q_LANDS = ['forest', 'castle', 'space', 'throne'].map((i) => '/assets/quest/lands/' + i + '.webp');
-function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); for (const p of Q_LANDS) qImg(p); qLoadLay(); } // once, when Quest opens: the nine frames and what they measure
+function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); for (const p of Q_LANDS) qImg(p); qLoadLay(); }
+function qPreloadMons(land) { if (land) for (const m of land.mons) qImg('/assets/quest/enemies/' + m.id + '.webp'); } // the land being entered, not all four
+function qMonDraw(M0, x, y, s, a) { // a monster: its painting when there is one, its emoji while there is not
+  const im = M0 && qImg('/assets/quest/enemies/' + M0.id + '.webp');
+  if (!im) { qEmoji(M0.e, x, y, s, a); return; }
+  const k = s * 1.15 / Math.max(im.naturalWidth, im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k;
+  resetView(); if (a !== 1) ctx.globalAlpha = a; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); if (a !== 1) ctx.globalAlpha = 1;
+} // once, when Quest opens: the nine frames and what they measure
 /* assets/quest/frames.json: where each frame's window and plates really sit, measured from the art by tools/quest_frames.py.
    Three generated sheets put them in three different places, so the layout follows the art instead of the art following the
    layout. A frame missing from the file, or the file missing altogether, simply keeps the constants below. */
@@ -23156,7 +23163,7 @@ function qDrawFight(now, y0) {
     const M0 = QC.MON.get(m.id), s = m._s, dn = quest.fx.find((q) => q.k === 'down' && q.i === m.i && now >= q.t); if (m.hp <= 0 && !m.downAt) m.downAt = dn ? dn.t : now;
     const lu = quest.fx.find((q) => q.k === 'lunge' && q.i === m.i && now >= q.t && now - q.t < 300), dy = lu ? Math.sin((now - lu.t) / 300 * Math.PI) * 26 : 0, a = m.hp <= 0 ? Math.max(0, 1 - (now - m.downAt) / 600) : 1;
     if (tgt && m.hp > 0) { resetView(); ctx.strokeStyle = 'rgba(255,214,80,' + (0.6 + 0.35 * Math.sin(now / 150)).toFixed(2) + ')'; ctx.lineWidth = 5; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.arc(m._x, m._y, s * 0.66, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
-    qEmoji(M0.e, m._x, m._y + dy + Math.sin(now / 500 + m.i) * 3, s, a);
+    qMonDraw(M0, m._x, m._y + dy + Math.sin(now / 500 + m.i) * 3, s, a);
     if (m.hp > 0) { const bw = Math.min(110, s * 1.2); qBar(m._x - bw / 2, m._y + s * 0.58, bw, 14, m.hp, m.max, '#ff5a6e', m.hp + '/' + m.max);
       if (m.blk) { qIcon('blk', m._x - bw / 2 - 10, m._y + s * 0.58 + 7, 19); qText(String(m.blk), m._x - bw / 2 - 10, m._y + s * 0.58 + 9, 11, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
       qStatus(m.st, m._x - bw / 2 + 8, m._y + s * 0.58 + 28, 13);

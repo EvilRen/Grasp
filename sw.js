@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-07g';
+const VERSION = 'grasp-2026-11-07h';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -24,7 +24,12 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/frame_power.webp', '/assets/quest/frame_power_u.webp', '/assets/quest/frame_power_r.webp',
   '/assets/quest/frames.json',
   '/assets/quest/lands/forest.webp', '/assets/quest/lands/castle.webp',
-  '/assets/quest/lands/space.webp', '/assets/quest/lands/throne.webp'];
+  '/assets/quest/lands/space.webp', '/assets/quest/lands/throne.webp',
+  // the first land's monsters, so a first run is complete offline; the later lands' art is cached at run time
+  // as the player reaches them (all 33 would be over a megabyte to precache before the game even opens).
+  '/assets/quest/enemies/slime.webp', '/assets/quest/enemies/mushroom.webp', '/assets/quest/enemies/wolf.webp',
+  '/assets/quest/enemies/goblin.webp', '/assets/quest/enemies/bee.webp', '/assets/quest/enemies/spider.webp',
+  '/assets/quest/enemies/bear.webp', '/assets/quest/enemies/ent.webp', '/assets/quest/enemies/troll.webp'];
 const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|sky|tama|tree|popit|spot|mix|quest|tachles|powder)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;
