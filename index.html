@@ -1540,8 +1540,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 /* (the owner: "why is there a scroll in the middle — it suddenly reveals the player names". While you pick, the question + drop zone grow to fill the space
    so there is no dead gap and nothing to scroll; the per-answerer chip row is dropped here since the scores strip already shows who has sent — see tkStatusHtml slim) */
 #tachles .tkCenter.tkPick{ justify-content:flex-start; }
-#tachles .tkCenter.tkPick .tkDuel{ flex:1 1 auto; min-height:0; }
-#tachles .tkCenter.tkPick .tkDuel .tkBlackC{ min-height:0; }
+#tachles .tkCenter.tkPick .tkDuel{ flex:0 1 auto; min-height:0; } /* content-sized (not stretched to fill), so a short question no longer balloons into a giant empty card; the space below it is the natural drop area above the hand */
+#tachles .tkCenter.tkPick .tkDuel .tkBlackC{ min-height:clamp(140px,22vh,196px); max-height:46vh; }
 #tachles .tkCzar{ display:flex; align-items:center; gap:8px; font-size:14px; color:var(--dim); } #tachles .tkCzar b{ color:#fff; } #tachles .tkCzar .tkI{ width:16px; height:16px; }
 #tachles .tkFace{ position:relative; display:flex; flex-direction:column; justify-content:space-between; border-radius:18px; padding:18px 18px 14px; box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04); text-align:start; }
 #tachles .tkBlackC{ width:min(28rem,100%); min-height:min(260px,27vh); text-align:center; color:#fafafa; border:1px solid #2a2a2a;
@@ -2082,7 +2082,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.64';
+const APP_VERSION = '1.12.65';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
