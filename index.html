@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.68';
+const APP_VERSION = '1.12.69';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22948,12 +22948,28 @@ function qUp(c) { return !!c.id && c.id.endsWith('+'); } // (c.up is the upgrade
 function qRar(c) { return c.r === 'r' ? 'r' : c.r === 'u' ? 'u' : ''; }
 function qFrameSrc(c) { return '/assets/quest/frame_' + (Q_TYPE[c.t] || 'skill') + (qRar(c) ? '_' + qRar(c) : '') + '.webp'; }
 const Q_FRAMES = ['attack', 'skill', 'power'].flatMap((t) => ['', '_u', '_r'].map((r) => '/assets/quest/frame_' + t + r + '.webp'));
-function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); } // once, when Quest opens: the nine frames
-function qLay(w) { const h = w * 1.42; // one layout for the painted frame and for the art: the rectangles the art templates are drawn to
+function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); qLoadLay(); } // once, when Quest opens: the nine frames and what they measure
+/* assets/quest/frames.json: where each frame's window and plates really sit, measured from the art by tools/quest_frames.py.
+   Three generated sheets put them in three different places, so the layout follows the art instead of the art following the
+   layout. A frame missing from the file, or the file missing altogether, simply keeps the constants below. */
+function qLoadLay() {
+  if (Q_ART.asked) return; Q_ART.asked = 1;
+  fetch('/assets/quest/frames.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
+    if (!j || typeof j !== 'object') return; Q_ART.lay = j;
+    for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|')) SPRITES.delete(k);
+  }).catch(() => {});
+}
+function qFrameLay(c) { // what this card's frame measures, if it has been measured
+  const L = Q_ART.lay; if (!L) return null;
+  const v = L[qFrameSrc(c).slice(qFrameSrc(c).lastIndexOf('/') + 1, -5)];
+  return v && Array.isArray(v.art) && v.art.length === 4 && Number.isFinite(v.nameY) && Number.isFinite(v.txtY) ? v : null;
+}
+function qLay(w, M) { const h = w * 1.42, A = M && M.art; // M: what this frame's art measures (qFrameLay); without it, the constants the painted frame is drawn to
   return { w, h, rad: w * 0.105,
-    art: { x: -w * 0.385, y: -h * 0.400, w: w * 0.770, h: h * 0.395 }, // the picture window
-    nameY: h * 0.085, nameH: h * 0.100, // the title plate
-    txtY: h * 0.295, txtW: w * 0.800, // the rules panel
+    art: A ? { x: (A[0] - 0.5) * w, y: (A[1] - 0.5) * h, w: A[2] * w, h: A[3] * h } // the picture window
+           : { x: -w * 0.385, y: -h * 0.400, w: w * 0.770, h: h * 0.395 },
+    nameY: ((M ? M.nameY : 0.585) - 0.5) * h, nameH: Math.max(0.07, M ? M.nameH : 0.100) * h, // the title plate
+    txtY: ((M ? M.txtY : 0.795) - 0.5) * h, txtW: w * 0.800, // the rules panel
     gem: { x: (lang === 'he' ? 1 : -1) * w * 0.335, y: -h * 0.392, r: w * 0.148 }, // the cost gem, in the corner the language starts from
     pipY: h * 0.443 }; // the rarity gems
 }
@@ -23029,14 +23045,15 @@ function qPaintGem(g, c, L) { // the cost: a faceted gem in the top corner, the 
   g.restore();
 }
 function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
-  const c = QC.cardOf(id); if (!c) return; const L = qLay(w), h = L.h, k = o.k || 1, af = o.dim ? 0.58 : 1, K = Q_KEY[c.t] || Q_KEY.s;
+  const c = QC.cardOf(id); if (!c) return;
+  const fr = qImg(qFrameSrc(c)); // the frame decides the layout: its own when the art is there, the constants while it is not
+  const L = qLay(w, fr && qFrameLay(c)), h = L.h, k = o.k || 1, af = o.dim ? 0.58 : 1, K = Q_KEY[c.t] || Q_KEY.s;
   if (o.glow) { resetView(); const gg = ctx.createRadialGradient(x, y, w * 0.2, x, y, w * 0.95); // the picked card: a halo of its own colour under it
     gg.addColorStop(0, 'rgba(' + K.g + ',' + (0.42 * o.glow).toFixed(3) + ')'); gg.addColorStop(0.55, 'rgba(' + K.g + ',' + (0.14 * o.glow).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(' + K.g + ',0)');
     ctx.fillStyle = gg; ctx.beginPath(); ctx.ellipse(x, y, w * 0.95, h * 0.72, 0, 0, TAU); ctx.fill(); }
   const pad = Math.max(6, w * 0.08);
   const sp = makeSprite('qc|' + id + '|' + Math.round(w) + '|' + lang, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => {
     g.fillStyle = 'rgba(0,0,0,0.45)'; g.beginPath(); g.roundRect(-w / 2, -h / 2 + w * 0.05, w, h, L.rad); g.fill(); // the card's own shadow
-    const fr = qImg(qFrameSrc(c));
     if (fr) { qPaintArt(g, c, L); g.drawImage(fr, -w / 2, -h / 2, w, h); } else { qPaintFrame(g, c, L); qPaintArt(g, c, L); } // (the art template's openings are cut out: the picture goes behind it. The frame is symmetric and is never mirrored, in any language: it carries no cost socket, because qPaintGem's ring is opaque out to the gem's full radius and so covered one completely. That keeps every highlight on the card lit from the top-left, the frame's and the gem's own, in English and in Hebrew alike)
     if (qUp(c)) { const bw = Math.max(2.4, w * 0.045); g.strokeStyle = '#7CFC6A'; g.lineWidth = Math.max(1.4, w * 0.018); g.beginPath(); g.roundRect(-w / 2 + bw / 2, -h / 2 + bw / 2, w - bw, h - bw, L.rad); g.stroke(); } // upgraded
     qPaintGem(g, c, L);

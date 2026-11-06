@@ -14,12 +14,13 @@ Needs Pillow (pip install pillow); numpy is used when present and is only a spee
 depends on it: the game paints the same frames in code until these files are there, and drops them in without a
 code change once they are.
 """
-import os, sys
+import json, os, sys
 
 TYPES = ['attack', 'skill', 'power']          # the columns
 RARITY = ['', '_u', '_r']                     # the rows
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'assets', 'quest')
+LAY = os.path.join(OUT, 'frames.json')        # what each frame actually measures; the game reads it
 KEY = (255, 0, 255)                           # the chroma the prompt asks for
 TOL = 90                                      # how far from pure magenta still counts as a hole (Gemini shades it)
 CORE = 0.62                                   # below TOL * CORE a pixel is fully a hole; above it, it fades out
@@ -163,6 +164,115 @@ def card_box(im):
     Read from the alpha channel explicitly: Pillow 9.2+ does this for RGBA anyway, older
     Pillow looks at all four bands and would hand back the whole cell."""
     return im.getchannel('A').getbbox()
+
+
+def measure_frame(im):
+    """Where this frame's window and two plates really sit, as fractions of the frame image.
+
+    Three sheets drifted three different ways, so the code reads the art rather than the art obeying
+    the code. Returns None when the frame does not look like a card; the game then keeps its constants.
+
+    Measured: the window as a full rectangle, and the two plates as vertical bands only. The widths are
+    left to qLay, because the title and the rules are centred and scaled to fit a width anyway — only
+    their height on the card has ever been wrong, and detecting a plate's edges by colour is the part
+    that would not hold (the rules tablet is nearly the colour of the frame's own body beneath it).
+
+    The window is the largest transparent region not touching the image border. The title bar is found
+    by comparing the middle of each row with that row's outer edges: across the bar the middle is a
+    different colour from the metal beside it, across the frame's body the two match. The rules tablet
+    is then the darkest wide band below the bar — it does not separate by colour, but it does by tone.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+    a = np.asarray(im.convert('RGBA')).astype(int)
+    H, W, _ = a.shape
+    if H < 40 or W < 40:
+        return None
+    clear = a[..., 3] < 24
+
+    seen = np.zeros_like(clear)
+    stack = [(0, x) for x in range(W) if clear[0, x]] + [(H - 1, x) for x in range(W) if clear[H - 1, x]]
+    stack += [(y, 0) for y in range(H) if clear[y, 0]] + [(y, W - 1) for y in range(H) if clear[y, W - 1]]
+    for y, x in stack:
+        seen[y, x] = True
+
+    def flood(st):
+        px = []
+        while st:
+            y, x = st.pop()
+            px.append((y, x))
+            for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= ny < H and 0 <= nx < W and clear[ny, nx] and not seen[ny, nx]:
+                    seen[ny, nx] = True
+                    st.append((ny, nx))
+        return px
+
+    flood(stack)                                 # the holes touching the border are the outside
+    best = []
+    for y in range(H):
+        for x in range(W):
+            if clear[y, x] and not seen[y, x]:
+                seen[y, x] = True
+                px = flood([(y, x)])
+                if len(px) > len(best):
+                    best = px
+    if len(best) < W * H * 0.02:
+        return None
+    ys = np.array([p[0] for p in best]); xs = np.array([p[1] for p in best])
+    ax0, ax1, ay0, ay1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    if ay1 > H * 0.85:
+        return None
+
+    rgb, op = a[..., :3], a[..., 3] > 200
+    mid = slice(int(W * 0.30), int(W * 0.70))
+    edge = np.r_[np.arange(int(W * 0.04), int(W * 0.14)), np.arange(int(W * 0.86), int(W * 0.96))]
+    diff, tone = np.full(H, np.nan), np.full(H, np.nan)
+    for y in range(ay1, H):
+        m, e = op[y, mid], op[y, edge]
+        if m.sum() < (mid.stop - mid.start) * 0.6:
+            continue
+        tone[y] = rgb[y, mid][m].mean()
+        if e.sum() >= len(edge) * 0.5:
+            diff[y] = np.abs(rgb[y, mid][m].mean(axis=0) - rgb[y, edge][e].mean(axis=0)).mean()
+    if np.isnan(diff).all() or np.isnan(tone).all():
+        return None
+
+    def runs_over(v, thr, lo, hi):
+        out, start = [], None
+        for y in range(lo, hi):
+            on = not np.isnan(v[y]) and v[y] > thr
+            if on and start is None:
+                start = y
+            elif not on and start is not None:
+                out.append((start, y - 1)); start = None
+        if start is not None:
+            out.append((start, hi - 1))
+        return [r for r in out if r[1] - r[0] > H * 0.012]
+
+    thr = np.nanmin(diff) + (np.nanmax(diff) - np.nanmin(diff)) * 0.40
+    bars = runs_over(diff, thr, ay1, H)
+    if not bars:
+        return None
+    name = max(bars, key=lambda r: np.nanmean(diff[r[0]:r[1] + 1]) * (r[1] - r[0]))
+
+    sub = tone[name[1] + 1:]                      # the tablet: the darkest wide band under the bar
+    if np.isnan(sub).all():
+        return None
+    lo_t, hi_t = np.nanmin(sub), np.nanmax(sub)
+    if hi_t - lo_t < 6:
+        return None
+    dark = runs_over(-tone, -(lo_t + (hi_t - lo_t) * 0.45), name[1] + 1, H)
+    if not dark:
+        return None
+    txt = max(dark, key=lambda r: r[1] - r[0])
+    if txt[1] - txt[0] < H * 0.08 or name[1] - name[0] < H * 0.02:
+        return None
+    f4 = lambda v: round(v, 4)
+    return {'art': [f4(ax0 / W), f4(ay0 / H), f4((ax1 - ax0) / W), f4((ay1 - ay0) / H)],
+            'nameY': f4((name[0] + name[1] + 1) / 2 / H), 'nameH': f4((name[1] + 1 - name[0]) / H),
+            'txtY': f4((txt[0] + txt[1] + 1) / 2 / H), 'txtH': f4((txt[1] + 1 - txt[0]) / H)}
 
 
 def probe(im):
@@ -321,6 +431,10 @@ def main():
         print('note: the sheet is %dx%d (%.3f wide-to-tall); %s 1:%.2f cards want %.3f'
               % (sheet.size + (sheet.size[0] / sheet.size[1], 'three' if ROW else 'nine', RATIO, want)))
     os.makedirs(OUT, exist_ok=True)
+    try:                                        # --row rewrites three entries and leaves the other six
+        lay = json.load(open(LAY))
+    except Exception:
+        lay = {}
     for row, rar in rows_wanted():
         for col, t in enumerate(TYPES):
             im = key_out(cell(sheet, col, row), tol)
@@ -338,8 +452,23 @@ def main():
             im = im.resize((size, round(size * RATIO)), Image.LANCZOS)
             path = os.path.join(OUT, 'frame_%s%s.webp' % (t, rar))
             im.save(path, 'WEBP', quality=88, method=6)
-            print('%-34s %5.1f KB' % (os.path.relpath(path, ROOT), os.path.getsize(path) / 1024))
-    print('\nAdd them to git, bump sw.js VERSION so the offline cache picks them up, and reload.')
+            m = measure_frame(Image.open(path))
+            key = 'frame_%s%s' % (t, rar)
+            if m:
+                lay[key] = m
+                print('%-34s %5.1f KB   window %.3f,%.3f,%.3f,%.3f  name y%.3f  rules y%.3f'
+                      % (os.path.relpath(path, ROOT), os.path.getsize(path) / 1024,
+                         m['art'][0], m['art'][1], m['art'][2], m['art'][3], m['nameY'], m['txtY']))
+            else:
+                lay.pop(key, None)
+                print('%-34s %5.1f KB   ! could not be measured: the game keeps its own layout for it'
+                      % (os.path.relpath(path, ROOT), os.path.getsize(path) / 1024))
+    with open(LAY, 'w') as fh:
+        json.dump(lay, fh, indent=1, sort_keys=True)
+        fh.write('\n')
+    print('\n%s: where %d frame(s) really put their window and plates.' % (os.path.relpath(LAY, ROOT), len(lay)))
+    print('qLay() reads it per frame, and keeps its own constants for any frame missing from it.')
+    print('Add them to git, bump sw.js VERSION so the offline cache picks them up, and reload.')
 
 
 if __name__ == '__main__':
