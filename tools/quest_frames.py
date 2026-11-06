@@ -90,7 +90,58 @@ def _key_out_slow(im, tol=TOL):
     return im
 
 
-def cell(im, col, row):
+_GRID = {}
+
+
+def _bands(mask, axis, n=3):
+    """Where the n solid stripes sit along an axis, from the gaps of keyed background between them."""
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+    hit = mask.any(axis=axis)
+    runs, start = [], None
+    for i, v in enumerate(hit):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            runs.append((start, i)); start = None
+    if start is not None:
+        runs.append((start, len(hit)))
+    runs = [r for r in runs if r[1] - r[0] > len(hit) * 0.04]       # ignore specks
+    return runs if len(runs) == n else None
+
+
+def grid(im, tol=TOL):
+    """The nine cards' boxes, found rather than assumed.
+
+    A generated sheet rarely lands its cards on exact thirds — the one that prompted this had 113px
+    outer margins and 36px gutters, so the left card crossed the first third line and the middle cell
+    measured the full cell width. Reading the gutters instead removes the even-grid requirement: the
+    columns and rows are wherever the keyed background runs clear through the sheet. Falls back to
+    thirds when the sheet has no clean gutters (one blended sheet, a card touching its neighbour).
+    """
+    key = id(im)
+    if key in _GRID:
+        return _GRID[key]
+    out = None
+    try:
+        import numpy as np
+        a = np.asarray(im.convert('RGB')).astype(int)
+        solid = ~((np.abs(a[..., 0] - KEY[0]) < tol) & (a[..., 1] < tol) & (np.abs(a[..., 2] - KEY[2]) < tol))
+        cols, rows = _bands(solid, 0), _bands(solid, 1)
+        if cols and rows:
+            out = [[(cols[c][0], rows[r][0], cols[c][1], rows[r][1]) for c in range(3)] for r in range(3)]
+    except ImportError:
+        pass
+    _GRID[key] = out
+    return out
+
+
+def cell(im, col, row, tol=TOL):
+    g = grid(im, tol)
+    if g:
+        return im.crop(g[row][col])
     w, h = im.size
     x0, x1 = round(w * col / 3), round(w * (col + 1) / 3)
     y0, y1 = round(h * row / 3), round(h * (row + 1) / 3)
