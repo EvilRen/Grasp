@@ -9,7 +9,8 @@ from **one** image: a 3 × 3 sheet. Paste the block below into Gemini as-is, sav
 and run:
 
 ```
-python3 tools/quest_frames.py art/quest_frames_raw.png     # slices, keys the magenta out, writes assets/quest/frame_*.webp
+python3 tools/quest_frames.py art/quest_frames_raw.png --check   # measures the sheet against qLay(); writes nothing
+python3 tools/quest_frames.py art/quest_frames_raw.png           # slices, keys the magenta out, writes assets/quest/frame_*.webp
 ```
 
 Until those files exist the game paints the same nine frames in code, to the same layout, so nothing breaks and nothing
@@ -58,6 +59,15 @@ transparency. Measured as percentages of that card's own width (W) and height (H
      diameter of 29.6% of W. It overlaps the top-left corner of the frame, set into the metal like an empty jewel
      mount with a raised rim around it.
 The background of the whole sheet — everything outside the nine cards — is also flat pure magenta #FF00FF.
+Do not draw a transparency checkerboard. Do not draw a grey and white chequered pattern of little squares in any
+opening or anywhere on the sheet. The openings are not transparent and are not a checker pattern: they are painted
+a solid flat magenta, the same magenta everywhere, as if filled with one pot of paint.
+
+ORNAMENT — what the metal carries instead of writing:
+The frame's raised decoration is purely ornamental geometry: scrollwork, interlocking knotwork, spirals, bevels,
+rivets, leaf and vine motifs, faceted studs. Decorative shapes only. There is no writing anywhere on the frame, no
+alphabet, no runic script, no engraved characters, no inscription along the border, and no marking of any kind on
+the title plate — the title plate is a completely smooth, unmarked, flat magenta bar.
 
 STYLE: painterly digital illustration, the feel of a premium hand-painted deck-builder. Dramatic rim light from the
 top-left, deep shadow falling to the bottom-right, so the metal reads as sculpted and three-dimensional. Faint

@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.64';
+const APP_VERSION = '1.12.65';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22910,7 +22910,7 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
   const sp = makeSprite('qc|' + id + '|' + Math.round(w) + '|' + lang, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => {
     g.fillStyle = 'rgba(0,0,0,0.45)'; g.beginPath(); g.roundRect(-w / 2, -h / 2 + w * 0.05, w, h, L.rad); g.fill(); // the card's own shadow
     const fr = qImg(qFrameSrc(c));
-    if (fr) { qPaintArt(g, c, L); g.drawImage(fr, -w / 2, -h / 2, w, h); } else { qPaintFrame(g, c, L); qPaintArt(g, c, L); } // (the art template's window is cut out: the picture goes behind it)
+    if (fr) { qPaintArt(g, c, L); if (lang === 'he') { g.save(); g.scale(-1, 1); g.drawImage(fr, -w / 2, -h / 2, w, h); g.restore(); } else g.drawImage(fr, -w / 2, -h / 2, w, h); } else { qPaintFrame(g, c, L); qPaintArt(g, c, L); } // (the art template's window is cut out: the picture goes behind it; mirrored in Hebrew so its cost socket is under the gem, which qLay puts in the corner the language starts from — the window, plate and panel are centred, so only the socket moves)
     if (qUp(c)) { const bw = Math.max(2.4, w * 0.045); g.strokeStyle = '#7CFC6A'; g.lineWidth = Math.max(1.4, w * 0.018); g.beginPath(); g.roundRect(-w / 2 + bw / 2, -h / 2 + bw / 2, w - bw, h - bw, L.rad); g.stroke(); } // upgraded
     qPaintGem(g, c, L);
     const nm = lang === 'he' ? c.he : c.en, fs = Math.max(9, Math.round(w * 0.142)); // the title
