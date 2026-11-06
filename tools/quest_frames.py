@@ -31,8 +31,14 @@ SPEC = {
     'picture window': (0.115, 0.100, 0.770, 0.395),   # art: -.385w, -.400h, .770w, .395h
     'title plate':    (0.095, 0.535, 0.810, 0.100),   # nameY .085h is the plate's centre, nameH .100h
     'rules panel':    (0.100, 0.695, 0.800, 0.205),   # txtY .295h is the centre of a .205h panel
-    'cost socket':    (0.017, 0.004, 0.296, 0.208),   # gem -.335w, -.392h, r .148w  (.296w = .208h)
 }
+# The cost gem is NOT an opening. qPaintGem() paints an opaque gem of exactly the gem radius over
+# the frame, so a socket cut in the art would be completely hidden: measured, cutting it changes
+# 2.06% of the pixels in that corner, which is only the semi-transparent shadow ring at 1.04r.
+# Worse, a socket makes the frame asymmetric, and qLay puts the gem in the corner the language
+# starts from — so an asymmetric frame has to be mirrored per language, which mirrors its light.
+# Keep the frame symmetric and both top corners plain, and none of that arises.
+SOCKET = (0.017, 0.004, 0.296, 0.208)             # where the gem lands; must be SOLID in the art
 TOLERANCE = 0.02                              # how far an opening may drift before --check calls it out
 
 
@@ -130,6 +136,19 @@ def probe(im):
         ring = region(name, RING) & ~region(name) & ~others
         out[name] = (hole[inside].mean() if inside.any() else 0.0,
                      solid[ring].mean() if ring.any() else 1.0)
+
+    x, y, w, h = SOCKET                                  # both top corners, where the gem may land
+    cx, cy, r = x + w / 2, y + h / 2, w / 2
+    disc = ((fx - cx) ** 2 + ((fy - cy) * (w / h)) ** 2) <= r ** 2
+    disc |= ((fx - (1 - cx)) ** 2 + ((fy - cy) * (w / h)) ** 2) <= r ** 2
+    # qLay overlaps the gem onto the picture window's corner on purpose, so only judge the
+    # part of the disc that is supposed to be metal
+    metal = disc & ~region('picture window') & ~region('title plate') & ~region('rules panel')
+    out['cost gem corners'] = (0.0, solid[metal].mean() if metal.any() else 1.0)
+
+    mirror = al[:, ::-1]                                 # the frame must read the same flipped
+    same = (np.abs(al.astype(np.int16) - mirror.astype(np.int16)) < 40).mean()
+    out['left-right symmetry'] = (same, 1.0)
     return out
 
 
@@ -162,8 +181,22 @@ def check(sheet, tol=TOL):
             if got is None:
                 print('       (install numpy to measure the openings)')
                 continue
-            for label in SPEC:
+            for label in list(SPEC) + ['cost gem corners', 'left-right symmetry']:
                 open_pct, solid_pct = got[label]
+                if label == 'cost gem corners':
+                    mark = '' if solid_pct > 0.97 else '  <-- cut a socket here; the painted gem hides it anyway'
+                    if mark:
+                        bad += 1
+                    print('       %-18s %5.1f%% solid where the gem lands (both corners)%s'
+                          % (label, solid_pct * 100, mark))
+                    continue
+                if label == 'left-right symmetry':
+                    mark = '' if open_pct > 0.97 else '  <-- asymmetric: it would have to be mirrored per language'
+                    if mark:
+                        bad += 1
+                    print('       %-18s %5.1f%% of the card matches its own mirror%s'
+                          % (label, open_pct * 100, mark))
+                    continue
                 mark = ''
                 if open_pct < 0.96:
                     mark = '  <-- the opening is short, shifted or filled in'
@@ -171,7 +204,7 @@ def check(sheet, tol=TOL):
                     mark = '  <-- the opening spills past where the code draws'
                 if mark:
                     bad += 1
-                print('       %-15s %5.1f%% open inside   %5.1f%% solid around%s'
+                print('       %-18s %5.1f%% open inside   %5.1f%% solid around%s'
                       % (label, open_pct * 100, solid_pct * 100, mark))
     print()
     if bad:

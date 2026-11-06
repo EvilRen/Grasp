@@ -46,7 +46,7 @@ all four corners, a glowing inlay line, and three small faceted gems set into th
 spaced on the centreline.
 
 THE OPENINGS — these are holes, and this is the most important part:
-Each frame has four empty areas, and every one of them must be filled with FLAT PURE MAGENTA #FF00FF — a solid,
+Each frame has three empty areas, and every one of them must be filled with FLAT PURE MAGENTA #FF00FF — a solid,
 uniform, unshaded keying colour with no gradient, no texture, no glow and no shadow inside it, so it can be cut to
 transparency. Measured as percentages of that card's own width (W) and height (H), from the card's top-left corner:
   1. THE PICTURE WINDOW: a rounded rectangle starting 11.5% of W from the left and 10% of H from the top, 77% of W
@@ -55,9 +55,14 @@ transparency. Measured as percentages of that card's own width (W) and height (H
      wide and 10% of H tall. It sits proud of the surface like an inlaid nameplate, with a lit top edge.
   3. THE RULES PANEL: a rounded rectangle starting 10% of W from the left and 69.5% of H from the top, 80% of W wide
      and 20.5% of H tall. A sunken, slightly recessed tablet in the lower half.
-  4. THE COST SOCKET: a perfect circle whose centre is 16.5% of W from the left and 10.8% of H from the top, with a
-     diameter of 29.6% of W. It overlaps the top-left corner of the frame, set into the metal like an empty jewel
-     mount with a raised rim around it.
+There is NO fourth opening. Do not cut a socket, a disc, a jewel mount or a hole of any kind into either top
+corner — the game paints an opaque cost gem over that corner itself and would hide it completely.
+
+SYMMETRY — as important as the measurements:
+The frame must be exactly symmetric left to right: its left half is the mirror image of its right half. Both top
+corners are plain and identical, carrying the same ornament as each other, with no socket, mount, badge or
+emblem in either one, and nothing that a disc covering 29.6% of the card's width would half-cover. The three
+openings are all centred on the card's vertical centreline.
 The background of the whole sheet — everything outside the nine cards — is also flat pure magenta #FF00FF.
 Do not draw a transparency checkerboard. Do not draw a grey and white chequered pattern of little squares in any
 opening or anywhere on the sheet. The openings are not transparent and are not a checker pattern: they are painted
@@ -70,11 +75,12 @@ alphabet, no runic script, no engraved characters, no inscription along the bord
 the title plate — the title plate is a completely smooth, unmarked, flat magenta bar.
 
 STYLE: painterly digital illustration, the feel of a premium hand-painted deck-builder. Dramatic rim light from the
-top-left, deep shadow falling to the bottom-right, so the metal reads as sculpted and three-dimensional. Faint
+top-left (the whole game is lit from the top-left; the frame is never mirrored, so this direction holds in every
+language), deep shadow falling to the bottom-right, so the metal reads as sculpted and three-dimensional. Faint
 bioluminescent flecks caught along the bevels. Rich, low-key, cinematic; crisp readable silhouettes; uncluttered.
 
 ABSOLUTELY NOT: no text, no letters, no numbers, no words, no runes, no icons, no symbols, no swords, no shields, no
-illustration or character or landscape of any kind, nothing at all inside any of the four magenta openings. No drop
+illustration or character or landscape of any kind, nothing at all inside any of the three magenta openings. No drop
 shadows on the magenta. No watermark, no signature, no border around the sheet, no caption, no label, no grid lines
 drawn on the image. Only the nine empty frames on magenta.
 ```

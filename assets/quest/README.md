@@ -16,8 +16,10 @@ draws to with `python3 tools/quest_frames.py art/quest_frames_raw.png --check`, 
 `python3 tools/quest_frames.py art/quest_frames_raw.png`. Run `--check` first: a frame whose window is a few
 percent off crops every illustration, and nothing shows that until the art is in the game.
 
-In Hebrew the cost gem moves to the other corner, so `qCard()` mirrors the frame image. The art is always drawn
-with its cost socket in the **top-left**; the code flips it when it has to. The window, title plate and rules
-panel are centred, so nothing else moves.
+The frame carries **no cost socket** and is symmetric left to right. In Hebrew `qLay()` moves the cost gem to the
+other corner, but `qPaintGem()` paints an opaque gem of exactly the gem radius, so a socket cut in the art would be
+invisible anyway — measured, cutting one changes 2.06% of the pixels in that corner, which is only the
+semi-transparent shadow ring at 1.04r. Keeping the frame symmetric means it never has to be mirrored per language,
+which is what would otherwise flip its rim light away from the game's top-left convention.
 
 Still to come: `icons/` (the status and resource icons), `enemies/`, `lands/`.
