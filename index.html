@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.62';
+const APP_VERSION = '1.12.63';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21749,7 +21749,7 @@ var TK2_GAME;
   }
 
   function reset(now) {
-    tlayout(); si = 0; stage = 3; events = 0; M = 0.52; Mt = 1; collected = 0; needForNext = 9; lush = 0; starTimer = 0; // open with a lush tree that finishes unfurling in a few seconds, not an empty seedling
+    tlayout(); si = 0; stage = 0; events = 0; M = 0.24; Mt = 1; collected = 0; needForNext = 9; lush = 0; starTimer = 0; // open as a small glowing sapling and bloom very slowly to full
     fruits = []; harvest = []; moths = []; blossoms = []; touches = []; ripples = []; sparks = []; blooms = []; plants = [];
     tStart = now - (STAGE_MS - 3400); idle = now; last = now; wateredHinted = false;
     raindrops = []; rainGlow = 0; petals = []; puddles = []; critter = null; critterAt = now; hasRained = false; hasPicked = false; hasShaken = false; guideAt = now; // the guide teaches rain, picking, then shaking, in turn
@@ -21764,7 +21764,7 @@ var TK2_GAME;
     var paused = (typeof pause !== 'undefined' && pause.on) || (typeof menu !== 'undefined' && menu.open);
     var dt = paused ? 0 : Math.min(50, now - (last || now)); last = now;
     var tp = Math.min(1, (now - tStart) / STAGE_MS); if (!paused && now - tStart >= STAGE_MS) event();
-    M += Math.min((Mt - M) * dt * 0.0012, dt * 0.00014); // a steady, unhurried unfurl (rate-capped so it doesn't rush at the start), with a soft finish
+    M += Math.min((Mt - M) * dt * 0.0003, dt * 0.000016); // a very slow bloom: a small sapling opens to a full tree over ~50 s, with a soft finish
     if (!paused) { starTimer += dt; if (starTimer > 2300) { starTimer -= 2300; litStars(1); } } // more stars keep coming out with time
     rainGlow = Math.max(0, rainGlow - dt * 0.0006); // the tree's rain-glow fades after you stop
     if (!paused) critterTick(now, dt);
