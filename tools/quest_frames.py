@@ -209,6 +209,14 @@ def main():
             box = card_box(im)                  # the card's own bounds, the magenta margin dropped
             if box:
                 im = im.crop(box)
+            ar = im.size[1] / im.size[0]
+            if abs(ar / RATIO - 1) > 0.03:      # resizing keeps every opening at its own percentage of the
+                off = (ar / RATIO - 1) * 100    # card, so the layout still lines up -- but the art is stretched
+                print('  ! %-12s is h/w %.3f, %+.1f%% off 1:%.2f: the frame will be squeezed to fit.'
+                      % (t + (rar or ''), ar, off, RATIO))
+                print('    Regenerate the sheet at 1:%.2f. Do not crop to fit -- cropping is what would move'
+                      % RATIO)
+                print('    the openings off the rectangles qLay() draws to.')
             im = im.resize((size, round(size * RATIO)), Image.LANCZOS)
             path = os.path.join(OUT, 'frame_%s%s.webp' % (t, rar))
             im.save(path, 'WEBP', quality=88, method=6)
