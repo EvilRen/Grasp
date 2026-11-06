@@ -10,13 +10,18 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-06l';
+const VERSION = 'grasp-2026-11-07a';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
   '/icons/shortcut-strike.png', '/icons/shortcut-smash.png', '/icons/shortcut-shapes.png', '/icons/shortcut-camera.png',
   '/assets/guests/cow_in.png', '/assets/guests/cow_happy.png', '/assets/guests/cow_dizzy.png', '/assets/guests/cow_squash.png',
-  '/assets/pet/Flying_Dragon.glb', '/assets/pet/Flying_Dragon_Evolved.glb'];
+  '/assets/pet/Flying_Dragon.glb', '/assets/pet/Flying_Dragon_Evolved.glb',
+  // Quest's card frames (assets/quest/): one per card type, with the uncommon and rare variants. A frame that has not been drawn yet is
+  // simply skipped at install (below) and painted in code instead, so listing one early can never break the install.
+  '/assets/quest/frame_attack.webp', '/assets/quest/frame_attack_u.webp', '/assets/quest/frame_attack_r.webp',
+  '/assets/quest/frame_skill.webp', '/assets/quest/frame_skill_u.webp', '/assets/quest/frame_skill_r.webp',
+  '/assets/quest/frame_power.webp', '/assets/quest/frame_power_u.webp', '/assets/quest/frame_power_r.webp'];
 const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|sky|tama|tree|popit|spot|mix|quest|tachles|powder)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;
@@ -25,7 +30,8 @@ let lastUpdate = 0; // when a new index.html was last cached (a page loaded befo
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    await c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })));
+    // one by one, not addAll: a shell file that is not in this build yet (art being added) must not fail the whole install
+    await Promise.all(SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
     if (!self.registration.active) await self.skipWaiting(); // the very first install takes over at once (nothing older to replace)
   })());
 });
