@@ -24,6 +24,12 @@ moves when they land. Replacing one later is a drop-in: same filename, no code c
 A single flat sheet of nine EMPTY fantasy trading-card frames, laid out as a strict 3-column × 3-row grid, for a
 painterly fairytale-sci-fi deck-building game.
 
+THE SHAPE OF THE IMAGE — read this first, it decides everything else:
+The finished image must be PORTRAIT, clearly taller than it is wide: about 1448 pixels wide by 2048 pixels tall, a
+1 : 1.42 width-to-height ratio. Do NOT output a square image. The sheet is three cards wide and three cards tall, and
+each card is itself 1 : 1.42, so the whole sheet carries exactly the same 1 : 1.42 shape as one card. A square sheet
+gives square cells and squat cards, which is wrong.
+
 GRID — this is a technical sheet, so the geometry must be exact:
 The image is divided into nine identical rectangular cells by two perfectly straight vertical lines at exactly 1/3 and
 2/3 of the width and two perfectly horizontal lines at exactly 1/3 and 2/3 of the height. Every cell holds exactly one
@@ -45,16 +51,22 @@ Row 3 (bottom): RARE. The same frame in polished gold-touched metal, with engrav
 all four corners, a glowing inlay line, and three small faceted gems set into the bottom edge of the border, evenly
 spaced on the centreline.
 
-THE OPENINGS — these are holes, and this is the most important part:
-Each frame has three empty areas, and every one of them must be filled with FLAT PURE MAGENTA #FF00FF — a solid,
-uniform, unshaded keying colour with no gradient, no texture, no glow and no shadow inside it, so it can be cut to
-transparency. Measured as percentages of that card's own width (W) and height (H), from the card's top-left corner:
+THE ONE HOLE — the most important part:
+Exactly ONE area of each frame is cut away, and it must be filled with FLAT PURE MAGENTA #FF00FF — a solid, uniform,
+unshaded keying colour with no gradient, no texture, no glow and no shadow inside it, so it can be cut to transparency:
   1. THE PICTURE WINDOW: a rounded rectangle starting 11.5% of W from the left and 10% of H from the top, 77% of W
-     wide and 39.5% of H tall. The frame's metal surrounds it as a recessed, bevelled opening with a crisp inner lip.
+     wide and 39.5% of H tall (W and H are that card's own width and height, measured from its top-left corner). The
+     frame's metal surrounds it as a recessed, bevelled opening with a crisp inner lip.
+
+THE TWO PLATES — these are NOT holes. Paint them as real metal, do not cut them out and do not make them magenta:
   2. THE TITLE PLATE: a rounded horizontal bar starting 9.5% of W from the left and 53.5% of H from the top, 81% of W
-     wide and 10% of H tall. It sits proud of the surface like an inlaid nameplate, with a lit top edge.
+     wide and 10% of H tall. An inlaid nameplate sitting proud of the surface, with a lit top edge — smooth, blank,
+     polished metal, completely unmarked.
   3. THE RULES PANEL: a rounded rectangle starting 10% of W from the left and 69.5% of H from the top, 80% of W wide
-     and 20.5% of H tall. A sunken, slightly recessed tablet in the lower half.
+     and 20.5% of H tall. A sunken, slightly recessed tablet of smooth dark stone or darkened metal in the lower half,
+     blank and unmarked, with a gentle inner shadow along its top edge.
+Both plates must be completely smooth and empty: the game prints the card's name on the plate and its rules on the
+panel, in English or in Hebrew, so anything drawn there would sit underneath live text.
 There is NO fourth opening. Do not cut a socket, a disc, a jewel mount or a hole of any kind into either top
 corner — the game paints an opaque cost gem over that corner itself and would hide it completely.
 
@@ -64,9 +76,9 @@ corners are plain and identical, carrying the same ornament as each other, with 
 emblem in either one, and nothing that a disc covering 29.6% of the card's width would half-cover. The three
 openings are all centred on the card's vertical centreline.
 The background of the whole sheet — everything outside the nine cards — is also flat pure magenta #FF00FF.
-Do not draw a transparency checkerboard. Do not draw a grey and white chequered pattern of little squares in any
-opening or anywhere on the sheet. The openings are not transparent and are not a checker pattern: they are painted
-a solid flat magenta, the same magenta everywhere, as if filled with one pot of paint.
+Do not draw a transparency checkerboard. Do not draw a grey and white chequered pattern of little squares in the
+picture window or anywhere on the sheet. The window is not transparent and is not a checker pattern: it is painted
+a solid flat magenta, the same magenta as the background, as if filled with one pot of paint.
 
 ORNAMENT — what the metal carries instead of writing:
 The frame's raised decoration is purely ornamental geometry: scrollwork, interlocking knotwork, spirals, bevels,
@@ -80,9 +92,10 @@ language), deep shadow falling to the bottom-right, so the metal reads as sculpt
 bioluminescent flecks caught along the bevels. Rich, low-key, cinematic; crisp readable silhouettes; uncluttered.
 
 ABSOLUTELY NOT: no text, no letters, no numbers, no words, no runes, no icons, no symbols, no swords, no shields, no
-illustration or character or landscape of any kind, nothing at all inside any of the three magenta openings. No drop
-shadows on the magenta. No watermark, no signature, no border around the sheet, no caption, no label, no grid lines
-drawn on the image. Only the nine empty frames on magenta.
+illustration or character or landscape of any kind, nothing at all inside the magenta picture window and nothing on
+either plate. No drop shadows on the magenta. No watermark, no signature, no border around the sheet, no caption, no
+label, no grid lines drawn on the image. Only the nine empty frames on magenta. And the image is PORTRAIT, about
+1448 x 2048 — taller than it is wide, never square.
 ```
 
 ---

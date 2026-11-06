@@ -27,8 +27,14 @@ RATIO = 1.42                                  # the card's height / width, the s
 
 # The openings, as fractions of the card box, straight out of qLay(w) in index.html.
 # x, y, w, h — the cost socket as the square that bounds its circle.
+# Only ONE of the three is a hole. qCard draws the picture, then the frame over it, then the title and
+# the rules text on top of the frame — so the picture window must be cut out, while the title plate and the
+# rules panel must be painted metal the text can sit on. A plate cut to magenta would show the card's own
+# shadow through it behind the words.
 SPEC = {
     'picture window': (0.115, 0.100, 0.770, 0.395),   # art: -.385w, -.400h, .770w, .395h
+}
+PLATES = {
     'title plate':    (0.095, 0.535, 0.810, 0.100),   # nameY .085h is the plate's centre, nameH .100h
     'rules panel':    (0.100, 0.695, 0.800, 0.205),   # txtY .295h is the centre of a .205h panel
 }
@@ -118,8 +124,10 @@ def probe(im):
     yy, xx = np.mgrid[0:H, 0:W]
     fx, fy = xx / W, yy / H
 
+    ALL = {**SPEC, **PLATES}   # the three rectangles qLay draws to; only the window is a hole
+
     def region(name, grow=0.0):
-        x, y, w, h = SPEC[name]
+        x, y, w, h = ALL[name]
         if name == 'cost socket':                       # a disc, not a rectangle
             cx, cy, r = x + w / 2, y + h / 2, w / 2 + grow
             return ((fx - cx) ** 2 + ((fy - cy) * (w / h)) ** 2) <= r ** 2
@@ -127,10 +135,10 @@ def probe(im):
 
     RING = 0.022
     out = {}
-    for name in SPEC:
+    for name in ALL:
         inside = region(name)
         others = np.zeros_like(inside)
-        for o in SPEC:
+        for o in ALL:
             if o != name:
                 others |= region(o, RING)
         ring = region(name, RING) & ~region(name) & ~others
@@ -181,14 +189,17 @@ def check(sheet, tol=TOL):
             if got is None:
                 print('       (install numpy to measure the openings)')
                 continue
-            for label in list(SPEC) + ['cost gem corners', 'left-right symmetry']:
+            for label in list(SPEC) + list(PLATES) + ['cost gem corners', 'left-right symmetry']:
                 open_pct, solid_pct = got[label]
                 if label == 'cost gem corners':
-                    mark = '' if solid_pct > 0.97 else '  <-- cut a socket here; the painted gem hides it anyway'
+                    # Never "cut a socket": the frame carries none. This only warns if the corner is SO open
+                    # that the gem would hang over nothing. Some openness is by design — qLay overlaps the gem
+                    # onto the picture window's corner, so part of its disc always lands on the hole.
+                    mark = '' if solid_pct > 0.55 else '  <-- the top corners are too open: the gem would float'
                     if mark:
                         bad += 1
-                    print('       %-18s %5.1f%% solid where the gem lands (both corners)%s'
-                          % (label, solid_pct * 100, mark))
+                    print('       %-18s %5.1f%% solid where the gem lands (both corners; ~65-75%% is normal,'
+                          ' the rest overlaps the window by design)%s' % (label, solid_pct * 100, mark))
                     continue
                 if label == 'left-right symmetry':
                     mark = '' if open_pct > 0.97 else '  <-- asymmetric: it would have to be mirrored per language'
@@ -197,15 +208,21 @@ def check(sheet, tol=TOL):
                     print('       %-18s %5.1f%% of the card matches its own mirror%s'
                           % (label, open_pct * 100, mark))
                     continue
+                if label in PLATES: # painted, not cut: the words go on top of it, so it must be metal
+                    mark = '' if open_pct < 0.04 else '  <-- cut to magenta: the words would sit on a hole'
+                    if mark:
+                        bad += 1
+                    print('       %-18s %5.1f%% solid where the words go%s' % (label, (1 - open_pct) * 100, mark))
+                    continue
                 mark = ''
                 if open_pct < 0.96:
-                    mark = '  <-- the opening is short, shifted or filled in'
-                elif solid_pct < 0.85:
-                    mark = '  <-- the opening spills past where the code draws'
+                    mark = '  <-- the opening is short, shifted or filled in'   # metal over the picture: fatal
                 if mark:
                     bad += 1
-                print('       %-18s %5.1f%% open inside   %5.1f%% solid around%s'
-                      % (label, open_pct * 100, solid_pct * 100, mark))
+                note = '' if solid_pct >= 0.85 else '  (note: the hole is wider than the code draws to;'
+                note += '' if solid_pct >= 0.85 else ' harmless, qPaintArt overfills it)'
+                print('       %-18s %5.1f%% open inside   %5.1f%% solid around%s%s'
+                      % (label, open_pct * 100, solid_pct * 100, mark, note))
     print()
     if bad:
         print('%d problem(s). Regenerate rather than patch: the layout in the code is fixed,' % bad)

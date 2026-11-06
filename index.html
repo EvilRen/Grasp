@@ -22988,7 +22988,9 @@ function qPaintFrame(g, c, L) { // the frame in code: the look the art replaces,
     for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.save(); g.scale(sx, sy); g.beginPath(); g.arc(-w / 2 + R * 1.15, -h / 2 + R * 1.15, R * 0.62, Math.PI * 0.95, Math.PI * 1.55); g.stroke(); g.restore(); } }
 }
 function qPaintArt(g, c, L) { // the picture window: the card's own illustration when there is one, else a lit scene behind its symbol
-  const A = L.art, w = L.w, K = Q_KEY[c.t] || Q_KEY.s, cx = A.x + A.w / 2, cy = A.y + A.h / 2;
+  const w = L.w, K = Q_KEY[c.t] || Q_KEY.s, o = w * 0.045, A0 = L.art; // overfilled past the window: an art frame whose
+  const A = { x: A0.x - o, y: A0.y - o, w: A0.w + o * 2, h: A0.h + o * 2 };  // hole is cut a little wider than qLay draws
+  const cx = A.x + A.w / 2, cy = A.y + A.h / 2;                             // would otherwise show a gap around the picture
   g.save(); g.beginPath(); g.roundRect(A.x, A.y, A.w, A.h, w * 0.055); g.clip();
   const pic = qImg('/assets/quest/art/' + c.id.replace('+', '') + '.webp');
   if (pic) { const s = Math.max(A.w / pic.naturalWidth, A.h / pic.naturalHeight), pw = pic.naturalWidth * s, ph = pic.naturalHeight * s; g.drawImage(pic, cx - pw / 2, cy - ph / 2, pw, ph); }
