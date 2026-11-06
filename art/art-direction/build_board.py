@@ -19,9 +19,17 @@ GOLD = (201, 162, 39)
 TEAL = (47, 214, 195)
 
 
+EXTS = (".webp", ".png", ".jpg", ".jpeg")
+
+
 def load(name):
-    p = PANELS / name
-    return Image.open(p).convert("RGB") if p.exists() else None
+    """Accept whatever the generator handed back -- webp, png or jpg."""
+    stem = Path(name).stem
+    for ext in EXTS:
+        p = PANELS / (stem + ext)
+        if p.exists():
+            return Image.open(p).convert("RGB")
+    return None
 
 
 def trim(img, tol=18, pad=2):
