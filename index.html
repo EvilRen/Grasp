@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.69';
+const APP_VERSION = '1.12.70';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22796,10 +22796,20 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   if (o.text) { const sp = textSprite(o.text, o.fs || 18, o.fg || '#2a1f3d', null, 800); blit(sp, x + w / 2 + (o.tx || 0), y + h / 2 + (o.ty || 0), 0, Math.min(1, (w - 12) / sp.tw), dis ? 0.6 : 1); } }
 function qEmoji(e, x, y, s, a = 1) { resetView(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); ctx.globalAlpha = 1; }
 function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null) { const sp = textSprite(s, size, col, glow, weight); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
-function qBg(land) { const L = land || QC.LANDS[0]; return makeSprite('qbg|' + L.id + '|' + W + 'x' + H, W, H, 0, 0, (g) => { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, L.sky[0]); gr.addColorStop(1, L.sky[1]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  const r = rng(L.id.length * 97 + W); if (L.id === 'space' || L.id === 'throne') { g.fillStyle = '#ffffff'; for (let i = 0; i < 90; i++) { g.globalAlpha = 0.3 + r() * 0.7; g.beginPath(); g.arc(r() * W, r() * H, 0.6 + r() * 1.6, 0, TAU); g.fill(); } g.globalAlpha = 1; }
-  else { g.fillStyle = 'rgba(255,255,255,0.06)'; for (let i = 0; i < 30; i++) { g.beginPath(); g.arc(r() * W, r() * H, 8 + r() * 30, 0, TAU); g.fill(); } }
-  g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(W / 2, H * 0.62, W * 0.7, H * 0.08, 0, 0, TAU); g.fill(); }); }
+function qBg(land) { // the land's painting (assets/quest/lands/<id>.webp) when it is there, its gradient while it is not
+  const L = land || QC.LANDS[0], im = qImg('/assets/quest/lands/' + L.id + '.webp');
+  return makeSprite('qbg|' + L.id + '|' + W + 'x' + H + '|' + (im ? 'art' : 'sky'), W, H, 0, 0, (g) => {
+    if (im) { const k = Math.max(W / im.naturalWidth, H / im.naturalHeight), pw = im.naturalWidth * k, ph = im.naturalHeight * k;
+      g.drawImage(im, (W - pw) / 2, (H - ph) / 2, pw, ph); } // cover, not stretched: a wide screen crops the sides instead of smearing the painting
+    else { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, L.sky[0]); gr.addColorStop(1, L.sky[1]); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      const r = rng(L.id.length * 97 + W); if (L.id === 'space' || L.id === 'throne') { g.fillStyle = '#ffffff'; for (let i = 0; i < 90; i++) { g.globalAlpha = 0.3 + r() * 0.7; g.beginPath(); g.arc(r() * W, r() * H, 0.6 + r() * 1.6, 0, TAU); g.fill(); } g.globalAlpha = 1; }
+      else { g.fillStyle = 'rgba(255,255,255,0.06)'; for (let i = 0; i < 30; i++) { g.beginPath(); g.arc(r() * W, r() * H, 8 + r() * 30, 0, TAU); g.fill(); } } }
+    const sh = g.createLinearGradient(0, H * 0.42, 0, H); // the lower half sinks, so the hand, the hero and the buttons read over it
+    sh.addColorStop(0, 'rgba(6,4,16,0)'); sh.addColorStop(0.55, 'rgba(6,4,16,0.42)'); sh.addColorStop(1, 'rgba(6,4,16,0.82)');
+    g.fillStyle = sh; g.fillRect(0, H * 0.42, W, H * 0.58);
+    const tp = g.createLinearGradient(0, 0, 0, H * 0.18); // and the top, under the health bar and the room line
+    tp.addColorStop(0, 'rgba(6,4,16,0.55)'); tp.addColorStop(1, 'rgba(6,4,16,0)'); g.fillStyle = tp; g.fillRect(0, 0, W, H * 0.18);
+    g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(W / 2, H * 0.62, W * 0.7, H * 0.08, 0, 0, TAU); g.fill(); }); }
 /* ---- the status and resource icons, drawn in code. They sit at 11-20px on a card, in an intent bubble and in the HUD, where a painted
    image muddies, so each is a path: crisp at any size and any DPR, and the same glyph everywhere the thing it names appears. Every icon
    is drawn with a dark contour first, so it reads on the pale intent bubble as well as on a dark card. The palette is the game's key:
@@ -22933,7 +22943,7 @@ const Q_ART = { im: new Map() };
 function qImg(path) { // null until the file is decoded (or for good, if it is not there): the painted frame stands in
   let e = Q_ART.im.get(path);
   if (!e) { e = { img: new Image(), ok: false }; Q_ART.im.set(path, e); e.img.decoding = 'async';
-    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|')) SPRITES.delete(k); }; // the cards draw again, now with the art
+    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|') || k.startsWith('qbg|')) SPRITES.delete(k); }; // the cards and the backdrop draw again, now with the art
     e.img.onerror = () => { e.bad = true; }; e.img.src = path; }
   return e.ok && e.img.naturalWidth ? e.img : null;
 }
@@ -22948,7 +22958,8 @@ function qUp(c) { return !!c.id && c.id.endsWith('+'); } // (c.up is the upgrade
 function qRar(c) { return c.r === 'r' ? 'r' : c.r === 'u' ? 'u' : ''; }
 function qFrameSrc(c) { return '/assets/quest/frame_' + (Q_TYPE[c.t] || 'skill') + (qRar(c) ? '_' + qRar(c) : '') + '.webp'; }
 const Q_FRAMES = ['attack', 'skill', 'power'].flatMap((t) => ['', '_u', '_r'].map((r) => '/assets/quest/frame_' + t + r + '.webp'));
-function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); qLoadLay(); } // once, when Quest opens: the nine frames and what they measure
+const Q_LANDS = ['forest', 'castle', 'space', 'throne'].map((i) => '/assets/quest/lands/' + i + '.webp');
+function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); for (const p of Q_LANDS) qImg(p); qLoadLay(); } // once, when Quest opens: the nine frames and what they measure
 /* assets/quest/frames.json: where each frame's window and plates really sit, measured from the art by tools/quest_frames.py.
    Three generated sheets put them in three different places, so the layout follows the art instead of the art following the
    layout. A frame missing from the file, or the file missing altogether, simply keeps the constants below. */
