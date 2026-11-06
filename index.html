@@ -2089,7 +2089,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.77';
+const APP_VERSION = '1.12.78';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22818,7 +22818,13 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   ctx.strokeStyle = mt; ctx.lineWidth = bw; ctx.beginPath(); ctx.roundRect(x + bw / 2, y + bw / 2, w - bw, h - bw, r); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + bw, y + bw, w - bw * 2, h - bw * 2, Math.max(1, r - bw)); ctx.stroke();
   ctx.restore();
-  if (o.text) { const sp = textSprite(o.text, o.fs || 18, o.fg || Q_INK, 'rgba(6,4,16,0.92)', 400, Q_DISP); blit(sp, x + w / 2 + (o.tx || 0), y + h / 2 + (o.ty || 0), 0, Math.min(1, (w - 12) / sp.tw), dis ? 0.6 : 1); } }
+  if (o.text) { const sp = textSprite(o.text, o.fs || 18, o.fg || Q_INK, 'rgba(6,4,16,0.92)', 400, Q_DISP);
+    const is = o.ic ? (o.fs || 18) * 1.2 : 0, gap = is * 0.35, k = Math.min(1, (w - 14 - is - gap) / sp.tw);
+    const cx = x + w / 2 + (o.tx || 0), cy = y + h / 2 + (o.ty || 0), af = dis ? 0.6 : 1;
+    if (!o.ic) { blit(sp, cx, cy, 0, k, af); return; }
+    const side = lang === 'he' ? 1 : -1, tw = sp.tw * k;
+    blit(sp, cx - side * (is + gap) / 2, cy, 0, k, af);
+    qIcon(o.ic, cx + side * (tw / 2 + gap / 2 + is / 2) - side * (is + gap) / 2 + side * (is + gap) / 2, cy, is, af); } }
 function qEmoji(e, x, y, s, a = 1) { resetView(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); ctx.globalAlpha = 1; }
 const Q_DISP = '"Suez One", Rubik, Georgia, serif'; // titles, names and buttons; the small explaining lines stay on Rubik
 function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null, fam) { const sp = textSprite(s, size, col, glow, weight, fam); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
@@ -22909,6 +22915,73 @@ const Q_IC = { // each draws itself centred on (0, 0), about s across
     qIkS(g, () => { g.beginPath(); g.moveTo(hx + 0.19 * s, hy - 0.04 * s); g.lineTo(hx - 0.09 * s, hy - 0.17 * s); g.lineTo(hx - 0.05 * s, hy + 0.15 * s); g.closePath(); }, s, '#ffd23f');
   },
   all: (g, s) => { for (let i = 0; i < 3; i++) { const x = (i - 1) * 0.31 * s; qIkS(g, () => { g.beginPath(); g.arc(x, 0, 0.13 * s, 0, TAU); }, s, '#ffd98a'); } }, // on every monster
+  gold: (g, s) => { // the coin
+    qIkS(g, () => { g.beginPath(); g.ellipse(0, 0, 0.44 * s, 0.46 * s, 0, 0, TAU); }, s, '#d2a33a');
+    g.fillStyle = '#ffe08a'; g.beginPath(); g.ellipse(-0.04 * s, -0.03 * s, 0.30 * s, 0.32 * s, 0, 0, TAU); g.fill();
+    g.fillStyle = '#a87c1c'; g.beginPath(); g.ellipse(0, 0, 0.17 * s, 0.19 * s, 0, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.ellipse(-0.17 * s, -0.20 * s, 0.10 * s, 0.06 * s, -0.6, 0, TAU); g.fill();
+  },
+  skull: (g, s) => { // a tough fight
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.34 * s, -0.02 * s); g.quadraticCurveTo(-0.34 * s, -0.46 * s, 0, -0.46 * s);
+      g.quadraticCurveTo(0.34 * s, -0.46 * s, 0.34 * s, -0.02 * s); g.lineTo(0.20 * s, 0.14 * s); g.lineTo(0.20 * s, 0.34 * s);
+      g.lineTo(-0.20 * s, 0.34 * s); g.lineTo(-0.20 * s, 0.14 * s); g.closePath(); }, s, '#e7eaf2');
+    g.fillStyle = '#2a2440'; for (const k of [-1, 1]) { g.beginPath(); g.ellipse(k * 0.15 * s, -0.12 * s, 0.10 * s, 0.12 * s, 0, 0, TAU); g.fill(); }
+    g.beginPath(); g.moveTo(0, 0.02 * s); g.lineTo(0.06 * s, 0.14 * s); g.lineTo(-0.06 * s, 0.14 * s); g.closePath(); g.fill();
+    g.strokeStyle = '#2a2440'; g.lineWidth = s * 0.05; g.beginPath(); g.moveTo(-0.07 * s, 0.20 * s); g.lineTo(-0.07 * s, 0.33 * s); g.moveTo(0.07 * s, 0.20 * s); g.lineTo(0.07 * s, 0.33 * s); g.stroke();
+  },
+  crown: (g, s) => { // the boss
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.42 * s, 0.26 * s); g.lineTo(-0.42 * s, -0.22 * s); g.lineTo(-0.19 * s, 0.00 * s);
+      g.lineTo(0, -0.36 * s); g.lineTo(0.19 * s, 0.00 * s); g.lineTo(0.42 * s, -0.22 * s); g.lineTo(0.42 * s, 0.26 * s); g.closePath(); }, s, '#ffd23f');
+    g.fillStyle = '#a87c1c'; g.fillRect(-0.42 * s, 0.14 * s, 0.84 * s, 0.07 * s);
+    g.fillStyle = '#ff6a78'; g.beginPath(); g.arc(0, -0.13 * s, 0.07 * s, 0, TAU); g.fill();
+    for (const k of [-1, 1]) { g.fillStyle = '#4fe5d2'; g.beginPath(); g.arc(k * 0.29 * s, -0.08 * s, 0.05 * s, 0, TAU); g.fill(); }
+  },
+  fire: (g, s) => { // the camp fire
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.46 * s, 0.40 * s); g.lineTo(0.46 * s, 0.22 * s); g.lineTo(0.40 * s, 0.40 * s); g.lineTo(-0.40 * s, 0.40 * s); g.closePath(); }, s, '#6d4c2a');
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, -0.48 * s); g.bezierCurveTo(0.30 * s, -0.14 * s, 0.34 * s, 0.10 * s, 0.17 * s, 0.26 * s);
+      g.bezierCurveTo(0.02 * s, 0.38 * s, -0.22 * s, 0.32 * s, -0.28 * s, 0.12 * s);
+      g.bezierCurveTo(-0.33 * s, -0.08 * s, -0.14 * s, -0.20 * s, 0, -0.48 * s); g.closePath(); }, s, '#ff6a3a');
+    g.fillStyle = '#ffd23f'; g.beginPath(); g.moveTo(0.01 * s, -0.18 * s); g.bezierCurveTo(0.17 * s, 0.02 * s, 0.15 * s, 0.17 * s, 0.03 * s, 0.24 * s);
+    g.bezierCurveTo(-0.09 * s, 0.26 * s, -0.15 * s, 0.14 * s, -0.11 * s, 0.03 * s); g.bezierCurveTo(-0.08 * s, -0.06 * s, -0.03 * s, -0.10 * s, 0.01 * s, -0.18 * s); g.closePath(); g.fill();
+  },
+  chest: (g, s) => { // the treasure
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.42 * s, -0.06 * s, 0.84 * s, 0.44 * s, 0.05 * s); }, s, '#8a5a2a');
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.44 * s, -0.04 * s); g.quadraticCurveTo(-0.44 * s, -0.40 * s, 0, -0.40 * s);
+      g.quadraticCurveTo(0.44 * s, -0.40 * s, 0.44 * s, -0.04 * s); g.closePath(); }, s, '#a8702f');
+    g.fillStyle = '#d2a33a'; g.fillRect(-0.44 * s, -0.09 * s, 0.88 * s, 0.09 * s);
+    g.fillStyle = '#ffd23f'; g.beginPath(); g.roundRect(-0.09 * s, -0.11 * s, 0.18 * s, 0.22 * s, 0.03 * s); g.fill();
+    g.fillStyle = '#5a3a14'; g.beginPath(); g.arc(0, 0, 0.045 * s, 0, TAU); g.fill();
+  },
+  shop: (g, s) => { // the coin pouch
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.14 * s, -0.26 * s); g.bezierCurveTo(-0.46 * s, -0.06 * s, -0.42 * s, 0.34 * s, 0, 0.44 * s);
+      g.bezierCurveTo(0.42 * s, 0.34 * s, 0.46 * s, -0.06 * s, 0.14 * s, -0.26 * s); g.closePath(); }, s, '#8a5a2a');
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.20 * s, -0.36 * s, 0.40 * s, 0.13 * s, 0.05 * s); }, s, '#d2a33a');
+    g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(0, 0.10 * s, 0.14 * s, 0, TAU); g.fill();
+    g.fillStyle = '#a87c1c'; g.beginPath(); g.arc(0, 0.10 * s, 0.06 * s, 0, TAU); g.fill();
+  },
+  lock: (g, s) => { // a hero not opened yet
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = 'rgba(0,0,0,0.78)'; g.lineWidth = s * 0.26; g.beginPath(); g.arc(0, -0.14 * s, 0.22 * s, Math.PI, 0); g.stroke();
+    g.strokeStyle = '#cdd8e6'; g.lineWidth = s * 0.13; g.beginPath(); g.arc(0, -0.14 * s, 0.22 * s, Math.PI, 0); g.stroke();
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.32 * s, -0.10 * s, 0.64 * s, 0.50 * s, 0.08 * s); }, s, '#d2a33a');
+    g.fillStyle = '#6d4c12'; g.beginPath(); g.arc(0, 0.12 * s, 0.07 * s, 0, TAU); g.fill();
+    g.fillRect(-0.03 * s, 0.12 * s, 0.06 * s, 0.14 * s);
+  },
+  trophy: (g, s) => { // a win
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.26 * s, -0.40 * s); g.lineTo(0.26 * s, -0.40 * s); g.lineTo(0.22 * s, -0.02 * s);
+      g.quadraticCurveTo(0.18 * s, 0.14 * s, 0, 0.16 * s); g.quadraticCurveTo(-0.18 * s, 0.14 * s, -0.22 * s, -0.02 * s); g.closePath(); }, s, '#ffd23f');
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    for (const k of [-1, 1]) { g.strokeStyle = 'rgba(0,0,0,0.78)'; g.lineWidth = s * 0.17;
+      g.beginPath(); g.arc(k * 0.30 * s, -0.26 * s, 0.13 * s, -1.6, 1.6, k < 0); g.stroke();
+      g.strokeStyle = '#d2a33a'; g.lineWidth = s * 0.08; g.beginPath(); g.arc(k * 0.30 * s, -0.26 * s, 0.13 * s, -1.6, 1.6, k < 0); g.stroke(); }
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.07 * s, 0.14 * s, 0.14 * s, 0.16 * s, 0.03 * s); }, s, '#d2a33a');
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.26 * s, 0.28 * s, 0.52 * s, 0.13 * s, 0.04 * s); }, s, '#d2a33a');
+  },
+  mystery: (g, s) => { // a surprise
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, -0.48 * s); g.lineTo(0.42 * s, 0); g.lineTo(0, 0.48 * s); g.lineTo(-0.42 * s, 0); g.closePath(); }, s, '#4fe5d2');
+    g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '400 ' + Math.round(s * 0.62) + 'px ' + Q_DISP;
+    g.fillStyle = '#06282e'; g.fillText('?', 0, s * 0.03); g.restore();
+  },
   call: (g, s) => { // it calls another monster in
     qIkS(g, () => { g.beginPath(); g.moveTo(-0.44 * s, -0.24 * s); g.lineTo(0, -0.44 * s); g.lineTo(0, 0.44 * s); g.lineTo(-0.44 * s, 0.24 * s); g.closePath(); }, s, '#ffd23f');
     for (const col of ['rgba(0,0,0,0.7)', '#ffd23f']) { g.strokeStyle = col; g.lineWidth = s * (col === '#ffd23f' ? 0.08 : 0.17);
@@ -23125,11 +23198,11 @@ function qStatus(st, x, y, s) { let k = 0;
 function qTop(now) { // health, gold, the room, the treasures
   const r = quest.run; if (!r) return 0; const rtl = lang === 'he', L = QC.landOf(r) || QC.LANDS[0];
   const y = cgTopY() - 6, bw = Math.min(150, W * 0.36), x0 = rtl ? W - 16 - bw : 16;
-  qEmoji('❤️', rtl ? x0 + bw + 2 : x0 - 2, y + 9, 18); qBar(x0 + (rtl ? -12 : 12), y, bw, 18, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
-  const gx = rtl ? x0 - 70 : x0 + bw + 30; qEmoji('💰', gx, y + 9, 18); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
+  qIcon('heal', rtl ? x0 + bw + 4 : x0 - 4, y + 9, 19); qBar(x0 + (rtl ? -12 : 12), y, bw, 18, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
+  const gx = rtl ? x0 - 70 : x0 + bw + 30; qIcon('gold', gx, y + 9, 20); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
   const ly = y + 30; qText(L.e + ' ' + (rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
   r.relics.forEach((id, i) => { const R0 = QC.RELICS[id], xx = rtl ? W - 24 - i * 26 : 24 + i * 26; qEmoji(R0.e, xx, ly + 34, 19); quest.btns.push({ x: xx - 13, y: ly + 21, w: 26, h: 26, act: () => { quest.msg = { t: performance.now(), text: (lang === 'he' ? R0.he : R0.en) + ': ' + R0.d[lang === 'he' ? 'he' : 'en'] }; } }); });
-  qBtn(rtl ? 16 : W - 96, ly + 22, 80, 30, () => { quest.deckFor = { k: 'view' }; sfx('click'); }, { text: '🃏 ' + qtx('deck') + ' ' + r.deck.length, fs: 13, r: 15 });
+  qBtn(rtl ? 16 : W - 96, ly + 22, 80, 30, () => { quest.deckFor = { k: 'view' }; sfx('click'); }, { text: qtx('deck') + ' ' + r.deck.length, ic: 'draw', fs: 13, r: 15 });
   return ly + 58;
 }
 function renderQuest(now) {
@@ -23153,29 +23226,30 @@ function qDrawPick(now) {
   const ids = ['knight', 'wizard', 'robot'], cw = Math.min(124, (W - 40) / 3), ch = cw * 1.3;
   ids.forEach((id, i) => { const H0 = QC.HEROES[id], x = W / 2 + ((rtl ? 2 - i : i) - 1) * (cw + 8) - cw / 2, lock = !P.heroes.includes(id), on = quest.pickHero === id;
     qBtn(x, y, cw, ch, () => { if (lock) { quest.msg = { t: performance.now(), text: qtx('locked') }; sfx('boop'); return; } quest.pickHero = id; sfx('tink'); }, { on, dis: lock, r: 18 });
-    if (lock) qEmoji('🔒', x + cw / 2, y + ch * 0.32, cw * 0.4); else qHeroDraw(id, H0, x + cw / 2, y + ch * 0.32, cw * 0.42);
-    qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP); qText(qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qText('❤️ ' + H0.hp, x + cw / 2, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
+    if (lock) qIcon('lock', x + cw / 2, y + ch * 0.32, cw * 0.4); else qHeroDraw(id, H0, x + cw / 2, y + ch * 0.32, cw * 0.42);
+    qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP); qText(qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qIcon('heal', x + cw / 2 - 16, y + ch * 0.91, 15); qText(String(H0.hp), x + cw / 2 + 8, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
   y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
   ['short', 'normal', 'epic'].forEach((k, i) => { const bw = Math.min(124, (W - 40) / 3), x = W / 2 + ((rtl ? 2 - i : i) - 1) * (bw + 8) - bw / 2, on = quest.pickLen === k;
     qBtn(x, y, bw, 64, () => { quest.pickLen = k; sfx('tink'); }, { on, r: 16 }); qText(qtx(k), x + bw / 2, y + 22, 18, Q_INK, bw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP); qText(qtx(k + 'D'), x + bw / 2, y + 46, 12, '#b9aed6', bw - 8, 700, 'rgba(6,4,16,0.9)');
-    if (P.wins[k]) qEmoji('🏆', x + bw - 10, y + 6, 16); });
+    if (P.wins[k]) qIcon('trophy', x + bw - 12, y + 10, 18); });
   y += 90; const gw = Math.min(260, W - 60);
   qBtn(W / 2 - gw / 2, y, gw, 62, () => qNewRun(quest.pickHero, quest.pickLen), { text: qtx('go'), fs: 26, bg: '#3ddc84', r: 31 });
   qBtn(W / 2 - 90, y + 80, 180, 40, () => { quest.howto = { p: 0 }; sfx('click'); }, { text: qtx('how'), fs: 15, r: 20 });
 }
-const Q_DOOR = { fight: '⚔️', elite: '💀', boss: '👑', rest: '🔥', shop: '🛒', chest: '🎁', event: '❓' };
+const Q_DOOR = { fight: 'dmg', elite: 'skull', boss: 'crown', rest: 'fire', shop: 'shop', chest: 'chest', event: 'mystery' }; // drawn, not typed
+const Q_DOORC = { fight: '#4fe5d2', elite: '#b388ff', boss: '#ff5a6e', rest: '#ff9a5a', shop: '#ffd23f', chest: '#ffd23f', event: '#4fe5d2' }; // each door's own light
 function qDrawDoors(now, y0) {
   const r = quest.run, d = r.doors || [], rtl = lang === 'he', n = d.length, dw = Math.min(150, (W - 32 - (n - 1) * 12) / n), dh = dw * 1.5, y = Math.max(y0 + 50, H * 0.36);
   qText(qtx('choose'), W / 2, y - 26, 20, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   d.forEach((k, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (dw + 12) - dw / 2, bob = Math.sin(now / 400 + i) * 3;
-    qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: k === 'boss' ? '#ffb3b3' : k === 'elite' ? '#e7c6ff' : '#fff6d6' });
+    qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: Q_DOORC[k] || '#4fe5d2' });
     resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
-    qEmoji(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.42); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP);
+    qIcon(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.46); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP);
     qText(qtx('doorD_' + k), x + dw / 2, y + dh + 22, 14, '#fff6d6', dw + 6, 800, 'rgba(0,0,0,0.6)'); });
   // the rooms of this land: a dot each
   const rooms = QC.roomsOf(r), sp = Math.min(30, (W - 60) / rooms), x0 = W / 2 - sp * (rooms - 1) / 2, yy = y + dh + 74;
   qText(qtx('toBoss'), W / 2, yy + 26, 12, '#ffffff', 0, 700, 'rgba(0,0,0,0.5)');
-  for (let i = 0; i < rooms; i++) { const x = x0 + (rtl ? rooms - 1 - i : i) * sp; resetView(); ctx.beginPath(); ctx.arc(x, yy, i === r.room ? 9 : 6, 0, TAU); ctx.fillStyle = i < r.room ? '#3ddc84' : i === r.room ? '#ffd23f' : 'rgba(255,255,255,0.35)'; ctx.fill(); if (i === rooms - 1) qEmoji('👑', x, yy - 18, 14); }
+  for (let i = 0; i < rooms; i++) { const x = x0 + (rtl ? rooms - 1 - i : i) * sp; resetView(); ctx.beginPath(); ctx.arc(x, yy, i === r.room ? 9 : 6, 0, TAU); ctx.fillStyle = i < r.room ? '#3ddc84' : i === r.room ? '#ffd23f' : 'rgba(255,255,255,0.35)'; ctx.fill(); if (i === rooms - 1) qIcon('crown', x, yy - 18, 16); }
 }
 function qMonPos(f, y0) { // the monsters' places: in a row (the live ones), smoothly sliding
   const live = f.mons.filter((m) => m.hp > 0 || (m.downAt && performance.now() - m.downAt < 700)), n = live.length, rtl = lang === 'he', s = Math.min(100, (W - 24) / Math.max(1, n) * 0.62), y = y0 + 90 + s * 0.4;
@@ -23275,17 +23349,18 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
 function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(118, (W - 30) / n - 10); ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
   quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qText('💰' + p, x, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
 function qDrawReward(now, y0) {
-  const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qText('+' + p.gold + ' 💰', W / 2, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
+  const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qIcon('gold', W / 2 - 28, y + 36, 21); qText('+' + p.gold, W / 2 + 10, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
   let yy = y + 64; if (p.relic) { const R0 = QC.RELICS[p.relic]; qEmoji(R0.e, W / 2, yy + 20, 40); qText(qtx('relic') + ' ' + (lang === 'he' ? R0.he : R0.en), W / 2, yy + 54, 15, '#ffffff', W - 30, 800, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, yy + 74, 13, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); yy += 96; }
   if (p.cards && !p.took) { qText(qtx('prize'), W / 2, yy + 8, 18, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); const h = qPickCards(p.cards, yy + 30 + 85, (id) => { quest.run.deck.push(id); p.took = id; sfx('chime'); quest.log.push('took:' + id); qNext(); }); yy += h + 50; }
   const bw = 160; qBtn(W / 2 - bw / 2, Math.min(H - 80, yy + 20), bw, 50, () => { quest.log.push('skip'); qNext(); }, { text: p.cards && !p.took ? qtx('skip') : qtx('next'), fs: 18, r: 25 });
 }
 function qDrawRest(now, y0) {
-  const r = quest.run, y = y0 + 60, n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qEmoji('🔥', W / 2, y + 30, 70 + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + 90, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
-  const bw = Math.min(300, W - 40); qBtn(W / 2 - bw / 2, y + 130, bw, 56, () => { QC.rest(r, 'heal'); sfx('chime'); quest.log.push('rest:heal'); qNext(); }, { text: '❤️ ' + qtx('heal', { n }), fs: 18, r: 28, bg: '#ffc2cc' });
-  qBtn(W / 2 - bw / 2, y + 200, bw, 56, () => { quest.deckFor = { k: 'up', done: (id) => { QC.rest(r, 'up', id); sfx('levelup'); quest.log.push('rest:up:' + id); qNext(); } }; }, { text: '⬆️ ' + qtx('up'), fs: 18, r: 28, bg: '#c2f0d0', dis: !r.deck.some(QC.upgradable) });
+  const r = quest.run, y = y0 + 60, n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qIcon('fire', W / 2, y + 30, 72 + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + 90, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const bw = Math.min(300, W - 40); qBtn(W / 2 - bw / 2, y + 130, bw, 56, () => { QC.rest(r, 'heal'); sfx('chime'); quest.log.push('rest:heal'); qNext(); }, { text: qtx('heal', { n }), ic: 'heal', fs: 18, r: 28, bg: '#ff5a6e' });
+  qBtn(W / 2 - bw / 2, y + 200, bw, 56, () => { quest.deckFor = { k: 'up', done: (id) => { QC.rest(r, 'up', id); sfx('levelup'); quest.log.push('rest:up:' + id); qNext(); } }; }, { text: qtx('up'), ic: 'str', fs: 18, r: 28, bg: '#ffd23f', dis: !r.deck.some(QC.upgradable) });
 }
-function qDrawChest(now, y0) { const d = quest.data || {}, y = y0 + 70; qEmoji('🎁', W / 2, y + 30, 80); qText('+' + d.gold + ' 💰', W / 2, y + 100, 22, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
+function qDrawChest(now, y0) { const d = quest.data || {}, y = y0 + 70; qIcon('chest', W / 2, y + 30, 84);
+  qIcon('gold', W / 2 - 26, y + 100, 22); qText('+' + d.gold, W / 2 + 14, y + 100, 22, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
   if (d.relic) { const R0 = QC.RELICS[d.relic]; qEmoji(R0.e, W / 2, y + 150, 46); qText(lang === 'he' ? R0.he : R0.en, W / 2, y + 190, 18, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, y + 214, 14, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); }
   qBtn(W / 2 - 80, y + 250, 160, 50, () => qNext(), { text: qtx('next'), fs: 18, r: 25 }); }
 function qDrawEvent(now, y0) {
@@ -23297,7 +23372,7 @@ function qDrawEvent(now, y0) {
     qBtn(W / 2 - bw / 2, y + 140 + k * 72, bw, 60, () => { if (!ok) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } const res = QC.doEvent(quest.run, ev.id, k); d.res = res || {}; sfx('chime'); quest.log.push('event:' + ev.id + ':' + k); qGo('event', d); }, { text: he ? o.he : o.en, fs: 16, r: 22, dis: !ok }); });
 }
 function qDrawShop(now, y0) {
-  const d = quest.data, r = quest.run, y = y0 + 20; qText('🛒 ' + qtx('shop'), W / 2, y + 10, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const d = quest.data, r = quest.run, y = y0 + 20; qIcon('shop', W / 2 - 58, y + 10, 26); qText(qtx('shop'), W / 2 + 14, y + 10, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   const row1 = d.cards.slice(0, 3), row2 = d.cards.slice(3); const buyCard = (id) => { const it = d.cards.find((q) => q.id === id && !q.sold); if (!it) return; if (r.gold < it.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; sfx('boop'); return; } r.gold -= it.price; it.sold = true; r.deck.push(id); sfx('coin'); quest.log.push('buy:' + id); qGo('shop', d); };
   const left = (row) => row.filter((q) => !q.sold); const cw = Math.min(100, (W - 40) / 3 - 10), rh = cw * 1.42 + 52;
   qPickCards(left(row1).map((q) => q.id), y + 40 + cw * 0.71, buyCard, { price: left(row1).map((q) => q.price) });
@@ -23321,10 +23396,10 @@ function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp
   qBtn(W - 146, H - 64, 130, 46, () => { quest.deckFor = null; quest.scroll = 0; sfx('click'); }, { text: qtx('close'), fs: 17, r: 23 });
 }
 function qDrawEnd(now) {
-  const e = quest.end || {}, top = cgTopY() + 30; qEmoji(e.won ? '🏆' : '💫', W / 2, top + 60, 96 + 6 * Math.sin(now / 250)); qText(e.won ? qtx('victory') : qtx('lost'), W / 2, top + 140, 34, e.won ? '#ffe08a' : '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const e = quest.end || {}, top = cgTopY() + 30; if (e.won) qIcon('trophy', W / 2, top + 60, 98 + 6 * Math.sin(now / 250)); else qIcon('skull', W / 2, top + 60, 92 + 6 * Math.sin(now / 250)); qText(e.won ? qtx('victory') : qtx('lost'), W / 2, top + 140, 34, e.won ? '#ffe08a' : '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, top + 180, 18, '#ffffff', W - 30, 700, 'rgba(0,0,0,0.6)');
-  const st = [[e.fights, 'stFights', '⚔️'], [e.bosses, 'stBoss', '👑'], [e.coins, 'stCoins', '🪙']], rtl = lang === 'he';
-  st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * 100; qEmoji(ic, x, top + 230, 28); qText(String(v || 0), x, top + 266, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)'); qText(qtx(k), x, top + 290, 13, '#ffe08a', 90, 700, 'rgba(0,0,0,0.6)'); });
+  const st = [[e.fights, 'stFights', 'dmg'], [e.bosses, 'stBoss', 'crown'], [e.coins, 'stCoins', 'gold']], rtl = lang === 'he';
+  st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * 100; qIcon(ic, x, top + 230, 30); qText(String(v || 0), x, top + 266, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)'); qText(qtx(k), x, top + 290, 13, '#ffe08a', 90, 700, 'rgba(0,0,0,0.6)'); });
   if (quest.newHero) qText('🤖 ' + (lang === 'he' ? 'הרובוט נפתח!' : 'The Robot is unlocked!'), W / 2, top + 330, 18, '#7CFC6A', W - 30, 900, 'rgba(0,0,0,0.6)');
   const bw = Math.min(200, (W - 40) / 2); qBtn(W / 2 - bw - 6, top + 370, bw, 56, () => { quest.newHero = null; quest.run = null; quest.scr = 'pick'; sfx('click'); }, { text: qtx('again'), fs: 18, r: 28, bg: '#3ddc84' });
   qBtn(W / 2 + 6, top + 370, bw, 56, () => { quest.newHero = null; goHome(); }, { text: qtx('home'), fs: 18, r: 28 });
