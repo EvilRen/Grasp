@@ -134,3 +134,19 @@ python3 tools/quest_frames.py art/quest_rares_raw.png --row rare            # wr
 
 The slicer finds the cards by their gutters, so the three need only be clearly separated — they do not have to sit on
 exact thirds.
+
+
+### Why the first rare re-run failed, and the rule it produced
+
+The colours came back right (crimson / teal / gold) and the ratio was the best of any sheet at 1.428 against 1.42.
+But the generator had painted the words **THE TITLE PLATE** and **THE RULES PANEL** onto the plates themselves, in
+capitals, reading them off this file's own section headings. No measurement catches that — `--check` only sees that
+the plate is solid metal, which it is, with writing on it.
+
+So: never head a section with the name of a part in capitals. A generator treats a capitalised noun phrase sitting
+above a description as a caption to render. Describe each region in a sentence instead, and state outright that no
+part of the image may be labelled with its own name.
+
+The same run also deepened the arched window to a tall dome when asked for a "gently arched top", dropping the
+picture window to 72.6% of the rectangle qLay draws into — worse than the 89.9% it was trying to improve. The other
+two rarities use a plain rounded rectangle, so the rare row should too; the filigree already carries the tier.
