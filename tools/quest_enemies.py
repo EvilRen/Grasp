@@ -33,18 +33,41 @@ INSET = 0.02                                  # of the cell, dropped on every si
 
 
 def key_out(im, tol=TOL):
+    """Magenta to transparency, by hue rather than by distance from pure #FF00FF.
+
+    The old test measured how far a pixel sat from pure magenta, which misses magenta that has been
+    SHADED: a generator that draws a cast shadow under a figure paints it as darker magenta, and at 60%
+    brightness that is already too far from #FF00FF to key, so the shadow survived as a bright pink
+    ellipse under the moon golem and the star hydra.
+
+    Scoring min(r - g, b - g) instead catches magenta at any brightness, because the background is the
+    only thing on the sheet with red and blue both far above green. Measured on the star throne sheet:
+    the background scores 248-251, the surviving shadow 155, and the golem's own grey body 3. Teal,
+    gold, crimson and indigo art all score near zero, so there is a wide gap to put a threshold in.
+
+    Edge pixels then get the magenta pulled back out of them, so a soft outline does not keep a pink
+    fringe when it is drawn over something dark. Only partly-transparent pixels are touched; art that
+    is genuinely violet or pink keeps its colour.
+    """
     im = im.convert('RGBA')
     try:
         import numpy as np
     except ImportError:
         return im
     a = np.asarray(im).astype(int)
-    d = np.maximum(np.abs(a[..., 0] - KEY[0]), np.maximum(a[..., 1] - KEY[1], np.abs(a[..., 2] - KEY[2])))
-    al = a[..., 3].copy()
-    al[d <= tol * 0.55] = 0
-    edge = (d > tol * 0.55) & (d <= tol)
-    al[edge] = (al[edge] * ((d[edge] - tol * 0.55) / (tol * 0.45))).astype(int)
-    a[..., 3] = al
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    score = np.minimum(r - g, b - g)
+    hi, lo = 130, 60                                  # above hi it is background; below lo it is art
+    al = a[..., 3].astype(float)
+    al[score >= hi] = 0
+    band = (score > lo) & (score < hi)
+    al[band] *= 1 - (score[band] - lo) / (hi - lo)
+    spill = band & (al > 0)                           # take the magenta back out of what is left
+    if spill.any():
+        cut = (score[spill] * 0.75).astype(int)
+        a[..., 0][spill] = np.clip(r[spill] - cut, 0, 255)
+        a[..., 2][spill] = np.clip(b[spill] - cut, 0, 255)
+    a[..., 3] = np.clip(al, 0, 255)
     from PIL import Image
     return Image.fromarray(a.astype('uint8'), 'RGBA')
 
