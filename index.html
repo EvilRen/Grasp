@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.54';
+const APP_VERSION = '1.12.55';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21746,15 +21746,16 @@ var TK2_GAME;
     ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
 
     var scale = 1 + lush * 0.22 + rainGlow * 0.035; ctx.save(); ctx.translate(baseX, baseY); ctx.scale(scale, scale); ctx.translate(-baseX, -baseY); // the tree drinks and swells a touch while it rains
-    ctx.lineCap = 'round';
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalCompositeOperation = 'lighter';
+    // glowing trunk and branches: a soft outer glow, a mid halo, then a bright defined core — so the tree's structure reads clearly, brighter toward the trunk and in rain
     for (var i = 0; i < tree.br.length; i++) { var b = tree.br[i]; var gr = (M - b.born) / GROWSPAN; if (gr <= 0) continue; if (gr > 1) gr = 1;
       var ex = b.x0 + (b.x1 - b.x0) * gr, ey = b.y0 + (b.y1 - b.y0) * gr, cx = b.x0 + (b.cx - b.x0) * gr, cy = b.y0 + (b.cy - b.y0) * gr;
       var s0x = sway(b.x0, b.y0, now), s1x = sway(ex, ey, now), scx = sway(cx, cy, now);
-      ctx.lineWidth = Math.max(1, b.w * (0.4 + 0.6 * gr)); ctx.strokeStyle = '#0c171f';
-      ctx.beginPath(); ctx.moveTo(s0x, b.y0); ctx.quadraticCurveTo(scx, cy, s1x, ey); ctx.stroke();
-      ctx.lineWidth = Math.max(0.6, b.w * (0.4 + 0.6 * gr) * 0.4); ctx.strokeStyle = 'rgba(120,200,220,.10)';
-      ctx.beginPath(); ctx.moveTo(s0x, b.y0); ctx.quadraticCurveTo(scx, cy, s1x, ey); ctx.stroke(); }
-    ctx.globalCompositeOperation = 'lighter';
+      var w = Math.max(1, b.w * (0.45 + 0.55 * gr)), core = 0.4 + (1 - b.born) * 0.3 + rainGlow * 0.28;
+      ctx.beginPath(); ctx.moveTo(s0x, b.y0); ctx.quadraticCurveTo(scx, cy, s1x, ey);
+      ctx.lineWidth = w * 2.8; ctx.strokeStyle = 'rgba(55,140,165,' + (0.05 + rainGlow * 0.04) + ')'; ctx.stroke(); // outer glow
+      ctx.lineWidth = w * 1.35; ctx.strokeStyle = 'rgba(95,190,215,0.16)'; ctx.stroke(); // mid halo
+      ctx.lineWidth = Math.max(0.9, w * 0.55); ctx.strokeStyle = 'rgba(182,238,248,' + core + ')'; ctx.stroke(); } // bright core
     var sb = 0.6 + 0.4 * Math.sin(now * 0.0015), ssz = treeH * (0.14 - M * 0.05) * (0.92 + antic * 0.6);
     ctx.globalAlpha = ((0.16 - M * 0.09) + antic * 0.26) * sb + 0.03; ctx.drawImage(SEEDG, baseX - ssz / 2, baseY - ssz * 0.62, ssz, ssz);
     var tcount = touches.length;
