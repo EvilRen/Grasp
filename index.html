@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.63';
+const APP_VERSION = '1.12.64';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22734,7 +22734,7 @@ function questStart() {
   const P = qP(); quest.sel = -1; quest.fx = []; quest.msg = null; quest.f = null; quest.btns = []; quest.t0 = performance.now(); quest.deckFor = null;
   quest.run = P.run && qRunOk(P.run) ? P.run : null; if (P.run && !quest.run) { P.run = null; saveProfile(); }
   if (quest.run) qResume(); else quest.scr = 'pick'; quest.howto = P.howto ? null : { p: 0 }; // (the first time: how to play)
-  quest.log.push('start:' + quest.scr);
+  qPreloadArt(); quest.log.push('start:' + quest.scr);
 }
 function qResume() { // back into a saved run: the room it was in
   const r = quest.run, at = r.at || { k: 'doors' };
@@ -22799,21 +22799,129 @@ function qBg(land) { const L = land || QC.LANDS[0]; return makeSprite('qbg|' + L
   const r = rng(L.id.length * 97 + W); if (L.id === 'space' || L.id === 'throne') { g.fillStyle = '#ffffff'; for (let i = 0; i < 90; i++) { g.globalAlpha = 0.3 + r() * 0.7; g.beginPath(); g.arc(r() * W, r() * H, 0.6 + r() * 1.6, 0, TAU); g.fill(); } g.globalAlpha = 1; }
   else { g.fillStyle = 'rgba(255,255,255,0.06)'; for (let i = 0; i < 30; i++) { g.beginPath(); g.arc(r() * W, r() * H, 8 + r() * 30, 0, TAU); g.fill(); } }
   g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(W / 2, H * 0.62, W * 0.7, H * 0.08, 0, 0, TAU); g.fill(); }); }
+/* ---- the cards on the screen. A card is a frame + a picture window + a title plate + a cost gem + a rules panel. The frame comes from
+   assets/quest/frame_{attack,skill,power}[_u|_r].webp (the rarity variants: a starter and a common share the plain one); until a file is
+   there the same frame is painted in code, to the same layout (qLay), so the art drops in without a single label moving. A card may also
+   bring its own illustration (assets/quest/art/<id>.webp) for the window. Every file is loaded once, decoded off the render loop, and a
+   missing one is simply never drawn — it can never show as a hole. ---- */
+const Q_ART = { im: new Map() };
+function qImg(path) { // null until the file is decoded (or for good, if it is not there): the painted frame stands in
+  let e = Q_ART.im.get(path);
+  if (!e) { e = { img: new Image(), ok: false }; Q_ART.im.set(path, e); e.img.decoding = 'async';
+    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|')) SPRITES.delete(k); }; // the cards draw again, now with the art
+    e.img.onerror = () => { e.bad = true; }; e.img.src = path; }
+  return e.ok && e.img.naturalWidth ? e.img : null;
+}
+const Q_TYPE = { a: 'attack', s: 'skill', p: 'power' };
+const Q_KEY = { // the key: crimson attacks, teal skills, gold powers, all on the dark base
+  a: { lo: '#3b0e1a', hi: '#8e1d2f', rim: '#ff6a78', g: '255,90,110' },
+  s: { lo: '#062a30', hi: '#0f6b6b', rim: '#4fe5d2', g: '79,229,210' },
+  p: { lo: '#2f1d06', hi: '#a8761a', rim: '#ffd23f', g: '255,210,63' },
+};
+const Q_INK = '#f6ecd4', Q_NUM = '#ffd98a';
+function qUp(c) { return !!c.id && c.id.endsWith('+'); } // (c.up is the upgrade recipe on a plain card: the id says whether it is upgraded)
+function qRar(c) { return c.r === 'r' ? 'r' : c.r === 'u' ? 'u' : ''; }
+function qFrameSrc(c) { return '/assets/quest/frame_' + (Q_TYPE[c.t] || 'skill') + (qRar(c) ? '_' + qRar(c) : '') + '.webp'; }
+const Q_FRAMES = ['attack', 'skill', 'power'].flatMap((t) => ['', '_u', '_r'].map((r) => '/assets/quest/frame_' + t + r + '.webp'));
+function qPreloadArt() { for (const p of Q_FRAMES) qImg(p); } // once, when Quest opens: the nine frames
+function qLay(w) { const h = w * 1.42; // one layout for the painted frame and for the art: the rectangles the art templates are drawn to
+  return { w, h, rad: w * 0.105,
+    art: { x: -w * 0.385, y: -h * 0.400, w: w * 0.770, h: h * 0.395 }, // the picture window
+    nameY: h * 0.085, nameH: h * 0.100, // the title plate
+    txtY: h * 0.295, txtW: w * 0.800, // the rules panel
+    gem: { x: (lang === 'he' ? 1 : -1) * w * 0.335, y: -h * 0.392, r: w * 0.148 }, // the cost gem, in the corner the language starts from
+    pipY: h * 0.443 }; // the rarity gems
+}
+function qPaintFrame(g, c, L) { // the frame in code: the look the art replaces, and the fallback whenever a file is missing
+  const w = L.w, h = L.h, R = L.rad, K = Q_KEY[c.t] || Q_KEY.s, rar = qRar(c), A = L.art, bw = Math.max(2.4, w * 0.045);
+  const base = g.createLinearGradient(0, -h / 2, 0, h / 2); base.addColorStop(0, '#1b1536'); base.addColorStop(0.5, '#120d26'); base.addColorStop(1, '#0a0717');
+  g.fillStyle = base; g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, R); g.fill();
+  g.save(); g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, R); g.clip(); // the type's light and the darker foot, held inside the plate
+  const lit = g.createRadialGradient(0, -h * 0.20, w * 0.04, 0, -h * 0.16, w);
+  lit.addColorStop(0, 'rgba(' + K.g + ',0.34)'); lit.addColorStop(0.55, 'rgba(' + K.g + ',0.09)'); lit.addColorStop(1, 'rgba(' + K.g + ',0)');
+  g.fillStyle = lit; g.fillRect(-w / 2, -h / 2, w, h);
+  const foot = g.createLinearGradient(0, 0, 0, h / 2); foot.addColorStop(0, 'rgba(6,4,14,0)'); foot.addColorStop(1, 'rgba(6,4,14,0.78)');
+  g.fillStyle = foot; g.fillRect(-w / 2, 0, w, h / 2); g.restore();
+  const met = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); // the border: metal lit from the top-left, the type's colour inside it
+  met.addColorStop(0, rar === 'r' ? '#ffe9a8' : '#8e86b0'); met.addColorStop(0.35, rar === 'r' ? '#c8992f' : K.hi); met.addColorStop(0.7, K.lo); met.addColorStop(1, '#070512');
+  g.strokeStyle = met; g.lineWidth = bw; g.beginPath(); g.roundRect(-w / 2 + bw / 2, -h / 2 + bw / 2, w - bw, h - bw, R); g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,0.20)'; g.lineWidth = Math.max(1, w * 0.012); g.beginPath(); g.roundRect(-w / 2 + bw, -h / 2 + bw, w - bw * 2, h - bw * 2, R * 0.8); g.stroke();
+  const ar = w * 0.055; // the picture window: a recess, a rim of the type's light around it
+  g.fillStyle = '#05040c'; g.beginPath(); g.roundRect(A.x, A.y, A.w, A.h, ar); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.75)'; g.lineWidth = Math.max(1.5, w * 0.022); g.beginPath(); g.roundRect(A.x, A.y, A.w, A.h, ar); g.stroke();
+  g.strokeStyle = 'rgba(' + K.g + ',0.55)'; g.lineWidth = Math.max(1, w * 0.012); g.beginPath(); g.roundRect(A.x + 1, A.y + 1, A.w - 2, A.h - 2, ar); g.stroke();
+  const nh = L.nameH, np = g.createLinearGradient(0, L.nameY - nh / 2, 0, L.nameY + nh / 2); // the title plate
+  np.addColorStop(0, K.hi); np.addColorStop(1, K.lo); g.fillStyle = np;
+  g.beginPath(); g.roundRect(-w * 0.405, L.nameY - nh / 2, w * 0.81, nh, nh * 0.34); g.fill();
+  g.strokeStyle = rar === 'r' ? 'rgba(255,214,120,0.85)' : 'rgba(255,255,255,0.22)'; g.lineWidth = Math.max(1, w * 0.011);
+  g.beginPath(); g.roundRect(-w * 0.405, L.nameY - nh / 2, w * 0.81, nh, nh * 0.34); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.05)'; g.beginPath(); g.roundRect(-w * 0.40, L.txtY - h * 0.10, w * 0.80, h * 0.205, w * 0.05); g.fill(); // the rules panel
+  if (rar) { const n = rar === 'r' ? 3 : 1, col = rar === 'r' ? '#ffd23f' : K.rim, s = w * 0.030; // the rarity: one stud, or three gold gems
+    for (let i = 0; i < n; i++) { g.save(); g.translate((i - (n - 1) / 2) * w * 0.10, L.pipY); g.rotate(Math.PI / 4);
+      g.fillStyle = col; g.fillRect(-s, -s, s * 2, s * 2); g.strokeStyle = 'rgba(0,0,0,0.6)'; g.lineWidth = 1; g.strokeRect(-s, -s, s * 2, s * 2); g.restore(); } }
+  if (rar === 'r') { g.strokeStyle = 'rgba(255,214,120,0.75)'; g.lineWidth = Math.max(1.2, w * 0.016); // the corner filigree of a rare
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.save(); g.scale(sx, sy); g.beginPath(); g.arc(-w / 2 + R * 1.15, -h / 2 + R * 1.15, R * 0.62, Math.PI * 0.95, Math.PI * 1.55); g.stroke(); g.restore(); } }
+}
+function qPaintArt(g, c, L) { // the picture window: the card's own illustration when there is one, else a lit scene behind its symbol
+  const A = L.art, w = L.w, K = Q_KEY[c.t] || Q_KEY.s, cx = A.x + A.w / 2, cy = A.y + A.h / 2;
+  g.save(); g.beginPath(); g.roundRect(A.x, A.y, A.w, A.h, w * 0.055); g.clip();
+  const pic = qImg('/assets/quest/art/' + c.id.replace('+', '') + '.webp');
+  if (pic) { const s = Math.max(A.w / pic.naturalWidth, A.h / pic.naturalHeight), pw = pic.naturalWidth * s, ph = pic.naturalHeight * s; g.drawImage(pic, cx - pw / 2, cy - ph / 2, pw, ph); }
+  else {
+    const sky = g.createLinearGradient(0, A.y, 0, A.y + A.h); sky.addColorStop(0, K.lo); sky.addColorStop(0.65, '#0a0818'); sky.addColorStop(1, '#05040c');
+    g.fillStyle = sky; g.fillRect(A.x, A.y, A.w, A.h);
+    const r = rng(strSeed(c.id) + 11); g.fillStyle = 'rgba(' + K.g + ',0.9)'; // bioluminescent specks, the same ones for a card every time
+    for (let i = 0; i < 16; i++) { g.globalAlpha = 0.12 + r() * 0.5; g.beginPath(); g.arc(A.x + r() * A.w, A.y + r() * A.h * 0.92, w * (0.006 + r() * 0.014), 0, TAU); g.fill(); }
+    g.globalAlpha = 1;
+    const halo = g.createRadialGradient(cx, cy + A.h * 0.04, w * 0.02, cx, cy + A.h * 0.04, A.w * 0.6);
+    halo.addColorStop(0, 'rgba(' + K.g + ',0.55)'); halo.addColorStop(0.5, 'rgba(' + K.g + ',0.16)'); halo.addColorStop(1, 'rgba(' + K.g + ',0)');
+    g.fillStyle = halo; g.fillRect(A.x, A.y, A.w, A.h);
+    g.fillStyle = 'rgba(0,0,0,0.42)'; g.beginPath(); g.ellipse(cx, A.y + A.h * 0.86, A.w * 0.3, A.h * 0.055, 0, 0, TAU); g.fill(); // the subject's shadow
+    g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = Math.round(A.h * 0.56) + 'px ' + MX_EMOJI;
+    g.shadowColor = 'rgba(0,0,0,0.75)'; g.shadowBlur = w * 0.08; g.shadowOffsetY = w * 0.02; g.fillText(c.e, cx, cy + A.h * 0.02); g.restore();
+  }
+  const vg = g.createRadialGradient(cx, cy, A.w * 0.22, cx, cy, A.w * 0.72); // the window's vignette and the rim light along its top edge
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.5)'); g.fillStyle = vg; g.fillRect(A.x, A.y, A.w, A.h);
+  const rim = g.createLinearGradient(0, A.y, 0, A.y + A.h * 0.22); rim.addColorStop(0, 'rgba(255,255,255,0.22)'); rim.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = rim; g.fillRect(A.x, A.y, A.w, A.h * 0.22); g.restore();
+}
+function qPaintGem(g, c, L) { // the cost: a faceted gem in the top corner, the number cut into it
+  const G = L.gem, w = L.w, K = Q_KEY[c.t] || Q_KEY.s;
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.arc(G.x, G.y + w * 0.012, G.r * 1.04, 0, TAU); g.fill();
+  const ring = g.createLinearGradient(G.x - G.r, G.y - G.r, G.x + G.r, G.y + G.r);
+  ring.addColorStop(0, '#ffeab0'); ring.addColorStop(0.5, '#d2a33a'); ring.addColorStop(1, '#6d4c12');
+  g.fillStyle = ring; g.beginPath(); g.arc(G.x, G.y, G.r, 0, TAU); g.fill();
+  const face = g.createRadialGradient(G.x - G.r * 0.35, G.y - G.r * 0.4, G.r * 0.08, G.x, G.y, G.r * 0.84);
+  face.addColorStop(0, '#ffffff'); face.addColorStop(0.3, lighten(K.rim, 0.45)); face.addColorStop(1, K.rim);
+  g.fillStyle = face; g.beginPath(); g.arc(G.x, G.y, G.r * 0.78, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.45)'; g.lineWidth = Math.max(1, w * 0.012); g.beginPath(); g.arc(G.x, G.y, G.r * 0.78, 0, TAU); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(G.x - G.r * 0.26, G.y - G.r * 0.34, G.r * 0.26, G.r * 0.15, -0.6, 0, TAU); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 ' + Math.round(G.r * 1.22) + 'px Rubik, system-ui, sans-serif';
+  g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = w * 0.03; g.fillStyle = '#0d0a1c'; g.fillText(String(c.c), G.x, G.y + G.r * 0.06);
+  g.restore();
+}
 function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
-  const c = QC.cardOf(id); if (!c) return; const h = w * 1.42, col = c.t === 'a' ? '#ffb3a8' : c.t === 'p' ? '#d9c2ff' : '#b8dcff', ink = '#2a1f3d', k = o.k || 1, af = o.dim ? 0.55 : 1;
-  const sp = makeSprite('qc|' + id + '|' + Math.round(w) + '|' + lang, w + 8, h + 10, w / 2 + 4, h / 2 + 4, (g) => {
-    g.fillStyle = 'rgba(0,0,0,0.3)'; g.beginPath(); g.roundRect(-w / 2, -h / 2 + 4, w, h, w * 0.12); g.fill();
-    g.fillStyle = col; g.strokeStyle = c.up ? '#2bbf6a' : ink; g.lineWidth = Math.max(2.5, w * 0.035); g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, w * 0.12); g.fill(); g.stroke();
-    g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(-w * 0.42, -h * 0.34, w * 0.84, h * 0.38, w * 0.08); g.fill();
-    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = Math.round(w * 0.36) + 'px ' + MX_EMOJI; g.fillText(c.e, 0, -h * 0.15);
-    const nm = lang === 'he' ? c.he : c.en, fsz = Math.max(10, Math.round(w * 0.13)); g.font = '800 ' + fsz + 'px Rubik, system-ui, sans-serif'; g.fillStyle = ink; g.direction = lang === 'he' ? 'rtl' : 'ltr';
-    const tw = g.measureText(nm).width, sc = Math.min(1, (w * 0.9) / tw); g.save(); g.translate(0, h * 0.13); g.scale(sc, sc); g.fillText(nm, 0, 0); g.restore();
-    { const parts = qDesc(c, false).split(' '), fe = Math.round(w * 0.14) + 'px ' + MX_EMOJI, fn = '900 ' + Math.round(w * 0.15) + 'px Rubik, system-ui, sans-serif', segs = []; g.direction = 'ltr'; // (the icons in the emoji font, the numbers in the text font: one font for both splits the digits)
-      for (const p of parts) { const m = p.match(/^(\D*?)([\d=×\u00D7].*)?$/u) || [p, p, '']; segs.push([m[1] || '', fe], [m[2] || '', fn], [' ', fn]); }
-      let tw = 0; for (const [t, f] of segs) { g.font = f; tw += g.measureText(t).width; } const s2 = Math.min(1, (w * 0.92) / tw); g.save(); g.translate(0, h * 0.32); g.scale(s2, s2); g.textAlign = 'left'; let xx = -tw / 2;
-      for (const [t, f] of segs) { g.font = f; g.fillText(t, xx, 0); xx += g.measureText(t).width; } g.restore(); g.textAlign = 'center'; }
-    g.fillStyle = '#ffd23f'; g.strokeStyle = ink; g.lineWidth = 2.5; g.beginPath(); g.arc(-w / 2 + w * 0.14, -h / 2 + w * 0.14, w * 0.15, 0, TAU); g.fill(); g.stroke();
-    g.fillStyle = ink; g.font = '900 ' + Math.round(w * 0.19) + 'px Rubik, system-ui, sans-serif'; g.fillText(String(c.c), -w / 2 + w * 0.14, -h / 2 + w * 0.15);
+  const c = QC.cardOf(id); if (!c) return; const L = qLay(w), h = L.h, k = o.k || 1, af = o.dim ? 0.58 : 1, K = Q_KEY[c.t] || Q_KEY.s;
+  if (o.glow) { resetView(); const gg = ctx.createRadialGradient(x, y, w * 0.2, x, y, w * 0.95); // the picked card: a halo of its own colour under it
+    gg.addColorStop(0, 'rgba(' + K.g + ',' + (0.42 * o.glow).toFixed(3) + ')'); gg.addColorStop(0.55, 'rgba(' + K.g + ',' + (0.14 * o.glow).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(' + K.g + ',0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.ellipse(x, y, w * 0.95, h * 0.72, 0, 0, TAU); ctx.fill(); }
+  const pad = Math.max(6, w * 0.08);
+  const sp = makeSprite('qc|' + id + '|' + Math.round(w) + '|' + lang, w + pad * 2, h + pad * 2, w / 2 + pad, h / 2 + pad, (g) => {
+    g.fillStyle = 'rgba(0,0,0,0.45)'; g.beginPath(); g.roundRect(-w / 2, -h / 2 + w * 0.05, w, h, L.rad); g.fill(); // the card's own shadow
+    const fr = qImg(qFrameSrc(c));
+    if (fr) { qPaintArt(g, c, L); g.drawImage(fr, -w / 2, -h / 2, w, h); } else { qPaintFrame(g, c, L); qPaintArt(g, c, L); } // (the art template's window is cut out: the picture goes behind it)
+    if (qUp(c)) { const bw = Math.max(2.4, w * 0.045); g.strokeStyle = '#7CFC6A'; g.lineWidth = Math.max(1.4, w * 0.018); g.beginPath(); g.roundRect(-w / 2 + bw / 2, -h / 2 + bw / 2, w - bw, h - bw, L.rad); g.stroke(); } // upgraded
+    qPaintGem(g, c, L);
+    const nm = lang === 'he' ? c.he : c.en, fs = Math.max(9, Math.round(w * 0.142)); // the title
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
+    const sc = Math.min(1, (w * 0.74) / Math.max(1, g.measureText(nm).width));
+    g.save(); g.translate(0, L.nameY); g.scale(sc, sc); g.shadowColor = 'rgba(0,0,0,0.7)'; g.shadowBlur = fs * 0.5; g.shadowOffsetY = fs * 0.06; g.fillStyle = Q_INK; g.fillText(nm, 0, 0); g.restore();
+    { const parts = qDesc(c, false).split(' '), fe = Math.round(w * 0.145) + 'px ' + MX_EMOJI, fn = '900 ' + Math.round(w * 0.155) + 'px Rubik, system-ui, sans-serif', segs = []; g.direction = 'ltr'; // (the icons in the emoji font, the numbers in the text font: one font for both splits the digits)
+      for (const p of parts) { const m = p.match(/^(\D*?)([\d=××].*)?$/u) || [p, p, '']; segs.push([m[1] || '', fe, Q_INK], [m[2] || '', fn, Q_NUM], [' ', fn, Q_INK]); }
+      let tw = 0; for (const [t, f] of segs) { g.font = f; tw += g.measureText(t).width; }
+      const s2 = Math.min(1, L.txtW / Math.max(1, tw)); g.save(); g.translate(0, L.txtY); g.scale(s2, s2); g.textAlign = 'left'; g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; let xx = -tw / 2;
+      for (const [t, f, col] of segs) { g.font = f; g.fillStyle = col; g.fillText(t, xx, 0); xx += g.measureText(t).width; } g.restore(); g.textAlign = 'center'; }
   });
   blit(sp, x, y, o.ang || 0, k, af);
 }
@@ -22912,9 +23020,12 @@ function qDrawFight(now, y0) {
   const ex = rtl ? 60 : W - 60, ey = hy - 4; resetView(); ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ex, ey, 30, 0, TAU); ctx.fill(); ctx.stroke(); qText(f.en + '', ex, ey + 1, 26, '#2a1f3d', 0, 900); qText(qtx('energy'), ex, ey + 44, 12, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
   // the hand
   const n = f.hand.length, cw = Math.min(96, Math.max(66, (W - 20) / 5.2)), ch = cw * 1.42, span = Math.min(W - 20 - cw, (n - 1) * (cw * 0.92)), hy2 = H - ch / 2 - 74, busy = now < quest.busyUntil || f.over;
+  let lift = null; // the picked card: drawn after the others, so its lift and its halo are over them (the tap rects keep their order)
   for (let i = 0; i < n; i++) { const k = rtl ? n - 1 - i : i, x = W / 2 + (n > 1 ? (k / (n - 1) - 0.5) * span : 0), on = quest.sel === i, c = QC.cardOf(f.hand[i]), can = c.c <= f.en;
-    const y = hy2 - (on ? 30 : 0) + Math.abs(k - (n - 1) / 2) * 4; qCard(f.hand[i], x, y, cw, { k: on ? 1.15 : 1, ang: n > 1 ? (k / (n - 1) - 0.5) * 0.18 : 0, dim: !can });
+    const y = hy2 - (on ? 30 : 0) + Math.abs(k - (n - 1) / 2) * 4, o = { k: on ? 1.15 : 1, ang: n > 1 ? (k / (n - 1) - 0.5) * 0.18 : 0, dim: !can, glow: on ? 0.75 + 0.25 * Math.sin(now / 220) : 0 };
+    if (on) lift = [f.hand[i], x, y, cw, o]; else qCard(f.hand[i], x, y, cw, o);
     if (!busy) quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: cw * (i === n - 1 ? 1 : 0.92), h: ch, act: () => qTapCard(i, performance.now()), card: i }); }
+  if (lift) qCard(...lift);
   const coach = !qP().tut && r.fights === 0 && !f.over && !busy && !quest.howto ? qCoach(f, sel, tgt, hy2, ch, now) : false;
   if (sel && !coach) { const tx = qDesc(sel, true), sp = textSprite(tx, 16, '#ffffff', 'rgba(30,20,60,0.95)', 800); blit(sp, W / 2, hy2 - ch / 2 - 76, 0, Math.min(1, (W - 20) / sp.tw)); qText(tgt && f.mons.filter((m) => m.hp > 0).length > 1 ? qtx('target') : qtx('tapAgain'), W / 2, hy2 - ch / 2 - 50, 13, '#ffe08a', W - 20, 800, 'rgba(0,0,0,0.7)'); }
   const bw = 132; qBtn(rtl ? 16 : W - 16 - bw, H - 62, bw, 48, () => qEndTurn(performance.now()), { text: qtx('endTurn'), fs: 18, bg: busy ? '#cfcfcf' : '#ffb347', dis: busy, r: 24 });
