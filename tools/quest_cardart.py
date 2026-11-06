@@ -1,6 +1,13 @@
 """Quest's card pictures: cut a sheet into the per-card files the game draws behind its frames.
 
-    python3 tools/quest_cardart.py art/knight_raw.png --ids strike,defend,bash,cleave,twin,ironwave,shrug,bodyslam,headbutt
+    python3 tools/quest_cardart.py art/knight_raw.png --ids strike,defend,bash,... [--caption] [--top 0.16] [--inset 0.07]
+
+Look at the sheet first and say what it has. --caption crops a band of words off the bottom of every
+cell; --top 0.16 drops that fraction from the top, where a generator puts the black corner blocks it
+draws when told to keep the corners clear. Both are off by default. They are flags rather than
+detection on purpose: three attempts at detecting them automatically each misfired on one sheet or the
+other, and a wrong guess silently eats a painting. --inset crops every side, for a sheet that draws its
+cells inside a gutter or behind a rounded mask.
 
 Three cards across, in reading order, one id per cell. Each cell is written to
 assets/quest/art/<card id>.webp and qPaintArt draws it into the card's picture window; a card with no
@@ -23,46 +30,46 @@ OUT = os.path.join(ROOT, 'assets', 'quest', 'art')
 RATIO = 1.21          # the picture window's width / height in qLay()
 
 
-def strip_caption(a, np):
-    """Where the painting really ends: above any band of bright glyphs near the bottom."""
-    H, W, _ = a.shape
-    lum = a[..., :3].mean(axis=2)
-    lo = int(H * 0.74)
-    med = np.median(lum[lo:], axis=1)
-    ink = ((lum[lo:] - med[:, None]) > 42).mean(axis=1)      # pixels far brighter than their own row
-    rows = np.where(ink > 0.035)[0]
-    if not len(rows):
-        return H
-    top = lo + rows.min()
-    return max(int(H * 0.72), top - int(H * 0.025))
-
-
 def trim_margin(a, np):
     """Drop the pale gutter a sheet carries between its cells, before anything else is measured."""
     H, W, _ = a.shape
     lum = a[..., :3].mean(axis=2)
-    def flat_pale(line):
-        return line.mean() > 140 and line.std() < 34
+    def junk(line):            # a sheet's gutter is either pale or black, and always flat
+        return (line.mean() > 140 or line.mean() < 18) and line.std() < 34
     t, b, l, r = 0, H, 0, W
-    while t < H * 0.15 and flat_pale(lum[t]):
+    while t < H * 0.15 and junk(lum[t]):
         t += 1
-    while b > H * 0.85 and flat_pale(lum[b - 1]):
+    while b > H * 0.85 and junk(lum[b - 1]):
         b -= 1
-    while l < W * 0.15 and flat_pale(lum[:, l]):
+    while l < W * 0.15 and junk(lum[:, l]):
         l += 1
-    while r > W * 0.85 and flat_pale(lum[:, r - 1]):
+    while r > W * 0.85 and junk(lum[:, r - 1]):
         r -= 1
     return a[t:b, l:r]
 
 
-TOP = 0.16            # of the cell, dropped from the top: the sheet's gutter and the black corner
-                      # blocks a generator leaves there both live inside it, and the subject sits low
+def caption_top(a, np):
+    """Where the painting ends, above a band of bright glyphs near the bottom."""
+    H = a.shape[0]
+    lum = a[..., :3].mean(axis=2)
+    lo = int(H * 0.74)
+    med = np.median(lum[lo:], axis=1) if False else None
+    import numpy as _np
+    med = _np.median(lum[lo:], axis=1)
+    ink = ((lum[lo:] - med[:, None]) > 42).mean(axis=1)
+    rows = _np.where(ink > 0.035)[0]
+    if not len(rows):
+        return H
+    return max(int(H * 0.72), lo + rows.min() - int(H * 0.025))
 
 
 def main():
     args = [v for v in sys.argv[1:] if not v.startswith('--')]
     ids = sys.argv[sys.argv.index('--ids') + 1].split(',') if '--ids' in sys.argv else []
     size = int(sys.argv[sys.argv.index('--size') + 1]) if '--size' in sys.argv else 420
+    topf = float(sys.argv[sys.argv.index('--top') + 1]) if '--top' in sys.argv else 0.0
+    caption = '--caption' in sys.argv
+    inset = float(sys.argv[sys.argv.index('--inset') + 1]) if '--inset' in sys.argv else 0.0
     if not args or not ids:
         sys.exit(__doc__)
     try:
@@ -80,8 +87,11 @@ def main():
         c, r = i % cols, i // cols
         cell = sheet.crop((round(W * c / cols), round(H * r / rows), round(W * (c + 1) / cols), round(H * (r + 1) / rows)))
         a = trim_margin(np.asarray(cell).astype(int).copy(), np)
-        cut = strip_caption(a, np)
-        top = int(a.shape[0] * TOP)
+        if inset:                                   # a sheet whose cells sit inside a gutter or a rounded mask
+            dy, dx = int(a.shape[0] * inset), int(a.shape[1] * inset)
+            a = a[dy:a.shape[0] - dy, dx:a.shape[1] - dx]
+        cut = caption_top(a, np) if caption else a.shape[0]
+        top = int(a.shape[0] * topf)
         im = Image.fromarray(a.astype('uint8'), 'RGB').crop((0, top, a.shape[1], cut))
         w, h = im.size                                        # centre-crop to the window's shape
         if w / h > RATIO:
@@ -93,8 +103,7 @@ def main():
         im.save(path, 'WEBP', quality=86, method=6)
         kb = os.path.getsize(path) / 1024
         total += kb
-        print('%-34s %dx%d  %5.1f KB   caption cut %s'
-              % (os.path.relpath(path, ROOT), im.width, im.height, kb, 'no' if cut >= a.shape[0] else 'yes'))
+        print('%-34s %dx%d  %5.1f KB' % (os.path.relpath(path, ROOT), im.width, im.height, kb))
     print('\n%.0f KB for %d card pictures.' % (total, len(ids)))
 
 
