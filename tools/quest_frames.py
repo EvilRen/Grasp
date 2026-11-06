@@ -24,6 +24,8 @@ KEY = (255, 0, 255)                           # the chroma the prompt asks for
 TOL = 90                                      # how far from pure magenta still counts as a hole (Gemini shades it)
 CORE = 0.62                                   # below TOL * CORE a pixel is fully a hole; above it, it fades out
 RATIO = 1.42                                  # the card's height / width, the same number as qLay() in index.html
+ROWS = {'common': 0, 'uncommon': 1, 'rare': 2}  # --row <name>: the sheet is that one rarity, three cards across
+ROW = None                                    # set from the command line; None means a whole 3 x 3 sheet
 
 # The openings, as fractions of the card box, straight out of qLay(w) in index.html.
 # x, y, w, h — the cost socket as the square that bounds its circle.
@@ -100,6 +102,7 @@ def _bands(mask, axis, n=3):
     except ImportError:
         return None
     hit = mask.any(axis=axis)
+    n = 1 if (axis == 1 and ROW is not None) else n   # --row: one band of rows, three of columns
     runs, start = [], None
     for i, v in enumerate(hit):
         if v and start is None:
@@ -131,7 +134,7 @@ def grid(im, tol=TOL):
         solid = ~((np.abs(a[..., 0] - KEY[0]) < tol) & (a[..., 1] < tol) & (np.abs(a[..., 2] - KEY[2]) < tol))
         cols, rows = _bands(solid, 0), _bands(solid, 1)
         if cols and rows:
-            out = [[(cols[c][0], rows[r][0], cols[c][1], rows[r][1]) for c in range(3)] for r in range(3)]
+            out = [[(cols[c][0], rows[r][0], cols[c][1], rows[r][1]) for c in range(3)] for r in range(len(rows))]
     except ImportError:
         pass
     _GRID[key] = out
@@ -141,11 +144,17 @@ def grid(im, tol=TOL):
 def cell(im, col, row, tol=TOL):
     g = grid(im, tol)
     if g:
-        return im.crop(g[row][col])
+        return im.crop(g[0 if ROW is not None else row][col])
     w, h = im.size
+    n, r = (1, 0) if ROW is not None else (3, row)
     x0, x1 = round(w * col / 3), round(w * (col + 1) / 3)
-    y0, y1 = round(h * row / 3), round(h * (row + 1) / 3)
+    y0, y1 = round(h * r / n), round(h * (r + 1) / n)
     return im.crop((x0, y0, x1, y1))
+
+
+def rows_wanted():
+    """Which (index, suffix) pairs this run touches: every rarity, or just the one --row names."""
+    return list(enumerate(RARITY)) if ROW is None else [(ROWS[ROW], RARITY[ROWS[ROW]])]
 
 
 def card_box(im):
@@ -214,12 +223,13 @@ def probe(im):
 def check(sheet, tol=TOL):
     """Measure the sheet against qLay() and report. Writes nothing."""
     print('sheet %dx%d' % sheet.size)
-    want = sheet.size[0] / sheet.size[1]
-    if abs(want - 1 / RATIO) > 0.02:
-        print('  ! the sheet is %.3f wide-to-tall; nine 1:%.2f cards want %.3f (%+.1f%% off)'
-              % (want, RATIO, 1 / RATIO, (want * RATIO - 1) * 100))
+    got = sheet.size[0] / sheet.size[1]
+    want = (3 / RATIO) if ROW is not None else (1 / RATIO)
+    if abs(got - want) > 0.02 * max(1, want):
+        print('  ! the sheet is %.3f wide-to-tall; %s 1:%.2f cards want %.3f (%+.1f%% off)'
+              % (got, 'three' if ROW else 'nine', RATIO, want, (got / want - 1) * 100))
     bad = 0
-    for row, rar in enumerate(RARITY):
+    for row, rar in rows_wanted():
         for col, t in enumerate(TYPES):
             name = t + (rar or '')
             im = key_out(cell(sheet, col, row), tol)
@@ -284,8 +294,14 @@ def check(sheet, tol=TOL):
 
 
 def main():
+    global ROW
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     size, tol = 512, TOL
+    if '--row' in sys.argv:                     # a re-run of one rarity: the sheet is three cards across
+        ROW = sys.argv[sys.argv.index('--row') + 1]
+        if ROW not in ROWS:
+            sys.exit('--row takes one of: ' + ', '.join(ROWS))
+        args = [a for a in args if a != ROW]
     if '--size' in sys.argv:
         size = int(sys.argv[sys.argv.index('--size') + 1])
     if '--tol' in sys.argv:
@@ -300,11 +316,12 @@ def main():
     sheet = Image.open(src)
     if '--check' in sys.argv:
         sys.exit(check(sheet, tol))
-    if abs(sheet.size[0] / sheet.size[1] - 1 / RATIO) > 0.08:
-        print('note: the sheet is %dx%d; nine 1:%.2f cards want about %d:%d — check the grid is even'
-              % (sheet.size[0], sheet.size[1], RATIO, 3, round(3 * RATIO)))
+    want = (3 / RATIO) if ROW is not None else (1 / RATIO)   # three across, one or three down
+    if abs(sheet.size[0] / sheet.size[1] - want) > 0.08 * max(1, want):
+        print('note: the sheet is %dx%d (%.3f wide-to-tall); %s 1:%.2f cards want %.3f'
+              % (sheet.size + (sheet.size[0] / sheet.size[1], 'three' if ROW else 'nine', RATIO, want)))
     os.makedirs(OUT, exist_ok=True)
-    for row, rar in enumerate(RARITY):
+    for row, rar in rows_wanted():
         for col, t in enumerate(TYPES):
             im = key_out(cell(sheet, col, row), tol)
             box = card_box(im)                  # the card's own bounds, the magenta margin dropped
