@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.52';
+const APP_VERSION = '1.12.53';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21557,8 +21557,8 @@ var TK2_GAME;
   var MAXDEPTH = 9, GROWSPAN = 0.14, STAGE_MS = 22000, STAGES = 7;
   var baseX = 0, baseY = 0, treeH = 0, CAP = 850, lastW = 0, lastH = 0, starField = null, starFieldH = 0, starTimer = 0;
   var si = 0, stage = 0, tStart = 0, events = 0, M = 0.15, Mt = 0.15, collected = 0, needForNext = 6, lush = 0;
-  var tree = { seed: 7, br: [], motes: [] }, stars = [], fruits = [], harvest = [], moths = [], blossoms = [], touches = [], ripples = [], sparks = [], blooms = [], plants = [];
-  var idle = 0, wateredHinted = false, last = 0;
+  var tree = { seed: 7, br: [], motes: [] }, stars = [], fruits = [], harvest = [], moths = [], blossoms = [], touches = [], ripples = [], sparks = [], blooms = [], plants = [], raindrops = [];
+  var idle = 0, wateredHinted = false, last = 0, rainGlow = 0, guideAt = 0, hasRained = false, hasPicked = false;
   var hintText = '', hintUntil = 0, seasonText = '', seasonCol = '#fff', seasonAt = -9999;
   function seasonHue() { var h = SEASONS[si].hues; return h[(Math.random() * h.length) | 0]; }
   function sway(px, py, t) { var up = (baseY - py) / Math.max(1, treeH); var amp = 12 * up * up; return px + Math.sin(t * 0.0005 + py * 0.011) * amp; }
@@ -21627,7 +21627,7 @@ var TK2_GAME;
   function pick(f, fx, now) { f.picked = true; f.t = now; f.m.used = false; collected++;
     for (var k = 0; k < 22; k++) { var a = Math.random() * 6.283, s = Math.random() * 1.6 + 0.4; sparks.push({ x: fx, y: f.m.hy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.3, t: now, life: 1300, spr: FRUIT[f.hue], s: 9 + Math.random() * 9 }); }
     harvest.push({ x: fx, y: f.m.hy, ph: Math.random() * 6.283, sp: 0.25 + Math.random() * 0.4, bl: Math.random() * 6.283, hue: f.hue, drift: -0.2 - Math.random() * 0.2 });
-    litStars(3);
+    litStars(3); hasPicked = true;
     buzz(10); if (collected >= needForNext) advanceSeason(); }
   function newPlant(px, now) { var ty = (Math.random() * 3) | 0, p = { x: px, born: now, h: treeH * (0.1 + Math.random() * 0.13), ty: ty, hue: seasonHue(), ph: Math.random() * 6.283 };
     if (ty === 0) { p.blades = []; var nb = 3 + ((Math.random() * 3) | 0); for (var k = 0; k < nb; k++) p.blades.push({ a: (Math.random() - 0.5) * 0.6, hh: 0.62 + Math.random() * 0.55, hue: seasonHue() }); }
@@ -21637,13 +21637,16 @@ var TK2_GAME;
     var near = null; for (var j = 0; j < plants.length; j++) { var dx = plants[j].x - px; if (dx * dx < 28 * 28) { near = plants[j]; break; } }
     if (near) near.h = Math.min(treeH * 0.3, near.h + treeH * 0.012);
     else if (plants.length < 50) plants.push(newPlant(px, now)); }
-  function stir(px, py, now) { touches.push({ x: px, y: py, t: now }); if (touches.length > 12) touches.shift();
-    ripples.push({ x: px, y: py, t: now, life: 1100, hue: SEASONS[si].hues[0] }); idle = now;
-    for (var i = 0; i < tree.motes.length; i++) { var m = tree.motes[i]; var mx = sway(m.hx, m.hy, now) + m.ox, my = m.hy + m.oy;
-      var dx = mx - px, dy = my - py, dd = dx * dx + dy * dy; if (dd < 140 * 140 && dd > 1) { var d = Math.sqrt(dd), f = (1 - d / 140);
-        m.vx += (-dy / d) * f * 1.1 + (-dx / d) * f * 0.25; m.vy += (dx / d) * f * 1.1 + (-dy / d) * f * 0.25; } }
-    for (var j = 0; j < 3; j++) { var a = Math.random() * 6.283; sparks.push({ x: px, y: py, vx: Math.cos(a) * 0.5, vy: Math.sin(a) * 0.5 - 0.2, t: now, life: 800, spr: gs(seasonHue()), s: 6 + Math.random() * 6 }); } }
-  function act(px, py, now) { if (py > H * 0.72) waterGround(px, now); else stir(px, py, now); }
+  // rain from the finger (summoned out of the sky): glowing drops fall from above the touch point, down through the tree to the ground
+  function rain(px, py, now) { idle = now; hasRained = true; rainGlow = Math.min(1, rainGlow + 0.09);
+    var sy = Math.max(H * 0.1, Math.min(py, baseY - 10));
+    for (var i = 0; i < 2; i++) raindrops.push({ x: px + (Math.random() * 30 - 15), y: sy - Math.random() * 120, vy: 2.5 + Math.random() * 1.9, s: 7 + Math.random() * 4, hue: 196 + Math.random() * 18 });
+    if (raindrops.length > 90) raindrops.splice(0, raindrops.length - 90);
+    // a gentle touch ring where the finger is, and a nudge to the nearest motes so the canopy stirs under the rain
+    ripples.push({ x: px, y: py, t: now, life: 650, hue: 200 });
+    for (var j = 0; j < tree.motes.length; j += 3) { var m = tree.motes[j]; var mx = sway(m.hx, m.hy, now) + m.ox, dd = (mx - px) * (mx - px) + (m.hy + m.oy - py) * (m.hy + m.oy - py);
+      if (dd < 120 * 120 && dd > 1) { var d = Math.sqrt(dd), ff = (1 - d / 120); m.vy += ff * 0.5; } } }
+  function act(px, py, now) { rain(px, py, now); } // touch anywhere: rain falls from your finger (it waters the ground where it lands)
   function plantNew() { Mt = 0.15; M = 0.15; stage = 0; events = 0; tStart = performance.now(); fruits = []; blossoms = []; build(((tree.seed * 48271 + 11) >>> 0) || 3); }
 
   // canvas-drawn hint pill + season name (no DOM)
@@ -21653,21 +21656,42 @@ var TK2_GAME;
     ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(rx + r, ry); ctx.arcTo(rx + rw, ry, rx + rw, ry + rh, r); ctx.arcTo(rx + rw, ry + rh, rx, ry + rh, r); ctx.arcTo(rx, ry + rh, rx, ry, r); ctx.arcTo(rx, ry, rx + rw, ry, r); ctx.fill();
     ctx.fillStyle = col; ctx.fillText(text, cx, cy + 1); ctx.direction = 'ltr';
   }
-  function drawHints(now) {
+  function drawHints(now, skipPill) {
     var sa = now - seasonAt; if (sa < 3600) { var a = sa < 650 ? sa / 650 : (sa > 2700 ? Math.max(0, 1 - (sa - 2700) / 900) : 1);
       var fs = Math.min(30, W * 0.065); ctx.globalAlpha = a; ctx.font = '800 ' + fs + 'px Heebo,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
       ctx.fillStyle = seasonCol; ctx.shadowBlur = 18; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.fillText(seasonText, W / 2, H * 0.14 + (1 - a) * -6); ctx.shadowBlur = 0; ctx.direction = 'ltr'; ctx.globalAlpha = 1; }
-    if (hintUntil > now) { var left = hintUntil - now, a2 = left < 700 ? left / 700 : 1; var maxW = W * 0.84 - 32;
+    if (!skipPill && hintUntil > now) { var left = hintUntil - now, a2 = left < 700 ? left / 700 : 1; var maxW = W * 0.84 - 32;
       ctx.font = '600 18px Heebo,sans-serif'; var tw = ctx.measureText(hintText).width; var fs2 = tw > maxW ? Math.max(12, 18 * maxW / tw) : 18;
       ctx.globalAlpha = a2; pill(hintText, W / 2, H * 0.9, fs2, 'rgba(232,242,250,.92)', 'rgba(8,12,22,.6)'); ctx.globalAlpha = 1; }
+  }
+  // a glowing fingertip that shows where to touch
+  function drawFinger(x, y, now) {
+    ctx.globalCompositeOperation = 'source-over'; var p = (now % 1500) / 1500;
+    ctx.globalAlpha = (1 - p) * 0.5; ctx.strokeStyle = 'rgba(200,235,250,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 9 + p * 26, 0, 6.283); ctx.stroke();
+    ctx.globalAlpha = 0.26; ctx.fillStyle = 'rgba(170,215,245,1)'; ctx.beginPath(); ctx.arc(x, y, 16, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 0.95; ctx.fillStyle = 'rgba(238,246,255,1)'; ctx.beginPath(); ctx.arc(x, y, 8.5, 0, 6.283); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  // guiding hints in turn: first the sky-rain, then (once a fruit is ripe) picking — a demo finger + a line, until the player does each
+  function drawGuide(now) {
+    if (now - guideAt > 52000) return false; // give up gently after a while
+    var tip = !hasRained ? 'rain' : (!hasPicked ? 'pick' : null); if (!tip) return false;
+    var txt;
+    if (tip === 'rain') { var fx = W * 0.5, fy = H * 0.27 + Math.sin(now * 0.0022) * 10;
+      ctx.globalCompositeOperation = 'lighter';
+      for (var k = 0; k < 4; k++) { var dp = ((now * 0.0013 + k * 0.27) % 1); ctx.globalAlpha = (1 - dp) * 0.6; ctx.drawImage(WATER, fx - 3.5 + (k - 1.5) * 11, fy + 16 + dp * 92, 7, 15); }
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; drawFinger(fx, fy, now); txt = '✋ געו בשמיים — יורד גשם 💧'; }
+    else { var rf = null; for (var i = 0; i < fruits.length; i++) if (!fruits[i].picked && fruits[i].pop > 0.5) { rf = fruits[i]; break; }
+      if (!rf) return false; drawFinger(sway(rf.m.hx, rf.m.hy, now), rf.m.hy, now); txt = '✋ געו בפרי הזוהר — לקטוף 🌟'; }
+    pill(txt, W / 2, H * 0.9, Math.min(18, W * 0.044), 'rgba(236,246,255,.95)', 'rgba(8,12,22,.62)'); return true;
   }
 
   function reset(now) {
     tlayout(); si = 0; stage = 3; events = 0; M = 0.52; Mt = 1; collected = 0; needForNext = 6; lush = 0; starTimer = 0; // open with a lush tree that finishes unfurling in a few seconds, not an empty seedling
     fruits = []; harvest = []; moths = []; blossoms = []; touches = []; ripples = []; sparks = []; blooms = []; plants = [];
     tStart = now - (STAGE_MS - 3400); idle = now; last = now; wateredHinted = false;
+    raindrops = []; rainGlow = 0; hasRained = false; hasPicked = false; guideAt = now; // the guide teaches rain, then picking, in turn
     build(((Math.random() * 1e9) | 0) || 7); makeStars(); litStars(7); // a few stars already out, the night keeps filling
-    say('געו, השקו, קטפו — בקצב שלכם ✨', 6500); showSeason();
+    showSeason();
   }
 
   function render(now) {
@@ -21678,6 +21702,7 @@ var TK2_GAME;
     var tp = Math.min(1, (now - tStart) / STAGE_MS); if (!paused && now - tStart >= STAGE_MS) event();
     M += (Mt - M) * Math.min(1, dt * 0.0011); // a gentle unfurl to full over a few seconds
     if (!paused) { starTimer += dt; if (starTimer > 2300) { starTimer -= 2300; litStars(1); } } // more stars keep coming out with time
+    rainGlow = Math.max(0, rainGlow - dt * 0.0006); // the tree's rain-glow fades after you stop
     var antic = tp * tp * 0.55;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.save();
 
@@ -21711,7 +21736,7 @@ var TK2_GAME;
       m.vx *= 0.90; m.vy *= 0.90; m.ox += m.vx * dt * 0.06; m.oy += m.vy * dt * 0.06; m.ox *= 0.94; m.oy *= 0.94;
       var px = sway(m.hx, m.hy, now) + m.ox + Math.cos(now * 0.0006 * m.dsp + m.ph) * 4 * m.z;
       var py = m.hy + m.oy + Math.sin(now * 0.0007 * m.dsp + m.ph) * 4 * m.z;
-      var breathe = 0.55 + 0.45 * Math.sin(now * 0.0011 + m.ph); var a = mg * m.z * (0.16 + 0.17 * breathe);
+      var breathe = 0.55 + 0.45 * Math.sin(now * 0.0011 + m.ph); var a = mg * m.z * (0.16 + 0.17 * breathe + rainGlow * 0.3);
       if (tcount) { for (var ti = tcount - 1; ti >= 0; ti--) { var tu = touches[ti]; var ag = now - tu.t; if (ag > 900) continue;
           var ddx = px - tu.x, ddy = py - tu.y, dd = ddx * ddx + ddy * ddy; if (dd < 150 * 150) a += (1 - ag / 900) * (1 - Math.sqrt(dd) / 150) * 0.5; } }
       if (a <= 0.003) continue; if (a > 0.9) a = 0.9;
@@ -21746,6 +21771,13 @@ var TK2_GAME;
       sp.x += sp.vx * dt * 0.12; sp.y += sp.vy * dt * 0.12; sp.vy += dt * 0.0016; ctx.globalAlpha = (1 - saa / sp.life) * 0.8; ctx.drawImage(sp.spr, sp.x - sp.s / 2, sp.y - sp.s / 2, sp.s, sp.s); }
     ctx.restore(); ctx.globalAlpha = 1;
 
+    // the rain (unscaled, screen space): glowing drops streak down; where one lands it waters the ground and the garden grows
+    ctx.globalCompositeOperation = 'lighter';
+    for (var dn = raindrops.length - 1; dn >= 0; dn--) { var rd = raindrops[dn]; rd.y += rd.vy * dt * 0.12;
+      if (rd.y >= baseY) { if (Math.random() < 0.3) waterGround(rd.x, now); else ripples.push({ x: rd.x, t: now, life: 650, hue: 200, ground: true }); raindrops.splice(dn, 1); continue; }
+      ctx.globalAlpha = 0.5; ctx.drawImage(WATER, rd.x - rd.s * 0.3, rd.y - rd.s * 1.3, rd.s * 0.6, rd.s * 2.6); }
+    ctx.globalAlpha = 1;
+
     // ground garden (unscaled)
     ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
     for (var gp = 0; gp < plants.length; gp++) { var pl = plants[gp]; var pg = Math.min(1, (now - pl.born) / 1400); var hh = pl.h * pg; var psw = Math.sin(now * 0.0013 + pl.ph) * hh * 0.09;
@@ -21774,10 +21806,8 @@ var TK2_GAME;
     var vg = ctx.createRadialGradient(W / 2, H * 0.55, treeH * 0.5, W / 2, H * 0.55, Math.max(W, H) * 0.82);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
 
-    if (!wateredHinted && plants.length === 0 && events >= 1 && now - idle > 5000 && hintUntil <= now) { wateredHinted = true; say('💧 געו באדמה כדי להצמיח גן אור 🌱', 5200); }
-
     ctx.restore(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-    drawHints(now);
+    var guiding = drawGuide(now); drawHints(now, guiding); // the guide owns the bottom line while it's teaching
     ctx.textAlign = 'start'; ctx.direction = 'ltr';
   }
 
