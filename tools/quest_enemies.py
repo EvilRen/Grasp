@@ -21,10 +21,12 @@ ORDER = {
     'castle': ['skeleton', 'bat', 'knightm', 'ghost', 'mimic', 'snake', 'golem', 'witch', 'dragon'],
     'space': ['drone', 'alien', 'bot', 'octo', 'comet', 'saucer', 'mech', 'brain', 'mother'],
     'throne': ['wisp', 'golemx', 'phoenix', 'robo2', 'hydra', 'shadow'],
+    'heroes': ['knight', 'wizard', 'robot'],  # not a land: the three the player picks, in HEROES order
 }
-GRID = {9: (3, 3), 6: (3, 2)}                 # how many across, how many down
+GRID = {9: (3, 3), 6: (3, 2), 3: (3, 1)}      # how many across, how many down
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'assets', 'quest', 'enemies')
+OUT_HERO = os.path.join(ROOT, 'assets', 'quest', 'heroes')
 KEY = (255, 0, 255)
 TOL = 90
 INSET = 0.02                                  # of the cell, dropped on every side before keying
@@ -61,7 +63,8 @@ def main():
     ids = ORDER[land]
     cols, rows = GRID[len(ids)]
     W, H = sheet.size
-    os.makedirs(OUT, exist_ok=True)
+    out = OUT_HERO if land == 'heroes' else OUT
+    os.makedirs(out, exist_ok=True)
     total = 0
     for i, mid in enumerate(ids):
         c, r = i % cols, i // cols
@@ -78,7 +81,7 @@ def main():
         k = size / max(im.size)
         if k < 1:
             im = im.resize((max(1, round(im.width * k)), max(1, round(im.height * k))), Image.LANCZOS)
-        path = os.path.join(OUT, mid + '.webp')
+        path = os.path.join(out, mid + '.webp')
         im.save(path, 'WEBP', quality=86, method=6)
         kb = os.path.getsize(path) / 1024
         total += kb
