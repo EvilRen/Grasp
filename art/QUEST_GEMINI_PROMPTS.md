@@ -115,3 +115,22 @@ nothing crosses a cell boundary. It writes, in reading order:
 
 If Gemini drifts — uneven cells, a stray symbol, text in a plate — regenerate rather than patch: the layout in the code
 is fixed, and a frame whose window is a few percent off will crop the picture.
+
+---
+
+## The rare row, re-run (one prompt, three frames)
+
+The second sheet's rare row came back with the ATTACK frame gold instead of crimson, so a rare attack reads as a power
+card. Only that row needs redoing; the common and uncommon rows ship as they are. This prompt asks for the three rare
+frames side by side, described to match the row already in the game — gold filigree corners, an arched window, faceted
+gems — with the colour separation corrected.
+
+Save as `art/quest_rares_raw.png`, then:
+
+```
+python3 tools/quest_frames.py art/quest_rares_raw.png --row rare --check    # measure first
+python3 tools/quest_frames.py art/quest_rares_raw.png --row rare            # writes the three *_r.webp
+```
+
+The slicer finds the cards by their gutters, so the three need only be clearly separated — they do not have to sit on
+exact thirds.
