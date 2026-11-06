@@ -32,6 +32,15 @@
 html{ scroll-padding-top:env(safe-area-inset-top,0px); }
 html,body{ height:100%; margin:0; overflow:hidden; background:var(--ink); color:var(--bone);
   font-family:Rubik,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+/* Quest's display face: a slab serif that carries the same character in Hebrew as in Latin, which matters in a bilingual
+   game. Self-hosted under assets/quest/fonts and precached, so it is there offline like every other piece of Quest's art.
+   Suez One, Hagilda & Mooniak, SIL Open Font License 1.1. Only Quest uses it; the rest of Grasp stays on Rubik. */
+@font-face{ font-family:"Suez One"; font-style:normal; font-weight:400; font-display:swap;
+  src:url(/assets/quest/fonts/suezone-hebrew.woff2) format("woff2");
+  unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F; }
+@font-face{ font-family:"Suez One"; font-style:normal; font-weight:400; font-display:swap;
+  src:url(/assets/quest/fonts/suezone-latin.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 #stage{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:none; }
 #stage3d{ position:fixed; inset:0; width:100%; height:100%; pointer-events:none; } /* Strike's WebGL layer, under the 2D canvas */
 button{ font:inherit; cursor:pointer; border:0; border-radius:12px; }
@@ -2080,7 +2089,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.76';
+const APP_VERSION = '1.12.77';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -3611,11 +3620,11 @@ function drawParticles() {
 const HEB = /[\u0590-\u05FF]/, BIDI_NUM = /\u200E?([+\-−]?[×x]?\d[\d,.:]*(?:\s?[×%])?)/g;
 function bidiDir(text) { return lang === 'he' && HEB.test(text) ? 'rtl' : 'ltr'; }
 function bidiText(text) { text = String(text); return lang === 'he' && HEB.test(text) ? text.replace(BIDI_NUM, '\u2066$1\u2069') : text; }
-function textSprite(text, size, color, glow, weight = 700) {
-  const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang;
+function textSprite(text, size, color, glow, weight = 700, fam) {
+  const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang + '|' + (fam || '');
   let sp = TEXTS.get(key); if (sp) return sp;
   if (TEXTS.size > 80) TEXTS.clear();
-  const font = weight + ' ' + size + 'px Rubik, system-ui, sans-serif', dir = bidiDir(text); text = bidiText(text);
+  const font = weight + ' ' + size + 'px ' + (fam || 'Rubik, system-ui, sans-serif'), dir = bidiDir(text); text = bidiText(text);
   ctx.font = font; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size * 1.2, h = Math.ceil(size * 1.6);
   const c = document.createElement('canvas'); c.width = Math.ceil(w * SS); c.height = Math.ceil(h * SS);
   const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir; // Hebrew labels with digits read right-to-left, the digits stay LTR
@@ -22809,9 +22818,10 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   ctx.strokeStyle = mt; ctx.lineWidth = bw; ctx.beginPath(); ctx.roundRect(x + bw / 2, y + bw / 2, w - bw, h - bw, r); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + bw, y + bw, w - bw * 2, h - bw * 2, Math.max(1, r - bw)); ctx.stroke();
   ctx.restore();
-  if (o.text) { const sp = textSprite(o.text, o.fs || 18, o.fg || Q_INK, 'rgba(6,4,16,0.92)', 800); blit(sp, x + w / 2 + (o.tx || 0), y + h / 2 + (o.ty || 0), 0, Math.min(1, (w - 12) / sp.tw), dis ? 0.6 : 1); } }
+  if (o.text) { const sp = textSprite(o.text, o.fs || 18, o.fg || Q_INK, 'rgba(6,4,16,0.92)', 400, Q_DISP); blit(sp, x + w / 2 + (o.tx || 0), y + h / 2 + (o.ty || 0), 0, Math.min(1, (w - 12) / sp.tw), dis ? 0.6 : 1); } }
 function qEmoji(e, x, y, s, a = 1) { resetView(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); ctx.globalAlpha = 1; }
-function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null) { const sp = textSprite(s, size, col, glow, weight); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
+const Q_DISP = '"Suez One", Rubik, Georgia, serif'; // titles, names and buttons; the small explaining lines stay on Rubik
+function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null, fam) { const sp = textSprite(s, size, col, glow, weight, fam); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
 function qBg(land) { // the land's painting (assets/quest/lands/<id>.webp) when it is there, its gradient while it is not
   const L = land || QC.LANDS[0], im = qImg('/assets/quest/lands/' + L.id + '.webp');
   return makeSprite('qbg|' + L.id + '|' + W + 'x' + H + '|' + (im ? 'art' : 'sky'), W, H, 0, 0, (g) => {
@@ -23099,7 +23109,7 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
     if (qUp(c)) { const bw = Math.max(2.4, w * 0.045); g.strokeStyle = '#7CFC6A'; g.lineWidth = Math.max(1.4, w * 0.018); g.beginPath(); g.roundRect(-w / 2 + bw / 2, -h / 2 + bw / 2, w - bw, h - bw, L.rad); g.stroke(); } // upgraded
     qPaintGem(g, c, L);
     const nm = lang === 'he' ? c.he : c.en, fs = Math.max(9, Math.round(w * 0.142)); // the title
-    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '400 ' + fs + 'px ' + Q_DISP; g.direction = lang === 'he' ? 'rtl' : 'ltr';
     const sc = Math.min(1, (w * 0.74) / Math.max(1, g.measureText(nm).width));
     g.save(); g.translate(0, L.nameY); g.scale(sc, sc); g.shadowColor = 'rgba(0,0,0,0.7)'; g.shadowBlur = fs * 0.5; g.shadowOffsetY = fs * 0.06; g.fillStyle = Q_INK; g.fillText(nm, 0, 0); g.restore();
     { const run = qDescRun(c), fs = Math.round(w * 0.165), isz = w * 0.185, gap = w * 0.075; // the rules: the icons drawn, the numbers set beside them
@@ -23137,17 +23147,17 @@ function renderQuest(now) {
 }
 function qDrawPick(now) {
   const P = qP(), rtl = lang === 'he', top = cgTopY(); let y = top + 4;
-  qText('⚔️ ' + qtx('title') + ' 🚀', W / 2, y + 16, 30, '#ffffff', W - 40, 900, 'rgba(0,0,0,0.6)'); y += 42;
+  qText('⚔️ ' + qtx('title') + ' 🚀', W / 2, y + 16, 30, '#ffffff', W - 40, 400, 'rgba(0,0,0,0.6)', Q_DISP); y += 42;
   qText(qtx('sub'), W / 2, y, 14, '#fff6d6', W - 30, 700, 'rgba(0,0,0,0.55)'); y += 30;
-  qText(qtx('pick'), W / 2, y, 17, '#ffffff', 0, 800, 'rgba(0,0,0,0.5)'); y += 16;
+  qText(qtx('pick'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
   const ids = ['knight', 'wizard', 'robot'], cw = Math.min(124, (W - 40) / 3), ch = cw * 1.3;
   ids.forEach((id, i) => { const H0 = QC.HEROES[id], x = W / 2 + ((rtl ? 2 - i : i) - 1) * (cw + 8) - cw / 2, lock = !P.heroes.includes(id), on = quest.pickHero === id;
     qBtn(x, y, cw, ch, () => { if (lock) { quest.msg = { t: performance.now(), text: qtx('locked') }; sfx('boop'); return; } quest.pickHero = id; sfx('tink'); }, { on, dis: lock, r: 18 });
     if (lock) qEmoji('🔒', x + cw / 2, y + ch * 0.32, cw * 0.4); else qHeroDraw(id, H0, x + cw / 2, y + ch * 0.32, cw * 0.42);
-    qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 900, 'rgba(6,4,16,0.9)'); qText(qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qText('❤️ ' + H0.hp, x + cw / 2, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
-  y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 800, 'rgba(0,0,0,0.5)'); y += 16;
+    qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP); qText(qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qText('❤️ ' + H0.hp, x + cw / 2, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
+  y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
   ['short', 'normal', 'epic'].forEach((k, i) => { const bw = Math.min(124, (W - 40) / 3), x = W / 2 + ((rtl ? 2 - i : i) - 1) * (bw + 8) - bw / 2, on = quest.pickLen === k;
-    qBtn(x, y, bw, 64, () => { quest.pickLen = k; sfx('tink'); }, { on, r: 16 }); qText(qtx(k), x + bw / 2, y + 22, 18, Q_INK, bw - 10, 900, 'rgba(6,4,16,0.9)'); qText(qtx(k + 'D'), x + bw / 2, y + 46, 12, '#b9aed6', bw - 8, 700, 'rgba(6,4,16,0.9)');
+    qBtn(x, y, bw, 64, () => { quest.pickLen = k; sfx('tink'); }, { on, r: 16 }); qText(qtx(k), x + bw / 2, y + 22, 18, Q_INK, bw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP); qText(qtx(k + 'D'), x + bw / 2, y + 46, 12, '#b9aed6', bw - 8, 700, 'rgba(6,4,16,0.9)');
     if (P.wins[k]) qEmoji('🏆', x + bw - 10, y + 6, 16); });
   y += 90; const gw = Math.min(260, W - 60);
   qBtn(W / 2 - gw / 2, y, gw, 62, () => qNewRun(quest.pickHero, quest.pickLen), { text: qtx('go'), fs: 26, bg: '#3ddc84', r: 31 });
@@ -23156,11 +23166,11 @@ function qDrawPick(now) {
 const Q_DOOR = { fight: '⚔️', elite: '💀', boss: '👑', rest: '🔥', shop: '🛒', chest: '🎁', event: '❓' };
 function qDrawDoors(now, y0) {
   const r = quest.run, d = r.doors || [], rtl = lang === 'he', n = d.length, dw = Math.min(150, (W - 32 - (n - 1) * 12) / n), dh = dw * 1.5, y = Math.max(y0 + 50, H * 0.36);
-  qText(qtx('choose'), W / 2, y - 26, 20, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)');
+  qText(qtx('choose'), W / 2, y - 26, 20, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   d.forEach((k, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (dw + 12) - dw / 2, bob = Math.sin(now / 400 + i) * 3;
     qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: k === 'boss' ? '#ffb3b3' : k === 'elite' ? '#e7c6ff' : '#fff6d6' });
     resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
-    qEmoji(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.42); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 900, 'rgba(6,4,16,0.9)');
+    qEmoji(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.42); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 400, 'rgba(6,4,16,0.9)', Q_DISP);
     qText(qtx('doorD_' + k), x + dw / 2, y + dh + 22, 14, '#fff6d6', dw + 6, 800, 'rgba(0,0,0,0.6)'); });
   // the rooms of this land: a dot each
   const rooms = QC.roomsOf(r), sp = Math.min(30, (W - 60) / rooms), x0 = W / 2 - sp * (rooms - 1) / 2, yy = y + dh + 74;
@@ -23253,7 +23263,7 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
   ctx.fillStyle = hp; ctx.beginPath(); ctx.roundRect(x, y, cw, chh, 26); ctx.fill();
   ctx.strokeStyle = 'rgba(79,229,210,0.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x + 1.5, y + 1.5, cw - 3, chh - 3, 25); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 4, y + 4, cw - 8, chh - 8, 22); ctx.stroke();
-  qEmoji(pg[0], W / 2, y + 52, 54); qText(pg[1], W / 2, y + 108, 22, Q_INK, cw - 24, 900, 'rgba(6,4,16,0.9)');
+  qEmoji(pg[0], W / 2, y + 52, 54); qText(pg[1], W / 2, y + 108, 22, Q_INK, cw - 24, 400, 'rgba(6,4,16,0.9)', Q_DISP);
   pg[2].forEach((l, i) => qText(l, W / 2, y + 148 + i * 30, 17, '#cfc4e4', cw - 24, 700, 'rgba(6,4,16,0.9)'));
   if (pg[3]) qText(pg[3], W / 2, y + 160 + pg[2].length * 30 + 8, 26, Q_INK, cw - 24, 700, 'rgba(6,4,16,0.9)');
   const dy = y + chh - 92; for (let i = 0; i < pages.length; i++) { resetView(); ctx.beginPath(); ctx.arc(W / 2 + ((lang === 'he' ? pages.length - 1 - i : i) - (pages.length - 1) / 2) * 18, dy, i === D.p ? 6 : 4, 0, TAU); ctx.fillStyle = i === D.p ? '#4fe5d2' : 'rgba(255,255,255,0.25)'; ctx.fill(); }
@@ -23265,13 +23275,13 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
 function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(118, (W - 30) / n - 10); ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
   quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qText('💰' + p, x, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
 function qDrawReward(now, y0) {
-  const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)'); qText('+' + p.gold + ' 💰', W / 2, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
+  const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qText('+' + p.gold + ' 💰', W / 2, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
   let yy = y + 64; if (p.relic) { const R0 = QC.RELICS[p.relic]; qEmoji(R0.e, W / 2, yy + 20, 40); qText(qtx('relic') + ' ' + (lang === 'he' ? R0.he : R0.en), W / 2, yy + 54, 15, '#ffffff', W - 30, 800, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, yy + 74, 13, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); yy += 96; }
-  if (p.cards && !p.took) { qText(qtx('prize'), W / 2, yy + 8, 18, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)'); const h = qPickCards(p.cards, yy + 30 + 85, (id) => { quest.run.deck.push(id); p.took = id; sfx('chime'); quest.log.push('took:' + id); qNext(); }); yy += h + 50; }
+  if (p.cards && !p.took) { qText(qtx('prize'), W / 2, yy + 8, 18, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); const h = qPickCards(p.cards, yy + 30 + 85, (id) => { quest.run.deck.push(id); p.took = id; sfx('chime'); quest.log.push('took:' + id); qNext(); }); yy += h + 50; }
   const bw = 160; qBtn(W / 2 - bw / 2, Math.min(H - 80, yy + 20), bw, 50, () => { quest.log.push('skip'); qNext(); }, { text: p.cards && !p.took ? qtx('skip') : qtx('next'), fs: 18, r: 25 });
 }
 function qDrawRest(now, y0) {
-  const r = quest.run, y = y0 + 60, n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qEmoji('🔥', W / 2, y + 30, 70 + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + 90, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)');
+  const r = quest.run, y = y0 + 60, n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qEmoji('🔥', W / 2, y + 30, 70 + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + 90, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   const bw = Math.min(300, W - 40); qBtn(W / 2 - bw / 2, y + 130, bw, 56, () => { QC.rest(r, 'heal'); sfx('chime'); quest.log.push('rest:heal'); qNext(); }, { text: '❤️ ' + qtx('heal', { n }), fs: 18, r: 28, bg: '#ffc2cc' });
   qBtn(W / 2 - bw / 2, y + 200, bw, 56, () => { quest.deckFor = { k: 'up', done: (id) => { QC.rest(r, 'up', id); sfx('levelup'); quest.log.push('rest:up:' + id); qNext(); } }; }, { text: '⬆️ ' + qtx('up'), fs: 18, r: 28, bg: '#c2f0d0', dis: !r.deck.some(QC.upgradable) });
 }
@@ -23279,7 +23289,7 @@ function qDrawChest(now, y0) { const d = quest.data || {}, y = y0 + 70; qEmoji('
   if (d.relic) { const R0 = QC.RELICS[d.relic]; qEmoji(R0.e, W / 2, y + 150, 46); qText(lang === 'he' ? R0.he : R0.en, W / 2, y + 190, 18, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, y + 214, 14, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); }
   qBtn(W / 2 - 80, y + 250, 160, 50, () => qNext(), { text: qtx('next'), fs: 18, r: 25 }); }
 function qDrawEvent(now, y0) {
-  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), y = y0 + 40, he = lang === 'he'; qEmoji(ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)');
+  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), y = y0 + 40, he = lang === 'he'; qEmoji(ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   if (d.res) { const R = d.res, lines = []; if (R.relic) lines.push(QC.RELICS[R.relic].e + ' ' + (he ? QC.RELICS[R.relic].he : QC.RELICS[R.relic].en)); if (R.card) lines.push('🃏 ' + (he ? QC.cardOf(R.card).he : QC.cardOf(R.card).en)); if (R.removed) lines.push('✂️ ' + (he ? QC.cardOf(R.removed).he : QC.cardOf(R.removed).en));
     lines.forEach((l, i) => qText(l, W / 2, y + 150 + i * 30, 18, '#ffe08a', W - 30, 800, 'rgba(0,0,0,0.6)')); if (R.card) qCard(R.card, W / 2, y + 260, 90);
     qBtn(W / 2 - 80, Math.min(H - 80, y + 340), 160, 50, () => { if (R.skip && quest.run.room < QC.roomsOf(quest.run) - 3) QC.nextRoom(quest.run); qNext(); }, { text: qtx('next'), fs: 18, r: 25 }); return; }
@@ -23287,7 +23297,7 @@ function qDrawEvent(now, y0) {
     qBtn(W / 2 - bw / 2, y + 140 + k * 72, bw, 60, () => { if (!ok) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } const res = QC.doEvent(quest.run, ev.id, k); d.res = res || {}; sfx('chime'); quest.log.push('event:' + ev.id + ':' + k); qGo('event', d); }, { text: he ? o.he : o.en, fs: 16, r: 22, dis: !ok }); });
 }
 function qDrawShop(now, y0) {
-  const d = quest.data, r = quest.run, y = y0 + 20; qText('🛒 ' + qtx('shop'), W / 2, y + 10, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)');
+  const d = quest.data, r = quest.run, y = y0 + 20; qText('🛒 ' + qtx('shop'), W / 2, y + 10, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   const row1 = d.cards.slice(0, 3), row2 = d.cards.slice(3); const buyCard = (id) => { const it = d.cards.find((q) => q.id === id && !q.sold); if (!it) return; if (r.gold < it.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; sfx('boop'); return; } r.gold -= it.price; it.sold = true; r.deck.push(id); sfx('coin'); quest.log.push('buy:' + id); qGo('shop', d); };
   const left = (row) => row.filter((q) => !q.sold); const cw = Math.min(100, (W - 40) / 3 - 10), rh = cw * 1.42 + 52;
   qPickCards(left(row1).map((q) => q.id), y + 40 + cw * 0.71, buyCard, { price: left(row1).map((q) => q.price) });
@@ -23302,7 +23312,7 @@ function qDrawShop(now, y0) {
 function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp fire), to remove (shop)
   const D = quest.deckFor, r = quest.run, ids = D.k === 'up' ? r.deck.filter(QC.upgradable) : r.deck.slice(); quest.btns = [];
   resetView(); ctx.fillStyle = 'rgba(15,10,35,0.9)'; ctx.fillRect(0, 0, W, H);
-  qText(D.k === 'up' ? qtx('upPick') : D.k === 'rm' ? qtx('rmPick') : qtx('deck') + ' (' + r.deck.length + ')', W / 2, cgTopY() + 4, 20, '#ffffff', W - 30, 900);
+  qText(D.k === 'up' ? qtx('upPick') : D.k === 'rm' ? qtx('rmPick') : qtx('deck') + ' (' + r.deck.length + ')', W / 2, cgTopY() + 4, 20, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   const cols = W > 600 ? 6 : 4, cw = Math.min(92, (W - 20) / cols - 8), ch = cw * 1.42, top = cgTopY() + 30, rows = Math.ceil(ids.length / cols), maxS = Math.max(0, rows * (ch + 8) - (H - top - 90));
   quest.scroll = Math.max(0, Math.min(maxS, quest.scroll || 0));
   ids.sort().forEach((id, i) => { const c = i % cols, rr = Math.floor(i / cols), x = W / 2 + ((lang === 'he' ? cols - 1 - c : c) - (cols - 1) / 2) * (cw + 8), y = top + ch / 2 + rr * (ch + 8) - quest.scroll; if (y < top - ch || y > H - 70) return;
@@ -23311,7 +23321,7 @@ function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp
   qBtn(W - 146, H - 64, 130, 46, () => { quest.deckFor = null; quest.scroll = 0; sfx('click'); }, { text: qtx('close'), fs: 17, r: 23 });
 }
 function qDrawEnd(now) {
-  const e = quest.end || {}, top = cgTopY() + 30; qEmoji(e.won ? '🏆' : '💫', W / 2, top + 60, 96 + 6 * Math.sin(now / 250)); qText(e.won ? qtx('victory') : qtx('lost'), W / 2, top + 140, 34, e.won ? '#ffe08a' : '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)');
+  const e = quest.end || {}, top = cgTopY() + 30; qEmoji(e.won ? '🏆' : '💫', W / 2, top + 60, 96 + 6 * Math.sin(now / 250)); qText(e.won ? qtx('victory') : qtx('lost'), W / 2, top + 140, 34, e.won ? '#ffe08a' : '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, top + 180, 18, '#ffffff', W - 30, 700, 'rgba(0,0,0,0.6)');
   const st = [[e.fights, 'stFights', '⚔️'], [e.bosses, 'stBoss', '👑'], [e.coins, 'stCoins', '🪙']], rtl = lang === 'he';
   st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * 100; qEmoji(ic, x, top + 230, 28); qText(String(v || 0), x, top + 266, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)'); qText(qtx(k), x, top + 290, 13, '#ffe08a', 90, 700, 'rgba(0,0,0,0.6)'); });
