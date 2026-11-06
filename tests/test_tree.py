@@ -46,6 +46,17 @@ async def tree_suite(b):
         s_before = await page.evaluate("__grasp.tree.state().stars")
         await page.evaluate("__grasp.tree.touchBug()"); await page.wait_for_timeout(300)
         check(tag + ': touching the creature bursts light and lights a star', (await page.evaluate("__grasp.tree.state().stars")) >= s_before, {'before': s_before, 'after': await page.evaluate("__grasp.tree.state().stars")})
+        # ambient music: plays while in the tree (audio running), stops on mute, returns on unmute, stops on leaving
+        m0 = await page.evaluate("__grasp.tree.music()")
+        if m0['audio'] == 'running':  # (headless with --autoplay-policy=no-user-gesture-required; skip the assert where audio can't run)
+            check(tag + ': ambient music plays in the tree', m0['on'], m0)
+            await page.evaluate("setMuted(true)"); await page.wait_for_timeout(300)
+            check(tag + ': mute stops the music', not (await page.evaluate("__grasp.tree.music()"))['on'])
+            await page.evaluate("setMuted(false)"); await page.wait_for_timeout(300)
+            check(tag + ': unmute brings it back', (await page.evaluate("__grasp.tree.music()"))['on'])
+            await page.tap('#pauseBtn'); await wait(page, "mode === 'none'", 4000); await page.wait_for_timeout(200)
+            check(tag + ': leaving the room stops the music', not (await page.evaluate("__grasp.tree.music()"))['on'])
+            await page.goto(BASE + '/tree'); await page.wait_for_function("window.__grasp && __grasp.tree && gameMode === 'tree'")  # back for the screenshot
         await page.screenshot(path=OUT + 'tree_%s.png' % ('he' if he else 'en'))
         # the Little ones tile exists with its icon
         tile = await page.evaluate("""(() => { const b = document.querySelector('#littlePick [data-mode="tree"]'); if (!b) return null; return { ic: b.querySelector('.ic') ? b.querySelector('.ic').dataset.ic : null, lb: b.querySelector('.lb') ? b.querySelector('.lb').textContent.trim() : null }; })()""")

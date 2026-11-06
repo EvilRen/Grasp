@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.60';
+const APP_VERSION = '1.12.61';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -16122,6 +16122,7 @@ function goHome() {
   if (gameMode === 'busy') busyQuiet(); else toneOff(); // no tone carries on to the start screen
   if (cgOn()) cgLeave(); // (the camera games: the backing beat stops, the camera prompt closes)
   if (tgOn()) tgLeave(); // (the Little ones games: Colors' camera stops)
+  try { if (window.__treeAudioStop) window.__treeAudioStop(); } catch (e) {} // (Glow Tree: its ambient music stops)
   if (gameMode === 'smash') { smash.endAt = Infinity; smash.punching = false; smash.prev = null; smash.taps.length = 0; smFlushTrack(performance.now(), true); } // the clock stops; the next start deals a fresh run
   closeMenu(false); unpauseGame();
   const keepCam = mode === 'camera' && !!stream && !!landmarker && inputPref() === 'camera'; // (panel fix: once the camera is chosen it stays on: the start screen, the maps and the picker answer to the hand)
@@ -21623,6 +21624,7 @@ var TK2_GAME;
     if (blossoms.length > 80) blossoms = blossoms.slice(-80);
     spawnMoth(); if (si % 2 === 0) spawnMoth();
     blooms.push({ t: performance.now(), y: baseY - treeH * 0.55, hue: SEASONS[si].hues[0], big: true });
+    tmChord(performance.now(), [0, 4, 7, 12], 0.1); // a gentle chord as the season turns
     showSeason(); buzz([18, 50, 22]); }
   function spawnMoth() { moths.push({ cx: baseX + (Math.random() * W * 0.5 - W * 0.25), cy: baseY - treeH * (0.4 + Math.random() * 0.5), ang: Math.random() * 6.283, r: treeH * (0.08 + Math.random() * 0.12), sp: (Math.random() < 0.5 ? 1 : -1) * (0.2 + Math.random() * 0.3), wph: Math.random() * 6.283, hue: seasonHue(), drift: Math.random() * 6.283 }); if (moths.length > 10) moths.shift(); }
   function pick(f, fx, now) { f.picked = true; f.t = now; f.m.used = false; collected++;
@@ -21632,6 +21634,7 @@ var TK2_GAME;
     for (var k = 0; k < 26; k++) { var a = Math.random() * 6.283, s = Math.random() * 1.8 + 0.5; sparks.push({ x: fx, y: f.m.hy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.6, t: now, life: 1500, spr: FRUIT[f.hue], s: 10 + Math.random() * 10 }); } // the fruit's own confetti
     harvest.push({ x: fx, y: f.m.hy, ph: Math.random() * 6.283, sp: 0.25 + Math.random() * 0.4, bl: Math.random() * 6.283, hue: f.hue, drift: -0.2 - Math.random() * 0.2 });
     litStars(4); hasPicked = true;
+    if (tm.on && audio) tmBell(PENTA[(Math.random() * 4 | 0) + 2] + 24, audio.currentTime, 0.13); // a bright bell on a pick
     buzz([14, 26, 20]); if (collected >= needForNext) advanceSeason(); }
   function newPlant(px, now) { var ty = (Math.random() * 3) | 0, p = { x: px, born: now, h: treeH * (0.1 + Math.random() * 0.13), ty: ty, hue: seasonHue(), ph: Math.random() * 6.283 };
     if (ty === 0) { p.blades = []; var nb = 3 + ((Math.random() * 3) | 0); for (var k = 0; k < nb; k++) p.blades.push({ a: (Math.random() - 0.5) * 0.6, hh: 0.62 + Math.random() * 0.55, hue: seasonHue() }); }
@@ -21671,6 +21674,40 @@ var TK2_GAME;
     for (var k = 0; k < 20; k++) { var a = Math.random() * 6.283, s = Math.random() * 2 + 0.6; sparks.push({ x: c.x, y: c.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, t: now, life: 1000, spr: gs(c.hue), s: 9 + Math.random() * 8 }); }
     litStars(2); c.hue = seasonHue(); critterTarget(now); c.retarget = now + 1300; }
   function plantNew() { Mt = 0.15; M = 0.15; stage = 0; events = 0; tStart = performance.now(); fruits = []; blossoms = []; build(((tree.seed * 48271 + 11) >>> 0) || 3); }
+
+  // ---- calm ambient music (generated, no files): a soft evolving drone bed + sparse pentatonic bells; shares the app's AudioContext + mute + master bus ----
+  var tm = { on: false, ducked: false, bus: null, lp: null, nodes: [], timer: 0, next: 0, root: 146.83 }; // root ~ D3
+  var PENTA = [0, 2, 4, 7, 9, 12, 14, 16]; // major pentatonic, two octaves
+  function tmFreq(semi) { return tm.root * Math.pow(2, semi / 12); }
+  function tmBell(semi, t0, peak) { if (!audio || !tm.bus) return; try { var f = tmFreq(semi), dest = tm.bus; // bells ride post-lowpass (bright), under the master fade
+    for (var h = 0; h < 3; h++) { var o = audio.createOscillator(), g = audio.createGain(); o.type = 'sine'; o.frequency.value = f * [1, 2.01, 3.02][h];
+      var p = peak * [1, 0.38, 0.16][h], dur = 2.8 - h * 0.6; g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(p, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(dest); o.start(t0); o.stop(t0 + dur + 0.05); } } catch (e) {} }
+  function tmChord(now, semis, peak) { if (!tm.on || !audio) return; var t0 = audio.currentTime; for (var i = 0; i < semis.length; i++) tmBell(semis[i], t0 + i * 0.16, peak || 0.09); }
+  function tmSched() { if (!tm.on || !audio) { return; } var t0 = audio.currentTime; if (tm.next < t0) tm.next = t0 + 0.2;
+    while (tm.next < t0 + 1.3) { if (Math.random() < 0.55) tmBell(PENTA[(Math.random() * PENTA.length) | 0] + 12, tm.next, 0.085 + Math.random() * 0.05); tm.next += 1.5 + Math.random() * 1.9; } }
+  function tmStart() { if (tm.on || muted || !audio || audio.state !== 'running') return;
+    try { var t0 = audio.currentTime;
+      tm.bus = audio.createGain(); tm.bus.gain.setValueAtTime(0.0001, t0); tm.bus.gain.linearRampToValueAtTime(0.6, t0 + 4); tm.bus.connect(audioBus()); // master (slow fade-in, duck)
+      tm.lp = audio.createBiquadFilter(); tm.lp.type = 'lowpass'; tm.lp.frequency.value = 850; tm.lp.Q.value = 0.6; tm.lp.connect(tm.bus); // the drone bed is warm (filtered); bells bypass it
+      var flfo = audio.createOscillator(), fdep = audio.createGain(); flfo.frequency.value = 0.045; fdep.gain.value = 320; flfo.connect(fdep); fdep.connect(tm.lp.frequency); flfo.start(t0); tm.nodes.push(flfo); // the bed breathes
+      var voices = [0, 7, 12, 19]; // root, fifth, octave, octave+fifth
+      for (var i = 0; i < voices.length; i++) { var f = tmFreq(voices[i]);
+        for (var d = 0; d < 2; d++) { var o = audio.createOscillator(), g = audio.createGain(); o.type = i < 2 ? 'sine' : 'triangle'; o.frequency.value = f * (d ? 1.004 : 0.996);
+          g.gain.value = (0.085 / voices.length) * (i === 0 ? 1.5 : 1);
+          var alfo = audio.createOscillator(), adep = audio.createGain(); alfo.frequency.value = 0.025 + i * 0.015; adep.gain.value = g.gain.value * 0.5; alfo.connect(adep); adep.connect(g.gain); alfo.start(t0);
+          o.connect(g); g.connect(tm.lp); o.start(t0); tm.nodes.push(o, alfo); } }
+      tm.on = true; tm.ducked = false; tm.next = t0 + 2.5; tm.timer = setInterval(tmSched, 800);
+    } catch (e) { tm.on = false; } }
+  function tmStop() { if (!tm.on) return; tm.on = false; if (tm.timer) { clearInterval(tm.timer); tm.timer = 0; }
+    try { var t0 = audio.currentTime; if (tm.bus) tm.bus.gain.setTargetAtTime(0.0001, t0, 0.5); var ns = tm.nodes.slice(); setTimeout(function () { for (var i = 0; i < ns.length; i++) { try { ns[i].stop(); } catch (e) {} } }, 2000); } catch (e) {}
+    tm.nodes = []; tm.bus = null; tm.lp = null; }
+  function tmTick(paused) { // called every frame: start when we can, stop on mute / leaving / background preview, duck on pause
+    var playing = (typeof mode === 'undefined' || mode !== 'none'); // only while the tree is the game in play (not a start-screen preview render)
+    if (!playing || !audio || audio.state !== 'running' || muted) { if (tm.on) tmStop(); return; }
+    if (!tm.on) tmStart();
+    if (tm.on && paused !== tm.ducked) { tm.ducked = paused; try { tm.bus.gain.setTargetAtTime(paused ? 0.14 : 0.6, audio.currentTime, 0.3); } catch (e) {} } }
+  try { window.__treeAudioStop = tmStop; } catch (e) {} // goHome() calls this when leaving the room
 
   // canvas-drawn hint pill + season name (no DOM)
   function pill(text, cx, cy, fs, col, bg) {
@@ -21718,6 +21755,7 @@ var TK2_GAME;
     raindrops = []; rainGlow = 0; petals = []; puddles = []; critter = null; critterAt = now; hasRained = false; hasPicked = false; hasShaken = false; guideAt = now; // the guide teaches rain, picking, then shaking, in turn
     build(((Math.random() * 1e9) | 0) || 7); makeStars(); litStars(7); // a few stars already out, the night keeps filling
     showSeason();
+    try { audioInit(); } catch (e) {} // unlock the shared AudioContext so the ambient music can start (tmTick starts it once it is running)
   }
 
   function render(now) {
@@ -21730,6 +21768,7 @@ var TK2_GAME;
     if (!paused) { starTimer += dt; if (starTimer > 2300) { starTimer -= 2300; litStars(1); } } // more stars keep coming out with time
     rainGlow = Math.max(0, rainGlow - dt * 0.0006); // the tree's rain-glow fades after you stop
     if (!paused) critterTick(now, dt);
+    tmTick(paused); // the calm ambient music
     var antic = tp * tp * 0.55;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.save();
 
@@ -21876,6 +21915,7 @@ var TK2_GAME;
     fast: function () { M = 1; Mt = 1; for (var i = 0; i < STAGES + 2; i++) event(); },
     water: function (px) { waterGround(px, performance.now()); }, pickAt: function (x, y) { down({ x: x, y: y }, performance.now()); },
     shake: function (x, y) { shake(x == null ? baseX : x, y == null ? baseY - treeH * 0.58 : y, performance.now()); },
+    music: function () { return { on: tm.on, audio: audio ? audio.state : 'none', muted: muted }; },
     bug: function () { spawnCritter(performance.now()); return { x: critter.x, y: critter.y }; }, bugAt: function () { return critter ? { x: critter.x, y: critter.y } : null; }, touchBug: function () { if (critter) critterTouch(performance.now()); },
     fpos: function () { return fruits.filter(function (f) { return !f.picked && f.pop > 0.5; }).map(function (f) { return { x: sway(f.m.hx, f.m.hy, performance.now()), y: f.m.hy }; }); } }; } catch (e) {}
 })();
