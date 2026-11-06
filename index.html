@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.61';
+const APP_VERSION = '1.12.62';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21555,7 +21555,7 @@ var TK2_GAME;
   ];
   function rng(s) { s = s >>> 0 || 1; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
   function gauss(R) { return (R() + R() + R() - 1.5) * 0.9; }
-  var MAXDEPTH = 9, GROWSPAN = 0.14, STAGE_MS = 22000, STAGES = 7;
+  var MAXDEPTH = 9, GROWSPAN = 0.14, STAGE_MS = 34000, STAGES = 7; // the wait between blooms / fruit (the moon fills over this); unhurried
   var baseX = 0, baseY = 0, treeH = 0, CAP = 850, lastW = 0, lastH = 0, starField = null, starFieldH = 0, starTimer = 0;
   var si = 0, stage = 0, tStart = 0, events = 0, M = 0.15, Mt = 0.15, collected = 0, needForNext = 6, lush = 0;
   var tree = { seed: 7, br: [], motes: [] }, stars = [], fruits = [], harvest = [], moths = [], blossoms = [], touches = [], ripples = [], sparks = [], blooms = [], plants = [], raindrops = [], petals = [], puddles = [];
@@ -21618,7 +21618,7 @@ var TK2_GAME;
     blooms.push({ t: performance.now(), y: baseY - treeH * M * 0.72, hue: SEASONS[si].hues[0] });
     for (var i = 0; i < 26; i++) { var a = Math.random() * 6.283, s = Math.random() * 1.5 + 0.3; sparks.push({ x: baseX + (Math.random() * 90 - 45), y: baseY - treeH * M * 0.72, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, t: performance.now(), life: 1400, spr: gs(seasonHue()), s: 8 + Math.random() * 10 }); }
     if (collected === 0 && fruits.length === 1) say('🌟 נדלק פרי אור — געו בו כשבא לכם', 5000); }
-  function advanceSeason() { si = (si + 1) % SEASONS.length; lush = Math.min(1, lush + 0.2); needForNext = collected + 6 + si;
+  function advanceSeason() { si = (si + 1) % SEASONS.length; lush = Math.min(1, lush + 0.2); needForNext = collected + 9 + si;
     for (var i = 0; i < tree.motes.length; i++) tree.motes[i].tgt = seasonHue();
     for (var b = 0; b < 10 + (si * 2); b++) { var mm = tree.motes[(Math.random() * tree.motes.length) | 0]; blossoms.push({ m: mm, born: performance.now(), hue: SEASONS[si].hues[(Math.random() * SEASONS[si].hues.length) | 0], ph: Math.random() * 6.283, s: 0.7 + Math.random() * 0.6 }); }
     if (blossoms.length > 80) blossoms = blossoms.slice(-80);
@@ -21749,7 +21749,7 @@ var TK2_GAME;
   }
 
   function reset(now) {
-    tlayout(); si = 0; stage = 3; events = 0; M = 0.52; Mt = 1; collected = 0; needForNext = 6; lush = 0; starTimer = 0; // open with a lush tree that finishes unfurling in a few seconds, not an empty seedling
+    tlayout(); si = 0; stage = 3; events = 0; M = 0.52; Mt = 1; collected = 0; needForNext = 9; lush = 0; starTimer = 0; // open with a lush tree that finishes unfurling in a few seconds, not an empty seedling
     fruits = []; harvest = []; moths = []; blossoms = []; touches = []; ripples = []; sparks = []; blooms = []; plants = [];
     tStart = now - (STAGE_MS - 3400); idle = now; last = now; wateredHinted = false;
     raindrops = []; rainGlow = 0; petals = []; puddles = []; critter = null; critterAt = now; hasRained = false; hasPicked = false; hasShaken = false; guideAt = now; // the guide teaches rain, picking, then shaking, in turn
