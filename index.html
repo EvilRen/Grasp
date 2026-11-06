@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.66';
+const APP_VERSION = '1.12.67';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22708,7 +22708,8 @@ const QS = {
 };
 function qtx(k, v) { let s = (QS[lang] || QS.en)[k] || QS.en[k] || k; if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]); return s; }
 const QD = { // a card's text: the short line (icons) and the long one (words)
-  ic: { dmg: '⚔️', blk: '🛡️', draw: '🃏', en: '⚡', weak: '😵', vul: '🎯', poi: '🧪', str: '💪', heal: '❤️', thorns: '🌵', pblk: '🛡️', pstr: '💪', ppoi: '🧪', pdraw: '🃏', pen: '⚡', blkdmg: '⚔️' },
+  ic: { dmg: '⚔️', blk: '🛡️', draw: '🃏', en: '⚡', weak: '😵', vul: '🎯', poi: '🧪', str: '💪', heal: '❤️', thorns: '🌵', pblk: '🛡️', pstr: '💪', ppoi: '🧪', pdraw: '🃏', pen: '⚡', blkdmg: '⚔️' }, // (the words below; the drawn icons are Q_IC, named by ik)
+  ik: { dmg: 'dmg', blk: 'blk', draw: 'draw', en: 'en', weak: 'weak', vul: 'vul', poi: 'poi', str: 'str', heal: 'heal', thorns: 'thorns', pblk: 'blk', pstr: 'str', ppoi: 'poi', pdraw: 'draw', pen: 'en', blkdmg: 'dmg' },
   en: { dmg: 'Deal {n}', blk: 'Block {n}', draw: 'Draw {n}', en: '+{n} energy', weak: 'Weak {n}', vul: 'Exposed {n}', poi: 'Poison {n}', str: '+{n} strength', heal: 'Heal {n}', thorns: 'Thorns {n}', pblk: 'Every turn: block {n}', pstr: 'Every turn: +{n} strength', ppoi: 'Every turn: poison {n} on all', pdraw: 'Every turn: draw {n} more', pen: 'Every turn: +{n} energy', blkdmg: 'Hit as hard as your block', x: ' ×{x}', all: ' (all)', exh: 'Once a fight' },
   he: { dmg: '{n} נזק', blk: '{n} הגנה', draw: 'שולפים {n}', en: '+{n} אנרגיה', weak: 'חולשה {n}', vul: 'פגיעות {n}', poi: 'רעל {n}', str: '+{n} כוח', heal: 'ריפוי {n}', thorns: 'קוצים {n}', pblk: 'בכל תור: {n} הגנה', pstr: 'בכל תור: +{n} כוח', ppoi: 'בכל תור: רעל {n} לכולם', pdraw: 'בכל תור: עוד {n} קלפים', pen: 'בכל תור: +{n} אנרגיה', blkdmg: 'מכה בגובה ההגנה', x: ' ×{x}', all: ' (לכולם)', exh: 'פעם בקרב' },
 };
@@ -22799,6 +22800,130 @@ function qBg(land) { const L = land || QC.LANDS[0]; return makeSprite('qbg|' + L
   const r = rng(L.id.length * 97 + W); if (L.id === 'space' || L.id === 'throne') { g.fillStyle = '#ffffff'; for (let i = 0; i < 90; i++) { g.globalAlpha = 0.3 + r() * 0.7; g.beginPath(); g.arc(r() * W, r() * H, 0.6 + r() * 1.6, 0, TAU); g.fill(); } g.globalAlpha = 1; }
   else { g.fillStyle = 'rgba(255,255,255,0.06)'; for (let i = 0; i < 30; i++) { g.beginPath(); g.arc(r() * W, r() * H, 8 + r() * 30, 0, TAU); g.fill(); } }
   g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(W / 2, H * 0.62, W * 0.7, H * 0.08, 0, 0, TAU); g.fill(); }); }
+/* ---- the status and resource icons, drawn in code. They sit at 11-20px on a card, in an intent bubble and in the HUD, where a painted
+   image muddies, so each is a path: crisp at any size and any DPR, and the same glyph everywhere the thing it names appears. Every icon
+   is drawn with a dark contour first, so it reads on the pale intent bubble as well as on a dark card. The palette is the game's key:
+   teal energy, steel-and-teal block, gold strength, crimson heal, poison green. ---- */
+function qIkS(g, path, s, fill, line) { // a shape with its contour: the dark stroke under the fill is what keeps it legible when tiny
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  path(); g.strokeStyle = 'rgba(0,0,0,0.78)'; g.lineWidth = s * 0.17; g.stroke();
+  path(); g.fillStyle = fill; g.fill();
+  if (line) { path(); g.strokeStyle = line; g.lineWidth = s * 0.05; g.stroke(); }
+}
+function qIkArrow(g, s, dir, col) { // up for stronger, down for weaker: one shape, one meaning, told apart by direction and colour
+  const p = () => { g.beginPath(); g.moveTo(0, dir * 0.48 * s); g.lineTo(0.38 * s, dir * -0.02 * s); g.lineTo(0.16 * s, dir * -0.02 * s);
+    g.lineTo(0.16 * s, dir * -0.46 * s); g.lineTo(-0.16 * s, dir * -0.46 * s); g.lineTo(-0.16 * s, dir * -0.02 * s); g.lineTo(-0.38 * s, dir * -0.02 * s); g.closePath(); };
+  qIkS(g, p, s, col);
+}
+function qIkCard(g, s, col) { // a card off a pile: one behind, one in front
+  g.save(); g.rotate(-0.17);
+  qIkS(g, () => { g.beginPath(); g.roundRect(-0.36 * s, -0.40 * s, 0.48 * s, 0.70 * s, 0.09 * s); }, s, '#3b3558');
+  qIkS(g, () => { g.beginPath(); g.roundRect(-0.14 * s, -0.30 * s, 0.48 * s, 0.70 * s, 0.09 * s); }, s, col);
+  g.restore();
+}
+const Q_IC = { // each draws itself centred on (0, 0), about s across
+  en: (g, s) => { // energy: the crystal, cut like the cost gem on a card
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, -0.50 * s); g.lineTo(0.33 * s, -0.21 * s); g.lineTo(0.26 * s, 0.26 * s); g.lineTo(0, 0.50 * s); g.lineTo(-0.26 * s, 0.26 * s); g.lineTo(-0.33 * s, -0.21 * s); g.closePath(); }, s, '#4fe5d2');
+    const facet = (k) => { g.beginPath(); g.moveTo(0, -0.34 * s); g.lineTo(k * 0.16 * s, -0.15 * s); g.lineTo(k * 0.11 * s, 0.20 * s); g.lineTo(0, 0.32 * s); g.closePath(); g.fill(); };
+    g.fillStyle = 'rgba(255,255,255,0.55)'; facet(-1); g.fillStyle = 'rgba(6,40,46,0.30)'; facet(1); // lit from the top-left, like everything else
+  },
+  blk: (g, s) => { // block: the shield
+    const w = 0.40 * s, t = -0.44 * s, b = 0.47 * s;
+    qIkS(g, () => { g.beginPath(); g.moveTo(-w, t); g.lineTo(w, t); g.lineTo(w, 0.04 * s); g.quadraticCurveTo(w * 0.92, b * 0.72, 0, b); g.quadraticCurveTo(-w * 0.92, b * 0.72, -w, 0.04 * s); g.closePath(); }, s, '#cdd8e6');
+    const w2 = w * 0.58, t2 = t + 0.13 * s, b2 = b - 0.16 * s;
+    g.fillStyle = '#2f8f8a'; g.beginPath(); g.moveTo(-w2, t2); g.lineTo(w2, t2); g.lineTo(w2, 0.03 * s); g.quadraticCurveTo(w2 * 0.92, b2 * 0.72, 0, b2); g.quadraticCurveTo(-w2 * 0.92, b2 * 0.72, -w2, 0.03 * s); g.closePath(); g.fill();
+  },
+  dmg: (g, s) => { // damage: the sword, blade and gold guard as wide as the shield beside it
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, -0.50 * s); g.lineTo(0.21 * s, -0.19 * s); g.lineTo(0.21 * s, 0.10 * s); g.lineTo(-0.21 * s, 0.10 * s); g.lineTo(-0.21 * s, -0.19 * s); g.closePath(); }, s, '#e4ebf3');
+    g.fillStyle = 'rgba(104,126,158,0.5)'; g.beginPath(); g.moveTo(0, -0.42 * s); g.lineTo(0.17 * s, -0.17 * s); g.lineTo(0.17 * s, 0.09 * s); g.lineTo(0, 0.09 * s); g.closePath(); g.fill(); // the shaded side
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.35 * s, 0.08 * s, 0.70 * s, 0.13 * s, 0.06 * s); }, s, '#d2a33a');
+    qIkS(g, () => { g.beginPath(); g.roundRect(-0.10 * s, 0.21 * s, 0.20 * s, 0.29 * s, 0.07 * s); }, s, '#8e1d2f');
+  },
+  poi: (g, s) => { // poison: the drop
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, -0.50 * s); g.bezierCurveTo(0.34 * s, -0.06 * s, 0.40 * s, 0.16 * s, 0.26 * s, 0.33 * s);
+      g.bezierCurveTo(0.12 * s, 0.50 * s, -0.12 * s, 0.50 * s, -0.26 * s, 0.33 * s); g.bezierCurveTo(-0.40 * s, 0.16 * s, -0.34 * s, -0.06 * s, 0, -0.50 * s); g.closePath(); }, s, '#6fe04a');
+    g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(-0.11 * s, 0.16 * s, 0.08 * s, 0.12 * s, -0.4, 0, TAU); g.fill();
+  },
+  str: (g, s) => qIkArrow(g, s, -1, '#ffd23f'), // strength: up
+  weak: (g, s) => qIkArrow(g, s, 1, '#a79ad8'), // weak: down
+  vul: (g, s) => { // vulnerable: the target
+    const r = 0.42 * s;
+    qIkS(g, () => { g.beginPath(); g.arc(0, 0, r, 0, TAU); }, s, '#ff9a5a');
+    g.fillStyle = '#2a1424'; g.beginPath(); g.arc(0, 0, r * 0.56, 0, TAU); g.fill();
+    g.fillStyle = '#ff9a5a'; g.beginPath(); g.arc(0, 0, r * 0.24, 0, TAU); g.fill();
+  },
+  thorns: (g, s) => { // thorns: it hurts to hit
+    qIkS(g, () => { g.beginPath(); for (let i = 0; i < 6; i++) { const a0 = i / 6 * TAU - Math.PI / 2, a1 = a0 + TAU / 12;
+      g.lineTo(Math.cos(a0) * 0.50 * s, Math.sin(a0) * 0.50 * s); g.lineTo(Math.cos(a1) * 0.21 * s, Math.sin(a1) * 0.21 * s); } g.closePath(); }, s, '#cdd8e6');
+    g.fillStyle = '#ff6a78'; g.beginPath(); g.arc(0, 0, 0.16 * s, 0, TAU); g.fill();
+  },
+  heal: (g, s) => { // heal: the heart
+    const r = 0.52 * s;
+    qIkS(g, () => { g.beginPath(); g.moveTo(0, r * 0.92); g.bezierCurveTo(-r * 1.30, r * 0.06, -r * 0.74, -r * 1.06, 0, -r * 0.40);
+      g.bezierCurveTo(r * 0.74, -r * 1.06, r * 1.30, r * 0.06, 0, r * 0.92); g.closePath(); }, s, '#ff5a6e');
+    g.fillStyle = 'rgba(255,255,255,0.45)'; g.beginPath(); g.ellipse(-r * 0.40, -r * 0.32, r * 0.20, r * 0.13, -0.6, 0, TAU); g.fill();
+  },
+  draw: (g, s) => qIkCard(g, s, '#f6ecd4'), // the draw pile
+  disc: (g, s) => qIkCard(g, s, '#8b85a6'), // the used pile
+  loop: (g, s) => { // a power: every turn, again
+    const r = 0.36 * s, a = TAU - 0.45, hx = Math.cos(a) * r, hy = Math.sin(a) * r;
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = 'rgba(0,0,0,0.78)'; g.lineWidth = s * 0.29; g.beginPath(); g.arc(0, 0, r, 0.6, a); g.stroke();
+    g.strokeStyle = '#ffd23f'; g.lineWidth = s * 0.15; g.beginPath(); g.arc(0, 0, r, 0.6, a); g.stroke();
+    qIkS(g, () => { g.beginPath(); g.moveTo(hx + 0.19 * s, hy - 0.04 * s); g.lineTo(hx - 0.09 * s, hy - 0.17 * s); g.lineTo(hx - 0.05 * s, hy + 0.15 * s); g.closePath(); }, s, '#ffd23f');
+  },
+  all: (g, s) => { for (let i = 0; i < 3; i++) { const x = (i - 1) * 0.31 * s; qIkS(g, () => { g.beginPath(); g.arc(x, 0, 0.13 * s, 0, TAU); }, s, '#ffd98a'); } }, // on every monster
+  call: (g, s) => { // it calls another monster in
+    qIkS(g, () => { g.beginPath(); g.moveTo(-0.44 * s, -0.24 * s); g.lineTo(0, -0.44 * s); g.lineTo(0, 0.44 * s); g.lineTo(-0.44 * s, 0.24 * s); g.closePath(); }, s, '#ffd23f');
+    for (const col of ['rgba(0,0,0,0.7)', '#ffd23f']) { g.strokeStyle = col; g.lineWidth = s * (col === '#ffd23f' ? 0.08 : 0.17);
+      for (let i = 0; i < 2; i++) { g.beginPath(); g.arc(0.04 * s, 0, (0.20 + i * 0.17) * s, -0.9, 0.9); g.stroke(); } }
+  },
+};
+function qIconDraw(g, k, x, y, s) { // an icon into any context (a card's sprite, or the screen)
+  const f = Q_IC[k]; if (!f) return;
+  g.save(); g.shadowColor = 'transparent'; g.translate(x, y); f(g, s); g.restore(); // (no shadow: each icon carries its own contour)
+}
+function qIcon(k, x, y, s, a = 1) { const sp = makeSprite('qi|' + k + '|' + Math.round(s * 2), s * 1.4, s * 1.4, s * 0.7, s * 0.7, (g) => qIconDraw(g, k, 0, 0, s)); blit(sp, x, y, 0, 1, a); } // on the screen: drawn once, then blitted
+/* a run: icons and numbers on one line ({ ic } an icon, { t } text, { n } a number, { g } a gap between two effects) */
+function qRunW(g, run, fs, isz, gap) { g.font = '900 ' + fs + 'px Rubik, system-ui, sans-serif'; let w = 0;
+  for (const it of run) w += it.ic ? isz * 1.02 : it.g ? gap : g.measureText(it.t).width + fs * 0.07; return w; }
+function qRunDraw(g, run, fs, isz, gap, col, num) { // centred on (0, 0): the caller places and scales it
+  const w = qRunW(g, run, fs, isz, gap); let x = -w / 2;
+  const ta = g.textAlign, dir = g.direction; g.textAlign = 'left'; g.textBaseline = 'middle'; g.direction = 'ltr';
+  for (const it of run) {
+    if (it.ic) { qIconDraw(g, it.ic, x + isz / 2, 0, isz); x += isz * 1.02; }
+    else if (it.g) x += gap;
+    else { g.font = '900 ' + fs + 'px Rubik, system-ui, sans-serif'; g.fillStyle = it.n ? num : col; g.fillText(it.t, x, 0); x += g.measureText(it.t).width + fs * 0.07; }
+  }
+  g.textAlign = ta; g.direction = dir; return w;
+}
+function qRunBlit(run, x, y, fs, isz, gap, col, num) { // a run on the screen, cached by what it says (the intents repeat all fight)
+  resetView(); const w = qRunW(ctx, run, fs, isz, gap), h = Math.max(fs, isz) * 1.7;
+  const sp = makeSprite('qr|' + run.map((i) => i.ic || i.t || '_').join(',') + '|' + Math.round(fs) + '|' + col + '|' + num, w + 6, h, w / 2 + 3, h / 2, (g) => qRunDraw(g, run, fs, isz, gap, col, num));
+  blit(sp, x, y); return w;
+}
+function qDescRun(c) { // a card's rules, as icons and numbers: the same reading as qDesc(c, false), drawn instead of typed
+  const out = [];
+  for (const [k, n, x = 1, w] of c.fx) { const all = c.tg === 'all' || w === 'all';
+    if (out.length) out.push({ g: 1 });
+    if (k[0] === 'p' && k.length > 3) out.push({ ic: 'loop' });
+    out.push({ ic: QD.ik[k] || 'dmg' });
+    if (k === 'blkdmg') out.push({ t: '=' }, { ic: 'blk' }); else out.push({ t: String(n), n: 1 });
+    if (x > 1) out.push({ t: '×' + x, n: 1 });
+    if (all && ['dmg', 'poi', 'weak', 'vul'].includes(k)) out.push({ ic: 'all' });
+  }
+  return out;
+}
+function qIntentRun(m, f) { // what a monster will do, as icons with the real numbers
+  const r = quest.run, dk = QC.LENGTHS[r.len].dmg * QC.landOf(r).k, out = [];
+  for (const [k, n, x = 1] of m.intent || []) {
+    if (out.length) out.push({ g: 1 });
+    if (k === 'atk') { let d = n * dk + m.st.str; if (m.st.weak > 0) d *= 0.75; if (f.st.vul > 0) d *= 1.5;
+      out.push({ ic: 'dmg' }, { t: String(Math.floor(d)), n: 1 }); if (x > 1) out.push({ t: '×' + x, n: 1 }); }
+    else { const ic = { blk: 'blk', str: 'str', weak: 'weak', vul: 'vul', poi: 'poi', heal: 'heal', call: 'call' }[k]; out.push(ic ? { ic } : { t: '?' }); }
+  }
+  return out;
+}
 /* ---- the cards on the screen. A card is a frame + a picture window + a title plate + a cost gem + a rules panel. The frame comes from
    assets/quest/frame_{attack,skill,power}[_u|_r].webp (the rarity variants: a starter and a common share the plain one); until a file is
    there the same frame is painted in code, to the same layout (qLay), so the art drops in without a single label moving. A card may also
@@ -22917,18 +23042,16 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
     const sc = Math.min(1, (w * 0.74) / Math.max(1, g.measureText(nm).width));
     g.save(); g.translate(0, L.nameY); g.scale(sc, sc); g.shadowColor = 'rgba(0,0,0,0.7)'; g.shadowBlur = fs * 0.5; g.shadowOffsetY = fs * 0.06; g.fillStyle = Q_INK; g.fillText(nm, 0, 0); g.restore();
-    { const parts = qDesc(c, false).split(' '), fe = Math.round(w * 0.145) + 'px ' + MX_EMOJI, fn = '900 ' + Math.round(w * 0.155) + 'px Rubik, system-ui, sans-serif', segs = []; g.direction = 'ltr'; // (the icons in the emoji font, the numbers in the text font: one font for both splits the digits)
-      for (const p of parts) { const m = p.match(/^(\D*?)([\d=××].*)?$/u) || [p, p, '']; segs.push([m[1] || '', fe, Q_INK], [m[2] || '', fn, Q_NUM], [' ', fn, Q_INK]); }
-      let tw = 0; for (const [t, f] of segs) { g.font = f; tw += g.measureText(t).width; }
-      const s2 = Math.min(1, L.txtW / Math.max(1, tw)); g.save(); g.translate(0, L.txtY); g.scale(s2, s2); g.textAlign = 'left'; g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; let xx = -tw / 2;
-      for (const [t, f, col] of segs) { g.font = f; g.fillStyle = col; g.fillText(t, xx, 0); xx += g.measureText(t).width; } g.restore(); g.textAlign = 'center'; }
+    { const run = qDescRun(c), fs = Math.round(w * 0.165), isz = w * 0.185, gap = w * 0.075; // the rules: the icons drawn, the numbers set beside them
+      const s2 = Math.min(1, L.txtW / Math.max(1, qRunW(g, run, fs, isz, gap)));
+      g.save(); g.translate(0, L.txtY); g.scale(s2, s2); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; qRunDraw(g, run, fs, isz, gap, Q_INK, Q_NUM); g.restore(); g.textAlign = 'center'; }
   });
   blit(sp, x, y, o.ang || 0, k, af);
 }
 function qBar(x, y, w, h, v, max, col, label) { resetView(); ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, Math.max(h, w * Math.max(0, v) / max), h, h / 2); ctx.fill();
   if (label) { const sp = textSprite(label, Math.round(h * 0.85), '#ffffff', 'rgba(0,0,0,0.6)', 800); blit(sp, x + w / 2, y + h / 2, 0, Math.min(1, (w - 4) / sp.tw)); } }
-function qStatus(st, x, y, s) { const ic = { str: '💪', weak: '😵', vul: '🎯', poi: '🧪', thorns: '🌵' }; let k = 0;
-  for (const key of ['str', 'weak', 'vul', 'poi', 'thorns']) { const n = st[key]; if (!n) continue; const xx = x + k * s * 1.7; qEmoji(ic[key], xx, y, s); qText(String(n), xx + s * 0.75, y + s * 0.35, Math.round(s * 0.62), '#ffffff', 0, 900, 'rgba(0,0,0,0.85)'); k++; } }
+function qStatus(st, x, y, s) { let k = 0;
+  for (const key of ['str', 'weak', 'vul', 'poi', 'thorns']) { const n = st[key]; if (!n) continue; const xx = x + k * s * 1.7; qIcon(key, xx, y, s); qText(String(n), xx + s * 0.72, y + s * 0.34, Math.round(s * 0.66), '#ffffff', 0, 900, 'rgba(0,0,0,0.85)'); k++; } }
 function qTop(now) { // health, gold, the room, the treasures
   const r = quest.run; if (!r) return 0; const rtl = lang === 'he', L = QC.landOf(r) || QC.LANDS[0];
   const y = cgTopY() - 6, bw = Math.min(150, W * 0.36), x0 = rtl ? W - 16 - bw : 16;
@@ -23005,19 +23128,30 @@ function qDrawFight(now, y0) {
     if (tgt && m.hp > 0) { resetView(); ctx.strokeStyle = 'rgba(255,214,80,' + (0.6 + 0.35 * Math.sin(now / 150)).toFixed(2) + ')'; ctx.lineWidth = 5; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.arc(m._x, m._y, s * 0.66, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     qEmoji(M0.e, m._x, m._y + dy + Math.sin(now / 500 + m.i) * 3, s, a);
     if (m.hp > 0) { const bw = Math.min(110, s * 1.2); qBar(m._x - bw / 2, m._y + s * 0.58, bw, 14, m.hp, m.max, '#ff5a6e', m.hp + '/' + m.max);
-      if (m.blk) { qEmoji('🛡️', m._x - bw / 2 - 10, m._y + s * 0.58 + 7, 18); qText(String(m.blk), m._x - bw / 2 - 10, m._y + s * 0.58 + 8, 11, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
+      if (m.blk) { qIcon('blk', m._x - bw / 2 - 10, m._y + s * 0.58 + 7, 19); qText(String(m.blk), m._x - bw / 2 - 10, m._y + s * 0.58 + 9, 11, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
       qStatus(m.st, m._x - bw / 2 + 8, m._y + s * 0.58 + 28, 13);
-      const it = qIntent(m, f), isp = textSprite(it, 16, '#2a1f3d', null, 900); resetView(); ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 2.5; const iw = isp.tw + 18, iy = m._y - s * 0.62 - 16;
-      ctx.beginPath(); ctx.roundRect(m._x - iw / 2, iy - 13, iw, 26, 13); ctx.fill(); ctx.stroke(); blit(isp, m._x, iy);
+      const irun = qIntentRun(m, f); resetView(); const iw = qRunW(ctx, irun, 16, 19, 9) + 20, iy = m._y - s * 0.62 - 16;
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(m._x - iw / 2, iy - 15, iw, 30, 15); ctx.fill(); ctx.stroke(); qRunBlit(irun, m._x, iy, 16, 19, 9, '#2a1f3d', '#8e1d2f');
       quest.btns.push({ x: m._x - s * 0.6, y: m._y - s * 0.6, w: s * 1.2, h: s * 1.3, act: () => { if (quest.sel >= 0) qPlay(quest.sel, m.i, performance.now()); else quest.msg = { t: performance.now(), text: (lang === 'he' ? M0.he : M0.en) + ' · ' + qIntent(m, f) }; } }); }
   }
   // the hero, the energy, the piles
   const hy = H * 0.6, hx = rtl ? W - 64 : 64, H0 = QC.HEROES[r.hero];
   qEmoji(r.hero === 'knight' ? '🤺' : H0.e, hx, hy, 64); const hb = 104; qBar(hx - hb / 2, hy + 40, hb, 14, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
-  if (f.blk) { qEmoji('🛡️', hx + (rtl ? -1 : 1) * 46, hy - 10, 30); qText(String(f.blk), hx + (rtl ? -1 : 1) * 46, hy - 8, 15, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
+  if (f.blk) { qIcon('blk', hx + (rtl ? -1 : 1) * 46, hy - 10, 32); qText(String(f.blk), hx + (rtl ? -1 : 1) * 46, hy - 7, 15, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
   qStatus(f.st, hx - hb / 2 + 8, hy + 66, 14);
-  const pw = []; for (const k in f.pw) if (f.pw[k]) pw.push(QD.ic[k] + '↻' + f.pw[k]); if (pw.length) qText(pw.join(' '), hx, hy - 48, 13, '#ffffff', 140, 800, 'rgba(0,0,0,0.7)');
-  const ex = rtl ? 60 : W - 60, ey = hy - 4; resetView(); ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ex, ey, 30, 0, TAU); ctx.fill(); ctx.stroke(); qText(f.en + '', ex, ey + 1, 26, '#2a1f3d', 0, 900); qText(qtx('energy'), ex, ey + 44, 12, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
+  const pw = []; for (const k in f.pw) if (f.pw[k]) { if (pw.length) pw.push({ g: 1 }); pw.push({ ic: 'loop' }, { ic: QD.ik[k] || 'dmg' }, { t: String(f.pw[k]), n: 1 }); }
+  if (pw.length) qRunBlit(pw, hx, hy - 48, 13, 15, 8, '#ffffff', '#ffe08a');
+  const ex = rtl ? 60 : W - 60, ey = hy - 4; resetView();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.arc(ex, ey + 3, 31, 0, TAU); ctx.fill();
+  const ering = ctx.createLinearGradient(ex - 30, ey - 30, ex + 30, ey + 30); ering.addColorStop(0, '#ffeab0'); ering.addColorStop(0.5, '#d2a33a'); ering.addColorStop(1, '#6d4c12');
+  ctx.fillStyle = ering; ctx.beginPath(); ctx.arc(ex, ey, 30, 0, TAU); ctx.fill();
+  const eface = ctx.createRadialGradient(ex - 10, ey - 12, 2, ex, ey, 25); eface.addColorStop(0, '#ffffff'); eface.addColorStop(0.3, lighten('#4fe5d2', 0.45)); eface.addColorStop(1, '#4fe5d2');
+  ctx.fillStyle = eface; ctx.beginPath(); ctx.arc(ex, ey, 23.5, 0, TAU); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(ex, ey, 23.5, 0, TAU); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(ex - 8, ey - 11, 8, 4.5, -0.6, 0, TAU); ctx.fill();
+  qText(f.en + '', ex, ey + 1, 26, '#0d0a1c', 0, 900);
+  const lsp = qText(qtx('energy'), ex + 9, ey + 44, 12, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)'); qIcon('en', ex + 9 - lsp.tw / 2 - 11, ey + 44, 15);
   // the hand
   const n = f.hand.length, cw = Math.min(96, Math.max(66, (W - 20) / 5.2)), ch = cw * 1.42, span = Math.min(W - 20 - cw, (n - 1) * (cw * 0.92)), hy2 = H - ch / 2 - 74, busy = now < quest.busyUntil || f.over;
   let lift = null; // the picked card: drawn after the others, so its lift and its halo are over them (the tap rects keep their order)
@@ -23029,10 +23163,13 @@ function qDrawFight(now, y0) {
   const coach = !qP().tut && r.fights === 0 && !f.over && !busy && !quest.howto ? qCoach(f, sel, tgt, hy2, ch, now) : false;
   if (sel && !coach) { const tx = qDesc(sel, true), sp = textSprite(tx, 16, '#ffffff', 'rgba(30,20,60,0.95)', 800); blit(sp, W / 2, hy2 - ch / 2 - 76, 0, Math.min(1, (W - 20) / sp.tw)); qText(tgt && f.mons.filter((m) => m.hp > 0).length > 1 ? qtx('target') : qtx('tapAgain'), W / 2, hy2 - ch / 2 - 50, 13, '#ffe08a', W - 20, 800, 'rgba(0,0,0,0.7)'); }
   const bw = 132; qBtn(rtl ? 16 : W - 16 - bw, H - 62, bw, 48, () => qEndTurn(performance.now()), { text: qtx('endTurn'), fs: 18, bg: busy ? '#cfcfcf' : '#ffb347', dis: busy, r: 24 });
-  qText('🃏 ' + f.draw.length + '   ♻️ ' + f.disc.length, rtl ? W - 80 : 80, H - 38, 15, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
+  qRunBlit([{ ic: 'draw' }, { t: String(f.draw.length), n: 1 }, { g: 1 }, { ic: 'disc' }, { t: String(f.disc.length), n: 1 }], rtl ? W - 80 : 80, H - 38, 15, 18, 12, '#ffffff', '#ffe08a');
   // the numbers that fly
   for (const q of quest.fx) { if (q.k !== 'num' || now < q.t) continue; const p = (now - q.t) / 900; if (p >= 1) continue; let x, y; if (q.hero) { x = hx; y = hy - 40; } else { const m = f.mons[q.i]; if (!m || m._x == null) continue; x = m._x; y = m._y - 20; }
-    const s = q.n > 0 ? '-' + q.n : q.b ? '🛡️' + q.b : '0'; qText(s, x + (q.hero ? 0 : 10), y - p * 40, 26, q.n > 0 ? q.col : '#9fd4ff', 0, 900, 'rgba(0,0,0,0.85)'); }
+    const fx = x + (q.hero ? 0 : 10), fy = y - p * 40;
+    if (q.n > 0) qText('-' + q.n, fx, fy, 26, q.col, 0, 900, 'rgba(0,0,0,0.85)');
+    else if (q.b) qRunBlit([{ ic: 'blk' }, { t: String(q.b), n: 1 }], fx, fy, 24, 27, 4, '#9fd4ff', '#9fd4ff');
+    else qText('0', fx, fy, 26, '#9fd4ff', 0, 900, 'rgba(0,0,0,0.85)'); }
   quest.fx = quest.fx.filter((q) => now - q.t < 1500);
 }
 function qFinger(x, y, now, up = true) { const b = Math.sin(now / 180) * 7; qEmoji(up ? '👆' : '👇', x, y + (up ? 26 + b : -26 - b), 40); }
