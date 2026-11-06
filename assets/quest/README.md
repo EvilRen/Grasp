@@ -8,6 +8,12 @@ frame_attack.webp  frame_attack_u.webp  frame_attack_r.webp   the card frames: a
 frame_skill.webp   frame_skill_u.webp   frame_skill_r.webp    _u uncommon, _r rare (a starter and a
 frame_power.webp   frame_power_u.webp   frame_power_r.webp    common share the plain one)
 art/<card id>.webp                                            a card's own picture for its window (optional)
+
+Keep both TOP CORNERS of a card picture clear. `qLay()` overlaps the cost gem onto the picture window on purpose,
+and the gem covers a 26% x 28% block of the window — its top-left corner in English, its top-right in Hebrew, since
+the gem follows the reading direction. The same picture is used for both languages, so nothing that has to stay
+readable belongs in either top corner: keep the subject centred or low, and keep bright highlights and hard bevels
+out of those corners so they do not read as clutter under the gem.
 ```
 
 The frames carry **no text and no symbols** — Grasp draws the title, the cost and the rules over them, in English or
