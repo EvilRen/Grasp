@@ -1578,13 +1578,14 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:1; background:#1b1b1f; color:#6b6b78; }
 #tachles .tkSend:disabled{ opacity:1; background:#241a33; color:#d8c6ff; border:2px dashed rgba(168,85,247,.75); box-shadow:none; } #tachles .tkSend:not(:disabled){ box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 6px 26px rgba(217,70,239,.65); } /* (the owner: with 3 to pick the purple button was hard to see: half see-through over the cards behind it. Now solid, the waiting one dashed with clear text, the ready one glowing) */ #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
 #tachles .tkHandW{ overflow-x:auto; overflow-y:hidden; margin:0 -16px; scrollbar-width:none; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; } #tachles .tkHandW::-webkit-scrollbar{ display:none; }
-#tachles .tkHand{ display:flex; gap:0; padding:30px calc(50vw - 105px) 18px; width:max-content; }
+#tachles .tkHand{ display:flex; gap:0; padding:30px calc(50vw - 70px) 18px; width:max-content; } /* 70 = half the widest card (height 196 × 5/7 = 140), so the fan can center the first/last card */
 #tachles .tkHC{ width:210px; min-height:220px; margin-inline:-18px; flex:none; font:inherit; cursor:pointer; justify-content:flex-start; scroll-snap-align:center; transform-origin:50% 120%; transition:box-shadow .15s; box-shadow:0 10px 24px rgba(0,0,0,.6); }
 #tachles .tkHC p{ font-size:18px; padding-top:4px; }
 #tachles .tkHC{ touch-action:pan-x; } #tachles .tkHC.tkDragged{ opacity:.35; }
 /* all hand cards are ONE fixed size (text is auto-fitted in tkFitCards), so the fan never jumps between short and long cards or between rounds.
    NB: no overflow:hidden here — the emoji avatars, reaction badges and the pick number sit OUTSIDE the card on purpose and must not be clipped. */
-#tachles .tkHand .tkHC{ min-height:0; height:clamp(148px, 23vh, 196px); padding-bottom:26px; } /* a fixed height a touch SHORTER than the old tuned tiers, so the board keeps its headroom (phone safe-area insets) and never scrolls; tkFitCards shrinks the text to fit */
+/* a real card shape: a fixed height (short enough to keep the board's headroom, so it never scrolls) with a portrait 5:7 width derived from it; tkFitCards shrinks the text to fit */
+#tachles .tkHand .tkHC{ min-height:0; height:clamp(148px, 23vh, 196px); width:auto; aspect-ratio:5 / 7; padding-bottom:26px; }
 #tachles .tkDuel{ display:flex; gap:10px; width:min(28rem,100%); align-items:stretch; }
 #tachles .tkDuel .tkBlackC{ flex:1.2; width:auto; min-width:0; min-height:min(200px,24vh); padding:14px 12px 10px; }
 #tachles .tkDuel .tkBlackC p{ font-size:clamp(15px,4.4vw,21px); padding-top:2px; }
@@ -2083,7 +2084,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.68';
+const APP_VERSION = '1.12.69';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
