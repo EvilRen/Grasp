@@ -2080,7 +2080,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.51';
+const APP_VERSION = '1.12.52';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -21611,7 +21611,7 @@ var TK2_GAME;
     if (!cand.length) return; var pm = cand[(Math.random() * cand.length) | 0]; pm.used = true;
     fruits.push({ m: pm, picked: false, born: performance.now(), pop: 0, t: 0, hue: events % FRUIT.length }); }
   function event() { tStart = performance.now(); events++;
-    if (stage < STAGES) { stage++; Mt = 0.15 + (stage / STAGES) * 0.85; }
+    if (stage < STAGES) stage++; // the tree is already lush on open (growth is decoupled from the event rhythm); events pace the blooms / fruit / seasons
     if (fruits.filter(function (f) { return !f.picked; }).length < 3) spawnFruit();
     blooms.push({ t: performance.now(), y: baseY - treeH * M * 0.72, hue: SEASONS[si].hues[0] });
     for (var i = 0; i < 26; i++) { var a = Math.random() * 6.283, s = Math.random() * 1.5 + 0.3; sparks.push({ x: baseX + (Math.random() * 90 - 45), y: baseY - treeH * M * 0.72, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, t: performance.now(), life: 1400, spr: gs(seasonHue()), s: 8 + Math.random() * 10 }); }
@@ -21663,10 +21663,10 @@ var TK2_GAME;
   }
 
   function reset(now) {
-    tlayout(); si = 0; stage = 0; events = 0; M = Mt = 0.15; collected = 0; needForNext = 6; lush = 0;
+    tlayout(); si = 0; stage = 3; events = 0; M = 0.52; Mt = 1; collected = 0; needForNext = 6; lush = 0; starTimer = 0; // open with a lush tree that finishes unfurling in a few seconds, not an empty seedling
     fruits = []; harvest = []; moths = []; blossoms = []; touches = []; ripples = []; sparks = []; blooms = []; plants = [];
-    tStart = now - (STAGE_MS - 6000); idle = now; last = now; wateredHinted = false;
-    build(((Math.random() * 1e9) | 0) || 7); makeStars();
+    tStart = now - (STAGE_MS - 3400); idle = now; last = now; wateredHinted = false;
+    build(((Math.random() * 1e9) | 0) || 7); makeStars(); litStars(7); // a few stars already out, the night keeps filling
     say('געו, השקו, קטפו — בקצב שלכם ✨', 6500); showSeason();
   }
 
@@ -21676,7 +21676,7 @@ var TK2_GAME;
     var paused = (typeof pause !== 'undefined' && pause.on) || (typeof menu !== 'undefined' && menu.open);
     var dt = paused ? 0 : Math.min(50, now - (last || now)); last = now;
     var tp = Math.min(1, (now - tStart) / STAGE_MS); if (!paused && now - tStart >= STAGE_MS) event();
-    M += (Mt - M) * Math.min(1, dt * 0.0016);
+    M += (Mt - M) * Math.min(1, dt * 0.0011); // a gentle unfurl to full over a few seconds
     if (!paused) { starTimer += dt; if (starTimer > 2300) { starTimer -= 2300; litStars(1); } } // more stars keep coming out with time
     var antic = tp * tp * 0.55;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.save();
