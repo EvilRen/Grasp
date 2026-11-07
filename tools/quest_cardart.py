@@ -1,6 +1,6 @@
 """Quest's card pictures: cut a sheet into the per-card files the game draws behind its frames.
 
-    python3 tools/quest_cardart.py art/knight_raw.png --ids strike,defend,bash,... [--caption] [--top 0.16] [--inset 0.07]
+    python3 tools/quest_cardart.py art/knight_raw.png --ids strike,defend,bash,... [--caption] [--top 0.16] [--inset 0.07] [--cols 2]
 
 Look at the sheet first and say what it has. --caption crops a band of words off the bottom of every
 cell; --top 0.16 drops that fraction from the top, where a generator puts the black corner blocks it
@@ -70,6 +70,7 @@ def main():
     topf = float(sys.argv[sys.argv.index('--top') + 1]) if '--top' in sys.argv else 0.0
     caption = '--caption' in sys.argv
     inset = float(sys.argv[sys.argv.index('--inset') + 1]) if '--inset' in sys.argv else 0.0
+    cols = int(sys.argv[sys.argv.index('--cols') + 1]) if '--cols' in sys.argv else 3
     if not args or not ids:
         sys.exit(__doc__)
     try:
@@ -79,7 +80,6 @@ def main():
         sys.exit('Pillow and numpy are needed: pip install pillow numpy')
     sheet = Image.open(args[0]).convert('RGB')
     W, H = sheet.size
-    cols = 3
     rows = (len(ids) + cols - 1) // cols
     os.makedirs(OUT, exist_ok=True)
     total = 0
