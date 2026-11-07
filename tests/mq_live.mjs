@@ -5,6 +5,7 @@ import fs from 'fs';
 const s = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const a = s.slice(s.indexOf('const TK_MQ = ['), s.indexOf('const TKNET = {')), m = s.slice(s.indexOf('  mqHost(code, onConn'), s.indexOf('  async host(code, onConn'));
 globalThis.document = { addEventListener() {}, removeEventListener() {}, visibilityState: 'visible' }; globalThis.addEventListener = () => {}; globalThis.removeEventListener = () => {};
+globalThis.window = globalThis; // (the game reads window.__tkMQ and window.__tkBus; without this stub mqHost threw "window is not defined" before it reached a broker)
 const LOG = []; globalThis.tkDbg = (x) => LOG.push(x); globalThis.tkErrS = String;
 const a2 = process.env.MQ ? a.replace(/const TK_MQ = \[[^\]]*\]/, 'const TK_MQ = [' + process.env.MQ + ']') : a; const T = new Function(a2 + '; return {' + m + '};')(), wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const code = 'Z' + Math.random().toString(36).slice(2, 5).toUpperCase(), got = { host: [], g1: [], g2: [] }; let fails = 0;
