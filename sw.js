@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-09e';
+const VERSION = 'grasp-2026-11-09f';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -31,6 +31,9 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/enemies/goblin.webp', '/assets/quest/enemies/bee.webp', '/assets/quest/enemies/spider.webp',
   '/assets/quest/enemies/bear.webp', '/assets/quest/enemies/ent.webp', '/assets/quest/enemies/troll.webp',
   '/assets/quest/heroes/knight.webp', '/assets/quest/heroes/wizard.webp', '/assets/quest/heroes/robot.webp',
+  // the knight's four drawings: standing, mid-breath, striking, struck
+  '/assets/quest/heroes/knight/kn_idle.webp', '/assets/quest/heroes/knight/kn_breath.webp',
+  '/assets/quest/heroes/knight/kn_atk.webp', '/assets/quest/heroes/knight/kn_hurt.webp',
   '/assets/quest/fonts/suezone-latin.woff2', '/assets/quest/fonts/suezone-hebrew.woff2',
   // the painted interface plates, and the border band the slicer measured off each one
   '/assets/quest/plates.json', '/assets/quest/plates/panel_quiet.webp', '/assets/quest/plates/panel_chosen.webp',

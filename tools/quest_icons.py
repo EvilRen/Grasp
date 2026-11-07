@@ -32,6 +32,7 @@ SETS = {
                 ['cut', 'mystery', 'help']], 'icons'),
     'doors': ([['door_fight', 'door_elite', 'door_boss', 'door_rest'],
                ['door_shop', 'door_chest', 'door_event']], 'doors'),
+    'knight4': ([['kn_idle', 'kn_breath', 'kn_atk', 'kn_hurt']], 'heroes/knight'),
     'door1': ([['door_event']], 'doors'),     # a one-piece sheet, for re-running a single doorway
     'events': ([['ev_well', 'ev_shrine', 'ev_merchant', 'ev_chest', 'ev_fountain'],   # the eight events, by EVENTS id
                 ['ev_robot', 'ev_portal', 'ev_feast', 'map', 'door'],                 # then the how-to page symbols
@@ -119,21 +120,50 @@ def runs(mask, gap=10, least=40):
     return [(a, b) for a, b in out if b - a >= least]
 
 
-def find(sc, np, cols):
+def find(sc, np, cols, want=None):
     """Where the objects actually are: bands of rows that hold anything, then runs of columns inside each band.
 
     Runs are then snapped to cells, because one object is not always one run: a sword snapped in half is two
     separate blades with magenta between them, and read as two pieces it pushed every name in its row along by
     one. Each run is assigned to the cell its centre falls in, and runs sharing a cell become one box."""
     solid = ~(sc > KEY_T)
-    W = solid.shape[1]
+    H, W = solid.shape
+    # A column counts as holding a piece once a real run of it is there. The old flat four was below the noise:
+    # a handful of stray pixels in the gap between two figures bridged them into one run, and a sheet of four
+    # knights came through as two. The floor is a small share of the sheet instead, which no real piece is under.
+    VR, VC = max(4, int(W * 0.012)), max(4, int(H * 0.012))
     grid = []
-    for y0, y1 in runs(solid.sum(1) > 4):
+    for bi, (y0, y1) in enumerate(runs(solid.sum(1) > VR)):
         strip = solid[y0:y1]
+        # When the row's piece count is known, look for the threshold that yields it rather than trusting one
+        # number. A sheet's gaps carry different amounts of stray colour, and a single floor either welds two
+        # pieces together or splits one in half; this finds the floor that fits the sheet in hand.
+        colsum = strip.sum(0)
+        cols_here = runs(colsum > VC)
+        exp0 = want[bi] if want and bi < len(want) else None
+        if exp0 is not None and len(cols_here) != exp0:
+            for t in (VC, VC * 2, VC * 4, VC * 8, VC * 16, VC * 32):
+                cand = runs(colsum > t)
+                if len(cand) == exp0:
+                    cols_here = cand; break
+        # Snap to cells only when there are MORE runs than pieces expected — that is the case snapping is for, a
+        # piece drawn in two parts. When the count already matches, the runs ARE the pieces, and snapping can only
+        # do harm: this sheet spaces its four figures unevenly, two of them fall in one quarter, and snapping
+        # welded them into a single box.
+        exp = want[bi] if want and bi < len(want) else None
+        if exp is not None and len(cols_here) == exp:
+            row = []
+            for x0, x1 in cols_here:
+                sub = strip[:, x0:x1]
+                ys, xs = np.where(sub.sum(1) > 0)[0], np.where(sub.sum(0) > 0)[0]
+                if len(ys) and len(xs):
+                    row.append((x0 + int(xs[0]), y0 + int(ys[0]), x0 + int(xs[-1]) + 1, y0 + int(ys[-1]) + 1))
+            grid.append(row)
+            continue
         cells = {}
-        for x0, x1 in runs(strip.sum(0) > 4):
+        for x0, x1 in cols_here:
             sub = strip[:, x0:x1]
-            ys, xs = np.where(sub.sum(1) > 4)[0], np.where(sub.sum(0) > 4)[0]
+            ys, xs = np.where(sub.sum(1) > 0)[0], np.where(sub.sum(0) > 0)[0]
             if not (len(ys) and len(xs)):
                 continue
             b = (x0 + int(xs[0]), y0 + int(ys[0]), x0 + int(xs[-1]) + 1, y0 + int(ys[-1]) + 1)
@@ -278,7 +308,7 @@ def main():
     from PIL import Image
     im = Image.open(args[0]).convert('RGB')
     sc = delines(score(im, np), np)
-    grid = find(sc, np, COLS)
+    grid = find(sc, np, COLS, [len(r) for r in NAMES])
     print('sheet %d x %d' % im.size)
     want = [len(r) for r in NAMES]
     if [len(r) for r in grid] != want:
