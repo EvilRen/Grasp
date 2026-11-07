@@ -2106,7 +2106,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.104';
+const APP_VERSION = '1.12.106';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23490,11 +23490,12 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
   const D = quest.howto, pages = qtx('h'), pg = pages[D.p], last = D.p === pages.length - 1; quest.btns = [];
   resetView(); ctx.fillStyle = 'rgba(15,10,35,0.82)'; ctx.fillRect(0, 0, W, H);
   const cw = Math.min(380, W - 32), chh = Math.min(440, H - cgTopY() - 40), x = W / 2 - cw / 2, y = Math.max(cgTopY() + 4, H / 2 - chh / 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x, y + 6, cw, chh, 26); ctx.fill();
-  const hp = ctx.createLinearGradient(0, y, 0, y + chh); hp.addColorStop(0, '#241c44'); hp.addColorStop(0.55, '#16102e'); hp.addColorStop(1, '#0c0820');
-  ctx.fillStyle = hp; ctx.beginPath(); ctx.roundRect(x, y, cw, chh, 26); ctx.fill();
-  ctx.strokeStyle = 'rgba(79,229,210,0.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x + 1.5, y + 1.5, cw - 3, chh - 3, 25); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 4, y + 4, cw - 8, chh - 8, 22); ctx.stroke();
+  if (!qPlate('panel_quiet', x, y, cw, chh)) {   // the painted panel; the drawn card below it while the art is not there
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x, y + 6, cw, chh, 26); ctx.fill();
+    const hp = ctx.createLinearGradient(0, y, 0, y + chh); hp.addColorStop(0, '#241c44'); hp.addColorStop(0.55, '#16102e'); hp.addColorStop(1, '#0c0820');
+    ctx.fillStyle = hp; ctx.beginPath(); ctx.roundRect(x, y, cw, chh, 26); ctx.fill();
+    ctx.strokeStyle = 'rgba(79,229,210,0.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x + 1.5, y + 1.5, cw - 3, chh - 3, 25); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 4, y + 4, cw - 8, chh - 8, 22); ctx.stroke(); }
   qEmoji(pg[0], W / 2, y + 52, 54); qText(pg[1], W / 2, y + 108, 22, Q_INK, cw - 24, 400, 'rgba(6,4,16,0.9)', Q_DISP);
   pg[2].forEach((l, i) => qText(l, W / 2, y + 148 + i * 30, 17, '#cfc4e4', cw - 24, 700, 'rgba(6,4,16,0.9)'));
   if (pg[3]) qText(pg[3], W / 2, y + 160 + pg[2].length * 30 + 8, 26, Q_INK, cw - 24, 700, 'rgba(6,4,16,0.9)');

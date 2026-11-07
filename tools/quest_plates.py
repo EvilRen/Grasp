@@ -220,6 +220,12 @@ def cut(im, sc, box, np):
             'flat': flatness(sol, np), 'band': band(rgb, sol, np)}
 
 
+# A cell boundary that the generator drew ACROSS a plate cannot be repaired here, and the attempt did harm: the
+# line is soft-edged in a JPEG, so a threshold loose enough to catch it also caught every plate's own dark bands,
+# and repainting those smeared the filigree on all nine pieces while the line itself survived. The one plate that
+# was crossed, the tall green window, is simply not used; its neighbours were never crossed and are clean.
+
+
 def despill(rgb, a, np):
     """Recover each pixel's own colour from its blend with the magenta behind it.
 
