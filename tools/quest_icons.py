@@ -41,6 +41,12 @@ NAMES, COLS, ROWS, OUT = None, 0, 0, None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 KEY_T = 70        # how far the magenta score (min(r-g, b-g)) must reach for a pixel to be a hole
 CORE = 0.62       # below KEY_T * CORE a pixel is fully a hole; above it, it fades out
+RAMP = None       # set by --ramp: the width of that fade, in score, instead of deriving it from CORE
+# --key raises the threshold for a sheet whose artwork is itself close to the keying colour. A violet glow scores
+# high on min(r-g, b-g) — the mystery doorway's rim reached 150 against a background of 242 — so at the default 70
+# fourteen thousand pixels of the glow were cut away and the land behind showed through as a thread along it.
+# Measure the sheet before choosing one: the right value sits in the gap between the art's highest and the
+# background's lowest.
 LINE = 4          # px masked either side of each cell boundary: the generator draws the boundaries in as thin lines
 SMALL = 18        # the size the check renders each object at
 
@@ -262,6 +268,12 @@ def main():
             only = set(f.split('=', 1)[1].split(','))
     check = '--check' in flags
     which = pick_set(flags)
+    global KEY_T, RAMP
+    for f in flags:
+        if f.startswith('--key') and '=' in f:
+            KEY_T = int(f.split('=', 1)[1])
+        if f.startswith('--ramp') and '=' in f:
+            RAMP = int(f.split('=', 1)[1])
     import numpy as np
     from PIL import Image
     im = Image.open(args[0]).convert('RGB')
@@ -283,7 +295,7 @@ def main():
                 continue
             x0, y0, x1, y1 = trimstray(box, sc, np)
             sub = sc[y0:y1, x0:x1]
-            al = np.clip((KEY_T - sub) / max(1e-6, KEY_T * (1 - CORE)), 0, 1)
+            al = np.clip((KEY_T - sub) / max(1e-6, RAMP if RAMP else KEY_T * (1 - CORE)), 0, 1)
             px, al = closeslits(arr[y0:y1, x0:x1], al, np)
             px = despill(px, al, np)
             out = np.concatenate([np.clip(px, 0, 255), (al * 255)[:, :, None]], 2).astype('uint8')
