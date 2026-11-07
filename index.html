@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.121';
+const APP_VERSION = '1.12.122';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22807,8 +22807,13 @@ function qTapCard(i, now) {
   quest.sel = i; sfx('tink');
 }
 function qPlay(i, ti, now) {
-  const f = quest.f, before = f.log.length; const c0 = QC.cardOf(f.hand[i]);
-  if (!QC.play(quest.run, f, i, ti)) return; quest.sel = -1; sfx('whoosh'); quest.log.push('play:' + f.log[before].id);
+  const f = quest.f, before = f.log.length; const c0 = QC.cardOf(f.hand[i]), id0 = f.hand[i];
+  const b0 = quest.btns.find((b) => b.card === i);                       // where it sits in the hand, before it goes
+  if (!QC.play(quest.run, f, i, ti)) return;
+  if (b0) { const m = f.mons.find((x) => x.i === ti);                    // and where it was aimed
+    const self = !c0 || !QC.needsTarget(c0) || !m || m._x == null;
+    quest.cardFly = { id: id0, t: now, w: b0.w, x: b0.x + b0.w / 2, y: b0.y + b0.h / 2,
+      tx: self ? quest.heroX || W / 2 : m._x, ty: self ? (quest.heroY || H * 0.55) : m._y }; } quest.sel = -1; sfx('whoosh'); quest.log.push('play:' + f.log[before].id);
   quest.heroAct = { t: now, kind: c0 && c0.fx.some((x) => x[0] === 'dmg' || x[0] === 'blkdmg') ? 'atk' : 'def' };
   qFxFrom(before, now); if (f.over === 'won') qFightWon(now);
 }
@@ -23379,7 +23384,7 @@ function qPaintGem(g, c, L) { // the cost: a faceted gem in the top corner, the 
 function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
   const c = QC.cardOf(id); if (!c) return;
   const fr = qImg(qFrameSrc(c)); // the frame decides the layout: its own when the art is there, the constants while it is not
-  const L = qLay(w, fr && qFrameLay(c)), h = L.h, k = o.k || 1, af = o.dim ? 0.58 : 1, K = Q_KEY[c.t] || Q_KEY.s;
+  const L = qLay(w, fr && qFrameLay(c)), h = L.h, k = o.k || 1, af = o.a != null ? o.a : (o.dim ? 0.58 : 1), K = Q_KEY[c.t] || Q_KEY.s;
   if (o.glow) { resetView(); const gg = ctx.createRadialGradient(x, y, w * 0.2, x, y, w * 0.95); // the picked card: a halo of its own colour under it
     gg.addColorStop(0, 'rgba(' + K.g + ',' + (0.42 * o.glow).toFixed(3) + ')'); gg.addColorStop(0.55, 'rgba(' + K.g + ',' + (0.14 * o.glow).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(' + K.g + ',0)');
     ctx.fillStyle = gg; ctx.beginPath(); ctx.ellipse(x, y, w * 0.95, h * 0.72, 0, 0, TAU); ctx.fill(); }
@@ -23630,7 +23635,7 @@ function qDrawFight(now, y0) {
   // the block badge — is placed from his size rather than from numbers that stop being true when he is resized.
   const hy = H * 0.585, hs = 118, hx = rtl ? W * 0.73 : W * 0.27, H0 = QC.HEROES[r.hero];
   const hHalf = hs * 0.65, hTop = hy - hHalf;   // qHeroDraw scales the longest side to s * 1.3
-  qHeroDraw(r.hero, H0, hx, hy, hs, 1, qHeroPose(now)); const hb = 112; qBar(hx - hb / 2, hy + hHalf + 10, hb, 15, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
+  quest.heroX = hx; quest.heroY = hy; qHeroDraw(r.hero, H0, hx, hy, hs, 1, qHeroPose(now)); const hb = 112; qBar(hx - hb / 2, hy + hHalf + 10, hb, 15, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
   if (f.blk) { const bx = hx + (rtl ? -1 : 1) * hs * 0.46; qIcon('blk', bx, hy - 12, 34); qText(String(f.blk), bx, hy - 9, 16, '#ffffff', 0, 900, 'rgba(8,4,16,0.95)', undefined, 3.4); } // clear of his shield arm
   qStatus(f.st, hx - hb / 2 + 8, hy + hHalf + 36, 14);
   const pw = []; for (const k in f.pw) if (f.pw[k]) { if (pw.length) pw.push({ g: 1 }); pw.push({ ic: 'loop' }, { ic: QD.ik[k] || 'dmg' }, { t: String(f.pw[k]), n: 1 }); }
@@ -23666,6 +23671,12 @@ function qDrawFight(now, y0) {
     if (on) lift = [f.hand[i], x, y, cw, o]; else qCard(f.hand[i], x, y, cw, o);
     if (!busy) quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: i === n - 1 ? cw : Math.max(28, step), h: ch, act: () => qTapCard(i, performance.now()), card: i }); }
   if (lift) qCard(...lift);
+  // A played card used to vanish from the hand with nothing to say where it went. It flies to what it was aimed
+  // at — the monster it strikes, or the hero it helps — shrinking and fading as it goes.
+  { const F = quest.cardFly, D = 340;
+    if (F && now - F.t < D) { const q = (now - F.t) / D, e = q * q * (3 - 2 * q);   // ease in and out
+      qCard(F.id, F.x + (F.tx - F.x) * e, F.y + (F.ty - F.y) * e, F.w, { k: 1 - 0.55 * e, ang: e * 0.5, a: 1 - Math.max(0, (e - 0.55) / 0.45) * 0.9 });
+    } else if (F && now - F.t >= D) quest.cardFly = null; }
   const coach = !qP().tut && r.fights === 0 && !f.over && !busy && !quest.howto ? qCoach(f, sel, tgt, hy2, ch, now) : false;
   if (sel && !coach) { const tx = qDesc(sel, true), sp = textSprite(tx, 16, '#ffffff', 'rgba(30,20,60,0.95)', 800); blit(sp, W / 2, hy2 - ch / 2 - 76, 0, Math.min(1, (W - 20) / sp.tw)); qText(tgt && f.mons.filter((m) => m.hp > 0).length > 1 ? qtx('target') : qtx('tapAgain'), W / 2, hy2 - ch / 2 - 50, 13, '#ffe08a', W - 20, 800, 'rgba(0,0,0,0.7)'); }
   const bw = 132; qBtn(rtl ? 16 : W - 16 - bw, H - 62, bw, 48, () => qEndTurn(performance.now()), { text: qtx('endTurn'), fs: 18, bg: busy ? '#cfcfcf' : '#ffb347', solid: !busy, dis: busy, r: 24 });
