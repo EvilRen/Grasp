@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.118';
+const APP_VERSION = '1.12.119';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22840,8 +22840,12 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   // A button that carries no accent of its own gets the painted plate when the art is there. The three bright
   // primaries keep the code-drawn sticker, and so does anything with an o.bg, because its colour is what names it.
   // The primary buttons have their own painted bar; the rest take a panel. Both fall back to the code-drawn plate.
+  // Every button takes a painted plate now. The rule that kept one with its own accent colour on the code-drawn
+  // plate made sense while there were no painted plates; it left the camp fire's two buttons, the shop's heal and
+  // remove and its Leave flat beside everything else. What a button does is said by its icon and its words, which
+  // is the one icon language the playtest panel asked for. o.plain opts out, for the doors' own fallback.
   const pn = solid ? (o.pl || (hexRgb(o.bg || '#3ddc84')[0] > 200 ? 'btn_gold' : 'btn_jade'))
-    : (!o.bg && !o.plain) ? (on ? 'panel_chosen' : dis ? 'panel_locked' : 'panel_quiet') : null;
+    : o.plain ? null : (on ? 'panel_chosen' : dis ? 'panel_locked' : 'panel_quiet');
   const pi = pn ? qPlate(pn, x, y, w, h, !solid && dis ? 0.6 : 1) : false;
   if (pi) { // the lettering goes inside the plate's window: centred on the whole button it rode up onto the border,
     if (o.text) qBtnText(x + pi.dx, y + pi.dy, w - pi.dx * 2, h - pi.dy * 2, o, dis, solid); // which is what "Deck 10" did
@@ -23481,7 +23485,7 @@ function qDrawDoors(now, y0) {
       resetView(); ctx.drawImage(im, x + (dw - w2) / 2, y + bob + (dh - h2) / 2, w2, h2);
       quest.btns.push({ x, y: y + bob, w: dw, h: dh, act: () => qEnter(k) });
     } else {
-      qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: Q_DOORC[k] || '#4fe5d2' });
+      qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: Q_DOORC[k] || '#4fe5d2', plain: 1 });
       resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
       qIcon(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.46);
     }
@@ -23576,9 +23580,14 @@ function qDrawFight(now, y0) {
     if (m.hp > 0) { const bw = Math.min(110, s * 1.2); qBar(m._x - bw / 2, m._y + s * 0.58, bw, 14, m.hp, m.max, '#ff5a6e', m.hp + '/' + m.max);
       if (m.blk) { qIcon('blk', m._x - bw / 2 - 10, m._y + s * 0.58 + 7, 19); qText(String(m.blk), m._x - bw / 2 - 10, m._y + s * 0.58 + 9, 11, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
       qStatus(m.st, m._x - bw / 2 + 8, m._y + s * 0.58 + 28, 13);
-      const irun = qIntentRun(m, f); resetView(); const iw = qRunW(ctx, irun, 16, 19, 9) + 20, iy = m._y - s * 0.62 - 16;
-      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.roundRect(m._x - iw / 2, iy - 15, iw, 30, 15); ctx.fill(); ctx.stroke(); qRunBlit(irun, m._x, iy, 16, 19, 9, '#2a1f3d', '#8e1d2f');
+      // What the monster will do next, on a painted plate rather than the white sticker it used to be — the one
+      // bright flat object left on a painted screen. The number stays the loudest thing inside it.
+      const irun = qIntentRun(m, f); resetView();
+      const iw = qRunW(ctx, irun, 16, 19, 9) + 34, ih = 36, iy = m._y - s * 0.62 - 18;
+      if (!qPlate('nameplate', m._x - iw / 2, iy - ih / 2, iw, ih)) {
+        ctx.fillStyle = 'rgba(14,9,26,0.92)'; ctx.strokeStyle = '#d2a33a'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(m._x - iw / 2, iy - ih / 2, iw, ih, ih / 2); ctx.fill(); ctx.stroke(); }
+      qRunBlit(irun, m._x, iy, 16, 19, 9, Q_INK, '#ff8a7a');
       quest.btns.push({ x: m._x - s * 0.6, y: m._y - s * 0.6, w: s * 1.2, h: s * 1.3, act: () => { if (quest.sel >= 0) qPlay(quest.sel, m.i, performance.now()); else quest.msg = { t: performance.now(), text: (lang === 'he' ? M0.he : M0.en) + ' · ' + qIntent(m, f) }; } }); }
   }
   // the hero, the energy, the piles
@@ -23676,22 +23685,31 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
 function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(118, (W - 30) / n - 10); ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
   quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qIcon('gold', x - 13, y + cw * 0.71 + 16, 17); qText(String(p), x + 13, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
 function qDrawReward(now, y0) {
-  const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qIcon('gold', W / 2 - 28, y + 36, 21); qText('+' + p.gold, W / 2 + 10, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
+  const p = quest.data || {}, y = qMidY(y0, 420); qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qIcon('gold', W / 2 - 28, y + 36, 21); qText('+' + p.gold, W / 2 + 10, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
   let yy = y + 64; if (p.relic) { const R0 = QC.RELICS[p.relic]; qRelic(p.relic, R0, W / 2, yy + 20, 44); qText(qtx('relic') + ' ' + (lang === 'he' ? R0.he : R0.en), W / 2, yy + 54, 15, '#ffffff', W - 30, 800, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, yy + 74, 13, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); yy += 96; }
   if (p.cards && !p.took) { qText(qtx('prize'), W / 2, yy + 8, 18, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)'); const h = qPickCards(p.cards, yy + 30 + 85, (id) => { quest.run.deck.push(id); p.took = id; sfx('chime'); quest.log.push('took:' + id); qNext(); }); yy += h + 50; }
   const bw = 160; qBtn(W / 2 - bw / 2, Math.min(H - 80, yy + 20), bw, 50, () => { quest.log.push('skip'); qNext(); }, { text: p.cards && !p.took ? qtx('skip') : qtx('next'), fs: 18, r: 25 });
 }
+/* These screens laid their contents out from the top and left the bottom third of the phone empty. Each one knows
+   roughly how tall it is, so the block is pushed down to sit in the middle of what is left under the top bar. */
+function qMidY(y0, contentH) { return y0 + Math.max(0, (H - y0 - contentH) * 0.40); }
 function qDrawRest(now, y0) {
-  const r = quest.run, y = y0 + 60, n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qIcon('fire', W / 2, y + 30, 72 + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + 90, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
-  const bw = Math.min(300, W - 40); qBtn(W / 2 - bw / 2, y + 130, bw, 56, () => { QC.rest(r, 'heal'); sfx('chime'); quest.log.push('rest:heal'); qNext(); }, { text: qtx('heal', { n }), ic: 'heal', fs: 18, r: 28, bg: '#ff5a6e' });
-  qBtn(W / 2 - bw / 2, y + 200, bw, 56, () => { quest.deckFor = { k: 'up', done: (id) => { QC.rest(r, 'up', id); sfx('levelup'); quest.log.push('rest:up:' + id); qNext(); } }; }, { text: qtx('up'), ic: 'str', fs: 18, r: 28, bg: '#ffd23f', dis: !r.deck.some(QC.upgradable) });
+  // The fire is the subject of this screen and was drawn at 72 px on a 844 px phone. It takes a share of the room
+  // the screen actually has now, and everything under it is spaced off its size rather than off fixed numbers.
+  const r = quest.run, fz = Math.min(140, Math.max(72, (H - y0) * 0.21)), y = qMidY(y0, fz + 240) + 10;
+  const n = Math.round(r.max * 0.3 * (QC.has(r, 'tea') ? 1.5 : 1)); qIcon('fire', W / 2, y + fz * 0.5, fz + 4 * Math.sin(now / 200)); qText(qtx('rest'), W / 2, y + fz + 24, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const bw = Math.min(300, W - 40); qBtn(W / 2 - bw / 2, y + fz + 58, bw, 58, () => { QC.rest(r, 'heal'); sfx('chime'); quest.log.push('rest:heal'); qNext(); }, { text: qtx('heal', { n }), ic: 'heal', fs: 18, r: 28, bg: '#ff5a6e' });
+  qBtn(W / 2 - bw / 2, y + fz + 130, bw, 58, () => { quest.deckFor = { k: 'up', done: (id) => { QC.rest(r, 'up', id); sfx('levelup'); quest.log.push('rest:up:' + id); qNext(); } }; }, { text: qtx('up'), ic: 'str', fs: 18, r: 28, bg: '#ffd23f', dis: !r.deck.some(QC.upgradable) });
 }
-function qDrawChest(now, y0) { const d = quest.data || {}, y = y0 + 70; qIcon('chest', W / 2, y + 30, 84);
-  qIcon('gold', W / 2 - 26, y + 100, 22); qText('+' + d.gold, W / 2 + 14, y + 100, 22, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
-  if (d.relic) { const R0 = QC.RELICS[d.relic]; qRelic(d.relic, R0, W / 2, y + 150, 50); qText(lang === 'he' ? R0.he : R0.en, W / 2, y + 190, 18, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, y + 214, 14, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); }
-  qBtn(W / 2 - 80, y + 250, 160, 50, () => qNext(), { text: qtx('next'), fs: 18, r: 25 }); }
+function qDrawChest(now, y0) { const d = quest.data || {};
+  const cz = Math.min(150, Math.max(84, (H - y0) * 0.22)), y = qMidY(y0, cz + 300) + 10;
+  qIcon('chest', W / 2, y + cz * 0.5, cz);
+  qIcon('gold', W / 2 - 26, y + cz + 24, 24); qText('+' + d.gold, W / 2 + 14, y + cz + 24, 23, '#ffe08a', 0, 900, 'rgba(8,4,16,0.95)', undefined, 4);
+  if (d.relic) { const R0 = QC.RELICS[d.relic]; qRelic(d.relic, R0, W / 2, y + cz + 90, 72); qText(lang === 'he' ? R0.he : R0.en, W / 2, y + cz + 142, 18, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, y + cz + 168, 14, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); }
+  qBtn(W / 2 - 90, y + cz + 206, 180, 54, () => qNext(), { text: qtx('next'), fs: 18, r: 27 }); }
 function qDrawEvent(now, y0) {
-  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), y = y0 + 40, he = lang === 'he'; qPic('/assets/quest/icons/ev_' + d.ev + '.webp', ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), he = lang === 'he';
+  const y = qMidY(y0, 220 + ev.opts.length * 72); qPic('/assets/quest/icons/ev_' + d.ev + '.webp', ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   if (d.res) { const R = d.res, lines = []; if (R.relic) lines.push(QC.RELICS[R.relic].e + ' ' + (he ? QC.RELICS[R.relic].he : QC.RELICS[R.relic].en)); if (R.card) lines.push('🃏 ' + (he ? QC.cardOf(R.card).he : QC.cardOf(R.card).en)); if (R.removed) lines.push('✂️ ' + (he ? QC.cardOf(R.removed).he : QC.cardOf(R.removed).en));
     lines.forEach((l, i) => qText(l, W / 2, y + 150 + i * 30, 18, '#ffe08a', W - 30, 800, 'rgba(0,0,0,0.6)')); if (R.card) qCard(R.card, W / 2, y + 260, 90);
     qBtn(W / 2 - 80, Math.min(H - 80, y + 340), 160, 50, () => { if (R.skip && quest.run.room < QC.roomsOf(quest.run) - 3) QC.nextRoom(quest.run); qNext(); }, { text: qtx('next'), fs: 18, r: 25 }); return; }
