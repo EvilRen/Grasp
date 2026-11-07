@@ -14,7 +14,7 @@ async def step_local(page):
     if await page.locator('#tachles .tkCrownB').count(): # judging, the czar: the answers in the hand, a gold background; one into the zone, then the crown
         if not JUDGED:
             JUDGED.append(1); g0 = await page.evaluate("[$('tachles').classList.contains('tkJudge'), document.querySelectorAll('#tachles .tkJC').length, !!document.querySelector('#tachles .tkCrownB[disabled]'), !!document.querySelector('#tachles .tkJudgeT')]")
-            check('judging: the answers as a hand of cards, a gold background and a "judging" line, the crown off until one is chosen (the owner)', g0[0] and g0[1] >= 1 and g0[2] and g0[3], g0)
+            check('judging: the answers as a hand of cards, a gold background, the crown button off until one is chosen, and no extra instruction pill behind it (the owner)', g0[0] and g0[1] >= 1 and g0[2] and not g0[3], g0)
             z = await page.evaluate("(() => { const r = document.querySelector('#tachles .tkSlots').getBoundingClientRect(), c = document.querySelectorAll('#tachles .tkJC')[0]; c.scrollIntoView({ inline: 'center', block: 'nearest' }); const q = c.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2, r.left + r.width / 2, r.top + r.height / 2]; })()")
             await page.wait_for_timeout(150); await page.mouse.move(z[0], z[1]); await page.mouse.down()
             for k in range(1, 13): await page.mouse.move(z[0] + (z[2] - z[0]) * k / 12, z[1] + (z[3] - z[1]) * k / 12); await page.wait_for_timeout(20)
@@ -246,13 +246,13 @@ async def online(b):
     J = await host.evaluate(f"{TKH}.tk.view.judge"); pick = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") != J]
     H = "(() => { const s = document.querySelector('#tachles .tkStatus'); return s ? Math.round(s.getBoundingClientRect().height) : -1; })()"; h0 = await pick[1].evaluate(H)
     await step_local(pick[0]); await host.wait_for_timeout(200); h1 = await pick[1].evaluate(H)
-    # (the owner: "why is there a scroll in the middle, it suddenly reveals the player names") — while you hold a hand the per-answerer name chips are gone
-    # (the scores strip already shows who sent, a ✓ badge), leaving just the tease line; the czar / a done picker still get the full chips
+    # (the owner: "why is there a scroll in the middle, it suddenly reveals the player names") — the per-answerer name chips are gone for everyone
+    # (the scores strip already shows who sent, a ✓ badge), leaving just the tease line; the czar and a done picker get the slim line too now
     check('online: while picking, the submit status shows on the scores strip (a ✓ on the answerer), not a duplicate name-chip row below', await pick[1].locator('#tachles .tkScores .tkSt.ok').count() >= 1 and await pick[1].locator('#tachles .tkChips').count() == 0)
     check('online: the tease line for the last one still shows while picking', len((await pick[1].inner_text('#tachles .tkTease')).strip()) > 3)
     check('the tease line does not push the screen: its place is kept from the start of the round (the owner: a scroll appeared)', h0 > 0 and h0 == h1, [h0, h1])
     czarSt = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
-    check('online: the czar (no hand) still sees the full status chips with names', await czarSt.locator('#tachles .tkChips .tkChip').count() >= 1)
+    check('online: the czar sees the slim status too — no duplicate name chips in the middle, the scores strip already shows who sent (the owner)', await czarSt.locator('#tachles .tkChips').count() == 0 and await czarSt.locator('#tachles .tkScores .tkSt').count() >= 1)
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     czarP = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
     # the owner: the goblin felt too much — instead a neon doodle pad; it is inert until you tap the pencil (so the game's own buttons never get blocked), then you draw and the line fades
