@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.115';
+const APP_VERSION = '1.12.116';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23075,14 +23075,19 @@ function qIconDraw(g, k, x, y, s) { // an icon into any context (a card's sprite
 function qIcon(k, x, y, s, a = 1) { const sp = makeSprite('qi|' + k + '|' + Math.round(s * 2), s * 1.4, s * 1.4, s * 0.7, s * 0.7, (g) => qIconDraw(g, k, 0, 0, s)); blit(sp, x, y, 0, 1, a); } // on the screen: drawn once, then blitted
 /* a run: icons and numbers on one line ({ ic } an icon, { t } text, { n } a number, { g } a gap between two effects) */
 function qRunW(g, run, fs, isz, gap) { g.font = '900 ' + fs + 'px Rubik, system-ui, sans-serif'; let w = 0;
-  for (const it of run) w += it.ic ? isz * 1.02 : it.g ? gap : g.measureText(it.t).width + fs * 0.07; return w; }
+  for (const it of run) w += it.ic ? isz * 1.12 : it.g ? gap : g.measureText(it.t).width + fs * 0.16; return w; }
 function qRunDraw(g, run, fs, isz, gap, col, num) { // centred on (0, 0): the caller places and scales it
   const w = qRunW(g, run, fs, isz, gap); let x = -w / 2;
   const ta = g.textAlign, dir = g.direction; g.textAlign = 'left'; g.textBaseline = 'middle'; g.direction = 'ltr';
   for (const it of run) {
-    if (it.ic) { qIconDraw(g, it.ic, x + isz / 2, 0, isz); x += isz * 1.02; }
+    if (it.ic) { qIconDraw(g, it.ic, x + isz / 2, 0, isz); x += isz * 1.12; }
     else if (it.g) x += gap;
-    else { g.font = '900 ' + fs + 'px Rubik, system-ui, sans-serif'; g.fillStyle = it.n ? num : col; g.fillText(it.t, x, 0); x += g.measureText(it.t).width + fs * 0.07; }
+    else { g.font = '900 ' + fs + 'px Rubik, system-ui, sans-serif';
+      // A number gets a cut outline, not the soft shadow the caller used to hang behind it: the blur filled the
+      // counters of 6 and 8 at this size and left the digit floating on the panel with nothing to hold its shape.
+      g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = 'rgba(8,4,16,0.95)';
+      g.lineWidth = Math.max(2, fs * (it.n ? 0.30 : 0.22)); g.strokeText(it.t, x, 0);
+      g.fillStyle = it.n ? num : col; g.fillText(it.t, x, 0); x += g.measureText(it.t).width + fs * 0.16; }
   }
   g.textAlign = ta; g.direction = dir; return w;
 }
@@ -23323,12 +23328,15 @@ function qPaintGem(g, c, L) { // the cost: a faceted gem in the top corner, the 
   ring.addColorStop(0, '#ffeab0'); ring.addColorStop(0.5, '#d2a33a'); ring.addColorStop(1, '#6d4c12');
   g.fillStyle = ring; g.beginPath(); g.arc(G.x, G.y, G.r, 0, TAU); g.fill();
   const face = g.createRadialGradient(G.x - G.r * 0.35, G.y - G.r * 0.4, G.r * 0.08, G.x, G.y, G.r * 0.84);
-  face.addColorStop(0, '#ffffff'); face.addColorStop(0.3, lighten(K.rim, 0.45)); face.addColorStop(1, K.rim);
+  face.addColorStop(0, '#ffffff'); face.addColorStop(0.28, lighten(K.rim, 0.42));
+  face.addColorStop(0.72, K.rim); face.addColorStop(1, mix(K.rim, [0, 0, 0], 0.45));   // the outer edge rolls away
   g.fillStyle = face; g.beginPath(); g.arc(G.x, G.y, G.r * 0.78, 0, TAU); g.fill();
   g.strokeStyle = 'rgba(0,0,0,0.45)'; g.lineWidth = Math.max(1, w * 0.012); g.beginPath(); g.arc(G.x, G.y, G.r * 0.78, 0, TAU); g.stroke();
   g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(G.x - G.r * 0.26, G.y - G.r * 0.34, G.r * 0.26, G.r * 0.15, -0.6, 0, TAU); g.fill();
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 ' + Math.round(G.r * 1.22) + 'px Rubik, system-ui, sans-serif';
-  g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = w * 0.03; g.fillStyle = '#0d0a1c'; g.fillText(String(c.c), G.x, G.y + G.r * 0.06);
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 ' + Math.round(G.r * 1.24) + 'px Rubik, system-ui, sans-serif';
+  g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = 'rgba(6,3,14,0.95)'; g.lineWidth = Math.max(2, G.r * 0.34);
+  g.strokeText(String(c.c), G.x, G.y + G.r * 0.06);                      // cut in, so it reads on any gem colour
+  g.fillStyle = '#fff4dd'; g.fillText(String(c.c), G.x, G.y + G.r * 0.06);
   g.restore();
 }
 function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
@@ -23357,7 +23365,7 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
       const run = qDescRun(c), fs = Math.round(w * (two ? 0.150 : 0.165)), isz = w * (two ? 0.168 : 0.185), gap = w * 0.075;
       const s2 = Math.min(1, L.txtW / Math.max(1, qRunW(g, run, fs, isz, gap)));
       g.save(); g.translate(0, L.txtY - (two ? L.txtH * 0.20 : 0)); g.scale(s2, s2);
-      g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; qRunDraw(g, run, fs, isz, gap, Q_INK, Q_NUM); g.restore();
+      qRunDraw(g, run, fs, isz, gap, Q_INK, Q_NUM); g.restore();   // (the outline replaces the shadow)
       g.textAlign = 'center'; g.textBaseline = 'middle';
       if (two) { const wf = Math.max(7, w * 0.088);
         g.font = '700 ' + wf + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
@@ -23620,8 +23628,13 @@ function qDrawFight(now, y0) {
 }
 function qFinger(x, y, now, up = true) { const b = Math.sin(now / 180) * 7;
   qPic('/assets/quest/icons/finger.webp', up ? '👆' : '👇', x, y + (up ? 26 + b : -26 - b), 40, 1, !up); }
-function qBubble(text, y, now) { const sp = textSprite(text, 17, '#2a1f3d', null, 900), w = Math.min(W - 20, sp.tw + 28), x = W / 2 - w / 2; resetView(); ctx.fillStyle = '#ffe76a'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.roundRect(x, y - 20, w, 40, 20); ctx.fill(); ctx.stroke(); blit(sp, W / 2, y, 0, Math.min(1, (w - 20) / sp.tw)); }
+function qBubble(text, y, now) { // the coach speaking: the painted gold bar, not the flat yellow sticker it was
+  const sp = textSprite(text, 17, '#2d1c06', null, 900), h = 46;
+  const w = Math.min(W - 16, sp.tw + 74), x = W / 2 - w / 2; resetView();
+  if (!qPlate('btn_gold', x, y - h / 2, w, h)) {
+    ctx.fillStyle = '#ffe76a'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.roundRect(x, y - 20, w, 40, 20); ctx.fill(); ctx.stroke(); }
+  blit(sp, W / 2, y, 0, Math.min(1, (w - 58) / sp.tw)); }
 function qCoach(f, sel, tgt, hy2, ch, now) { // the first fight ever: a finger and a bubble for each step (a card, the monster, End turn; then what the bubble over a monster means)
   const live = f.mons.filter((m) => m.hp > 0), by = hy2 - ch / 2 - 46, card = (i) => quest.btns.find((b) => b.card === i), rtl = lang === 'he';
   if (sel) { if (tgt && live.length) { const m = live[0]; qBubble(qtx('c2'), by, now); qFinger(m._x, m._y + m._s * 0.2, now); } else { const b = card(quest.sel); qBubble(qtx('c2b'), by, now); if (b) qFinger(b.x + b.w / 2, b.y + b.h * 0.99, now); } quest.coach = 2; return true; }
