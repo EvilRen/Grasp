@@ -2104,7 +2104,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.96';
+const APP_VERSION = '1.12.97';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -3635,15 +3635,19 @@ function drawParticles() {
 const HEB = /[\u0590-\u05FF]/, BIDI_NUM = /\u200E?([+\-−]?[×x]?\d[\d,.:]*(?:\s?[×%])?)/g;
 function bidiDir(text) { return lang === 'he' && HEB.test(text) ? 'rtl' : 'ltr'; }
 function bidiText(text) { text = String(text); return lang === 'he' && HEB.test(text) ? text.replace(BIDI_NUM, '\u2066$1\u2069') : text; }
-function textSprite(text, size, color, glow, weight = 700, fam) {
-  const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang + '|' + (fam || '');
+/* `stroke` draws a crisp outline round the lettering instead of the soft halo `glow` gives. A halo is right behind a
+   word on a painting; it is wrong behind a number, because the blur eats the counters of 8 and 0 at the size the
+   health bars use them, and "18/18" came out as a smear. A number gets an outline; prose keeps the halo. */
+function textSprite(text, size, color, glow, weight = 700, fam, stroke = 0) {
+  const key = text + '|' + size + '|' + color + '|' + glow + '|' + weight + '|' + lang + '|' + (fam || '') + '|' + stroke;
   let sp = TEXTS.get(key); if (sp) return sp;
   if (TEXTS.size > 80) TEXTS.clear();
   const font = weight + ' ' + size + 'px ' + (fam || 'Rubik, system-ui, sans-serif'), dir = bidiDir(text); text = bidiText(text);
-  ctx.font = font; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size * 1.2, h = Math.ceil(size * 1.6);
+  ctx.font = font; const tw = Math.ceil(ctx.measureText(text).width), w = tw + size * 1.2 + stroke * 2, h = Math.ceil(size * 1.6 + stroke * 2);
   const c = document.createElement('canvas'); c.width = Math.ceil(w * SS); c.height = Math.ceil(h * SS);
   const g = c.getContext('2d'); g.scale(SS, SS); g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = dir; // Hebrew labels with digits read right-to-left, the digits stay LTR
-  if (glow) { g.shadowColor = glow; g.shadowBlur = size * 0.5; g.fillStyle = glow; g.fillText(text, w / 2, h / 2); g.fillText(text, w / 2, h / 2); g.shadowColor = 'transparent'; }
+  if (stroke) { g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = glow || 'rgba(8,4,16,0.95)'; g.lineWidth = stroke; g.strokeText(text, w / 2, h / 2); }
+  else if (glow) { g.shadowColor = glow; g.shadowBlur = size * 0.5; g.fillStyle = glow; g.fillText(text, w / 2, h / 2); g.fillText(text, w / 2, h / 2); g.shadowColor = 'transparent'; }
   g.fillStyle = color; g.fillText(text, w / 2, h / 2);
   sp = { c, w, h, ox: w / 2, oy: h / 2, tw }; TEXTS.set(key, sp); return sp;
 }
@@ -22878,7 +22882,7 @@ function qBtnText(x, y, w, h, o, dis, solid) { // a button's lettering, wherever
 }
 function qEmoji(e, x, y, s, a = 1) { resetView(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); ctx.globalAlpha = 1; }
 const Q_DISP = '"Suez One", Rubik, Georgia, serif'; // titles, names and buttons; the small explaining lines stay on Rubik
-function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null, fam) { const sp = textSprite(s, size, col, glow, weight, fam); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
+function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null, fam, stroke = 0) { const sp = textSprite(s, size, col, glow, weight, fam, stroke); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
 function qBg(land) { // the land's painting (assets/quest/lands/<id>.webp) when it is there, its gradient while it is not
   const L = land || QC.LANDS[0], im = qImg('/assets/quest/lands/' + L.id + '.webp');
   return makeSprite('qbg|' + L.id + '|' + W + 'x' + H + '|' + (im ? 'art' : 'sky'), W, H, 0, 0, (g) => {
@@ -23297,15 +23301,26 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
   });
   blit(sp, x, y, o.ang || 0, k, af);
 }
-function qBar(x, y, w, h, v, max, col, label) { resetView(); ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, Math.max(h, w * Math.max(0, v) / max), h, h / 2); ctx.fill();
-  if (label) { const sp = textSprite(label, Math.round(h * 0.85), '#ffffff', 'rgba(0,0,0,0.6)', 800); blit(sp, x + w / 2, y + h / 2, 0, Math.min(1, (w - 4) / sp.tw)); } }
+function qBar(x, y, w, h, v, max, col, label) { // a sunken trough with a lit bar in it — it was two flat slabs
+  resetView(); const r = h / 2, q = Math.max(0, Math.min(1, v / Math.max(1, max))), fw = Math.max(h, w * q);
+  ctx.fillStyle = 'rgba(8,5,20,0.85)'; ctx.beginPath(); ctx.roundRect(x - 1.5, y - 1.5, w + 3, h + 3, r + 1.5); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.clip();
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, mix(col, [255, 255, 255], 0.45)); g.addColorStop(0.52, col); g.addColorStop(1, mix(col, [0, 0, 0], 0.34));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, fw, h, r); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.30)'; ctx.beginPath(); ctx.roundRect(x + 2, y + 1.5, Math.max(0, fw - 4), h * 0.30, h * 0.15); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(246,239,226,0.20)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 0.5, y + 0.5, w - 1, h - 1, r); ctx.stroke();
+  if (label) { const sp = textSprite(label, Math.round(h * 0.82), '#ffffff', 'rgba(8,4,16,0.95)', 900, undefined, Math.max(2, h * 0.19));
+    blit(sp, x + w / 2, y + h / 2, 0, Math.min(1, (w - 6) / sp.tw)); } }
 function qStatus(st, x, y, s) { let k = 0;
   for (const key of ['str', 'weak', 'vul', 'poi', 'thorns']) { const n = st[key]; if (!n) continue; const xx = x + k * s * 1.7; qIcon(key, xx, y, s); qText(String(n), xx + s * 0.72, y + s * 0.34, Math.round(s * 0.66), '#ffffff', 0, 900, 'rgba(0,0,0,0.85)'); k++; } }
 function qTop(now) { // health, gold, the room, the treasures
   const r = quest.run; if (!r) return 0; const rtl = lang === 'he', L = QC.landOf(r) || QC.LANDS[0];
   const y = cgTopY() - 6, bw = Math.min(150, W * 0.36), x0 = rtl ? W - 16 - bw : 16;
   qIcon('heal', rtl ? x0 + bw + 4 : x0 - 4, y + 9, 19); qBar(x0 + (rtl ? -12 : 12), y, bw, 18, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
-  const gx = rtl ? x0 - 70 : x0 + bw + 30; qIcon('gold', gx, y + 9, 20); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
+  const gx = rtl ? x0 - 70 : x0 + bw + 30; qIcon('gold', gx, y + 9, 20); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(8,4,16,0.95)', undefined, 3.4);
   const ly = y + 30; qText((rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
   r.relics.forEach((id, i) => { const R0 = QC.RELICS[id], xx = rtl ? W - 26 - i * 34 : 26 + i * 34, yy = ly + 34;
     resetView(); ctx.fillStyle = 'rgba(16,11,32,0.72)'; ctx.beginPath(); ctx.arc(xx, yy, 15, 0, TAU); ctx.fill();
