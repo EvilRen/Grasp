@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.111';
+const APP_VERSION = '1.12.112';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22778,6 +22778,8 @@ function qNewRun(hero, len) { const P = qP(); P.runs = (P.runs || 0) + 1; quest.
 function qGo(k, data) { quest.scr = k; quest.data = data || null; quest.sel = -1; if (quest.run) quest.run.at = { k, data: data || null }; qSave(); }
 function qEnter(kind, resumed) { // a door was chosen
   const r = quest.run; quest.log.push('door:' + kind);
+  if (!resumed) { if (!r.path || typeof r.path !== 'object') r.path = {};   // the trail's memory: what each room was
+    if (!Array.isArray(r.path[r.li])) r.path[r.li] = []; r.path[r.li][r.room] = kind; }
   if (kind === 'fight' || kind === 'elite' || kind === 'boss') { qPreloadMons(QC.landOf(r)); quest.f = QC.newFight(r, kind); quest.logAt = 0; quest.fx = []; quest.sel = -1; quest.scr = 'fight'; r.at = { k: 'fight', kind }; qSave(); quest.fightAt = performance.now(); if (kind === 'boss') sfx('boss'); return; }
   if (kind === 'rest') return qGo('rest');
   if (kind === 'shop') return qGo('shop', QC.shopStock(r));
@@ -23465,10 +23467,45 @@ function qDrawDoors(now, y0) {
     resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
     qIcon(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.46); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 800, 'rgba(6,4,16,0.9)');
     qText(qtx('doorD_' + k), x + dw / 2, y + dh + 22, 14, '#fff6d6', dw + 6, 800, 'rgba(0,0,0,0.6)'); });
-  // the rooms of this land: a dot each
-  const rooms = QC.roomsOf(r), sp = Math.min(30, (W - 60) / rooms), x0 = W / 2 - sp * (rooms - 1) / 2, yy = y + dh + 74;
-  qText(qtx('toBoss'), W / 2, yy + 26, 12, '#ffffff', 0, 700, 'rgba(0,0,0,0.5)');
-  for (let i = 0; i < rooms; i++) { const x = x0 + (rtl ? rooms - 1 - i : i) * sp; resetView(); ctx.beginPath(); ctx.arc(x, yy, i === r.room ? 9 : 6, 0, TAU); ctx.fillStyle = i < r.room ? '#3ddc84' : i === r.room ? '#ffd23f' : 'rgba(255,255,255,0.35)'; ctx.fill(); if (i === rooms - 1) qIcon('crown', x, yy - 18, 16); }
+  qTrail(r, y + dh + 86, now);
+}
+/* The way through this land: a cord winding across the screen with a stop for every room. It replaced a row of
+   plain dots, which said where you were and nothing else. A room you have been through shows what it turned out
+   to be, the one you are standing at is lit, the ones ahead are blank because the game does not decide them until
+   you get there, and the last stop is the boss. Nothing here changes a rule: it draws r.room and the kinds the
+   run now remembers. */
+function qTrail(r, y, now) {
+  const rooms = QC.roomsOf(r), rtl = lang === 'he', pad = 30, w = W - pad * 2, amp = Math.min(17, w / rooms * 0.6);
+  const at = (i) => { const t = rooms > 1 ? i / (rooms - 1) : 0.5;
+    return { x: pad + (rtl ? 1 - t : t) * w, y: y + Math.sin(t * Math.PI * 2.1 + 0.6) * amp }; };
+  resetView(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [wd, col] of [[8, 'rgba(6,4,16,0.6)'], [5, '#5a4327'], [1.8, 'rgba(255,226,166,0.42)']]) {
+    ctx.beginPath(); const p0 = at(0); ctx.moveTo(p0.x, p0.y);
+    for (let i = 1; i < rooms; i++) { const a = at(i - 1), b = at(i); ctx.quadraticCurveTo((a.x + b.x) / 2, a.y, b.x, b.y); }
+    ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.stroke();
+  }
+  const done = (r.path && r.path[r.li]) || [];
+  const pulse = 1 + 0.07 * Math.sin(now / 320);
+  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1, cur = i === r.room, past = i < r.room;
+    const rad = (cur ? 15 : last ? 14 : 10) * (cur ? pulse : 1);
+    resetView();
+    ctx.beginPath(); ctx.arc(p.x, p.y + 2, rad, 0, TAU); ctx.fillStyle = 'rgba(6,4,16,0.5)'; ctx.fill();
+    const bz = ctx.createLinearGradient(p.x - rad, p.y - rad, p.x + rad, p.y + rad);
+    if (cur) { bz.addColorStop(0, '#fff0c0'); bz.addColorStop(0.5, '#f2c14e'); bz.addColorStop(1, '#8a5f12'); }
+    else if (past || last) { bz.addColorStop(0, '#e7c78a'); bz.addColorStop(0.5, '#b88c33'); bz.addColorStop(1, '#5e4210'); }
+    else { bz.addColorStop(0, '#5b5470'); bz.addColorStop(0.6, '#3a3550'); bz.addColorStop(1, '#231f33'); }
+    ctx.fillStyle = bz; ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(8,5,18,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x, p.y, rad * 0.78, 0, TAU);
+    ctx.fillStyle = cur ? 'rgba(14,9,28,0.55)' : past || last ? 'rgba(12,8,24,0.8)' : 'rgba(10,8,20,0.85)'; ctx.fill();
+    if (cur) { ctx.strokeStyle = 'rgba(255,226,140,0.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, rad + 4 * pulse, 0, TAU); ctx.stroke(); }
+  }
+  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1, cur = i === r.room;
+    const k = last ? 'crown' : done[i] ? Q_DOOR[done[i]] : null;
+    if (k) qIcon(k, p.x, p.y, (last ? 17 : 13) * (cur ? pulse : 1), i < r.room || last ? 1 : 0.9);
+    else if (!cur) { resetView(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.6, 0, TAU); ctx.fillStyle = 'rgba(246,239,226,0.30)'; ctx.fill(); }
+  }
+  qText(qtx('toBoss'), W / 2, y + amp + 34, 12, '#ffffff', 0, 700, 'rgba(0,0,0,0.5)');
 }
 function qMonPos(f, y0) { // the monsters' places: in a row (the live ones), smoothly sliding
   const live = f.mons.filter((m) => m.hp > 0 || (m.downAt && performance.now() - m.downAt < 700)), n = live.length, rtl = lang === 'he', s = Math.min(100, (W - 24) / Math.max(1, n) * 0.62), y = y0 + 90 + s * 0.4;
