@@ -1639,7 +1639,14 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkHandBox{ position:sticky; bottom:0; z-index:3; margin:0 -16px; padding:0 16px calc(env(safe-area-inset-bottom,0px) + 4px); background:linear-gradient(rgba(10,10,10,0), rgba(10,10,10,.97) 8px); } /* (the hand stays at the bottom of the screen, like cards held: the owner, from the owner's reference) */
 #tachles .tkHC em, #tachles .tkSub em, #tachles .tkSlot em{ position:absolute; top:-8px; inset-inline-end:-8px; width:28px; height:28px; border-radius:50%; background:var(--neon); color:#fff; font-style:normal; font-size:14px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(168,85,247,.7); }
 #tachles .tkSub em{ position:static; width:20px; height:20px; font-size:12px; margin-bottom:4px; box-shadow:none; }
-#tachles .tkBanner{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:4px; } #tachles .tkBanner > div{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; } #tachles .tkBanner .tkI{ width:20px; height:20px; }
+#tachles .tkBanner{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:4px; } #tachles .tkBanner > div{ display:flex; align-items:center; gap:8px; font-size:17px; font-weight:800; } #tachles .tkBanner .tkI{ width:26px; height:26px; }
+#tachles .tkBanner .tkNeonC{ font-size:20px; text-shadow:0 0 14px rgba(168,85,247,.7); } /* the winner's name, bigger and glowing — a clear winner moment */
+/* the winner moment: the winning card pops in, and a one-shot confetti burst (tkCeleb) falls */
+@keyframes tkWinPop{ 0%{ transform:scale(.72); opacity:0 } 60%{ transform:scale(1.07) } 100%{ transform:scale(1); opacity:1 } }
+#tachles .tkSlot.tkWinC{ animation:tkWinPop .5s cubic-bezier(.2,1.5,.45,1) both; }
+.tkConfetti{ position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden; }
+.tkConfetti i{ position:absolute; top:-16px; width:8px; height:13px; border-radius:2px; opacity:.95; animation:tkCfall var(--d,1.3s) cubic-bezier(.35,.35,.5,1) forwards; }
+@keyframes tkCfall{ 0%{ transform:translateY(-20px) rotate(0) } 100%{ transform:translateY(112vh) rotate(760deg); opacity:.12 } }
 #tachles .tkSubs{ width:100%; max-width:48rem; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:4px 8px; }
 #tachles .tkSub{ position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; min-width:min(180px,42vw); max-width:220px; flex:1 1 160px; border-radius:16px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; transition:border-color .15s, transform .15s, opacity .2s; touch-action:manipulation; }
 #tachles .tkSub[disabled]{ cursor:default; } #tachles .tkSub.can:active{ transform:scale(.98); border-color:var(--neon); }
@@ -2084,7 +2091,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.69';
+const APP_VERSION = '1.12.70';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23511,6 +23518,15 @@ function tkNickRow(v) { return '<p class="tkDim tkSm tkNickL">' + tks('yourNick'
 function tkSolo(nm) { tk.own = {}; tk.mode = 'solo'; tk.me = 'h'; tk.code = ''; tk.netMsg = ''; tk.lobby = [{ id: 'h', name: nm }]; tk.botN = 0; for (let i = 0; i < 2; i++) tkAddBot(); tk.scr = 'lobby'; }
 function tkFixNick() { if (!tk.myName || TK_SNACKS.en.some((w) => tk.myName.startsWith(w + ' '))) tk.myName = tkNick(); } // (a nickname from the English list: a Hebrew one)
 function tkForm(f) { tk.form = f; tk.scr = 'form'; tk.err = ''; tkFixNick(); }
+function tkCeleb() { // a one-shot confetti burst for the round's winner — lives on <body> so a re-render of #tachles can't wipe it
+  try { if (window.__tkNoCeleb) return; const prev = document.querySelector('body > .tkConfetti'); if (prev) prev.remove();
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return; // respect reduced-motion
+    const cols = ['#a855f7', '#e24ad0', '#f59e0b', '#22d3ee', '#34d399', '#ffffff']; let html = '';
+    for (let i = 0; i < 28; i++) { const x = (Math.random() * 100).toFixed(1), d = (1 + Math.random() * 0.9).toFixed(2), dl = (Math.random() * 0.28).toFixed(2), c = cols[(Math.random() * cols.length) | 0], r = (Math.random() * 360) | 0;
+      html += '<i style="left:' + x + '%;background:' + c + ';--d:' + d + 's;animation-delay:' + dl + 's;transform:rotate(' + r + 'deg)"></i>'; }
+    const w = document.createElement('div'); w.className = 'tkConfetti'; w.innerHTML = html; document.body.appendChild(w);
+    setTimeout(() => { try { w.remove(); } catch (e) {} }, 2300); } catch (e) {}
+}
 function tkRender() {
   const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr; el.dir = 'rtl'; el.lang = 'he';
   const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
@@ -23544,6 +23560,8 @@ function tkRender() {
   const waitHtml = waitH ? '<div class="tkHostWait"><div class="tkSpin"></div><div class="tkHWEmoji">📵</div><h2 class="tkHWT">' + tks('hostGoneT') + '</h2><p class="tkHWD">' + tks('hostGoneD') + '</p>' + (Date.now() - (tk.hostWaitAt || 0) > (window.__tkFast ? 3000 : 15000) ? '<button class="tkLink tkHWB" data-a="leave">' + tks('leave') + '</button>' : '') + '</div>' : '';
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   tk.scrNow = s; tkMiniSync(); // the waiting goblin: shown only in a game, only while waiting, and only after the delay (tkMiniSync)
+  // the winner moment: one confetti burst the first time each round's reveal shows (keyed on the round, so a re-render never re-fires it)
+  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; tkCeleb(); } }
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFitCards(); tkFan(); }
