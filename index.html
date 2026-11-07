@@ -2102,7 +2102,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.92';
+const APP_VERSION = '1.12.93';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22824,6 +22824,12 @@ function qFightWon(at) { const r = quest.run, f = quest.f; quest.wonAt = at; qP(
 function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o }); resetView();
   const r = o.r != null ? o.r : 16, on = o.on, dis = o.dis, solid = !!o.solid && !dis;
   const quiet = !solid && !on && !o.bg, ac = hexRgb(o.bg || (on ? '#ffd23f' : '#4fe5d2')).join(',');
+  // A button that carries no accent of its own gets the painted plate when the art is there. The three bright
+  // primaries keep the code-drawn sticker, and so does anything with an o.bg, because its colour is what names it.
+  if (!solid && !o.bg && !o.plain && qPlate(on ? 'panel_chosen' : dis ? 'panel_locked' : 'panel_quiet', x, y, w, h, dis ? 0.6 : 1)) {
+    if (o.text) qBtnText(x, y, w, h, o, dis, false);
+    return;
+  }
   ctx.save(); ctx.globalAlpha = dis ? 0.45 : 1;
   if (solid) { // filled bright, a darker lip under it: the one thing on the screen that asks to be pressed
     const c = hexRgb(o.bg || '#3ddc84'), up = (k) => 'rgb(' + c.map((v) => Math.round(v + (255 - v) * k)).join(',') + ')',
@@ -22855,15 +22861,19 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
       ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + bw, y + bw, w - bw * 2, h - bw * 2, Math.max(1, r - bw)); ctx.stroke(); }
   }
   ctx.restore();
-  if (o.text) { const big = (o.fs || 18) >= 20; // the display serif only where it is large enough to hold its strokes
-    const ink = solid ? 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')' : (o.fg || Q_INK);
-    const sp = textSprite(o.text, o.fs || 18, ink, solid ? 'rgba(255,255,255,0.45)' : 'rgba(6,4,16,0.92)', big ? 400 : 800, big ? Q_DISP : undefined);
-    const is = o.ic ? (o.fs || 18) * 1.2 : 0, gap = is * 0.35, k = Math.min(1, (w - 14 - is - gap) / sp.tw);
-    const cx = x + w / 2 + (o.tx || 0), cy = y + h / 2 + (o.ty || 0), af = dis ? 0.6 : 1;
-    if (!o.ic) { blit(sp, cx, cy, 0, k, af); return; }
-    const tw = sp.tw * k; // the icon sits on the left in both languages (the owner's call: mirroring it read as misplaced in Hebrew)
-    blit(sp, cx + (is + gap) / 2, cy, 0, k, af);
-    qIcon(o.ic, cx - (tw / 2 + gap / 2 + is / 2), cy, is, af); } }
+  if (o.text) qBtnText(x, y, w, h, o, dis, solid);
+}
+function qBtnText(x, y, w, h, o, dis, solid) { // a button's lettering, wherever its plate came from
+  const big = (o.fs || 18) >= 20; // the display serif only where it is large enough to hold its strokes
+  const ink = solid ? 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')' : (o.fg || Q_INK);
+  const sp = textSprite(o.text, o.fs || 18, ink, solid ? 'rgba(255,255,255,0.45)' : 'rgba(6,4,16,0.92)', big ? 400 : 800, big ? Q_DISP : undefined);
+  const is = o.ic ? (o.fs || 18) * 1.2 : 0, gap = is * 0.35, k = Math.min(1, (w - 14 - is - gap) / sp.tw);
+  const cx = x + w / 2 + (o.tx || 0), cy = y + h / 2 + (o.ty || 0), af = dis ? 0.6 : 1;
+  if (!o.ic) { blit(sp, cx, cy, 0, k, af); return; }
+  const tw = sp.tw * k; // the icon sits on the left in both languages (the owner's call: mirroring it read as misplaced in Hebrew)
+  blit(sp, cx + (is + gap) / 2, cy, 0, k, af);
+  qIcon(o.ic, cx - (tw / 2 + gap / 2 + is / 2), cy, is, af);
+}
 function qEmoji(e, x, y, s, a = 1) { resetView(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = Math.round(s) + 'px ' + MX_EMOJI; ctx.fillText(e, x, y); ctx.globalAlpha = 1; }
 const Q_DISP = '"Suez One", Rubik, Georgia, serif'; // titles, names and buttons; the small explaining lines stay on Rubik
 function qText(s, x, y, size, col = '#ffffff', w = 0, weight = 800, glow = null, fam) { const sp = textSprite(s, size, col, glow, weight, fam); blit(sp, x, y, 0, w ? Math.min(1, w / sp.tw) : 1); return sp; }
@@ -23092,7 +23102,7 @@ const Q_ART = { im: new Map() };
 function qImg(path) { // null until the file is decoded (or for good, if it is not there): the painted frame stands in
   let e = Q_ART.im.get(path);
   if (!e) { e = { img: new Image(), ok: false }; Q_ART.im.set(path, e); e.img.decoding = 'async';
-    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|') || k.startsWith('qbg|')) SPRITES.delete(k); }; // the cards and the backdrop draw again, now with the art
+    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|') || k.startsWith('qbg|') || k.startsWith('qpl|')) SPRITES.delete(k); }; // the cards and the backdrop draw again, now with the art
     e.img.onerror = () => { e.bad = true; }; e.img.src = path; }
   return e.ok && e.img.naturalWidth ? e.img : null;
 }
@@ -23132,6 +23142,36 @@ function qLoadLay() {
     if (!j || typeof j !== 'object') return; Q_ART.lay = j;
     for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|')) SPRITES.delete(k);
   }).catch(() => {});
+}
+const Q_PL = { lay: null, asked: 0 };   // the painted interface plates, and the border band each one measures
+function qPlatesLay() {
+  if (Q_PL.asked) return Q_PL.lay; Q_PL.asked = 1;
+  fetch('/assets/quest/plates.json').then((r) => (r.ok ? r.json() : null)).then((j) => {
+    if (!j || typeof j !== 'object') return; Q_PL.lay = j;
+    for (const k of [...SPRITES.keys()]) if (k.startsWith('qpl|')) SPRITES.delete(k);
+  }).catch(() => {});
+  return Q_PL.lay;
+}
+/* A painted plate drawn at any size: the four corners are kept, the four edges stretched along one axis, the middle
+   stretched both ways. The border is scaled to the TARGET rather than pasted at its size in the file — a 73 px band
+   on a 585 px plate is an eighth of it, and must stay an eighth on a 64 px button instead of swallowing it. The
+   insets come from assets/quest/plates.json, which the slicer measured off the art; nothing here is a magic number.
+   Returns false when the file or the measurements are not there, and the caller paints its own plate instead. */
+function qPlate(name, x, y, w, h, a = 1) {
+  const L = qPlatesLay(), m = L && L[name];
+  if (!m || !Array.isArray(m.ins) || !(w > 4) || !(h > 4)) return false;
+  const im = qImg('/assets/quest/plates/' + name + '.webp'); if (!im) return false;
+  const sw = im.naturalWidth, sh = im.naturalHeight;
+  const sx = Math.min(m.ins[0], (sw - 2) / 2), sy = Math.min(m.ins[1], (sh - 2) / 2);
+  const k = Math.min(w, h) / Math.min(sw, sh);
+  const dx = Math.max(2, Math.min(Math.round(sx * k), (w - 2) / 2)), dy = Math.max(2, Math.min(Math.round(sy * k), (h - 2) / 2));
+  const sp = makeSprite('qpl|' + name + '|' + Math.round(w) + '|' + Math.round(h), w, h, 0, 0, (g) => {
+    const cx = [[0, sx, 0, dx], [sx, sw - sx * 2, dx, w - dx * 2], [sw - sx, sx, w - dx, dx]];
+    const cy = [[0, sy, 0, dy], [sy, sh - sy * 2, dy, h - dy * 2], [sh - sy, sy, h - dy, dy]];
+    for (const [a0, a1, a2, a3] of cx) for (const [b0, b1, b2, b3] of cy)
+      if (a1 > 0.5 && b1 > 0.5 && a3 > 0.5 && b3 > 0.5) g.drawImage(im, a0, b0, a1, b1, a2, b2, a3, b3);
+  });
+  blit(sp, x, y, 0, 1, a); return true;
 }
 function qFrameLay(c) { // what this card's frame measures, if it has been measured
   const L = Q_ART.lay; if (!L) return null;
@@ -23289,7 +23329,8 @@ function qDrawPick(now) {
     if (lock) { resetView(); ctx.beginPath(); ctx.arc(x + cw / 2, ay, cw * 0.19, 0, TAU);
       ctx.fillStyle = 'rgba(10,7,22,0.82)'; ctx.fill(); ctx.strokeStyle = 'rgba(246,239,226,0.22)'; ctx.lineWidth = 1.5; ctx.stroke();
       qIcon('lock', x + cw / 2, ay, cw * 0.22); }
-    resetView(); ctx.fillStyle = 'rgba(10,7,22,0.55)'; ctx.beginPath(); ctx.roundRect(x + 6, y + ch * 0.55, cw - 12, ch * 0.16, 7); ctx.fill();
+    if (!qPlate('nameplate', x + 6, y + ch * 0.55, cw - 12, ch * 0.16, lock ? 0.6 : 1)) {
+      resetView(); ctx.fillStyle = 'rgba(10,7,22,0.55)'; ctx.beginPath(); ctx.roundRect(x + 6, y + ch * 0.55, cw - 12, ch * 0.16, 7); ctx.fill(); }
     qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 800, 'rgba(6,4,16,0.9)'); qText(lock ? qtx('locked') : qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, lock ? '#8d85a3' : '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qIcon('heal', x + cw / 2 - 16, y + ch * 0.91, 15); qText(String(H0.hp), x + cw / 2 + 8, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
   y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
   ['short', 'normal', 'epic'].forEach((k, i) => { const bw = Math.min(124, (W - 40) / 3), x = W / 2 + ((rtl ? 2 - i : i) - 1) * (bw + 8) - bw / 2, on = quest.pickLen === k;

@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-08a';
+const VERSION = 'grasp-2026-11-08b';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -31,7 +31,11 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/enemies/goblin.webp', '/assets/quest/enemies/bee.webp', '/assets/quest/enemies/spider.webp',
   '/assets/quest/enemies/bear.webp', '/assets/quest/enemies/ent.webp', '/assets/quest/enemies/troll.webp',
   '/assets/quest/heroes/knight.webp', '/assets/quest/heroes/wizard.webp', '/assets/quest/heroes/robot.webp',
-  '/assets/quest/fonts/suezone-latin.woff2', '/assets/quest/fonts/suezone-hebrew.woff2'];
+  '/assets/quest/fonts/suezone-latin.woff2', '/assets/quest/fonts/suezone-hebrew.woff2',
+  // the painted interface plates, and the border band the slicer measured off each one
+  '/assets/quest/plates.json', '/assets/quest/plates/panel_quiet.webp', '/assets/quest/plates/panel_chosen.webp',
+  '/assets/quest/plates/panel_locked.webp', '/assets/quest/plates/plaque.webp',
+  '/assets/quest/plates/window.webp', '/assets/quest/plates/nameplate.webp'];
 const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|sky|tama|tree|popit|spot|mix|quest|tachles|powder)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;
