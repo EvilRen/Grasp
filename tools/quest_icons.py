@@ -30,6 +30,9 @@ SETS = {
     'icons2': ([['all', 'call', 'gold', 'skull', 'crown'],                  # the rest of Q_IC: the screens and doors
                 ['trophy', 'chest', 'shop', 'fire', 'lock'],
                 ['cut', 'mystery', 'help']], 'icons'),
+    'events': ([['ev_well', 'ev_shrine', 'ev_merchant', 'ev_chest', 'ev_fountain'],   # the eight events, by EVENTS id
+                ['ev_robot', 'ev_portal', 'ev_feast', 'map', 'door'],                 # then the how-to page symbols
+                ['cards', 'hourglass', 'finger', 'monster']], 'icons'),
 }
 NAMES, COLS, ROWS, OUT = None, 0, 0, None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
