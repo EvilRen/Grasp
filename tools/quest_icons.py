@@ -32,6 +32,7 @@ SETS = {
                 ['cut', 'mystery', 'help']], 'icons'),
     'doors': ([['door_fight', 'door_elite', 'door_boss', 'door_rest'],
                ['door_shop', 'door_chest', 'door_event']], 'doors'),
+    'door1': ([['door_event']], 'doors'),     # a one-piece sheet, for re-running a single doorway
     'events': ([['ev_well', 'ev_shrine', 'ev_merchant', 'ev_chest', 'ev_fountain'],   # the eight events, by EVENTS id
                 ['ev_robot', 'ev_portal', 'ev_feast', 'map', 'door'],                 # then the how-to page symbols
                 ['cards', 'hourglass', 'finger', 'monster']], 'icons'),
