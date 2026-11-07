@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.112';
+const APP_VERSION = '1.12.113';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22713,7 +22713,7 @@ const QS = {
     stFights: 'fights', stBoss: 'bosses', stCoins: 'coins', target: 'Tap a monster', tapAgain: 'Tap again to play', needEn: 'Not enough energy', draw: 'draw', disc: 'used',
     phoenix: 'The feather saves you!', tip: 'Tap a card, then a monster. Out of energy? End turn!', land: 'A new land: {n}', ok: 'OK', once: 'once',
     sub: 'Go room by room, beat the monsters, reach the boss', how: 'How to play', heroD_knight: 'strong shield', heroD_wizard: 'magic + poison', heroD_robot: 'extra energy',
-    doorD_fight: 'gold + a card', doorD_elite: 'big prize', doorD_boss: 'end of the land', doorD_rest: 'rest, upgrade', doorD_shop: 'buy cards', doorD_chest: 'a treasure', doorD_event: 'a surprise', toBoss: 'the way to the boss',
+    doorD_fight: 'gold + a card', doorD_elite: 'big prize', doorD_boss: 'end of the land', doorD_rest: 'rest, upgrade', doorD_shop: 'buy cards', doorD_chest: 'a treasure', doorD_event: 'a surprise', toBoss: 'the way to the boss', mapT: 'Your journey',
     c1: '1. Tap a card ⚔️', c2: '2. Now tap the monster', c2b: 'Tap the card again to play it', c3: 'Out of energy? Tap End turn', c4: 'The bubble = what the monster will do next. ⚔️ = it hits, so block with 🛡️!',
     hNext: 'Next', hGo: "Got it, let's go!", hOk: 'Got it',
     h: [['🗺️', 'The goal', ['Go from room to room,', 'beat the monsters,', 'and reach the boss 👑 at the end.'], '⚔️ ➜ ⚔️ ➜ 🔥 ➜ 👑'],
@@ -22730,7 +22730,7 @@ const QS = {
     stFights: 'קרבות', stBoss: 'בוסים', stCoins: 'מטבעות', target: 'הקישו על מפלצת', tapAgain: 'הקישו שוב כדי לשחק', needEn: 'אין מספיק אנרגיה', draw: 'קופה', disc: 'שוחקו',
     phoenix: 'הנוצה הצילה אתכם!', tip: 'הקישו על קלף ואז על מפלצת. נגמרה האנרגיה? סוף תור!', land: 'ארץ חדשה: {n}', ok: 'אישור', once: 'פעם אחת',
     sub: 'עוברים חדר אחרי חדר, מנצחים מפלצות ומגיעים לבוס', how: 'איך משחקים', heroD_knight: 'מגן חזק', heroD_wizard: 'קסם ורעל', heroD_robot: 'עוד אנרגיה',
-    doorD_fight: 'זהב + קלף', doorD_elite: 'פרס גדול', doorD_boss: 'סוף הארץ', doorD_rest: 'מנוחה, שדרוג', doorD_shop: 'קונים קלפים', doorD_chest: 'אוצר', doorD_event: 'הפתעה', toBoss: 'הדרך לבוס',
+    doorD_fight: 'זהב + קלף', doorD_elite: 'פרס גדול', doorD_boss: 'סוף הארץ', doorD_rest: 'מנוחה, שדרוג', doorD_shop: 'קונים קלפים', doorD_chest: 'אוצר', doorD_event: 'הפתעה', toBoss: 'הדרך לבוס', mapT: 'המסע שלך',
     c1: '1. הקישו על קלף ⚔️', c2: '2. עכשיו הקישו על המפלצת', c2b: 'הקישו שוב על הקלף כדי לשחק', c3: 'נגמרה האנרגיה? הקישו "סוף תור"', c4: 'הבועה = מה המפלצת תעשה. ⚔️ = היא תכה, אז תתגוננו עם 🛡️!',
     hNext: 'הבא', hGo: 'הבנתי, יוצאים!', hOk: 'הבנתי',
     h: [['🗺️', 'המטרה', ['עוברים חדר אחרי חדר,', 'מנצחים מפלצות', 'ומגיעים לבוס בסוף הדרך.'], '👑 ⬅ 🔥 ⬅ ⚔️ ⬅ ⚔️'],
@@ -23388,7 +23388,9 @@ function qTop(now) { // health, gold, the room, the treasures
   const y = cgTopY() - 6, bw = Math.min(150, W * 0.36), x0 = rtl ? W - 16 - bw : 16;
   qIcon('heal', rtl ? x0 + bw + 4 : x0 - 4, y + 9, 19); qBar(x0 + (rtl ? -12 : 12), y, bw, 18, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
   const gx = rtl ? x0 - 70 : x0 + bw + 30; qIcon('gold', gx, y + 9, 20); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(8,4,16,0.95)', undefined, 3.4);
-  const ly = y + 30; qText((rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
+  const ly = y + 30; const lsp = qText((rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
+  { const tw = Math.min(W - 120, lsp.tw) + 40;   // tapping where you are opens the whole journey
+    quest.btns.push({ x: W / 2 - tw / 2, y: ly - 7, w: tw, h: 32, act: () => { quest.mapOpen = true; sfx('click'); } }); }
   // The relic medallions. The symbol inside one was drawn at 18 px while its tap target was 44 — the finger had
   // room and the eye did not, and no painted relic can survive being shrunk to 18. The row now takes the space it
   // has: wide medallions when the player holds a few, closing up as the collection grows, and never below the size
@@ -23422,6 +23424,7 @@ function renderQuest(now) {
   if (scr === 'pick') qDrawPick(now); else if (scr === 'end') qDrawEnd(now);
   else { const y0 = qTop(now); if (scr === 'doors') qDrawDoors(now, y0); else if (scr === 'fight' && quest.f) qDrawFight(now, y0); else if (scr === 'reward') qDrawReward(now, y0); else if (scr === 'rest') qDrawRest(now, y0);
     else if (scr === 'shop') qDrawShop(now, y0); else if (scr === 'event') qDrawEvent(now, y0); else if (scr === 'chest') qDrawChest(now, y0); }
+  if (quest.mapOpen) { if (quest.run) qDrawMap(now); else quest.mapOpen = false; }
   if (quest.deckFor) qDrawDeck(now);
   if (quest.howto) qDrawHowto(now);
   if (quest.msg) { const m = quest.msg, q = (now - m.t) / (m.big ? 2200 : 1700); if (q >= 1) quest.msg = null; else if (q >= 0) { const sp = textSprite(m.text, m.big ? 24 : 17, '#ffffff', 'rgba(30,20,60,0.95)', 800); blit(sp, W / 2, H * (m.big ? 0.4 : 0.47), 0, Math.min(1, (W - 24) / sp.tw), Math.min(1, (1 - q) * 4)); } }
@@ -23474,20 +23477,24 @@ function qDrawDoors(now, y0) {
    to be, the one you are standing at is lit, the ones ahead are blank because the game does not decide them until
    you get there, and the last stop is the boss. Nothing here changes a rule: it draws r.room and the kinds the
    run now remembers. */
-function qTrail(r, y, now) {
-  const rooms = QC.roomsOf(r), rtl = lang === 'he', pad = 30, w = W - pad * 2, amp = Math.min(17, w / rooms * 0.6);
+function qTrail(r, y, now, o = {}) {
+  const li = o.li == null ? r.li : o.li, here = li === r.li, ahead = li > r.li, k = o.k || 1;
+  const rooms = QC.roomsOf(r), rtl = lang === 'he', pad = o.x0 == null ? 30 : o.x0;
+  const w = o.w == null ? W - pad * 2 : o.w, amp = Math.min(17, w / rooms * 0.6) * k;
   const at = (i) => { const t = rooms > 1 ? i / (rooms - 1) : 0.5;
     return { x: pad + (rtl ? 1 - t : t) * w, y: y + Math.sin(t * Math.PI * 2.1 + 0.6) * amp }; };
   resetView(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (const [wd, col] of [[8, 'rgba(6,4,16,0.6)'], [5, '#5a4327'], [1.8, 'rgba(255,226,166,0.42)']]) {
+  for (const [wd, col] of (ahead ? [[7 * k, 'rgba(6,4,16,0.45)'], [4 * k, '#3b3450']]
+    : [[8 * k, 'rgba(6,4,16,0.6)'], [5 * k, '#5a4327'], [1.8 * k, 'rgba(255,226,166,0.42)']])) {
     ctx.beginPath(); const p0 = at(0); ctx.moveTo(p0.x, p0.y);
     for (let i = 1; i < rooms; i++) { const a = at(i - 1), b = at(i); ctx.quadraticCurveTo((a.x + b.x) / 2, a.y, b.x, b.y); }
     ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.stroke();
   }
-  const done = (r.path && r.path[r.li]) || [];
+  const done = (r.path && r.path[li]) || [];
   const pulse = 1 + 0.07 * Math.sin(now / 320);
-  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1, cur = i === r.room, past = i < r.room;
-    const rad = (cur ? 15 : last ? 14 : 10) * (cur ? pulse : 1);
+  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1;
+    const cur = here && i === r.room, past = ahead ? false : here ? i < r.room : true;
+    const rad = (cur ? 15 : last ? 14 : 10) * k * (cur ? pulse : 1);
     resetView();
     ctx.beginPath(); ctx.arc(p.x, p.y + 2, rad, 0, TAU); ctx.fillStyle = 'rgba(6,4,16,0.5)'; ctx.fill();
     const bz = ctx.createLinearGradient(p.x - rad, p.y - rad, p.x + rad, p.y + rad);
@@ -23495,17 +23502,39 @@ function qTrail(r, y, now) {
     else if (past || last) { bz.addColorStop(0, '#e7c78a'); bz.addColorStop(0.5, '#b88c33'); bz.addColorStop(1, '#5e4210'); }
     else { bz.addColorStop(0, '#5b5470'); bz.addColorStop(0.6, '#3a3550'); bz.addColorStop(1, '#231f33'); }
     ctx.fillStyle = bz; ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, TAU); ctx.fill();
-    ctx.strokeStyle = 'rgba(8,5,18,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.strokeStyle = 'rgba(8,5,18,0.6)'; ctx.lineWidth = 1.4 * k; ctx.stroke();
     ctx.beginPath(); ctx.arc(p.x, p.y, rad * 0.78, 0, TAU);
     ctx.fillStyle = cur ? 'rgba(14,9,28,0.55)' : past || last ? 'rgba(12,8,24,0.8)' : 'rgba(10,8,20,0.85)'; ctx.fill();
-    if (cur) { ctx.strokeStyle = 'rgba(255,226,140,0.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y, rad + 4 * pulse, 0, TAU); ctx.stroke(); }
+    if (cur) { ctx.strokeStyle = 'rgba(255,226,140,0.75)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(p.x, p.y, rad + 4 * pulse, 0, TAU); ctx.stroke(); }
   }
-  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1, cur = i === r.room;
-    const k = last ? 'crown' : done[i] ? Q_DOOR[done[i]] : null;
-    if (k) qIcon(k, p.x, p.y, (last ? 17 : 13) * (cur ? pulse : 1), i < r.room || last ? 1 : 0.9);
-    else if (!cur) { resetView(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.6, 0, TAU); ctx.fillStyle = 'rgba(246,239,226,0.30)'; ctx.fill(); }
+  for (let i = 0; i < rooms; i++) { const p = at(i), last = i === rooms - 1, cur = here && i === r.room;
+    const ic = last ? 'crown' : done[i] ? Q_DOOR[done[i]] : null;
+    if (ic) qIcon(ic, p.x, p.y, (last ? 17 : 13) * k * (cur ? pulse : 1), ahead ? 0.45 : 1);
+    else if (!cur) { resetView(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.6 * k, 0, TAU); ctx.fillStyle = 'rgba(246,239,226,0.30)'; ctx.fill(); }
   }
-  qText(qtx('toBoss'), W / 2, y + amp + 34, 12, '#ffffff', 0, 700, 'rgba(0,0,0,0.5)');
+  if (o.label !== false) qText(qtx('toBoss'), W / 2, y + amp + 34, 12, '#ffffff', 0, 700, 'rgba(0,0,0,0.5)');
+}
+/* The whole journey: one trail per land, the ones behind complete, the one you are in lit, the ones ahead greyed
+   with their stops still blank. Opened from the land-and-room line in the top bar. */
+function qDrawMap(now) {
+  const r = quest.run; if (!r) { quest.mapOpen = false; return; }
+  const lands = QC.LENGTHS[r.len].lands, rtl = lang === 'he'; quest.btns = [];
+  resetView(); ctx.fillStyle = 'rgba(12,8,28,0.88)'; ctx.fillRect(0, 0, W, H);
+  // the height comes from what is actually in it: a title, a row per land, then the button clear of the last trail
+  const cw = Math.min(366, W - 16), cx = W / 2 - cw / 2;
+  const rowH = Math.min(84, Math.max(62, (H - cgTopY() - 300) / Math.max(1, lands.length - 1) || 84));
+  const chh = Math.min(H - cgTopY() - 20, 238 + (lands.length - 1) * rowH), top = Math.max(cgTopY() + 6, H / 2 - chh / 2);
+  if (!qPlate('panel_quiet', cx, top, cw, chh)) {
+    ctx.fillStyle = 'rgba(16,11,34,0.94)'; ctx.beginPath(); ctx.roundRect(cx, top, cw, chh, 22); ctx.fill();
+    ctx.strokeStyle = 'rgba(246,239,226,0.18)'; ctx.lineWidth = 1.5; ctx.stroke(); }
+  qText(qtx('mapT'), W / 2, top + 46, 24, '#ffffff', cw - 90, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  lands.forEach((id, n) => { const L = QC.LANDS[id], y = top + 96 + n * rowH, on = n === r.li;
+    qText((rtl ? L.he : L.en) + (n < r.li ? ' \u2713' : ''), W / 2, y, 14, on ? '#ffe08a' : n < r.li ? '#cfc4e4' : '#7b7392',
+      cw - 96, 800, 'rgba(0,0,0,0.6)');
+    qTrail(r, y + 38, now, { li: n, x0: cx + 46, w: cw - 92, k: 0.78, label: false }); });
+  const bw = Math.min(190, cw - 60);
+  qBtn(W / 2 - bw / 2, top + chh - 68, bw, 48, () => { quest.mapOpen = false; sfx('click'); }, { text: qtx('close'), fs: 17, r: 24 });
+  quest.btns.push({ x: 0, y: 0, w: W, h: H, act: () => { quest.mapOpen = false; } }); quest.btns.unshift(quest.btns.pop());
 }
 function qMonPos(f, y0) { // the monsters' places: in a row (the live ones), smoothly sliding
   const live = f.mons.filter((m) => m.hp > 0 || (m.downAt && performance.now() - m.downAt < 700)), n = live.length, rtl = lang === 'he', s = Math.min(100, (W - 24) / Math.max(1, n) * 0.62), y = y0 + 90 + s * 0.4;
