@@ -2102,7 +2102,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.91';
+const APP_VERSION = '1.12.92';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23276,13 +23276,19 @@ function qDrawPick(now) {
   qText(qtx('title'), W / 2, y + 18, 34, '#ffffff', W - 40, 400, 'rgba(0,0,0,0.65)', Q_DISP); y += 44;
   qText(qtx('sub'), W / 2, y, 14, '#fff6d6', W - 30, 700, 'rgba(0,0,0,0.55)'); y += 30;
   qText(qtx('pick'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
-  const ids = ['knight', 'wizard', 'robot'], cw = Math.min(124, (W - 40) / 3), ch = cw * 1.3;
+  const ids = ['knight', 'wizard', 'robot'], cw = Math.min(124, (W - 40) / 3);
+  // The paintings are the best thing on this screen and they were being wasted: the cards were a fixed 1.3 times
+  // their width and left a quarter of the screen empty under them. Everything below the cards costs a fixed 252 px
+  // (the two small headings, the three run lengths, Start and How to play), so the cards take whatever is left,
+  // between 1.3 and 1.78 times their width. On a short screen this falls back to exactly what it was before.
+  const ch = Math.max(cw * 1.3, Math.min(cw * 1.78, H - 10 - 252 - y));
   ids.forEach((id, i) => { const H0 = QC.HEROES[id], x = W / 2 + ((rtl ? 2 - i : i) - 1) * (cw + 8) - cw / 2, lock = !P.heroes.includes(id), on = quest.pickHero === id;
     qBtn(x, y, cw, ch, () => { if (lock) { quest.msg = { t: performance.now(), text: qtx('locked') }; sfx('boop'); return; } quest.pickHero = id; sfx('tink'); }, { on, dis: lock, r: 18 });
-    qHeroDraw(id, H0, x + cw / 2, y + ch * 0.32, cw * 0.42, lock ? 0.24 : 1); // locked: the hero is there, in shadow — a padlock in its place said nothing about who it is
-    if (lock) { resetView(); ctx.beginPath(); ctx.arc(x + cw / 2, y + ch * 0.32, cw * 0.165, 0, TAU);
+    const ay = y + ch * 0.30, as = Math.min(cw * 0.66, ch * 0.40); // as tall as the room above the name plate allows
+    qHeroDraw(id, H0, x + cw / 2, ay, as, lock ? 0.24 : 1); // locked: the hero is there, in shadow — a padlock in its place said nothing about who it is
+    if (lock) { resetView(); ctx.beginPath(); ctx.arc(x + cw / 2, ay, cw * 0.19, 0, TAU);
       ctx.fillStyle = 'rgba(10,7,22,0.82)'; ctx.fill(); ctx.strokeStyle = 'rgba(246,239,226,0.22)'; ctx.lineWidth = 1.5; ctx.stroke();
-      qIcon('lock', x + cw / 2, y + ch * 0.32, cw * 0.19); }
+      qIcon('lock', x + cw / 2, ay, cw * 0.22); }
     resetView(); ctx.fillStyle = 'rgba(10,7,22,0.55)'; ctx.beginPath(); ctx.roundRect(x + 6, y + ch * 0.55, cw - 12, ch * 0.16, 7); ctx.fill();
     qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 800, 'rgba(6,4,16,0.9)'); qText(lock ? qtx('locked') : qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, lock ? '#8d85a3' : '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qIcon('heal', x + cw / 2 - 16, y + ch * 0.91, 15); qText(String(H0.hp), x + cw / 2 + 8, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
   y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
@@ -23338,9 +23344,9 @@ function qDrawFight(now, y0) {
   }
   // the hero, the energy, the piles
   const hy = H * 0.6, hx = rtl ? W - 64 : 64, H0 = QC.HEROES[r.hero];
-  qHeroDraw(r.hero, H0, hx, hy, 64); const hb = 104; qBar(hx - hb / 2, hy + 40, hb, 14, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
+  qHeroDraw(r.hero, H0, hx, hy, 80); const hb = 104; qBar(hx - hb / 2, hy + 54, hb, 14, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
   if (f.blk) { qIcon('blk', hx + (rtl ? -1 : 1) * 46, hy - 10, 32); qText(String(f.blk), hx + (rtl ? -1 : 1) * 46, hy - 7, 15, '#ffffff', 0, 900, 'rgba(0,0,0,0.9)'); }
-  qStatus(f.st, hx - hb / 2 + 8, hy + 66, 14);
+  qStatus(f.st, hx - hb / 2 + 8, hy + 80, 14);
   const pw = []; for (const k in f.pw) if (f.pw[k]) { if (pw.length) pw.push({ g: 1 }); pw.push({ ic: 'loop' }, { ic: QD.ik[k] || 'dmg' }, { t: String(f.pw[k]), n: 1 }); }
   if (pw.length) qRunBlit(pw, hx, hy - 48, 13, 15, 8, '#ffffff', '#ffe08a');
   const ex = rtl ? 60 : W - 60, ey = hy - 4; resetView();
