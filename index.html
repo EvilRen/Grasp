@@ -2115,7 +2115,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.127';
+const APP_VERSION = '1.12.128';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24097,7 +24097,7 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
     { text: last ? (quest.run ? qtx('hOk') : qtx('hGo')) : qtx('hNext') + (lang === 'he' ? ' ⬅' : ' ➜'), fs: 20, bg: last ? '#3ddc84' : '#ffd23f', r: 26 });
   quest.btns.push({ x: 0, y: 0, w: W, h: H, act: () => {} }); quest.btns.unshift(quest.btns.pop()); // (taps elsewhere do nothing)
 }
-function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(118, (W - 30) / n - 10); ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
+function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(o.w || 118, (W - 30) / n - 10); /* o.w caps it: the shop needs six cards and four buttons on a short screen */ ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
   quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qIcon('gold', x - 13, y + cw * 0.71 + 16, 17); qText(String(p), x + 13, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
 function qDrawReward(now, y0) {
   const p = quest.data || {}, y = qMidY(y0, 420); qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qIcon('gold', W / 2 - 28, y + 36, 21); qText('+' + p.gold, W / 2 + 10, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
@@ -24135,17 +24135,25 @@ function qDrawEvent(now, y0) {
     qBtn(W / 2 - bw / 2, y + 140 + k * 72, bw, 60, () => { if (!ok) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } const res = QC.doEvent(quest.run, ev.id, k); d.res = res || {}; sfx('chime'); quest.log.push('event:' + ev.id + ':' + k); qGo('event', d); }, { text: he ? o.he : o.en, fs: 16, r: 22, dis: !ok }); });
 }
 function qDrawShop(now, y0) {
-  const d = quest.data, r = quest.run, y = y0 + 20; qIcon('shop', W / 2 - 58, y + 10, 26); qText(qtx('shop'), W / 2 + 14, y + 10, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const d = quest.data, r = quest.run, y = y0 + 14; qIcon('shop', W / 2 - 58, y + 10, 26); qText(qtx('shop'), W / 2 + 14, y + 10, 24, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   const row1 = d.cards.slice(0, 3), row2 = d.cards.slice(3); const buyCard = (id) => { const it = d.cards.find((q) => q.id === id && !q.sold); if (!it) return; if (r.gold < it.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; sfx('boop'); return; } r.gold -= it.price; it.sold = true; r.deck.push(id); sfx('coin'); quest.log.push('buy:' + id); qGo('shop', d); };
-  const left = (row) => row.filter((q) => !q.sold); const cw = Math.min(100, (W - 40) / 3 - 10), rh = cw * 1.42 + 52;
-  qPickCards(left(row1).map((q) => q.id), y + 40 + cw * 0.71, buyCard, { price: left(row1).map((q) => q.price) });
-  qPickCards(left(row2).map((q) => q.id), y + 40 + rh + cw * 0.71, buyCard, { price: left(row2).map((q) => q.price) });
-  let yy = y + 40 + rh * 2 + 6; const bw = Math.min(160, (W - 40) / 2);
-  if (d.relic && !d.relic.sold) { const R0 = QC.RELICS[d.relic.id]; qBtn(W / 2 - bw - 6, yy, bw, 64, () => { if (r.gold < d.relic.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.relic.price; d.relic.sold = true; QC.addRelic(r, d.relic.id); sfx('coin'); quest.msg = { t: performance.now(), text: R0.d[lang === 'he' ? 'he' : 'en'] }; qGo('shop', d); }, { r: 18, dis: r.gold < d.relic.price });
-    qRelic(d.relic.id, R0, W / 2 - bw - 6 + 26, yy + 32, 30); qText(lang === 'he' ? R0.he : R0.en, W / 2 - bw / 2 - 6 + 14, yy + 22, 13, Q_INK, bw - 56, 800, 'rgba(6,4,16,0.9)'); qIcon('gold', W / 2 - bw / 2 - 6 + 2, yy + 44, 16); qText(String(d.relic.price), W / 2 - bw / 2 - 6 + 24, yy + 44, 14, Q_NUM, 0, 900, 'rgba(6,4,16,0.9)'); }
-  if (!d.removed) qBtn(W / 2 + 6, yy, bw, 64, () => { if (r.gold < d.remove) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } quest.deckFor = { k: 'rm', done: (id) => { const i = r.deck.indexOf(id); if (i >= 0) r.deck.splice(i, 1); r.gold -= d.remove; d.removed = true; sfx('whoosh'); quest.log.push('remove:' + id); qGo('shop', d); } }; }, { text: qtx('remove') + ' · ' + d.remove, ic: 'cut', fs: 14, r: 18, dis: r.gold < d.remove });
-  yy += 76; if (!d.healed) { qBtn(W / 2 - bw - 6, yy, bw, 50, () => { if (r.gold < d.heal) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.heal; r.hp = Math.min(r.max, r.hp + 15); d.healed = true; sfx('chime'); qGo('shop', d); }, { text: qtx('healBuy') + ' · ' + d.heal, ic: 'heal', fs: 14, r: 18, dis: r.gold < d.heal }); }
-  qBtn(W / 2 + 6, yy, bw, 50, () => { quest.log.push('leave shop'); qNext(); }, { text: qtx('leave'), fs: 17, r: 25, bg: '#8d85a3' });
+  const left = (row) => row.filter((q) => !q.sold);
+  // The shop laid itself out from the card width alone, so on a short phone the relic, the card removal, the heal
+  // and Leave itself fell past the bottom edge — on a 640 px screen a player could not leave the shop at all.
+  // Everything in it is now measured against the height there actually is and shrinks together: the band under
+  // the title, the space between the two rows (which is where each card's price is written, so it may not simply
+  // be closed up), the cards, and the four buttons.
+  const cw0 = Math.min(100, (W - 40) / 3 - 10);
+  const k = Math.max(0.6, Math.min(1, (H - y - 20) / (270 + 2.84 * cw0)));
+  const cw = cw0 * k, gap = 52 * k, rh = cw * 1.42 + gap, hd = 40 * k;
+  qPickCards(left(row1).map((q) => q.id), y + hd + cw * 0.71, buyCard, { price: left(row1).map((q) => q.price), w: cw });
+  qPickCards(left(row2).map((q) => q.id), y + hd + rh + cw * 0.71, buyCard, { price: left(row2).map((q) => q.price), w: cw });
+  let yy = y + hd + rh * 2 + 6; const bw = Math.min(160, (W - 40) / 2), bh1 = 64 * k, bh2 = 50 * k;
+  if (d.relic && !d.relic.sold) { const R0 = QC.RELICS[d.relic.id]; qBtn(W / 2 - bw - 6, yy, bw, bh1, () => { if (r.gold < d.relic.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.relic.price; d.relic.sold = true; QC.addRelic(r, d.relic.id); sfx('coin'); quest.msg = { t: performance.now(), text: R0.d[lang === 'he' ? 'he' : 'en'] }; qGo('shop', d); }, { r: 18, dis: r.gold < d.relic.price });
+    qRelic(d.relic.id, R0, W / 2 - bw - 6 + 26, yy + bh1 / 2, 30 * k); qText(lang === 'he' ? R0.he : R0.en, W / 2 - bw / 2 - 6 + 14, yy + bh1 * 0.34, 13, Q_INK, bw - 56, 800, 'rgba(6,4,16,0.9)'); qIcon('gold', W / 2 - bw / 2 - 6 + 2, yy + bh1 * 0.69, 16); qText(String(d.relic.price), W / 2 - bw / 2 - 6 + 24, yy + bh1 * 0.69, 14, Q_NUM, 0, 900, 'rgba(6,4,16,0.9)'); }
+  if (!d.removed) qBtn(W / 2 + 6, yy, bw, bh1, () => { if (r.gold < d.remove) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } quest.deckFor = { k: 'rm', done: (id) => { const i = r.deck.indexOf(id); if (i >= 0) r.deck.splice(i, 1); r.gold -= d.remove; d.removed = true; sfx('whoosh'); quest.log.push('remove:' + id); qGo('shop', d); } }; }, { text: qtx('remove') + ' · ' + d.remove, ic: 'cut', fs: 14, r: 18, dis: r.gold < d.remove });
+  yy += bh1 + 12 * k; if (!d.healed) { qBtn(W / 2 - bw - 6, yy, bw, bh2, () => { if (r.gold < d.heal) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.heal; r.hp = Math.min(r.max, r.hp + 15); d.healed = true; sfx('chime'); qGo('shop', d); }, { text: qtx('healBuy') + ' · ' + d.heal, ic: 'heal', fs: 14, r: 18, dis: r.gold < d.heal }); }
+  qBtn(W / 2 + 6, yy, bw, bh2, () => { quest.log.push('leave shop'); qNext(); }, { text: qtx('leave'), fs: 17, r: 25, bg: '#8d85a3' });
 }
 function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp fire), to remove (shop)
   const D = quest.deckFor, r = quest.run, ids = D.k === 'up' ? r.deck.filter(QC.upgradable) : r.deck.slice(); quest.btns = [];
