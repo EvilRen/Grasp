@@ -17,6 +17,7 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/icons/shortcut-strike.png', '/icons/shortcut-smash.png', '/icons/shortcut-shapes.png', '/icons/shortcut-camera.png',
   '/assets/guests/cow_in.png', '/assets/guests/cow_happy.png', '/assets/guests/cow_dizzy.png', '/assets/guests/cow_squash.png',
   '/assets/pet/Flying_Dragon.glb', '/assets/pet/Flying_Dragon_Evolved.glb',
+  '/assets/tachles/icons/rx/laugh.webp', '/assets/tachles/icons/rx/clap.webp', '/assets/tachles/icons/rx/fart.webp', '/assets/tachles/icons/rx/burp.webp', '/assets/tachles/icons/rx/vomit.webp', '/assets/tachles/icons/rx/horn.webp',
   // Quest's card frames (assets/quest/): one per card type, with the uncommon and rare variants. A frame that has not been drawn yet is
   // simply skipped at install (below) and painted in code instead, so listing one early can never break the install.
   '/assets/quest/frame_attack.webp', '/assets/quest/frame_attack_u.webp', '/assets/quest/frame_attack_r.webp',
