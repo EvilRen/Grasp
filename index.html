@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.116';
+const APP_VERSION = '1.12.117';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23474,11 +23474,20 @@ function qDrawDoors(now, y0) {
   const r = quest.run, d = r.doors || [], rtl = lang === 'he', n = d.length, dw = Math.min(150, (W - 32 - (n - 1) * 12) / n), dh = dw * 1.5, y = Math.max(y0 + 50, H * 0.36);
   qText(qtx('choose'), W / 2, y - 26, 20, '#ffffff', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   d.forEach((k, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (dw + 12) - dw / 2, bob = Math.sin(now / 400 + i) * 3;
-    qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: Q_DOORC[k] || '#4fe5d2' });
-    resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
-    qIcon(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.46); qText(qtx(k), x + dw / 2, y + bob + dh * 0.86, 17, Q_INK, dw - 10, 800, 'rgba(6,4,16,0.9)');
-    qText(qtx('doorD_' + k), x + dw / 2, y + dh + 22, 14, '#fff6d6', dw + 6, 800, 'rgba(0,0,0,0.6)'); });
-  qTrail(r, y + dh + 86, now);
+    // The painted doorway says what is behind it by the colour of the light escaping round its edges, so no icon
+    // is drawn on top of it and its name goes underneath. Without the art it falls back to the plate it used to be.
+    const im = qImg('/assets/quest/doors/door_' + k + '.webp');
+    if (im) { const s2 = Math.min(dw / im.naturalWidth, dh / im.naturalHeight), w2 = im.naturalWidth * s2, h2 = im.naturalHeight * s2;
+      resetView(); ctx.drawImage(im, x + (dw - w2) / 2, y + bob + (dh - h2) / 2, w2, h2);
+      quest.btns.push({ x, y: y + bob, w: dw, h: dh, act: () => qEnter(k) });
+    } else {
+      qBtn(x, y + bob, dw, dh, () => qEnter(k), { r: dw * 0.4, bg: Q_DOORC[k] || '#4fe5d2' });
+      resetView(); ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.beginPath(); ctx.roundRect(x + dw * 0.12, y + bob + dh * 0.12, dw * 0.76, dh * 0.62, dw * 0.3); ctx.fill();
+      qIcon(Q_DOOR[k], x + dw / 2, y + bob + dh * 0.42, dw * 0.46);
+    }
+    qText(qtx(k), x + dw / 2, y + dh + 16, 17, '#ffffff', dw + 4, 800, 'rgba(0,0,0,0.7)');
+    qText(qtx('doorD_' + k), x + dw / 2, y + dh + 36, 13, '#fff6d6', dw + 8, 800, 'rgba(0,0,0,0.7)'); });
+  qTrail(r, y + dh + 92, now);
 }
 /* The way through this land: a cord winding across the screen with a stop for every room. It replaced a row of
    plain dots, which said where you were and nothing else. A room you have been through shows what it turned out

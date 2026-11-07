@@ -30,6 +30,8 @@ SETS = {
     'icons2': ([['all', 'call', 'gold', 'skull', 'crown'],                  # the rest of Q_IC: the screens and doors
                 ['trophy', 'chest', 'shop', 'fire', 'lock'],
                 ['cut', 'mystery', 'help']], 'icons'),
+    'doors': ([['door_fight', 'door_elite', 'door_boss', 'door_rest'],
+               ['door_shop', 'door_chest', 'door_event']], 'doors'),
     'events': ([['ev_well', 'ev_shrine', 'ev_merchant', 'ev_chest', 'ev_fountain'],   # the eight events, by EVENTS id
                 ['ev_robot', 'ev_portal', 'ev_feast', 'map', 'door'],                 # then the how-to page symbols
                 ['cards', 'hourglass', 'finger', 'monster']], 'icons'),
@@ -48,15 +50,31 @@ def score(im, np):
 
 
 def delines(sc, np):
-    """Blank the thin lines drawn along the cell boundaries; left alone they join every object into one band."""
+    """Blank a thin line drawn along a cell boundary — but only where one is actually drawn.
+
+    Blanking the boundaries unconditionally assumes every piece sits inside its own cell of an even grid, and that
+    is not always true: the doors sheet puts three pieces across a four-column grid, so a boundary fell inside the
+    treasure door and cut a third of it away. A drawn line is a narrow solid stripe with background either side of
+    it, and only that is removed.
+    """
     H, W = sc.shape
     sc = sc.copy()
+    def isline(strip, left, right):
+        return (strip <= KEY_T).mean() > 0.6 and (left > KEY_T).mean() > 0.7 and (right > KEY_T).mean() > 0.7
     for i in range(1, COLS):
         x = W * i // COLS
-        sc[:, max(0, x - LINE):x + LINE] = 255
+        a, b = max(0, x - LINE), min(W, x + LINE)
+        if b - a < 2 or a - LINE * 5 < 0 or b + LINE * 5 > W:
+            continue
+        if isline(sc[:, a:b], sc[:, a - LINE * 5:a - LINE * 2], sc[:, b + LINE * 2:b + LINE * 5]):
+            sc[:, a:b] = 255
     for i in range(1, ROWS):
         y = H * i // ROWS
-        sc[max(0, y - LINE):y + LINE, :] = 255
+        a, b = max(0, y - LINE), min(H, y + LINE)
+        if b - a < 2 or a - LINE * 5 < 0 or b + LINE * 5 > H:
+            continue
+        if isline(sc[a:b, :], sc[a - LINE * 5:a - LINE * 2, :], sc[b + LINE * 2:b + LINE * 5, :]):
+            sc[a:b, :] = 255
     return sc
 
 
@@ -115,11 +133,88 @@ def find(sc, np, cols):
             c = min(cols - 1, max(0, int((b[0] + b[2]) / 2 * cols // W)))
             if c in cells:
                 o = cells[c]
-                cells[c] = (min(o[0], b[0]), min(o[1], b[1]), max(o[2], b[2]), max(o[3], b[3]))
+                ao = (o[2] - o[0]) * (o[3] - o[1])
+                ab = (b[2] - b[0]) * (b[3] - b[1])
+                # Two runs in one cell are two halves of one thing — a sword snapped in two — only if they are of
+                # comparable size. A speck beside the artwork is not part of it: told not to number the positions,
+                # the generator numbered them, and unioning a door with the digit under it dragged the digit in.
+                if min(ao, ab) >= max(ao, ab) * 0.15:
+                    cells[c] = (min(o[0], b[0]), min(o[1], b[1]), max(o[2], b[2]), max(o[3], b[3]))
+                elif ab > ao:
+                    cells[c] = b
             else:
                 cells[c] = b
         grid.append([cells[c] for c in sorted(cells)])
+    # Drop a band of stray marks. Told not to number the positions, the generator numbered them anyway, and a row
+    # of small digits under the artwork reads as a band of its own — four bands where the sheet has two, and every
+    # name after the first row lands on the wrong piece. Anything far shorter than the real rows is not a piece.
+    tall = max((b[3] - b[1] for row in grid for b in row), default=0)
+    grid = [row for row in grid if row and max(b[3] - b[1] for b in row) > tall * 0.35]
     return grid
+
+
+def trimstray(box, sc, np):
+    """Pull a box in to the piece itself, dropping anything hanging off it across a clear gap.
+
+    The size rule above separates a speck from a piece only when the two are separate runs. A digit printed right
+    under a door touches its shadow, so they come through as one run and one box. Here the box's own rows and
+    columns are read: the piece is the largest unbroken block of them, and a blob beyond a gap of empty ones is not
+    part of it.
+    """
+    x0, y0, x1, y1 = box
+    sub = ~(sc[y0:y1, x0:x1] > KEY_T)
+    # The cut must be at a real gap, not merely a thin part. At 6% a door's ragged stone edge counted as empty and
+    # half the treasure door was trimmed away; a stray mark is separated by rows that are empty, not sparse.
+    def block(fill, lo_frac=0.015):
+        on = fill > lo_frac
+        best, start = (0, 0), None          # empty to begin with: seeded with the full range it can never shrink
+        for i, v in enumerate(on):
+            if v and start is None:
+                start = i
+            elif not v and start is not None:
+                if i - start > best[1] - best[0]:
+                    best = (start, i)
+                start = None
+        if start is not None and len(on) - start > best[1] - best[0]:
+            best = (start, len(on))
+        return best if best[1] > best[0] else (0, len(fill))
+    ry0, ry1 = block(sub.mean(1))
+    rx0, rx1 = block(sub.mean(0))
+    return (x0 + rx0, y0 + ry0, x0 + rx1, y0 + ry1)
+
+
+def closeslits(rgb, a, np):
+    """Fill a narrow band of background left inside a piece.
+
+    The mystery doorway was painted as two pieces with a slit of the background colour running between them, so the
+    cut-out let the land behind it show through as a thin line. A gap this narrow with artwork on both sides is
+    never wanted, so it is closed and its colour taken from the pixels either side of it.
+    """
+    rgb = rgb.astype(float).copy()
+    a = a.copy()
+    h, w = a.shape
+    for axis in (1, 0):
+        n = w if axis == 1 else h
+        lim = max(2, int(n * 0.03))
+        lines = range(h) if axis == 1 else range(w)
+        for i in lines:
+            al = a[i] if axis == 1 else a[:, i]
+            px = rgb[i] if axis == 1 else rgb[:, i]
+            j = 0
+            while j < n:
+                if al[j] > 0.35:
+                    j += 1; continue
+                k = j
+                while k < n and al[k] <= 0.35:
+                    k += 1
+                if 0 < j and k < n and (k - j) <= lim:      # a gap, with the piece on both sides of it
+                    lo, hi = px[j - 1].copy(), px[k].copy()
+                    for t in range(j, k):
+                        f = (t - j + 1) / (k - j + 1)
+                        px[t] = lo * (1 - f) + hi * f
+                        al[t] = 1.0
+                j = k
+    return rgb, a
 
 
 def despill(rgb, a, np):
@@ -185,10 +280,11 @@ def main():
             name = NAMES[ry][rx]
             if only and name not in only:
                 continue
-            x0, y0, x1, y1 = box
+            x0, y0, x1, y1 = trimstray(box, sc, np)
             sub = sc[y0:y1, x0:x1]
             al = np.clip((KEY_T - sub) / max(1e-6, KEY_T * (1 - CORE)), 0, 1)
-            px = despill(arr[y0:y1, x0:x1], al, np)
+            px, al = closeslits(arr[y0:y1, x0:x1], al, np)
+            px = despill(px, al, np)
             out = np.concatenate([np.clip(px, 0, 255), (al * 255)[:, :, None]], 2).astype('uint8')
             img = Image.fromarray(out, 'RGBA')
             rng = legible(img, np)

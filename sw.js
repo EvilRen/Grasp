@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-08y';
+const VERSION = 'grasp-2026-11-08z';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -50,6 +50,9 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/icons/ev_fountain.webp', '/assets/quest/icons/ev_robot.webp', '/assets/quest/icons/ev_portal.webp', '/assets/quest/icons/ev_feast.webp',
   '/assets/quest/icons/map.webp', '/assets/quest/icons/door.webp', '/assets/quest/icons/cards.webp', '/assets/quest/icons/hourglass.webp',
   '/assets/quest/icons/finger.webp', '/assets/quest/icons/monster.webp',
+  // the seven painted doorways
+  '/assets/quest/doors/door_fight.webp', '/assets/quest/doors/door_elite.webp', '/assets/quest/doors/door_boss.webp', '/assets/quest/doors/door_rest.webp',
+  '/assets/quest/doors/door_shop.webp', '/assets/quest/doors/door_chest.webp', '/assets/quest/doors/door_event.webp',
   // the eighteen relics, painted (they were emoji); a run can hand the player any of them, so all are precached
   '/assets/quest/relics/heart.webp', '/assets/quest/relics/book.webp', '/assets/quest/relics/core.webp', '/assets/quest/relics/clover.webp',
   '/assets/quest/relics/boot.webp', '/assets/quest/relics/whet.webp', '/assets/quest/relics/pot.webp', '/assets/quest/relics/lantern.webp',
