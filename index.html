@@ -2111,7 +2111,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.124';
+const APP_VERSION = '1.12.125';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22831,12 +22831,12 @@ function qPlay(i, ti, now) {
 function qEndTurn(now) { const f = quest.f; if (!f || f.over || now < quest.busyUntil) return; const before = f.log.length; QC.endTurn(quest.run, f); quest.sel = -1; quest.log.push('end turn'); const ms = qFxFrom(before, now, 380); quest.busyUntil = now + ms;
   if (f.over === 'lost') { quest.deadAt = now + ms + 600; } else if (f.over === 'won') qFightWon(now + ms); qSave(); }
 function qFxFrom(k, now, step = 0) { // the log since k: numbers that fly up, shakes; each monster move a step later
-  const f = quest.f; let t = now, ms = 0;
+  const f = quest.f; let t = now, ms = 0, from = null;
   for (const e of f.log.slice(k)) {
-    if (e.k === 'atk') { t += step; ms += step; quest.fx.push({ k: 'lunge', i: e.i, t }); }
+    if (e.k === 'atk') { t += step; ms += step; from = e.i; quest.fx.push({ k: 'lunge', i: e.i, t }); }
     if (e.k === 'hit' || e.k === 'poison') quest.fx.push({ k: 'num', i: e.i, n: e.n - (e.b || 0), b: e.b, col: e.k === 'poison' ? '#7CFC6A' : '#ff5a5a', t });
     if (e.k === 'hurt') { quest.fx.push({ k: 'num', hero: 1, n: e.n - e.b, b: e.b, col: '#ff5a5a', t }); quest.fx.push({ k: 'shake', t }); quest.heroHurt = t;
-      quest.fx.push({ k: 'spell', s: 'slash', foe: 1, hero: 1, t, ms: Q_SPELL_MS.slash, x: 0, y: 0, tx: 0, ty: 0, r: 76, seed: (t % 9973) + e.i * 31 }); }
+      quest.fx.push({ k: 'spell', s: 'slash', foe: 1, hero: 1, fi: from, t, ms: Q_SPELL_MS.slash, x: 0, y: 0, tx: 0, ty: 0, r: 76, seed: (t % 9973) + (from || 0) * 31 }); }
     if (e.k === 'down') quest.fx.push({ k: 'down', i: e.i, t });
     if (e.k === 'phoenix') quest.msg = { t, text: qtx('phoenix') };
   }
@@ -23688,21 +23688,37 @@ function qSr(s, i) { const x = Math.sin(s * 127.1 + i * 311.7 + 7.3) * 43758.545
 function qSpellCast(c, hx, hy, targets, now) { // one for each thing the card lands on
   const s = qSpellOf(c); if (!s) return;
   const n = Q_SPELL_N[c.id] || 1;
-  for (const t of targets) for (let k = 0; k < n; k++)
-    quest.fx.push({ k: 'spell', s, t: now + k * 150, ms: Q_SPELL_MS[s] || 500, x: hx, y: hy,
-      tx: t.x, ty: t.y, r: t.s || 60, seed: (now % 9973) + k * 37 + (t.x | 0), id: c.id });
+  // Several monsters are struck one after another rather than all at the same instant: three bursts landing
+  // together read as a scatter, a sweep across the row reads as one blow going through them.
+  targets.forEach((t, j) => { for (let k = 0; k < n; k++)
+    quest.fx.push({ k: 'spell', s, t: now + k * 150 + j * 90, ms: Q_SPELL_MS[s] || 500, x: hx, y: hy,
+      tx: t.x, ty: t.y, mi: t.i, r: t.s || 60, seed: (now % 9973) + k * 37 + (t.x | 0), id: c.id }); });
 }
 function qSpellDraw(e, now) {
   const p = (now - e.t) / e.ms; if (p < 0 || p >= 1) return;
   resetView(); ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   // A blow struck AT the hero is placed where he is standing at the moment it lands, not where he stood when the
   // monster decided to swing: he breathes, lunges and braces between the two.
-  const R = e.r, tx = e.hero ? (quest.heroX || W / 2) : e.tx, ty = e.hero ? (quest.heroY || H * 0.55) : e.ty;
+  // An effect follows what it was thrown at. It used to be pinned to the spot the monster stood on when the card
+  // was played, and the row shuffles up while the effect is still running — a monster dies and the survivors slide
+  // into its place — so a cloud of poison, which hangs for most of a second, was left behind over bare forest.
+  let tx = e.tx, ty = e.ty, ex = e.x, ey = e.y;
+  if (e.hero) { tx = quest.heroX || W / 2; ty = quest.heroY || H * 0.55; }
+  else if (e.mi != null && quest.f) { const m = quest.f.mons[e.mi];
+    if (m && m._x != null) { tx = m._x; ty = m._y; } }
+  if (e.fi != null && quest.f) { const a0 = quest.f.mons[e.fi];   // a blow the monster struck: it comes from him
+    if (a0 && a0._x != null) { ex = a0._x; ey = a0._y; } }
+  else if (quest.heroX != null) { ex = quest.heroX; ey = quest.heroY; }
+  const R = e.r;
   const sd = e.seed, rn = (i) => qSr(sd, i);
   const fade = (a, b) => Math.max(0, Math.min(1, p < a ? p / a : 1 - (p - a) / (b - a)));
   if (e.s === 'slash') {
     // a blade sweeping through: a tapered crescent, swung and gone
-    const q = Math.min(1, p / 0.45), a = fade(0.16, 1), rot = (rn(1) - 0.5) * 1.1 + (rn(2) < 0.5 ? 0 : Math.PI);
+    // The blade swings in from the side the blow comes from, with a little play in it — it used to point in a
+    // different quarter every time, so a card that hit three monsters threw three blades every which way.
+    const q = Math.min(1, p / 0.45), a = fade(0.16, 1);
+    const from = Math.atan2(ty - ey, tx - ex);
+    const rot = from + Math.PI / 2 + (rn(1) - 0.5) * 0.5 + (rn(2) < 0.5 ? 0 : Math.PI);
     // The blade passes THROUGH it: the arc is struck about a centre set back one radius, so the middle of the
     // sweep lands on the monster rather than curling round beside it.
     const ARC = R * 1.15, bx = tx - Math.cos(rot) * ARC, by = ty - Math.sin(rot) * ARC;
@@ -23796,7 +23812,7 @@ function qSpellDraw(e, now) {
   } else if (e.s === 'beam') {
     const col = e.id === 'laser' || e.id === 'mega' || e.id === 'rapid' ? [255, 90, 110] : [90, 230, 200];
     const a = Math.sin(Math.min(1, p) * Math.PI);
-    const sx = e.x, sy = e.y - R * 0.15;
+    const sx = ex, sy = ey - R * 0.15;
     ctx.globalCompositeOperation = 'lighter';
     const line = (w, c, al) => { ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.lineWidth = w; ctx.strokeStyle = c; ctx.globalAlpha = al * a; ctx.stroke(); };
     line(13, 'rgba(' + col + ',0.26)', 1); line(6, 'rgba(' + col + ',0.8)', 1); line(2.2, '#ffffff', 1);
@@ -23811,26 +23827,26 @@ function qSpellDraw(e, now) {
       const rad = R * (1.05 - 0.35 * (1 - u) * (1 - u));
       ctx.globalAlpha = Math.sin(u * Math.PI) * (k ? 0.7 : 1);
       ctx.strokeStyle = k ? 'rgba(200,252,255,0.95)' : 'rgba(79,229,210,1)'; ctx.lineWidth = 11 - k * 5;
-      ctx.beginPath(); ctx.ellipse(e.x, e.y, rad * 0.8, rad, 0, 0, TAU); ctx.stroke(); }
+      ctx.beginPath(); ctx.ellipse(ex, ey, rad * 0.8, rad, 0, 0, TAU); ctx.stroke(); }
     ctx.globalAlpha = fade(0.2, 0.95) * 0.8;
-    const g = ctx.createRadialGradient(e.x, e.y, R * 0.2, e.x, e.y, R);
+    const g = ctx.createRadialGradient(ex, ey, R * 0.2, ex, ey, R);
     g.addColorStop(0, 'rgba(79,229,210,0)'); g.addColorStop(0.72, 'rgba(120,245,225,0.55)'); g.addColorStop(1, 'rgba(79,229,210,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(e.x, e.y, R * 0.8, R, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(ex, ey, R * 0.8, R, 0, 0, TAU); ctx.fill();
   } else if (e.s === 'heal' || e.s === 'buff') {
     const heal = e.s === 'heal', col = heal ? '124,252,106' : '255,210,90';
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 16; i++) {
       const off = rn(i) * 0.4, u = (p - off) / (1 - off); if (u < 0 || u > 1) continue;
       const a = rn(i + 5) * TAU, rr = R * (0.35 + rn(i + 9) * 0.55);
-      const mx = e.x + Math.cos(a + u * 2.2) * rr, my = e.y + R * 0.6 - u * R * 1.6;
+      const mx = ex + Math.cos(a + u * 2.2) * rr, my = ey + R * 0.6 - u * R * 1.6;
       ctx.globalAlpha = Math.sin(u * Math.PI); ctx.fillStyle = 'rgba(' + col + ',1)';
       const s2 = (heal ? 8 : 6.5) * (0.7 + rn(i + 60) * 0.6);
       if (heal) { ctx.fillRect(mx - s2, my - s2 / 2.6, s2 * 2, s2 / 1.3); ctx.fillRect(mx - s2 / 2.6, my - s2, s2 / 1.3, s2 * 2); }
       else { ctx.beginPath(); ctx.arc(mx, my, s2, 0, TAU); ctx.fill(); } }
     ctx.globalAlpha = fade(0.15, 0.95) * 0.75;
-    const g = ctx.createRadialGradient(e.x, e.y, R * 0.1, e.x, e.y, R * 1.1);
+    const g = ctx.createRadialGradient(ex, ey, R * 0.1, ex, ey, R * 1.1);
     g.addColorStop(0, 'rgba(' + col + ',0.75)'); g.addColorStop(0.6, 'rgba(' + col + ',0.3)'); g.addColorStop(1, 'rgba(' + col + ',0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y, R * 1.1, 0, TAU); ctx.fill();
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(ex, ey, R * 1.1, 0, TAU); ctx.fill();
   } else if (e.s === 'curse') {
     for (let k = 0; k < 3; k++) { const u = Math.max(0, Math.min(1, (p - k * 0.12) / 0.75)); if (u <= 0) continue;
       const rad = R * (1.7 - 1.05 * u), a0 = rn(k) * TAU + u * 3.0;
