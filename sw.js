@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-08r';
+const VERSION = 'grasp-2026-11-08s';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -45,6 +45,11 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/icons/crown.webp', '/assets/quest/icons/trophy.webp', '/assets/quest/icons/chest.webp', '/assets/quest/icons/shop.webp',
   '/assets/quest/icons/fire.webp', '/assets/quest/icons/lock.webp', '/assets/quest/icons/cut.webp', '/assets/quest/icons/mystery.webp',
   '/assets/quest/icons/help.webp',
+  // the eight events, the how-to headings, the coach's hand and a monster face
+  '/assets/quest/icons/ev_well.webp', '/assets/quest/icons/ev_shrine.webp', '/assets/quest/icons/ev_merchant.webp', '/assets/quest/icons/ev_chest.webp',
+  '/assets/quest/icons/ev_fountain.webp', '/assets/quest/icons/ev_robot.webp', '/assets/quest/icons/ev_portal.webp', '/assets/quest/icons/ev_feast.webp',
+  '/assets/quest/icons/map.webp', '/assets/quest/icons/door.webp', '/assets/quest/icons/cards.webp', '/assets/quest/icons/hourglass.webp',
+  '/assets/quest/icons/finger.webp', '/assets/quest/icons/monster.webp',
   // the eighteen relics, painted (they were emoji); a run can hand the player any of them, so all are precached
   '/assets/quest/relics/heart.webp', '/assets/quest/relics/book.webp', '/assets/quest/relics/core.webp', '/assets/quest/relics/clover.webp',
   '/assets/quest/relics/boot.webp', '/assets/quest/relics/whet.webp', '/assets/quest/relics/pot.webp', '/assets/quest/relics/lantern.webp',

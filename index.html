@@ -2106,7 +2106,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.107';
+const APP_VERSION = '1.12.108';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23142,6 +23142,16 @@ function qHeroDraw(id, H0, x, y, s, a = 1) { // the hero: the painting when ther
   const k = s * 1.3 / Math.max(im.naturalWidth, im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k;
   resetView(); if (a !== 1) ctx.globalAlpha = a; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); if (a !== 1) ctx.globalAlpha = 1;
 }
+function qPic(path, e, x, y, s, a = 1, flipY = false) { // a painted file when there is one, its emoji while there is not
+  const im = path && qImg(path);
+  if (!im) { qEmoji(e, x, y, s, a); return; }
+  const k = s * 1.15 / Math.max(im.naturalWidth, im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k;
+  resetView(); if (a !== 1) ctx.globalAlpha = a;
+  if (flipY) { ctx.save(); ctx.translate(x, y); ctx.scale(1, -1); ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); }
+  else ctx.drawImage(im, x - w / 2, y - h / 2, w, h);
+  if (a !== 1) ctx.globalAlpha = 1;
+}
+const Q_HOW_IC = ['map', 'door', 'cards', 'hourglass', 'trophy']; // the how-to pages' headings, in order
 function qRelic(id, R0, x, y, s) { // a relic: its painting when there is one, its emoji while there is not
   const im = id && qImg('/assets/quest/relics/' + id + '.webp');
   if (!im) { qEmoji(R0.e, x, y, s); return; }
@@ -23486,7 +23496,8 @@ function qDrawFight(now, y0) {
     else qText('0', fx, fy, 26, '#9fd4ff', 0, 900, 'rgba(0,0,0,0.85)'); }
   quest.fx = quest.fx.filter((q) => now - q.t < 1500);
 }
-function qFinger(x, y, now, up = true) { const b = Math.sin(now / 180) * 7; qEmoji(up ? '👆' : '👇', x, y + (up ? 26 + b : -26 - b), 40); }
+function qFinger(x, y, now, up = true) { const b = Math.sin(now / 180) * 7;
+  qPic('/assets/quest/icons/finger.webp', up ? '👆' : '👇', x, y + (up ? 26 + b : -26 - b), 40, 1, !up); }
 function qBubble(text, y, now) { const sp = textSprite(text, 17, '#2a1f3d', null, 900), w = Math.min(W - 20, sp.tw + 28), x = W / 2 - w / 2; resetView(); ctx.fillStyle = '#ffe76a'; ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.roundRect(x, y - 20, w, 40, 20); ctx.fill(); ctx.stroke(); blit(sp, W / 2, y, 0, Math.min(1, (w - 20) / sp.tw)); }
 function qCoach(f, sel, tgt, hy2, ch, now) { // the first fight ever: a finger and a bubble for each step (a card, the monster, End turn; then what the bubble over a monster means)
@@ -23508,7 +23519,7 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
     ctx.fillStyle = hp; ctx.beginPath(); ctx.roundRect(x, y, cw, chh, 26); ctx.fill();
     ctx.strokeStyle = 'rgba(79,229,210,0.6)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(x + 1.5, y + 1.5, cw - 3, chh - 3, 25); ctx.stroke();
     ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 4, y + 4, cw - 8, chh - 8, 22); ctx.stroke(); }
-  qEmoji(pg[0], W / 2, y + 52, 54); qText(pg[1], W / 2, y + 108, 22, Q_INK, cw - 24, 400, 'rgba(6,4,16,0.9)', Q_DISP);
+  qPic(Q_HOW_IC[D.p] ? '/assets/quest/icons/' + Q_HOW_IC[D.p] + '.webp' : null, pg[0], W / 2, y + 70, 48); // clear of the plate's top border qText(pg[1], W / 2, y + 108, 22, Q_INK, cw - 24, 400, 'rgba(6,4,16,0.9)', Q_DISP);
   pg[2].forEach((l, i) => qText(l, W / 2, y + 148 + i * 30, 17, '#cfc4e4', cw - 24, 700, 'rgba(6,4,16,0.9)'));
   if (pg[3]) qText(pg[3], W / 2, y + 160 + pg[2].length * 30 + 8, 26, Q_INK, cw - 24, 700, 'rgba(6,4,16,0.9)');
   const dy = y + chh - 92; for (let i = 0; i < pages.length; i++) { resetView(); ctx.beginPath(); ctx.arc(W / 2 + ((lang === 'he' ? pages.length - 1 - i : i) - (pages.length - 1) / 2) * 18, dy, i === D.p ? 6 : 4, 0, TAU); ctx.fillStyle = i === D.p ? '#4fe5d2' : 'rgba(255,255,255,0.25)'; ctx.fill(); }
@@ -23535,7 +23546,7 @@ function qDrawChest(now, y0) { const d = quest.data || {}, y = y0 + 70; qIcon('c
   if (d.relic) { const R0 = QC.RELICS[d.relic]; qRelic(d.relic, R0, W / 2, y + 150, 50); qText(lang === 'he' ? R0.he : R0.en, W / 2, y + 190, 18, '#ffffff', W - 30, 900, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, y + 214, 14, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); }
   qBtn(W / 2 - 80, y + 250, 160, 50, () => qNext(), { text: qtx('next'), fs: 18, r: 25 }); }
 function qDrawEvent(now, y0) {
-  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), y = y0 + 40, he = lang === 'he'; qEmoji(ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  const d = quest.data, ev = QC.EVENTS.find((e) => e.id === d.ev), y = y0 + 40, he = lang === 'he'; qPic('/assets/quest/icons/ev_' + d.ev + '.webp', ev.e, W / 2, y + 40, 76); qText(he ? ev.he : ev.en, W / 2, y + 100, 22, '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
   if (d.res) { const R = d.res, lines = []; if (R.relic) lines.push(QC.RELICS[R.relic].e + ' ' + (he ? QC.RELICS[R.relic].he : QC.RELICS[R.relic].en)); if (R.card) lines.push('🃏 ' + (he ? QC.cardOf(R.card).he : QC.cardOf(R.card).en)); if (R.removed) lines.push('✂️ ' + (he ? QC.cardOf(R.removed).he : QC.cardOf(R.removed).en));
     lines.forEach((l, i) => qText(l, W / 2, y + 150 + i * 30, 18, '#ffe08a', W - 30, 800, 'rgba(0,0,0,0.6)')); if (R.card) qCard(R.card, W / 2, y + 260, 90);
     qBtn(W / 2 - 80, Math.min(H - 80, y + 340), 160, 50, () => { if (R.skip && quest.run.room < QC.roomsOf(quest.run) - 3) QC.nextRoom(quest.run); qNext(); }, { text: qtx('next'), fs: 18, r: 25 }); return; }
