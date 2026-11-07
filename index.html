@@ -2104,7 +2104,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.95';
+const APP_VERSION = '1.12.96';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23185,7 +23185,7 @@ function qLay(w, M) { const h = w * 1.42, A = M && M.art; // M: what this frame'
     art: A ? { x: (A[0] - 0.5) * w, y: (A[1] - 0.5) * h, w: A[2] * w, h: A[3] * h } // the picture window
            : { x: -w * 0.385, y: -h * 0.400, w: w * 0.770, h: h * 0.395 },
     nameY: ((M ? M.nameY : 0.585) - 0.5) * h, nameH: Math.max(0.07, M ? M.nameH : 0.100) * h, // the title plate
-    txtY: ((M ? M.txtY : 0.795) - 0.5) * h, txtW: w * 0.800, // the rules panel
+    txtY: ((M ? M.txtY : 0.795) - 0.5) * h, txtH: Math.max(0.12, M ? M.txtH : 0.26) * h, txtW: w * 0.800, // the rules panel
     gem: { x: (lang === 'he' ? 1 : -1) * w * 0.335, y: -h * 0.392, r: w * 0.148 }, // the cost gem, in the corner the language starts from
     pipY: h * 0.443 }; // the rarity gems
 }
@@ -23277,9 +23277,23 @@ function qCard(id, x, y, w, o = {}) { // a card, its centre at (x, y)
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 ' + fs + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
     const sc = Math.min(1, (w * 0.74) / Math.max(1, g.measureText(nm).width));
     g.save(); g.translate(0, L.nameY); g.scale(sc, sc); g.shadowColor = 'rgba(0,0,0,0.7)'; g.shadowBlur = fs * 0.5; g.shadowOffsetY = fs * 0.06; g.fillStyle = Q_INK; g.fillText(nm, 0, 0); g.restore();
-    { const run = qDescRun(c), fs = Math.round(w * 0.165), isz = w * 0.185, gap = w * 0.075; // the rules: the icons drawn, the numbers set beside them
+    // The rules twice over: the icons with their numbers, and the same thing in words under them. The icons alone
+    // are quick to scan once you know them and say nothing at all until you do — the owner, looking at a shop:
+    // "it is not clear what the cards do". The words were already written, in both languages (qDesc), but only ever
+    // showed in a fight, and only after a card had been picked. The frame measures its rules panel (txtH), so both
+    // rows sit inside it: icons in the upper part, the sentence in the lower.
+    { const words = qDesc(c, true), two = !!words;
+      const run = qDescRun(c), fs = Math.round(w * (two ? 0.150 : 0.165)), isz = w * (two ? 0.168 : 0.185), gap = w * 0.075;
       const s2 = Math.min(1, L.txtW / Math.max(1, qRunW(g, run, fs, isz, gap)));
-      g.save(); g.translate(0, L.txtY); g.scale(s2, s2); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; qRunDraw(g, run, fs, isz, gap, Q_INK, Q_NUM); g.restore(); g.textAlign = 'center'; }
+      g.save(); g.translate(0, L.txtY - (two ? L.txtH * 0.20 : 0)); g.scale(s2, s2);
+      g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = w * 0.05; qRunDraw(g, run, fs, isz, gap, Q_INK, Q_NUM); g.restore();
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      if (two) { const wf = Math.max(7, w * 0.088);
+        g.font = '700 ' + wf + 'px Rubik, system-ui, sans-serif'; g.direction = lang === 'he' ? 'rtl' : 'ltr';
+        const ws = Math.min(1, L.txtW / Math.max(1, g.measureText(words).width));
+        g.save(); g.translate(0, L.txtY + L.txtH * 0.27); g.scale(ws, ws);
+        g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = wf * 0.6; g.fillStyle = '#e8dfc8'; g.fillText(words, 0, 0); g.restore(); }
+      g.textAlign = 'center'; }
   });
   blit(sp, x, y, o.ang || 0, k, af);
 }
@@ -23497,7 +23511,12 @@ function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp
   const cols = W > 600 ? 6 : 4, cw = Math.min(92, (W - 20) / cols - 8), ch = cw * 1.42, top = cgTopY() + 30, rows = Math.ceil(ids.length / cols), maxS = Math.max(0, rows * (ch + 8) - (H - top - 90));
   quest.scroll = Math.max(0, Math.min(maxS, quest.scroll || 0));
   ids.sort().forEach((id, i) => { const c = i % cols, rr = Math.floor(i / cols), x = W / 2 + ((lang === 'he' ? cols - 1 - c : c) - (cols - 1) / 2) * (cw + 8), y = top + ch / 2 + rr * (ch + 8) - quest.scroll; if (y < top - ch || y > H - 70) return;
-    qCard(id, x, y, cw); if (D.k !== 'view') quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: cw, h: ch, act: () => { quest.deckFor = null; D.done(id); } }); });
+    qCard(id, x, y, cw);
+    // Looking through the deck, a tap explains the card instead of doing nothing; when the deck is open to choose
+    // one to upgrade or remove, the tap still chooses, because that is what the player came here for.
+    quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: cw, h: ch, act: D.k !== 'view' ? () => { quest.deckFor = null; D.done(id); }
+      : () => { const c = QC.cardOf(id); if (!c) return; sfx('tink');
+        quest.msg = { t: performance.now(), text: (lang === 'he' ? c.he : c.en) + ': ' + qDesc(c, true) }; } }); });
   if (maxS > 0) { qBtn(16, H - 64, 50, 46, () => { quest.scroll -= ch + 8; }, { text: '▲', fs: 18, r: 20 }); qBtn(74, H - 64, 50, 46, () => { quest.scroll += ch + 8; }, { text: '▼', fs: 18, r: 20 }); }
   qBtn(W - 146, H - 64, 130, 46, () => { quest.deckFor = null; quest.scroll = 0; sfx('click'); }, { text: qtx('close'), fs: 17, r: 23 });
 }
