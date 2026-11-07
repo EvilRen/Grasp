@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-08m';
+const VERSION = 'grasp-2026-11-08n';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -37,10 +37,14 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   '/assets/quest/plates/panel_locked.webp', '/assets/quest/plates/plaque.webp',
   '/assets/quest/plates/window.webp', '/assets/quest/plates/nameplate.webp',
   '/assets/quest/plates/btn_gold.webp', '/assets/quest/plates/btn_jade.webp', '/assets/quest/plates/btn_steel.webp',
-  // the fight and card symbols, painted (they were drawn in code); the rest of Q_IC still is
+  // all twenty-five of Q_IC, painted
   '/assets/quest/icons/dmg.webp', '/assets/quest/icons/blk.webp', '/assets/quest/icons/heal.webp', '/assets/quest/icons/en.webp',
   '/assets/quest/icons/str.webp', '/assets/quest/icons/weak.webp', '/assets/quest/icons/vul.webp', '/assets/quest/icons/poi.webp',
   '/assets/quest/icons/thorns.webp', '/assets/quest/icons/draw.webp', '/assets/quest/icons/disc.webp', '/assets/quest/icons/loop.webp',
+  '/assets/quest/icons/all.webp', '/assets/quest/icons/call.webp', '/assets/quest/icons/gold.webp', '/assets/quest/icons/skull.webp',
+  '/assets/quest/icons/crown.webp', '/assets/quest/icons/trophy.webp', '/assets/quest/icons/chest.webp', '/assets/quest/icons/shop.webp',
+  '/assets/quest/icons/fire.webp', '/assets/quest/icons/lock.webp', '/assets/quest/icons/cut.webp', '/assets/quest/icons/mystery.webp',
+  '/assets/quest/icons/help.webp',
   // the eighteen relics, painted (they were emoji); a run can hand the player any of them, so all are precached
   '/assets/quest/relics/heart.webp', '/assets/quest/relics/book.webp', '/assets/quest/relics/core.webp', '/assets/quest/relics/clover.webp',
   '/assets/quest/relics/boot.webp', '/assets/quest/relics/whet.webp', '/assets/quest/relics/pot.webp', '/assets/quest/relics/lantern.webp',

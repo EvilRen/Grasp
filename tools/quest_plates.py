@@ -221,15 +221,22 @@ def cut(im, sc, box, np):
 
 
 def despill(rgb, a, np):
-    """Pull the magenta back out of the half-covered pixels at the plate's edge."""
-    r, g, b = rgb[:, :, 0].astype(float), rgb[:, :, 1].astype(float), rgb[:, :, 2].astype(float)
-    over = np.minimum(r, b) - g
-    k = (over > 10) & (a > 0.15)
-    cap = g + 10
-    r = np.where(k, np.minimum(r, cap), r)
-    b = np.where(k, np.minimum(b, cap), b)
-    return np.stack([r, g, b], 2)
+    """Recover each pixel's own colour from its blend with the magenta behind it.
 
+    A half-covered rim pixel is observed = a * object + (1 - a) * magenta, and alpha already says what a is, so the
+    object's colour is (observed - (1 - a) * magenta) / a. A fully opaque pixel is left exactly as it is.
+
+    The rule this replaces was wrong and silently destroyed artwork: it pulled red and blue down to green wherever
+    both exceeded it, on every pixel rather than only on the rim. That is what a crimson red looks like, so the
+    heart came out of the sheet at (164, 21, 66) and was written to disk at (32, 21, 32) — black. Nothing in the
+    file said so; it took rendering the icon and looking at it.
+    """
+    out = np.empty(rgb.shape, dtype=float)
+    al = np.clip(a, 0, 1)
+    safe = np.maximum(al, 0.05)[:, :, None]
+    mag = np.array([255.0, 0.0, 255.0])
+    out = (rgb.astype(float) - (1 - al)[:, :, None] * mag) / safe
+    return np.where((al > 0.98)[:, :, None], rgb.astype(float), np.clip(out, 0, 255))
 
 def main():
     args = [x for x in sys.argv[1:] if not x.startswith('--')]
