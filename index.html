@@ -1597,6 +1597,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
    NB: no overflow:hidden here — the emoji avatars, reaction badges and the pick number sit OUTSIDE the card on purpose and must not be clipped. */
 /* a real card shape: a fixed height (short enough to keep the board's headroom, so it never scrolls) with a portrait 5:7 width derived from it; tkFitCards shrinks the text to fit */
 #tachles .tkHand .tkHC{ min-height:0; height:clamp(148px, 23vh, 196px); width:auto; aspect-ratio:5 / 7; padding-bottom:26px; }
+#tachles .tkHand .tkHC.tkJC{ padding-bottom:28px; justify-content:flex-start; } /* the reveal / judge cards stack the answer then the author from the top (not space-between, which let a long answer overlap the name); extra bottom space clears the absolute number badge on the judge's cards too */
 #tachles .tkDuel{ display:flex; gap:10px; width:min(28rem,100%); align-items:stretch; }
 #tachles .tkDuel .tkBlackC{ flex:1.2; width:auto; min-width:0; min-height:min(200px,24vh); padding:14px 12px 10px; }
 #tachles .tkDuel .tkBlackC p{ font-size:clamp(15px,4.4vw,21px); padding-top:2px; }
@@ -1620,7 +1621,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkJC .tkRxB{ position:absolute; top:-10px; inset-inline-start:-10px; } #tachles .tkJC .tkRxPop{ position:absolute; bottom:-12px; inset-inline:6px; } #tachles .tkJC .tkRxN{ position:absolute; top:-10px; inset-inline-end:-6px; }
 #tachles .tkNextRow{ display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
 #tachles .tkNextB{ font:inherit; font-weight:900; font-size:18px; color:#fff; border:0; padding:12px 26px 12px 22px; background:linear-gradient(180deg,#ef4444,#b91c1c); clip-path:polygon(8% 0,100% 0,95% 50%,100% 100%,8% 100%,0 50%); padding:12px 22px 12px 26px; cursor:pointer; box-shadow:0 6px 18px rgba(239,68,68,.35); }
-#tachles .tkBy{ display:block; margin-top:auto; padding-top:8px; font-size:13px; font-weight:800; color:#6d28d9; } #tachles .tkJC .tkBy{ position:absolute; bottom:12px; inset-inline-start:16px; }
+#tachles .tkBy{ display:block; margin-top:auto; padding-top:8px; font-size:13px; font-weight:800; color:#6d28d9; } #tachles .tkJC .tkBy{ align-self:flex-start; flex:none; margin-top:4px; padding-top:0; } /* (the owner: the author sits in the card's flow, below the answer, with its own reserved space — never text-on-text) */
+#tachles .tkJC p{ flex:1 1 auto; min-height:0; overflow:hidden; } /* the answer takes the space above the author and clips as a last resort; tkFitCards shrinks the font so it fits first */
 #tachles .tkWinC{ box-shadow:0 0 0 3px #f59e0b, 0 0 30px rgba(245,158,11,.55) !important; } #tachles .tkSlot .tkTrophy{ position:absolute; top:-12px; inset-inline-end:-12px; }
 #tachles .tkBacks{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0 4px; }
 #tachles .tkBackC{ width:52px; height:72px; border-radius:9px; border:2px solid #fff; background:repeating-linear-gradient(45deg,#7c3aed 0 7px,#6d28d9 7px 14px); box-shadow:0 4px 10px rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; font-style:normal; animation:tkLand .35s ease-out; }
@@ -2104,7 +2106,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.97';
+const APP_VERSION = '1.12.98';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24119,7 +24121,7 @@ function tkPubSync() { // the host's note in the open rooms: while waiting for p
 function tkFitCards() { // shrink each hand card's text until it fits the fixed card height, so all cards stay the same size and nothing is clipped
   for (const c of document.querySelectorAll('#tachles .tkHand .tkHC')) { const p = c.querySelector('p'); if (!p) continue;
     p.style.fontSize = ''; let fs = parseFloat(getComputedStyle(p).fontSize) || 18, g = 0;
-    while (c.scrollHeight > c.clientHeight && fs > 11 && g++ < 16) { fs -= 1; p.style.fontSize = fs + 'px'; } }
+    while ((c.scrollHeight > c.clientHeight || p.scrollHeight > p.clientHeight + 1) && fs > 10 && g++ < 24) { fs -= 1; p.style.fontSize = fs + 'px'; } } // (also shrink when the answer paragraph itself overflows — the reveal/judge cards clip the <p> so the card height alone would not catch it)
 }
 function tkFan() { // the hand, held: the card in the middle straight and in front, the others tilting and sinking away (and a dot each, the middle one white)
   const W0 = document.querySelector('#tachles .tkHandW'); if (!W0) return; const r0 = W0.getBoundingClientRect(), mid = r0.left + r0.width / 2, cards = W0.querySelectorAll('.tkHC'); let best = 0, bd = 1e9;
