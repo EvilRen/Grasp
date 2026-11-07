@@ -353,8 +353,16 @@ async def reconnect(b):
 async def mqtt_room(b):
     # the rooms over MQTT (the default since the owner's network blocks PeerJS), through a local broker (tests/mq_broker.py): a room, a phone joins
     # with the code and sees the room, the game starts on both
-    import subprocess, sys as _s
-    br = subprocess.Popen([_s.executable if 'websockets' in _s.modules else 'python3.13', 'tests/mq_broker.py', '8897'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); await asyncio.sleep(1.2)
+    import subprocess, sys as _s, socket as _sk
+    # the broker is standard-library only, so this interpreter can always run it. Its output is kept and the port is waited for: a broker that
+    # cannot start used to be invisible (stderr thrown away), and the suite then died 30 s later on a click that could never work.
+    br = subprocess.Popen([_s.executable, 'tests/mq_broker.py', '8897'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    for _ in range(60):
+        if br.poll() is not None: raise RuntimeError('tests/mq_broker.py died at once:\n' + (br.stdout.read() or '(no output)'))
+        try:
+            with _sk.create_connection(('localhost', 8897), 0.2): break
+        except OSError: await asyncio.sleep(0.1)
+    else: br.terminate(); raise RuntimeError('tests/mq_broker.py did not listen on 8897 within 6 s')
     try:
         ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []; pages = []
         INIT = FAST + "window.__tkMQ = ['ws://localhost:8897/mqtt']; sessionStorage.setItem('grasp.tk18', '1'); localStorage.setItem('lang','he'); Object.defineProperty(navigator, 'wakeLock', { value: { request: () => { window.__wl = (window.__wl || 0) + 1; return Promise.resolve({ release: () => Promise.resolve(), addEventListener() {} }); } } });"
