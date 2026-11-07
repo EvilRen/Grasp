@@ -2106,7 +2106,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.100';
+const APP_VERSION = '1.12.101';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22834,6 +22834,11 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   const quiet = !solid && !on && !o.bg, ac = hexRgb(o.bg || (on ? '#ffd23f' : '#4fe5d2')).join(',');
   // A button that carries no accent of its own gets the painted plate when the art is there. The three bright
   // primaries keep the code-drawn sticker, and so does anything with an o.bg, because its colour is what names it.
+  // The primary buttons have their own painted bar; the rest take a panel. Both fall back to the code-drawn plate.
+  if (solid && qPlate(o.pl || (hexRgb(o.bg || '#3ddc84')[0] > 200 ? 'btn_gold' : 'btn_jade'), x, y, w, h)) {
+    if (o.text) qBtnText(x, y, w, h, o, dis, true);
+    return;
+  }
   if (!solid && !o.bg && !o.plain && qPlate(on ? 'panel_chosen' : dis ? 'panel_locked' : 'panel_quiet', x, y, w, h, dis ? 0.6 : 1)) {
     if (o.text) qBtnText(x, y, w, h, o, dis, false);
     return;
@@ -22873,7 +22878,7 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
 }
 function qBtnText(x, y, w, h, o, dis, solid) { // a button's lettering, wherever its plate came from
   const big = (o.fs || 18) >= 20; // the display serif only where it is large enough to hold its strokes
-  const ink = solid ? 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')' : (o.fg || Q_INK);
+  const ink = solid ? (o.ink || 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')') : (o.fg || Q_INK);
   const sp = textSprite(o.text, o.fs || 18, ink, solid ? 'rgba(255,255,255,0.45)' : 'rgba(6,4,16,0.92)', big ? 400 : 800, big ? Q_DISP : undefined);
   const is = o.ic ? (o.fs || 18) * 1.2 : 0, gap = is * 0.35, k = Math.min(1, (w - 14 - is - gap) / sp.tw);
   const cx = x + w / 2 + (o.tx || 0), cy = y + h / 2 + (o.ty || 0), af = dis ? 0.6 : 1;

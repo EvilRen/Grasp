@@ -149,6 +149,16 @@ def band(rgb, solid, np):
     return {'l': x, 'r': x, 't': y, 'b': y, 'raw': raw}
 
 
+def cap(ins, w, h, name):
+    """A button is a bar with a half-circle at each end, so its left and right slices must take the WHOLE round
+    end — at least half the height. Measured from the ornament alone the inset comes out narrower, the middle
+    slice then contains part of the curve, and stretching it flattens one end and not the other."""
+    if not name.startswith('btn_'):
+        return ins
+    want = min(int(round(h * 0.52)), (w - 2) // 2)
+    return dict(ins, l=max(ins['l'], want), r=max(ins['r'], want))
+
+
 def delines(sc, np):
     """Mark the thin dark lines Gemini draws along the cell boundaries as background, so they do not read as part
     of a plate — left alone they join every piece into one band. Only the lines, nothing wider."""
@@ -236,7 +246,10 @@ def main():
     im = load(args[0])
     sc = delines(score(im), np)
     grid = find(sc, np)
-    if len(grid) != 3 or any(len(r) != 3 for r in grid):
+    if len(grid) == 1 and len(grid[0]) == 3:
+        print('one row of three: reading it as the button row')   # the re-run sheet holds only the top row
+        grid = [grid[0], [], []]
+    elif len(grid) != 3 or any(len(r) != 3 for r in grid):
         print('found %s, expected three rows of three — the sheet is not laid out as asked' %
               ([len(r) for r in grid],))
     print('sheet %d x %d' % im.size)
@@ -251,7 +264,8 @@ def main():
             if not c:
                 print('%-13s EMPTY' % name)
                 continue
-            w, h, bd = c['w'], c['h'], c['band']
+            w, h = c['w'], c['h']
+            bd = cap(c['band'], w, h, name)
             ft, fb = c['flat']
             ok = ft <= FLAT and fb <= FLAT
             print('%-13s %4dx%-6d %-7.2f x%-5d y%-5d (raw %d/%d %d/%d)  %s' % (
@@ -272,8 +286,18 @@ def main():
     if check:
         print('\n--check: nothing written.')
         return
+    # Merge, do not replace. The plates arrived on two sheets — the panels on one, the buttons on another — and a
+    # run with --only used to write a file holding just what that run cut, silently dropping the rest.
+    old = {}
+    if os.path.exists(LAY):
+        try:
+            with open(LAY) as f:
+                old = json.load(f) or {}
+        except (ValueError, OSError):
+            old = {}
+    old.update(lay)
     with open(LAY, 'w') as f:
-        json.dump(lay, f, indent=1, sort_keys=True)
+        json.dump(old, f, indent=1, sort_keys=True)
     print('\nwrote %s' % os.path.relpath(LAY, ROOT))
     for n, sz in files:
         print('  %-13s %6.1f KB' % (n, sz / 1024))
