@@ -452,3 +452,106 @@ any of the words of this description into the image.
 Cut it with `--only=btn_gold,btn_jade,btn_steel`. The slicer already reports the test this row failed: it measures
 how far each silhouette's top and bottom edges rise and fall across the middle 60% of the width, and refuses
 anything over 6 px. The panels measure 0 to 1 px; this row measured 38 to 41.
+
+---
+
+## The icons (one prompt, twenty-five pieces)
+
+The owner, looking at the victory screen: there are a lot of bad graphics. The trophy, the crown, the sword and the
+coin on that screen are the last things still drawn in code — flat vector shapes with no light in them, sitting on a
+painted forest. There are twenty-five of them (`Q_IC` in index.html) and they appear on every screen in the game:
+on card faces, in a monster's intent bubble, on the status row, in the top bar, on the doors, in the shop.
+
+A five by five grid, one icon per cell. The order below is the order the slicer reads them in.
+
+| | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| **1** | `dmg` | `blk` | `heal` | `en` | `gold` |
+| **2** | `str` | `weak` | `vul` | `poi` | `thorns` |
+| **3** | `draw` | `disc` | `loop` | `all` | `call` |
+| **4** | `skull` | `crown` | `trophy` | `chest` | `shop` |
+| **5** | `fire` | `lock` | `cut` | `mystery` | `help` |
+
+**The size they are actually used at decides everything.** These are drawn between 13 and 22 css pixels — about 40
+to 66 real pixels on a phone. That is why the prompt asks for two or three big shapes with a heavy dark outline and
+nothing fine: a painted icon with delicate detail is a smudge at 16 px, and worse than the flat one it replaced.
+
+`help` is an open book rather than a question mark on purpose. Every other prompt in this file forbids writing in
+the image, and asking for one punctuation mark as a shape invites the generator to letter the rest of the sheet —
+which it has done before, printing a section heading onto a card plate.
+
+```
+A single flat technical sheet of twenty-five painted fantasy game icons, laid out as a strict 5-column by 5-row
+grid, for a painterly fairytale-sci-fi deck-building game.
+
+THE SHAPE OF THE IMAGE:
+The finished image is SQUARE, 2048 by 2048 pixels, divided into twenty-five identical square cells by four evenly
+spaced vertical lines and four evenly spaced horizontal lines. Each cell holds exactly ONE icon, centred in its
+cell, upright, drawn straight on with no perspective and no tilt, filling about 70% of its cell so that a clear
+empty margin surrounds it on all four sides. No icon may touch, overlap or cross a cell boundary, and no two icons
+may touch each other.
+
+THE BACKGROUND, AND THE ONLY KEYING COLOUR:
+Every pixel that is not part of an icon is FLAT PURE MAGENTA #FF00FF — solid, uniform, unshaded, with no gradient,
+no texture, no glow and no shadow in it. Each icon's silhouette ends hard against that magenta: no drop shadow, no
+outer glow, no soft halo, no reflection spilling outside the shape. Light and depth live INSIDE the silhouette
+only. Do not draw the lines between the cells: leave plain magenta between the icons.
+
+HOW THESE WILL BE USED, WHICH DECIDES HOW TO DRAW THEM:
+Each icon will be shown very small — about the size of a word on a phone screen — on top of a detailed painted
+background. So each must be built from only TWO OR THREE large, simple, bold shapes with a clear silhouette, a
+strong dark outline all the way round, and strong light-to-dark contrast inside. No thin lines, no fine engraving,
+no small ornament, no scattered sparkles, no tiny parts, no clutter. Each icon must still be recognisable as a
+black silhouette with no colours at all. Every icon has the same visual weight and the same thickness of outline,
+so that they look like one set.
+
+THE TWENTY-FIVE ICONS, in reading order, left to right and then down:
+Row 1: a short broad sword, blade upward. A round shield. A heart. A glowing faceted crystal. A gold coin seen face
+on.
+Row 2: a clenched armoured fist. A sword snapped in half. A shield with a jagged crack across it. A round-bellied
+potion bottle with a stopper, full of liquid. A circle woven out of thorny briar.
+Row 3: a single playing card lifting off the top of a small stack. A single playing card tumbling away and falling.
+A thick circular arrow curling round to meet its own tail. A three-pointed starburst, like one blow landing in
+three places at once. A curved war horn.
+Row 4: a skull. A crown. A two-handled trophy cup. A closed treasure chest with a domed lid. A drawstring money
+pouch, tied at the neck and bulging.
+Row 5: a campfire: three logs and a flame. A padlock, body and shackle. A pair of open scissors. A swirling spiral
+portal. An open book, seen from above, both pages showing.
+
+COLOUR — each icon is mostly one metal or material, so that colour alone tells them apart at a glance:
+The sword, the broken sword and the scissors are pale steel with a gold-bound grip. The shield and the cracked
+shield are deep teal and silver. The heart is deep crimson. The crystal is bright jade green, lit from inside. The
+coin, the crown, the trophy, the chest's fittings and the pouch's drawstring are warm gold. The fist is dark iron.
+The potion is bright poison green glass. The thorn ring is dark bramble brown. The cards are cream with a dark
+indigo back. The circular arrow and the starburst are bright jade. The horn is bone and gold. The skull is bone
+white. The campfire is orange flame on dark logs. The padlock is iron with a gold body. The portal is violet and
+magenta-free deep purple, swirling. The book is cream pages in a dark indigo cover.
+The palette they live in: near-black violet #0F0B20, deep indigo #1D1636, warm gold #F2C14E, jade #45D6C2 and
+#3DDC84, crimson #FF5A6E, bone #F6EFE2. Nothing pastel, nothing washed out, nothing neon. IMPORTANT: no part of any
+icon may be magenta, pink or purple-pink, because that colour is cut away as the background — the portal must be
+clearly violet-blue, never pink.
+
+LIGHT AND MATERIAL:
+One light source, above and slightly to the left, the same for all twenty-five. Each icon is painted and solid,
+with a lit top edge and a shaded underside, so it reads as an object rather than a flat symbol. The metal is real
+and worked, with a little wear on its raised edges.
+
+WHAT MUST NOT BE IN THE IMAGE:
+No letters, no words, no numbers, no runes, no glyphs, no punctuation, no logos, no watermark, no caption, no label,
+and no writing of any kind anywhere in the picture — not on the icons, not on the open book's pages, not on the
+cards, not in the magenta, not in the margins. The book's pages and the playing cards are blank. No hands, no
+faces, no creatures, no cursor. No picture frame around the sheet, no grid lines drawn in, no numbering of the
+cells. Nothing may be labelled with its own name. Do not render any of the words of this description into the
+image.
+```
+
+### What to do with the result
+
+`tools/quest_icons.py`, written the way `quest_plates.py` ended up: find the pieces rather than cut at fixed
+fractions (the generator does not centre its cells), key the magenta, trim each to its own bounds, and write
+`assets/quest/icons/<name>.webp` in the order of the table above. Then `qIcon` draws the painted file when it is
+there and falls back to the code-drawn shape when it is not, exactly as `qCard` already does with the frames — so
+a missing or rejected icon costs nothing.
+
+Check each one at the size it is used, not at the size it was drawn. The failure to watch for is an icon that is
+beautiful at 400 px and a grey smudge at 16.
