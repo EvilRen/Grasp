@@ -10,7 +10,7 @@
      focuses an open Tremorti window or opens /tremorti/ (notificationclick below).
    - The CDN files (MediaPipe's tasks-vision bundle and wasm, the hand model, Google Fonts, the CDN fallbacks of Matter / three) are cached at
      run time, stale-while-revalidate; the big immutable ones (.wasm, the .task model: versioned URLs) are not re-downloaded once cached. */
-const VERSION = 'grasp-2026-11-08h';
+const VERSION = 'grasp-2026-11-08j';
 const CACHE = 'grasp-shell-' + VERSION, RUNTIME = 'grasp-runtime-v1';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', '/vendor/three.min.js', '/vendor/GLTFLoader.js',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-192.png', '/icons/icon-maskable-512.png', '/icons/apple-touch-icon.png', '/icons/favicon-32.png',
@@ -35,7 +35,13 @@ const SHELL = ['/index.html', '/manifest.webmanifest', '/vendor/matter.min.js', 
   // the painted interface plates, and the border band the slicer measured off each one
   '/assets/quest/plates.json', '/assets/quest/plates/panel_quiet.webp', '/assets/quest/plates/panel_chosen.webp',
   '/assets/quest/plates/panel_locked.webp', '/assets/quest/plates/plaque.webp',
-  '/assets/quest/plates/window.webp', '/assets/quest/plates/nameplate.webp'];
+  '/assets/quest/plates/window.webp', '/assets/quest/plates/nameplate.webp',
+  // the eighteen relics, painted (they were emoji); a run can hand the player any of them, so all are precached
+  '/assets/quest/relics/heart.webp', '/assets/quest/relics/book.webp', '/assets/quest/relics/core.webp', '/assets/quest/relics/clover.webp',
+  '/assets/quest/relics/boot.webp', '/assets/quest/relics/whet.webp', '/assets/quest/relics/pot.webp', '/assets/quest/relics/lantern.webp',
+  '/assets/quest/relics/bag.webp', '/assets/quest/relics/feather.webp', '/assets/quest/relics/snail.webp', '/assets/quest/relics/thorn.webp',
+  '/assets/quest/relics/tea.webp', '/assets/quest/relics/map.webp', '/assets/quest/relics/star.webp', '/assets/quest/relics/magnet.webp',
+  '/assets/quest/relics/egg.webp', '/assets/quest/relics/venom.webp'];
 const GAME = /^\/(strike|smash|slice|busy|shapes|sandbox|frenzy|duel|drums|bubbles|paint|stars|animals|colors|peekaboo|feed|puzzle|sand|sky|tama|tree|popit|spot|mix|quest|tachles|powder)\/?$/;
 const CDN = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'storage.googleapis.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 const IMMUTABLE = /\.(wasm|task)(\?|$)/;

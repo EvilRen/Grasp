@@ -555,3 +555,115 @@ a missing or rejected icon costs nothing.
 
 Check each one at the size it is used, not at the size it was drawn. The failure to watch for is an icon that is
 beautiful at 400 px and a grey smudge at 16.
+
+---
+
+## The relics (one prompt, eighteen pieces)
+
+Eighteen relics, every one of them still an emoji — the honey pot, the phoenix feather, the iron boots — sitting in
+gold-rimmed medallions along the top bar, in the reward card, in the chest and in the shop.
+
+**The size they are used at.** The medallion in the top bar is the small one, and it moves: the row takes the space
+it has, so a player holding three relics sees the symbol at about 28 px and one holding eight sees it at 18. The
+reward and chest screens draw it at 40 and 46, the shop at 28. So the art must hold together at **18 px** and may
+not depend on anything that only appears above 40.
+
+**What the first icon sheet got wrong, and what this prompt does about it.** Gemini ignored the list of
+twenty-five names entirely and invented its own set of generic fantasy items — a key, a helmet, a bow, a pelt —
+none of which the game has a slot for. It also drew runes on a scroll and letters on three stones after being told
+not to write anything, and it gave each cell its own duller purple panel instead of one flat magenta, so the sheet
+had two background colours.
+
+So this prompt numbers the eighteen items, says outright that there are to be no substitutions and no extras,
+forbids writing a second time at the point where it is tempting (the map), and states that the magenta is one
+single value everywhere including inside the cells.
+
+| | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| **1** | `heart` | `book` | `core` | `clover` | `boot` | `whet` |
+| **2** | `pot` | `lantern` | `bag` | `feather` | `snail` | `thorn` |
+| **3** | `tea` | `map` | `star` | `magnet` | `egg` | `venom` |
+
+```
+A single flat technical sheet of exactly EIGHTEEN painted fantasy treasure objects, laid out as a strict 6-column
+by 3-row grid, for a painterly fairytale-sci-fi deck-building game.
+
+THE LIST IS FIXED. The eighteen objects are listed below and numbered 1 to 18. Draw those eighteen, in that order,
+reading left to right along the top row, then the middle row, then the bottom row. Do not substitute a different
+object for any of them, do not add an object that is not on the list, do not leave one out, and do not reorder
+them. The list is not a suggestion of a theme — it is the contents of the picture.
+
+THE SHAPE OF THE IMAGE:
+The finished image is 2048 pixels wide by 1024 pixels tall, divided into eighteen identical square cells by five
+evenly spaced vertical lines and two evenly spaced horizontal lines. Each cell holds exactly ONE object, centred in
+its cell, upright, drawn straight on with no perspective and no tilt, filling about 72% of its cell so that a clear
+empty margin surrounds it on all four sides. No object may touch, overlap or cross a cell boundary, and no two
+objects may touch each other.
+
+THE BACKGROUND, AND THE ONLY KEYING COLOUR:
+Every pixel that is not part of an object is FLAT PURE MAGENTA #FF00FF — ONE single colour everywhere, the same
+value in the gaps between the cells as inside each cell, solid, uniform and unshaded, with no gradient, no texture,
+no glow and no shadow in it. Do not give the cells their own panel, tile, square, border or darker background: each
+object floats directly on the same magenta that fills the rest of the sheet. Each object's silhouette ends hard
+against that magenta: no drop shadow, no outer glow, no soft halo, nothing spilling outside the shape.
+
+HOW THESE WILL BE USED, WHICH DECIDES HOW TO DRAW THEM:
+Each object will usually be shown very small, about the size of a letter on a phone screen, inside a round
+medallion. So each must be built from ONE large bold shape with at most two smaller parts, with a clear outline all
+the way round and strong light-to-dark contrast inside. No thin lines, no fine engraving, no chain mail, no small
+rivets, no scattered sparkles, no clutter, nothing that disappears when the picture is made small. Each object must
+still be told apart from the other seventeen as a plain black silhouette with no colour at all, and each must be a
+different colour from its neighbours so it can also be told apart by colour alone.
+
+THE EIGHTEEN OBJECTS:
+1. A plump heart, deep rich crimson red, with a thin gold rim.
+2. A thick closed book standing upright, dark indigo leather cover, gold clasp and gold page edges.
+3. A glowing bright jade crystal held in a dark metal collar, lit from inside.
+4. A four-leaf clover, fresh grass green, on a short stem.
+5. One heavy armoured boot, brown leather with dark steel plates.
+6. A rectangular grey whetstone with one worn hollow along its top.
+7. A round-bellied clay honey pot, warm amber, with honey running down one side.
+8. A hanging lantern with a glass belly and a warm orange flame inside, a ring on top.
+9. A brown leather drawstring pouch, tied at the neck, with gold coins spilling from it.
+10. One single large feather standing upright, burning orange and gold at its edges.
+11. A snail with a tall spiral shell, the shell warm tan, the body pale grey.
+12. A thorny green stem bearing one open rose. The rose is DEEP DARK RED, like wine — it must not be pink or
+    magenta in any part.
+13. A round white teacup on a saucer, with steam curling from it.
+14. A rolled parchment map, partly unrolled, pale cream paper with dark edges. Its surface is completely BLANK: no
+    writing, no runes, no symbols, no lines, no drawn coastlines, no compass, nothing marked on it at all.
+15. A jagged shard of starlight, pale gold and white, glowing.
+16. A horseshoe magnet, red at the curve with bare steel tips.
+17. A speckled dragon egg, deep teal green with darker spots.
+18. One single curved fang, bone white, with a drop of bright green venom at its point.
+
+LIGHT AND MATERIAL:
+One light source, above and slightly to the left, the same for all eighteen. Each object is painted and solid, with
+a lit top edge and a shaded underside, so it reads as a real thing rather than a flat symbol, with a little wear
+and age on it. They all look like they belong in one set.
+
+COLOUR:
+The palette they live in: near-black violet #0F0B20, deep indigo #1D1636, warm gold #F2C14E, jade #45D6C2 and
+#3DDC84, crimson #FF5A6E, bone #F6EFE2. Nothing pastel, nothing washed out, nothing neon. IMPORTANT: no part of any
+object may be magenta, pink or purple-pink, because that colour is cut away as the background. The rose is the one
+to watch: it is dark wine red, never pink.
+
+WHAT MUST NOT BE IN THE IMAGE:
+No letters, no words, no numbers, no runes, no glyphs, no inscriptions, no punctuation, no logos, no watermark, no
+caption, no label, and no writing or marking of any kind anywhere in the picture — not on the book, not on the map,
+not on the whetstone, not on any object, not in the magenta, not in the margins. No hands, no faces, no creatures
+beyond the snail, no cursor, no arrow. No picture frame around the sheet, no grid lines drawn in, no panels behind
+the objects, no numbering of the cells. Nothing may be labelled with its own name. Do not render any of the words
+of this description into the image.
+```
+
+### What to do with the result
+
+`tools/quest_icons.py`, built the way `quest_plates.py` ended up: find the pieces rather than cut at fixed
+fractions, key the magenta, trim each to its own bounds, and write `assets/quest/relics/<name>.webp` in the order
+of the table. `qEmoji(R0.e, ...)` becomes a call that draws the painted file when it is there and falls back to the
+emoji when it is not, so a relic that is rejected or missing costs nothing.
+
+Check every one of them at 18 px before shipping any of them, not at the size it was drawn. That check is what
+condemned the first icon sheet, where a shield's lion and a helmet's mail were a brown smudge at the size the game
+actually uses them.
