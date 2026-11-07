@@ -2104,7 +2104,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.94';
+const APP_VERSION = '1.12.95';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24231,15 +24231,15 @@ function tkGameHtml(v) {
   const goalB = v.target ? '<small class="tkGoalP" title="' + tks('winScore') + '">🏆 ' + v.target + '</small>' : ''; // (the owner: how many points win — always in view, not only in the settings)
   let h = '<div class="tkWrap2 tkGame">' + tkTop(tkLeaveLabel(), tks('round', { n: v.round }) + goalB + histB + fullB, right) + tkScoresHtml(v, local ? who : v.me) + '<div class="tkCenter' + (choosing ? ' tkPick' : '') + '">' +
     /* the "previous round" recap strip is gone (the owner: it pushed the height and made the board scroll); the 🏆 Winners button in the top bar still shows who won */
-    '<div class="tkCzar">' + tki('crown', 'gold') + '<span>' + tks('czar') + ' <b>' + tkEsc(v.judgeName) + '</b>' + (() => { const J = v.players.find((p) => p.id === v.judge), T = J && J.bot && tkTasteOf(J.taste); return T ? ' <small class="tkTaste">· ' + tks('likes') + ' ' + T.e + ' ' + T.n + '</small>' : ''; })() + '</span></div>' +
+    (() => { const J = v.players.find((p) => p.id === v.judge), T = J && J.bot && tkTasteOf(J.taste); return T ? '<div class="tkCzar">' + tki('crown', 'gold') + '<span><b>' + tkEsc(v.judgeName) + '</b> <small class="tkTaste">' + tks('likes') + ' ' + T.e + ' ' + T.n + '</small></span></div>' : ''; })() + /* (the owner: who's the czar already shows as the crown on the strip; keep only the bot's taste — a real hint on what it will pick — and drop the plain "Czar: name" line) */
     (choosing ? tkDuelHtml(v) : judging ? tkJudgeDuelHtml(v, czar) : revealing ? tkRevealDuelHtml(v) : '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>');
   if (v.phase === 'reveal') { const can = tk.mode !== 'guest' || v.me === v.judge, auto = tk.nx && tk.nx - Date.now() < 1e9;
     h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div>' +
     tkCrowdHtml(v) + '<div class="tkNextRow">' + (v.last && v.last.cards ? '<button class="tkS tkSm tkShareB" data-a="shr:last">' + tki('share') + tks('shareIt') + '</button>' : '') + (can ? '<button class="tkNextB" data-a="nextR">' + tks('nextR') + ' ›</button>' : '') + '</div>' +
     (auto ? '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p>' : can ? '' : '<p class="tkDim tkXs">' + tks('waitNext', { n: tkEsc(v.judgeName) }) + '</p>') + '</div>' + (revealing ? '' : tkSubsHtml(v, false)); }
-  else if (v.phase === 'judge') h += judging ? '<p class="tkJudgeT">⚖️ ' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' : '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar);
+  else if (v.phase === 'judge') h += judging ? (czar ? '' : '<p class="tkJudgeT">⚖️ ' + tks('czarPicking') + '</p>') : '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar); // (the owner: the czar's crown button below already says "pick the winner" — drop the extra pill that sat behind it)
   else {
-    h += tkStatusHtml(v, choosing); // (slim — tease only, no chip row — while this viewer holds a hand: the scores strip already shows ✓/⏳ per player, so the name chips below just revealed the same names again in the middle and pushed the board into a scroll. The czar / a done picker still get the full chips: no hand box, room to spare)
+    h += tkStatusHtml(v, choosing || czar || sent); // (slim — tease only, no chip row — the scores strip at the top already shows ✓/⏳ per player, so the name chips in the middle just repeated the same names and cluttered the board. The czar and a done picker get the slim line too; only a local "waiting for answers" viewer still sees the full chips)
     if (local && !who) h += '<p class="tkDim tkSm">' + tks('waitSubs') + '</p>';
     else if (czar) h += '<div class="tkCzarNote">' + tks('youJudge') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v);
     else if (sent) h += '<div class="tkDone">' + tki('check') + tks('submitted') + '</div>' + tkBacksHtml(v) + tkSkipHtml(v);
