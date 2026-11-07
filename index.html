@@ -25155,7 +25155,8 @@ function tkClick(e) {
   else if (a === 'own') { if (tk.scr === 'setLocal') tkReadNames(); tk.myOwn = tk.mode === 'guest' ? tk.myOwn : (tk.own.h || []).slice(); tk.modal = { t: 'own', back: tk.modal && tk.modal.t === 'set' }; }
   else if (a === 'ownAdd' || a.startsWith('ownRm:')) { const x = $('tkOwnIn'), v = x ? x.value.trim().slice(0, 80) : ''; if (a === 'ownAdd') { if (!v) return; tk.myOwn.push(/[.!?]$/.test(v) ? v : v + '.'); } else tk.myOwn.splice(+a.slice(6), 1);
     if (tk.mode === 'guest') { try { tk.net.send({ t: 'own', cards: tk.myOwn }); } catch {} } else { tk.own.h = tk.myOwn.slice(); if (tk.mode === 'host') tkLobbyPush(); } }
-  else if (a.startsWith('rxo:')) { const id = tk.subsKey + ':' + a.slice(4); tk.rxOpen = tk.rxOpen === id ? null : id; } // (the owner: six emojis under every answer was too much: one small 😂 opens them)
+  else if (a.startsWith('rxo:')) { const id = tk.subsKey + ':' + a.slice(4); tk.rxOpen = tk.rxOpen === id ? null : id; // (the owner: six emojis under every answer was too much: one small 😂 opens them)
+    if (tk.rxOpen) requestAnimationFrame(() => { try { const pop = document.querySelector('#tachles .tkRxPop'); const card = pop && pop.closest('.tkHC, .tkSubW'); if (card && card.scrollIntoView) card.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); } catch (e) {} }); }
   else if (a.startsWith('rx:')) { const [, k, e] = a.split(':'), v = tkCurView(); tk.rxOpen = null; tkRender(); if (v) tkAct({ t: 'react', k: +k, e: +e, pid: v.me }); return; }
   else if (a.startsWith('lvl:')) { if (tk.scr === 'setLocal') tkReadNames(); tk.set.lvl = +a.slice(4); tkSave(); if (tk.mode === 'host') tkLobbyPush(); }
   else if (a === 'packs') { if (tk.scr === 'setLocal') tkReadNames(); tk.modal = { t: 'packs', back: tk.modal && tk.modal.t === 'set' }; }
