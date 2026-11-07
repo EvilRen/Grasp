@@ -667,3 +667,126 @@ emoji when it is not, so a relic that is rejected or missing costs nothing.
 Check every one of them at 18 px before shipping any of them, not at the size it was drawn. That check is what
 condemned the first icon sheet, where a shield's lion and a helmet's mail were a brown smudge at the size the game
 actually uses them.
+
+---
+
+## The events and the last symbols (one prompt, fourteen pieces)
+
+The last emoji in the game. Eight of them are the event screens, where the symbol is drawn at 76 px in the middle
+of a painted land — the single worst graphic left. Four are the headings of the how-to pages, drawn at 54 px. The
+last two are the coach's pointing hand, 40 px, and a monster face used in the how-to.
+
+These are drawn much larger than the twenty-five symbols were, so detail is allowed here, nearer the relics than
+the icons. The monster face is the exception: it also appears small, so it is asked for as a bold shape.
+
+| | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| **1** | `ev_well` | `ev_shrine` | `ev_merchant` | `ev_chest` | `ev_fountain` |
+| **2** | `ev_robot` | `ev_portal` | `ev_feast` | `map` | `door` |
+| **3** | `cards` | `hourglass` | `finger` | `monster` | |
+
+Four things in this prompt are there because a previous sheet got them wrong, and each cost real time:
+
+* **The list is numbered and closed.** The first icon sheet was given twenty-five names and returned its own set of
+  generic fantasy items — a key, a helmet, a bow — none of which the game has a slot for.
+* **One symbol is one connected shape.** A sword drawn snapped into two separate halves was read as two pieces, and
+  every name after it in its row was written to the wrong file: the cracked shield was saved as the potion.
+* **One flat magenta, no panel behind anything.** Both icon sheets gave each cell its own duller square. It keyed
+  out, but it is one more thing that can go wrong.
+* **PNG, not JPEG.** The plates sheet arrived as a JPEG, and a 2 px line the generator drew across one plate became
+  a soft 6 px dip that no threshold could remove without smearing the artwork on every other piece. That plate had
+  to be abandoned.
+
+```
+A single flat technical sheet of exactly FOURTEEN painted fantasy game symbols for a painterly fairytale-sci-fi
+deck-building game, arranged in three rows: five across the top row, five across the middle row, and four across
+the bottom row, left aligned, with the fifth position of the bottom row left empty.
+
+SAVE THE IMAGE AS A PNG, not a JPEG. Hard edges and flat colour must stay hard and flat.
+
+THE LIST IS FIXED. The fourteen symbols are listed below and numbered 1 to 14. Draw those fourteen, in that order,
+reading left to right along the top row, then the middle row, then the bottom row. Do not substitute a different
+object for any of them, do not add a symbol that is not on the list, do not leave one out, and do not reorder them.
+The list is not a suggestion of a theme — it is the contents of the picture.
+
+THE SHAPE OF THE IMAGE:
+2400 pixels wide by 1440 pixels tall. Each symbol is centred in its own position, upright, drawn straight on with
+no perspective and no tilt, filling about 70% of the space it has, with a clear empty margin all round. No symbol
+may touch, overlap or cross into a neighbour's space, and no two symbols may touch each other.
+
+ONE SYMBOL IS ONE CONNECTED SHAPE:
+Do not draw any symbol as two or more separate pieces with background showing between them. Every part of a symbol
+must be joined to the rest of it. A symbol made of loose pieces is cut up wrongly by the tool that reads this sheet.
+
+THE BACKGROUND, AND THE ONLY KEYING COLOUR:
+Every pixel that is not part of a symbol is FLAT PURE MAGENTA #FF00FF — ONE single colour everywhere, the same
+value behind every symbol as in the gaps between them, solid, uniform and unshaded, with no gradient, no texture,
+no glow and no shadow in it. Do not give any symbol its own panel, tile, square, border, circle or darker
+background: each floats directly on the magenta. Each symbol's silhouette ends hard against that magenta: no drop
+shadow, no outer glow, no soft halo, nothing spilling outside the shape. Do not draw any lines between the symbols.
+
+HOW THESE WILL BE USED:
+Most of these are shown at about the size of a thumbnail on a phone, on top of a detailed painted background. Each
+needs a clear bold silhouette and a strong dark outline all the way round, and must still be told apart from the
+other thirteen as a plain black shape with no colour at all. Detail inside is welcome, but nothing so fine that it
+turns to mush when the picture is made small.
+
+THE FOURTEEN SYMBOLS:
+1. A stone wishing well: a round grey stone wall, a little wooden roof on two posts, a bucket hanging under it.
+2. An old shrine: a small weathered stone archway, standing alone, moss growing on it, grey-green stone.
+3. A friendly old wizard standing, in a deep blue robe and a tall pointed hat, with a long white beard and a
+   wooden staff. Kindly, not frightening.
+4. A locked chest: dark wood bound in black iron, with a heavy iron padlock hanging on the front.
+5. A fairy: a small winged figure, glowing, with pale jade-green light around her and translucent wings. Her light
+   is green and gold — never pink.
+6. A small lost robot standing, boxy and rusty, with one round glowing cyan eye and short stubby arms.
+7. A standing portal: a tall stone archway with swirling violet and deep blue light filling the opening. The light
+   is violet and blue, never pink.
+8. A feast: a big roast on a wooden platter with a round loaf of bread beside it, joined as one shape.
+9. A folded paper map, open and flat, pale cream paper with worn edges, with one simple dark dotted line crossing
+   it and a small red cross at its end. No letters, no numbers, no compass, no coastlines, nothing else on it.
+10. A closed wooden door seen face on: planks bound with two black iron bands and a round iron ring handle.
+11. A fan of three playing cards, held together and spread, cream faces, dark indigo backs, completely blank.
+12. An hourglass in a dark wooden frame, clear glass, warm gold sand running through it.
+13. A pointing hand: a cartoon glove in cream with a dark outline, index finger pointing straight up, the other
+    fingers curled, seen face on.
+14. A monster's face: one round creature's head, bright green, with two big round eyes and a wide toothy grin,
+    bold and simple so it still reads when it is tiny.
+
+FIGURES:
+The wizard, the fairy, the robot and the monster face are the only figures in the picture. No other symbol may have
+a face, a figure, hands or eyes.
+
+LIGHT AND MATERIAL:
+One light source, above and slightly to the left, the same for all fourteen. Each symbol is painted and solid, with
+a lit top edge and a shaded underside, so it reads as a real thing rather than a flat drawing. They all look like
+they belong in one set.
+
+COLOUR:
+The palette: near-black violet #0F0B20, deep indigo #1D1636, warm gold #F2C14E, jade #45D6C2 and #3DDC84, crimson
+#FF5A6E, bone #F6EFE2. Nothing pastel, nothing washed out, nothing neon. IMPORTANT: no part of any symbol may be
+magenta, pink or purple-pink, because that colour is cut away as the background. The fairy's glow and the portal's
+light are the two to watch: both are green-gold and violet-blue, never pink.
+
+WHAT MUST NOT BE IN THE IMAGE:
+No letters, no words, no numbers, no runes, no glyphs, no inscriptions, no punctuation, no logos, no watermark, no
+caption, no label, and no writing or marking of any kind anywhere in the picture — not on the map, not on the
+cards, not on the shrine, not on any symbol, not in the magenta, not in the margins. No cursor, no arrow. No
+picture frame around the sheet, no grid lines drawn in, no panels behind the symbols, no numbering of the
+positions. Nothing may be labelled with its own name. Do not render any of the words of this description into the
+image.
+```
+
+### What to do with the result
+
+`python3 tools/quest_icons.py art/quest_events_raw.png --set=events --check` first, then without `--check`. The
+set is already in the tool, writing into `assets/quest/icons/` with the event pieces prefixed `ev_` so they cannot
+collide with a `Q_IC` name.
+
+Then three small changes in the game, none of them art: `qDrawEvent` draws `ev_<id>` instead of the event's emoji,
+the how-to page headings take their painted symbol instead of theirs, and `qFinger` draws the hand. Each falls back
+to the emoji when a file is missing, the way the heroes, monsters and relics already do.
+
+That leaves the emoji sitting inside the how-to sentences — ⚔️ 💀 🔥 🛒 🎁 ❓ 👑 ⚡ 🛡️ — which is a code job rather
+than an art one: those strings have to be split so an icon can be drawn where the emoji is, and in Hebrew that has
+to happen without disturbing the line's direction.
