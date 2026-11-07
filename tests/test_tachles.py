@@ -271,8 +271,7 @@ async def online(b):
     check('TV: the reveal on the screen: the winning sentence in the question card and every answer under it', await g3.locator('#tachles .tkTV .tkBlackC mark').count() >= 1 and await g3.locator('#tachles .tkTV .tkSub .tkAnsC').count() >= 2)
     await g3.screenshot(path=OUT + 'tachles_tv_reveal.png')
     await host.wait_for_timeout(1900); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
-    rc = await g1.evaluate("(() => { const e = document.querySelector('#tachles .tkRecap'); return e ? e.innerText : ''; })()")
-    check('reveal: a "סבב קודם" recap line at the top of the new round (the owner: people miss the winning answer)', 'סבב קודם' in rc, rc)
+    check('the "סבב קודם" recap strip is gone (the owner: it pushed the height and made the board scroll)', await g1.evaluate("!document.querySelector('#tachles .tkRecap')"))
     await click(g1, '#tachles [data-a="hist"]'); hm = await g1.inner_text('#tachles .tkModal')
     check('🏆 winners button opens a history + scores modal with the winning sentences', 'זוכים' in hm and await g1.locator('#tachles .tkModal .tkMoment').count() >= 1 and await g1.locator('#tachles .tkModal .tkScores .tkSc').count() >= 2)
     await g1.screenshot(path=OUT + 'tachles_history.png'); await click(g1, '#tachles .tkMHead [data-a="mclose"]')
@@ -499,12 +498,64 @@ async def fits_mid(b):
         await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
     # some bots submit so the status is mixed (as when the owner hit it); the picker must still not need a vertical scroll
     await page.evaluate(f"(() => {{ const g = {TKH}.tk.g, J = g.players[g.judge].id, others = g.players.filter((p) => p.id !== J && p.bot); for (let i = 0; i < 2 && i < others.length; i++) {{ try {{ {TKH}.TK.submit(g, others[i].id, [others[i].hand[0]]); }} catch (e) {{}} }} {TKH}.tk.view = {TKH}.TK.view(g, {TKH}.tk.me); {TKH}.render(); }})()")
-    m = await page.evaluate("(() => { const el = $('tachles'), w = document.querySelector('#tachles .tkHandW'); return { over: el.scrollHeight - el.clientHeight, hand: w ? w.scrollWidth - w.clientWidth : -1, chips: !!document.querySelector('#tachles .tkChips') }; })()")
+    m = await page.evaluate("(() => { const el = $('tachles'), w = document.querySelector('#tachles .tkHandW'), hc = el.querySelector('.tkHand .tkHC'); const r = hc && hc.getBoundingClientRect(); return { over: el.scrollHeight - el.clientHeight, hand: w ? w.scrollWidth - w.clientWidth : -1, chips: !!document.querySelector('#tachles .tkChips'), ar: r ? +(r.width / r.height).toFixed(2) : None }; })()".replace('None', 'null'))
     await page.screenshot(path=OUT + 'tachles_fits_844.png')
     check('a full room (390x844, %d players): the game board fits with no vertical scroll (the owner\'s "weird scrolls" fix)' % np, m['over'] <= 2, m)
+    check('the hand cards keep a portrait card shape (~0.6-0.8 w/h), not a wide block (the owner: "so wide, not like a card")', m['ar'] is not None and 0.55 <= m['ar'] <= 0.85, m)
     check('the hand of cards still scrolls horizontally (only axis that scrolls)', m['hand'] > 50, m)
     check('while picking, the redundant submit-status chip row is gone (the scores strip already shows ✓/⏳); no scroll-causing duplicate', not m['chips'], m)
     check('mid phone: no page errors', not errs, errs); await ctx.close()
+
+async def fits_judge_tall(b):
+    # the owner saw scroll on a taller phone AND on the judge screen (an extra button), with a long question — neither was covered before. The
+    # board must fit with no vertical scroll there too, and the hand/judge cards keep a portrait card shape (~0.7 w/h), not a wide block.
+    LONG = "החילוני שלא היה בבית כנסת עשר שנים שלמות חזר לפתע בגלל ____ וזה משפט ארוך במיוחד שאמור לבדוק גלישה."
+    for (W, H) in [(412, 915), (390, 844)]:
+        ctx = await b.new_context(viewport={'width': W, 'height': H}, is_mobile=True, has_touch=True); errs = []
+        page = await ctx.new_page(); await routes(page); page.on('pageerror', lambda e: errs.append(str(e)))
+        await page.add_init_script(FAST + "sessionStorage.setItem('grasp.tk18','1'); localStorage.setItem('lang','he');")
+        await page.goto(BASE + '/tachles'); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+        await click(page, '#tachles [data-a="m:bots"]')
+        for _ in range(4):
+            if await page.locator('#tachles [data-a="addBot"]:not([disabled])').count(): await click(page, '#tachles [data-a="addBot"]')
+        await page.evaluate(f"{TKH}.TK.botMove = () => false")
+        ok = False
+        for _ in range(30):
+            await page.evaluate(f"{TKH}.tk.scr = 'lobby'; {TKH}.tk.g = null; {TKH}.render()")
+            await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(120)
+            if await page.evaluate(f"{TKH}.tk.view.me === {TKH}.tk.view.judge"): ok = True; break
+        check('reach the judge screen (%dx%d)' % (W, H), ok)
+        await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g; g.deck.b[g.black] = {LONG!r};
+            const J = g.players[g.judge].id, o = g.players.filter(p => p.id !== J);
+            for (const p of o) {{ try {{ {TKH}.TK.submit(g, p.id, [p.hand[0]]); }} catch (e) {{}} }}
+            g.phase = 'judge'; {TKH}.tk.view = {TKH}.TK.view(g, {TKH}.tk.me); {TKH}.render(); }})()""")
+        await page.wait_for_timeout(250)
+        m = await page.evaluate("(() => { const el = $('tachles'); return { doc: document.scrollingElement.scrollHeight - innerHeight, tk: el.scrollHeight - el.clientHeight }; })()")
+        check('judge screen %dx%d with a long question: no vertical scroll (doc + board)' % (W, H), m['doc'] <= 2 and m['tk'] <= 2, m)
+        check('judge tall: no page errors (%dx%d)' % (W, H), not errs, errs)
+        await ctx.close()
+
+async def strip_crowd(b):
+    # the owner: at a party (6+ players) the strip was cramped and names cut. Force 8 players; the strip must fit one row (no horizontal scroll),
+    # take the compact 'lots' layout, and keep every score visible so you can track who has how many.
+    ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); errs = []
+    page = await ctx.new_page(); await routes(page); page.on('pageerror', lambda e: errs.append(str(e)))
+    await page.add_init_script(FAST + "sessionStorage.setItem('grasp.tk18','1'); localStorage.setItem('lang','he');")
+    await page.goto(BASE + '/tachles'); await wait(page, f"{TKH}.tk.scr === 'menu' && {TKH}.tk.deck", 8000)
+    await click(page, '#tachles [data-a="m:bots"]')
+    for _ in range(4):
+        if await page.locator('#tachles [data-a="addBot"]:not([disabled])').count(): await click(page, '#tachles [data-a="addBot"]')
+    await page.evaluate(f"{TKH}.TK.botMove = () => false")
+    await click(page, '#tachles [data-a="start"]'); await page.wait_for_timeout(200)
+    await page.evaluate(f"""(() => {{ const g = {TKH}.tk.g; const sc = [3, 5, 1, 8, 2, 0, 4, 6];
+        while (g.players.length < 8) {{ const i = g.players.length; g.players.push({{ id: 'x' + i, name: 'שחקן ' + i, score: sc[i % 8], on: true, bot: true, hand: [], taste: '' }}); }}
+        {TKH}.tk.view = {TKH}.TK.view(g, {TKH}.tk.me); {TKH}.render(); }})()""")
+    await page.wait_for_timeout(150)
+    m = await page.evaluate("(() => { const s = document.querySelector('#tachles .tkScores'); return { n: document.querySelectorAll('#tachles .tkSc').length, lots: s.classList.contains('lots'), scrollX: s.scrollWidth - s.clientWidth, over: $('tachles').scrollHeight - $('tachles').clientHeight, scores: [...s.querySelectorAll('.tkScN b')].every((e) => e.offsetWidth > 0) }; })()")
+    await page.screenshot(path=OUT + 'tachles_strip8.png')
+    check('8 players: the strip fits one row with no horizontal scroll (compact "lots" layout)', m['n'] == 8 and m['lots'] and m['scrollX'] <= 2 and m['over'] <= 2, m)
+    check('8 players: every player\'s score stays visible (track who has how many)', m['scores'], m)
+    check('crowded strip: no page errors', not errs, errs); await ctx.close()
 
 async def public_rooms(b):
     # the owner: "see the games others open and join one before it starts; quick join drops me into one not started yet". Every waiting room is listed
@@ -650,7 +701,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
         for he in (True, False): await gate_and_bots(b, he)
-        await link_in(b); await sel_kept(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await fits_mid(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
+        await link_in(b); await sel_kept(b); await host_wait(b); await stats(b); await public_rooms(b); await taps(b); await small_screen(b); await fits_mid(b); await fits_judge_tall(b); await strip_crowd(b); await write_card(b); await rules(b); await reconnect(b); await mqtt_room(b); await style_packs(b); await settings_way(b); await pass_round(b); await online(b); await deck(b)
         await b.close()
     print('FAILURES:', check.fails)
 try: asyncio.run(main())
