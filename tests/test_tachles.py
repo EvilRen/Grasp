@@ -483,8 +483,10 @@ async def small_screen(b):
     sl = await page.evaluate(f"(() => {{ const t = {TKH}.tk, g = t.g; g.black = g.deck.b.findIndex((c) => c[1] === 3); for (const p of g.players) while (p.hand.length < 7) p.hand.push(g.wd.pop()); t.view = {TKH}.TK.view(g, t.me); t.sel = [0]; {TKH}.render(); const h = document.querySelector('#tachles .tkHandBox').getBoundingClientRect().top; return [...document.querySelectorAll('#tachles .tkSlots.multi .tkSlot')].map((x) => Math.round(x.getBoundingClientRect().bottom) <= h + 2); }})()")
     await page.screenshot(path=OUT + 'tachles_small_pick3.png')
     check('short phone, pick 3: the slots are small numbered boxes, all three above the hand (the owner\'s pick)', len(sl) == 3 and all(sl), sl)
-    nb = await page.evaluate(f"(() => {{ {TKH}.tk.netMsg = tks('hostGone'); {TKH}.render(); const b = document.querySelector('#tachles .tkNetBar').getBoundingClientRect(), L = document.querySelector('#tachles .tkTop [data-a=\"leave\"]'), r = L.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); const out = [Math.round(b.top), Math.round(b.height), L.contains(e)]; {TKH}.tk.netMsg = ''; {TKH}.render(); return out; }})()")
-    check('the "host not connected" note: a thin strip at the very top, the leave button under it still free (the owner\'s pick)', nb[0] == 0 and nb[1] <= 26 and nb[2], nb)
+    nb = await page.evaluate(f"(() => {{ const t = {TKH}.tk, m0 = t.mode; t.mode = 'guest'; t.netMsg = tks('hostGone'); {TKH}.render(); const b = document.querySelector('#tachles .tkNetBar').getBoundingClientRect(), L = document.querySelector('#tachles .tkTop [data-a=\"leave\"]'), r = L.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); const out = [Math.round(b.top), Math.round(b.height), L.contains(e)]; t.netMsg = ''; t.mode = m0; {TKH}.render(); return out; }})()")
+    check('the "host not connected" note (an online game): a thin strip at the very top, the leave button under it still free (the owner\'s pick)', nb[0] == 0 and nb[1] <= 26 and nb[2], nb)
+    noNb = await page.evaluate(f"(() => {{ const t = {TKH}.tk; t.netMsg = tks('reconn'); {TKH}.render(); const shown = !!document.querySelector('#tachles .tkNetBar'); t.netMsg = ''; {TKH}.render(); return shown; }})()")
+    check('a one-phone game (bots) shows no connection note, even with a stale netMsg (the owner: why a connection alert on one phone)', noNb is False, noNb)
     check('short phone: no page errors', not errs, errs); await ctx.close()
 
 async def fits_mid(b):
