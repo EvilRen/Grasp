@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.123';
+const APP_VERSION = '1.12.124';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22809,12 +22809,21 @@ function qTapCard(i, now) {
 function qPlay(i, ti, now) {
   const f = quest.f, before = f.log.length; const c0 = QC.cardOf(f.hand[i]), id0 = f.hand[i];
   const b0 = quest.btns.find((b) => b.card === i);                       // where it sits in the hand, before it goes
+  // Where the effect will land, read BEFORE the rules run: a monster the card kills is gone from the living by the
+  // time play() returns, and the fireball has to burst on it all the same.
+  const aim = f.mons.filter((m) => m.hp > 0 && m._x != null).map((m) => ({ i: m.i, x: m._x, y: m._y, s: (m._s || 90) * 0.62 }));
   if (!QC.play(quest.run, f, i, ti)) return;
   if (b0) { const m = f.mons.find((x) => x.i === ti);                    // and where it was aimed
     const self = !c0 || !QC.needsTarget(c0) || !m || m._x == null;
     quest.cardFly = { id: id0, t: now, w: b0.w, x: b0.x + b0.w / 2, y: b0.y + b0.h / 2,
       tx: self ? quest.heroX || W / 2 : m._x, ty: self ? (quest.heroY || H * 0.55) : m._y }; } quest.sel = -1; sfx('whoosh'); quest.log.push('play:' + f.log[before].id);
   quest.heroAct = { t: now, kind: c0 && c0.fx.some((x) => x[0] === 'dmg' || x[0] === 'blkdmg') ? 'atk' : 'def' };
+  { const hx = quest.heroX || W / 2, hy = quest.heroY || H * 0.55;      // the effect follows the card in
+    const self = !c0 || c0.tg === 'self';
+    const one = !self && c0.tg === 'one';
+    const at = self ? [{ x: hx, y: hy, s: 74 }]
+      : one ? (aim.find((m) => m.i === ti) ? [aim.find((m) => m.i === ti)] : aim.slice(0, 1)) : aim;
+    if (at.length) qSpellCast(c0, hx, hy, at, now + (self ? 150 : 230)); }
   qFxFrom(before, now); if (f.over === 'won') qFightWon(now);
 }
 function qEndTurn(now) { const f = quest.f; if (!f || f.over || now < quest.busyUntil) return; const before = f.log.length; QC.endTurn(quest.run, f); quest.sel = -1; quest.log.push('end turn'); const ms = qFxFrom(before, now, 380); quest.busyUntil = now + ms;
@@ -23265,6 +23274,18 @@ function qTextIc(str, x, y, fs, col, maxW, asWritten) { // the line, centred, sh
     (g) => { g.shadowColor = 'rgba(6,4,16,0.9)'; g.shadowBlur = fs * 0.5; qRunDraw(g, run, fs, isz, gap, col, col); });
   blit(sp, x, y, 0, k);
 }
+function qTally(x, y, w, ic, v, fs) { // an icon and its number on ONE line, the pair centred together
+  // The run screen used to stack them: a small icon floating over a bare number over a plate carrying the label,
+  // three things on three levels that never lined up with each other. They are one row now, measured and centred
+  // as a whole, so the icon sits beside the figure it counts.
+  resetView();
+  const run = [{ ic }, { g: 1 }, { t: String(v || 0), n: 1 }];
+  const isz = fs * 1.18, gap = fs * 0.22;
+  const rw = qRunW(ctx, run, fs, isz, gap), k = Math.min(1, w / Math.max(1, rw)), h = Math.max(fs, isz) * 1.7;
+  const sp = makeSprite('qty|' + ic + '|' + v + '|' + Math.round(fs), rw + 8, h, rw / 2 + 4, h / 2,
+    (g) => qRunDraw(g, run, fs, isz, gap, '#ffffff', '#ffffff'));
+  blit(sp, x, y, 0, k);
+}
 function qRelic(id, R0, x, y, s) { // a relic: its painting when there is one, its emoji while there is not
   const im = id && qImg('/assets/quest/relics/' + id + '.webp');
   if (!im) { qEmoji(R0.e, x, y, s); return; }
@@ -23632,6 +23653,190 @@ function qIntent(m, f) { // what a monster will do: icons with the real numbers
     else out.push({ blk: '🛡️', str: '💪', weak: '😵', vul: '🎯', poi: '🧪', heal: '❤️', call: '📣' }[k] || '?'); }
   return out.join(' ');
 }
+/* ---------------- what a card looks like when it goes off ----------------
+   A card used to disappear and a red number used to float up, and that was the whole of it: Zap, Fireball and
+   Giant Hammer all looked exactly alike. Each card now throws the thing it is named after — lightning falls out
+   of the sky, a blade sweeps through the monster, a fireball bursts and throws sparks — chosen by card id, with a
+   fallback read off the card's own effects so a card added later still gets something.
+   All of it is drawn in code, over the painting, and all of it is over in half a second. */
+const Q_SPELL = {
+  strike: 'slash', bash: 'slash', cleave: 'slash', twin: 'slash', ironwave: 'slash', bodyslam: 'slash',
+  headbutt: 'slash', uppercut: 'slash', whirl: 'slash', bludgeon: 'slash', rocket: 'slash', shieldbash2: 'slash', dash: 'slash',
+  zap: 'bolt', chain: 'bolt', overload: 'bolt', stun: 'bolt',
+  fireball: 'fire', meteor: 'fire', frost: 'frost',
+  dart: 'poison', cloud: 'poison', plague: 'poison', toxic: 'poison',
+  laser: 'beam', rapid: 'beam', drone: 'beam', spark: 'beam', mega: 'beam',
+  defend: 'guard', ward: 'guard', barrier: 'guard', entrench: 'guard', impervious: 'guard', metal: 'guard',
+  plating: 'guard', focus: 'guard', shrug: 'guard', repair: 'guard', mirror: 'guard', spikes: 'guard', panic: 'guard',
+  potion: 'heal', nanobots: 'heal', apple: 'heal',
+  flex: 'buff', rage: 'buff', upgrade: 'buff', reactor: 'buff', warcry: 'buff', compile: 'buff', boost: 'buff',
+  mana: 'buff', time: 'buff', owl: 'buff', lucky: 'buff',
+  hex: 'curse', scan: 'curse' };
+const Q_SPELL_MS = { slash: 440, bolt: 560, fire: 680, frost: 560, poison: 950, beam: 460, guard: 600, heal: 820, buff: 820, curse: 620 };
+const Q_SPELL_N = { twin: 2, whirl: 2, rapid: 3, drone: 2 };   // the cards that strike more than once
+function qSpellOf(c) {
+  if (!c) return null;
+  if (Q_SPELL[c.id]) return Q_SPELL[c.id];
+  const has = (k) => c.fx.some((x) => x[0] === k);
+  return has('dmg') || has('blkdmg') ? 'slash' : has('heal') ? 'heal' : has('blk') ? 'guard'
+    : has('poi') ? 'poison' : has('weak') || has('vul') ? 'curse' : 'buff';
+}
+function qSr(s, i) { const x = Math.sin(s * 127.1 + i * 311.7 + 7.3) * 43758.5453; return x - Math.floor(x); }
+function qSpellCast(c, hx, hy, targets, now) { // one for each thing the card lands on
+  const s = qSpellOf(c); if (!s) return;
+  const n = Q_SPELL_N[c.id] || 1;
+  for (const t of targets) for (let k = 0; k < n; k++)
+    quest.fx.push({ k: 'spell', s, t: now + k * 150, ms: Q_SPELL_MS[s] || 500, x: hx, y: hy,
+      tx: t.x, ty: t.y, r: t.s || 60, seed: (now % 9973) + k * 37 + (t.x | 0), id: c.id });
+}
+function qSpellDraw(e, now) {
+  const p = (now - e.t) / e.ms; if (p < 0 || p >= 1) return;
+  resetView(); ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const R = e.r, tx = e.tx, ty = e.ty, sd = e.seed, rn = (i) => qSr(sd, i);
+  const fade = (a, b) => Math.max(0, Math.min(1, p < a ? p / a : 1 - (p - a) / (b - a)));
+  if (e.s === 'slash') {
+    // a blade sweeping through: a tapered crescent, swung and gone
+    const q = Math.min(1, p / 0.45), a = fade(0.16, 1), rot = (rn(1) - 0.5) * 1.1 + (rn(2) < 0.5 ? 0 : Math.PI);
+    // The blade passes THROUGH it: the arc is struck about a centre set back one radius, so the middle of the
+    // sweep lands on the monster rather than curling round beside it.
+    const ARC = R * 1.15, bx = tx - Math.cos(rot) * ARC, by = ty - Math.sin(rot) * ARC;
+    const draw = (wid, col, al) => { const span = 0.7 + 1.5 * q, seg = 18; ctx.beginPath();
+      for (let i = 0; i <= seg; i++) { const u = i / seg, ang = rot - span / 2 + span * u, w = Math.sin(Math.PI * u) * wid;
+        const rr = ARC + w / 2; const px = bx + Math.cos(ang) * rr, py = by + Math.sin(ang) * rr; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+      for (let i = seg; i >= 0; i--) { const u = i / seg, ang = rot - span / 2 + span * u, w = Math.sin(Math.PI * u) * wid;
+        const rr = Math.max(2, ARC - w / 2); ctx.lineTo(bx + Math.cos(ang) * rr, by + Math.sin(ang) * rr); }
+      ctx.closePath(); ctx.fillStyle = col; ctx.globalAlpha = al * a; ctx.fill(); };
+    ctx.globalCompositeOperation = 'source-over';
+    draw(R * 0.46, 'rgba(24,10,34,0.72)', 1);                        // the dark of the cut, so the light has an edge
+    ctx.globalCompositeOperation = 'lighter';
+    draw(R * 0.34, 'rgba(255,196,90,0.85)', 1);
+    draw(R * 0.13, 'rgba(255,255,255,1)', 1);
+    { const q2 = Math.max(0, Math.min(1, (p - 0.22) / 0.5));         // the second stroke, crossing the first
+      if (q2 > 0) { const r2 = rot + 1.3, A2 = R * 1.3, cx2 = tx - Math.cos(r2) * A2, cy2 = ty - Math.sin(r2) * A2;
+        const span = 0.6 + 1.2 * q2, seg = 14;
+        ctx.globalAlpha = fade(0.3, 1) * 0.9; ctx.strokeStyle = 'rgba(255,245,215,0.95)';
+        ctx.lineWidth = R * 0.10; ctx.beginPath();
+        for (let i = 0; i <= seg; i++) { const u = i / seg, ang = r2 - span / 2 + span * u;
+          const px = cx2 + Math.cos(ang) * A2, py = cy2 + Math.sin(ang) * A2; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+        ctx.stroke(); } }
+    ctx.globalAlpha = fade(0.10, 0.5) * 0.85;                       // the hit itself
+    const g = ctx.createRadialGradient(tx, ty, 0, tx, ty, R);
+    g.addColorStop(0, 'rgba(255,255,255,0.95)'); g.addColorStop(1, 'rgba(255,220,150,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, R, 0, TAU); ctx.fill();
+  } else if (e.s === 'bolt') {
+    // lightning, out of the sky and down onto it
+    const fl = p < 0.08 ? p / 0.08 : Math.max(0, (0.55 + 0.45 * Math.sin(p * 55)) * (1 - (p - 0.08) / 0.92));
+    ctx.globalCompositeOperation = 'lighter';
+    const pts = [[tx + (rn(0) - 0.5) * 30, -12]];
+    const SEG = 9;
+    for (let i = 1; i <= SEG; i++) { const u = i / SEG;
+      pts.push([tx + (rn(i) - 0.5) * 34 * (1 - u * u) * (1 - u * 0.2), -12 + (ty + 12) * u]); }
+    pts[SEG] = [tx, ty];
+    const line = (w, col, al) => { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i <= SEG; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineWidth = w; ctx.strokeStyle = col; ctx.globalAlpha = al * fl; ctx.stroke(); };
+    line(16, 'rgba(90,170,255,0.30)', 1); line(7, 'rgba(160,220,255,0.85)', 1); line(2.6, '#ffffff', 1);
+    for (let b = 0; b < 2; b++) { const i = 3 + b * 3, o = pts[i];      // a fork or two off the trunk
+      ctx.beginPath(); ctx.moveTo(o[0], o[1]);
+      ctx.lineTo(o[0] + (rn(40 + b) - 0.5) * 70, o[1] + 34 + rn(50 + b) * 26);
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(190,230,255,0.8)'; ctx.globalAlpha = fl * 0.8; ctx.stroke(); }
+    ctx.globalAlpha = fade(0.08, 0.7);
+    const g = ctx.createRadialGradient(tx, ty, 0, tx, ty, R * 0.9);
+    g.addColorStop(0, 'rgba(230,245,255,0.95)'); g.addColorStop(0.5, 'rgba(120,190,255,0.45)'); g.addColorStop(1, 'rgba(90,150,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, R * 0.9, 0, TAU); ctx.fill();
+  } else if (e.s === 'fire') {
+    // a ball of fire that bursts and throws sparks
+    const q = Math.min(1, p / 0.42), ez = 1 - (1 - q) * (1 - q), rad = R * (0.18 + 0.78 * ez);
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fade(0.12, 1);
+    const g = ctx.createRadialGradient(tx, ty, rad * 0.05, tx, ty, rad);
+    g.addColorStop(0, 'rgba(255,255,220,0.95)'); g.addColorStop(0.32, 'rgba(255,196,70,0.85)');
+    g.addColorStop(0.68, 'rgba(240,96,30,0.55)'); g.addColorStop(1, 'rgba(160,40,10,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, rad, 0, TAU); ctx.fill();
+    ctx.globalAlpha = Math.max(0, 1 - p * 1.3) * 0.8;               // the shock going out
+    ctx.strokeStyle = 'rgba(255,170,60,0.9)'; ctx.lineWidth = 5 * (1 - p);
+    ctx.beginPath(); ctx.arc(tx, ty, R * (0.4 + p * 1.5), 0, TAU); ctx.stroke();
+    for (let i = 0; i < 16; i++) {                                   // and the sparks
+      const a = rn(i) * TAU, v = R * (1.1 + rn(i + 20) * 1.5), tq = Math.min(1, p / 0.9);
+      const sx = tx + Math.cos(a) * v * tq, sy = ty + Math.sin(a) * v * tq + 120 * tq * tq * 0.5;
+      ctx.globalAlpha = Math.max(0, 1 - tq) * 0.95; ctx.fillStyle = i % 3 ? '#ffc14e' : '#fff0c0';
+      const r2 = 3.2 * (1 - tq * 0.6); ctx.beginPath(); ctx.arc(sx, sy, r2, 0, TAU); ctx.fill(); }
+  } else if (e.s === 'frost') {
+    const q = Math.min(1, p / 0.5); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 7; i++) {                                    // shards closing in, then flying out
+      const a = rn(i) * TAU, d = R * (1.9 * (1 - q) + 0.25) + (p > 0.5 ? (p - 0.5) * R * 2.4 : 0);
+      const sx = tx + Math.cos(a) * d, sy = ty + Math.sin(a) * d, L = R * 0.34;
+      ctx.globalAlpha = (p < 0.5 ? 1 : Math.max(0, 1 - (p - 0.5) / 0.5)) * 0.9;
+      ctx.fillStyle = i % 2 ? 'rgba(200,240,255,0.95)' : 'rgba(120,200,250,0.85)';
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(a + Math.PI);
+      ctx.beginPath(); ctx.moveTo(L, 0); ctx.lineTo(-L * 0.4, L * 0.26); ctx.lineTo(-L * 0.4, -L * 0.26); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    ctx.globalAlpha = fade(0.45, 0.9) * 0.75;
+    const g = ctx.createRadialGradient(tx, ty, 0, tx, ty, R * 0.8);
+    g.addColorStop(0, 'rgba(235,250,255,0.9)'); g.addColorStop(1, 'rgba(120,200,250,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, R * 0.8, 0, TAU); ctx.fill();
+  } else if (e.s === 'poison') {
+    ctx.globalAlpha = fade(0.1, 0.75) * 0.8;                         // the cloud hanging over it
+    const g = ctx.createRadialGradient(tx, ty + R * 0.2, 0, tx, ty + R * 0.2, R * 1.15);
+    g.addColorStop(0, 'rgba(124,252,106,0.70)'); g.addColorStop(0.55, 'rgba(70,190,90,0.40)'); g.addColorStop(1, 'rgba(40,120,50,0)');
+    ctx.fillStyle = g; ctx.save(); ctx.translate(tx, ty + R * 0.2); ctx.scale(1, 0.62);
+    ctx.beginPath(); ctx.arc(0, 0, R * 1.15, 0, TAU); ctx.fill(); ctx.restore();
+    for (let i = 0; i < 20; i++) {                                   // bubbles going up through it
+      const off = rn(i) * 0.45, u = (p - off) / (1 - off); if (u < 0 || u > 1) continue;
+      const bx = tx + (rn(i + 10) - 0.5) * R * 1.3 + Math.sin(u * 6 + i) * 6;
+      const by = ty + R * 0.4 - u * R * 1.7, rr = 4 + rn(i + 30) * 9;
+      ctx.globalAlpha = Math.sin(Math.min(1, u) * Math.PI) * 0.95;
+      ctx.fillStyle = i % 3 ? 'rgba(150,255,130,0.9)' : 'rgba(70,215,130,0.9)';
+      ctx.beginPath(); ctx.arc(bx, by, rr, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(16,60,26,0.7)'; ctx.lineWidth = 1.8; ctx.stroke(); }
+  } else if (e.s === 'beam') {
+    const col = e.id === 'laser' || e.id === 'mega' || e.id === 'rapid' ? [255, 90, 110] : [90, 230, 200];
+    const a = Math.sin(Math.min(1, p) * Math.PI);
+    const sx = e.x, sy = e.y - R * 0.15;
+    ctx.globalCompositeOperation = 'lighter';
+    const line = (w, c, al) => { ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.lineWidth = w; ctx.strokeStyle = c; ctx.globalAlpha = al * a; ctx.stroke(); };
+    line(13, 'rgba(' + col + ',0.26)', 1); line(6, 'rgba(' + col + ',0.8)', 1); line(2.2, '#ffffff', 1);
+    ctx.globalAlpha = a * 0.9;                                       // where it lands
+    const g = ctx.createRadialGradient(tx, ty, 0, tx, ty, R * 0.6);
+    g.addColorStop(0, 'rgba(255,255,255,0.95)'); g.addColorStop(1, 'rgba(' + col + ',0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, R * 0.6, 0, TAU); ctx.fill();
+  } else if (e.s === 'guard') {
+    // the shield closing round him: two rings, one behind the other
+    ctx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 2; k++) { const u = Math.max(0, Math.min(1, (p - k * 0.18) / 0.8)); if (u <= 0) continue;
+      const rad = R * (1.05 - 0.35 * (1 - u) * (1 - u));
+      ctx.globalAlpha = Math.sin(u * Math.PI) * (k ? 0.7 : 1);
+      ctx.strokeStyle = k ? 'rgba(200,252,255,0.95)' : 'rgba(79,229,210,1)'; ctx.lineWidth = 11 - k * 5;
+      ctx.beginPath(); ctx.ellipse(e.x, e.y, rad * 0.8, rad, 0, 0, TAU); ctx.stroke(); }
+    ctx.globalAlpha = fade(0.2, 0.95) * 0.8;
+    const g = ctx.createRadialGradient(e.x, e.y, R * 0.2, e.x, e.y, R);
+    g.addColorStop(0, 'rgba(79,229,210,0)'); g.addColorStop(0.72, 'rgba(120,245,225,0.55)'); g.addColorStop(1, 'rgba(79,229,210,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(e.x, e.y, R * 0.8, R, 0, 0, TAU); ctx.fill();
+  } else if (e.s === 'heal' || e.s === 'buff') {
+    const heal = e.s === 'heal', col = heal ? '124,252,106' : '255,210,90';
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 16; i++) {
+      const off = rn(i) * 0.4, u = (p - off) / (1 - off); if (u < 0 || u > 1) continue;
+      const a = rn(i + 5) * TAU, rr = R * (0.35 + rn(i + 9) * 0.55);
+      const mx = e.x + Math.cos(a + u * 2.2) * rr, my = e.y + R * 0.6 - u * R * 1.6;
+      ctx.globalAlpha = Math.sin(u * Math.PI); ctx.fillStyle = 'rgba(' + col + ',1)';
+      const s2 = (heal ? 8 : 6.5) * (0.7 + rn(i + 60) * 0.6);
+      if (heal) { ctx.fillRect(mx - s2, my - s2 / 2.6, s2 * 2, s2 / 1.3); ctx.fillRect(mx - s2 / 2.6, my - s2, s2 / 1.3, s2 * 2); }
+      else { ctx.beginPath(); ctx.arc(mx, my, s2, 0, TAU); ctx.fill(); } }
+    ctx.globalAlpha = fade(0.15, 0.95) * 0.75;
+    const g = ctx.createRadialGradient(e.x, e.y, R * 0.1, e.x, e.y, R * 1.1);
+    g.addColorStop(0, 'rgba(' + col + ',0.75)'); g.addColorStop(0.6, 'rgba(' + col + ',0.3)'); g.addColorStop(1, 'rgba(' + col + ',0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y, R * 1.1, 0, TAU); ctx.fill();
+  } else if (e.s === 'curse') {
+    for (let k = 0; k < 3; k++) { const u = Math.max(0, Math.min(1, (p - k * 0.12) / 0.75)); if (u <= 0) continue;
+      const rad = R * (1.7 - 1.05 * u), a0 = rn(k) * TAU + u * 3.0;
+      ctx.globalAlpha = Math.sin(u * Math.PI); ctx.strokeStyle = k === 1 ? 'rgba(214,160,255,1)' : 'rgba(146,92,235,1)';
+      ctx.lineWidth = 11 - k * 2.5; ctx.beginPath(); ctx.arc(tx, ty, rad, a0, a0 + 2.1); ctx.stroke(); }
+    ctx.globalAlpha = fade(0.3, 0.98) * 0.9; ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(tx, ty, 0, tx, ty, R * 1.05);
+    g.addColorStop(0, 'rgba(190,130,255,0.75)'); g.addColorStop(0.55, 'rgba(140,80,230,0.35)'); g.addColorStop(1, 'rgba(120,60,200,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, R * 1.05, 0, TAU); ctx.fill();
+  }
+  ctx.restore(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
 function qDrawFight(now, y0) {
   const f = quest.f, r = quest.run, rtl = lang === 'he', sel = quest.sel >= 0 ? QC.cardOf(f.hand[quest.sel]) : null, tgt = sel && QC.needsTarget(sel);
   // the monsters
@@ -23680,6 +23885,7 @@ function qDrawFight(now, y0) {
   ctx.strokeStyle = 'rgba(255,240,200,0.30)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(ex, ey, er * 0.84, 0, TAU); ctx.stroke();
   qText(f.en + '', ex, ey + 2, 34, '#ffffff', 0, 900, 'rgba(4,14,20,0.95)', undefined, 5);
   const lsp = qText(qtx('energy'), ex + 9, ey + er + 16, 12, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)'); qIcon('en', ex + 9 - lsp.tw / 2 - 11, ey + er + 16, 15);
+  for (const q of quest.fx) if (q.k === 'spell') qSpellDraw(q, now);   // what the cards do, over the fighters
   // the hand
   // The hand. The card was a fixed width and the fan simply overlapped harder the more cards there were, so a hand
   // of seven covered a quarter of each one and sliced the name off its edge. The width now comes from the count:
@@ -23816,29 +24022,41 @@ function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp
 }
 function qDrawEnd(now) {
   // The run's last screen. It used to be a tall flat icon, a title and three numbers floating loose on the painting
-  // with half the screen empty under them. Everything now sits on one painted panel, sized to the screen it is on.
+  // with half the screen empty under them. Everything now sits on one painted panel — and the panel is cut to what
+  // it holds, instead of being stretched to a fixed share of the screen with a hand's depth of nothing at the foot
+  // of it. Each piece is placed from the one above rather than at a fraction of the height, so the trophy, the
+  // title and the tally keep their spacing whatever the phone.
   const e = quest.end || {}, rtl = lang === 'he', top = cgTopY() + 16;
   const cw = Math.min(360, W - 20), cx = W / 2 - cw / 2;
-  const chh = Math.max(330, Math.min(470, H - top - 96));
+  const ic = 78, tiH = 34, suH = 20, tyH = 38, plH = 28, nhH = quest.newHero ? 52 : 0;
+  // The panel's painted frame eats a band at the top and bottom: the trophy used to be drawn over it. The band is
+  // measured from the art, the same figure qBtn insets its lettering by, so the content starts inside the frame
+  // whatever size the panel ends up.
+  const pl = Q_PL.lay && Q_PL.lay.panel_quiet;
+  const PAD = pl ? Math.max(16, Math.min(44, pl.ins[1] * (Math.min(cw, 340) / Math.min(pl.w, pl.h)))) : 20;
+  const want = PAD + ic + 12 + tiH + 6 + suH + 20 + tyH + plH + 14 + nhH + PAD;
+  const chh = Math.max(250, Math.min(want, H - top - 96));
+  const k = chh / want;                                   // on a short screen everything closes up together
   if (!qPlate('panel_quiet', cx, top, cw, chh)) {
     resetView(); ctx.fillStyle = 'rgba(16,11,34,0.82)'; ctx.beginPath(); ctx.roundRect(cx, top, cw, chh, 22); ctx.fill();
     ctx.strokeStyle = 'rgba(246,239,226,0.18)'; ctx.lineWidth = 1.5; ctx.stroke();
   }
-  const Y = (f) => top + chh * f;
-  qIcon(e.won ? 'trophy' : 'skull', W / 2, Y(0.17), (e.won ? 84 : 80) + 5 * Math.sin(now / 250));
-  qText(e.won ? qtx('victory') : qtx('lost'), W / 2, Y(0.35), 32, e.won ? '#ffe08a' : '#ffffff', cw - 44, 400, 'rgba(0,0,0,0.6)', Q_DISP);
-  qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, Y(0.435), 16, '#ffffff', cw - 44, 700, 'rgba(0,0,0,0.6)');
-  // the three numbers, each on its own small plate so they read as a tally rather than as loose text
+  let y = top + PAD * k;
+  qIcon(e.won ? 'trophy' : 'skull', W / 2, y + ic * k / 2, ic * k + 5 * Math.sin(now / 250)); y += (ic + 12) * k;
+  qText(e.won ? qtx('victory') : qtx('lost'), W / 2, y + tiH * k / 2, Math.round(32 * k), e.won ? '#ffe08a' : '#ffffff', cw - 44, 400, 'rgba(0,0,0,0.6)', Q_DISP); y += (tiH + 6) * k;
+  qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, y + suH * k / 2, Math.round(16 * k), '#ffffff', cw - 44, 700, 'rgba(0,0,0,0.6)'); y += (suH + 20) * k;
+  // the three numbers. The icon and its figure are one line now, measured and centred together, with the name on a
+  // plate under them — before, the icon floated over a bare number over a plate and the three never lined up.
   const st = [[e.fights, 'stFights', 'dmg'], [e.bosses, 'stBoss', 'crown'], [e.coins, 'stCoins', 'gold']];
-  const sw = Math.min(96, (cw - 56) / 3), sy = Y(0.52), sh = chh * 0.20;
-  st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * (sw + 6) - sw / 2;
-    qPlate('nameplate', x, sy + sh * 0.62, sw, sh * 0.34);
-    qIcon(ic, x + sw / 2, sy + sh * 0.2, Math.min(28, sw * 0.32));
-    qText(String(v || 0), x + sw / 2, sy + sh * 0.49, 23, '#ffffff', sw - 8, 900, 'rgba(8,4,16,0.95)', undefined, 4);
-    qText(qtx(k), x + sw / 2, sy + sh * 0.78, 12, '#ffe08a', sw - 12, 700, 'rgba(6,4,16,0.9)'); });
+  const sw = Math.min(104, (cw - 52) / 3);
+  st.forEach(([v, kk, icn], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * (sw + 6) - sw / 2;
+    qTally(x + sw / 2, y + tyH * k / 2, sw - 8, icn, v, Math.round(26 * k));
+    qPlate('nameplate', x, y + tyH * k, sw, plH * k);
+    qText(qtx(kk), x + sw / 2, y + (tyH + plH / 2) * k, Math.round(12 * k), '#ffe08a', sw - 14, 700, 'rgba(6,4,16,0.9)'); });
+  y += (tyH + plH + 14) * k;
   if (quest.newHero) { const R = QC.HEROES.robot;   // the hero itself, not an emoji of one
-    qHeroDraw('robot', R, W / 2 - (rtl ? -1 : 1) * (cw * 0.30), Y(0.85), 30);
-    qText(lang === 'he' ? 'הרובוט נפתח!' : 'The Robot is unlocked!', W / 2 + (rtl ? -1 : 1) * 18, Y(0.85), 17, '#7CFC6A', cw - 110, 900, 'rgba(0,0,0,0.7)'); }
+    qHeroDraw('robot', R, W / 2 - (rtl ? -1 : 1) * (cw * 0.26), y + nhH * k / 2, 30 * k);
+    qText(lang === 'he' ? 'הרובוט נפתח!' : 'The Robot is unlocked!', W / 2 + (rtl ? -1 : 1) * 26, y + nhH * k / 2, Math.round(17 * k), '#7CFC6A', cw - 150, 900, 'rgba(0,0,0,0.7)'); }
   const bw = Math.min(200, (W - 40) / 2), by = top + chh + 16;
   qBtn(W / 2 - bw - 6, by, bw, 56, () => { quest.newHero = null; quest.run = null; quest.scr = 'pick'; sfx('click'); }, { text: qtx('again'), fs: 18, r: 28, bg: '#3ddc84', solid: 1 });
   qBtn(W / 2 + 6, by, bw, 56, () => { quest.newHero = null; goHome(); }, { text: qtx('home'), fs: 18, r: 28 });
