@@ -150,3 +150,219 @@ part of the image may be labelled with its own name.
 The same run also deepened the arched window to a tall dome when asked for a "gently arched top", dropping the
 picture window to 72.6% of the rectangle qLay draws into — worse than the 89.9% it was trying to improve. The other
 two rarities use a plain rounded rectangle, so the rare row should too; the filigree already carries the tier.
+
+---
+
+## The interface plates (one prompt, nine pieces)
+
+The owner, twice: the buttons look like a slide deck. They do, and the reason is that every plate in the game is
+drawn in code — a rounded rectangle with a gradient. The paintings are finished; the chrome sitting on them is not.
+This sheet replaces the chrome with painted metal, and the owner chose the ornate end of the scale.
+
+Nine pieces, cut the same way the card frames are: exact thirds, magenta keyed out, each piece trimmed to its own
+bounds. The pieces do **not** share an aspect ratio — a wide pill and a tall card sit in cells of the same size, each
+with magenta around it, and the trim sorts them out.
+
+**Why the centres must be flat.** A button is 180 px wide on one screen and 260 on another, so the art cannot be used
+at one size. The three pills are stretched horizontally: left cap, stretched middle, right cap. That works only if the
+middle is identical in every column of pixels — a top-to-bottom bevel is fine and wanted, a left-to-right change is
+not. The six panels are nine-sliced, so their inner field must be flat in both directions. This is also what makes
+them readable: the ornament is in the border, the text sits on a quiet field.
+
+Resolution is enough even where a piece looks small on the sheet: a stretched middle costs nothing, so only the caps
+and corners need pixels, and they get the full cell.
+
+```
+A single flat technical sheet of nine EMPTY painted interface plates for a painterly fairytale-sci-fi deck-building
+game, laid out as a strict 3-column × 3-row grid. These are empty containers that lettering will be drawn on top of
+later, in code — so no piece may carry any lettering of its own.
+
+THE SHAPE OF THE IMAGE:
+The finished image is SQUARE, 2048 by 2048 pixels. It is divided into nine identical square cells by two perfectly
+straight vertical lines at exactly 1/3 and 2/3 of the width, and two perfectly horizontal lines at exactly 1/3 and
+2/3 of the height. Each cell holds exactly ONE plate, centred in its cell, upright, drawn straight on with no
+perspective and no tilt. The plates are NOT all the same size or shape: each row below states its own proportion.
+Nothing may touch or cross a cell boundary.
+
+THE BACKGROUND, AND THE ONLY KEYING COLOUR:
+Every pixel that is not part of a plate is FLAT PURE MAGENTA #FF00FF — a solid, uniform, unshaded colour with no
+gradient, no texture, no glow and no shadow in it. That means all the empty space between and around the plates, and
+the area outside each plate's rounded corners. Each plate's own silhouette must end hard against that magenta: no
+drop shadow, no outer glow, no soft halo, no reflection spilling outside the shape. Light and depth live INSIDE the
+silhouette only.
+
+ROW 1 — three wide pressable plates, each a long horizontal lozenge with fully rounded ends, about 4 units wide to 1
+unit tall, filling about 90% of its cell's width:
+  Left: polished warm gold metal, bright and lit, the most valuable-looking object on the sheet.
+  Middle: polished jade-green metal with the same construction and the same light, bright and inviting.
+  Right: dark blued steel with a thin gold rim, deliberately quieter than the other two.
+
+ROW 2 — three rectangular plates with softly rounded corners, about 2 units wide to 1 unit tall, filling about 85% of
+its cell's width:
+  Left: dark blued steel with a thin pewter rim, quiet.
+  Middle: the identical plate, but its metal is warm gold and it is lit as though a lamp sits just above it.
+  Right: the identical plate in cold dead grey iron, unlit, as though it has been left in the dark.
+
+ROW 3 — three larger pieces:
+  Left: an upright rectangular plaque with softly rounded corners, taller than it is wide, about 1 unit wide to 1.3
+  units tall, in dark blued steel with a gold rim.
+  Middle: a large upright panel with softly rounded corners, about 1 unit wide to 1.2 units tall, in dark blued steel
+  with a heavier gold rim — this one is a window that a whole screen of writing will sit inside.
+  Right: a long, low, shallow strip with softly rounded corners, about 5 units wide to 1 unit tall, in dark pewter —
+  a small nameplate that a single line will sit on.
+
+HOW ORNATE, AND EXACTLY WHERE THE ORNAMENT MAY GO — this decides whether the sheet is usable:
+All nine plates are richly worked: engraved filigree scrollwork, hammered metal, raised rivets, a polished inlay line
+following the edge, and a small faceted gem set into each corner where there is room for one. But every bit of that
+ornament, and every rivet, gem, scroll and bevel, must sit entirely within a narrow band hugging the plate's outer
+edge, no thicker than about one sixth of the plate's SHORTER side. Inside that band the plate's face is a quiet,
+calm, EVEN field of its own colour — no filigree, no rivets, no scrollwork, no pattern, no vignette, no spotlight, no
+scratches, no highlight blooms crossing it.
+  On the three lozenges in row 1, that inner face may shade smoothly from lighter at the top to darker at the bottom,
+  like a convex surface lit from above — but it must be IDENTICAL all the way across from left to right, so that any
+  vertical slice through the middle of the plate looks the same as any other.
+  On the six plates in rows 2 and 3, the inner face must be flat and even in BOTH directions: the same tone in the
+  middle as at the inner edge of the border band.
+
+LIGHT AND MATERIAL:
+One light source, above and slightly to the left, the same for all nine. Each plate reads as a solid thing with
+thickness: a lit upper edge, a soft occluded lower edge, a crisp bevel where the face meets the border band. The
+metal is real and worked — hammer marks, wear on the raised edges, a little age in the recesses — not smooth plastic
+and not a flat vector shape.
+
+COLOUR:
+The game's palette: near-black violet #0F0B20 and deep indigo #1D1636 for the dark metal, warm gold #F2C14E for the
+gold, bright jade #45D6C2 and #3DDC84 for the green, with cream #F6EFE2 as the brightest highlight. Nothing
+pastel, nothing washed out, nothing neon.
+
+SYMMETRY:
+Every plate must be perfectly symmetrical left to right, so that it can be mirrored for a right-to-left language
+without the ornament reading backwards. No piece may have a feature on one side that it lacks on the other.
+
+WHAT MUST NOT BE IN THE IMAGE:
+No letters, no words, no numbers, no runes, no glyphs, no logos, no watermark, no caption, no label, and no writing of
+any kind anywhere in the picture, including on the plates themselves, in the magenta, or in the margins. No icons, no
+swords, no shields, no hearts, no coins, no faces, no creatures, no hands, no cursor, no arrow. No picture frame
+around the whole sheet, no grid lines drawn in, no numbering of the cells. Nothing may be labelled with its own name.
+Do not render any of the words of this description into the image.
+```
+
+### What to do with the result
+
+`tools/quest_plates.py` (to be written alongside the sheet) cuts the nine cells, keys the magenta the same way
+`quest_frames.py` does, trims each piece to its own bounds, and measures each one's border band — the thickness, in
+pixels, of the ornamented edge on each side — into `assets/quest/plates.json`, so `qBtn` can nine-slice a plate at
+any size without the insets being hard-coded. The same measure-and-adapt contract the card frames use: the art
+states its own geometry and the code reads it, rather than the art being made to fit a number in the code.
+
+If Gemini drifts, regenerate rather than patch. The two failures to watch for, both fatal to a stretched plate: a
+centre field that is not even (a vignette or a highlight bloom shows up as a seam the moment the plate is stretched),
+and ornament that creeps inward past the border band (it gets stretched and smeared).
+
+---
+
+## The interface plates (one prompt, nine pieces)
+
+The owner, twice: the buttons look like a slide deck. They do, and the reason is that every plate in the game is
+drawn in code — a rounded rectangle with a gradient. The paintings are finished; the chrome sitting on them is not.
+This sheet replaces the chrome with painted metal, and the owner chose the ornate end of the scale.
+
+Nine pieces, cut the way the card frames are: exact thirds, magenta keyed out, each piece trimmed to its own bounds.
+The pieces do **not** share an aspect ratio — a wide lozenge and a tall plaque sit in cells of the same size, each
+with magenta around it, and the trim sorts them out.
+
+**Why the centres must be flat.** A button is 180 px wide on one screen and 260 on another, so one fixed picture
+cannot serve. The three lozenges are stretched horizontally: left cap, stretched middle, right cap. That works only
+if the middle is identical in every column of pixels — a top-to-bottom bevel is fine and wanted, a left-to-right
+change is not. The six panels are nine-sliced, so their inner field must be flat in both directions. This is also
+what keeps them readable: the ornament is in the border, the lettering sits on a quiet field.
+
+Resolution is enough even where a piece looks small on the sheet. A stretched middle costs nothing, so only the caps
+and corners need pixels, and each of those gets a full cell.
+
+```
+A single flat technical sheet of nine EMPTY painted interface plates for a painterly fairytale-sci-fi deck-building
+game, laid out as a strict 3-column by 3-row grid. These are empty containers that lettering will be drawn on top of
+later, in code — so no piece may carry any lettering of its own.
+
+THE SHAPE OF THE IMAGE:
+The finished image is SQUARE, 2048 by 2048 pixels. It is divided into nine identical square cells by two perfectly
+straight vertical lines at exactly 1/3 and 2/3 of the width, and two perfectly horizontal lines at exactly 1/3 and
+2/3 of the height. Each cell holds exactly ONE plate, centred in its cell, upright, drawn straight on with no
+perspective and no tilt. The plates are NOT all the same size or shape: each row below states its own proportion.
+Nothing may touch or cross a cell boundary.
+
+THE BACKGROUND, AND THE ONLY KEYING COLOUR:
+Every pixel that is not part of a plate is FLAT PURE MAGENTA #FF00FF — a solid, uniform, unshaded colour with no
+gradient, no texture, no glow and no shadow in it. That means all the empty space between and around the plates, and
+the area outside each plate's rounded corners. Each plate's silhouette must end hard against that magenta: no drop
+shadow, no outer glow, no soft halo, no reflection spilling outside the shape. Light and depth live INSIDE the
+silhouette only.
+
+ROW 1 — three wide pressable plates, each a long horizontal lozenge with fully rounded ends, about 4 units wide to 1
+unit tall, filling about 90% of its cell's width:
+  Left: polished warm gold metal, bright and lit, the most valuable-looking object on the sheet.
+  Middle: polished jade-green metal, the same construction and the same light, bright and inviting.
+  Right: dark blued steel with a thin gold rim, deliberately quieter than the other two.
+
+ROW 2 — three rectangular plates with softly rounded corners, about 2 units wide to 1 unit tall, filling about 85% of
+its cell's width:
+  Left: dark blued steel with a thin pewter rim, quiet.
+  Middle: the identical plate, but its metal is warm gold and it is lit as though a lamp sits just above it.
+  Right: the identical plate in cold dead grey iron, unlit, as though it has been left in the dark.
+
+ROW 3 — three larger pieces:
+  Left: an upright plaque with softly rounded corners, taller than it is wide, about 1 unit wide to 1.3 units tall,
+  in dark blued steel with a gold rim.
+  Middle: a large upright panel with softly rounded corners, about 1 unit wide to 1.2 units tall, in dark blued steel
+  with a heavier gold rim — this one is a window that a whole screen of writing will sit inside.
+  Right: a long, low, shallow strip with softly rounded corners, about 5 units wide to 1 unit tall, in dark pewter —
+  a small nameplate that a single line will sit on.
+
+HOW ORNATE, AND EXACTLY WHERE THE ORNAMENT MAY GO — this decides whether the sheet is usable:
+All nine plates are richly worked: engraved filigree scrollwork, hammered metal, raised rivets, a polished inlay line
+following the edge, and a small faceted gem set into each corner where there is room for one. But every bit of that
+ornament — every rivet, gem, scroll and bevel — must sit entirely within a narrow band hugging the plate's outer
+edge, no thicker than about one sixth of the plate's SHORTER side. Inside that band the plate's face is a quiet,
+calm, EVEN field of its own colour: no filigree, no rivets, no scrollwork, no pattern, no vignette, no spotlight, no
+scratches, no highlight blooms crossing it.
+  On the three lozenges in row 1, that inner face may shade smoothly from lighter at the top to darker at the bottom,
+  like a convex surface lit from above — but it must be IDENTICAL all the way across from left to right, so that any
+  vertical slice through the middle of the plate looks the same as any other.
+  On the six plates in rows 2 and 3, the inner face must be flat and even in BOTH directions: the same tone in the
+  middle as at the inner edge of the border band.
+
+LIGHT AND MATERIAL:
+One light source, above and slightly to the left, the same for all nine. Each plate reads as a solid thing with
+thickness: a lit upper edge, a soft occluded lower edge, a crisp bevel where the face meets the border band. The
+metal is real and worked — hammer marks, wear on the raised edges, a little age in the recesses — not smooth plastic
+and not a flat vector shape.
+
+COLOUR:
+The game's palette: near-black violet #0F0B20 and deep indigo #1D1636 for the dark metal, warm gold #F2C14E for the
+gold, bright jade #45D6C2 and #3DDC84 for the green, cream #F6EFE2 as the brightest highlight. Nothing pastel,
+nothing washed out, nothing neon.
+
+SYMMETRY:
+Every plate must be perfectly symmetrical left to right, so that it can be mirrored for a right-to-left language
+without the ornament reading backwards. No piece may have a feature on one side that it lacks on the other.
+
+WHAT MUST NOT BE IN THE IMAGE:
+No letters, no words, no numbers, no runes, no glyphs, no logos, no watermark, no caption, no label, and no writing of
+any kind anywhere in the picture — not on the plates, not in the magenta, not in the margins. No icons, no swords, no
+shields, no hearts, no coins, no faces, no creatures, no hands, no cursor, no arrow. No picture frame around the whole
+sheet, no grid lines drawn in, no numbering of the cells. Nothing may be labelled with its own name. Do not render
+any of the words of this description into the image.
+```
+
+### What to do with the result
+
+`tools/quest_plates.py` — to be written alongside the sheet — cuts the nine cells, keys the magenta the way
+`quest_frames.py` does, trims each piece to its own bounds, and measures each one's border band (its thickness in
+pixels on each side) into `assets/quest/plates.json`, so `qBtn` can nine-slice a plate at any size without the insets
+being hard-coded. That is the same measure-and-adapt contract the card frames use: the art states its own geometry
+and the code reads it, rather than the art being made to fit a number in the code.
+
+If Gemini drifts, regenerate rather than patch. Two failures to watch for, both fatal to a stretched plate: a centre
+field that is not even (a vignette or a highlight bloom becomes a visible seam the moment the plate is stretched),
+and ornament that creeps inward past the border band (it gets stretched and smeared).
