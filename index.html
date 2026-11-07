@@ -1532,6 +1532,8 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkScores{ padding:10px; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; } #tachles .tkScores::-webkit-scrollbar{ display:none; }
 #tachles .tkSc{ flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; gap:8px; padding:4px 6px; border-radius:12px; border:1px solid transparent; }
 #tachles .tkScores.many{ gap:2px; padding:8px 6px; } #tachles .tkScores.many .tkSc{ flex-direction:column; gap:3px; padding:5px 2px; } #tachles .tkScores.many .tkScN{ align-items:center; width:100%; } #tachles .tkScores.many .tkScN small{ max-width:100%; font-size:11px; } /* (the owner: with 5 or more not everyone fit, the strip scrolled: now each player stands, the avatar over the name, all in one row) */
+/* 7+ players (the owner: at a party the strip was cramped and names cut): tighter still, a smaller avatar, the NAME smaller but the SCORE bigger and clearer so you can track who has how many */
+#tachles .tkScores.lots{ gap:1px; padding:7px 4px; } #tachles .tkScores.lots .tkSc{ padding:4px 1px; gap:2px; } #tachles .tkScores.lots .tkScN small{ font-size:9.5px; letter-spacing:-.01em; } #tachles .tkScores.lots .tkScN b{ font-size:16px; }
 #tachles .tkSc.me{ background:rgba(168,85,247,.1); border-color:rgba(168,85,247,.3); } #tachles .tkSc.off{ opacity:.35; }
 #tachles .tkAvW{ position:relative; display:inline-flex; } #tachles .tkCrown{ position:absolute; top:-8px; inset-inline-end:-5px; width:16px; height:16px; color:#facc15; fill:#facc15; filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
 #tachles .tkScN{ display:flex; flex-direction:column; line-height:1.15; min-width:0; } #tachles .tkScN small{ font-size:12px; font-weight:700; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2091,7 +2093,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.70';
+const APP_VERSION = '1.12.71';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -23738,7 +23740,8 @@ function tkLocalHtml() { // one phone: the names (letter avatars), bots, the set
     '<button class="tkP tkW tkLg tkGo" data-a="goLocal"' + (n + tk.botsL < 2 || !tkEnough(tk.set, n + tk.botsL) ? ' disabled' : '') + '>' + tki('play', 'rflip') + (tkEnough(tk.set, n + tk.botsL) ? tks('start') : tks('fewCards')) + '</button></div>';
 }
 function tkScoresHtml(v, me) { const st = (p) => !p.on || v.phase === 'reveal' || v.phase === 'over' ? '' : p.id === v.judge ? '<i class="tkSt j">⚖️</i>' : v.phase === 'pick' ? (p.sent ? '<i class="tkSt ok">✓</i>' : '<i class="tkSt w">⏳</i>') : ''; // (from Evil Apples: who judges, who is still choosing, who is done)
-  return '<div class="tkCard tkScores' + (v.players.length > 4 ? ' many' : '') + '">' + v.players.map((p) => '<div class="tkSc' + (p.id === me ? ' me' : '') + (p.on ? '' : ' off') + '"><span class="tkAvW">' + tkAv(p.name, 32) + (p.id === v.judge ? tki('crown', 'tkCrown') : '') + st(p) + '</span>' +
+  const n = v.players.length, av = n > 5 ? 26 : 32;
+  return '<div class="tkCard tkScores' + (n > 4 ? ' many' : '') + (n > 5 ? ' lots' : '') + '">' + v.players.map((p) => '<div class="tkSc' + (p.id === me ? ' me' : '') + (p.on ? '' : ' off') + '"><span class="tkAvW">' + tkAv(p.name, av) + (p.id === v.judge ? tki('crown', 'tkCrown') : '') + st(p) + '</span>' +
   '<span class="tkScN"><small>' + tkEsc(p.name) + '</small><b>' + p.score + '</b></span></div>').join('') + '</div>'; }
 function tkTeaseFor(v, holdouts) { // a stable line for the one still choosing (picked once per round and player)
   if (holdouts.length !== 1) return '<p class="tkTease"></p>'; const key = v.round + '|' + holdouts[0].id;
