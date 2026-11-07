@@ -2109,7 +2109,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.113';
+const APP_VERSION = '1.12.115';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22714,7 +22714,7 @@ const QS = {
     phoenix: 'The feather saves you!', tip: 'Tap a card, then a monster. Out of energy? End turn!', land: 'A new land: {n}', ok: 'OK', once: 'once',
     sub: 'Go room by room, beat the monsters, reach the boss', how: 'How to play', heroD_knight: 'strong shield', heroD_wizard: 'magic + poison', heroD_robot: 'extra energy',
     doorD_fight: 'gold + a card', doorD_elite: 'big prize', doorD_boss: 'end of the land', doorD_rest: 'rest, upgrade', doorD_shop: 'buy cards', doorD_chest: 'a treasure', doorD_event: 'a surprise', toBoss: 'the way to the boss', mapT: 'Your journey',
-    c1: '1. Tap a card ⚔️', c2: '2. Now tap the monster', c2b: 'Tap the card again to play it', c3: 'Out of energy? Tap End turn', c4: 'The bubble = what the monster will do next. ⚔️ = it hits, so block with 🛡️!',
+    c1: '1. Tap a card', c2: '2. Now tap the monster', c2b: 'Tap the card again to play it', c3: 'Out of energy? Tap End turn', c4: 'The bubble over a monster says what it will do next. A sword means it hits, so block!',
     hNext: 'Next', hGo: "Got it, let's go!", hOk: 'Got it',
     h: [['🗺️', 'The goal', ['Go from room to room,', 'beat the monsters,', 'and reach the boss 👑 at the end.'], '⚔️ ➜ ⚔️ ➜ 🔥 ➜ 👑'],
       ['🚪', 'Every room: pick a door', ['⚔️ fight: gold and a new card', '💀 tough fight: a bigger prize', '🔥 camp fire: rest  ·  🛒 shop', '🎁 treasure  ·  ❓ a surprise'], ''],
@@ -22731,7 +22731,7 @@ const QS = {
     phoenix: 'הנוצה הצילה אתכם!', tip: 'הקישו על קלף ואז על מפלצת. נגמרה האנרגיה? סוף תור!', land: 'ארץ חדשה: {n}', ok: 'אישור', once: 'פעם אחת',
     sub: 'עוברים חדר אחרי חדר, מנצחים מפלצות ומגיעים לבוס', how: 'איך משחקים', heroD_knight: 'מגן חזק', heroD_wizard: 'קסם ורעל', heroD_robot: 'עוד אנרגיה',
     doorD_fight: 'זהב + קלף', doorD_elite: 'פרס גדול', doorD_boss: 'סוף הארץ', doorD_rest: 'מנוחה, שדרוג', doorD_shop: 'קונים קלפים', doorD_chest: 'אוצר', doorD_event: 'הפתעה', toBoss: 'הדרך לבוס', mapT: 'המסע שלך',
-    c1: '1. הקישו על קלף ⚔️', c2: '2. עכשיו הקישו על המפלצת', c2b: 'הקישו שוב על הקלף כדי לשחק', c3: 'נגמרה האנרגיה? הקישו "סוף תור"', c4: 'הבועה = מה המפלצת תעשה. ⚔️ = היא תכה, אז תתגוננו עם 🛡️!',
+    c1: '1. הקישו על קלף', c2: '2. עכשיו הקישו על המפלצת', c2b: 'הקישו שוב על הקלף כדי לשחק', c3: 'נגמרה האנרגיה? הקישו "סוף תור"', c4: 'הבועה מעל מפלצת אומרת מה היא תעשה. חרב = היא תכה, אז תתגוננו!',
     hNext: 'הבא', hGo: 'הבנתי, יוצאים!', hOk: 'הבנתי',
     h: [['🗺️', 'המטרה', ['עוברים חדר אחרי חדר,', 'מנצחים מפלצות', 'ומגיעים לבוס בסוף הדרך.'], '👑 ⬅ 🔥 ⬅ ⚔️ ⬅ ⚔️'],
       ['🚪', 'בכל חדר בוחרים דלת', ['⚔️ קרב: זהב וקלף חדש', '💀 קרב קשה: פרס גדול', '🔥 מדורה: מנוחה', '🛒 חנות', '🎁 אוצר', '❓ הפתעה'], ''],
@@ -23592,12 +23592,19 @@ function qDrawFight(now, y0) {
   qText(f.en + '', ex, ey + 2, 34, '#ffffff', 0, 900, 'rgba(4,14,20,0.95)', undefined, 5);
   const lsp = qText(qtx('energy'), ex + 9, ey + er + 16, 12, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)'); qIcon('en', ex + 9 - lsp.tw / 2 - 11, ey + er + 16, 15);
   // the hand
-  const n = f.hand.length, cw = Math.min(96, Math.max(66, (W - 20) / 5.2)), ch = cw * 1.42, span = Math.min(W - 20 - cw, (n - 1) * (cw * 0.92)), hy2 = H - ch / 2 - 74, busy = now < quest.busyUntil || f.over;
+  // The hand. The card was a fixed width and the fan simply overlapped harder the more cards there were, so a hand
+  // of seven covered a quarter of each one and sliced the name off its edge. The width now comes from the count:
+  // each card shows at least 93% of itself, which is more than its widest line occupies, so nothing is cut. A small hand
+  // gets bigger cards than before out of the same rule; a hand too big to fit even at the floor overlaps more.
+  const n = f.hand.length, FIT = 0.93, room = W - 16;   // 0.88 still clipped the rules row, which is wider than the name
+  const cw = Math.max(50, Math.min(92, n > 1 ? room / (1 + (n - 1) * FIT) : 92));
+  const step = n > 1 ? Math.min(cw * FIT, (room - cw) / (n - 1)) : 0;
+  const ch = cw * 1.42, span = step * (n - 1), hy2 = H - ch / 2 - 74, busy = now < quest.busyUntil || f.over;
   let lift = null; // the picked card: drawn after the others, so its lift and its halo are over them (the tap rects keep their order)
   for (let i = 0; i < n; i++) { const k = rtl ? n - 1 - i : i, x = W / 2 + (n > 1 ? (k / (n - 1) - 0.5) * span : 0), on = quest.sel === i, c = QC.cardOf(f.hand[i]), can = c.c <= f.en;
     const y = hy2 - (on ? 30 : 0) + Math.abs(k - (n - 1) / 2) * 4, o = { k: on ? 1.15 : 1, ang: n > 1 ? (k / (n - 1) - 0.5) * 0.18 : 0, dim: !can, glow: on ? 0.75 + 0.25 * Math.sin(now / 220) : 0 };
     if (on) lift = [f.hand[i], x, y, cw, o]; else qCard(f.hand[i], x, y, cw, o);
-    if (!busy) quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: cw * (i === n - 1 ? 1 : 0.92), h: ch, act: () => qTapCard(i, performance.now()), card: i }); }
+    if (!busy) quest.btns.push({ x: x - cw / 2, y: y - ch / 2, w: i === n - 1 ? cw : Math.max(28, step), h: ch, act: () => qTapCard(i, performance.now()), card: i }); }
   if (lift) qCard(...lift);
   const coach = !qP().tut && r.fights === 0 && !f.over && !busy && !quest.howto ? qCoach(f, sel, tgt, hy2, ch, now) : false;
   if (sel && !coach) { const tx = qDesc(sel, true), sp = textSprite(tx, 16, '#ffffff', 'rgba(30,20,60,0.95)', 800); blit(sp, W / 2, hy2 - ch / 2 - 76, 0, Math.min(1, (W - 20) / sp.tw)); qText(tgt && f.mons.filter((m) => m.hp > 0).length > 1 ? qtx('target') : qtx('tapAgain'), W / 2, hy2 - ch / 2 - 50, 13, '#ffe08a', W - 20, 800, 'rgba(0,0,0,0.7)'); }
@@ -23617,11 +23624,11 @@ function qBubble(text, y, now) { const sp = textSprite(text, 17, '#2a1f3d', null
   ctx.beginPath(); ctx.roundRect(x, y - 20, w, 40, 20); ctx.fill(); ctx.stroke(); blit(sp, W / 2, y, 0, Math.min(1, (w - 20) / sp.tw)); }
 function qCoach(f, sel, tgt, hy2, ch, now) { // the first fight ever: a finger and a bubble for each step (a card, the monster, End turn; then what the bubble over a monster means)
   const live = f.mons.filter((m) => m.hp > 0), by = hy2 - ch / 2 - 46, card = (i) => quest.btns.find((b) => b.card === i), rtl = lang === 'he';
-  if (sel) { if (tgt && live.length) { const m = live[0]; qBubble(qtx('c2'), by, now); qFinger(m._x, m._y + m._s * 0.2, now); } else { const b = card(quest.sel); qBubble(qtx('c2b'), by, now); if (b) qFinger(b.x + b.w / 2, b.y + b.h * 0.55, now); } quest.coach = 2; return true; }
+  if (sel) { if (tgt && live.length) { const m = live[0]; qBubble(qtx('c2'), by, now); qFinger(m._x, m._y + m._s * 0.2, now); } else { const b = card(quest.sel); qBubble(qtx('c2b'), by, now); if (b) qFinger(b.x + b.w / 2, b.y + b.h * 0.99, now); } quest.coach = 2; return true; }
   const ok = f.hand.findIndex((id) => { const c = QC.cardOf(id); return c && c.c <= f.en && c.fx.some((x) => x[0] === 'dmg'); }), any = f.hand.findIndex((id) => { const c = QC.cardOf(id); return c && c.c <= f.en; });
   const i = ok >= 0 ? ok : any;
   if (i >= 0) { if (f.turn === 2 && live.length) { const m = live[0]; qBubble(qtx('c4'), m._y - m._s * 0.62 - 52, now); } // (turn 2: the monster's bubble)
-    const b = card(i); qBubble(qtx('c1'), by, now); if (b) qFinger(b.x + b.w / 2, b.y + b.h * 0.55, now); quest.coach = 1; return true; }
+    const b = card(i); qBubble(qtx('c1'), by, now); if (b) qFinger(b.x + b.w / 2, b.y + b.h * 0.99, now); quest.coach = 1; return true; }
   qBubble(qtx('c3'), by - 30, now); qFinger(rtl ? 16 + 66 : W - 16 - 66, H - 62 - 2, now, false); quest.coach = 3; return true;
 }
 function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first time Quest opens; ❓ on the pick screen)
