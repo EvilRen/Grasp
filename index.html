@@ -22834,6 +22834,11 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
   const quiet = !solid && !on && !o.bg, ac = hexRgb(o.bg || (on ? '#ffd23f' : '#4fe5d2')).join(',');
   // A button that carries no accent of its own gets the painted plate when the art is there. The three bright
   // primaries keep the code-drawn sticker, and so does anything with an o.bg, because its colour is what names it.
+  // The primary buttons have their own painted bar; the rest take a panel. Both fall back to the code-drawn plate.
+  if (solid && qPlate(o.pl || (hexRgb(o.bg || '#3ddc84')[0] > 200 ? 'btn_gold' : 'btn_jade'), x, y, w, h)) {
+    if (o.text) qBtnText(x, y, w, h, o, dis, true);
+    return;
+  }
   if (!solid && !o.bg && !o.plain && qPlate(on ? 'panel_chosen' : dis ? 'panel_locked' : 'panel_quiet', x, y, w, h, dis ? 0.6 : 1)) {
     if (o.text) qBtnText(x, y, w, h, o, dis, false);
     return;
@@ -22873,7 +22878,7 @@ function qBtn(x, y, w, h, act, o = {}) { quest.btns.push({ x, y, w, h, act, o })
 }
 function qBtnText(x, y, w, h, o, dis, solid) { // a button's lettering, wherever its plate came from
   const big = (o.fs || 18) >= 20; // the display serif only where it is large enough to hold its strokes
-  const ink = solid ? 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')' : (o.fg || Q_INK);
+  const ink = solid ? (o.ink || 'rgb(' + hexRgb(o.bg || '#3ddc84').map((v) => Math.round(v * 0.17)).join(',') + ')') : (o.fg || Q_INK);
   const sp = textSprite(o.text, o.fs || 18, ink, solid ? 'rgba(255,255,255,0.45)' : 'rgba(6,4,16,0.92)', big ? 400 : 800, big ? Q_DISP : undefined);
   const is = o.ic ? (o.fs || 18) * 1.2 : 0, gap = is * 0.35, k = Math.min(1, (w - 14 - is - gap) / sp.tw);
   const cx = x + w / 2 + (o.tx || 0), cy = y + h / 2 + (o.ty || 0), af = dis ? 0.6 : 1;
@@ -23057,6 +23062,9 @@ const Q_IC = { // each draws itself centred on (0, 0), about s across
   },
 };
 function qIconDraw(g, k, x, y, s) { // an icon into any context (a card's sprite, or the screen)
+  const im = qImg('/assets/quest/icons/' + k + '.webp');   // its painting when there is one, the drawn shape while there is not
+  if (im) { const kk = s * 1.18 / Math.max(im.naturalWidth, im.naturalHeight), w = im.naturalWidth * kk, h = im.naturalHeight * kk;
+    g.drawImage(im, x - w / 2, y - h / 2, w, h); return; }
   const f = Q_IC[k]; if (!f) return;
   g.save(); g.shadowColor = 'transparent'; g.translate(x, y); f(g, s); g.restore(); // (no shadow: each icon carries its own contour)
 }
@@ -23110,7 +23118,7 @@ const Q_ART = { im: new Map() };
 function qImg(path) { // null until the file is decoded (or for good, if it is not there): the painted frame stands in
   let e = Q_ART.im.get(path);
   if (!e) { e = { img: new Image(), ok: false }; Q_ART.im.set(path, e); e.img.decoding = 'async';
-    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|') || k.startsWith('qbg|') || k.startsWith('qpl|')) SPRITES.delete(k); }; // the cards and the backdrop draw again, now with the art
+    e.img.onload = () => { e.ok = true; for (const k of [...SPRITES.keys()]) if (k.startsWith('qc|') || k.startsWith('qbg|') || k.startsWith('qpl|') || k.startsWith('qi|')) SPRITES.delete(k); }; // the cards and the backdrop draw again, now with the art
     e.img.onerror = () => { e.bad = true; }; e.img.src = path; }
   return e.ok && e.img.naturalWidth ? e.img : null;
 }
@@ -23551,13 +23559,33 @@ function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp
   qBtn(W - 146, H - 64, 130, 46, () => { quest.deckFor = null; quest.scroll = 0; sfx('click'); }, { text: qtx('close'), fs: 17, r: 23 });
 }
 function qDrawEnd(now) {
-  const e = quest.end || {}, top = cgTopY() + 30; if (e.won) qIcon('trophy', W / 2, top + 60, 98 + 6 * Math.sin(now / 250)); else qIcon('skull', W / 2, top + 60, 92 + 6 * Math.sin(now / 250)); qText(e.won ? qtx('victory') : qtx('lost'), W / 2, top + 140, 34, e.won ? '#ffe08a' : '#ffffff', W - 30, 400, 'rgba(0,0,0,0.6)', Q_DISP);
-  qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, top + 180, 18, '#ffffff', W - 30, 700, 'rgba(0,0,0,0.6)');
-  const st = [[e.fights, 'stFights', 'dmg'], [e.bosses, 'stBoss', 'crown'], [e.coins, 'stCoins', 'gold']], rtl = lang === 'he';
-  st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * 100; qIcon(ic, x, top + 230, 30); qText(String(v || 0), x, top + 266, 24, '#ffffff', 0, 900, 'rgba(0,0,0,0.6)'); qText(qtx(k), x, top + 290, 13, '#ffe08a', 90, 700, 'rgba(0,0,0,0.6)'); });
-  if (quest.newHero) qText('🤖 ' + (lang === 'he' ? 'הרובוט נפתח!' : 'The Robot is unlocked!'), W / 2, top + 330, 18, '#7CFC6A', W - 30, 900, 'rgba(0,0,0,0.6)');
-  const bw = Math.min(200, (W - 40) / 2); qBtn(W / 2 - bw - 6, top + 370, bw, 56, () => { quest.newHero = null; quest.run = null; quest.scr = 'pick'; sfx('click'); }, { text: qtx('again'), fs: 18, r: 28, bg: '#3ddc84', solid: 1 });
-  qBtn(W / 2 + 6, top + 370, bw, 56, () => { quest.newHero = null; goHome(); }, { text: qtx('home'), fs: 18, r: 28 });
+  // The run's last screen. It used to be a tall flat icon, a title and three numbers floating loose on the painting
+  // with half the screen empty under them. Everything now sits on one painted panel, sized to the screen it is on.
+  const e = quest.end || {}, rtl = lang === 'he', top = cgTopY() + 16;
+  const cw = Math.min(360, W - 20), cx = W / 2 - cw / 2;
+  const chh = Math.max(330, Math.min(470, H - top - 96));
+  if (!qPlate('panel_quiet', cx, top, cw, chh)) {
+    resetView(); ctx.fillStyle = 'rgba(16,11,34,0.82)'; ctx.beginPath(); ctx.roundRect(cx, top, cw, chh, 22); ctx.fill();
+    ctx.strokeStyle = 'rgba(246,239,226,0.18)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  const Y = (f) => top + chh * f;
+  qIcon(e.won ? 'trophy' : 'skull', W / 2, Y(0.17), (e.won ? 84 : 80) + 5 * Math.sin(now / 250));
+  qText(e.won ? qtx('victory') : qtx('lost'), W / 2, Y(0.35), 32, e.won ? '#ffe08a' : '#ffffff', cw - 44, 400, 'rgba(0,0,0,0.6)', Q_DISP);
+  qText(e.won ? qtx('vicT') : qtx('lostT'), W / 2, Y(0.435), 16, '#ffffff', cw - 44, 700, 'rgba(0,0,0,0.6)');
+  // the three numbers, each on its own small plate so they read as a tally rather than as loose text
+  const st = [[e.fights, 'stFights', 'dmg'], [e.bosses, 'stBoss', 'crown'], [e.coins, 'stCoins', 'gold']];
+  const sw = Math.min(96, (cw - 56) / 3), sy = Y(0.52), sh = chh * 0.20;
+  st.forEach(([v, k, ic], i) => { const x = W / 2 + ((rtl ? 2 - i : i) - 1) * (sw + 6) - sw / 2;
+    qPlate('nameplate', x, sy + sh * 0.62, sw, sh * 0.34);
+    qIcon(ic, x + sw / 2, sy + sh * 0.2, Math.min(28, sw * 0.32));
+    qText(String(v || 0), x + sw / 2, sy + sh * 0.49, 23, '#ffffff', sw - 8, 900, 'rgba(8,4,16,0.95)', undefined, 4);
+    qText(qtx(k), x + sw / 2, sy + sh * 0.78, 12, '#ffe08a', sw - 12, 700, 'rgba(6,4,16,0.9)'); });
+  if (quest.newHero) { const R = QC.HEROES.robot;   // the hero itself, not an emoji of one
+    qHeroDraw('robot', R, W / 2 - (rtl ? -1 : 1) * (cw * 0.30), Y(0.85), 30);
+    qText(lang === 'he' ? 'הרובוט נפתח!' : 'The Robot is unlocked!', W / 2 + (rtl ? -1 : 1) * 18, Y(0.85), 17, '#7CFC6A', cw - 110, 900, 'rgba(0,0,0,0.7)'); }
+  const bw = Math.min(200, (W - 40) / 2), by = top + chh + 16;
+  qBtn(W / 2 - bw - 6, by, bw, 56, () => { quest.newHero = null; quest.run = null; quest.scr = 'pick'; sfx('click'); }, { text: qtx('again'), fs: 18, r: 28, bg: '#3ddc84', solid: 1 });
+  qBtn(W / 2 + 6, by, bw, 56, () => { quest.newHero = null; goHome(); }, { text: qtx('home'), fs: 18, r: 28 });
 }
 function questDown(e) {
   if (pause.on || menu.open || !(e.button === 0 || e.pointerType === 'touch')) return; const x = e.clientX, y = e.clientY, now = performance.now();

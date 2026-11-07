@@ -19,13 +19,20 @@ Needs Pillow and numpy.
 import os
 import sys
 
-# three rows of six, in reading order; these are the keys of RELICS in index.html
-NAMES = [['heart', 'book', 'core', 'clover', 'boot', 'whet'],
-         ['pot', 'lantern', 'bag', 'feather', 'snail', 'thorn'],
-         ['tea', 'map', 'star', 'magnet', 'egg', 'venom']]
-COLS, ROWS = 6, 3
+# Each sheet is a set: its grid in reading order, and the folder it is written to. --set picks one.
+SETS = {
+    'relics': ([['heart', 'book', 'core', 'clover', 'boot', 'whet'],        # the keys of RELICS in index.html
+                ['pot', 'lantern', 'bag', 'feather', 'snail', 'thorn'],
+                ['tea', 'map', 'star', 'magnet', 'egg', 'venom']], 'relics'),
+    'icons1': ([['dmg', 'blk', 'heal', 'en'],                               # the keys of Q_IC: the fight and card ones
+                ['str', 'weak', 'vul', 'poi'],
+                ['thorns', 'draw', 'disc', 'loop']], 'icons'),
+    'icons2': ([['all', 'call', 'gold', 'skull', 'crown'],                  # the rest of Q_IC: the screens and doors
+                ['trophy', 'chest', 'shop', 'fire', 'lock'],
+                ['cut', 'mystery', 'help']], 'icons'),
+}
+NAMES, COLS, ROWS, OUT = None, 0, 0, None
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, 'assets', 'quest', 'relics')
 KEY_T = 70        # how far the magenta score (min(r-g, b-g)) must reach for a pixel to be a hole
 CORE = 0.62       # below KEY_T * CORE a pixel is fully a hole; above it, it fades out
 LINE = 4          # px masked either side of each cell boundary: the generator draws the boundaries in as thin lines
@@ -50,6 +57,21 @@ def delines(sc, np):
     return sc
 
 
+def pick_set(flags):
+    global NAMES, COLS, ROWS, OUT
+    name = 'relics'
+    for f in flags:
+        if f.startswith('--set') and '=' in f:
+            name = f.split('=', 1)[1]
+    if name not in SETS:
+        raise SystemExit('--set must be one of: ' + ', '.join(sorted(SETS)))
+    NAMES, folder = SETS[name]
+    ROWS = len(NAMES)
+    COLS = max(len(r) for r in NAMES)
+    OUT = os.path.join(ROOT, 'assets', 'quest', folder)
+    return name
+
+
 def runs(mask, gap=10, least=40):
     """The runs of true in a 1-D mask, bridging gaps shorter than `gap` and dropping anything under `least`."""
     out, start, blank = [], None, 0
@@ -69,29 +91,51 @@ def runs(mask, gap=10, least=40):
     return [(a, b) for a, b in out if b - a >= least]
 
 
-def find(sc, np):
-    """Where the objects actually are: bands of rows that hold anything, then runs of columns inside each band."""
+def find(sc, np, cols):
+    """Where the objects actually are: bands of rows that hold anything, then runs of columns inside each band.
+
+    Runs are then snapped to cells, because one object is not always one run: a sword snapped in half is two
+    separate blades with magenta between them, and read as two pieces it pushed every name in its row along by
+    one. Each run is assigned to the cell its centre falls in, and runs sharing a cell become one box."""
     solid = ~(sc > KEY_T)
+    W = solid.shape[1]
     grid = []
     for y0, y1 in runs(solid.sum(1) > 4):
         strip = solid[y0:y1]
-        row = []
+        cells = {}
         for x0, x1 in runs(strip.sum(0) > 4):
             sub = strip[:, x0:x1]
             ys, xs = np.where(sub.sum(1) > 4)[0], np.where(sub.sum(0) > 4)[0]
-            if len(ys) and len(xs):
-                row.append((x0 + int(xs[0]), y0 + int(ys[0]), x0 + int(xs[-1]) + 1, y0 + int(ys[-1]) + 1))
-        grid.append(row)
+            if not (len(ys) and len(xs)):
+                continue
+            b = (x0 + int(xs[0]), y0 + int(ys[0]), x0 + int(xs[-1]) + 1, y0 + int(ys[-1]) + 1)
+            c = min(cols - 1, max(0, int((b[0] + b[2]) / 2 * cols // W)))
+            if c in cells:
+                o = cells[c]
+                cells[c] = (min(o[0], b[0]), min(o[1], b[1]), max(o[2], b[2]), max(o[3], b[3]))
+            else:
+                cells[c] = b
+        grid.append([cells[c] for c in sorted(cells)])
     return grid
 
 
 def despill(rgb, a, np):
-    """Pull the magenta back out of the half-covered pixels at an object's edge."""
-    r, g, b = rgb[:, :, 0].astype(float), rgb[:, :, 1].astype(float), rgb[:, :, 2].astype(float)
-    k = ((np.minimum(r, b) - g) > 10) & (a > 0.15)
-    cap = g + 12
-    return np.stack([np.where(k, np.minimum(r, cap), r), g, np.where(k, np.minimum(b, cap), b)], 2)
+    """Recover each pixel's own colour from its blend with the magenta behind it.
 
+    A half-covered rim pixel is observed = a * object + (1 - a) * magenta, and alpha already says what a is, so the
+    object's colour is (observed - (1 - a) * magenta) / a. A fully opaque pixel is left exactly as it is.
+
+    The rule this replaces was wrong and silently destroyed artwork: it pulled red and blue down to green wherever
+    both exceeded it, on every pixel rather than only on the rim. That is what a crimson red looks like, so the
+    heart came out of the sheet at (164, 21, 66) and was written to disk at (32, 21, 32) — black. Nothing in the
+    file said so; it took rendering the icon and looking at it.
+    """
+    out = np.empty(rgb.shape, dtype=float)
+    al = np.clip(a, 0, 1)
+    safe = np.maximum(al, 0.05)[:, :, None]
+    mag = np.array([255.0, 0.0, 255.0])
+    out = (rgb.astype(float) - (1 - al)[:, :, None] * mag) / safe
+    return np.where((al > 0.98)[:, :, None], rgb.astype(float), np.clip(out, 0, 255))
 
 def legible(img, np):
     """How much of an object is still there at 18 px: the share of its pixels that keep a strong edge. A bold shape
@@ -118,20 +162,23 @@ def main():
         if f.startswith('--only') and '=' in f:
             only = set(f.split('=', 1)[1].split(','))
     check = '--check' in flags
+    which = pick_set(flags)
     import numpy as np
     from PIL import Image
     im = Image.open(args[0]).convert('RGB')
     sc = delines(score(im, np), np)
-    grid = find(sc, np)
+    grid = find(sc, np, COLS)
     print('sheet %d x %d' % im.size)
-    if len(grid) != ROWS or any(len(r) != COLS for r in grid):
-        print('found %s, expected %d rows of %d — the sheet is not laid out as asked'
-              % ([len(r) for r in grid], ROWS, COLS))
+    want = [len(r) for r in NAMES]
+    if [len(r) for r in grid] != want:
+        print('found rows of %s, expected %s — the sheet is not laid out as asked'
+              % ([len(r) for r in grid], want))
+    print('set: %s -> %s' % (which, os.path.relpath(OUT, ROOT)))
     print('%-9s %-11s %-7s %s' % ('relic', 'size', 'range', 'at %d px' % SMALL))
     files = []
     arr = np.asarray(im).astype(np.int16)
     for ry, row in enumerate(grid[:ROWS]):
-        for rx, box in enumerate(row[:COLS]):
+        for rx, box in enumerate(row[:len(NAMES[ry])]):
             name = NAMES[ry][rx]
             if only and name not in only:
                 continue
@@ -143,7 +190,7 @@ def main():
             img = Image.fromarray(out, 'RGBA')
             rng = legible(img, np)
             print('%-9s %4dx%-6d %-7.0f %s' % (name, x1 - x0, y1 - y0, rng,
-                                               'reads' if rng >= 60 else 'FLAT — check it by eye'))
+                                               'reads' if rng >= 60 else 'one flat tone — reads by shape, check by eye'))
             if check:
                 continue
             os.makedirs(OUT, exist_ok=True)

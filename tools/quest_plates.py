@@ -149,6 +149,16 @@ def band(rgb, solid, np):
     return {'l': x, 'r': x, 't': y, 'b': y, 'raw': raw}
 
 
+def cap(ins, w, h, name):
+    """A button is a bar with a half-circle at each end, so its left and right slices must take the WHOLE round
+    end — at least half the height. Measured from the ornament alone the inset comes out narrower, the middle
+    slice then contains part of the curve, and stretching it flattens one end and not the other."""
+    if not name.startswith('btn_'):
+        return ins
+    want = min(int(round(h * 0.52)), (w - 2) // 2)
+    return dict(ins, l=max(ins['l'], want), r=max(ins['r'], want))
+
+
 def delines(sc, np):
     """Mark the thin dark lines Gemini draws along the cell boundaries as background, so they do not read as part
     of a plate — left alone they join every piece into one band. Only the lines, nothing wider."""
@@ -211,15 +221,22 @@ def cut(im, sc, box, np):
 
 
 def despill(rgb, a, np):
-    """Pull the magenta back out of the half-covered pixels at the plate's edge."""
-    r, g, b = rgb[:, :, 0].astype(float), rgb[:, :, 1].astype(float), rgb[:, :, 2].astype(float)
-    over = np.minimum(r, b) - g
-    k = (over > 10) & (a > 0.15)
-    cap = g + 10
-    r = np.where(k, np.minimum(r, cap), r)
-    b = np.where(k, np.minimum(b, cap), b)
-    return np.stack([r, g, b], 2)
+    """Recover each pixel's own colour from its blend with the magenta behind it.
 
+    A half-covered rim pixel is observed = a * object + (1 - a) * magenta, and alpha already says what a is, so the
+    object's colour is (observed - (1 - a) * magenta) / a. A fully opaque pixel is left exactly as it is.
+
+    The rule this replaces was wrong and silently destroyed artwork: it pulled red and blue down to green wherever
+    both exceeded it, on every pixel rather than only on the rim. That is what a crimson red looks like, so the
+    heart came out of the sheet at (164, 21, 66) and was written to disk at (32, 21, 32) — black. Nothing in the
+    file said so; it took rendering the icon and looking at it.
+    """
+    out = np.empty(rgb.shape, dtype=float)
+    al = np.clip(a, 0, 1)
+    safe = np.maximum(al, 0.05)[:, :, None]
+    mag = np.array([255.0, 0.0, 255.0])
+    out = (rgb.astype(float) - (1 - al)[:, :, None] * mag) / safe
+    return np.where((al > 0.98)[:, :, None], rgb.astype(float), np.clip(out, 0, 255))
 
 def main():
     args = [x for x in sys.argv[1:] if not x.startswith('--')]
@@ -236,7 +253,10 @@ def main():
     im = load(args[0])
     sc = delines(score(im), np)
     grid = find(sc, np)
-    if len(grid) != 3 or any(len(r) != 3 for r in grid):
+    if len(grid) == 1 and len(grid[0]) == 3:
+        print('one row of three: reading it as the button row')   # the re-run sheet holds only the top row
+        grid = [grid[0], [], []]
+    elif len(grid) != 3 or any(len(r) != 3 for r in grid):
         print('found %s, expected three rows of three — the sheet is not laid out as asked' %
               ([len(r) for r in grid],))
     print('sheet %d x %d' % im.size)
@@ -251,7 +271,8 @@ def main():
             if not c:
                 print('%-13s EMPTY' % name)
                 continue
-            w, h, bd = c['w'], c['h'], c['band']
+            w, h = c['w'], c['h']
+            bd = cap(c['band'], w, h, name)
             ft, fb = c['flat']
             ok = ft <= FLAT and fb <= FLAT
             print('%-13s %4dx%-6d %-7.2f x%-5d y%-5d (raw %d/%d %d/%d)  %s' % (
@@ -272,8 +293,18 @@ def main():
     if check:
         print('\n--check: nothing written.')
         return
+    # Merge, do not replace. The plates arrived on two sheets — the panels on one, the buttons on another — and a
+    # run with --only used to write a file holding just what that run cut, silently dropping the rest.
+    old = {}
+    if os.path.exists(LAY):
+        try:
+            with open(LAY) as f:
+                old = json.load(f) or {}
+        except (ValueError, OSError):
+            old = {}
+    old.update(lay)
     with open(LAY, 'w') as f:
-        json.dump(lay, f, indent=1, sort_keys=True)
+        json.dump(old, f, indent=1, sort_keys=True)
     print('\nwrote %s' % os.path.relpath(LAY, ROOT))
     for n, sz in files:
         print('  %-13s %6.1f KB' % (n, sz / 1024))
