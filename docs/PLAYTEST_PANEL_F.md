@@ -122,3 +122,24 @@ player has selected, which is the one they are reading.
 
 Nothing here is a rules change and nothing here is a regression: no page errors, and the balance
 simulation is unchanged.
+
+---
+
+## After the fixes (re-measured on the same build, same way)
+
+| Finding | Before | After |
+|---|---|---|
+| Tap targets under 44 px | relic chip 26×26, deck chip 80×30 | none |
+| Chosen hero's name | 3.5:1 | 13.8–14.8:1 |
+| Shop prices, heal and remove buttons | 💰 ❤️ ✂️ beside drawn icons | drawn coin, heart and scissors |
+| The land marker | 🌲 in front of the land's name | gone; the painting behind it says it |
+| The gold rim in the shop | on Leave | Leave is grey; nothing claims primary |
+
+A relic is now a drawn gold-rimmed medallion with its own symbol inside, 44 px to the finger: the
+symbol stays the thing that tells one relic from another, and the medallion makes it read as a control
+rather than an emoji floating on a painting.
+
+One correction to my own method: the first re-measurement of the hero name still read 3.5:1, and I
+nearly reported the fix as failed. The panel script's tap sequence had drifted — the How-to-play button
+changed — so it was measuring the doors screen, not the pick screen. Rendering the pick screen directly
+gave 13.8–14.8:1 across the name, with 3.5:1 only on a crop straddling the scrim's top edge.

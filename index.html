@@ -2089,7 +2089,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.88';
+const APP_VERSION = '1.12.89';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -22980,6 +22980,12 @@ const Q_IC = { // each draws itself centred on (0, 0), about s across
     qIkS(g, () => { g.beginPath(); g.roundRect(-0.07 * s, 0.14 * s, 0.14 * s, 0.16 * s, 0.03 * s); }, s, '#d2a33a');
     qIkS(g, () => { g.beginPath(); g.roundRect(-0.26 * s, 0.28 * s, 0.52 * s, 0.13 * s, 0.04 * s); }, s, '#d2a33a');
   },
+  cut: (g, s) => { // take a card out of the deck
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    for (const [col, lw] of [['rgba(0,0,0,0.78)', s * 0.21], ['#cdd8e6', s * 0.10]]) { g.strokeStyle = col; g.lineWidth = lw;
+      g.beginPath(); g.moveTo(-0.30 * s, -0.42 * s); g.lineTo(0.22 * s, 0.22 * s); g.moveTo(0.30 * s, -0.42 * s); g.lineTo(-0.22 * s, 0.22 * s); g.stroke(); }
+    for (const k of [-1, 1]) qIkS(g, () => { g.beginPath(); g.arc(k * 0.26 * s, 0.33 * s, 0.15 * s, 0, TAU); }, s, '#8e1d2f');
+  },
   help: (g, s) => { // how to play
     qIkS(g, () => { g.beginPath(); g.arc(0, 0, 0.44 * s, 0, TAU); }, s, '#4fe5d2');
     g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '400 ' + Math.round(s * 0.66) + 'px ' + Q_DISP;
@@ -23208,10 +23214,13 @@ function qTop(now) { // health, gold, the room, the treasures
   const y = cgTopY() - 6, bw = Math.min(150, W * 0.36), x0 = rtl ? W - 16 - bw : 16;
   qIcon('heal', rtl ? x0 + bw + 4 : x0 - 4, y + 9, 19); qBar(x0 + (rtl ? -12 : 12), y, bw, 18, r.hp, r.max, '#ff5a6e', r.hp + '/' + r.max);
   const gx = rtl ? x0 - 70 : x0 + bw + 30; qIcon('gold', gx, y + 9, 20); qText(String(r.gold), gx + (rtl ? -26 : 26), y + 10, 17, '#ffe08a', 0, 900, 'rgba(0,0,0,0.6)');
-  const ly = y + 30; qText(L.e + ' ' + (rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
-  r.relics.forEach((id, i) => { const R0 = QC.RELICS[id], xx = rtl ? W - 24 - i * 26 : 24 + i * 26; qEmoji(R0.e, xx, ly + 34, 19); quest.btns.push({ x: xx - 13, y: ly + 21, w: 26, h: 26, act: () => { quest.msg = { t: performance.now(), text: (lang === 'he' ? R0.he : R0.en) + ': ' + R0.d[lang === 'he' ? 'he' : 'en'] }; } }); });
-  qBtn(rtl ? 16 : W - 96, ly + 22, 80, 30, () => { quest.deckFor = { k: 'view' }; sfx('click'); }, { text: qtx('deck') + ' ' + r.deck.length, ic: 'draw', fs: 13, r: 15 });
-  return ly + 58;
+  const ly = y + 30; qText((rtl ? L.he : L.en) + ' · ' + qtx('room', { n: Math.min(r.room + 1, QC.roomsOf(r)), all: QC.roomsOf(r) }), W / 2, ly + 8, 15, '#ffffff', W - 120, 800, 'rgba(0,0,0,0.6)');
+  r.relics.forEach((id, i) => { const R0 = QC.RELICS[id], xx = rtl ? W - 26 - i * 34 : 26 + i * 34, yy = ly + 34;
+    resetView(); ctx.fillStyle = 'rgba(16,11,32,0.72)'; ctx.beginPath(); ctx.arc(xx, yy, 15, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(210,163,58,0.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(xx, yy, 15, 0, TAU); ctx.stroke();
+    qEmoji(R0.e, xx, yy, 18); quest.btns.push({ x: xx - 22, y: yy - 22, w: 44, h: 44, act: () => { quest.msg = { t: performance.now(), text: (lang === 'he' ? R0.he : R0.en) + ': ' + R0.d[lang === 'he' ? 'he' : 'en'] }; } }); });
+  qBtn(rtl ? 16 : W - 102, ly + 14, 86, 44, () => { quest.deckFor = { k: 'view' }; sfx('click'); }, { text: qtx('deck') + ' ' + r.deck.length, ic: 'draw', fs: 13, r: 18 });
+  return ly + 66;
 }
 function renderQuest(now) {
   quest.btns = []; const r = quest.run; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.drawImage(qBg(r && QC.landOf(r)).c, 0, 0, W, H); resetView();
@@ -23235,6 +23244,7 @@ function qDrawPick(now) {
   ids.forEach((id, i) => { const H0 = QC.HEROES[id], x = W / 2 + ((rtl ? 2 - i : i) - 1) * (cw + 8) - cw / 2, lock = !P.heroes.includes(id), on = quest.pickHero === id;
     qBtn(x, y, cw, ch, () => { if (lock) { quest.msg = { t: performance.now(), text: qtx('locked') }; sfx('boop'); return; } quest.pickHero = id; sfx('tink'); }, { on, dis: lock, r: 18 });
     if (lock) qIcon('lock', x + cw / 2, y + ch * 0.32, cw * 0.4); else qHeroDraw(id, H0, x + cw / 2, y + ch * 0.32, cw * 0.42);
+    resetView(); ctx.fillStyle = 'rgba(10,7,22,0.55)'; ctx.beginPath(); ctx.roundRect(x + 6, y + ch * 0.55, cw - 12, ch * 0.16, 7); ctx.fill();
     qText(rtl ? H0.he : H0.en, x + cw / 2, y + ch * 0.63, 17, Q_INK, cw - 10, 800, 'rgba(6,4,16,0.9)'); qText(qtx('heroD_' + id), x + cw / 2, y + ch * 0.78, 12, '#b9aed6', cw - 10, 700, 'rgba(6,4,16,0.9)'); qIcon('heal', x + cw / 2 - 16, y + ch * 0.91, 15); qText(String(H0.hp), x + cw / 2 + 8, y + ch * 0.91, 13, Q_INK, cw - 10, 700, 'rgba(6,4,16,0.9)'); });
   y += ch + 26; qText(qtx('len'), W / 2, y, 17, '#ffffff', 0, 400, 'rgba(0,0,0,0.5)', Q_DISP); y += 16;
   ['short', 'normal', 'epic'].forEach((k, i) => { const bw = Math.min(124, (W - 40) / 3), x = W / 2 + ((rtl ? 2 - i : i) - 1) * (bw + 8) - bw / 2, on = quest.pickLen === k;
@@ -23355,7 +23365,7 @@ function qDrawHowto(now) { // how to play: 5 cards, Next / Got it (the first tim
   quest.btns.push({ x: 0, y: 0, w: W, h: H, act: () => {} }); quest.btns.unshift(quest.btns.pop()); // (taps elsewhere do nothing)
 }
 function qPickCards(ids, y, act, o = {}) { const n = ids.length, rtl = lang === 'he', cw = Math.min(118, (W - 30) / n - 10); ids.forEach((id, i) => { const x = W / 2 + ((rtl ? n - 1 - i : i) - (n - 1) / 2) * (cw + 10); qCard(id, x, y, cw, { k: 1 + 0.02 * Math.sin(performance.now() / 300 + i) });
-  quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qText('💰' + p, x, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
+  quest.btns.push({ x: x - cw / 2, y: y - cw * 0.71, w: cw, h: cw * 1.42, act: () => act(id, i) }); if (o.price) { const p = o.price[i]; qIcon('gold', x - 13, y + cw * 0.71 + 16, 17); qText(String(p), x + 13, y + cw * 0.71 + 16, 15, quest.run.gold >= p ? '#ffe08a' : '#ff8a8a', 0, 900, 'rgba(0,0,0,0.7)'); } }); return cw * 1.42; }
 function qDrawReward(now, y0) {
   const p = quest.data || {}, y = y0 + 40; qText(qtx('won'), W / 2, y, 30, '#ffe08a', 0, 400, 'rgba(0,0,0,0.6)', Q_DISP); qIcon('gold', W / 2 - 28, y + 36, 21); qText('+' + p.gold, W / 2 + 10, y + 36, 20, '#ffffff', 0, 800, 'rgba(0,0,0,0.6)');
   let yy = y + 64; if (p.relic) { const R0 = QC.RELICS[p.relic]; qEmoji(R0.e, W / 2, yy + 20, 40); qText(qtx('relic') + ' ' + (lang === 'he' ? R0.he : R0.en), W / 2, yy + 54, 15, '#ffffff', W - 30, 800, 'rgba(0,0,0,0.6)'); qText(R0.d[lang === 'he' ? 'he' : 'en'], W / 2, yy + 74, 13, '#ffe08a', W - 30, 700, 'rgba(0,0,0,0.6)'); yy += 96; }
@@ -23387,10 +23397,10 @@ function qDrawShop(now, y0) {
   qPickCards(left(row2).map((q) => q.id), y + 40 + rh + cw * 0.71, buyCard, { price: left(row2).map((q) => q.price) });
   let yy = y + 40 + rh * 2 + 6; const bw = Math.min(160, (W - 40) / 2);
   if (d.relic && !d.relic.sold) { const R0 = QC.RELICS[d.relic.id]; qBtn(W / 2 - bw - 6, yy, bw, 64, () => { if (r.gold < d.relic.price) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.relic.price; d.relic.sold = true; QC.addRelic(r, d.relic.id); sfx('coin'); quest.msg = { t: performance.now(), text: R0.d[lang === 'he' ? 'he' : 'en'] }; qGo('shop', d); }, { r: 18, dis: r.gold < d.relic.price });
-    qEmoji(R0.e, W / 2 - bw - 6 + 26, yy + 32, 28); qText(lang === 'he' ? R0.he : R0.en, W / 2 - bw / 2 - 6 + 14, yy + 22, 13, Q_INK, bw - 56, 800, 'rgba(6,4,16,0.9)'); qText('💰' + d.relic.price, W / 2 - bw / 2 - 6 + 14, yy + 44, 14, Q_NUM, 0, 900, 'rgba(6,4,16,0.9)'); }
-  if (!d.removed) qBtn(W / 2 + 6, yy, bw, 64, () => { if (r.gold < d.remove) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } quest.deckFor = { k: 'rm', done: (id) => { const i = r.deck.indexOf(id); if (i >= 0) r.deck.splice(i, 1); r.gold -= d.remove; d.removed = true; sfx('whoosh'); quest.log.push('remove:' + id); qGo('shop', d); } }; }, { text: '✂️ ' + qtx('remove') + ' 💰' + d.remove, fs: 14, r: 18, dis: r.gold < d.remove });
-  yy += 76; if (!d.healed) { qBtn(W / 2 - bw - 6, yy, bw, 50, () => { if (r.gold < d.heal) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.heal; r.hp = Math.min(r.max, r.hp + 15); d.healed = true; sfx('chime'); qGo('shop', d); }, { text: '❤️ ' + qtx('healBuy') + ' 💰' + d.heal, fs: 14, r: 18, dis: r.gold < d.heal }); }
-  qBtn(W / 2 + 6, yy, bw, 50, () => { quest.log.push('leave shop'); qNext(); }, { text: qtx('leave'), fs: 17, r: 25, bg: '#ffb347' });
+    qEmoji(R0.e, W / 2 - bw - 6 + 26, yy + 32, 28); qText(lang === 'he' ? R0.he : R0.en, W / 2 - bw / 2 - 6 + 14, yy + 22, 13, Q_INK, bw - 56, 800, 'rgba(6,4,16,0.9)'); qIcon('gold', W / 2 - bw / 2 - 6 + 2, yy + 44, 16); qText(String(d.relic.price), W / 2 - bw / 2 - 6 + 24, yy + 44, 14, Q_NUM, 0, 900, 'rgba(6,4,16,0.9)'); }
+  if (!d.removed) qBtn(W / 2 + 6, yy, bw, 64, () => { if (r.gold < d.remove) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } quest.deckFor = { k: 'rm', done: (id) => { const i = r.deck.indexOf(id); if (i >= 0) r.deck.splice(i, 1); r.gold -= d.remove; d.removed = true; sfx('whoosh'); quest.log.push('remove:' + id); qGo('shop', d); } }; }, { text: qtx('remove') + ' · ' + d.remove, ic: 'cut', fs: 14, r: 18, dis: r.gold < d.remove });
+  yy += 76; if (!d.healed) { qBtn(W / 2 - bw - 6, yy, bw, 50, () => { if (r.gold < d.heal) { quest.msg = { t: performance.now(), text: qtx('noGold') }; return; } r.gold -= d.heal; r.hp = Math.min(r.max, r.hp + 15); d.healed = true; sfx('chime'); qGo('shop', d); }, { text: qtx('healBuy') + ' · ' + d.heal, ic: 'heal', fs: 14, r: 18, dis: r.gold < d.heal }); }
+  qBtn(W / 2 + 6, yy, bw, 50, () => { quest.log.push('leave shop'); qNext(); }, { text: qtx('leave'), fs: 17, r: 25, bg: '#8d85a3' });
 }
 function qDrawDeck(now) { // the deck over everything: to look, to upgrade (camp fire), to remove (shop)
   const D = quest.deckFor, r = quest.run, ids = D.k === 'up' ? r.deck.filter(QC.upgradable) : r.deck.slice(); quest.btns = [];
