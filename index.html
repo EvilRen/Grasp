@@ -2128,7 +2128,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.132';
+const APP_VERSION = '1.12.133';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -25024,8 +25024,8 @@ function tkGameHtml(v) {
     /* the "previous round" recap strip is gone (the owner: it pushed the height and made the board scroll); the 🏆 Winners button in the top bar still shows who won */
     /* (the owner: no "Czar: name" line at all — who's judging already shows as the crown on the scores strip) */
     (choosing ? tkDuelHtml(v) : judging ? tkJudgeDuelHtml(v, czar) : revealing ? tkRevealDuelHtml(v) : '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>');
-  if (v.phase === 'reveal') { // (the owner: no Next / Share / "who won" / crowd-prize clutter — just a 10 s clock to the next round, so the cards get the room)
-    h += '<p id="tkNextN" class="tkNextCount">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p></div>' + (revealing ? '' : tkSubsHtml(v, false)); }
+  if (v.phase === 'reveal') { // (the owner: no Next / Share / "who won" / crowd-prize clutter — just a 10 s clock to the next round, so the cards get the room; .tkCenter is closed once at line ~25037, NOT here)
+    h += '<p id="tkNextN" class="tkNextCount">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p>' + (revealing ? '' : tkSubsHtml(v, false)); }
   else if (v.phase === 'judge') h += judging ? (czar ? '' : '<p class="tkJudgeT">⚖️ ' + tks('czarPicking') + '</p>') : '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar); // (the owner: the czar's crown button below already says "pick the winner" — drop the extra pill that sat behind it)
   else {
     h += tkStatusHtml(v, choosing || czar || sent); // (slim — tease only, no chip row — the scores strip at the top already shows ✓/⏳ per player, so the name chips in the middle just repeated the same names and cluttered the board. The czar and a done picker get the slim line too; only a local "waiting for answers" viewer still sees the full chips)
