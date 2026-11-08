@@ -1631,6 +1631,11 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkWaitJ span{ animation:tkPulse 1.6s ease-in-out infinite; } #tachles .tkCrownB{ background:linear-gradient(180deg,#fbbf24,#d97706) !important; color:#1c1404 !important; }
 #tachles .tkJC .tkRxB{ position:absolute; top:-10px; inset-inline-start:-10px; } #tachles .tkJC .tkRxPop{ position:absolute; top:50%; bottom:auto; inset-inline-start:50%; inset-inline-end:auto; transform:translate(-50%,-50%); display:grid; grid-template-columns:repeat(3,auto); justify-items:center; } /* a narrow 3×2 grid centred inside the card, so it stays on-screen for any card in the row (not a wide bar that ran off the edge) */ /* (the owner: the reaction picker on a reveal card was stretched to full width and the emoji turned into tall pills — make it a compact popup centred above the card) */
 #tachles .tkNextRow{ display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
+#tachles .tkNextCount{ text-align:center; font-size:14px; font-weight:800; color:var(--neonB); margin:6px 0 2px; letter-spacing:.01em; opacity:.92; } /* the 10 s clock to the next round (the owner: replaced the Next button) */
+/* the crowd-favourite toast lives on <body> (so a re-render can't wipe it) and has no app CSS vars — hardcoded gold; drifts up and fades, then gone */
+body > .tkCrowdPop{ position:fixed; left:50%; top:26%; transform:translateX(-50%); z-index:9; pointer-events:none; background:rgba(21,16,29,.96); border:1.5px solid #facc15; color:#facc15; font-weight:800; font-size:15px; line-height:1.2; padding:9px 16px; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.6); white-space:nowrap; animation:tkCrowdPop 3.6s ease-out forwards; }
+body > .tkCrowdPop b{ color:#fff; }
+@keyframes tkCrowdPop{ 0%{ opacity:0; transform:translate(-50%,12px) scale(.9); } 9%{ opacity:1; transform:translate(-50%,0) scale(1); } 72%{ opacity:1; transform:translate(-50%,-34px) scale(1); } 100%{ opacity:0; transform:translate(-50%,-68px) scale(1); } }
 #tachles .tkNextB{ font:inherit; font-weight:900; font-size:18px; color:#fff; border:0; padding:12px 26px 12px 22px; background:linear-gradient(180deg,#ef4444,#b91c1c); clip-path:polygon(8% 0,100% 0,95% 50%,100% 100%,8% 100%,0 50%); padding:12px 22px 12px 26px; cursor:pointer; box-shadow:0 6px 18px rgba(239,68,68,.35); }
 #tachles .tkBy{ display:block; margin-top:auto; padding-top:8px; font-size:13px; font-weight:800; color:#6d28d9; } #tachles .tkJC .tkBy{ align-self:flex-start; flex:none; margin-top:4px; padding-top:0; } /* (the owner: the author sits in the card's flow, below the answer, with its own reserved space — never text-on-text) */
 #tachles .tkJC p{ flex:1 1 auto; min-height:0; overflow:hidden; } /* the answer takes the space above the author and clips as a last resort; tkFitCards shrinks the font so it fits first */
@@ -1652,11 +1657,9 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
   #tachles .tkTop{ margin-bottom:6px; min-height:40px; } #tachles .tkScores{ padding:6px; } #tachles .tkGame .tkCenter{ gap:8px; margin:8px 0 4px; justify-content:flex-start; }
   #tachles .tkHC{ min-height:150px; } #tachles .tkHC p{ font-size:16px; } #tachles .tkHand{ padding-top:22px; padding-bottom:8px; } #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:14px; }
   #tachles .tkDuel .tkBlackC{ min-height:0; padding:10px 10px 8px; } #tachles .tkDuel .tkBlackC p{ font-size:clamp(13px,4vw,16px); line-height:1.3; } #tachles .tkSlot{ min-height:64px; padding:8px; } #tachles .tkSendRow{ padding-top:2px; } #tachles .tkSend, #tachles .tkSwap{ margin-top:0; padding-top:10px; padding-bottom:10px; } #tachles .tkSwipe{ margin:2px 0; } }
-@media (max-height:680px){ /* very short screens (e.g. 360x640): shrink the reveal hand + black card so the crowd-prize line and the Next/Share buttons clear the sticky hand */
-  #tachles .tkRevHand .tkHand .tkHC{ height:clamp(102px,15vh,134px); }
-  #tachles .tkCenter:not(.tkPick) .tkBlackC{ min-height:min(128px,15vh); }
-  #tachles .tkCenter:not(.tkPick) .tkBlackC p{ -webkit-line-clamp:4; font-size:clamp(15px,4.2vw,20px); }
-  #tachles .tkBanner{ gap:2px; margin-top:0; } }
+/* the reveal cards get the room freed by dropping the Next/Share buttons, the "who won" banner and the crowd-prize line — bigger than a normal hand (the owner: enlarge the cards) */
+#tachles .tkRevHand .tkHand .tkHC{ height:clamp(150px,27vh,224px); }
+@media (max-height:680px){ #tachles .tkRevHand .tkHand .tkHC{ height:clamp(132px,24vh,180px); } #tachles .tkCenter:not(.tkPick) .tkBlackC{ min-height:min(120px,15vh); } #tachles .tkCenter:not(.tkPick) .tkBlackC p{ -webkit-line-clamp:4; font-size:clamp(15px,4.2vw,20px); } }
 /* (the scroll fix: phones ~761-888 tall overflowed the game board by up to ~82px, so a small vertical scroll fought the sideways hand swipe; a gentle
    compaction fits the board, leaving the hand the only thing that scrolls. Two tiers: taller phones — iPhone 12-16, ~844/852 — keep fuller cards) */
 @media (min-height:761px) and (max-height:829px){
@@ -2125,7 +2128,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.131';
+const APP_VERSION = '1.12.132';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24303,7 +24306,7 @@ function tkSnd(kind) {
 }
 const TK_NETDOWN = ['disconnected', 'network', 'server-error', 'socket-error', 'socket-closed']; // (the broker errors that really mean the room cannot be found right now)
 const TK_V = 9, TK_SWAPS = 3, TK_STAG = 700, TK_GRACE = 3000, TK_MAXP = 8, TK_MAXB = 4, TK_TIMERS = [30, 45, 60, 90, 120, 180];
-const TK_REVS = [0, 10, 15, 20], tkRevealMs = () => window.__tkReveal || (tk.set && tk.set.rev ? tk.set.rev * 1000 : 1e12); // (1.10.1, from Evil Apples: a "Next round" button, not a clock; 0 = by the button) // the winner's banner, then the next round on its own (the owner: 4.5 s "goes by really, really fast": 10 s, a room setting)
+const TK_REVS = [10, 15, 20], tkRevealMs = () => window.__tkReveal || (tk.set && tk.set.rev ? tk.set.rev * 1000 : 10000); // (the owner: the reveal is on a 10 s clock now, no Next button — the next round comes on its own; 10/15/20 s a room setting, default 10)
 const tkFullOn = () => { // (the owner: the answers below show just the answer; the whole sentence is a switch. 1.12.3, the owner: "is it only for me?" - both: the
   // host sets it for the room (tk.set.full, sent with the room and every view), a guest may change it on their own phone for this room (sessionStorage grasp.tkFullMine)
   if (tk.mode === 'guest' || tk.mode === 'screen') { const M = tkFullMine(); return M && M.code === tk.code ? !!M.v : !!(tk.lobbySet && tk.lobbySet.full); } return !!tk.set.full; };
@@ -24645,7 +24648,7 @@ function tkFsNeed() { return !window.__graspNoAutoFs && typeof fsCan === 'functi
 function tkFs() { if (window.__graspNoAutoFs || typeof fsCan !== 'function' || !fsCan() || fsEl()) return; const d = document.documentElement; try { const p = (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch {} } // (always full screen: on the first tap if the opening tap could not)
 function tkStart() {
   const el = $('tachles'); el.hidden = false; document.body.classList.add('tkOn'); tkFs(); const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, TK_MAXP) : ['', '', ''];
-  const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7, lvl: [1, 2, 3].includes(st.lvl) ? st.lvl : 2, rev: TK_REVS.includes(st.rev) ? st.rev : 0, full: st.full != null ? !!st.full : (() => { try { return localStorage.getItem('grasp.tkFull') === '1'; } catch { return false; } })(), names: st.names !== false, off: Array.isArray(st.off) ? st.off.filter((k) => TK_PACKS.some((q) => q[0] === k)) : [] }; tk.myName = S.me || '';
+  const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7, lvl: [1, 2, 3].includes(st.lvl) ? st.lvl : 2, rev: TK_REVS.includes(st.rev) ? st.rev : 10, full: st.full != null ? !!st.full : (() => { try { return localStorage.getItem('grasp.tkFull') === '1'; } catch { return false; } })(), names: st.names !== false, off: Array.isArray(st.off) ? st.off.filter((k) => TK_PACKS.some((q) => q[0] === k)) : [] }; tk.myName = S.me || '';
   if (!document.getElementById('tkFont')) { const l = document.createElement('link'); l.id = 'tkFont'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap'; document.head.appendChild(l); }
   let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
   const Q = new URLSearchParams(location.search), room = Q.get('room') || Q.get('screen'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
@@ -24759,6 +24762,12 @@ function tkSad() { // (the owner: confetti only when I win; when someone else wi
     const w = document.createElement('div'); w.className = 'tkSad'; w.innerHTML = html; document.body.appendChild(w);
     setTimeout(() => { try { w.remove(); } catch (e) {} }, 4400); } catch (e) {}
 }
+function tkCrowdToast(name) { // the crowd favourite: a floating "+1" that drifts up and fades after a few seconds, then is gone (the owner: no permanent line, just a passing celebration)
+  try { document.querySelectorAll('body > .tkCrowdPop').forEach((e) => e.remove());
+    const w = document.createElement('div'); w.className = 'tkCrowdPop'; w.innerHTML = '👑 ' + tks('crowd') + ' <b>' + tkEsc(name) + '</b> +1';
+    try { w.dir = getComputedStyle(document.getElementById('tachles')).direction || 'rtl'; } catch (e) { w.dir = 'rtl'; } // lives on <body> (LTR), so take the app's direction or the Hebrew + "+1" reorder wrong
+    document.body.appendChild(w); setTimeout(() => { try { w.remove(); } catch (e) {} }, 3600); } catch (e) {}
+}
 function tkRender() {
   const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr; el.dir = 'rtl'; el.lang = 'he';
   const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
@@ -24794,7 +24803,7 @@ function tkRender() {
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   tk.scrNow = s; tkMiniSync(); // the waiting goblin: shown only in a game, only while waiting, and only after the delay (tkMiniSync)
   // the winner moment: one confetti burst the first time each round's reveal shows (keyed on the round, so a re-render never re-fires it)
-  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; if (tk.mode === 'local' || tk.view.last.me) tkCeleb(); else tkSad(); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round — in local pass-and-play the screen is shared, so keep the confetti for any winner)
+  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; if (tk.mode === 'local' || tk.view.last.me) tkCeleb(); else tkSad(); if (tk.view.last.crowd) tkCrowdToast(tk.view.last.crowd); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round — in local pass-and-play the screen is shared, so keep the confetti for any winner)
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFitCards(); tkFan(); }
@@ -25015,10 +25024,8 @@ function tkGameHtml(v) {
     /* the "previous round" recap strip is gone (the owner: it pushed the height and made the board scroll); the 🏆 Winners button in the top bar still shows who won */
     /* (the owner: no "Czar: name" line at all — who's judging already shows as the crown on the scores strip) */
     (choosing ? tkDuelHtml(v) : judging ? tkJudgeDuelHtml(v, czar) : revealing ? tkRevealDuelHtml(v) : '<div class="tkFace tkBlackC"><p>' + (v.phase === 'reveal' && v.last && v.last.cards ? tkFill(v.black[0], v.last.cards) : tkCard(v.black[0])) + '</p>' + (v.pick > 1 ? '<span class="tkPickL">' + tks('pickN', { n: v.pick }) + '</span>' : '') + '</div>');
-  if (v.phase === 'reveal') { const can = tk.mode !== 'guest' || v.me === v.judge, auto = tk.nx && tk.nx - Date.now() < 1e9;
-    h += '<div class="tkBanner"><div>' + tki('trophy', 'gold') + (v.last && v.last.name ? '<span>' + tks('wonRound') + ' <b class="tkNeonC">' + tkEsc(v.last.name) + '</b></span>' : '<span class="tkDim">' + tks('nobody') + '</span>') + '</div>' +
-    tkCrowdHtml(v) + '<div class="tkNextRow">' + (v.last && v.last.cards ? '<button class="tkS tkSm tkShareB" data-a="shr:last">' + tki('share') + tks('shareIt') + '</button>' : '') + (can ? '<button class="tkNextB" data-a="nextR">' + tks('nextR') + ' ›</button>' : '') + '</div>' +
-    (auto ? '<p id="tkNextN" class="tkDim tkXs">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p>' : can ? '' : '<p class="tkDim tkXs">' + tks('waitNext', { n: tkEsc(v.judgeName) }) + '</p>') + '</div>' + (revealing ? '' : tkSubsHtml(v, false)); }
+  if (v.phase === 'reveal') { // (the owner: no Next / Share / "who won" / crowd-prize clutter — just a 10 s clock to the next round, so the cards get the room)
+    h += '<p id="tkNextN" class="tkNextCount">' + tks('nextIn', { n: Math.max(1, Math.ceil((tk.nx - Date.now()) / 1000)) }) + '</p></div>' + (revealing ? '' : tkSubsHtml(v, false)); }
   else if (v.phase === 'judge') h += judging ? (czar ? '' : '<p class="tkJudgeT">⚖️ ' + tks('czarPicking') + '</p>') : '<p class="tkDim tkSm">' + (czar ? tks('judgeNow') : tks('czarPicking')) + '</p>' + tkSubsHtml(v, czar); // (the owner: the czar's crown button below already says "pick the winner" — drop the extra pill that sat behind it)
   else {
     h += tkStatusHtml(v, choosing || czar || sent); // (slim — tease only, no chip row — the scores strip at the top already shows ✓/⏳ per player, so the name chips in the middle just repeated the same names and cluttered the board. The czar and a done picker get the slim line too; only a local "waiting for answers" viewer still sees the full chips)
