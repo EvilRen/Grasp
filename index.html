@@ -1515,7 +1515,7 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkFly{ position:absolute; bottom:40%; font-size:34px; pointer-events:none; animation:tkFly 1.5s ease-out forwards; z-index:3; } @keyframes tkFly{ 0%{ transform:translateY(0) scale(.6); opacity:0; } 15%{ opacity:1; transform:translateY(-10px) scale(1.2); } 100%{ transform:translateY(-140px) scale(1); opacity:0; } }
 #tachles .tkRxImg{ display:block; object-fit:contain; -webkit-user-drag:none; } /* original neon reaction stickers */
 #tachles .tkRx button img{ width:28px; height:28px; } #tachles .tkRxB img{ width:26px; height:26px; } #tachles .tkFly img{ width:44px; height:44px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
-#tachles .tkCrowd{ font-size:14px; color:#facc15; font-weight:700; } #tachles .tkNames{ width:100%; margin-bottom:8px; }
+#tachles .tkCrowd{ margin:0; font-size:13.5px; line-height:1.25; color:#facc15; font-weight:700; } /* no default <p> margins — the crowd-prize line was ~28px of margin that pushed the Next/Share buttons under the sticky hand */ #tachles .tkNames{ width:100%; margin-bottom:8px; }
 #tachles .tkTV .tkSubs .tkSubW{ flex:1 1 calc(50% - 12px); max-width:none; }
 #tachles .tkDbgB{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 8px); left:8px; z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(30,30,30,.85); border:1px solid var(--bd); font-size:16px; opacity:.7; }
 #tachles .tkDbgP{ max-height:52vh; overflow:auto; font:11px/1.45 ui-monospace,Menlo,Consolas,monospace; color:#cfcfd8; background:#0b0b0b; border:1px solid var(--bd); border-radius:10px; padding:8px; white-space:pre-wrap; word-break:break-all; text-align:left; }
@@ -1568,6 +1568,9 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
   box-shadow:0 0 32px rgba(168,85,247,.18), 0 0 64px rgba(217,70,239,.08), 0 6px 18px rgba(0,0,0,.45); }
 #tachles .tkBlackC p{ font-size:clamp(22px,6.4vw,30px); font-weight:900; line-height:1.35; white-space:pre-wrap; padding-top:8px; word-break:break-word; }
 #tachles .tkBlackC u{ text-decoration:none; color:var(--neonB); letter-spacing:-.05em; }
+/* reveal/judge: the black card fills in the winning sentence (variable length) — a smaller font, lower min-height and a capped max keep it from pushing the Next/Share buttons under the sticky hand (the owner: the crowd-favourite case scrolled them away) */
+#tachles .tkCenter:not(.tkPick) .tkBlackC{ min-height:min(170px,20vh); max-height:40vh; overflow:hidden; }
+#tachles .tkCenter:not(.tkPick) .tkBlackC p{ font-size:clamp(17px,4.6vw,24px); line-height:1.3; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:6; overflow:hidden; }
 #tachles .tkPickL{ align-self:flex-start; margin-top:16px; font-size:11px; color:var(--neonB); font-weight:900; letter-spacing:.1em; }
 #tachles .tkWhiteC{ background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%); color:#0a0a0a; border:1px solid #d8d8d8; }
 #tachles .tkWhiteC p{ font-weight:700; line-height:1.4; white-space:pre-wrap; word-break:break-word; }
@@ -1649,6 +1652,11 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
   #tachles .tkTop{ margin-bottom:6px; min-height:40px; } #tachles .tkScores{ padding:6px; } #tachles .tkGame .tkCenter{ gap:8px; margin:8px 0 4px; justify-content:flex-start; }
   #tachles .tkHC{ min-height:150px; } #tachles .tkHC p{ font-size:16px; } #tachles .tkHand{ padding-top:22px; padding-bottom:8px; } #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:14px; }
   #tachles .tkDuel .tkBlackC{ min-height:0; padding:10px 10px 8px; } #tachles .tkDuel .tkBlackC p{ font-size:clamp(13px,4vw,16px); line-height:1.3; } #tachles .tkSlot{ min-height:64px; padding:8px; } #tachles .tkSendRow{ padding-top:2px; } #tachles .tkSend, #tachles .tkSwap{ margin-top:0; padding-top:10px; padding-bottom:10px; } #tachles .tkSwipe{ margin:2px 0; } }
+@media (max-height:680px){ /* very short screens (e.g. 360x640): shrink the reveal hand + black card so the crowd-prize line and the Next/Share buttons clear the sticky hand */
+  #tachles .tkRevHand .tkHand .tkHC{ height:clamp(102px,15vh,134px); }
+  #tachles .tkCenter:not(.tkPick) .tkBlackC{ min-height:min(128px,15vh); }
+  #tachles .tkCenter:not(.tkPick) .tkBlackC p{ -webkit-line-clamp:4; font-size:clamp(15px,4.2vw,20px); }
+  #tachles .tkBanner{ gap:2px; margin-top:0; } }
 /* (the scroll fix: phones ~761-888 tall overflowed the game board by up to ~82px, so a small vertical scroll fought the sideways hand swipe; a gentle
    compaction fits the board, leaving the hand the only thing that scrolls. Two tiers: taller phones — iPhone 12-16, ~844/852 — keep fuller cards) */
 @media (min-height:761px) and (max-height:829px){
@@ -2117,7 +2125,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.129';
+const APP_VERSION = '1.12.130';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
