@@ -1700,6 +1700,11 @@ body > .tkCrowdPop b{ color:#fff; }
 .tkSad{ position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden; } /* (the owner: someone else won — a funny-sad 💩 drizzle, not confetti) */
 .tkSad i{ position:absolute; top:-26px; font-size:26px; line-height:1; font-style:normal; will-change:transform; animation:tkSadFall var(--d,3s) ease-in forwards; }
 @keyframes tkSadFall{ 0%{ transform:translateY(-26px) rotate(0); opacity:0 } 12%{ opacity:1 } 100%{ transform:translateY(112vh) rotate(var(--r,0deg)); opacity:.5 } }
+/* the owner: a huge WINNER!!! / LOSER!!! that slams in over the confetti / 💩 drizzle at the reveal, then fades (always English) */
+body > .tkBigWord{ position:fixed; left:50%; top:40%; z-index:41; pointer-events:none; font-weight:900; font-style:italic; font-size:clamp(44px,15vw,120px); line-height:.95; letter-spacing:-1px; white-space:nowrap; text-align:center; animation:tkBigWord 2.2s cubic-bezier(.2,1.4,.3,1) forwards; }
+body > .tkBigWord.win{ color:#ffe14d; text-shadow:0 0 14px rgba(250,204,21,.85), 0 4px 0 #b8860b, 0 8px 22px rgba(0,0,0,.6); }
+body > .tkBigWord.lose{ color:#ff4d5e; text-shadow:0 0 14px rgba(255,60,80,.8), 0 4px 0 #7a0a16, 0 8px 22px rgba(0,0,0,.6); }
+@keyframes tkBigWord{ 0%{ opacity:0; transform:translate(-50%,-50%) scale(2.6) rotate(-9deg); } 14%{ opacity:1; transform:translate(-50%,-50%) scale(1) rotate(-5deg); } 72%{ opacity:1; transform:translate(-50%,-50%) scale(1) rotate(-5deg); } 100%{ opacity:0; transform:translate(-50%,-62%) scale(1.08) rotate(-5deg); } }
 #tachles .tkSubs{ width:100%; max-width:48rem; display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:4px 8px; }
 #tachles .tkSub{ position:relative; display:flex; flex-direction:column; gap:8px; padding:12px; min-width:min(180px,42vw); max-width:220px; flex:1 1 160px; border-radius:16px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; transition:border-color .15s, transform .15s, opacity .2s; touch-action:manipulation; }
 #tachles .tkSub[disabled]{ cursor:default; } #tachles .tkSub.can:active{ transform:scale(.98); border-color:var(--neon); }
@@ -2144,7 +2149,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.137';
+const APP_VERSION = '1.12.138';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24801,6 +24806,12 @@ function tkCrowdToast(name) { // the crowd favourite: a floating "+1" that drift
     try { w.dir = getComputedStyle(document.getElementById('tachles')).direction || 'rtl'; } catch (e) { w.dir = 'rtl'; } // lives on <body> (LTR), so take the app's direction or the Hebrew + "+1" reorder wrong
     document.body.appendChild(w); setTimeout(() => { try { w.remove(); } catch (e) {} }, 3600); } catch (e) {}
 }
+function tkBigWord(win) { // the owner: a huge WINNER!!! / LOSER!!! that slams in over the confetti / 💩 drizzle, then fades — always English, lives on <body> so a re-render can't wipe it
+  try { if (window.__tkNoCeleb) return; document.querySelectorAll('body > .tkBigWord').forEach((e) => e.remove());
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const w = document.createElement('div'); w.className = 'tkBigWord ' + (win ? 'win' : 'lose'); w.dir = 'ltr'; w.textContent = win ? 'WINNER!!!' : 'LOSER!!!';
+    document.body.appendChild(w); setTimeout(() => { try { w.remove(); } catch (e) {} }, 2200); } catch (e) {}
+}
 function tkRender() {
   const el = $('tachles'); if (!el || el.hidden) return; const s = tk.scr; el.dir = 'rtl'; el.lang = 'he';
   const hs = el.querySelector('.tkHandW'), hx = hs ? hs.scrollLeft : 0; let h = '';
@@ -24836,7 +24847,7 @@ function tkRender() {
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   tk.scrNow = s; tkArmNav(s); tkMiniSync(); // the waiting goblin: shown only in a game, only while waiting, and only after the delay (tkMiniSync)
   // the winner moment: one confetti burst the first time each round's reveal shows (keyed on the round, so a re-render never re-fires it)
-  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; const iCzar = tk.mode !== 'local' && tk.view.me === tk.view.judge; if (tk.mode === 'local' || tk.view.last.me) tkCeleb(); else if (!iCzar) tkSad(); if (tk.view.last.crowd) tkCrowdToast(tk.view.last.crowd); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round, but NOT for the czar who judged — they didn't compete; local pass-and-play shares the screen, so confetti for any winner)
+  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; const iCzar = tk.mode !== 'local' && tk.view.me === tk.view.judge; if (tk.mode === 'local' || tk.view.last.me) { tkCeleb(); tkBigWord(true); } else if (!iCzar) { tkSad(); tkBigWord(false); } if (tk.view.last.crowd) tkCrowdToast(tk.view.last.crowd); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round, but NOT for the czar who judged — they didn't compete; local pass-and-play shares the screen, so confetti for any winner)
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFitCards(); tkFan(); }

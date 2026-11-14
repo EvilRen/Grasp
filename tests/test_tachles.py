@@ -276,10 +276,16 @@ async def online(b):
     await g2.screenshot(path=OUT + 'tachles_online_reveal_he.png')
     check('TV: the reveal on the screen: the winning sentence in the question card and every answer under it', await g3.locator('#tachles .tkTV .tkBlackC mark').count() >= 1 and await g3.locator('#tachles .tkTV .tkSub .tkAnsC').count() >= 2)
     await g3.screenshot(path=OUT + 'tachles_tv_reveal.png')
-    # (the owner: when the czar picks a winner, the 💩 loss screen must NOT fall on the czar — they judged, they did not compete) the effects live on <body> for ~4.4s, so they are still up right after the reveal
-    czarFx = await czarP.evaluate("[document.querySelectorAll('body > .tkSad').length, document.querySelectorAll('body > .tkConfetti').length]")
+    # (the owner: at the reveal a huge WINNER!!! / LOSER!!! slams in — winner gets confetti + WINNER, losers get 💩 + LOSER, the czar who judged gets neither) the effects live on <body> for ~2-4s, still up right after the reveal
+    czarFx = await czarP.evaluate("[document.querySelectorAll('body > .tkSad').length, document.querySelectorAll('body > .tkConfetti').length, document.querySelectorAll('body > .tkBigWord').length]")
+    winP = [p for p in pick if await p.evaluate(f"!!({TKH}.tk.view && {TKH}.tk.view.last && {TKH}.tk.view.last.me)")]
+    loseP = [p for p in pick if p not in winP]
+    winWord = (await winP[0].inner_text('body > .tkBigWord.win')) if winP else ''
+    loseBig = max([await p.evaluate("document.querySelectorAll('body > .tkBigWord.lose').length") for p in loseP]) if loseP else 0
     loserSad = max([await p.evaluate("document.querySelectorAll('body > .tkSad').length") for p in pick])
-    check('online: the judging czar gets no 💩 loss screen at reveal (they did not compete); a losing player still does (the owner)', czarFx[0] == 0 and czarFx[1] == 0 and loserSad >= 1, [czarFx, loserSad])
+    check('online: the reveal word — WINNER!!! for the winner, LOSER!!! + 💩 for a loser, NOTHING for the judging czar (the owner)', czarFx[0] == 0 and czarFx[1] == 0 and czarFx[2] == 0 and loserSad >= 1 and 'WINNER' in winWord and loseBig >= 1, [czarFx, winWord, loseBig, loserSad])
+    if winP: await winP[0].screenshot(path=OUT + 'tachles_winner.png')
+    if loseP: await loseP[0].screenshot(path=OUT + 'tachles_loser.png')
     await host.wait_for_timeout(1900); check('online: the next round on its own, on every phone', all([(await view(p))['round'] == 2 for p in pages]))
     check('the "סבב קודם" recap strip is gone (the owner: it pushed the height and made the board scroll)', await g1.evaluate("!document.querySelector('#tachles .tkRecap')"))
     await click(g1, '#tachles [data-a="hist"]'); hm = await g1.inner_text('#tachles .tkModal')
