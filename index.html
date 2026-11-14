@@ -1519,9 +1519,9 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 #tachles .tkTV .tkSubs .tkSubW{ flex:1 1 calc(50% - 12px); max-width:none; }
 #tachles .tkDbgB{ position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 8px); left:8px; z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(30,30,30,.85); border:1px solid var(--bd); font-size:16px; opacity:.7; }
 #tachles .tkDbgP{ max-height:52vh; overflow:auto; font:11px/1.45 ui-monospace,Menlo,Consolas,monospace; color:#cfcfd8; background:#0b0b0b; border:1px solid var(--bd); border-radius:10px; padding:8px; white-space:pre-wrap; word-break:break-all; text-align:left; }
-#tachles .tkLvls{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
-#tachles .tkLv{ display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; border-radius:14px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; font-weight:800; font-size:14px; }
-#tachles .tkLv b{ font-size:24px; } #tachles .tkLv.on{ border-color:var(--neon); background:rgba(168,85,247,.16); box-shadow:0 0 18px rgba(168,85,247,.4); } #tachles .tkLv[disabled]{ opacity:.75; } #tachles .tkLv.on[disabled]{ opacity:1; }
+#tachles .tkLvls{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:10px; }
+#tachles .tkLv{ display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:4px; padding:9px 3px; border-radius:14px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; font-weight:800; font-size:12.5px; line-height:1.15; text-align:center; }
+#tachles .tkLv b{ font-size:22px; } #tachles .tkLv.on{ border-color:var(--neon); background:rgba(168,85,247,.16); box-shadow:0 0 18px rgba(168,85,247,.4); } #tachles .tkLv[disabled]{ opacity:.75; } #tachles .tkLv.on[disabled]{ opacity:1; }
 #tachles .tkLvD{ font-size:13px; color:var(--dim); line-height:1.45; margin:10px 2px 12px; min-height:2.9em; }
 #tachles .tkPacks{ display:flex; flex-direction:column; gap:6px; max-height:56vh; overflow:auto; margin:0 -4px; padding:0 4px; }
 #tachles .tkPk{ display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; background:var(--el); border:1px solid var(--bd); color:inherit; font:inherit; text-align:start; opacity:.55; }
@@ -1596,6 +1596,17 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 .tkDoodleTog.on{ background:linear-gradient(135deg,#a855f7,#e24ad0); color:#fff; border-color:transparent; box-shadow:0 0 0 3px rgba(168,85,247,.25), 0 6px 20px rgba(217,70,239,.5); }
 .tkDoodleHint{ position:absolute; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 74px); transform:translateX(-50%); pointer-events:none; color:#d8c6ff; font-size:13px; font-weight:700; white-space:nowrap; opacity:0; transition:opacity .6s; background:rgba(26,20,40,.8); padding:6px 14px; border-radius:999px; }
 .tkDoodleHint.on{ opacity:.9; }
+/* the goblin waiting game (the owner: brought back as an option; the default) */
+.tkMiniLayer{ position:fixed; inset:0; z-index:5; pointer-events:none; overflow:hidden; }
+.tkMiniChar{ position:absolute; left:0; top:0; width:72px; height:72px; border:0; padding:0; background:none; pointer-events:auto; cursor:grab; will-change:transform; image-rendering:pixelated; image-rendering:crisp-edges; filter:drop-shadow(2px 4px 0 rgba(0,0,0,.38)); -webkit-tap-highlight-color:transparent; touch-action:none; user-select:none; }
+.tkMiniBadge{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 54px); left:50%; transform:translateX(-50%); pointer-events:none; background:rgba(26,20,40,.85); color:#e9d5ff; font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,.4); }
+.tkMiniStar{ position:absolute; transform:translate(-50%,-50%); font-size:16px; pointer-events:none; animation:tkMiniStar .68s ease-out forwards; }
+@keyframes tkMiniStar{ to{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); opacity:0; } }
+.tkMiniSay{ position:absolute; pointer-events:none; background:#fff; color:#1a1030; font-size:12px; font-weight:800; padding:3px 9px; border-radius:9px; white-space:nowrap; box-shadow:0 2px 0 rgba(0,0,0,.3); animation:tkMiniSay 1.2s ease-out forwards; z-index:6; }
+.tkMiniSay::after{ content:''; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%); border:5px solid transparent; border-top-color:#fff; border-bottom:0; }
+@keyframes tkMiniSay{ 0%{ opacity:0; transform:translate(-50%,-70%) scale(.6); } 16%{ opacity:1; transform:translate(-50%,-100%) scale(1); } 78%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-140%) scale(.9); } }
+/* the little button that swaps the waiting game (goblin ↔ doodle), bottom-left so it clears the doodle's pencil (bottom-right) */
+.tkMiniSwap{ position:absolute; left:calc(env(safe-area-inset-left,0px) + 16px); bottom:calc(env(safe-area-inset-bottom,0px) + 16px); width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:auto; border:1px solid var(--bd); background:rgba(26,20,40,.9); color:#e9d5ff; font-size:22px; line-height:1; box-shadow:0 4px 16px rgba(0,0,0,.45); -webkit-tap-highlight-color:transparent; }
 #tachles .tkSkips{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } #tachles .tkSkips:empty{ display:none; }
 #tachles .tkSend{ margin-top:4px; } #tachles .tkSendRow{ position:relative; z-index:4; display:flex; justify-content:center; align-items:center; gap:10px; padding-top:6px; } #tachles .tkSwap{ margin-top:4px; padding-inline:14px; } #tachles .tkSwap[disabled]{ opacity:1; background:#1b1b1f; color:#6b6b78; }
 #tachles .tkSend:disabled{ opacity:1; background:#241a33; color:#d8c6ff; border:2px dashed rgba(168,85,247,.75); box-shadow:none; } #tachles .tkSend:not(:disabled){ box-shadow:0 0 0 3px rgba(255,255,255,.18), 0 6px 26px rgba(217,70,239,.65); } /* (the owner: with 3 to pick the purple button was hard to see: half see-through over the cards behind it. Now solid, the waiting one dashed with clear text, the ready one glowing) */ #tachles .tkHandBox .tkSendRow + .tkHandW .tkHand{ padding-top:22px; }
@@ -2128,7 +2139,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.134';
+const APP_VERSION = '1.12.135';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24259,7 +24270,8 @@ window.__grasp.quest = { QC, quest, start: questStart, newRun: qNewRun, enter: q
    and 0-3 packs (deck.json wm / bm: "2sg" = level 2, packs s and g, parallel to w / b); the room picks a level and switches packs off */
 const TK_LVL = [null, { e: '🟢', n: 'קליל', d: 'לערב עם ההורים או בחברה מעורבת. עוקץ, בלי סקס בוטה ובלי גועל.' },
   { e: '🟠', n: 'גס', d: 'לחברים. סקס, קללות, הפרשות והומור שחור.' },
-  { e: '🔴', n: 'בלי גבולות', d: 'מזעזע, טאבו, הכי רחוק שיש. רק למי שבאמת בא לו.' }];
+  { e: '🔴', n: 'בלי גבולות', d: 'מזעזע, טאבו, הכי רחוק שיש. רק למי שבאמת בא לו.' },
+  { e: '☠️', n: 'הארדקור', d: 'רק הכי קיצוני: רק הקלפים הכי קשים, בלי הרכים בכלל. לא לחלשי לב.' }];
 const TK_PACKS = [['s', '🍆', 'סקס', 'איברים, פורנו ומה שקורה מתחת לשמיכה'], ['g', '💩', 'קקי, פיפי וגועל', 'הפרשות, הקאות וריחות'], ['r', '🕍', 'דת וחרדים', 'רבנים, אלוהים, חגים וכשרות'],
   ['p', '🏛️', 'פוליטיקה', 'פוליטיקאים, הכנסת והממשלה'], ['a', '🪖', 'צבא ומילואים', 'טירונות, מילואים ושמירות'], ['d', '⚰️', 'מוות ומחלות', 'לוויות, בתי חולים והומור שחור'],
   ['x', '🍺', 'סמים ושתייה', 'אלכוהול, סמים והחלטות גרועות'], ['c', '⭐', 'סלבס ואנשים אמיתיים', 'אנשים אמיתיים, בשמם'], ['h', '🕯️', 'השואה וטרור', 'השואה, נאצים וטרור. הכי רגיש'],
@@ -24392,7 +24404,7 @@ const TKS = {
     kickQ: 'להוציא את {n} מהחדר?', cancel: 'ביטול', kick: 'הוצא', leaveQh: 'לסגור את החדר?', leaveQ: 'לעזוב את החדר?', leaveDh: 'כל השחקנים יחזרו לדף הבית והחדר ייסגר.', leaveD: 'תחזור לדף הבית, והמשחק ימשיך בלעדיך.',
     leaveQl: 'לסיים את המשחק?', leaveDl: 'הניקוד יימחק ותחזור לתפריט.', end: 'סיים',
     round: 'סבב {n}', czar: 'הקיסר:', waitOthers: 'מחכים לאחרים...', waitSubs: 'מחכים לתשובות...', submitted: 'הגשת!', submit: 'הגש', pickMore: 'בחר עוד {n}', swap: 'החלף ({n})', swapD: 'זורק את כל היד ומקבל קלפים חדשים. 3 פעמים במשחק', pickN: 'בחר {n}', noCards: 'אין לך קלפים ביד',
-    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', czarPickingN: '{n} בוחר/ת את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', doodle: '✏️ שעמם? צייר על המסך', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
+    judgeNow: 'בחר את התשובה הכי טובה', czarPicking: 'הקיסר בוחר את הזוכה...', czarPickingN: '{n} בוחר/ת את הזוכה...', wonRound: 'הסבב הלך ל:', nobody: 'אף אחד לא ניצח בסבב הזה', rev: 'זמן בין סבבים', fullS: 'המשפט המלא בתשובות', fullSD: 'כבוי: רואים רק את התשובה', fullH: 'לכל החדר. כל שחקן יכול לשנות אצלו', fullBtn: 'משפט מלא', pbQuick: 'הצטרפות מהירה', pbRooms: 'חדרים פתוחים', pbRoomsD: 'משחקים שמחכים לשחקנים. לוחצים ונכנסים.', pbLoad: 'מחפש חדרים...', pbQLoad: 'מחפש חדר פתוח...', pbNone: 'אין חדרים פתוחים כרגע', pbCreate: 'פתח חדר ציבורי', pbRetry: 'נסה שוב', pbJoin: 'הצטרף', pbPub: 'חדר פתוח לכולם', pbPubD: 'מופיע ב"חדרים פתוחים": כל אחד יכול להיכנס עד שמתחילים', pbPts: '{n} נק\' לניצחון', pbSec: '{n} שנ\' לסבב', pbOf: '{n}/{m} שחקנים', rights: 'כל הזכויות שמורות', relT: 'מה חדש בת\'כלס', histB: 'הזוכים', histT: 'זוכים וניקוד', histNone: 'עוד אין סבבים שהסתיימו', prevRound: 'סבב קודם:', doodle: '✏️ שעמם? צייר על המסך', miniSwap: 'החלף משחק המתנה', miniT: 'שעמם לך? תפוס!', miniS: 'ניקוד {n} · שיא {b}', miniUp: '⬆️ עליתי רמה!', miniKing: '👑 מלך!', miniFling: 'וויייי!', pbFind: 'מצא לי משחק', fbB: 'תתלוננו, אולי נקרא', fbT: 'באג, רעיון או סתם חפירה?', fbD: 'כתבו מה שבא לכם. נקרא את זה מתישהו. אולי.', fbPh: 'משהו לא עבד / היה מעצבן / יש לי רעיון...', fbSend: 'שלח לפח האשפה', fbOk: 'נשלח. אולי נקרא 😅', fbLimit: 'מספיק תלונות להיום 😅', fullG: 'רק בטלפון שלך. המארח קבע לחדר: {s}', on: 'פועל', off: 'כבוי', nextIn: 'הסבב הבא בעוד {n}…',
     winner: 'המנצח', wonWith: 'ניצח עם <b>{n}</b> נקודות', newGame: 'משחק חדש', waitNew: 'מחכים שהמארח יתחיל משחק חדש...', home: 'חזור לדף הבית',
     hostGone: 'המארח לא מחובר כרגע. מחכה שיחזור...', hostGoneT: 'המארח לא מחובר כרגע', hostGoneD: 'מחכה שיחזור...', backIn: 'חזרה למשחק', backRoom: 'חזרה לחדר שלך', kicked: 'המארח הוציא אותך מהחדר', closed: 'המארח סגר את החדר', pass: 'תעביר את הטלפון ל־', yourNick: 'הכינוי שלך במשחק', rename: 'שינוי כינוי', save: 'שמור', exit: 'יציאה מהמשחק', tapGo: 'גע במסך כדי להתחיל', write: 'כתוב קלף משלך', writeD: 'הקלף הכי מצחיק שלך. הוא יישלח לאישור, ואם יאושר ייכנס לחפיסה של כולם.', wrWhite: '⬜ תשובה', wrBlack: '⬛ שאלה',
     wrPhW: 'למשל: הדודה שלי בטיקטוק.', wrPhB: 'למשל: מה באמת קרה בחתונה של ___?', wrBlank: 'מקום ריק', wrSend: 'שלח לאישור', wrSending: 'שולח...', wrSent: 'נשלח לאישור! תודה 🙏', wrErr: 'השליחה לא הצליחה כרגע. נסה שוב מאוחר יותר.',
@@ -24408,7 +24420,7 @@ const TKS = {
     kickQ: 'Kick {n} out of the room?', cancel: 'Cancel', kick: 'Kick', leaveQh: 'Close the room?', leaveQ: 'Leave the room?', leaveDh: 'Every player goes back home and the room closes.', leaveD: 'You go back home. The room carries on without you.',
     leaveQl: 'End the game?', leaveDl: 'The scores are cleared and you go back to the menu.', end: 'End',
     round: 'Round {n}', czar: 'Czar:', waitOthers: 'Waiting for others...', waitSubs: 'Waiting for answers...', submitted: 'Submitted!', submit: 'Submit', pickMore: 'Pick {n} more', swap: 'Swap ({n})', swapD: 'Throw your whole hand away for new cards. 3 times a game', pickN: 'Pick {n}', noCards: 'No cards in hand',
-    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', czarPickingN: '{n} is choosing the winner...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', doodle: '✏️ Bored? Draw on the screen', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
+    judgeNow: 'Pick the best answer', czarPicking: 'The czar is choosing...', czarPickingN: '{n} is choosing the winner...', wonRound: 'Round winner:', nobody: 'Nobody won this round', rev: 'Time between rounds', fullS: 'The whole sentence in the answers', fullSD: 'Off: just the answer', fullH: 'For the whole room. Each player can change it for themselves', fullBtn: 'Full sentence', pbQuick: 'Quick join', pbRooms: 'Open rooms', pbRoomsD: 'Games waiting for players. Tap one and you are in.', pbLoad: 'Looking for rooms...', pbQLoad: 'Looking for an open room...', pbNone: 'No open rooms right now', pbCreate: 'Open a public room', pbRetry: 'Try again', pbJoin: 'Join', pbPub: 'Open to everyone', pbPubD: 'Listed in "Open rooms": anyone can come in until the game starts', pbPts: '{n} pts to win', pbSec: '{n}s a round', pbOf: '{n}/{m} players', rights: 'All rights reserved', relT: 'What\'s new in Tachles', histB: 'Winners', histT: 'Winners & scores', histNone: 'No finished rounds yet', prevRound: 'Last round:', doodle: '✏️ Bored? Draw on the screen', miniSwap: 'Switch waiting game', miniT: 'Bored? Tap!', miniS: 'Score {n} · Best {b}', miniUp: '⬆️ Level up!', miniKing: '👑 King!', miniFling: 'Wheee!', pbFind: 'Find me a game', fbB: 'Complain, we might read it', fbT: 'A bug, an idea or just a rant?', fbD: 'Write whatever. We will read it some day. Maybe.', fbPh: 'Something broke / annoyed me / I have an idea...', fbSend: 'Send it to the bin', fbOk: 'Sent. We might read it 😅', fbLimit: 'Enough complaints for today 😅', fullG: 'Only on your phone. The host set the room to: {s}', on: 'on', off: 'off', nextIn: 'Next round in {n}…',
     winner: 'The winner', wonWith: 'won with <b>{n}</b> points', newGame: 'New game', waitNew: 'Waiting for the host to start a new game...', home: 'Back home',
     hostGone: 'The host is not connected. Waiting for them to come back...', hostGoneT: 'The host is not connected', hostGoneD: 'Waiting for them to come back...', backIn: 'Back to the game', backRoom: 'Back to your room', kicked: 'The host kicked you out of the room', closed: 'The host closed the room', pass: 'Pass the phone to', yourNick: 'Your nickname in the game', rename: 'Change nickname', save: 'Save', exit: 'Leave the game', tapGo: 'Tap to start', write: 'Write your own card', writeD: 'Your funniest. It goes for approval, and if approved it joins everyone\'s deck.', wrWhite: '⬜ Answer', wrBlack: '⬛ Question',
     wrPhW: 'e.g. My aunt on TikTok.', wrPhB: 'e.g. What really happened at ___\'s wedding?', wrBlank: 'blank', wrSend: 'Send for approval', wrSending: 'Sending...', wrSent: 'Sent for approval! Thanks 🙏', wrErr: "Couldn't send. Check the internet and try again.",
@@ -24649,7 +24661,7 @@ function tkFsNeed() { return !window.__graspNoAutoFs && typeof fsCan === 'functi
 function tkFs() { if (window.__graspNoAutoFs || typeof fsCan !== 'function' || !fsCan() || fsEl()) return; const d = document.documentElement; try { const p = (d.requestFullscreen || d.webkitRequestFullscreen).call(d, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch {} } // (always full screen: on the first tap if the opening tap could not)
 function tkStart() {
   const el = $('tachles'); el.hidden = false; document.body.classList.add('tkOn'); tkFs(); const S = tkStore(); tk.names = Array.isArray(S.names) && S.names.length ? S.names.slice(0, TK_MAXP) : ['', '', ''];
-  const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7, lvl: [1, 2, 3].includes(st.lvl) ? st.lvl : 2, rev: TK_REVS.includes(st.rev) ? st.rev : 10, full: st.full != null ? !!st.full : (() => { try { return localStorage.getItem('grasp.tkFull') === '1'; } catch { return false; } })(), names: st.names !== false, off: Array.isArray(st.off) ? st.off.filter((k) => TK_PACKS.some((q) => q[0] === k)) : [] }; tk.myName = S.me || '';
+  const st = S.set || {}; tk.set = { target: st.target || S.target || 5, timer: TK_TIMERS.includes(st.timer) ? st.timer : 60, hand: st.hand || 7, lvl: [1, 2, 3, 4].includes(st.lvl) ? st.lvl : 2, rev: TK_REVS.includes(st.rev) ? st.rev : 10, full: st.full != null ? !!st.full : (() => { try { return localStorage.getItem('grasp.tkFull') === '1'; } catch { return false; } })(), names: st.names !== false, off: Array.isArray(st.off) ? st.off.filter((k) => TK_PACKS.some((q) => q[0] === k)) : [] }; tk.myName = S.me || '';
   if (!document.getElementById('tkFont')) { const l = document.createElement('link'); l.id = 'tkFont'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap'; document.head.appendChild(l); }
   let ok = false; try { ok = sessionStorage.getItem('grasp.tk18') === '1' || localStorage.getItem('grasp.tk18') === '1'; } catch {}
   const Q = new URLSearchParams(location.search), room = Q.get('room') || Q.get('screen'); tk.code = room ? room.toUpperCase().slice(0, 4) : ''; tk.modal = null; tk.form = null;
@@ -24900,7 +24912,7 @@ function tkPing(title, message, tags) { try { if (navigator.webdriver && window.
 const tkDay = (d = 0) => { const t = new Date(Date.now() - d * 864e5); return t.getFullYear() + String(t.getMonth() + 1).padStart(2, '0') + String(t.getDate()).padStart(2, '0'); };
 function tkStat(k) { try { if (navigator.webdriver && window.__tkStats !== true) return; fetch(TK_AB + 'hit/' + TK_NS + '/' + k, { keepalive: true, mode: 'cors' }).catch(() => {}); } catch {} }
 const TK_STATK = [['start-online', 'game'], ['start-bots', 'game'], ['start-local', 'game'], ['done', 'game'], ['size-2', 'size'], ['size-3', 'size'], ['size-4', 'size'], ['size-5', 'size'], ['size-6p', 'size'],
-  ['lvl-1', 'lvl'], ['lvl-2', 'lvl'], ['lvl-3', 'lvl'], ['rooms', 'room'], ['quick', 'room'], ['list', 'room'], ['code', 'room'], ['tv', 'room'], ['open', 'misc'], ['feedback', 'misc'], ['cards', 'misc']];
+  ['lvl-1', 'lvl'], ['lvl-2', 'lvl'], ['lvl-3', 'lvl'], ['lvl-4', 'lvl'], ['rooms', 'room'], ['quick', 'room'], ['list', 'room'], ['code', 'room'], ['tv', 'room'], ['open', 'misc'], ['feedback', 'misc'], ['cards', 'misc']];
 async function tkStatsLoad() { // ~27 reads, 4 at a time, under the 30 / 10 s limit; a missing key is 0
   const keys = TK_STATK.map((k) => k[0]).concat([0, 1, 2, 3, 4, 5, 6].map((d) => 'day-' + tkDay(d))), out = {}; tk.stats = { at: Date.now(), v: out, busy: true }; tkRender();
   let i = 0; const one = async () => { while (i < keys.length) { const k = keys[i++]; try { const r = await fetch(TK_AB + 'get/' + TK_NS + '/' + k, { mode: 'cors' }); const j = await r.json().catch(() => ({})); out[k] = r.status === 429 ? null : +j.value || 0; } catch { out[k] = null; } } };
@@ -24914,7 +24926,7 @@ function tkStatsHtml() {
     card('🎮 איך משחקים', row('אונליין (חדר)', n('start-online')) + row('נגד בוטים', n('start-bots')) + row('טלפון אחד', n('start-local')) + row('משחקים שהגיעו לסוף', n('done'))) +
     card('👥 שחקנים במשחק', row('2', n('size-2')) + row('3', n('size-3')) + row('4', n('size-4')) + row('5', n('size-5')) + row('6 ומעלה', n('size-6p')) + row('ממוצע', sized ? (seats / sized).toFixed(1) : '-')) +
     card('🚪 חדרים', row('חדרים שנפתחו', n('rooms')) + row('הצטרפות מהירה', n('quick')) + row('מרשימת החדרים', n('list')) + row('עם קוד / קישור', n('code')) + row('מסך טלוויזיה', n('tv'))) +
-    card('🎨 סגנון הערב', row('🟢 קליל', n('lvl-1')) + row('🟠 גס', n('lvl-2')) + row('🔴 בלי גבולות', n('lvl-3'))) +
+    card('🎨 סגנון הערב', row('🟢 קליל', n('lvl-1')) + row('🟠 גס', n('lvl-2')) + row('🔴 בלי גבולות', n('lvl-3')) + row('☠️ הארדקור', n('lvl-4'))) +
     card('📬 עוד', row('פתיחות של ת\'כלס', n('open')) + row('תלונות', n('feedback')) + row('קלפים שנשלחו לאישור', n('cards'))) +
     '<button class="tkS tkW" data-a="statsR">' + tki('reset') + 'רענן</button></div>';
 }
@@ -25089,19 +25101,28 @@ function tkRevealDuelHtml(v) { // the round's end: the winning answer sits in th
    fades out over ~2.8 s, so the drawing clears itself. The rAF runs only while waiting. A faint "draw here" hint shows after a few idle
    seconds and is gone once you draw. Shown to the waiting czar or a done picker in the pick phase (tk.miniElig, set in tkGameHtml). */
 const TK_DOODLE_FADE = 2800;
-function tkMiniSync() { const m = tk.mini; // the doodle pad is up only in a game, only while waiting
-  const ok = tk.scrNow === 'game' && tk.view && tk.view.phase !== 'over' && tk.miniElig && !tk.modal && !tk.hostWait; // (never over a modal or the host-gone overlay: the pad sits above #tachles, so it would eat their taps)
-  if (!ok) { tkMiniHide(); return; } tkMiniShow();
+// --- the waiting game (while you wait for the others): a goblin to catch & throw (default) or a neon doodle pad; a small button on each swaps between them, per-player, remembered. Shown to the waiting czar or a done picker (tk.miniElig). (the owner: bring the goblin back as an option, and give it to the czar too) ---
+function tkMiniMode() { try { return localStorage.getItem('grasp.tkMini') === 'doodle' ? 'doodle' : 'goblin'; } catch (e) { return 'goblin'; } }
+function tkMiniSwitch() { const next = tkMiniMode() === 'goblin' ? 'doodle' : 'goblin'; try { localStorage.setItem('grasp.tkMini', next); } catch (e) {} tkMiniHide(); tkMiniSync(); }
+function tkMiniSync() {
+  const ok = !window.__tkNoMini && tk.scrNow === 'game' && tk.view && tk.view.phase !== 'over' && tk.miniElig && !tk.modal && !tk.hostWait;
+  const mode = tkMiniMode();
+  if (!ok) { if (tk.mini.shown) tkMiniHide(); return; }
+  if (tk.mini.shown && tk.mini.shown !== mode) tkMiniHide();
+  if (tk.mini.shown === mode) return;
+  tk.mini.shown = mode; if (mode === 'doodle') tkDoodleShow(); else tkGobShow();
 }
-function tkMiniShow() { const m = tk.mini;
+function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } removeEventListener('resize', tkDoodleSize); if (m.el) { m.el.remove(); } m.el = m.cv = m.cx = m.hit = m.hintEl = m.tog = m.char = m.badge = m.say = null; m.on = false; m.cur2 = null; m.shown = null; } // tears down whichever mini is up (doodle or goblin) — they share tk.mini fields and only one is up at a time
+function tkDoodleShow() { const m = tk.mini;
   if (m.round !== tk.miniRound) { m.round = tk.miniRound; m.strokes = []; m.cur2 = null; m.drawn = false; m.shownAt = performance.now(); }
   if (!m.el) { const L = document.createElement('div'); L.className = 'tkDoodleLayer';
-    L.innerHTML = '<canvas class="tkDoodleC"></canvas><div class="tkDoodleHit" id="tkDoodleHit"></div><button class="tkDoodleTog" id="tkDoodleTog" type="button" aria-label="' + tks('doodle') + '">' + tki('pencil') + '</button><div class="tkDoodleHint" id="tkDoodleHint">' + tks('doodle') + '</div>';
+    L.innerHTML = '<canvas class="tkDoodleC"></canvas><div class="tkDoodleHit" id="tkDoodleHit"></div><button class="tkDoodleTog" id="tkDoodleTog" type="button" aria-label="' + tks('doodle') + '">' + tki('pencil') + '</button><button class="tkMiniSwap" type="button" aria-label="' + tks('miniSwap') + '">👺</button><div class="tkDoodleHint" id="tkDoodleHint">' + tks('doodle') + '</div>';
     document.body.appendChild(L); m.el = L; m.cv = L.querySelector('.tkDoodleC'); m.cx = m.cv.getContext('2d'); m.hit = L.querySelector('.tkDoodleHit'); m.hintEl = L.querySelector('.tkDoodleHint'); m.tog = L.querySelector('.tkDoodleTog'); m.on = false;
     m.strokes = m.strokes || []; m.cur2 = null;
     tkDoodleSize(); addEventListener('resize', tkDoodleSize); tkDoodleBind(m.hit);
-    m.tog.addEventListener('click', (e) => { e.preventDefault(); tkDoodleToggle(); }); } // (a pencil toggles draw mode, so the pad never blocks the game's own buttons)
-  if (!m.raf) { m.last = performance.now(); const loop = (now) => { m.raf = requestAnimationFrame(loop); tkMiniStep(now); }; m.raf = requestAnimationFrame(loop); }
+    m.tog.addEventListener('click', (e) => { e.preventDefault(); tkDoodleToggle(); });
+    L.querySelector('.tkMiniSwap').addEventListener('click', (e) => { e.preventDefault(); tkMiniSwitch(); }); } // the 👺 button swaps to the goblin
+  if (!m.raf) { m.last = performance.now(); const loop = (now) => { m.raf = requestAnimationFrame(loop); tkDoodleStep(now); }; m.raf = requestAnimationFrame(loop); }
 }
 function tkDoodleSize() { const m = tk.mini; if (!m.cv) return; const dpr = Math.min(2, devicePixelRatio || 1); m.cv.width = innerWidth * dpr; m.cv.height = innerHeight * dpr; m.cv.style.width = innerWidth + 'px'; m.cv.style.height = innerHeight + 'px'; m.cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
 function tkDoodleBind(hit) { const m = tk.mini; const pt = (e) => ({ x: e.clientX, y: e.clientY, t: performance.now() });
@@ -25112,9 +25133,8 @@ function tkDoodleBind(hit) { const m = tk.mini; const pt = (e) => ({ x: e.client
 }
 function tkDoodleToggle() { const m = tk.mini; m.on = !m.on; m.cur2 = null;
   if (m.hit) m.hit.classList.toggle('on', m.on); if (m.tog) { m.tog.classList.toggle('on', m.on); m.tog.innerHTML = m.on ? tki('check') : tki('pencil'); }
-  if (m.hintEl) m.hintEl.classList.toggle('on', m.on && !m.drawn); } // draw mode on: the pad catches the finger; off: it is transparent and the game's buttons work
-function tkMiniHide() { const m = tk.mini; if (m.raf) { cancelAnimationFrame(m.raf); m.raf = 0; } removeEventListener('resize', tkDoodleSize); if (m.el) { m.el.remove(); m.el = m.cv = m.cx = m.hit = m.hintEl = m.tog = null; } m.on = false; m.cur2 = null; }
-function tkMiniStep(now) { const m = tk.mini; if (document.hidden || !m.cx) return; const x = m.cx;
+  if (m.hintEl) m.hintEl.classList.toggle('on', m.on && !m.drawn); }
+function tkDoodleStep(now) { const m = tk.mini; if (document.hidden || !m.cx) return; const x = m.cx;
   x.clearRect(0, 0, innerWidth, innerHeight); x.lineCap = 'round'; x.lineJoin = 'round';
   for (let si = m.strokes.length - 1; si >= 0; si--) { const s = m.strokes[si]; let alive = false;
     for (let i = 1; i < s.pts.length; i++) { const p0 = s.pts[i - 1], p1 = s.pts[i], age = now - p1.t, a = 1 - age / TK_DOODLE_FADE; if (a <= 0) continue; alive = true; const hue = s.hue + i * 0.35;
@@ -25123,6 +25143,96 @@ function tkMiniStep(now) { const m = tk.mini; if (document.hidden || !m.cx) retu
     if (!alive && s !== m.cur2) m.strokes.splice(si, 1); }
   x.globalAlpha = 1; x.shadowBlur = 0;
 }
+// --- the goblin (recovered): roams the screen, a tap catches it (scores; green → purple → gold), a drag flings it ---
+const TK_GOB_BASE = { O: '#15230d', W: '#ffffff', K: '#1a1030', M: '#4a0f1e', T: '#fff4d6', N: '#e86a86', C: '#ffd83b', c: '#8a5a00' };
+const TK_GOB_TIERS = [{ G: '#5cc24a', D: '#3a8a30', L: '#92ec72' }, { G: '#a45cf0', D: '#7636c0', L: '#c89cf7' }, { G: '#f5c33b', D: '#c9902a', L: '#ffe49a' }]; // green → purple → gold
+const TK_GOB_CROWN = [[2, 6, 'c'], [2, 8, 'c'], [2, 10, 'c'], [3, 6, 'C'], [3, 7, 'C'], [3, 8, 'C'], [3, 9, 'C'], [3, 10, 'C'], [4, 7, 'C'], [4, 8, 'C'], [4, 9, 'C']];
+const TK_GOB = (() => {
+  const A = ['   O        O   ', '  OLO      OLO  ', '  OGDO    ODGO  ', '  OGGOOOOOOGGO  ', '  OGGGGGGGGGGO  ', ' OGGLGGGGGGLGGO ', ' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO ', ' OGGGGGNNGGGGGO ', ' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  ', '  OGGGGGGGGGGO  ', '   OGGGGGGGGO   ', '   OGO    OGO   ', '   OO      OO   '];
+  const B = A.slice(); B[14] = '  OGO      OGO  '; B[15] = '  OO        OO  ';
+  const EYE = { open: [' OGWWWGGGGWWWGO ', ' OGWKWGGGGWKWGO '], blink: [' OGGGGGGGGGGGGO ', ' OGKKKGGGGKKKGO '], happy: [' OGGGKGGGGKGGGO ', ' OGGKGKGGKGKGGO '] };
+  const MOUTH = { grin: [' OGGOMMMMMMOGGO ', ' OGGMTTTTTTMGGO ', '  OGMMMMMMMMGO  '], open: [' OGGMMMMMMMMGGO ', ' OGMTTTTTTTTMGO ', ' OGMMNNNNNNMMGO '], yawn: [' OGGGGMMMMGGGGO ', ' OGGGMNNMGGGGGO ', '  OGGMMMMGGGGO  '], calm: [' OGGGGGGGGGGGGO ', ' OGGGMMMMGGGGGO ', '  OGGGGGGGGGGO  '] };
+  const mk = (legs, eye, mouth) => { const g = (legs === 'b' ? B : A).slice(); g[6] = EYE[eye][0]; g[7] = EYE[eye][1]; g[9] = MOUTH[mouth][0]; g[10] = MOUTH[mouth][1]; g[11] = MOUTH[mouth][2]; return g; };
+  return { a: mk('a', 'open', 'grin'), b: mk('b', 'open', 'grin'), h: mk('a', 'happy', 'open'), k: mk('a', 'blink', 'grin'), y: mk('a', 'blink', 'yawn'), z: mk('a', 'blink', 'calm') };
+})();
+const TK_MINI_SAY = { he: { taunt: ['לא תתפוס!', 'נו כבר', 'כאן!', 'בוא נראה אותך', 'מהר מדי?'], yay: ['וואו!', 'עוד!', 'חחח', 'כיף!', 'יש!'] }, en: { taunt: ['Too slow!', 'Over here!', 'Catch me!', 'Come on', 'Missed?'], yay: ['Woo!', 'More!', 'Haha', 'Yay!', 'Nice!'] } };
+function tkGobRnd(k) { const s = (TK_MINI_SAY[lang] || TK_MINI_SAY.he)[k]; return s[(Math.random() * s.length) | 0]; }
+function tkGobTier() { const s = tk.mini.score; return s >= 20 ? 2 : s >= 8 ? 1 : 0; }
+function tkGobDraw(key) { const m = tk.mini, c = m.cv; if (!c || m.cur === key) return; m.cur = key; const grid = TK_GOB[key[0]], flip = key[1] === 'L', tier = +key[2] || 0, S = m.S, x = m.cx, PAL = Object.assign({}, TK_GOB_BASE, TK_GOB_TIERS[tier]);
+  x.clearRect(0, 0, c.width, c.height); x.save(); if (flip) { x.translate(c.width, 0); x.scale(-1, 1); }
+  for (let r = 0; r < 16; r++) { const row = grid[r]; for (let q = 0; q < 16; q++) { const col = PAL[row[q]]; if (col) { x.fillStyle = col; x.fillRect(q * S, r * S, S, S); } } }
+  if (tier >= 2) for (const a of TK_GOB_CROWN) { x.fillStyle = PAL[a[2]]; x.fillRect(a[1] * S, a[0] * S, S, S); }
+  x.restore();
+}
+function tkGobShow() { const m = tk.mini;
+  if (m.round !== tk.miniRound) { m.round = tk.miniRound; m.score = 0; m.combo = 0; }
+  if (!m.el) { const L = document.createElement('div'); L.className = 'tkMiniLayer'; const S = 4;
+    L.innerHTML = '<div class="tkMiniBadge" id="tkMiniScore"></div><canvas class="tkMiniChar" id="tkMiniChar" width="' + (16 * S) + '" height="' + (16 * S) + '" role="button" tabindex="0" aria-label="' + tks('miniT') + '"></canvas><button class="tkMiniSwap" type="button" aria-label="' + tks('miniSwap') + '">✏️</button>';
+    document.body.appendChild(L); m.el = L; m.char = L.querySelector('.tkMiniChar'); m.badge = L.querySelector('.tkMiniBadge');
+    m.S = S; m.cv = m.char; m.cx = m.char.getContext('2d'); m.cx.imageSmoothingEnabled = false; m.cur = ''; m.frame = 0; m.fLast = 0;
+    const now = performance.now(); m.idleAt = now; m.blinkUntil = 0; m.yawnUntil = 0; m.zzzAt = 0; m.tierShown = tkGobTier();
+    m.blinkAt = now + 1800 + Math.random() * 2400; m.yawnAt = now + 9000 + Math.random() * 7000; m.sayAt = now + 6000 + Math.random() * 4000;
+    m.drag = null; m.flingAt = 0; tkGobDrag(m.char);
+    m.x = innerWidth * 0.5; m.y = innerHeight * 0.42; const a = Math.random() * TAU; m.vx = Math.cos(a) * 0.12; m.vy = Math.sin(a) * 0.12; tkGobDraw('aR0'); tkGobSay(tks('miniT'));
+    L.querySelector('.tkMiniSwap').addEventListener('click', (e) => { e.preventDefault(); tkMiniSwitch(); }); } // the ✏️ button swaps to the doodle
+  tkGobBadge(); if (!m.raf) { m.last = performance.now(); const loop = (now) => { m.raf = requestAnimationFrame(loop); tkGobStep(now); }; m.raf = requestAnimationFrame(loop); }
+}
+function tkGobBadge() { const m = tk.mini; if (m.badge) m.badge.textContent = tks('miniS', { n: m.score, b: Math.max(m.best, m.score) }); }
+function tkGobStep(now) { const m = tk.mini; const dt = Math.min(40, now - (m.last || now)); m.last = now; if (document.hidden || !m.char) return;
+  const tier = tkGobTier();
+  if (m.drag && m.drag.active) {
+    const dface = m.drag.vx >= 0 ? 'R' : 'L'; tkGobDraw('h' + dface + tier);
+    m.char.style.transform = 'translate(-50%,-50%) translate(' + m.x.toFixed(1) + 'px,' + m.y.toFixed(1) + 'px) scale(1.12,0.9)'; return;
+  }
+  const flinging = m.flingAt && now - m.flingAt < 1600;
+  const idle = now - (m.idleAt || now), asleep = !flinging && idle > (window.__tkFast ? 2000 : 7000);
+  const sp = flinging ? 1 : (1 + Math.min(2.2, m.score * 0.05)) * (asleep ? 0.3 : 1);
+  m.x += m.vx * dt * sp; m.y += m.vy * dt * sp; const r = 36, W = innerWidth - r, H = innerHeight - r; let wall = false; const ke = flinging ? 0.9 : 1;
+  if (m.x < r) { m.x = r; m.vx = Math.abs(m.vx) * ke; wall = true; } if (m.x > W) { m.x = W; m.vx = -Math.abs(m.vx) * ke; wall = true; }
+  if (m.y < r + 40) { m.y = r + 40; m.vy = Math.abs(m.vy) * ke; wall = true; } if (m.y > H) { m.y = H; m.vy = -Math.abs(m.vy) * ke; wall = true; }
+  if (flinging) { m.vx *= Math.pow(0.997, dt); m.vy *= Math.pow(0.997, dt); if (wall && Math.hypot(m.vx, m.vy) > 0.5) tkGobStars(m.x, m.y, 3, false); if (Math.hypot(m.vx, m.vy) < 0.12) m.flingAt = 0; }
+  else { m.vx += (Math.random() - 0.5) * 0.004 * dt; m.vy += (Math.random() - 0.5) * 0.004 * dt; const v = Math.hypot(m.vx, m.vy) || 1; const cap = (0.1 + 0.02 * Math.min(6, m.score)) * (asleep ? 0.4 : 1); m.vx = m.vx / v * Math.min(v, cap); m.vy = m.vy / v * Math.min(v, cap); }
+  const hit = m.hit && now - m.hit < 230, sq = hit ? 1 - (now - m.hit) / 230 : 0;
+  const stepMs = Math.max(90, 200 - m.score * 8); if (!asleep && !hit && !flinging && now - m.fLast > stepMs) { m.fLast = now; m.frame ^= 1; }
+  if (!asleep && !hit && !flinging && now > m.blinkAt) { m.blinkAt = now + 1800 + Math.random() * 2600; m.blinkUntil = now + 150; }
+  if (!asleep && !hit && !flinging && now > m.yawnAt) { m.yawnAt = now + 11000 + Math.random() * 8000; m.yawnUntil = now + 680; }
+  if (!asleep && !flinging && now > m.sayAt) { m.sayAt = now + 7000 + Math.random() * 5000; tkGobSay(tkGobRnd('taunt')); }
+  if (asleep && now > m.zzzAt) { m.zzzAt = now + 1600; tkGobSay('💤'); }
+  const face = m.vx >= 0 ? 'R' : 'L';
+  let fk = m.frame ? 'b' : 'a'; if (hit || flinging) fk = 'h'; else if (asleep) fk = 'z'; else if (now < m.yawnUntil) fk = 'y'; else if (now < m.blinkUntil) fk = 'k';
+  tkGobDraw(fk + face + tier);
+  const wob = flinging ? 0 : asleep ? Math.sin(now / 560) * 2 : Math.sin(now / 120) * 4;
+  m.char.style.transform = 'translate(-50%,-50%) translate(' + m.x.toFixed(1) + 'px,' + (m.y + wob - sq * 3).toFixed(1) + 'px) scale(' + (1 + sq * 0.28) + ',' + (1 - sq * 0.34) + ')';
+}
+function tkGobDrag(ch) { const m = tk.mini;
+  ch.addEventListener('pointerdown', (e) => { e.preventDefault(); const now = performance.now(); m.idleAt = now; m.flingAt = 0;
+    try { ch.setPointerCapture(e.pointerId); } catch {} ch.style.cursor = 'grabbing';
+    m.drag = { id: e.pointerId, down: now, sx: e.clientX, sy: e.clientY, lx: e.clientX, ly: e.clientY, lt: now, vx: 0, vy: 0, moved: false, active: true }; });
+  ch.addEventListener('pointermove', (e) => { const d = m.drag; if (!d || !d.active || e.pointerId !== d.id) return; e.preventDefault(); const now = performance.now();
+    if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) > 6) d.moved = true;
+    const dt = Math.max(1, now - d.lt); d.vx = (e.clientX - d.lx) / dt; d.vy = (e.clientY - d.ly) / dt; d.lx = e.clientX; d.ly = e.clientY; d.lt = now; m.x = e.clientX; m.y = e.clientY; });
+  const up = (e) => { const d = m.drag; if (!d || e.pointerId !== d.id) return; e.preventDefault(); m.drag = null; ch.style.cursor = 'grab'; try { ch.releasePointerCapture(e.pointerId); } catch {}
+    if (!d.moved && performance.now() - d.down < 350) { tkGobHit(); return; }
+    const s = Math.hypot(d.vx, d.vy), cap = 2.6, k = s > cap ? cap / s : 1; m.vx = (d.vx * k) || 0; m.vy = (d.vy * k) || 0; m.idleAt = performance.now();
+    if (s > 0.22) { m.flingAt = performance.now(); tkGobSay(tks('miniFling')); tkGobStars(m.x, m.y, 7, false); try { tgSfx('pop'); } catch {} } };
+  ch.addEventListener('pointerup', up); ch.addEventListener('pointercancel', up);
+}
+function tkGobHit() { const m = tk.mini; const now = performance.now(); m.combo = (now - (m.lastHit || 0) < 1200) ? (m.combo || 0) + 1 : 1; m.lastHit = now; m.idleAt = now; m.zzzAt = 0;
+  m.score++; m.hit = now; if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
+  const a = Math.random() * TAU, s = 0.16 + Math.min(0.12, m.score * 0.004); m.vx = Math.cos(a) * s; m.vy = Math.sin(a) * s;
+  const milestone = m.score % 10 === 0; tkGobStars(m.x, m.y, milestone ? 18 : 6 + Math.min(10, m.combo * 2), milestone);
+  const tier = tkGobTier();
+  if (tier > (m.tierShown || 0)) { m.tierShown = tier; tkGobSay(tier >= 2 ? tks('miniKing') : tks('miniUp')); }
+  else if (milestone) tkGobSay(m.score + '! 🎉');
+  else if (m.combo >= 3) tkGobSay('x' + m.combo + '!');
+  else if (Math.random() < 0.45) tkGobSay(tkGobRnd('yay'));
+  tkGobBadge(); try { tgSfx('pop'); } catch {} tkStat('mini');
+}
+function tkGobSay(t) { const m = tk.mini; if (!m.el) return; if (m.say) m.say.remove(); const s = document.createElement('div'); s.className = 'tkMiniSay'; s.textContent = t;
+  s.style.left = m.x + 'px'; s.style.top = (m.y - 34) + 'px'; m.el.appendChild(s); m.say = s; setTimeout(() => { if (s.parentNode) s.remove(); if (m.say === s) m.say = null; }, 1200); }
+function tkGobStars(x, y, n, big) { const L = tk.mini.el; if (!L) return; n = n || 6; const set = big ? ['🎉', '✨', '⭐', '💫', '🎊'] : ['⭐', '✨', '💫'];
+  for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.className = 'tkMiniStar'; s.textContent = set[i % set.length];
+    const a = Math.random() * TAU, d = (big ? 34 : 24) + Math.random() * (big ? 48 : 26); s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); L.appendChild(s); setTimeout(() => s.remove(), 680); } }
 
 function tkBacksHtml(v) { // while the others choose (from Evil Apples): a face-down card for each answer that came in, an empty place for each still to come
   const el = v.players.filter((p) => p.id !== v.judge && p.on); if (!el.length) return ''; const n = el.filter((p) => p.sent).length;
@@ -25170,14 +25280,14 @@ function tkSeenMark(v) {
   try { localStorage.setItem('grasp.tkSeen', JSON.stringify([...S])); } catch {}
 }
 function tkAllowed(S, d) { // the cards this room's style and packs let in: { w: [index], b: [index] }
-  d = d || tk.deck; const off = S.off || [], lv = S.lvl || 2, pass = (m) => !m || (+m[0] <= lv && ![...m.slice(1)].some((k) => off.includes(k)));
+  d = d || tk.deck; const off = S.off || [], lv = S.lvl || 2, pass = (m) => m ? ((lv >= 4 ? +m[0] === 3 : +m[0] <= lv) && ![...m.slice(1)].some((k) => off.includes(k))) : lv < 4; // hardcore (lv 4): only the level-3 (most extreme) cards, the milder ones filtered out
   const pick = (arr, meta) => arr.map((_, i) => i).filter((i) => pass(meta && meta[i])); return { w: pick(d.w, d.wm), b: pick(d.b, d.bm) };
 }
 function tkEnough(S, n) { if (!tk.deck) return true; const ok = tkAllowed(S); return ok.b.length >= 8 && ok.w.length >= n * (S.hand || 7) + 30; }
 function tkStyleSum(S) { const ok = tk.deck ? tkAllowed(S) : null, L = TK_LVL[S.lvl || 2]; return L.e + ' ' + L.n + (ok ? ' · ' + tks('cardsN', { n: ok.w.length + ok.b.length }) : ''); }
 function tkStyleHtml(S, can, bare) { // the evening's style (3 levels) and the packs (a sheet); bare: inside the settings modal, no outer card
   const ok = tk.deck ? tkAllowed(S) : null, off = (S.off || []).length, L = TK_LVL[S.lvl || 2];
-  return '<div class="' + (bare ? 'tkStyle tkMb' : 'tkCard tkPad6 tkMb tkStyle') + '">' + (bare ? '' : '<h2 class="tkH2s">' + tks('styleT') + '</h2>') + '<div class="tkLvls">' + [1, 2, 3].map((l) => '<button class="tkLv' + ((S.lvl || 2) === l ? ' on' : '') + '" data-a="' + (can ? 'lvl:' + l : '') + '"' + (can ? '' : ' disabled') + '><b>' + TK_LVL[l].e + '</b><span>' + TK_LVL[l].n + '</span></button>').join('') + '</div>' +
+  return '<div class="' + (bare ? 'tkStyle tkMb' : 'tkCard tkPad6 tkMb tkStyle') + '">' + (bare ? '' : '<h2 class="tkH2s">' + tks('styleT') + '</h2>') + '<div class="tkLvls">' + [1, 2, 3, 4].map((l) => '<button class="tkLv' + ((S.lvl || 2) === l ? ' on' : '') + '" data-a="' + (can ? 'lvl:' + l : '') + '"' + (can ? '' : ' disabled') + '><b>' + TK_LVL[l].e + '</b><span>' + TK_LVL[l].n + '</span></button>').join('') + '</div>' +
     '<p class="tkLvD">' + L.d + '</p>' + '<button class="tkPk tkNames' + (S.names !== false ? ' on' : '') + '" data-a="' + (can ? 'names' : '') + '"' + (can ? '' : ' disabled') + '><b>👥</b><span><strong>' + tks('namesT') + '</strong><small>' + tks('namesD') + '</small></span><i class="tkTg"></i></button>' +
     '<button class="tkS tkW tkSm tkMb8" data-a="own">🤫 ' + tks('ownB', { n: tk.mode === 'guest' ? tk.lobbyOwn : tkOwnN() }) + '</button><button class="tkS tkW tkSm" data-a="packs">🗂️ ' + tks('packsB', { n: TK_PACKS.length - off, m: TK_PACKS.length }) + (ok ? ' · ' + tks('cardsN', { n: ok.w.length + ok.b.length }) : '') + '</button></div>';
 }

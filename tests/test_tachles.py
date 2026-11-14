@@ -41,7 +41,7 @@ async def step_local(page):
             check('after answering: the answers in so far lie face down (one per answer), the players\' strip marks the judge / still choosing / done', bk[0] >= 1 and bk[1] >= 2, bk)
         return True
     return False
-FAST = "window.__graspNoAutoFs = true; window.__tkFast = true; window.__tkReveal = 250;"
+FAST = "window.__graspNoAutoFs = true; window.__tkFast = true; window.__tkReveal = 250; window.__tkNoMini = true;"
 
 async def gate_and_bots(b, he):
     tag = 'HE' if he else 'EN'
@@ -255,10 +255,14 @@ async def online(b):
     check('online: the czar sees the slim status too — no duplicate name chips in the middle, the scores strip already shows who sent (the owner)', await czarSt.locator('#tachles .tkChips').count() == 0 and await czarSt.locator('#tachles .tkScores .tkSt').count() >= 1)
     await pick[1].screenshot(path=OUT + 'tachles_guest_he.png')
     czarP = [p for p in pages if await p.evaluate(f"{TKH}.tk.view.me") == J][0]
-    # the owner: the goblin felt too much — instead a neon doodle pad; it is inert until you tap the pencil (so the game's own buttons never get blocked), then you draw and the line fades
-    await czarP.wait_for_selector('#tkDoodleTog', timeout=4000)
+    # the goblin is the default waiting game (the owner: brought it back as an option, for the czar too); a button swaps to the doodle. (tests disable the mini globally via __tkNoMini; turn it on here for the czar.)
+    await czarP.evaluate(f"window.__tkNoMini = false; try {{ localStorage.removeItem('grasp.tkMini'); }} catch(e) {{}} {TKH}.render();")
+    await czarP.wait_for_selector('.tkMiniChar', timeout=4000)
+    gob = await czarP.evaluate("(() => { const ch = document.querySelector('.tkMiniChar'); if (!ch) return null; const m = __grasp.tk.tk.mini; const s0 = m.score; const r = ch.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2; ch.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true, pointerId:1, clientX:cx, clientY:cy})); ch.dispatchEvent(new PointerEvent('pointerup', {bubbles:true, cancelable:true, pointerId:1, clientX:cx, clientY:cy})); return [m.shown, m.score - s0, !!document.querySelector('.tkMiniSwap')]; })()")
+    check('waiting: the goblin is the default waiting game, shown to the waiting czar too; a tap catches it and scores (the owner: bring the goblin back)', gob and gob[0] == 'goblin' and gob[1] >= 1 and gob[2] is True, gob)
+    await czarP.click('.tkMiniSwap'); await czarP.wait_for_selector('#tkDoodleTog', timeout=4000)
     doodle = await czarP.evaluate("(() => { const tog = document.querySelector('#tkDoodleTog'), hit = document.querySelector('#tkDoodleHit'), cv = document.querySelector('.tkDoodleC'); if (!tog || !hit || !cv) return null; const m = __grasp.tk.tk.mini; const inert = getComputedStyle(hit).pointerEvents === 'none'; tog.click(); const active = getComputedStyle(hit).pointerEvents === 'auto'; const r = hit.getBoundingClientRect(), cx0 = r.left + r.width/2, cy0 = r.top + r.height/2; hit.dispatchEvent(new PointerEvent('pointerdown', {bubbles:true, cancelable:true, pointerId:1, clientX:cx0, clientY:cy0})); for (let i=1;i<=6;i++) hit.dispatchEvent(new PointerEvent('pointermove', {bubbles:true, cancelable:true, pointerId:1, clientX:cx0+i*12, clientY:cy0+Math.sin(i)*12})); hit.dispatchEvent(new PointerEvent('pointerup', {bubbles:true, cancelable:true, pointerId:1})); return [inert, active, (m.strokes && m.strokes[0] && m.strokes[0].pts.length) || 0, !!m.drawn]; })()")
-    check('waiting: instead of the goblin, a neon doodle pad — inert by default (a pencil toggles draw mode, so game buttons never get blocked); drawing then records a neon stroke that fades (the owner: the goblin felt too much, something solid: just draw and the colour disappears)', doodle and doodle[0] is True and doodle[1] is True and doodle[2] >= 5 and doodle[3] is True, doodle)
+    check('waiting: the 👺 button swaps to the neon doodle pad — inert until the pencil, then drawing records a fading neon stroke (the owner: keep the doodle as the alternative)', doodle and doodle[0] is True and doodle[1] is True and doodle[2] >= 5 and doodle[3] is True, doodle)
     await czarP.screenshot(path=OUT + 'tachles_mini.png')
     for k in range(30):
         if (await view(host))['phase'] == 'reveal': break
@@ -299,13 +303,20 @@ async def style_packs(b):
     check('the room is short: the style is not a card in the lobby; the settings button shows a style summary', await page.locator('#tachles .tkStyle').count() == 0 and await page.locator('#tachles .tkSetBtn .tkSetL small').count() == 1 and 'גס' in await page.inner_text('#tachles .tkSetBtn'))
     await page.screenshot(path=OUT + 'tachles_lobby_short.png')
     await click(page, '#tachles [data-a="set"]')
-    check('settings sheet: "סגנון הערב" with 3 levels inside, 🟠 גס on, the points stepper too', await page.locator('#tachles .tkModal .tkLv').count() == 3 and await page.locator('#tachles .tkModal .tkLv.on').inner_text() == '🟠\nגס' and await page.locator('#tachles .tkModal [data-a="ws+"]').count() == 1)
+    check('settings sheet: "סגנון הערב" with 4 levels inside, 🟠 גס on, the points stepper too', await page.locator('#tachles .tkModal .tkLv').count() == 4 and await page.locator('#tachles .tkModal .tkLv.on').inner_text() == '🟠\nגס' and await page.locator('#tachles .tkModal [data-a="ws+"]').count() == 1)
     await page.screenshot(path=OUT + 'tachles_settings.png')
     await click(page, '#tachles [data-a="lvl:1"]'); check('style: 🟢 קליל picked, its warning line shown', await page.evaluate(f"{TKH}.tk.set.lvl") == 1 and 'ההורים' in await page.inner_text('#tachles .tkLvD'))
+    await click(page, '#tachles [data-a="lvl:4"]')
+    hc = await page.evaluate(f"""(() => {{ const d = {TKH}.tk.deck, lv = {TKH}.tk.set.lvl;
+      const pass = (m) => m ? (lv >= 4 ? +m[0] === 3 : +m[0] <= lv) : lv < 4;
+      const w = d.wm.filter(pass), b = d.bm.filter(pass);
+      return {{ lv, w: w.length, b: b.length, only3: w.concat(b).every((m) => +m[0] === 3) }}; }})()""")
+    check('style: ☠️ הארדקור is a 4th level that deals ONLY the level-3 (most extreme) cards', hc['lv'] == 4 and hc['only3'] and hc['w'] >= 300 and hc['b'] >= 80, hc)
+    await click(page, '#tachles [data-a="lvl:1"]')
     await click(page, '#tachles [data-a="packs"]'); check('packs: a sheet of 13 packs, each with ⚠️ a warning and a card count, all on', await page.locator('#tachles .tkPacks .tkPk').count() == 13 and await page.locator('#tachles .tkPacks .tkPk.on').count() == 13 and await page.locator('#tachles .tkPk small:has-text("⚠️")').count() == 13)
     await page.screenshot(path=OUT + 'tachles_packs.png')
     await click(page, '#tachles [data-a="pkAll"]'); await click(page, '#tachles .tkMHead [data-a="mclose"]')
-    check('packs opened from settings: closing goes back to the settings sheet', await page.locator('#tachles .tkModal .tkLv').count() == 3)
+    check('packs opened from settings: closing goes back to the settings sheet', await page.locator('#tachles .tkModal .tkLv').count() == 4)
     n0 = await page.inner_text('#tachles .tkModal [data-a="packs"]')
     check('packs: all off at 🟢: the button says 0 of 13 and fewer cards (the ones with no sensitive topic stay)', 'חבילות: 0 מתוך 13' in n0, n0)
     await click(page, '#tachles .tkMHead [data-a="mclose"]')
