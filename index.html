@@ -2139,7 +2139,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.135';
+const APP_VERSION = '1.12.136';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -24831,7 +24831,7 @@ function tkRender() {
   el.innerHTML = '<div class="tkIn0' + (fresh ? ' fade' : '') + '">' + h + '</div>' + waitHtml + tkModalHtml() + (tkFsNeed() ? '<div class="tkFsVeil" data-a="fs"><h1 class="tkNeon tkH1">' + tks('title') + '</h1><p>' + tks('tapGo') + '</p></div>' : '') + (tk.toast && Date.now() < tk.toast.until ? '<div class="tkToast">' + tks(tk.toast.k) + '</div>' : '');
   tk.scrNow = s; tkArmNav(s); tkMiniSync(); // the waiting goblin: shown only in a game, only while waiting, and only after the delay (tkMiniSync)
   // the winner moment: one confetti burst the first time each round's reveal shows (keyed on the round, so a re-render never re-fires it)
-  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; if (tk.mode === 'local' || tk.view.last.me) tkCeleb(); else tkSad(); if (tk.view.last.crowd) tkCrowdToast(tk.view.last.crowd); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round — in local pass-and-play the screen is shared, so keep the confetti for any winner)
+  if (s === 'game' && tk.view && tk.view.phase === 'reveal' && tk.view.last && tk.view.last.name) { if (tk.celebRound !== tk.view.round) { tk.celebRound = tk.view.round; const iCzar = tk.mode !== 'local' && tk.view.me === tk.view.judge; if (tk.mode === 'local' || tk.view.last.me) tkCeleb(); else if (!iCzar) tkSad(); if (tk.view.last.crowd) tkCrowdToast(tk.view.last.crowd); } } // (the owner: confetti only on your own win; a 💩 drizzle when someone else takes the round, but NOT for the czar who judged — they didn't compete; local pass-and-play shares the screen, so confetti for any winner)
   if (top) el.scrollTop = 0;
   if (tk.drag && tk.drag.g) { el.appendChild(tk.drag.g); const c = el.querySelector('.tkHC[data-a="' + (tk.drag.j ? 'jc:' : 'card:') + tk.drag.i + '"]'); if (c) { c.classList.add('tkDragged'); tk.drag.c = c; } } // (a re-render mid-drag keeps the ghost)
   const hs2 = el.querySelector('.tkHandW'); if (hs2) { if (hx) hs2.scrollLeft = hx; hs2.addEventListener('scroll', tkFan, { passive: true }); tkFitCards(); tkFan(); }
