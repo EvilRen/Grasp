@@ -1602,6 +1602,11 @@ body.tkOn #tachles .tkIn0{ padding-top:calc(env(safe-area-inset-top,0px) + 16px)
 .tkMiniBadge{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 54px); left:50%; transform:translateX(-50%); pointer-events:none; background:rgba(26,20,40,.85); color:#e9d5ff; font-size:12px; font-weight:800; padding:4px 12px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,.4); }
 .tkMiniStar{ position:absolute; transform:translate(-50%,-50%); font-size:16px; pointer-events:none; animation:tkMiniStar .68s ease-out forwards; }
 @keyframes tkMiniStar{ to{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3); opacity:0; } }
+/* the goblin's splat (the owner: when you bonk it, a deliberate funny splat with a goo spray, then it bounces back — not an accidental blood dot) */
+.tkMiniSplat{ position:absolute; transform:translate(-50%,-50%) scale(.3); pointer-events:none; width:58px; height:58px; border-radius:50%; background:radial-gradient(circle at 42% 38%, rgba(255,96,116,.95), rgba(196,18,48,.9) 52%, rgba(120,8,28,0) 72%); animation:tkMiniSplat .42s ease-out forwards; }
+@keyframes tkMiniSplat{ 0%{ opacity:.95; transform:translate(-50%,-50%) scale(.3); } to{ opacity:0; transform:translate(-50%,-50%) scale(1.55); } }
+.tkMiniGoo{ position:absolute; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; background:radial-gradient(circle at 35% 30%, #ff5a6e, #c21230 70%); box-shadow:0 0 0 1px rgba(90,0,14,.25); animation:tkMiniGoo .62s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes tkMiniGoo{ 0%{ opacity:1; } to{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.35); opacity:0; } }
 .tkMiniSay{ position:absolute; pointer-events:none; background:#fff; color:#1a1030; font-size:12px; font-weight:800; padding:3px 9px; border-radius:9px; white-space:nowrap; box-shadow:0 2px 0 rgba(0,0,0,.3); animation:tkMiniSay 1.2s ease-out forwards; z-index:6; }
 .tkMiniSay::after{ content:''; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%); border:5px solid transparent; border-top-color:#fff; border-bottom:0; }
 @keyframes tkMiniSay{ 0%{ opacity:0; transform:translate(-50%,-70%) scale(.6); } 16%{ opacity:1; transform:translate(-50%,-100%) scale(1); } 78%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-140%) scale(.9); } }
@@ -2139,7 +2144,7 @@ body.gfxCalm #start.mb, body.gfxCalm .mbBubu .bb, body.gfxCalm .stk.hero .go, bo
 
 <script>
 /* The version (like the owner's other games): bump it on every ship (x.Y.0 a feature release: new What's New notes, I18N wn / wnFor; x.y.Z a fix) */
-const APP_VERSION = '1.12.136';
+const APP_VERSION = '1.12.137';
 /* Saving blocked (the owner's Brave: Shields blocking the site's data: every read and write of localStorage throws, so the progress, the pet, the
    lock and Strike's picked mode were all lost at once; a pick in the card's strip read back as Stage N at once): the game keeps its data in memory
    for the visit instead (LS_ERR names the browser's refusal; Settings says so in one line). */
@@ -25220,7 +25225,7 @@ function tkGobDrag(ch) { const m = tk.mini;
 function tkGobHit() { const m = tk.mini; const now = performance.now(); m.combo = (now - (m.lastHit || 0) < 1200) ? (m.combo || 0) + 1 : 1; m.lastHit = now; m.idleAt = now; m.zzzAt = 0;
   m.score++; m.hit = now; if (m.score > m.best) { m.best = m.score; try { localStorage.setItem('grasp.tkMiniBest', m.best); } catch {} }
   const a = Math.random() * TAU, s = 0.16 + Math.min(0.12, m.score * 0.004); m.vx = Math.cos(a) * s; m.vy = Math.sin(a) * s;
-  const milestone = m.score % 10 === 0; tkGobStars(m.x, m.y, milestone ? 18 : 6 + Math.min(10, m.combo * 2), milestone);
+  const milestone = m.score % 10 === 0; tkGobSplat(m.x, m.y); if (milestone) tkGobStars(m.x, m.y, 18, true); else if (m.combo >= 2) tkGobStars(m.x, m.y, 4 + Math.min(10, m.combo * 2), false); // the splat every bonk; gold stars reward a streak / round number
   const tier = tkGobTier();
   if (tier > (m.tierShown || 0)) { m.tierShown = tier; tkGobSay(tier >= 2 ? tks('miniKing') : tks('miniUp')); }
   else if (milestone) tkGobSay(m.score + '! 🎉');
@@ -25233,6 +25238,10 @@ function tkGobSay(t) { const m = tk.mini; if (!m.el) return; if (m.say) m.say.re
 function tkGobStars(x, y, n, big) { const L = tk.mini.el; if (!L) return; n = n || 6; const set = big ? ['🎉', '✨', '⭐', '💫', '🎊'] : ['⭐', '✨', '💫'];
   for (let i = 0; i < n; i++) { const s = document.createElement('span'); s.className = 'tkMiniStar'; s.textContent = set[i % set.length];
     const a = Math.random() * TAU, d = (big ? 34 : 24) + Math.random() * (big ? 48 : 26); s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); L.appendChild(s); setTimeout(() => s.remove(), 680); } }
+function tkGobSplat(x, y) { const L = tk.mini.el; if (!L) return; // the deliberate "splat": a quick red burst at the center + a goo spray that arcs out and falls
+  const f = document.createElement('span'); f.className = 'tkMiniSplat'; f.style.left = x + 'px'; f.style.top = y + 'px'; L.appendChild(f); setTimeout(() => f.remove(), 440);
+  for (let i = 0; i < 9; i++) { const g = document.createElement('span'); g.className = 'tkMiniGoo'; const a = Math.random() * TAU, d = 20 + Math.random() * 34, sz = (6 + Math.random() * 6).toFixed(1);
+    g.style.left = x + 'px'; g.style.top = y + 'px'; g.style.width = g.style.height = sz + 'px'; g.style.setProperty('--dx', Math.cos(a) * d + 'px'); g.style.setProperty('--dy', (Math.sin(a) * d + 20) + 'px'); L.appendChild(g); setTimeout(() => g.remove(), 640); } }
 
 function tkBacksHtml(v) { // while the others choose (from Evil Apples): a face-down card for each answer that came in, an empty place for each still to come
   const el = v.players.filter((p) => p.id !== v.judge && p.on); if (!el.length) return ''; const n = el.filter((p) => p.sent).length;
